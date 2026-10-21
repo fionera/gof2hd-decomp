@@ -90,9 +90,7 @@ public:
     Array<int> *field_a8;
     int miningPlantIndex;
     Array<KIPlayer *> *field_b0;
-    int field_b4;
-    int field_b8;
-    int field_bc;
+    Vector playerPosition;
     int missionPtr;
     BoundingVolume *collisionVolume;
     float field_c8;
@@ -311,7 +309,7 @@ public:
 
     void updateAsteroidCluster();
 
-    void update(long long time, bool param);
+    void update(long long dt, bool skipLod);
 
     int checkObjective(int param);
 

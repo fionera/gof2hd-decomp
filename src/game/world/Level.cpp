@@ -133,15 +133,10 @@ static char **g_ca_lowDetail = nullptr;
 
 static float g_ccm_pos0 = 50000.0f;
 
-static float g_up_eqMax = 0;
 
-static float *g_up_clampLo = nullptr;
 
-static float *g_up_clampHi = nullptr;
 
-static float *g_up_clampZ = nullptr;
 
-static float *g_up_clampW = nullptr;
 
 
 
@@ -4308,98 +4303,98 @@ void Level::uncoverWanted(int index) {
     }
 }
 
-void Level::update(long long /*time*/, bool param) {
-    Level *thisptr = this;
-    unsigned dt = (unsigned) param;
-
-    if (this->flashActive != 0) {
-        unsigned remaining = *(unsigned *) &this->flashDurationA - dt;
-        *(unsigned *) &this->flashDurationA = remaining;
-        if (0x7fffffff < remaining)
-            this->flashActive = 0;
-
-        float frac = (float) remaining / (float) this->flashDurationB;
-        float *col = &this->flashColor.x;
-        float lo = *g_up_clampLo, hi = *g_up_clampHi, z = *g_up_clampZ, w = *g_up_clampW;
-        float scaled[4] = {col[0] * frac, col[1] * frac, col[2] * frac, col[3] * frac};
-        float bounds[4] = {lo, hi, z, w};
-        for (int k = 0; k < 4; k = k + 1)
-            col[k] = bounds[k] > scaled[k] ? bounds[k] : scaled[k];
+void Level::update(long long dt, bool skipLod) {
+    if (flashActive) {
+        flashDurationA -= (int) dt;
+        if (flashDurationA < 0) {
+            flashActive = 0;
+        }
+        float fade = (float) flashDurationA / (float) flashDurationB;
+        float red = flashColor.x * fade;
+        float green = flashColor.y * fade;
+        float blue = flashColor.z * fade;
+        float alpha = flashAlpha * fade;
+        flashColor.x = i_r > red ? i_r : red;
+        flashColor.y = i_g > green ? i_g : green;
+        flashColor.z = i_b > blue ? i_b : blue;
+        flashAlpha = i_a > alpha ? i_a : alpha;
     }
 
-    bool didMission = false;
-    if (Globals::status->getMission() != 0) {
-        Globals::status->getMission();
-        if (((Mission *) Globals::status->getMission())->isEmpty() == 0) {
-            thisptr->updateMissionOrbit(dt);
-            didMission = true;
+    if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty()) {
+        updateOrbit((int) dt);
+    } else {
+        updateMissionOrbit((int) dt);
+    }
+    if (Globals::status->getStation()->isAttackedByAliens() || Globals::status->inAlienOrbit()) {
+        updateAlienAttackers((int) dt);
+    }
+
+    if (playerGuns != nullptr) {
+        for (unsigned int i = 0; i < playerGuns->size(); i++) {
+            (*playerGuns)[i]->update((int) dt);
         }
     }
-    if (!didMission)
-        thisptr->updateOrbit(dt);
-
-    Station *st = (Station *) Globals::status->getStation();
-    if (((Station *) st)->isAttackedByAliens() != 0 || Globals::status->inAlienOrbit() != 0)
-        thisptr->updateAlienAttackers(0);
-
-    if (this->playerGuns != nullptr) {
-        for (unsigned i = 0; i < this->playerGuns->size(); i = i + 1) {
-            ((ObjectGun *) (*this->playerGuns)[i])->update(dt);
-        }
-    }
-    if (this->enemyGuns != nullptr) {
-        for (unsigned i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            ((ObjectGun *) (*this->enemyGuns)[i])->update(dt);
+    if (enemyGuns != nullptr) {
+        for (unsigned int i = 0; i < enemyGuns->size(); i++) {
+            (*enemyGuns)[i]->update((int) dt);
         }
     }
 
-    int aPtr = (int) (intptr_t) Globals::status;
-    Station *st2 = (Station *) Globals::status->getStation();
-    int idx = ((Station *) st2)->getIndex();
-    Globals::status->getCurrentCampaignMission();
-    float gamma = ((Status *) (intptr_t) aPtr)->getGammaRayDamagePerSecond(aPtr, idx);
-    PlayerEgo *ego = this->player;
-    if (gamma > 0.0f && ego != nullptr) {
-        int ship = (int) (intptr_t) Globals::status->getShip();
-        int eq = (int) (intptr_t)((Ship *) (intptr_t) ship)->getFirstEquipmentOfSort(0x26);
-        float factor = gamma;
-        if (eq != 0) {
-            int attr = ((Item *) (intptr_t) eq)->getAttribute(0x34);
-            if (attr > 0)
-                factor = (g_up_eqMax - (float) attr) / g_up_eqMax;
+    float gammaDamage = Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                                    Globals::status->getCurrentCampaignMission());
+    if (gammaDamage > 0.0f && player != nullptr) {
+        Item *shield = Globals::status->getShip()->getFirstEquipmentOfSort(0x26);
+        if (shield != nullptr) {
+            int protection = shield->getAttribute(0x34);
+            if (protection > 0) {
+                gammaDamage *= (100.0f - (float) protection) / 100.0f;
+            }
         }
-        int hpBefore = ((Player *) this->player)->getGammaHP();
-        ((Player *) this->player)->damageGamma(factor);
-        if (hpBefore > 0xe && ((Player *) this->player)->getGammaHP() < 0xf) {
-            int hud = this->player->getHUD();
-            ((Hud *) (intptr_t) hud)->hudEvent(0x2c, this->player, 0);
+        gammaDamage = gammaDamage * (float) dt / 1000.0f;
+        int gammaBefore = player->player->getGammaHP();
+        player->player->damageGamma(gammaDamage);
+        if (gammaBefore >= 15 && player->player->getGammaHP() <= 14) {
+            ((Hud *) player->getHUD())->hudEvent(0x2c, player, 0);
         }
-        ego = this->player;
     }
 
-    if (ego != nullptr) {
-        char dummy[16];
-        if (this->field_80 != 0) {
-            *(Vec3 *) dummy = ego->getPosition();
-            this->field_b4 = *(int *) dummy;
-            (this->field_80)->update(dt);
+    if (player != nullptr) {
+        if (field_80 != nullptr) {
+            playerPosition = player->getPosition();
+            field_80->update(dt);
         }
-        if (this->field_74 != 0) (this->field_74)->update(dt);
-        if (this->particleEmitBoolPtr != nullptr) this->particleEmitBoolPtr->update(dt);
-        if (this->skybox2Mesh != 0) {
-            *(Vec3 *) dummy = ego->getPosition();
-            this->field_b4 = *(int *) dummy;
-            (this->skybox2Mesh)->update(dt);
+        if (field_74 != nullptr) {
+            field_74->update(dt);
         }
-        if (this->particleSystemMgr != nullptr) this->particleSystemMgr->update(dt);
-        if (this->particleRenderBoolPtr != nullptr) this->particleRenderBoolPtr->update(dt);
-        if (this->field_8c != 0) this->field_8c->update(dt);
-        if (this->field_98 != 0) (this->field_98)->update(dt);
-        if (this->field_94 != 0) this->field_94->update(dt);
-        if (this->field_9c != 0) (this->field_9c)->update(dt);
+        if (particleEmitBoolPtr != nullptr) {
+            particleEmitBoolPtr->update(dt);
+        }
+        if (skybox2Mesh != nullptr) {
+            playerPosition = player->getPosition();
+            skybox2Mesh->update(dt);
+        }
+        if (particleSystemMgr != nullptr) {
+            particleSystemMgr->update(dt);
+        }
+        if (particleRenderBoolPtr != nullptr) {
+            particleRenderBoolPtr->update(dt);
+        }
+        if (field_8c != nullptr) {
+            field_8c->update(dt);
+        }
+        if (field_98 != nullptr) {
+            field_98->update(dt);
+        }
+        if (field_94 != nullptr) {
+            field_94->update(dt);
+        }
+        if (field_9c != nullptr) {
+            field_9c->update(dt);
+        }
     }
-
-    this->lodManager->update(dt);
+    if (!skipLod) {
+        lodManager->update((int) dt);
+    }
 }
 
 void Level::connectPlayers() {
@@ -5281,7 +5276,7 @@ void Level::wingmanDied(AbyssEngine::String const &name) {
 
 
 Level::Level(int mission)
-        : field_b4(0), field_b8(0), field_bc(0),
+        : playerPosition(),
           field_c8(0), field_cc(0), field_d0(0),
           field_18c(0), field_190(0), field_194(0) {
     field_1c = 0;
