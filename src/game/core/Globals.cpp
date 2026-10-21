@@ -833,8 +833,8 @@ void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *en
     app->VibrateEnable(0);
 
     AbyssEngine::AERandom *rng = new AbyssEngine::AERandom();
-    Globals::globals = this;
     Globals::rnd = rng;
+    Globals::globals = this;
 
     Generator *gen = new Generator();
     Globals::generator = gen;
