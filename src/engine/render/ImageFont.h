@@ -13,6 +13,10 @@ namespace AbyssEngine {
         Mesh **glyphMeshes;
         int16_t spacing;
         int16_t yOffset;
+
+        // Inline: the original emits ImageFont::ImageFont() in Image.cpp next to its only caller.
+        ImageFont() : glyphCount(0), codes(0), field_0x8(0), glyphMeshes(0), spacing(0), yOffset(0) {
+        }
     };
 }
 

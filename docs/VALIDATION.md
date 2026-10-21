@@ -44,7 +44,7 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 | `verify-fn` | `tools/verify/`       | `FN=<mangled> … verify-fn` — side-by-side disassembly of one function (`\|` structural diff, `~` link-address diff only). |
 | `lint`      | `tools/goal_lint.py`  | Structural invariants. **Hard** rules (no `asm` in any spelling/`__attribute__`/`extern "C"`/linker hacks, templates without explicit instantiation, no include cycles) must be 0 everywhere. **Soft** rules (one class per file, no `void*` incl. `typedef`/`using` laundering, no `union`) are gated as a per-file **ratchet** vs `tools/goal_lint_baseline.json`. |
 | `drift`     | `tools/layout.py`     | Every `field_0xNN` sits at offset 0xNN under the **real ABI** (NDK clang, ARM AAPCS; forced layout completion so every class is actually checked). |
-| `check`     | `tools/ratchet.py`    | **The enforced no-degradation gate**: fresh build vs `tools/verify_baseline.json` + the allowlist + the pinned import set + lint. Also runs as the pre-push hook (`git config core.hooksPath tools/hooks`). |
+| `check`     | `tools/ratchet.py`    | **The enforced no-degradation gate** (also gates `data_exact`, exported data-object parity from `tools/datadiff.py`): fresh build vs `tools/verify_baseline.json` + the allowlist + the pinned import set + lint. Also runs as the pre-push hook (`git config core.hooksPath tools/hooks`). |
 
 `sodiff.py` and `goal_lint.py` are pure Python (run anywhere); the `verify` pipeline uses the NDK
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
@@ -202,7 +202,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1308, linked_exact 3930, avg 94.56%**
+Current numbers (of **4523** compared): **byte_exact 1314, linked_exact 4078, avg 96.89%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

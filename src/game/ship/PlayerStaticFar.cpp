@@ -10,6 +10,7 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
+PlayerStaticFar::~PlayerStaticFar() = default;
 
 PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
     : PlayerStatic(playerId, geometry, x, y, z), viewDirection() {
@@ -20,46 +21,11 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
     this->boundingVolumes = nullptr;
 }
 
-PlayerStaticFar::~PlayerStaticFar() = default;
-
-Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
-    if (this->boundingVolumes != nullptr) {
-        return (*this->boundingVolumes)[0]->getProjectionVector(value);
-    }
-    return {0.0f, 0.0f, 0.0f};
+void PlayerStaticFar::setYRotation(int /*yRotation*/) {
 }
 
 void PlayerStaticFar::render() {
     this->KIPlayer::render();
-}
-
-Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
-    if (this->boundingVolumes != nullptr) {
-        Vector out;
-        reinterpret_cast<BoundingVolume *>(&out)
-                ->staticProjectCollisionOnSurface(value, this->boundingVolumes);
-        return out;
-    }
-    return {0.0f, 0.0f, 0.0f};
-}
-
-int PlayerStaticFar::outerCollide(float x, float y, float z) {
-    return this->collide(x, y, z);
-}
-
-Vector PlayerStaticFar::getInitPosition(Vector /*value*/) {
-    Vector v;
-    v.x = this->posX;
-    v.y = this->posY;
-    v.z = this->posZ;
-    return v;
-}
-
-void PlayerStaticFar::setYRotation(int /*yRotation*/) {
-}
-
-int PlayerStaticFar::outerCollide(Vector value) {
-    return this->collide(value.x, value.y, value.z);
 }
 
 void PlayerStaticFar::update(int /*delta*/) {
@@ -101,4 +67,37 @@ int PlayerStaticFar::collide(float x, float y, float z) {
         }
     }
     return false;
+}
+
+Vector PlayerStaticFar::getInitPosition(Vector /*value*/) {
+    Vector v;
+    v.x = this->posX;
+    v.y = this->posY;
+    v.z = this->posZ;
+    return v;
+}
+
+int PlayerStaticFar::outerCollide(float x, float y, float z) {
+    return this->collide(x, y, z);
+}
+
+int PlayerStaticFar::outerCollide(Vector value) {
+    return this->collide(value.x, value.y, value.z);
+}
+
+Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
+    if (this->boundingVolumes != nullptr) {
+        return (*this->boundingVolumes)[0]->getProjectionVector(value);
+    }
+    return {0.0f, 0.0f, 0.0f};
+}
+
+Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
+    if (this->boundingVolumes != nullptr) {
+        Vector out;
+        reinterpret_cast<BoundingVolume *>(&out)
+                ->staticProjectCollisionOnSurface(value, this->boundingVolumes);
+        return out;
+    }
+    return {0.0f, 0.0f, 0.0f};
 }

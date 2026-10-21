@@ -58,6 +58,14 @@ Orchestrator session log. One entry per session; newest first. Resume from git l
 - Link now mirrors ndk-build (dbf3b4c2): APK libfmodex/libfmodevent inputs, libgcc.a last,
   --exclude-libs=libgcc.a. NEEDED identical to original.
 
+- Interim merge 4 (w2b,w6,w14b,w3,w8,w12b,w16,w4c): byte 1314 / linked 4074 / avg 96.84 /
+  data 772/843, RATCHET PASS. Unmerged at stop: wave3-w17 (data initializers; conflicts with
+  owners' files in BlowfishSubkeyFile, ConfigReader, ImageFactory, MiningGame, ModMainMenu,
+  PlayerCreature, ScrollTouchWindow, LevelScript — merge by hand, keep both sides), w9b, w18,
+  w10c, plus any newer commits on the merged branches. loadingScreen now lives in
+  GameInit.cpp (w14b TU move); w5c's 94.9% body is saved in
+  _work/reconstructions/loadingScreen_w5c_94pct.cpp — port it into GameInit.cpp.
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:

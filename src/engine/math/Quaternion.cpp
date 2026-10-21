@@ -9,41 +9,20 @@ namespace AbyssEngine {
     Quaternion::Quaternion(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {
     }
 
-    Quaternion::Quaternion(Quaternion *other) {
-        (void) other;
-    }
-
     Quaternion::Quaternion(AEMath::Vector angles) {
         Set(angles);
-    }
-
-    Quaternion::Quaternion(const AEMath::Matrix &matrix) {
-        Set(matrix);
-    }
-
-    float Quaternion::Dot(const Quaternion &a, const Quaternion &b) {
-        return a.y * b.y + a.x * b.x + a.z * b.z + a.w * b.w;
-    }
-
-    float Quaternion::Length() const {
-        return sqrtf(x * x + y * y + z * z + w * w);
     }
 
     void Quaternion::Set(AEMath::Vector angles) {
         Set(angles.x, angles.y, angles.z);
     }
 
-    void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
-        float sinZ = sinf(z_angle * 0.5f);
-        float sinY = sinf(y_angle * 0.5f);
-        float sinX = sinf(x_angle * 0.5f);
-        float cosZ = cosf(z_angle * 0.5f);
-        float cosY = cosf(y_angle * 0.5f);
-        float cosX = cosf(x_angle * 0.5f);
-        x = sinX * cosZ * cosY - sinZ * sinY * cosX;
-        y = -(sinY * cosZ * cosX) + -(sinX * sinZ * cosY);
-        z = sinZ * cosY * cosX - sinX * sinY * cosZ;
-        w = cosZ * cosY * cosX + sinZ * sinY * sinX;
+    Quaternion::Quaternion(Quaternion *other) {
+        (void) other;
+    }
+
+    Quaternion::Quaternion(const AEMath::Matrix &matrix) {
+        Set(matrix);
     }
 
     void Quaternion::Set(const AEMath::Matrix &matrix) {
@@ -91,13 +70,27 @@ namespace AbyssEngine {
         }
     }
 
-    Quaternion Quaternion::Normalized() {
-        float length = Length();
-        x /= length;
-        y /= length;
-        z /= length;
-        w /= length;
-        return *this;
+    Quaternion::~Quaternion() {
+    }
+
+    void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
+        float halfZ = z_angle * 0.5f;
+        float cosZ = cosf(halfZ);
+        float halfY = y_angle * 0.5f;
+        float cosY = cosf(halfY);
+        float halfX = x_angle * 0.5f;
+        float cosX = cosf(halfX);
+        float sinZ = sinf(halfZ);
+        float sinY = sinf(halfY);
+        float cosYsinZ = cosY * sinZ;
+        float sinZsinY = sinZ * sinY;
+        float cosZsinY = cosZ * sinY;
+        float sinX = sinf(halfX);
+        float cosZcosY = cosZ * cosY;
+        x = cosX * sinZsinY - cosZcosY * sinX;
+        y = -(cosYsinZ * sinX) - cosX * cosZsinY;
+        z = cosZsinY * sinX - cosX * cosYsinZ;
+        w = sinZsinY * sinX + cosZcosY * cosX;
     }
 
     Quaternion Quaternion::Inverse() const {
@@ -110,17 +103,27 @@ namespace AbyssEngine {
         return result;
     }
 
-    void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
-        float32x4_t av = vld1q_f32(&a.x);
-        float32x4_t bv = vld1q_f32(&b.x);
-        float32x4_t delta = vsubq_f32(bv, av);
-        float32x4_t result = vmlaq_f32(av, vdupq_n_f32(t), delta);
-
-        vst1q_f32(&x, result);
-        *this = Normalized();
+    float Quaternion::Dot(const Quaternion &a, const Quaternion &b) {
+        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     }
 
-    void Quaternion::Lerp(const float *a, const float *b, float t) {
+    Quaternion Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
+        float32x4_t result;
+        Quaternion difference = b - a;
+        result = vmlaq_f32(vld1q_f32(&a.x), vdupq_n_f32(t), *reinterpret_cast<float32x4_t *>(&difference));
+        return reinterpret_cast<Quaternion &>(result).Normalized();
+    }
+
+    Quaternion Quaternion::Normalized() {
+        float length = Length();
+        x /= length;
+        y /= length;
+        z /= length;
+        w /= length;
+        return *this;
+    }
+
+    Quaternion Quaternion::Lerp(const float *a, const float *b, float t) {
         float32x4_t av = vld1q_f32(a);
         float32x4_t bv = vld1q_f32(b);
 
@@ -129,13 +132,27 @@ namespace AbyssEngine {
         dot += vgetq_lane_f32(av, 2) * vgetq_lane_f32(bv, 2);
         dot += vgetq_lane_f32(av, 3) * vgetq_lane_f32(bv, 3);
 
-        float32x4_t delta = (dot < 0.0f)
-                                ? vsubq_f32(vnegq_f32(bv), av)
-                                : vsubq_f32(bv, av);
+        // Take the shorter way round.
+        float32x4_t delta;
+        if (dot < 0.0f)
+            delta = vsubq_f32(vnegq_f32(bv), av);
+        else
+            delta = vsubq_f32(bv, av);
 
         float32x4_t result = vmlaq_f32(av, vdupq_n_f32(t), delta);
-        vst1q_f32(&x, result);
-        *this = Normalized();
+        return reinterpret_cast<Quaternion &>(result).Normalized();
+    }
+
+    Quaternion::operator float *() { return &x; }
+
+    Quaternion::operator const float *() const { return &x; }
+
+    float &Quaternion::operator[](int i) { return (&x)[i]; }
+
+    float Quaternion::operator[](int i) const { return (&x)[i]; }
+
+    float Quaternion::Length() const {
+        return sqrtf(x * x + y * y + z * z + w * w);
     }
 
     void Quaternion::Convert(AEMath::Matrix &matrix) {

@@ -16,6 +16,8 @@
 #include "engine/render/PaintCanvas.h"
 
 
+
+
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     this->x = x;
     this->y = y;
@@ -99,88 +101,6 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     ArrayReleaseClasses(*allItems);
     delete allItems;
 }
-
-NewsTicker::~NewsTicker() {}
-
-void NewsTicker::draw() {
-    Globals::Canvas->SetColor(0x6f);
-    Globals::Canvas->FillRectangle(this->x, this->y - 2, this->width,
-                                   Globals::h - this->y + 2 - Globals::layout->field_0x10_rightMargin);
-    Globals::Canvas->EnableClip(this->x, this->y, this->width, Globals::h);
-    Globals::Canvas->SetColor(0x777777ff);
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
-                                (int) (this->scrollOffset + (float) this->x), this->y, false);
-
-    if (GameText::getLanguage() == 9) {
-        if (this->scrollOffset > (float) this->textWidth) {
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
-                                        (int) (this->scrollOffset + (float) this->x), this->y, false);
-        }
-    } else if (this->scrollOffset < (float) (this->textWidth - this->width)) {
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
-                                    (int) (this->scrollOffset + (float) this->x + (float) this->textWidth),
-                                    this->y, false);
-    }
-
-    Globals::Canvas->DisableClip();
-}
-
-void NewsTicker::update(int dt) {
-    if (this->touched != 0) {
-        return;
-    }
-
-    float step = ((float) dt / 1000.0f) * 50.0f;
-    if (GameText::getLanguage() == 9) {
-        this->scrollOffset += step;
-        if (this->scrollOffset > (float) this->width) {
-            this->scrollOffset = (float) -this->textWidth;
-        }
-    } else {
-        this->scrollOffset -= step;
-        if (this->scrollOffset < (float) -this->textWidth) {
-            this->scrollOffset = 0;
-        }
-    }
-}
-
-int NewsTicker::getHeight() {
-    return Globals::h + 2 - Globals::layout->field_0x10_rightMargin - this->y;
-}
-
-uint8_t NewsTicker::OnTouchBegin(int x, int y) {
-    if (this->x <= x && x <= this->x + this->width && this->y <= y) {
-        if (y <= Globals::h + 2 - Globals::layout->field_0x10_rightMargin) {
-            this->touched = 1;
-            this->lastTouchX = x;
-        }
-    }
-    return this->touched;
-}
-
-bool NewsTicker::OnTouchMove(int x, int) {
-    if (this->touched != 0) {
-        float delta = (float) (this->lastTouchX - x);
-        this->scrollOffset -= delta;
-        float maxX = (float) Globals::w;
-        if (maxX < this->scrollOffset) {
-            this->scrollOffset = maxX;
-        }
-        this->lastTouchX = x;
-    }
-    return this->touched != 0;
-}
-
-uint32_t NewsTicker::OnTouchEnd(int, int) {
-    if (this->touched == 0) {
-        return 0;
-    }
-    this->touched = 0;
-    return 1;
-}
-
-static const char *const kPlatformLetters[4] = {"A", "B", "C", "D"};
-
 String NewsTicker::replaceTokens(String text) {
     if (Globals::status->stringHasToken(String(text, false), String("#PLANET_NAME", false))) {
         Station *station = Globals::globals->getRandomStation();
@@ -228,12 +148,22 @@ String NewsTicker::replaceTokens(String text) {
     if (Globals::status->stringHasToken(String(text, false), String("#PLATFORM_NUMBER", false))) {
         unsigned int platformIndex = Globals::rnd->nextInt(6);
         const char *letter;
-        if (platformIndex < 4) {
-            letter = kPlatformLetters[platformIndex];
-        } else if (platformIndex == 4) {
-            letter = "E";
-        } else {
-            letter = "F";
+        switch (platformIndex) {
+            case 0:
+                letter = "A";
+                break;
+            case 1:
+                letter = "B";
+                break;
+            case 2:
+                letter = "C";
+                break;
+            case 3:
+                letter = "D";
+                break;
+            default:
+                letter = platformIndex == 4 ? "E" : "F";
+                break;
         }
         String platform(letter, false);
         text = Globals::status->replaceHash(String(text, false), platform + String(Globals::rnd->nextInt(10)),
@@ -247,10 +177,10 @@ String NewsTicker::replaceTokens(String text) {
     }
 
     if (Globals::status->stringHasToken(String(text, false), String("#VICTIMS", false))) {
-        int victims = Globals::rnd->nextInt(99000) + 100000;
-        text = Globals::status->replaceHash(String(text, false),
-                                            String(Globals::layout->formatNumber(victims / 1000 * 1000), false),
-                                            String("#VICTIMS", false));
+        text = Globals::status->replaceHash(
+                String(text, false),
+                String(Globals::layout->formatNumber((Globals::rnd->nextInt(99000) + 100000) / 1000 * 1000), false),
+                String("#VICTIMS", false));
     }
 
     if (Globals::status->stringHasToken(String(text, false), String("#BERGER_LASER", false))) {
@@ -277,7 +207,7 @@ String NewsTicker::replaceTokens(String text) {
             item = *Globals::gameText->getText(itemIndex + 1274);
             delete candidates;
         }
-        price = Globals::layout->formatNumber((int) (Globals::status->getPlayingTime() / 1000000) + (roll < 40 ? 140 : 12));
+        price = Globals::layout->formatNumber((int) (Globals::status->getPlayingTime() / 1000000 + (roll < 40 ? 140 : 12)));
         text = Globals::status->replaceHash(String(text, false), String(item, false),
                                             String("#VOSSK_SHIP_OR_ITEM", false));
         text = Globals::status->replaceHash(String(text, false),
@@ -323,8 +253,7 @@ String NewsTicker::replaceTokens(String text) {
                 (*stations)[Globals::rnd->nextInt(stations->size())]);
         text = Globals::status->replaceHash(String(text, false), String(station->getName(), false),
                                             String("#NIVELIAN_PLANET", false));
-        int demonstrators = Globals::rnd->nextInt(990000) + 1000000;
-        String count = Globals::layout->formatNumber(demonstrators / 1000 * 1000);
+        String count = Globals::layout->formatNumber((Globals::rnd->nextInt(990000) + 1000000) / 1000 * 1000);
         text = Globals::status->replaceHash(String(text, false), String(count, false),
                                             String("#DEMONSTRATORS", false));
         delete station;
@@ -346,4 +275,76 @@ String NewsTicker::replaceTokens(String text) {
 
     return String(text, false);
 }
+NewsTicker::~NewsTicker() {}
 
+void NewsTicker::draw() {
+    Globals::Canvas->SetColor(0x6f);
+    Globals::Canvas->FillRectangle(this->x, this->y - 2, this->width,
+                                   Globals::h - this->y + 2 - Globals::layout->field_0x10_rightMargin);
+    Globals::Canvas->EnableClip(this->x, this->y, this->width, Globals::h);
+    Globals::Canvas->SetColor(0x777777ff);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                (int) (this->scrollOffset + (float) this->x), this->y, false);
+
+    if (GameText::getLanguage() == 9) {
+        if (this->scrollOffset > (float) this->textWidth) {
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                        (int) (this->scrollOffset + (float) this->x), this->y, false);
+        }
+    } else if (this->scrollOffset < (float) (this->textWidth - this->width)) {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->tickerText,
+                                    (int) (this->scrollOffset + (float) this->x + (float) this->textWidth),
+                                    this->y, false);
+    }
+
+    Globals::Canvas->DisableClip();
+}
+void NewsTicker::update(int dt) {
+    if (this->touched != 0) {
+        return;
+    }
+
+    float step = ((float) dt / 1000.0f) * 50.0f;
+    if (GameText::getLanguage() == 9) {
+        this->scrollOffset += step;
+        if (this->scrollOffset > (float) this->width) {
+            this->scrollOffset = (float) -this->textWidth;
+        }
+    } else {
+        this->scrollOffset -= step;
+        if (this->scrollOffset < (float) -this->textWidth) {
+            this->scrollOffset = 0;
+        }
+    }
+}
+int NewsTicker::getHeight() {
+    return Globals::h + 2 - Globals::layout->field_0x10_rightMargin - this->y;
+}
+uint8_t NewsTicker::OnTouchBegin(int x, int y) {
+    if (this->x <= x && x <= this->x + this->width && this->y <= y) {
+        if (y <= Globals::h + 2 - Globals::layout->field_0x10_rightMargin) {
+            this->touched = 1;
+            this->lastTouchX = x;
+        }
+    }
+    return this->touched;
+}
+bool NewsTicker::OnTouchMove(int x, int) {
+    if (this->touched != 0) {
+        float delta = (float) (this->lastTouchX - x);
+        this->scrollOffset -= delta;
+        float maxX = (float) Globals::w;
+        if (maxX < this->scrollOffset) {
+            this->scrollOffset = maxX;
+        }
+        this->lastTouchX = x;
+    }
+    return this->touched != 0;
+}
+uint32_t NewsTicker::OnTouchEnd(int, int) {
+    if (this->touched == 0) {
+        return 0;
+    }
+    this->touched = 0;
+    return 1;
+}

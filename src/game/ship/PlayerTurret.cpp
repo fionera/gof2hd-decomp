@@ -36,85 +36,106 @@ namespace AbyssEngine {
 }
 
 
-void PlayerTurret::setTurretRange(int range) {
-    this->turretRange = range;
+// Factions 8, 9 and 10 are hostile to everyone else; 0/1 and 2/3 are mutual enemies.
+static bool factionsHostile(int a, int b) {
+    if (a == 8 && b != 8)
+        return true;
+    if (a != 8 && b == 8)
+        return true;
+    if (a == 10 && b != 10)
+        return true;
+    if (a != 10 && b == 10)
+        return true;
+    if (a == 9 && b != 9)
+        return true;
+    if (a != 9 && b == 9)
+        return true;
+    return (a == 0 && b == 1) || (a == 1 && b == 0) || (a == 3 && b == 2) || (a == 2 && b == 3);
 }
 
-void PlayerTurret::handleSentryGun(int delta) {
-    this->pickEnemyTimer += delta;
-    this->pickEnemy();
-    Player *enemy = this->currentEnemy;
-    if (enemy != nullptr && enemy->field_5e == 0) {
-        AEGeometry *geometry = this->geometry;
-        this->handleRotation(delta, geometry, geometry);
-    }
-}
-
-void PlayerTurret::setHost(KIPlayer *host, const Vector &offset) {
-    this->turretHost = host;
-    this->hostOffset = offset;
-}
-
-void PlayerTurret::render() {
-    AEGeometry *visible = this->crateGeometry;
-    if (visible != nullptr) {
-        visible->render();
-    }
-    int state = this->state;
-    if (state == 3) {
-        this->explosion->render();
-        state = this->state;
-    }
-
-    if ((uint32_t)(state - 3) >= 2) {
-        this->KIPlayer::render();
-    }
-}
-
-int PlayerTurret::collide(float x, float y, float z) {
-    return 0;
-}
-
-int PlayerTurret::outerCollide(float x, float y, float z) {
-    return 0;
-}
-
-void PlayerTurret::handleTurret(int delta) {
-    this->pickEnemyTimer += delta;
-    this->pickEnemy();
-    Player *enemy = this->currentEnemy;
-    if (enemy != nullptr && enemy->field_5e == 0) {
-        this->handleRotation(delta, this->helperGeometry, this->turretGeometry);
-    }
-}
-
-void PlayerTurret::revive() {
-    this->player->reset();
-    this->state = 1;
-    this->crateGeometry = nullptr;
-    this->field_0xd8 = 0;
-    this->setActive(true);
-    this->explosion->reset();
-    AEGeometry *geometry = this->parentGeometry;
+PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z)
+    : KIPlayer(mesh, -1, player, geometry, x, y, z, false) {
+    this->turretEnabled() = 1;
+    this->field_0x3e = 1;
+    this->baseGeometry = nullptr;
+    this->turretGeometry = nullptr;
     this->spawnInvulnTimer = 0;
-    this->visibleFlag = 1;
-    if (geometry == nullptr) {
-        geometry = this->geometry;
+    this->turretHost = nullptr;
+    this->turretRange = 50000;
+
+    this->baseGeometry = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
+    if (mesh == 14363) {
+        this->turretGeometry = new AEGeometry((uint16_t) 14364, Globals::Canvas, false);
+        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+        this->turretGeometry->setPosition(Vector{0.0f, 565.0f, -528.0f});
+    } else if (mesh == 6772) {
+        this->turretGeometry = new AEGeometry((uint16_t) 6773, Globals::Canvas, false);
+        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+        this->turretGeometry->setPosition(Vector{0.0f, 60.0f, 0.0f});
+    } else if (mesh == 6774) {
+        this->turretGeometry = new AEGeometry((uint16_t) 6775, Globals::Canvas, false);
+        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+        this->turretGeometry->setPosition(Vector{0.0f, 60.0f, 0.0f});
     }
-    geometry->setVisible(true);
+
+    this->helperGeometry = new AEGeometry(Globals::Canvas);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->helperGeometry->transform))
+            ->boundingRadius = 1000000.0f;
+    this->setPosition(Vector{x, y, z});
+
+    if (mesh == 14363) {
+        this->baseGeometry->rotate(0.0f, 3.1415927f, 0.0f);
+        this->turretGeometry->rotate(0.0f, 3.1415927f, 0.0f);
+        this->helperGeometry->addChild(this->turretGeometry->transform);
+    } else if ((mesh | 2) == 6774) {
+        this->helperGeometry->addChild(this->turretGeometry->transform);
+    } else if ((unsigned int) (mesh - 18880) < 3) {
+        this->isSentryGun() = 1;
+        unsigned short partMesh = 18888;
+        if (mesh == 18881)
+            partMesh = 18887;
+        if (mesh == 18880)
+            partMesh = 18886;
+        AEGeometry *part = new AEGeometry(partMesh, Globals::Canvas, false);
+        geometry->addChild(part->transform);
+        delete part;
+        geometry->setScaling(0.5f);
+    }
+
+    this->helperGeometry->addChild(this->baseGeometry->transform);
+    if (!this->isSentryGun())
+        geometry->addChild(this->helperGeometry->transform);
+
+    this->explosion = new Explosion(0);
+    this->explosion->addFireStreaks();
+    this->currentEnemy = nullptr;
+    this->previousEnemy = nullptr;
+    this->explosionTimer = 0;
+    this->pickEnemyTimer = 0;
+    this->rotationAccum = 0;
+    this->particleSystemId = -1;
 }
 
-void PlayerTurret::setPosition(const Vector &position) {
-    this->geometry->setPosition(position);
-    this->posX = position.x;
-    this->posY = position.y;
-    this->posZ = position.z;
-}
+PlayerTurret::~PlayerTurret() {
+    if (this->explosion != nullptr) {
+        delete this->explosion;
+    }
+    this->explosion = nullptr;
 
-void PlayerTurret::reset() {
-    this->KIPlayer::reset();
-    this->state = 0;
-    this->setActive(true);
+    if (this->baseGeometry != nullptr) {
+        delete this->baseGeometry;
+    }
+    this->baseGeometry = nullptr;
+
+    if (this->turretGeometry != nullptr) {
+        delete this->turretGeometry;
+    }
+    this->turretGeometry = nullptr;
+
+    if (this->helperGeometry != nullptr) {
+        delete this->helperGeometry;
+    }
+    this->helperGeometry = nullptr;
 }
 
 void PlayerTurret::setLevel(Level *level) {
@@ -125,61 +146,34 @@ void PlayerTurret::setLevel(Level *level) {
     ((ParticleSystemManager *) this->level->field_74)->enableSystemEmit(system, false);
 }
 
-KIPlayer *PlayerTurret::getHost() {
-    return this->turretHost;
-}
-
 void PlayerTurret::setScaling(float scale) {
     this->helperGeometry->setScaling(scale, scale, scale);
 }
 
-void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry) {
-    // Aim 1500 units ahead of the current enemy along its flight direction.
-    Matrix matrix = this->currentEnemy->transform;
-    this->aimPoint() = this->currentEnemy->getPosition() + VectorNormalize(MatrixGetDir(matrix)) * 1500.0f;
+void PlayerTurret::setPosition(const Vector &position) {
+    this->geometry->setPosition(position);
+    this->posX = position.x;
+    this->posY = position.y;
+    this->posZ = position.z;
+}
 
-    if (this->isSentryGun())
-        matrix = this->geometry->getMatrix();
-    else
-        matrix = this->geometry->getMatrix() * mainGeometry->getMatrix() * turretGeometry->getMatrix();
-    Vector aim = VectorNormalize(MatrixInverseTransformVector(matrix, this->aimPoint()));
+void PlayerTurret::setTurretRange(int range) {
+    this->turretRange = range;
+}
 
-    bool aligned;
-    if (aim.x > 0.05f) {
-        mainGeometry->rotate(0.0f, (float) delta * 0.00024414062f * 6.2831855f, 0.0f);
-        aligned = false;
-    } else if (aim.x < -0.05f) {
-        mainGeometry->rotate(0.0f, (float) -delta * 0.00024414062f * 6.2831855f, 0.0f);
-        aligned = false;
-    } else {
-        aligned = true;
-    }
+void PlayerTurret::setHost(KIPlayer *host, const Vector &offset) {
+    this->turretHost = host;
+    this->hostOffset = offset;
+}
 
-    if (aim.y > 0.05f) {
-        if (!this->isSentryGun() && this->rotationAccum < -599) {
-            this->pickEnemyTimer += delta;
-            this->previousEnemy = this->currentEnemy;
-            return;
-        }
-        float step = (float) this->lastDelta;
-        this->rotationAccum = (int) ((float) this->rotationAccum - step);
-        turretGeometry->rotate(step * 0.00024414062f * -6.2831855f, 0.0f, 0.0f);
-        this->previousEnemy = nullptr;
-    } else if (aim.y < -0.05f) {
-        if (!this->isSentryGun() && this->rotationAccum > 99) {
-            this->pickEnemyTimer += delta;
-            this->previousEnemy = this->currentEnemy;
-            return;
-        }
-        float step = (float) this->lastDelta;
-        this->rotationAccum = (int) (step + (float) this->rotationAccum);
-        turretGeometry->rotate(step * 0.00024414062f * 6.2831855f, 0.0f, 0.0f);
-        this->previousEnemy = nullptr;
-    } else if (aligned) {
-        this->player->shoot(0, (long long) delta, false, matrix);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(turretGeometry->transform))
-                ->Update(delta, false);
-    }
+KIPlayer *PlayerTurret::getHost() {
+    return this->turretHost;
+}
+
+void PlayerTurret::reset() {
+    this->KIPlayer::reset();
+    this->state = 0;
+    this->setActive(true);
 }
 
 void PlayerTurret::update(int delta) {
@@ -257,21 +251,23 @@ void PlayerTurret::update(int delta) {
         handleTurret(delta);
 }
 
-// Factions 8, 9 and 10 are hostile to everyone else; 0/1 and 2/3 are mutual enemies.
-static bool factionsHostile(int a, int b) {
-    if (a == 8 && b != 8)
-        return true;
-    if (a != 8 && b == 8)
-        return true;
-    if (a == 10 && b != 10)
-        return true;
-    if (a != 10 && b == 10)
-        return true;
-    if (a == 9 && b != 9)
-        return true;
-    if (a != 9 && b == 9)
-        return true;
-    return (a == 0 && b == 1) || (a == 1 && b == 0) || (a == 3 && b == 2) || (a == 2 && b == 3);
+void PlayerTurret::handleSentryGun(int delta) {
+    this->pickEnemyTimer += delta;
+    this->pickEnemy();
+    Player *enemy = this->currentEnemy;
+    if (enemy != nullptr && enemy->field_5e == 0) {
+        AEGeometry *geometry = this->geometry;
+        this->handleRotation(delta, geometry, geometry);
+    }
+}
+
+void PlayerTurret::handleTurret(int delta) {
+    this->pickEnemyTimer += delta;
+    this->pickEnemy();
+    Player *enemy = this->currentEnemy;
+    if (enemy != nullptr && enemy->field_5e == 0) {
+        this->handleRotation(delta, this->helperGeometry, this->turretGeometry);
+    }
 }
 
 void PlayerTurret::pickEnemy() {
@@ -311,87 +307,91 @@ void PlayerTurret::pickEnemy() {
     }
 }
 
-PlayerTurret::~PlayerTurret() {
-    if (this->explosion != nullptr) {
-        delete this->explosion;
-    }
-    this->explosion = nullptr;
+void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry) {
+    // Aim 1500 units ahead of the current enemy along its flight direction.
+    Matrix matrix = this->currentEnemy->transform;
+    this->aimPoint() = this->currentEnemy->getPosition() + VectorNormalize(MatrixGetDir(matrix)) * 1500.0f;
 
-    if (this->baseGeometry != nullptr) {
-        delete this->baseGeometry;
-    }
-    this->baseGeometry = nullptr;
+    if (this->isSentryGun())
+        matrix = this->geometry->getMatrix();
+    else
+        matrix = this->geometry->getMatrix() * mainGeometry->getMatrix() * turretGeometry->getMatrix();
+    Vector aim = VectorNormalize(MatrixInverseTransformVector(matrix, this->aimPoint()));
 
-    if (this->turretGeometry != nullptr) {
-        delete this->turretGeometry;
+    bool aligned;
+    if (aim.x > 0.05f) {
+        mainGeometry->rotate(0.0f, (float) delta * 0.00024414062f * 6.2831855f, 0.0f);
+        aligned = false;
+    } else if (aim.x < -0.05f) {
+        mainGeometry->rotate(0.0f, (float) -delta * 0.00024414062f * 6.2831855f, 0.0f);
+        aligned = false;
+    } else {
+        aligned = true;
     }
-    this->turretGeometry = nullptr;
 
-    if (this->helperGeometry != nullptr) {
-        delete this->helperGeometry;
+    if (aim.y > 0.05f) {
+        if (!this->isSentryGun() && this->rotationAccum < -599) {
+            this->pickEnemyTimer += delta;
+            this->previousEnemy = this->currentEnemy;
+            return;
+        }
+        float step = (float) this->lastDelta;
+        this->rotationAccum = (int) ((float) this->rotationAccum - step);
+        turretGeometry->rotate(step * 0.00024414062f * -6.2831855f, 0.0f, 0.0f);
+        this->previousEnemy = nullptr;
+    } else if (aim.y < -0.05f) {
+        if (!this->isSentryGun() && this->rotationAccum > 99) {
+            this->pickEnemyTimer += delta;
+            this->previousEnemy = this->currentEnemy;
+            return;
+        }
+        float step = (float) this->lastDelta;
+        this->rotationAccum = (int) (step + (float) this->rotationAccum);
+        turretGeometry->rotate(step * 0.00024414062f * 6.2831855f, 0.0f, 0.0f);
+        this->previousEnemy = nullptr;
+    } else if (aligned) {
+        this->player->shoot(0, (long long) delta, false, matrix);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(turretGeometry->transform))
+                ->Update(delta, false);
     }
-    this->helperGeometry = nullptr;
 }
 
-PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z)
-    : KIPlayer(mesh, -1, player, geometry, x, y, z, false) {
-    this->turretEnabled() = 1;
-    this->field_0x3e = 1;
-    this->baseGeometry = nullptr;
-    this->turretGeometry = nullptr;
+void PlayerTurret::render() {
+    AEGeometry *visible = this->crateGeometry;
+    if (visible != nullptr) {
+        visible->render();
+    }
+    int state = this->state;
+    if (state == 3) {
+        this->explosion->render();
+        state = this->state;
+    }
+
+    if ((uint32_t)(state - 3) >= 2) {
+        this->KIPlayer::render();
+    }
+}
+
+int PlayerTurret::collide(float x, float y, float z) {
+    return 0;
+}
+
+int PlayerTurret::outerCollide(float x, float y, float z) {
+    return 0;
+}
+
+void PlayerTurret::revive() {
+    this->player->reset();
+    this->state = 1;
+    this->crateGeometry = nullptr;
+    this->field_0xd8 = 0;
+    this->setActive(true);
+    this->explosion->reset();
+    AEGeometry *geometry = this->parentGeometry;
     this->spawnInvulnTimer = 0;
-    this->turretHost = nullptr;
-    this->turretRange = 50000;
-
-    this->baseGeometry = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
-    if (mesh == 14363) {
-        this->turretGeometry = new AEGeometry((uint16_t) 14364, Globals::Canvas, false);
-        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-        this->turretGeometry->setPosition(Vector{0.0f, 565.0f, -528.0f});
-    } else if (mesh == 6772) {
-        this->turretGeometry = new AEGeometry((uint16_t) 6773, Globals::Canvas, false);
-        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-        this->turretGeometry->setPosition(Vector{0.0f, 60.0f, 0.0f});
-    } else if (mesh == 6774) {
-        this->turretGeometry = new AEGeometry((uint16_t) 6775, Globals::Canvas, false);
-        this->turretGeometry->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-        this->turretGeometry->setPosition(Vector{0.0f, 60.0f, 0.0f});
+    this->visibleFlag = 1;
+    if (geometry == nullptr) {
+        geometry = this->geometry;
     }
-
-    this->helperGeometry = new AEGeometry(Globals::Canvas);
-    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->helperGeometry->transform))
-            ->boundingRadius = 1000000.0f;
-    this->setPosition(Vector{x, y, z});
-
-    if (mesh == 14363) {
-        this->baseGeometry->rotate(0.0f, 3.1415927f, 0.0f);
-        this->turretGeometry->rotate(0.0f, 3.1415927f, 0.0f);
-        this->helperGeometry->addChild(this->turretGeometry->transform);
-    } else if ((mesh | 2) == 6774) {
-        this->helperGeometry->addChild(this->turretGeometry->transform);
-    } else if ((unsigned int) (mesh - 18880) < 3) {
-        this->isSentryGun() = 1;
-        unsigned short partMesh = 18888;
-        if (mesh == 18881)
-            partMesh = 18887;
-        if (mesh == 18880)
-            partMesh = 18886;
-        AEGeometry *part = new AEGeometry(partMesh, Globals::Canvas, false);
-        geometry->addChild(part->transform);
-        delete part;
-        geometry->setScaling(0.5f);
-    }
-
-    this->helperGeometry->addChild(this->baseGeometry->transform);
-    if (!this->isSentryGun())
-        geometry->addChild(this->helperGeometry->transform);
-
-    this->explosion = new Explosion(0);
-    this->explosion->addFireStreaks();
-    this->currentEnemy = nullptr;
-    this->previousEnemy = nullptr;
-    this->explosionTimer = 0;
-    this->pickEnemyTimer = 0;
-    this->rotationAccum = 0;
-    this->particleSystemId = -1;
+    geometry->setVisible(true);
 }

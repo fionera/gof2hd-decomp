@@ -26,70 +26,96 @@ extern "C" void *decrypt(void *ctx) { // lint: extern_c (native ABI boundary; or
 extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
-    for (int i = 0; i != 16; ++i) {
-        unsigned int t = P[i] ^ Xl;
-        Xl = F(t) ^ Xr;
-        Xr = t;
+    unsigned int temp;
+    for (int i = 0; i < 16; ++i) {
+        Xl = Xl ^ P[i];
+        Xr = F(Xl) ^ Xr;
+        temp = Xl;
+        Xl = Xr;
+        Xr = temp;
     }
-    *xl = P[17] ^ Xr;
-    *xr = Xl ^ P[16];
+    temp = Xl;
+    Xl = Xr;
+    Xr = temp;
+    Xr = Xr ^ P[16];
+    Xl = Xl ^ P[17];
+    *xl = Xl;
+    *xr = Xr;
 }
 
 extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
+    unsigned int temp;
     for (unsigned int i = 17; i > 1; --i) {
-        unsigned int t = P[i] ^ Xl;
-        Xl = F(t) ^ Xr;
-        Xr = t;
+        Xl = Xl ^ P[i];
+        Xr = F(Xl) ^ Xr;
+        temp = Xl;
+        Xl = Xr;
+        Xr = temp;
     }
-    *xl = P[0] ^ Xr;
-    *xr = Xl ^ P[1];
+    temp = Xl;
+    Xl = Xr;
+    Xr = temp;
+    Xr = Xr ^ P[1];
+    Xl = Xl ^ P[0];
+    *xl = Xl;
+    *xr = Xr;
 }
 
-extern "C" void InitializeBlowfish(unsigned char *key, int keylen) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    if (opensubkeyfile() != 0) {
-        std::printf("InitializeBlowfish: cannot open subkey file\n");
-        return;
+// Reference Blowfish key schedule (P-array and S-boxes read from Blowfish.dat, then mixed with the key).
+extern "C" short InitializeBlowfish(unsigned char key[], short keybytes) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    unsigned int data;
+    unsigned int datal;
+    unsigned int datar;
+
+    int error = opensubkeyfile();
+    if (error != 0) {
+        std::printf("Unable to open subkey initialization file : %d\n", error);
+        return (short) error;
     }
 
-    for (unsigned int i = 0; i < 18; ++i) {
-        if (std::fread(&P[i], 4, 1, SubkeyFile) != 1)
-            return;
+    for (unsigned short i = 0; i < 18; ++i) {
+        unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+        if (numread != 1)
+            return -1;
+        P[i] = data;
     }
-    for (unsigned int box = 0; box < 4; ++box) {
-        for (unsigned int j = 0; j < 256; ++j) {
-            if (std::fread(&S[box][j], 4, 1, SubkeyFile) != 1)
-                return;
+    for (unsigned short i = 0; i < 4; ++i) {
+        for (unsigned short j = 0; j < 256; ++j) {
+            unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+            if (numread != 1)
+                return -1;
+            S[i][j] = data;
         }
     }
     std::fclose(SubkeyFile);
 
-    short k = 0;
-    for (int i = 0; i != 18; ++i) {
-        unsigned int data = 0;
-        for (unsigned short b = 0; b < 4; ++b) {
-            int idx = k;
-            ++k;
-            if (keylen <= k)
-                k = 0;
-            data = (data << 8) | key[idx];
+    short j = 0;
+    for (short i = 0; i < 18; ++i) {
+        data = 0;
+        for (unsigned short k = 0; k < 4; ++k) {
+            data = (data << 8) | key[j];
+            j = j + 1;
+            if (j >= keybytes)
+                j = 0;
         }
-        P[i] ^= data;
+        P[i] = P[i] ^ data;
     }
 
-    unsigned int dl = 0;
-    unsigned int dr = 0;
-    for (int i = 0; i < 18; i += 2) {
-        Blowfish_encipher(&dl, &dr);
-        P[i] = dl;
-        P[i + 1] = dr;
+    datal = 0;
+    datar = 0;
+    for (short i = 0; i < 18; i += 2) {
+        Blowfish_encipher(&datal, &datar);
+        P[i] = datal;
+        P[i + 1] = datar;
     }
-    for (int box = 0; box != 4; ++box) {
-        for (int j = 0; j < 256; j += 2) {
-            Blowfish_encipher(&dl, &dr);
-            S[box][j] = dl;
-            S[box][j + 1] = dr;
+    for (short i = 0; i < 4; ++i) {
+        for (short k = 0; k < 256; k += 2) {
+            Blowfish_encipher(&datal, &datar);
+            S[i][k] = datal;
+            S[i][k + 1] = datar;
         }
     }
+    return (short) error;
 }

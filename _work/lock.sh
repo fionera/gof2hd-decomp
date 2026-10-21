@@ -11,5 +11,6 @@ for n in ['fprintf','printf','sscanf','memalign']:   # genuine imports of the or
 d['imports'].sort(); json.dump(d,open(p,'w'),indent=1)
 open(p,'a').write('\n')
 P
+cp cmake-build-match/verify/report.json report.json
 python3 _work/docnums.py >/dev/null
 python3 -c "import json;print(json.load(open('tools/verify_baseline.json'))['verify'])"
