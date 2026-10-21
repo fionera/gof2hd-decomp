@@ -3562,8 +3562,8 @@ bool MGame::dockEvent(int p1, int p2) {
         if (this->player->goingToStream() && !this->player->isDockingToStream() &&
             !this->player->isDockedToStream()) {
             this->player->dockToStream(true);
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             return false;
         }
     }
@@ -3579,8 +3579,8 @@ bool MGame::dockEvent(int p1, int p2) {
             if (this->autopilotMenuOpen) {
                 return false;
             }
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             if (this->choiceWindow == nullptr) {
                 this->choiceWindow = new ChoiceWindow();
             }
@@ -3604,8 +3604,8 @@ bool MGame::dockEvent(int p1, int p2) {
         }
         if (Level::programmedStation == nullptr) {
             // No destination programmed yet: open the jump map.
-            this->freeCamDragging = 0;
             this->needsRedraw = 1;
+            this->freeCamDragging = 0;
             if (this->starMap == nullptr) {
                 this->starMap = new StarMap(false, nullptr, false, -1);
             }
@@ -3622,8 +3622,8 @@ bool MGame::dockEvent(int p1, int p2) {
         if (this->autopilotMenuOpen) {
             return false;
         }
-        this->freeCamDragging = 0;
         this->needsRedraw = 1;
+        this->freeCamDragging = 0;
         if (this->choiceWindow == nullptr) {
             this->choiceWindow = new ChoiceWindow();
         }
