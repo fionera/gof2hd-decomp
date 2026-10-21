@@ -3588,8 +3588,8 @@ bool MGame::dockEvent(int p1, int p2) {
                                     Level::programmedStation->getName() + String("\n") +
                                     *Globals::gameText->getText(421), true);
             this->choiceWindow->left();
-            this->pauseOpen = 1;
             this->autopilotMenuOpen = 1;
+            this->pauseOpen = 1;
             pauseSounds();
             this->player->setAutoPilot(nullptr);
             return false;
@@ -3613,8 +3613,8 @@ bool MGame::dockEvent(int p1, int p2) {
             this->starMap->initLights();
             this->starMap->setJumpMapMode(true, false);
             this->player->setAutoPilot(nullptr);
-            this->pauseOpen = 1;
             this->starMapOpen = 1;
+            this->pauseOpen = 1;
             pauseSounds();
             this->needsRedraw = 1;
             return true;
@@ -3631,8 +3631,8 @@ bool MGame::dockEvent(int p1, int p2) {
                                 Level::programmedStation->getName() + String("\n") +
                                 *Globals::gameText->getText(421), true);
         this->choiceWindow->left();
-        this->pauseOpen = 1;
         this->autopilotMenuOpen = 1;
+        this->pauseOpen = 1;
         pauseSounds();
         this->player->setAutoPilot(nullptr);
         return false;
