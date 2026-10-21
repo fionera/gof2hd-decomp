@@ -1789,8 +1789,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             Globals::layout->formatCredits(this->field_0xd4 - Globals::status->getCredits()),
                             String("#C"));
                         this->choiceWindow->set(text, false);
-                        this->flag_0x6b = 1;
                         this->flag_0xb2 = 1;
+                        this->flag_0x6b = 1;
                         this->flag_0x63 = 1;
                         return;
                     }
@@ -1803,8 +1803,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     autosave();
                 }
                 if (this->flag_0xdc) {
-                    this->flag_0x63 = 0;
                     this->flag_0xdc = 0;
+                    this->flag_0x63 = 0;
                     reinterpret_cast<uint8_t *>(Globals::appManager->GetApplicationData())[13] = 1;
                     NFC::rateGame();
                     return;
@@ -1848,8 +1848,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             case 1:
                 this->flag_0xb2 = 0;
                 if (!this->flag_0x6b) {
-                    this->flag_0x63 = 0;
                     this->flag_0xdc = 0;
+                    this->flag_0x63 = 0;
                     return;
                 }
                 this->flag_0xb2 = 0;
