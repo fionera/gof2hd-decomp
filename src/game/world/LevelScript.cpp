@@ -3532,453 +3532,277 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 102: { // 0x13a658
-                if (m_nState != 0) {
-                    // 0x13e816: cold substate (m_nState != 0). 6-way tbh on (m_nState-1),
-                    // table @0x13e822 (base 0x13e822): prong targets & classification.
-                    if (m_nState == 1) {
-                        // state 1 @0x13e880: slew the follow-camera and, once the mission radio message
-                        // (messages[2]) is over, advance the 64-bit script timer by delta. Both paths then
-                        // fall into the shared 2001-tick gate epilogue (DEFERRED 0x143b18).
-                        //   receiver [sp+0x58]=this -> [+0x14]=m_pCamera; args s6/s0/s2 = delta*0.6/0.8/-2.5
-                        //   (pool 0.6=0x3f19999a @0x13e878, 0.8=0x3f4ccccd @0x13e87c, 2.5=vmov.f32 #4).
-                        m_pCamera->translate((float) delta * 0.6f, (float) delta * 0.8f, -(float) delta * 2.5f);
-                        // isOver source [fp+4]=messages->data, [+8]=elem 2 (fp==messages, cf. case head 0x13a662).
-                        if (((RadioMessage *) ((*messages)[2]))->isOver()) {
-                            m_nScriptTimerA += delta; // strd @+0x90 (0x13e8d0)
-                        }
-                        // Shared cold-state epilogue (0x143b18 -> 0x143b1e, reached by fall-through from
-                        // the cold states 1..6). Wait until the 64-bit script timer passes 2001 ticks
-                        // (movw #2001; subs/sbcs -> blt exit), then hand control back to the player and
-                        // tear the cutscene framing down: re-enable the player ship, drop the look-at cam,
-                        // reframe the fixed camera 2400 units behind the player along its facing, restore
-                        // the HUD/radar, clear the cinematic-break flag, stop the current music, kick off
-                        // event 2241, reset the script timer and advance the state.
-                        if (m_nScriptTimerA >= 2001) { // 0x143b1e
-                            m_pLevel->getPlayer()->resetGunDelay();                   // 0x143b34/38
-                            player->setFreeze(false);                                 // 0x143b46
-                            player->setVisible(true);                                 // 0x143b4e
-                            player->player->setVulnerable(true);                      // 0x143b56
-                            m_pCamera->setLookAtCam(false);                           // 0x143b60
-                            m_pCamera->setTarget(player->geometry);                   // [r5+8]=player->geometry, 0x143b6a
-                            // reframe: player->getPosition() - player->GetDirVector() * 2400.0f (pool @0x143d48)
-                            m_pCamera->setPosition(player->getPosition()
-                                                   - player->GetDirVector() * 2400.0f); // 0x143b7a..0x143ba4
-                            m_pHud->visible = 1;                                      // [fp+0xd0]+1 = 1, 0x143bae
-                            m_pRadar->enabled = 1;                                 // [fp+0xd4]+0x48 = 1, 0x143bb4
-                            resetCamera(m_pLevel);                                    // 0x143bbe
-                            m_pLevel->lodManager->forceUpdate(delta, false);          // 0x143bcc
-                            m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11), 0x143bd2
-                            m_nScriptTimerA = 0;                                      // strd 0,0 [r4], 0x143bd8
-                            Globals::sound->stop(Globals::sound->currentMusicEvent);  // 0x143be2
-                            Globals::sound->play(2241, nullptr, nullptr, 0.0f);       // movw #0x8c1, 0x143bf4
-                            m_nState = m_nState + 1; // [fp+0x1c] += 1 -> post-switch tail 0x13999a, 0x143bfc
-                        }
-                        break;
+            case 102: {
+                // The Valkyrie escort battle: the alien fleet arrives, a wing of fighters engages.
+                if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    if (player->isInRocketControl()) {
+                        player->setRocketControl(nullptr, nullptr);
+                        player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
                     }
-                    if (m_nState == 2) {
-                        // state 2 @0x140b12 (tbh table @0x13e822[1]=0x1178; verified: sequence with
-                        // s3 0x140628 / s4 0x1408ea / s5 0x140a50 / s6 0x140ed8). "FP geometry body."
-                        // Advance the 64-bit script timer by delta; hold until it passes 30001 ticks
-                        // (movw #0x7531; subs/sbcs -> blt exit). Once past, re-stage the shipGroup==10
-                        // escort fighters into a new formation around the player, hand them to the AI,
-                        // reframe the fixed camera on the lead escort, and jump straight to state 3.
-                        m_nScriptTimerA += delta; // strd @+0x90 (0x140b28)
-                        if (m_nScriptTimerA < 30001) { // 0x140b2c
-                            break; // -> post-switch tail 0x144e36
-                        }
-                        Vector playerPos = player->getPosition(); // sp+0x170, 0x140b3a (unused except below)
-                        (void) playerPos;
-                        // Scratch vectors reuse the sibling LevelScript temp/scratch slots (cf. case 94).
-                        Vector *acc = &m_tempVec;   // this+0x28 tempVec
-                        Vector *scratch = &m_dirVec; // this+0x40 scratch
-                        int firstIdx = -1; // r8: index of the first shipGroup==10 escort
-                        for (unsigned int i = 0; i < enemies->count; ++i) {      // loop 0x140d54
-                            KIPlayer *e = (*enemies)[i];
-                            if (e->shipGroup == 10) {                            // [+0x28]==10, 0x140b56
-                                e->awake();                                      // vtable+0xc, 0x140b60
-                                if (firstIdx == -1) {                            // 0x140b62
-                                    firstIdx = (int) i;
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    player->setFreeze(true);
+                    player->setVisible(false);
+                    player->player->setVulnerable(false);
+                    m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
+                    Globals::sound->stop(Globals::sound->currentMusicEvent);
+                    Globals::sound->play(2240, nullptr, nullptr, 0.0f);
+                    m_nScriptTimerA = 0;
+                    m_nState++;
+                } else if (m_nState == 1) {
+                    m_pCamera->translate((float) delta * 0.6f, (float) delta * 0.8f, (float) -delta * 2.5f);
+                    if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        m_nScriptTimerA += delta;
+                    }
+                    if (m_nScriptTimerA >= 2001) {
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        player->player->setVulnerable(true);
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
+                        Globals::sound->stop(Globals::sound->currentMusicEvent);
+                        Globals::sound->play(2241, nullptr, nullptr, 0.0f);
+                        m_nState++;
+                    }
+                } else if (m_nState == 2) {
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 30001) {
+                        Vector playerPos = player->getPosition();
+                        int leader = -1;
+                        for (unsigned int i = 0; i < enemies->count; i++) {
+                            KIPlayer *ship = (*enemies)[i];
+                            if (ship->shipGroup == 10) {
+                                ship->awake();
+                                if (leader == -1) {
+                                    leader = i;
                                 }
-                                if ((int) i == firstIdx || (int) i == firstIdx + 1) {
-                                    // Lead escort (i==firstIdx, 0x140b6e): drop it far to the player's
-                                    //   left. pool: x=-81920.3125 @0x140ea8, y=2000.0 @0x140ea4, z=0.0.
-                                    // Second escort (i==firstIdx+1, 0x140be6): seat it behind/below the
-                                    //   lead escort. pool: x=-2000.0 @0x140eb0, y=-800.0, z=-2000.0.
-                                    // Both share the operator+ / setPosition / cloak code at 0x140bfc.
-                                    Vector pos;
-                                    if ((int) i == firstIdx) {
-                                        pos = e->getPosition()                     // vtable+0x28, 0x140b7e
-                                              + Vector{-81920.3125f, 2000.0f, 0.0f}; // 0x140bfc
-                                    } else {
-                                        pos = (*enemies)[firstIdx]->getPosition()  // vtable+0x28, 0x140bea
-                                              + Vector{-2000.0f, -800.0f, -2000.0f}; // 0x140bfc
-                                    }
-                                    e->setPosition(pos);                           // vtable+0x44, 0x140c06
-                                    ((PlayerFighter *) e)->cloak(1000, true);      // 0x140c1e
+                                if (i == (unsigned int) leader) {
+                                    KIPlayer *fighter = (*enemies)[i];
+                                    fighter->setPosition((*enemies)[0]->getPosition() + Vector{-82000.0f, 2000.0f, 0.0f});
+                                    ((PlayerFighter *) (*enemies)[i])->cloak(1000, true);
+                                } else if (i == (unsigned int) (leader + 1)) {
+                                    KIPlayer *fighter = (*enemies)[i];
+                                    fighter->setPosition((*enemies)[leader]->getPosition() + Vector{-2000.0f, -800.0f, -2000.0f});
+                                    ((PlayerFighter *) (*enemies)[i])->cloak(1000, true);
                                 } else {
-                                    // Remaining escorts (0x140c24): scatter to a random position around the
-                                    // player. x/z = (nextInt(2)==0 ? 1 : -1) * (35000 + nextInt(10000)),
-                                    //   y = nextInt(10000) - 5000; base = playerPos (arg1 = sp+0x170).
-                                    int magX = 35000 + Globals::rnd->nextInt(10000);      // 0x140c32
-                                    int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140c48
-                                    int y = Globals::rnd->nextInt(10000) - 5000;          // 0x140c62/0x140c9a
-                                    int magZ = 35000 + Globals::rnd->nextInt(10000);      // 0x140c6e
-                                    int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140c88
-                                    Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
-                                    e->setPosition(playerPos + offset);            // 0x140cc6 / 0x140cd2
+                                    KIPlayer *fighter = (*enemies)[i];
+                                    int dx = Globals::rnd->nextInt(10000) + 35000;
+                                    int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
+                                    int dy = Globals::rnd->nextInt(10000);
+                                    int dz = Globals::rnd->nextInt(10000) + 35000;
+                                    int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
+                                    fighter->setPosition(playerPos + Vector{(float) x, (float) (dy - 5000), (float) z});
                                 }
-                                // Common escort tail (0x140cd4..0x140d4c): drop AI enemies, re-aim, disable AI.
-                                e->player->setEnemies(nullptr);                    // [elem+4], 0x140ce0
-                                int pick = Globals::rnd->nextInt(5);               // 0x140cee
-                                Player *foe = (pick == 4)
-                                                  ? player->player                 // [sp+0x54]->player, 0x140d02
-                                                  : (*enemies)[pick + 2]->player;  // data[pick+2]->player, 0x140d08
-                                e->player->setEnemy(foe);                          // [elem+4], 0x140d10
-                                e->awake();                                        // vtable+0xc, 0x140d22
-                                e->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f},  // sp+0x118, 0x140d40
-                                                          Vector{0.0f, 1.0f, 0.0f}); // sp+0x10c
-                                ((PlayerFighter *) e)->setAIDisabled(true);        // 0x140d4c
-                            } else if (e->shipGroupFlag == 51) {                  // [+0x7c]==51, 0x140b90/92
-                                // shipGroup==51 branch (0x140b98): build a 2-element enemy list from the
-                                // first two escorts' Players and hand it to this escort. No delete (0x140bce).
-                                Array<Player *> *foes = new Array<Player *>();       // _Znwj(12) + ctor, 0x140ba0
-                                ArrayAdd((*enemies)[0]->player, *foes);              // data[0]->player, 0x140bb0
-                                ArrayAdd((*enemies)[1]->player, *foes);              // data[1]->player, 0x140bbc
-                                e->player->setEnemies(foes);                        // [elem+4], 0x140bca
+                                (*enemies)[i]->player->setEnemies(nullptr);
+                                int target = Globals::rnd->nextInt(5);
+                                (*enemies)[i]->player->setEnemy(target == 4 ? player->player : (*enemies)[target + 2]->player);
+                                (*enemies)[i]->awake();
+                                (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                                ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                            } else if (ship->shipGroupFlag == 51) {
+                                Array<Player *> *targets = new Array<Player *>();
+                                ArrayAdd((*enemies)[0]->player, *targets);
+                                ArrayAdd((*enemies)[1]->player, *targets);
+                                (*enemies)[i]->player->setEnemies(targets);
                             }
                         }
-                        // Cutscene teardown + camera reframe on the lead escort (0x140d5e..0x140e8e).
-                        player->setTurretMode(false);                            // 0x140d66
-                        player->setFreeze(true);                                 // 0x140d72
-                        player->setVisible(false);                               // 0x140d7a
-                        resetCamera(m_pLevel);                                   // 0x140d84
-                        if (player->isInRocketControl()) {                       // 0x140d8a
-                            player->setRocketControl(nullptr, nullptr);          // 0x140d96
-                            player->killLiberator();                             // 0x140d9c
-                            m_pCamera->setRumblePercentage(0.0f, 0);             // 0x140da6
+                        player->setTurretMode(false);
+                        player->setFreeze(true);
+                        player->setVisible(false);
+                        resetCamera(m_pLevel);
+                        if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
                         }
-                        player->setFreeLookMode(false);                          // 0x140dae
-                        m_pCamera->setLookAtCam(true);                           // 0x140db6
-                        m_pCamera->enableFirstPersonCam(false);                  // 0x140dbe
-                        player->hideShipForFirstPersonCameraView(false);         // 0x140dc6
-                        player->stopShooting(0);                                 // 0x140dce
-                        m_bCinematicBreak = 1; // cinematicBreak_ = 1 (byte @0x11), 0x140dd6
-                        m_pHud->visible = 0;                                     // [fp+0xd0]+1 = 0, 0x140dda
-                        m_pRadar->enabled = 0;                                // [fp+0xd4]+0x48 = 0, 0x140de0
-                        AEGeometry *leadGeo = (*enemies)[firstIdx]->parentGeometry; // [elem+8], 0x140dee
-                        m_pCamera->setTarget(leadGeo);                           // 0x140df2
-                        *acc = leadGeo->getPosition();                           // op= 0x140e0e
-                        *scratch = leadGeo->getDirection();                      // op= 0x140e26
-                        *acc += *scratch * 4500.0f;                              // op*/op+= (pool @0x140ec8)
-                        *scratch = leadGeo->getRightVector();                    // op= 0x140e54
-                        *acc += *scratch * 600.0f;                               // pool @0x140ed0
-                        *scratch = leadGeo->getUpVector();                       // op= 0x140e76
-                        *acc += *scratch * 400.0f;                               // pool @0x140ed4
-                        m_pCamera->setPosition(*acc);                            // 0x140e8e
-                        m_nScriptTimerA = 0;      // strd 0,0 @+0x90, 0x140e96
-                        m_nState = 3; // tail 0x142f2e (movs r0,#3) -> 0x144c0c str m_nState -> 0x144e36
-                        break;
+                        player->setFreeLookMode(false);
+                        m_pCamera->setLookAtCam(true);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        player->stopShooting(0);
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        AEGeometry *leaderShip = (*enemies)[leader]->geometry;
+                        m_pCamera->setTarget(leaderShip);
+                        m_tempVec = leaderShip->getPosition();
+                        m_dirVec = leaderShip->getDirection();
+                        m_tempVec += m_dirVec * 4500.0f;
+                        m_dirVec = leaderShip->getRightVector();
+                        m_tempVec += m_dirVec * 600.0f;
+                        m_dirVec = leaderShip->getUpVector();
+                        m_tempVec += m_dirVec * 400.0f;
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nScriptTimerA = 0;
+                        m_nState = 3;
                     }
-                    if (m_nState == 3) {
-                        // state 3 @0x140628 (tbh table @0x13e822[2]=0x0f03 -> 0x140628; verified). "Heavy FP
-                        // geometry advance." Advance the two 64-bit script counters, creep the shipGroup==10
-                        // escorts forward at a depth-dependent rate, and drive the fixed follow-camera along
-                        // the lead escort's basis; once the 64-bit script timer passes 10001 ticks, hand the
-                        // escorts back to the AI, re-enable the player ship, reframe the camera and advance.
-                        //
-                        // 0x14062a..0x140690: m_nScriptTimerA(64) += delta (0x14065e/0x14066e), and
-                        //   m_nScriptTimerB(64) = (long long)((float)delta*0.05f + (float)m_nScriptTimerB(64))
-                        //   (l2f @0x14064e, f2lz @0x140682). s2=0.05f @0x140610.
-                        m_nScriptTimerA += delta;
-                        m_nScriptTimerB = (long long) (
-                                (float) delta * 0.05f
-                                + (float) m_nScriptTimerB);
-                        // Per-frame creep of the shipGroup==10 escorts (loop 0x14069c..0x1406cc). The first
-                        // matching escort advances at delta*2.3 (d17=2.3 @0x140620, s22); the rest at
-                        // delta*2.2 (d16=2.2 @0x140618, s20). The double multiplies are the exact FP source.
-                        float leadStep = (float) ((double) delta * 2.3);   // vmul.f64 d17, cvt s22
-                        float restStep = (float) ((double) delta * 2.2);   // vmul.f64 d16, cvt s20
-                        int firstIdx = -1; // r4
-                        for (unsigned int i = 0; i < enemies->count; ++i) {
-                            KIPlayer *e = (*enemies)[i];
-                            if (e->shipGroup != 10) { // [elem+0x28]==10, 0x1406a0
-                                continue;
+                } else if (m_nState == 3) {
+                    float step = (float) delta;
+                    float drift = step * 0.05f;
+                    m_nScriptTimerA += delta;
+                    m_nScriptTimerB = (long long) (drift + (float) m_nScriptTimerB);
+                    float leaderSpeed = (float) ((double) delta * 2.3);
+                    float wingSpeed = (float) ((double) delta * 2.2);
+                    int leader = -1;
+                    for (unsigned int i = 0; i < enemies->count; i++) {
+                        KIPlayer *ship = (*enemies)[i];
+                        if (ship->shipGroup == 10) {
+                            if (leader == -1) {
+                                leader = i;
                             }
-                            AEGeometry *geo = e->parentGeometry; // [elem+8], 0x1406a6
-                            if (firstIdx == -1) {
-                                firstIdx = (int) i;
-                            }
-                            if ((int) i == firstIdx) {
-                                geo->moveForward(leadStep); // 0x1406b4
+                            if (i == (unsigned int) leader) {
+                                ship->geometry->moveForward(leaderSpeed);
                             } else {
-                                geo->moveForward(restStep); // 0x1406be
+                                ship->geometry->moveForward(wingSpeed);
                             }
                         }
-                        // Drive the fixed follow-camera along the lead escort's basis (0x1406ce..0x14080c).
-                        // Take the render camera's current local matrix, offset its translation along the
-                        // lead escort geometry's dir/right/up basis, then fix + re-apply the matrix.
-                        //   dir  * delta*2.04  (s0=2.04f @0x140a24)
-                        //   right* delta*0.04  (s0=0.04f @0x140a30)
-                        //   up   * (delta*0.05f * 0.004f) (s16 reused, s0=0.004f @0x140a34)
-                        AEGeometry *leadGeo = (*enemies)[firstIdx]->parentGeometry; // [elem+8], 0x1406d8
-                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                        Matrix local = *reinterpret_cast<Matrix *>(
-                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                        Vector *tempVec = &m_tempVec;   // this+0x28
-                        Vector *scratch = &m_dirVec;   // this+0x40
-                        *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                        *scratch = leadGeo->getDirection();
-                        *tempVec += *scratch * ((float) delta * 2.04f);
-                        *scratch = leadGeo->getRightVector();
-                        *tempVec += *scratch * ((float) delta * 0.04f);
-                        *scratch = leadGeo->getUpVector();
-                        *tempVec += *scratch * ((float) ((float) delta * 0.05f) * 0.004f);
-                        m_pCamera->setFixed(true);
-                        AbyssEngine::AEMath::MatrixSetTranslation(local, *tempVec);
-                        m_pCamera->setLocal(local);
-                        // Hold until the 64-bit script timer passes 10001 ticks (movw #0x2711 @0x140812).
-                        if (m_nScriptTimerA < 10001) { // 0x14081a
-                            break; // -> post-switch tail 0x144e36
-                        }
-                        // Cutscene teardown + reframe (0x140824..0x1408e6). Re-enable AI on the shipGroup==10
-                        // escorts, drop the player out of the cutscene framing, reset the camera, seat it
-                        // 2400 units behind the player along its facing, restore HUD/radar, clear the
-                        // cinematic-break flag, advance the state and reset the script timer.
-                        for (unsigned int i = 0; i < enemies->count; ++i) {
-                            KIPlayer *e = (*enemies)[i];
-                            if (e->shipGroup == 10) { // [elem+0x28]==10, 0x140830
-                                ((PlayerFighter *) e)->setAIDisabled(false); // 0x140838
-                            }
-                        }
-                        player->setFreeze(false);            // 0x14084e
-                        player->setVisible(true);            // 0x140856
-                        m_pCamera->setFixed(false);          // 0x140864
-                        m_pCamera->setTarget(player->geometry); // [player+8], 0x14086c
-                        m_pCamera->setLookAtCam(false);      // 0x140874
-                        // reframe: player->getPosition() - player->GetDirVector() * 2400.0f (pool @0x140a38)
-                        m_pCamera->setPosition(player->getPosition()
-                                               - player->GetDirVector() * 2400.0f); // 0x140884..0x1408ae
-                        m_pHud->visible = 1;                 // [fp+0xd0]+1 = 1, 0x1408b6
-                        m_pRadar->enabled = 1;            // [fp+0xd4]+0x48 = 1, 0x1408be
-                        resetCamera(m_pLevel);               // 0x1408c6
-                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x1408d2
-                        m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11), 0x1408d8
-                        m_nState = m_nState + 1;             // [fp+0x1c] += 1, 0x1408dc/0x1408de
-                        m_nScriptTimerA = 0; // strd 0,0 @+0x90, 0x1408e2
-                        break; // -> post-switch tail 0x144e36 (0x1408e6)
                     }
-                    if (m_nState == 4) {
-                        // state 4 @0x1408ea (tbh table @0x13e822[3]=0x1064 -> 0x1408ea; verified).
-                        // Per-frame: advance the 64-bit script timer by delta (strd @+0x90, 0x1408ea).
-                        // Every 60000-tick (0xea60 @0x140902) cycle, respawn the shipGroup==10 escorts:
-                        // any dead one is revived, woken, and re-scattered to a random spot around the
-                        // player; the timer then resets to 0. Then, unconditionally each frame, retarget
-                        // every dead escort's AI onto the first surviving escort (or the player), and once
-                        // the mission's status value passes 10 finish the wave -- mark the mission solved
-                        // (setType(4)), hand control back to the player, reframe the camera on the lead
-                        // escort and park/deactivate the remaining escorts far away.
-                        m_nScriptTimerA += delta; // 0x1408ee..0x1408fe
-                        if (m_nScriptTimerA > 60000) { // 0x140902..0x14090c
-                            Vector playerPos = player->getPosition(); // sp+0x170, 0x140918
-                            for (unsigned int i = 0; i < enemies->count; ++i) { // loop 0x140934..0x140a0a
-                                KIPlayer *e = (*enemies)[i];
-                                if (e->shipGroup != 10) { // [elem+0x28]==10, 0x14093a
-                                    continue;
-                                }
-                                if (!e->isDead()) { // 0x140940
-                                    continue;
-                                }
-                                e->revive();  // vtable+0x18, 0x140950
-                                e->awake();   // vtable+0xc, 0x14095e
-                                // Scatter to a random spot around the player (0x140960..0x1409ee):
-                                //   x/z = (nextInt(2)==0 ? 1 : -1) * (35000 + nextInt(10000)),
-                                //   y = nextInt(10000) - 5000. Base = playerPos.
-                                int magX = 35000 + Globals::rnd->nextInt(10000);      // 0x140974/0x14096e
-                                int signX = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x140980
-                                int y = Globals::rnd->nextInt(10000) - 5000;          // 0x14099a/0x1409c0
-                                int magZ = 35000 + Globals::rnd->nextInt(10000);      // 0x1409a8
-                                int signZ = (Globals::rnd->nextInt(2) == 0) ? 1 : -1; // 0x1409b4
-                                Vector offset{(float) (signX * magX), (float) y, (float) (signZ * magZ)};
-                                e->setPosition(playerPos + offset); // vtable+0x44, 0x1409f2/0x140a00
+                    AEGeometry *leaderShip = (*enemies)[leader]->geometry;
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                    m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    m_dirVec = leaderShip->getDirection();
+                    m_tempVec += m_dirVec * (step * 2.04f);
+                    m_dirVec = leaderShip->getRightVector();
+                    m_tempVec += m_dirVec * (step * 0.04f);
+                    m_dirVec = leaderShip->getUpVector();
+                    m_tempVec += m_dirVec * (drift * 0.004f);
+                    m_pCamera->setFixed(true);
+                    AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
+                    m_pCamera->setLocal(local);
+                    if (m_nScriptTimerA >= 10001) {
+                        for (unsigned int i = 0; i < enemies->count; i++) {
+                            if ((*enemies)[i]->shipGroup == 10) {
+                                ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             }
-                            m_nScriptTimerA = 0; // strd 0,0 @+0x90, 0x140a0c
                         }
-                        // Unconditional every frame (0x143974): retarget each dead escort's AI onto the
-                        // first surviving escort among enemies[2..5], or onto the player if none survive.
-                        for (unsigned int i = 0; i < enemies->count; ++i) { // 0x143978..0x1439de
-                            KIPlayer *e = (*enemies)[i];
-                            if (e->shipGroup != 10) { // [elem+0x28]==10, 0x14397e
-                                continue;
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        m_pCamera->setFixed(false);
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                        m_nState++;
+                        m_nScriptTimerA = 0;
+                    }
+                } else if (m_nState == 4) {
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA > 60000) {
+                        Vector playerPos = player->getPosition();
+                        for (unsigned int i = 0; i < enemies->count; i++) {
+                            if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->isDead()) {
+                                (*enemies)[i]->revive();
+                                (*enemies)[i]->awake();
+                                KIPlayer *fighter = (*enemies)[i];
+                                int dx = Globals::rnd->nextInt(10000) + 35000;
+                                int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
+                                int dy = Globals::rnd->nextInt(10000);
+                                int dz = Globals::rnd->nextInt(10000) + 35000;
+                                int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
+                                fighter->setPosition(playerPos + Vector{(float) x, (float) (dy - 5000), (float) z});
                             }
-                            if (!e->player->getEnemy(0)->isDead()) { // 0x143988/0x14398c
-                                continue;
-                            }
-                            int alive = -1; // r1: index of first surviving escort in [2..5]
-                            for (int j = 2; j <= 5; ++j) { // 0x14399a..0x1439ba
-                                if (!(*enemies)[j]->isDead()) {
-                                    alive = j;
-                                    break;
+                        }
+                        m_nScriptTimerA = 0;
+                    }
+                    for (unsigned int i = 0; i < enemies->count; i++) {
+                        if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->player->getEnemy(0)->isDead()) {
+                            int target = -1;
+                            for (unsigned int k = 2; k <= 5 && target == -1; k++) {
+                                if (!(*enemies)[k]->isDead()) {
+                                    target = k;
                                 }
                             }
-                            Player *foe = (alive < 0) ? player->player               // [sp+0x54]->player, 0x1439ce
-                                                      : (*enemies)[alive]->player;    // data[alive]->player, 0x1439c6
-                            e->player->setEnemy(foe); // 0x1439d2
+                            (*enemies)[i]->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
                         }
-                        // Wave-complete gate (0x1439e0): only finish once the mission status value passes 10.
-                        if (((Mission *) Globals::status->getCampaignMission())->getStatusValue() >= 10) {
-                            break; // -> post-switch tail 0x144e36
-                        }
-                        ((Mission *) Globals::status->getCampaignMission())->setType(4); // 0x1439fc
-                        m_nState = m_nState + 1; // [this+0x1c] += 1, 0x143a0a..0x143a0e
-                        // Cutscene teardown: drop the player out of the cutscene framing (0x143a10..0x143a70).
-                        player->setTurretMode(false);       // 0x143a12
-                        resetCamera(m_pLevel);              // 0x143a1a
-                        if (player->isInRocketControl()) {  // 0x143a20
-                            player->setRocketControl(nullptr, nullptr); // 0x143a2c
-                            player->killLiberator();        // 0x143a32
-                            m_pCamera->setRumblePercentage(0.0f, 0); // 0x143a3c
-                        }
-                        player->setFreeLookMode(false);     // 0x143a44
-                        m_pCamera->enableFirstPersonCam(false); // 0x143a4c
-                        player->hideShipForFirstPersonCameraView(false); // 0x143a54
-                        player->stopShooting(0);            // 0x143a5c
-                        player->setFreeze(true);            // 0x143a68
-                        player->setVisible(false);          // 0x143a70
-                        player->player->setVulnerable(false); // [player+0]=player->player, 0x143a78
-                        m_bCinematicBreak = 1; // cinematicBreak_ = 1 (byte @0x11), 0x143a82
-                        m_pHud->visible = 0;                // [fp+0xd0]+1 = 0, 0x143a86
-                        m_pRadar->enabled = 0;           // [fp+0xd4]+0x48 = 0, 0x143a8e
-                        m_pCamera->setLookAtCam(false);     // 0x143a94
-                        // Reframe the camera on the lead escort (enemies[0]): its parentGeometry becomes
-                        // the target, and the camera is seated at enemies[0]->getPosition() + {-7000, 9000,
-                        // 40000} (pool @0x143d38/d3c/d40). 0x143a98..0x143ad4.
-                        m_pCamera->setTarget((*enemies)[0]->parentGeometry); // [elem+8], 0x143aa0
-                        m_pCamera->setPosition((*enemies)[0]->getPosition()  // vtable+0x28, 0x143ab4
-                                               + Vector{-7000.0f, 9000.0f, 40000.0f}); // 0x143aca
-                        m_nScriptTimerA = 0; // strd 0,0 @+0x90, 0x143ada
-                        // Park + deactivate the remaining escorts enemies[2..9] far away (0x143ae4..0x143b12).
-                        for (int i = 2; i != 10; ++i) {
-                            (*enemies)[i]->setPosition(1000000.0f, 1000000.0f, 1000000.0f); // vtable+0x48, 0x143af4
-                            (*enemies)[i]->setActive(false);  // 0x143afe
-                            (*enemies)[i]->setVisible(false); // 0x143b0a
-                        }
-                        break; // -> post-switch tail 0x144e36 (0x143b14)
                     }
-                    if (m_nState == 5) {
-                        // state 5 @0x140a50 (tbh table @0x13e822[4]=0x1117 -> 0x140a50; verified).
-                        // Per-frame: creep the lead escort forward, drift the fixed follow-camera along
-                        // it, keep the 3D audio event pinned to the escort, advance the 64-bit script
-                        // timer; once it passes 8001 ticks reset the timer and advance the state.
-                        //
-                        // 0x140a50..0x140a6e: enemies[0]->geometry->moveForward((float)(delta*6)).
-                        //   r8=delta; r0 = delta + delta*2 = delta*3, <<1 -> delta*6 (add.w r0,r8,r8,lsl#1;
-                        //   lsls r0,#1); vcvt s32->f32; receiver [enemies+4][0]->[+8]=geometry.
-                        (*enemies)[0]->geometry->moveForward((float) (delta * 6));
-                        // 0x140a72..0x140aae: m_pCamera->translate(delta*0.4f, delta*0.1f, (float)-delta*1.8f).
-                        //   s0=(float)delta, s2=(float)-delta; pool s4=0.4f @0x140a44 (0x3ecccccd),
-                        //   s6=0.1f @0x140a48 (0x3dcccccd), s8=1.8f @0x140a4c (0x3fe66666).
-                        m_pCamera->translate((float) delta * 0.4f, (float) delta * 0.1f,
-                                             -(float) delta * 1.8f);
-                        // 0x140ab2..0x140ac6: m_nScriptTimerA(64) += delta (ldr.w r0,[r5,#144]!; adc asr#31; strd).
-                        m_nScriptTimerA += delta;
-                        // 0x140aca..0x140af0: pin FMOD event 2250 (0x8ca) to the lead escort's live position.
-                        //   pos = enemies[0]->geometry->getPosition() (sret sp+0x170), velocity = {0,0,0}
-                        //   (strd 0,0 @sp#280 / str 0 @sp#288), bool last = false (str 0 @sp#0).
-                        Vector enemyPos = (*enemies)[0]->geometry->getPosition();
-                        Vector zero{0.0f, 0.0f, 0.0f};
-                        Globals::sound->updateEvent3DAttributes(2250, &enemyPos, &zero, false);
-                        // 0x140af4..0x140b02: hold until the 64-bit script timer passes 8001 (movw #0x1f41).
-                        if (m_nScriptTimerA < 8001) {
-                            break; // -> post-switch tail 0x144e36
+                    if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
+                        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
+                        m_nState++;
+                        player->setTurretMode(false);
+                        resetCamera(m_pLevel);
+                        if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
                         }
-                        // 0x140b06..0x140b0e: reset the timer and advance the state.
-                        m_nScriptTimerA = 0; // strd 0,0 [r5]
-                        m_nState = m_nState + 1; // [r4+28]+1 -> 0x144c0c str m_nState -> 0x144e36
-                        break;
-                    }
-                    if (m_nState == 6) {
-                        // state 6 @0x140ed8 (tbh table @0x13e822[5]=0x135b -> 0x140ed8; verified).
-                        // LAST cold substate: creep the lead escort straight forward, keep the 3D audio
-                        // event pinned to it, advance the 64-bit script timer; once it passes 4001 ticks
-                        // hand control back to the player, tear the cutscene framing down and reframe the
-                        // fixed follow-camera 100 units behind the player, then advance the state.
-                        //
-                        // 0x140ed8..0x140ee6: pin FMOD event 2250 (0x8ca) to the lead escort's live pos.
-                        //   pos = enemies[0]->geometry->getPosition() (sret sp+0x170); receiver
-                        //   [enemies+4][0]->[+8]=geometry. velocity = {0,0,0} (strd 0,0 @sp#280 /
-                        //   str 0 @sp#288), bool last = false (str 0 @sp#0). GOT _ZN7Globals5soundE @0x210168.
-                        Vector enemyPos = (*enemies)[0]->geometry->getPosition();
-                        Vector zero{0.0f, 0.0f, 0.0f};
-                        Globals::sound->updateEvent3DAttributes(2250, &enemyPos, &zero, false);
-                        // 0x140f0c..0x140f36: m_nScriptTimerA(64) += delta (ldr.w r0,[r4,#144]!; adc asr#31; strd).
-                        //   s0 = (float)(delta*200) computed in parallel for the moveForward below (mul #0xc8).
-                        m_nScriptTimerA += delta;
-                        // 0x140f38..0x140f40: enemies[0]->geometry->moveForward((float)(delta*200)).
-                        (*enemies)[0]->geometry->moveForward((float) (delta * 200));
-                        // 0x140f42..0x140f50: hold until the 64-bit script timer passes 4001 (movw #0xfa1).
-                        if (m_nScriptTimerA < 4001) {
-                            break; // -> post-switch tail 0x144e36
+                        player->setFreeLookMode(false);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        player->stopShooting(0);
+                        player->setFreeze(true);
+                        player->setVisible(false);
+                        player->player->setVulnerable(false);
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        m_pCamera->setLookAtCam(true);
+                        m_pCamera->setTarget((*enemies)[0]->geometry);
+                        m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
+                        m_nScriptTimerA = 0;
+                        for (int k = 2; k != 10; k++) {
+                            (*enemies)[k]->setPosition(1000000.0f, 1000000.0f, 1000000.0f);
+                            (*enemies)[k]->setActive(false);
+                            (*enemies)[k]->setVisible(false);
                         }
-                        // Cutscene teardown + camera reframe (0x140f54..0x140ffa).
-                        m_pLevel->getPlayer()->resetGunDelay();  // [r5+0x18]=m_pLevel, 0x140f54/5a
-                        player->setFreeze(false);                // [sp+0x54]=player, 0x140f66
-                        player->setVisible(true);                // 0x140f6e
-                        player->player->setVulnerable(true);     // [player+0]=player->player, 0x140f78
-                        m_pCamera->setLookAtCam(false);          // [r5+0x14]=m_pCamera, 0x140f80
-                        m_pCamera->setTarget(player->geometry);  // [player+8]=player->geometry, 0x140f8a
-                        m_pCamera->setPosition(
-                                *&m_dirVec); // &this+0x40 scratch, 0x140f94
-                        // reframe: player->getPosition() - player->GetDirVector() * 100.0f (pool @0x141270).
-                        m_pCamera->setPosition(player->getPosition()
-                                               - player->GetDirVector() * 100.0f); // 0x140f98..0x140fce
-                        m_pHud->visible = 1;                     // [r5+0xd0]+1 = 1, 0x140fd2/d8
-                        m_pRadar->enabled = 1;                // [r5+0xd4]+0x48 = 1, 0x140fda/de
-                        resetCamera(m_pLevel);                   // [r5+0x18]=m_pLevel, 0x140fe6
-                        m_pLevel->lodManager->forceUpdate(delta, false); // 0x140ff2
-                        m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11), 0x140ff6
-                        m_nScriptTimerA = 0; // strd 0,0 @+0x90, 0x140ffa
-                        m_nState++; // shared tail 0x13953c increments m_nState -> 0x13edde
-                        break; // -> shared set-state tail (0x140ffe -> 0x13953c)
                     }
-                    break;
+                } else if (m_nState == 5) {
+                    (*enemies)[0]->geometry->moveForward((float) (6 * delta));
+                    m_pCamera->translate((float) delta * 0.4f, (float) delta * 0.1f, (float) -delta * 1.8f);
+                    m_nScriptTimerA += delta;
+                    Vector pos = (*enemies)[0]->geometry->getPosition();
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->updateEvent3DAttributes(2250, &pos, &zero, false);
+                    if (m_nScriptTimerA >= 8001) {
+                        m_nScriptTimerA = 0;
+                        m_nState++;
+                    }
+                } else if (m_nState == 6) {
+                    Vector pos = (*enemies)[0]->geometry->getPosition();
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Globals::sound->updateEvent3DAttributes(2250, &pos, &zero, false);
+                    m_nScriptTimerA += delta;
+                    (*enemies)[0]->geometry->moveForward((float) (200 * delta));
+                    if (m_nScriptTimerA >= 4001) {
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        player->player->setVulnerable(true);
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setPosition(m_dirVec);
+                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
+                        m_nState++;
+                    }
                 }
-                // m_nState==0 entry (0x13a662): gate on messages[0]->isTriggered(). When false the
-                // beq targets 0x13e812, whose `subs #1; cmp #5; bhi` (0u-1 > 5) falls to the 0x144e36
-                // tail -> a plain break with no side effects.
-                if (!((RadioMessage *) ((*messages)[0]))->isTriggered()) {
-                    break; // 0x13a66e beq 0x13e812 -> 0x144e36
-                }
-                // Cutscene exit: hand control back, hide/freeze the player ship and reframe the camera
-                // on enemies[0] at a fixed offset.
-                player->setTurretMode(false);
-                resetCamera(m_pLevel);
-                if (player->isInRocketControl()) {
-                    player->setRocketControl(nullptr, nullptr);
-                    player->killLiberator();
-                    m_pCamera->setRumblePercentage(0.0f, 0);
-                }
-                player->setFreeLookMode(false);
-                m_pCamera->enableFirstPersonCam(false);
-                player->hideShipForFirstPersonCameraView(false);
-                player->stopShooting(0);
-                player->setFreeze(true); // PlayerEgo+0x24 (byte flag) via setter
-                player->setVisible(false);
-                player->player->setVulnerable(false);
-                m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pHud->visible = 0;
-                m_pRadar->enabled = 0;
-                m_pCamera->setLookAtCam(true);
-                m_pCamera->setTarget((*enemies)[0]->geometry);
-                Vector camPos = (*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f};
-                m_pCamera->setPosition(camPos);
-                // 0x13a744..0x13a74e: stop the current music (GOT _ZN7Globals5soundE, identical idiom
-                // to the shared epilogue @0x143bd0). r4=Globals::sound, r0=[r4]=currentMusicEvent, r1=[r0].
-                Globals::sound->stop(Globals::sound->currentMusicEvent); // 0x13a74e
-                // 0x13a752..0x13a760: play(0x8c0=2240, nullptr, nullptr, 0.0f) (r8==0 pushed as pitch).
-                Globals::sound->play(2240, nullptr, nullptr, 0.0f);      // 0x13a760
-                m_nScriptTimerA = 0;
-                m_nState = 1; // shared tail 0x143d0c increments m_nState (0 -> 1) -> post-switch tail
                 break;
             }
             case 154: { // 0x13a76e
