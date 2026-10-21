@@ -1362,9 +1362,9 @@ void Radar::drawCurrentLock(Hud *) {
     }
     if (target == asteroid) {
         String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
-        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+        int x = (Globals::w >> 1) -
+                (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
         this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
-        int x = (Globals::w >> 1) - (textWidth >> 1);
         this->qualitySprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->qualitySprite->getFrameWidth(),
                                          this->field_0x214 + layoutField(0xc0));
         this->qualitySprite->draw(1.0f, 1.0f);
@@ -1413,8 +1413,8 @@ void Radar::drawCurrentLock(Hud *) {
         } else {
             this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
         }
-        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-        x = (Globals::w >> 1) - (textWidth >> 1);
+        x = (Globals::w >> 1) -
+            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
         this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                       this->field_0x214 + layoutField(0xc8));
         this->lockSprite->draw(1.0f, 1.0f);
