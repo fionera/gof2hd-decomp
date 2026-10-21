@@ -79,6 +79,15 @@ static uint32_t (*g_TransformGetObject)(PaintCanvas *canvas, uint32_t mesh) = nu
 
 static void (*g_TransformSetState)(uint32_t object, int state, int value) = nullptr;
 
+
+
+
+
+
+
+
+
+
 ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level)
     : dir(), up(), side() {
     this->useEgoOrientation = 0;
@@ -160,26 +169,11 @@ ObjectGun::~ObjectGun() {
     this->explosionReady = nullptr;
 }
 
-void ObjectGun::setScaling(int x, int y, int /*z*/) {
-    this->scaleX = (float) x;
-    this->scaleY = (float) y;
-}
-
-void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
-    PaintCanvas **canvas = &Globals::Canvas;
-    (*canvas)->TransformRemoveMesh(this->transform, this->meshId);
-    this->meshId = (int) mesh;
-    (*canvas)->TransformAddMesh(this->transform, (uint16_t) mesh, false);
-}
-
 void ObjectGun::setEnemies(Array<Player *> *enemies) {
     ObjectGun_setEnemies_impl(this->gun);
 }
 
 void ObjectGun::setEnemy(Player * /*enemy*/) {
-}
-
-void ObjectGun::translate(const Vector & /*v*/) {
 }
 
 void ObjectGun::update(int dt) {
@@ -470,3 +464,19 @@ void ObjectGun::render() {
         this->geometry->render();
     this->deltaTime = 0;
 }
+
+void ObjectGun::translate(const Vector & /*v*/) {
+}
+
+void ObjectGun::setScaling(int x, int y, int /*z*/) {
+    this->scaleX = (float) x;
+    this->scaleY = (float) y;
+}
+
+void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/) {
+    PaintCanvas **canvas = &Globals::Canvas;
+    (*canvas)->TransformRemoveMesh(this->transform, this->meshId);
+    this->meshId = (int) mesh;
+    (*canvas)->TransformAddMesh(this->transform, (uint16_t) mesh, false);
+}
+

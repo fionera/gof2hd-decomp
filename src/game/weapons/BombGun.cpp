@@ -16,15 +16,6 @@
 
 #include "game/core/Globals.h"
 
-BombGun::~BombGun() {
-    delete this->explosion;
-    this->explosion = nullptr;
-}
-
-int BombGun::isBombGun() {
-    return 1;
-}
-
 BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh,
                  Level *level)
     : RocketGun(rocketArg, gun, meshId, 0, 0, bombType, false, level), cameraOffset(),
@@ -78,14 +69,13 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     this->trailGeometry = new AEGeometry(Globals::Canvas);
 }
 
-void BombGun::setPlayer(PlayerEgo *player) {
-    this->player = player;
+BombGun::~BombGun() {
+    delete this->explosion;
+    this->explosion = nullptr;
 }
 
-void BombGun::render() {
-    RocketGun::render();
-    if (this->gun->ignited != 0)
-        this->explosion->render();
+void BombGun::setPlayer(PlayerEgo *player) {
+    this->player = player;
 }
 
 void BombGun::update(int elapsed) {
@@ -190,4 +180,14 @@ void BombGun::update(int elapsed) {
         this->detonationPending = 1;
         this->explosion->reset();
     }
+}
+
+void BombGun::render() {
+    RocketGun::render();
+    if (this->gun->ignited != 0)
+        this->explosion->render();
+}
+
+int BombGun::isBombGun() {
+    return 1;
 }

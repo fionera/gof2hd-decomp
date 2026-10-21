@@ -1,3 +1,4 @@
+
 #include "game/weapons/RocketGun.h"
 #include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
@@ -31,27 +32,23 @@ namespace AbyssEngine {
     }
 }
 
-int RocketGun::isRocketGun() { return 1; }
 
-void RocketGun::render() {
-    ObjectGun::render();
-}
 
-void RocketGun::translate(const Vector & /*v*/) {
-}
 
-RocketGun::~RocketGun() {
-    delete this->trailMatrices;
-    this->trailMatrices = nullptr;
-
-    delete this->trailSystems;
-    this->trailSystems = nullptr;
-
-    delete this->trailTimers;
-    this->trailTimers = nullptr;
-}
 
 static const float kRocketTurnRate = 0.3f;
+
+
+
+
+static const float kMuzzleZAdd = -100.0f;
+static const float kScaleDiv = -200.0f;
+static const float kScaleMul = 255.0f;
+static const float kZeroCompare = 50000.0f;
+static const float kWave = 0.003f;
+
+
+int RocketGun::isRocketGun() { return 1; }
 
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
@@ -82,6 +79,17 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
         Globals::Canvas->TransformAddChild(this->transform, geom->transform);
         delete geom;
     }
+}
+
+RocketGun::~RocketGun() {
+    delete this->trailMatrices;
+    this->trailMatrices = nullptr;
+
+    delete this->trailSystems;
+    this->trailSystems = nullptr;
+
+    delete this->trailTimers;
+    this->trailTimers = nullptr;
 }
 
 void RocketGun::setRadar(Radar *radar) {
@@ -156,41 +164,9 @@ void RocketGun::setRadar(Radar *radar) {
     }
 }
 
-void RocketGun::seekEnemy(int /*unused*/, int index) {
-    Array<Player *> *enemies = (Array<Player *> *) this->gun->getEnemies();
-    Player *enemy;
-    if (this->gun->owner != nullptr && this->gun->isPlayerGun() == 0 && this->gun->owner != nullptr &&
-        this->gun->owner->getKIPlayer()->field_0x38 >= 0 && this->gun->owner->getEnemies() != nullptr) {
-        Player *owner = this->gun->owner;
-        enemy = owner->getEnemy(owner->getKIPlayer()->field_0x38);
-    } else {
-        if (enemies == nullptr || this->radar == nullptr)
-            return;
-        KIPlayer *contact = this->radar->lockedEnemy;
-        if (contact == nullptr || contact->field_0x76 == 0 || contact->field_0x74 != 0)
-            return;
-        if (((PlayerEgo *) (long) ((Level *) this->radar->level)->getPlayer())->isInFreeLookMode() != 0)
-            return;
-        enemy = this->radar->lockedEnemy->player;
-    }
-    if (enemy == nullptr)
-        return;
-
-    Vector &steer = *(Vector *) &this->steerX;
-    steer = AbyssEngine::AEMath::VectorNormalize(enemy->getPosition() - ((Vector *) this->gun->positions)[index]);
-    Vector heading = AbyssEngine::AEMath::VectorNormalize(((Vector *) this->gun->velocities)[index]);
-    steer -= heading;
-    steer /= this->turnRate * 20.0f;
-    heading += steer;
-    ((Vector *) this->gun->velocities)[index] = AbyssEngine::AEMath::VectorNormalize(heading);
-    ((Vector *) this->gun->velocities)[index] *= this->gun->pitchRate;
+void RocketGun::render() {
+    ObjectGun::render();
 }
-
-static const float kMuzzleZAdd = -100.0f;
-static const float kScaleDiv = -200.0f;
-static const float kScaleMul = 255.0f;
-static const float kZeroCompare = 50000.0f;
-static const float kWave = 0.003f;
 
 void RocketGun::update(int elapsed) {
     Vector norm;
@@ -415,3 +391,37 @@ void RocketGun::update(int elapsed) {
         }
     }
 }
+
+void RocketGun::seekEnemy(int /*unused*/, int index) {
+    Array<Player *> *enemies = (Array<Player *> *) this->gun->getEnemies();
+    Player *enemy;
+    if (this->gun->owner != nullptr && this->gun->isPlayerGun() == 0 && this->gun->owner != nullptr &&
+        this->gun->owner->getKIPlayer()->field_0x38 >= 0 && this->gun->owner->getEnemies() != nullptr) {
+        Player *owner = this->gun->owner;
+        enemy = owner->getEnemy(owner->getKIPlayer()->field_0x38);
+    } else {
+        if (enemies == nullptr || this->radar == nullptr)
+            return;
+        KIPlayer *contact = this->radar->lockedEnemy;
+        if (contact == nullptr || contact->field_0x76 == 0 || contact->field_0x74 != 0)
+            return;
+        if (((PlayerEgo *) (long) ((Level *) this->radar->level)->getPlayer())->isInFreeLookMode() != 0)
+            return;
+        enemy = this->radar->lockedEnemy->player;
+    }
+    if (enemy == nullptr)
+        return;
+
+    Vector &steer = *(Vector *) &this->steerX;
+    steer = AbyssEngine::AEMath::VectorNormalize(enemy->getPosition() - ((Vector *) this->gun->positions)[index]);
+    Vector heading = AbyssEngine::AEMath::VectorNormalize(((Vector *) this->gun->velocities)[index]);
+    steer -= heading;
+    steer /= this->turnRate * 20.0f;
+    heading += steer;
+    ((Vector *) this->gun->velocities)[index] = AbyssEngine::AEMath::VectorNormalize(heading);
+    ((Vector *) this->gun->velocities)[index] *= this->gun->pitchRate;
+}
+
+void RocketGun::translate(const Vector & /*v*/) {
+}
+

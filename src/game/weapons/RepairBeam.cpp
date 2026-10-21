@@ -34,12 +34,9 @@ static const int kWeaponSounds[233] = {
     2275, 2276, 2278, 2277, 2280,
 };
 
-void RepairBeam::render() {
-    for (unsigned i = 0; i < this->targetIds->size(); ++i) {
-        if ((*this->targetIds)[i] != -1)
-            (*this->geometries)[i]->render();
-    }
-}
+
+
+
 
 RepairBeam::RepairBeam(int itemIndex, int sort) {
     this->beamPosition.x = 0;
@@ -228,3 +225,11 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
         Globals::sound->updateEvent3DAttributes(sound, &this->beamPosition, nullptr, false);
     }
 }
+
+void RepairBeam::render() {
+    for (unsigned i = 0; i < this->targetIds->size(); ++i) {
+        if ((*this->targetIds)[i] != -1)
+            (*this->geometries)[i]->render();
+    }
+}
+
