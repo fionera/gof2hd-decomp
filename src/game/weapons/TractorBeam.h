@@ -3,6 +3,7 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "game/ship/KIPlayer.h"
+#include "engine/math/Vector.h"
 
 class Radar;
 
@@ -13,9 +14,8 @@ class Level;
 
 class TractorBeam {
 public:
-    float dirX;
-    float dirY;
-    float dirZ;
+    // Crate position relative to the player (pull direction once normalised).
+    Vector direction;
     KIPlayer *grabbedCrate;
     uint8_t active;
     uint8_t soundPlaying;

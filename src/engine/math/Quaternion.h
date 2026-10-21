@@ -32,9 +32,9 @@ namespace AbyssEngine {
 
         static float Dot(const Quaternion &a, const Quaternion &b);
 
-        void Lerp(const Quaternion &a, const Quaternion &b, float t);
+        static Quaternion Lerp(const Quaternion &a, const Quaternion &b, float t);
 
-        void Lerp(const float *a, const float *b, float t);
+        static Quaternion Lerp(const float *a, const float *b, float t);
 
         Quaternion Normalized();
 
@@ -50,6 +50,12 @@ namespace AbyssEngine {
 
         float operator[](int i) const;
     };
+
+    Quaternion operator+(const Quaternion &lhs, const Quaternion &rhs);
+
+    Quaternion operator-(const Quaternion &lhs, const Quaternion &rhs);
+
+    Quaternion operator*(const Quaternion &lhs, float rhs);
 
     static_assert(sizeof(Quaternion) == 0x10, "Quaternion layout");
     static_assert(__builtin_offsetof(Quaternion, x) == 0x0, "Quaternion::x offset");

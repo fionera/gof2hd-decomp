@@ -35,5 +35,11 @@ public:
     void setPlayer(PlayerEgo *player);
 
     void update(int delta);
+
+private:
+    // Position of mine i (the gun's hit positions are packed Vectors).
+    const Vector &minePosition(uint32_t i) {
+        return *reinterpret_cast<Vector *>(this->gun->hitPositions + i * sizeof(Vector));
+    }
 };
 #endif

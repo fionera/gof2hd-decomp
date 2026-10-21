@@ -8,9 +8,6 @@ public:
     Array<Node *> *children;
     Node *parent;
     int value;
-    uint8_t reserved_0x0c[0x24];
-
-    unsigned int spriteMaterial;
 
     Node(int value);
 
