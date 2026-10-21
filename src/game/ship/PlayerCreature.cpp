@@ -10,49 +10,32 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Radar.h"
 
-static int PlayerCreature_weightTable[16] = {};
-static int PlayerCreature_rageTable[16] = {};
-static int PlayerCreature_enduranceTable[16] = {};
-static int *PlayerCreature_randomMax = nullptr;
-static FModSound **PlayerCreature_sound = nullptr;
+#include "game/core/Globals.h"
+#include "engine/math/AEMath.h"
 
-namespace AbyssEngine {
-    namespace AEMath {
-        Matrix operator*(const Matrix &, const Matrix &);
-
-        Matrix MatrixSetRotation(Matrix &, float, float, float);
-    }
-}
-
-namespace AbyssEngine {
-}
-
-void *ParticleSystemManager_emitManual_v( // lint: void_ptr external free fn; Pv signature fixed in original .so
-    void *self, int handle, const float *pos, void *ret, const float *vel, // lint: void_ptr external free fn; Pv signature fixed in original .so
-    float p5); // lint: void_ptr external free fn; Pv signature fixed in original .so
+// Per creature type: weight, rage modifier and endurance modifier share one table.
+static const int kCreatureTypeFactor[4] = {1, 1, 1, 0};
 
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
-    : KIPlayer(0, 0, player, geometry, x, y, z, true) {
-    this->rageMatrix = AbyssEngine::AEMath::Matrix();
-
-    this->caught = 0;
+    : KIPlayer(kind, -1, player, geometry, x, y, z, false) {
     this->itemIndex = itemIndex;
+    this->caught = false;
+    this->endurance = this->maxEndurance;
     this->rageScale = 1.0f;
     this->rageTimer = 0;
-    this->raging = 0;
-
-    int hitpoints = this->player->getHitpoints();
-    int endurance = (int) (((float) PlayerCreature_enduranceTable[kind] / 10.0f) * 8000.0f) + 8000;
-    this->maxEndurance = endurance;
-    this->endurance = endurance;
-    this->lastHitpoints = hitpoints;
+    this->raging = false;
+    this->hooked = false;
+    this->lastHitpoints = this->player->getHitpoints();
+    this->maxEndurance = this->endurance =
+            (int) ((float) kCreatureTypeFactor[kind] / 10.0f * 8000.0f) + 8000;
     reset();
 }
 
 void PlayerCreature::calmDown() {
-    this->raging = 0;
     this->rageTimer = 0;
+    this->raging = false;
+    this->hooked = false;
     this->endurance = this->maxEndurance;
 }
 
@@ -69,11 +52,10 @@ PlayerCreature::~PlayerCreature() {
 }
 
 void PlayerCreature::rage(int amount) {
-    float amountScale = (float) amount / -100.0f;
-    float typeScale = (float) PlayerCreature_rageTable[this->creatureType()];
     this->rageTimer = 0;
-    this->raging = 0x101;
-    this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
+    this->raging = true;
+    this->hooked = true;
+    this->rageScale = ((float) amount / -100.0f + 1.0f) * ((float) kCreatureTypeFactor[this->creatureType()] + 1.0f);
 }
 
 uint8_t PlayerCreature::isHooked() {
@@ -85,102 +67,70 @@ uint8_t PlayerCreature::isCaught() {
 }
 
 void PlayerCreature::hook(int value) {
-    this->hooked = 1;
-
-    this->rage(value);
+    this->hooked = true;
+    rage(value);
 }
 
 void PlayerCreature::unhook() {
+    this->caught = false;
     this->rageTimer = 0;
-    this->caught = 0;
-    this->raging = 0;
+    this->raging = false;
+    this->hooked = false;
     this->endurance = this->maxEndurance;
 }
 
 void PlayerCreature::update(int elapsed) {
     this->lastElapsed = elapsed;
-
-    int lastHitpoints = this->lastHitpoints;
-    int hitpoints = this->player->getHitpoints();
-    if (lastHitpoints > hitpoints && this->state != 4) {
-        this->raging = 1;
-    }
+    if (this->lastHitpoints > this->player->getHitpoints() && this->state != 4)
+        this->raging = true;
     this->lastHitpoints = this->player->getHitpoints();
 
-    if (this->raging != 0) {
-        float elapsedFloat = (float) elapsed;
-        int rageTime = this->rageTimer + elapsed;
-        this->rageTimer = rageTime;
+    if (this->raging) {
+        this->rageTimer += elapsed;
         this->endurance -= elapsed;
-        float rageScale = this->rageScale + elapsedFloat * 0.0007f;
-        elapsed = (int) (rageScale * elapsedFloat);
-        this->rageScale = rageScale;
-
-        if (rageTime < 4000) {
-            Matrix shaken = this->geometry->getMatrix() * this->rageMatrix;
-            this->geometry->setMatrix(shaken);
+        this->rageScale += (float) elapsed * 0.0007f;
+        elapsed = (int) (this->rageScale * (float) elapsed);
+        if (this->rageTimer < 4000) {
+            this->geometry->setMatrix(AbyssEngine::AEMath::MatrixMultiply(this->geometry->getMatrix(), this->rageMatrix));
         } else {
+            // Pick a new random wobble.
             int half = elapsed >> 1;
-            float negativeHalf = (float) half * -0.5f;
-            int first = ((AbyssEngine::AERandom *) (*PlayerCreature_randomMax))->nextInt(half);
-            int second = ((AbyssEngine::AERandom *) (*PlayerCreature_randomMax))->nextInt(half);
-            float xAngle = ((negativeHalf + (float) first) * 0.000244140625f) * 2.0f * 3.1415927f;
-            float zAngle = ((negativeHalf + (float) second) * 0.000244140625f) * 2.0f * 3.1415927f;
-            AbyssEngine::AEMath::MatrixSetRotation(this->rageMatrix, xAngle, zAngle, 0.0f);
+            float offset = (float) half * -0.5f;
+            float xAngle = (offset + (float) Globals::rnd->nextInt(half)) * (1.0f / 4096.0f);
+            float yAngle = (offset + (float) Globals::rnd->nextInt(half)) * (1.0f / 4096.0f);
+            AbyssEngine::AEMath::MatrixSetRotation(this->rageMatrix, (xAngle + xAngle) * 3.1415927f,
+                                                   (yAngle + yAngle) * 3.1415927f, 0.0f);
             this->rageTimer = 0;
         }
-
         if (this->endurance < 1) {
-            if (this->hooked == 0) {
-                this->rageTimer = 0;
-                this->raging = 0;
-                this->endurance = this->maxEndurance;
+            if (this->hooked) {
+                this->caught = true;
+                this->raging = false;
             } else {
-                this->raging = 0;
-                this->caught = 1;
+                calmDown();
             }
         }
     }
 
-    if (this->player->getHitpoints() < 1) {
-        if ((uint32_t)(this->state - 3) >= 2) {
-            this->state = 3;
-            (*PlayerCreature_sound)->play(0x16, nullptr, nullptr, 0.0f);
-            this->player->setActive(false);
-
-            Level *level = this->level;
-            PlayerEgo *ego = level->getPlayer();
-            Radar *radar = (Radar *) ego->field_0x14;
-            if (radar->field_0x1c == this) {
-                ego = level->getPlayer();
-                radar = (Radar *) ego->field_0x14;
-                radar->field_0x1c = nullptr;
-            }
-
-            Vector zero;
-            zero.x = 0.0f;
-            zero.y = 0.0f;
-            zero.z = 0.0f;
-            Vector position;
-            position.x = this->posX;
-            position.y = this->posY;
-            position.z = this->posZ;
-            Level *levelObject = this->level;
-            ParticleSystemManager_emitManual_v(
-                (void *) (intptr_t) levelObject->particleSystemMgr, // lint: void_ptr arg to external fn's void* param
-                levelObject->field_34,
-                (const float *) &position, nullptr, (const float *) &zero, 0.0f);
-        }
+    if (this->player->getHitpoints() < 1 && (uint32_t) (this->state - 3) >= 2) {
+        this->state = 3;
+        Globals::sound->play(22, nullptr, nullptr, 0.0f);
+        this->player->setActive(false);
+        if (this->level->getPlayer()->field_0x14->field_0x1c == this)
+            this->level->getPlayer()->field_0x14->field_0x1c = nullptr;
+        Vector position = {this->posX, this->posY, this->posZ};
+        Vector velocity = {0.0f, 0.0f, 0.0f};
+        this->level->field_74->emitManual(this->level->field_34, position, 0, velocity, -1.0f);
     }
 
-    if (this->state == 3) {
+    if (this->state != 3) {
+        if (this->state == 0 && !this->caught)
+            this->geometry->moveForward((float) elapsed);
+    } else {
         this->state = 4;
-    } else if (this->state == 0 && this->caught == 0) {
-        this->geometry->moveForward((float) elapsed);
     }
 
-    Matrix current = this->geometry->getMatrix();
-    memcpy(this->player->transform, &current, sizeof(this->player->transform));
+    this->player->transform = this->geometry->getMatrix();
 }
 
 void PlayerCreature::render() {
@@ -202,7 +152,7 @@ int PlayerCreature::outerCollide(float /*x*/, float /*y*/, float /*z*/) {
 }
 
 int PlayerCreature::getWeight() {
-    return PlayerCreature_weightTable[this->creatureType()];
+    return kCreatureTypeFactor[this->creatureType()];
 }
 
 int PlayerCreature::getItemIndex() {
