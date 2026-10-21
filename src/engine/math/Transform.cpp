@@ -452,7 +452,7 @@ namespace AbyssEngine {
                 AEMath::Matrix identity;
                 this->localMatrix = identity;
                 if (Engine::enableShader == 0)
-                    this->localMatrix.m[5] = -1.0f;
+                    this->localMatrix.m.e5 = -1.0f;
                 return;
             }
 
@@ -469,15 +469,11 @@ namespace AbyssEngine {
             } else {
                 KeyFrame *prev = cursor[-2];
                 longlong prevTime = prev->timestamp;
-                float t;
-                {
-                    Quaternion fromRotation(prev->rotation);
-                    float elapsed = (float) (current - prevTime);
-                    float span = (float) (nextTime - prevTime);
-                    Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
-                    t = elapsed / span;
-                    this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
-                }
+                float elapsed = (float) (current - prevTime);
+                float span = (float) (nextTime - prevTime);
+                float t = elapsed / span;
+                this->rotation = Quaternion::Lerp(Quaternion(prev->rotation),
+                                                  Quaternion(this->keyFrames[this->currentKeyFrameIndex]->rotation), t);
 
                 this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
                                                        this->keyFrames[this->currentKeyFrameIndex]->translation, t);
@@ -487,11 +483,8 @@ namespace AbyssEngine {
                 KeyFrame *to = this->keyFrames[this->currentKeyFrameIndex];
                 this->alpha = from->alpha + t * (to->alpha - from->alpha);
 
-                {
-                    Quaternion fromLocal(from->localRotation);
-                    Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
-                    this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
-                }
+                this->localRotation = Quaternion::Lerp(Quaternion(from->localRotation),
+                                                       Quaternion(this->keyFrames[this->currentKeyFrameIndex]->localRotation), t);
 
                 this->localTranslation = AEMath::VectorLerp(
                     this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,
@@ -529,18 +522,16 @@ namespace AbyssEngine {
             float w = this->localRotation.w;
             float xx = x * x, yy = y * y, zz = z * z;
             float zw = z * w, xy = x * y, yw = y * w, xz = x * z, xw = x * w, yz = y * z;
+            this->localMatrix.m[3] = this->localMatrix.m[7] = this->localMatrix.m[11] = 0.0f;
             this->localMatrix.m[0] = (float) (1.0 - 2.0 * ((double) yy + (double) zz));
             this->localMatrix.m[1] = (float) (2.0 * ((double) xy - (double) zw));
             this->localMatrix.m[2] = (float) (2.0 * ((double) xz + (double) yw));
-            this->localMatrix.m[3] = 0.0f;
             this->localMatrix.m[4] = (float) (2.0 * ((double) xy + (double) zw));
             this->localMatrix.m[5] = (float) (1.0 - 2.0 * ((double) xx + (double) zz));
             this->localMatrix.m[6] = (float) (2.0 * ((double) yz - (double) xw));
-            this->localMatrix.m[7] = 0.0f;
             this->localMatrix.m[8] = (float) (2.0 * ((double) xz - (double) yw));
             this->localMatrix.m[9] = (float) (2.0 * ((double) yz + (double) xw));
             this->localMatrix.m[10] = (float) (1.0 - 2.0 * ((double) xx + (double) yy));
-            this->localMatrix.m[11] = 0.0f;
 
             AEMath::Matrix toCenter;
             toCenter.m[3] = -0.5f;

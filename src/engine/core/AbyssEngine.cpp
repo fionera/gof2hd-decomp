@@ -267,8 +267,9 @@ namespace AbyssEngine {
                 long long t2 = (t * t) >> 12;
                 long long t3 = (t2 * t) >> 12;
                 int startValue = key->value;
-                return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
-                       (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
+                long long sum = (((t - 2 * t2 + t3) * key->c0) >> 12) + (((t3 - t2) * key->c1) >> 12) +
+                                (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12);
+                return (int) sum + startValue;
             }
         }
         return 0;
