@@ -994,11 +994,10 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
     }
 
     if (channel == 2 || channel == 3 || channel == 8) {
-        if (Globals::sound->isPlaying(soundId)) {
-            if (Globals::options[15])
-                Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
-        } else {
+        if (!Globals::sound->isPlaying(soundId)) {
             Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
+        } else if (Globals::options[15]) {
+            Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
         }
     } else {
         Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
