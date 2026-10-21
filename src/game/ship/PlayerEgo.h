@@ -285,7 +285,7 @@ public:
 
     int approachAsteroid(Hud *hud, int unused, Radar *radar);
 
-    int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
+    bool approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
 
     unsigned char autoTurretIsEnabled();
 

@@ -2647,16 +2647,16 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *station, Radar *radar) {
     }
 }
 
-int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
+bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
     KIPlayer *station = (KIPlayer *) (intptr_t) this->asteroidTarget;
     if (station->isDying())
-        return 0;
+        return false;
     switch (this->dockingPointIndex) {
         case 0: {
             SpacePoint *approach = ((KIPlayer *) (intptr_t) this->asteroidTarget)
                                        ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
             if (approach == nullptr)
-                return 0;
+                return false;
             if ((SpacePoint *) (intptr_t) this->spacePoint != approach) {
                 if (this->spacePoint != 0)
                     ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
@@ -2686,12 +2686,11 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                                                               ((SpacePoint *) (intptr_t) this->spacePoint)->position));
                 Vector dir = AbyssEngine::AEMath::VectorNormalize(AbyssEngine::AEMath::MatrixRotateVector(
                     ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(), port->direction));
-                Vector approachPos = AbyssEngine::AEMath::MatrixRotateVector(
-                    ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
-                    ((SpacePoint *) (intptr_t) this->spacePoint)->position);
-                Vector portPos = AbyssEngine::AEMath::MatrixRotateVector(
-                    ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(), port->position);
-                Vector up = AbyssEngine::AEMath::VectorNormalize(approachPos - portPos);
+                Vector up = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixRotateVector(((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
+                                                            ((SpacePoint *) (intptr_t) this->spacePoint)->position)
+                    - AbyssEngine::AEMath::MatrixRotateVector(
+                        ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(), port->position));
                 Vector right = AbyssEngine::AEMath::VectorNormalize(AbyssEngine::AEMath::VectorCross(up, dir));
                 Matrix target2;
                 AbyssEngine::AEMath::MatrixSetRotation(target2, right, up, dir);
@@ -2701,7 +2700,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 Vector position = this->player->getPosition();
                 Globals::sound->updateEvent3DAttributes(2270, &position, &velocity, false);
                 this->StopEngineSound();
-                return 0;
+                return false;
             }
             float speed = 4.0f;
             if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
@@ -2709,10 +2708,10 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             this->moveToPosition(this->moveTarget, true, speed);
             if (distance <= 19999)
                 this->aboutToReachAutoTargetFlag = 1;
-            return 0;
+            return false;
         }
         case 1:
-            return 1;
+            return true;
         case 2: {
             this->aboutToReachAutoTargetFlag = 1;
             if (this->turretActive)
@@ -2784,7 +2783,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 if (!this->field_0xb2)
                     this->switchToStandardCam = 1;
                 this->field_0xb2 = 0;
-                return 1;
+                return true;
             }
             this->easeMatrix->Increase((float) this->shakeIntensity);
             Matrix eased = this->easeMatrix->GetValue();
@@ -2795,7 +2794,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             this->geometry->setMatrix(eased);
             reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
             this->dockOffsetVec = this->geometry->getPosition();
-            return 0;
+            return false;
         }
         case 3: {
             SpacePoint *exit = ((KIPlayer *) (intptr_t) this->asteroidTarget)
@@ -2827,7 +2826,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                     this->hackingGame = 0;
                     hud->setHackingGameActive(false);
                 }
-                return 0;
+                return false;
             }
             this->easeMatrix->Increase((float) this->shakeIntensity);
             Matrix eased = this->easeMatrix->GetValue();
@@ -2838,10 +2837,10 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             this->geometry->setMatrix(eased);
             reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
             this->dockOffsetVec = this->geometry->getPosition();
-            return 0;
+            return false;
         }
         default:
-            return 0;
+            return false;
     }
 }
 
