@@ -469,167 +469,134 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
 
 
 void TouchButton::draw() {
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int savedColor = ((PaintCanvas *) (canvas))->GetColor();
-
-    if (this->visible == 0)
+    unsigned int savedColor = Globals::Canvas->GetColor();
+    if (!this->visible)
         return;
-
-    if (this->halfTransparent != 0) {
+    if (this->halfTransparent) {
         Globals::Canvas->SetColor(0xffffff2f);
-        Globals::layout->setDrawColor(-0xd1);
+        Globals::layout->setDrawColor(0xffffff2f);
     } else {
         Globals::Canvas->SetColor(0xffffffff);
     }
+    short savedSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
+    Globals::Canvas->FontSetSpacing(this->fontId, (short) this->fontSpacing);
 
-    short savedSpacing = (short) ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
-    ((PaintCanvas *) (canvas))->FontSetSpacing(this->fontId, (short) this->fontSpacing);
-
-    unsigned int kind = this->kind;
-    int icon = -1;
-    int iconY = 0;
-    bool tailIcon = false;
-
-    if (kind == 0x10) {
-        ((PaintCanvas *) (canvas))->DrawImage2D(this->imgFrameL, this->x, this->y);
-        if (this->touched != 0 || this->alwaysPressed != 0) {
-            icon = this->imgFrameTL;
-            iconY = this->x;
-            tailIcon = true;
-        }
-    } else if (kind == 4) {
-        ((PaintCanvas *) (canvas))->DrawImage2D(this->iconImage, this->x, this->y);
+    switch (this->kind) {
+    case 4:
+        Globals::Canvas->DrawImage2D(this->iconImage, this->x, this->y);
         if (this->iconSmall != -1) {
+            Globals::Canvas->SetColor(this->iconTexId);
+            Globals::Canvas->DrawImage2D(this->iconSmall, this->x + (this->width >> 1),
+                                         this->y + (this->height >> 1) - 1, 0x11, 0x44);
             Globals::Canvas->SetColor(0xffffffff);
-            ((PaintCanvas *) (canvas))->DrawImage2D(this->iconSmall, this->x + (this->width >> 1),
-                                                    (this->y + (this->height >> 1)) - 1, (unsigned char) 0x11,
-                                                    (unsigned char) 0x44);
-            Globals::Canvas->SetColor(0xffffffff);
-            if (this->touched != 0 || this->alwaysPressed != 0)
-                ((PaintCanvas *) (canvas))->DrawImage2D(this->iconOverlay, this->x, this->y);
+            if (this->touched || this->alwaysPressed)
+                Globals::Canvas->DrawImage2D(this->iconOverlay, this->x, this->y);
         }
-        Globals::Canvas->SetColor(0xffffffff);
-        ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
-                                               this->y + this->textOffsetY, false);
-    } else {
-        int base;
-        if (this->touched != 0)
-            base = this->imgFrameTL;
-        else if (this->alwaysPressed != 0)
-            base = this->imgFrameBL;
-        else
-            base = this->imgFrameL;
-
-        if (kind <= 0x14 && ((1u << (kind & 0xff)) & 0x001EF400) != 0) {
-            unsigned int frameLeft;
-            int frameMid;
-            if (this->touched != 0) {
-                frameLeft = (unsigned int) this->imgFrameT;
-                frameMid = this->imgFrameTR;
-            } else if (this->alwaysPressed != 0) {
-                frameLeft = (unsigned int) this->imgFrameB;
-                frameMid = this->imgFrameBR;
+        Globals::Canvas->SetColor(this->iconSmall == -1 ? 0x777777ff : 0xffffffff);
+        Globals::Canvas->DrawString(this->fontId, this->text, this->x + this->textOffsetX, this->y + this->textOffsetY,
+                                    false);
+        break;
+    case 16:
+        Globals::Canvas->DrawImage2D(this->imgFrameL, this->x, this->y);
+        if (this->touched || this->alwaysPressed)
+            Globals::Canvas->DrawImage2D(this->imgFrameTL, this->x, this->y);
+        break;
+    default: {
+        int leftCap = this->touched ? this->imgFrameTL : (this->alwaysPressed ? this->imgFrameBL : this->imgFrameL);
+        switch (this->kind) {
+        case 10:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+            break;
+        default: {
+            // Three-part stretchable frame.
+            int middle;
+            int rightCap;
+            if (this->touched) {
+                middle = this->imgFrameT;
+                rightCap = this->imgFrameTR;
             } else {
-                frameLeft = (unsigned int) this->imgFrameM;
-                frameMid = this->imgFrameR;
+                middle = this->alwaysPressed ? this->imgFrameB : this->imgFrameM;
+                rightCap = this->alwaysPressed ? this->imgFrameBR : this->imgFrameR;
             }
-            Globals::layout->drawBGPattern(frameLeft, this->leftWidth + this->x, this->y, this->midStretch,
-                                              this->height);
-            ((PaintCanvas *) (canvas))->DrawImage2D(frameMid, this->x + this->leftWidth + this->midStretch, this->y);
+            Globals::layout->drawBGPattern(middle, this->leftWidth + this->x, this->y, this->midStretch, this->height);
+            Globals::Canvas->DrawImage2D(rightCap, this->x + this->leftWidth + this->midStretch, this->y);
+            break;
         }
-        ((PaintCanvas *) (canvas))->DrawImage2D(base, this->x, this->y);
-
-        Layout *layoutC = Globals::layout;
-        layoutC->setDrawColor(-1);
-
-        float prog = this->pressProgress;
-        if (prog > 0.0f) {
-            Globals::Canvas->SetColor(0xffffffff);
-            layoutC->setDrawColor(-0x80);
-            int span = this->leftWidth;
-            int total = this->rightWidth + this->midStretch + span;
-            int filled = (int) (prog * (float) total);
-            int leftImg = (this->progressHighlight == 0) ? this->imgFrameL : this->imgFrameTL;
-            int drawW = (filled < span) ? filled : span;
-            ((PaintCanvas *) (canvas))->DrawRegion2D((unsigned int) leftImg, 0, 0, drawW, this->height, (float) filled,
-                                                     0, 0, 0, this->x);
-
-            int mid = this->leftWidth;
-            if (mid < filled) {
-                int midImg = (this->progressHighlight == 0) ? this->imgFrameM : this->imgFrameT;
-                int patW = this->midStretch;
-                if (filled - mid < patW) patW = filled - mid;
-                layoutC->drawBGPattern((unsigned int) midImg, mid + this->x, this->y, patW, this->height);
-                mid = this->leftWidth;
-            }
-            int rstart = this->midStretch + mid;
-            if (rstart < filled) {
-                int rImg = (this->progressHighlight == 0) ? this->imgFrameR : this->imgFrameTR;
-                int rW = (filled - mid) - this->midStretch;
-                if (this->rightWidth < rW) rW = this->rightWidth;
-                ((PaintCanvas *) (canvas))->DrawRegion2D((unsigned int) rImg, 0, 0, rW, this->height, (float) filled, 0,
-                                                         0, 0, rstart + this->x);
-            }
-            layoutC->setDrawColor(-1);
         }
-
-        unsigned int lblColor = (unsigned int) this->textColor;
-        if (this->halfTransparent != 0)
-            Globals::Canvas->SetColor((unsigned char) (lblColor >> 16), (unsigned char) (lblColor >> 8),
-                                      (unsigned char) lblColor, (unsigned char) (lblColor >> 24));
-        else
-            Globals::Canvas->SetColor(0xffffffff);
-
-        if (this->subId == -1) {
-            ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
-                                                   this->y + this->textOffsetY, false);
-
-            if (this->splitText.size() != 0) {
-                String *t = &this->text;
-                int px = this->x;
-                int w = this->width;
-                int tx, ty;
-                if (this->kind == 10) {
-                    int tw = ((PaintCanvas *) (canvas))->GetTextWidth(this->fontId, *t);
-                    int th = ((PaintCanvas *) (canvas))->GetTextHeight(this->fontId);
-                    ty = this->y + this->height + th * -2;
-                    tx = (px + w / 2) - tw / 2;
-                } else {
-                    int off = this->textOffsetX;
-                    int tw = ((PaintCanvas *) (canvas))->GetTextWidth(this->fontId, *t);
-                    ty = this->y + this->textOffsetY;
-                    tx = ((w + px) - off) - tw;
+        Globals::Canvas->DrawImage2D(leftCap, this->x, this->y);
+        Globals::layout->setDrawColor(0xffffffff);
+        if (this->pressProgress > 0.0f) {
+            Globals::Canvas->SetColor(0xffffff80);
+            Globals::layout->setDrawColor(0xffffff80);
+            int filled =
+                (int) (this->pressProgress * (float) (this->rightWidth + (this->midStretch + this->leftWidth)));
+            Globals::Canvas->DrawRegion2D(this->progressHighlight ? this->imgFrameTL : this->imgFrameL, 0, 0,
+                                          this->leftWidth > filled ? filled : this->leftWidth, this->height, 0.0f, 0,
+                                          0, this->x, this->y);
+            if (this->leftWidth < filled) {
+                int rest = filled - this->leftWidth;
+                Globals::layout->drawBGPattern(this->progressHighlight ? this->imgFrameT : this->imgFrameM,
+                                               this->leftWidth + this->x, this->y,
+                                               this->midStretch > rest ? rest : this->midStretch, this->height);
+                if (this->midStretch + this->leftWidth < filled) {
+                    int right = filled - this->leftWidth - this->midStretch;
+                    Globals::Canvas->DrawRegion2D(this->progressHighlight ? this->imgFrameTR : this->imgFrameR, 0, 0,
+                                                  this->rightWidth > right ? right : this->rightWidth, this->height,
+                                                  0.0f, 0, 0, this->midStretch + this->leftWidth + this->x, this->y);
                 }
-                ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->splitText, tx, ty, false);
             }
-
+            Globals::layout->setDrawColor(0xffffffff);
+        }
+        if (this->halfTransparent)
+            Globals::Canvas->SetColor((unsigned char) (this->textColor >> 24), (unsigned char) (this->textColor >> 16),
+                                      (unsigned char) (this->textColor >> 8), 47);
+        else
+            Globals::Canvas->SetColor(this->textColor);
+        if (this->subId != -1) {
+            if (this->kind != 19)
+                Globals::Canvas->DrawImage2D(this->subId, this->x + this->textOffsetX, this->y + this->textOffsetY);
+        } else {
+            Globals::Canvas->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
+                                        this->y + this->textOffsetY, false);
+            if (this->splitText.size() != 0) {
+                if (this->kind == 10)
+                    Globals::Canvas->DrawString(
+                        this->fontId, this->splitText,
+                        this->x + this->width / 2 - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
+                        this->height + this->y - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) * 2, false);
+                else
+                    Globals::Canvas->DrawString(this->fontId, this->splitText,
+                                                this->width + this->x - this->textOffsetX -
+                                                    Globals::Canvas->GetTextWidth(this->fontId, this->splitText),
+                                                this->y + this->textOffsetY, false);
+            }
             if (this->numberText.size() != 0) {
-                Globals::Canvas->SetColor(0xffffffff);
-                String *u = &this->numberText;
-                int tw = ((PaintCanvas *) (canvas))->GetTextWidth(this->fontId, *u);
-                ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->numberText, (this->leftWidth + this->x) - tw,
-                                                       this->y + this->textOffsetY, false);
-                Globals::Canvas->SetColor(0xffffffff);
+                Globals::Canvas->SetColor(0x777777ff);
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->numberText,
+                                            this->leftWidth + this->x -
+                                                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->numberText),
+                                            this->y + this->textOffsetY, false);
+                Globals::Canvas->SetColor(this->textColor);
             }
-
             if (this->adornImage != -1) {
                 Globals::Canvas->SetColor(0xffffffff);
-                ((PaintCanvas *) (canvas))->DrawImage2D(this->adornImage, (this->x + this->width + 6) - this->leftWidth,
-                                                        this->y + 1, (unsigned char) 0x11, (unsigned char) 0x14);
-                Globals::Canvas->SetColor(0xffffffff);
+                Globals::Canvas->DrawImage2D(this->adornImage, this->x + this->width + 6 - this->leftWidth, this->y + 1,
+                                             0x11, 0x14);
+                Globals::Canvas->SetColor(this->textColor);
             }
-        } else if (this->kind != 0x13) {
-            icon = base;
-            iconY = this->textOffsetX + this->x;
-            tailIcon = true;
         }
+        break;
     }
-
-    if (tailIcon)
-        ((PaintCanvas *) (canvas))->DrawImage2D(icon, this->x + this->textOffsetX + 0, iconY);
-
-    Globals::layout->setDrawColor(-1);
-    ((PaintCanvas *) (canvas))->FontSetSpacing(this->fontId, savedSpacing);
+    }
+    Globals::layout->setDrawColor(0xffffffff);
+    Globals::Canvas->FontSetSpacing(this->fontId, savedSpacing);
     Globals::Canvas->SetColor(savedColor);
 }
 
