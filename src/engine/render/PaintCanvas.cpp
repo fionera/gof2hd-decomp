@@ -338,30 +338,6 @@ namespace AbyssEngine {
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dr2_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_dr2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
-static inline float paintcanvas_ext_dr2_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_dr2_cosf(float v) { return cosf(v); }
-
-void paintcanvas_ext_dr2_setscaling(void *out, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dr2_mtx_mul(void *out, void *a, void *b); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dr2_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr2_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_dr2_gldisable(unsigned int cap) { glDisable(cap); }
-
-static inline void paintcanvas_ext_dr2_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
-
-static inline void paintcanvas_ext_dr2_glenable(unsigned int cap) { glEnable(cap); }
-
 static inline void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dm_settrans(void *out, float v); // lint: void_ptr (external symbol; mangling must match lib)
@@ -2851,70 +2827,43 @@ void PaintCanvas::CameraSetPerspective(unsigned int index, float fov, float aspe
     }
 }
 
-void PaintCanvas::DrawRegion2D(unsigned int index, float /*unused*/, int rotSteps,
-                               int pivotX, int pivotY, int transX, float scaleX, float scaleY) {
+void PaintCanvas::DrawRegion2D(unsigned int index, float angle, int pivotX, int pivotY, int posX, int posY,
+                               float scaleX, float scaleY) {
     if (index >= this->images.count) {
         return;
     }
-    PCImage2DView *img = (PCImage2DView *) ((char **) this->images.data_)[index];
+    PCImage2DView *img = (PCImage2DView *) this->images.data_[index];
     if (img->restoreFlag != 0) {
-        paintcanvas_ext_dr2_restore(img->restoreFlag, img);
-        img = (PCImage2DView *) ((char **) this->images.data_)[index];
+        this->RestoreImage2D((AbyssEngine::Image2D *) img);
+        img = (PCImage2DView *) this->images.data_[index];
     }
-    paintcanvas_ext_dr2_settexture(this, img->textureId);
+    this->SetTexture(img->textureId, (unsigned int) -1);
 
-    float rot = paintcanvas_ext_dr2_signedtofloat(rotSteps, 0);
-    float px = paintcanvas_ext_dr2_signedtofloat(pivotX, 0);
-    float py = paintcanvas_ext_dr2_signedtofloat(pivotY, 0);
-    float tx = paintcanvas_ext_dr2_signedtofloat(transX, 0);
-    float negpx = paintcanvas_ext_dr2_signedtofloat(-pivotX, 0);
-    float negpy = paintcanvas_ext_dr2_signedtofloat(-pivotY, 0);
+    // Scale, rotate by `angle` around the (scaled) pivot, then move the pivot to (posX, posY) + pivot.
+    AbyssEngine::AEMath::Matrix toPivot;
+    AbyssEngine::AEMath::Matrix fromPivot;
+    AbyssEngine::AEMath::Matrix rotation;
+    AbyssEngine::AEMath::Matrix world;
+    AbyssEngine::AEMath::Matrix scaling;
+    fromPivot.m[3] = (float) posX + (float) pivotX * scaleX;
+    fromPivot.m[7] = (float) posY + (float) pivotY * scaleY;
+    toPivot.m[3] = (float) -pivotX * scaleX;
+    toPivot.m[7] = (float) -pivotY * scaleY;
+    float s = AbyssEngine::AEMath::Sinf(angle);
+    float c = AbyssEngine::AEMath::Cosf(angle);
+    rotation.m[0] = c;
+    rotation.m[1] = -s;
+    rotation.m[4] = s;
+    rotation.m[5] = c;
+    rotation.m[10] = 1.0f;
+    AbyssEngine::AEMath::MatrixSetScaling(scaling, scaleX, scaleY, 1.0f);
+    world = rotation * toPivot;
+    world = fromPivot * world * scaling;
 
-    float transM[16];
-    memset(transM, 0, sizeof(transM));
-    transM[0] = 1.0f;
-    transM[5] = 1.0f;
-    transM[10] = 1.0f;
-    transM[15] = 1.0f;
-    transM[3] = py + rot * scaleX;
-    transM[7] = tx + px * scaleY;
-
-    float pivotM[16];
-    memset(pivotM, 0, sizeof(pivotM));
-    pivotM[0] = 1.0f;
-    pivotM[5] = 1.0f;
-    pivotM[10] = 1.0f;
-    pivotM[15] = 1.0f;
-    pivotM[3] = negpx * scaleX;
-    pivotM[7] = negpy * scaleY;
-
-    float s = paintcanvas_ext_dr2_sinf(negpx * scaleX);
-    float c = paintcanvas_ext_dr2_cosf(negpx * scaleX);
-    float rotM[16];
-    memset(rotM, 0, sizeof(rotM));
-    rotM[0] = c;
-    rotM[5] = c;
-    rotM[10] = 1.0f;
-    rotM[15] = 1.0f;
-    *(unsigned int *) &rotM[1] = *(unsigned int *) &s ^ 0x80000000;
-    rotM[4] = s;
-
-    float scaleBuf[16];
-    paintcanvas_ext_dr2_setscaling(scaleBuf, scaleX, scaleY, 1.0f);
-
-    float composed[16];
-    paintcanvas_ext_dr2_mtx_mul(scaleBuf, rotM, transM);
-    paintcanvas_ext_dr2_mtx_assign(composed, scaleBuf);
-    float scratch[16];
-    paintcanvas_ext_dr2_mtx_mul(scratch, pivotM, composed);
-    paintcanvas_ext_dr2_mtx_mul(scaleBuf, scratch, pivotM);
-    paintcanvas_ext_dr2_mtx_assign(composed, scaleBuf);
-
-    paintcanvas_ext_dr2_setwvm(this, composed);
-    paintcanvas_ext_dr2_gldisable(0xb44);
-    paintcanvas_ext_dr2_meshdraw(this->engine,
-                                 ((PCImage2DView *) ((char **) this->images.data_)[index])->mesh);
-    paintcanvas_ext_dr2_glenable(0xb44);
+    this->SetWorldViewMatrix(world);
+    glDisable(0xb44);
+    AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) ((PCImage2DView *) this->images.data_[index])->mesh);
+    glEnable(0xb44);
 }
 
 void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
