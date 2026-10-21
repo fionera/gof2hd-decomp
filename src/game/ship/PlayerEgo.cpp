@@ -2286,8 +2286,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     // control mode 1; evaluated without short-circuit, the binary ORs both flags) or in mode 3.
     if (!Globals::mouseCursorActivated || mouseLocked || !(!this->autoPilot | (controlMode == 1))
         || controlMode == 3) {
-        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
-                                           crosshairPos);
+        Vector aimTarget = aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection);
+        Globals::Canvas->GetScreenPosition(aimTarget, crosshairPos);
         crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
                                              : crosshairPos * 0.2f + this->lastCrosshairPos * 0.8f;
         } else {
@@ -2327,8 +2327,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             this->down(dt, (float) deltaY / rangeY);
         else if (deltaY <= -1)
             this->up(dt, -(float) deltaY / rangeY);
-        Globals::Canvas->GetScreenPosition(aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection),
-                                           crosshairShootPos);
+        Vector aimTarget = aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection);
+        Globals::Canvas->GetScreenPosition(aimTarget, crosshairShootPos);
         crosshairShootPos = crosshairShootPos.z > 0.0f ? crosshairShootPos
                                                        : crosshairShootPos * 0.2f + this->lastCrosshairShootPos * 0.8f;
         this->lastCrosshairShootPos = crosshairShootPos;
