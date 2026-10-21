@@ -16,36 +16,18 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/PlayerFighter.h"
 #include "game/ship/Ship.h"
+#include "engine/file/FileRead.h"
 
 using AbyssEngine::AERandom;
 using AbyssEngine::AnimationMode;
 
-static float CutScene_proc_tx0, CutScene_proc_tz0;
-static float CutScene_proc_rx0, CutScene_proc_rz0, CutScene_proc_rz1;
-static float CutScene_fogColorMode17, CutScene_fogDensityMode17;
-static float CutScene_fogColorMode4, CutScene_fogDensityMode4;
-static float CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar;
-static float CutScene_fogDensity_mode17;
-static float CutScene_fogDensity_mode4;
-static float CutScene_fogColor;
-static float CutScene_persp_fov_mode17;
-static float CutScene_persp_fov_mode4;
-static float CutScene_turret_tx, CutScene_turret_ty, CutScene_turret_tz;
-static float CutScene_turret_rx, CutScene_turret_ry, CutScene_turret_rz;
-static float CutScene_turret_rx2, CutScene_turret_ry2, CutScene_turret_rz2;
-static int CutScene_shipBankTable[256];
-
-float VectorSignedToFloat(int v, int mode);
-
-void MatrixSetRotation(void *m, float x, float y, float z); // lint: void_ptr (external symbol; param mangling must match lib)
-
-// lint: void_ptr (external symbol; param mangling must match lib)
-
-void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (external symbol; param mangling must match lib)
-
-// lint: void_ptr (external symbol; param mangling must match lib)
-
-int Station_getIndex(void *station); // lint: void_ptr (external symbol; param mangling must match lib)
+// Per-ship vertical offset of the hangar cutscene ship (original .rodata @ 0x1fb934).
+static const int CUTSCENE_SHIP_HEIGHT[64] = {
+    160, 150, 220, 310, 160, 180, 140, 170, 170, 110, 250, 205, 240, 250, 250, 250,
+    170, 170, 190, 460, 170, 210, 140, 170, 160, 190, 170, 240, 220, 280, 200, 200,
+    140, 160, 180, 150, 310, 390, 480, 200, 300, 300, 170, 200, 170, 370, 370, 300,
+    440, 340, 170, 470, 170, 170, 170, 170, 200, 170, 250, 150, 170, 250, 270, 170,
+};
 
 CutScene::CutScene(int mode) {
     this->shipPosY = 0;
@@ -54,19 +36,19 @@ CutScene::CutScene(int mode) {
     this->level = nullptr;
     this->turretGeom = nullptr;
     this->followCamera = nullptr;
-    this->cameraId6c = (uint32_t) - 1;
-    this->cameraId70 = (uint32_t) - 1;
+    this->cameraId6c = (uint32_t) -1;
+    this->cameraId70 = (uint32_t) -1;
     this->initialized = 0;
     this->geometries = nullptr;
-    this->vec8 = Vector{0.0f, 0.0f, 0.0f};
+    this->vec8.x = 0.0f;
+    this->vec8.y = 0.0f;
+    this->vec8.z = 0.0f;
     this->vec8w = 0.0f;
     this->geom28 = nullptr;
     this->geom2c = nullptr;
     this->geom30 = nullptr;
     this->geom34 = nullptr;
-
-    uint32_t bits = 0x3851b717u;
-    __builtin_memcpy(&this->rotationSpeed, &bits, sizeof bits);
+    this->rotationSpeed = 0.00005f;
 }
 
 CutScene::~CutScene() {
@@ -102,12 +84,14 @@ uint8_t CutScene::isInitialized() {
 }
 
 void CutScene::update() {
-    if (this->level != nullptr)
-        this->level->update((long long) (int) this->frameDelta, 0u);
+    // The original forwards an uninitialised delta here (process() ignores it): the
+    // tail call leaves r1 untouched.
+    int delta;
+    this->process(delta);
 }
 
-void CutScene::update(int /*delta*/) {
-    this->update();
+void CutScene::update(int delta) {
+    this->process(delta);
 }
 
 void CutScene::render3D() {
@@ -133,237 +117,150 @@ void CutScene::render2D() {
 }
 
 void CutScene::process(int /*delta*/) {
-    if (this->initialized == 0)
+    if (!this->initialized)
         return;
 
-    unsigned int now = (unsigned int) Globals::appManager->GetCurrentTimeMillis();
-    unsigned int prev = this->prevTimeLo;
-    unsigned int dt = now - prev;
-
-    unsigned int lo = this->accumLo;
-    this->accumLo = lo + dt;
-    this->accumHi = this->accumHi + ((int) dt >> 31) + (lo + dt < lo ? 1u : 0u);
-    this->frameDelta = dt;
-    this->renderAtTimeLo = now & 0xffff;
-    this->renderAtTimeHi = 0;
-    this->prevTimeLo = now & 0xffff;
-    this->prevTimeHi = 0;
+    this->currentTime = Globals::appManager->GetCurrentTimeMillis();
+    this->frameDelta = (int) (this->currentTime - this->lastTime);
+    this->totalTime += this->frameDelta;
+    this->lastTime = this->currentTime;
 
     if (this->followCamera != nullptr)
-        this->followCamera->update((int) this->frameDelta);
-
-    PaintCanvas *canvas = Globals::Canvas;
+        this->followCamera->update(30);
 
     if (this->mode == 2) {
-        float ft = VectorSignedToFloat((int) this->frameDelta, 0);
-        this->cameraRotX = this->cameraRotX + this->rotationSpeed * ft;
-        char tmp[0x3c];
-        memcpy(tmp, canvas->CameraGetLocal(0), 0x3c);
-        char mtx[0x3c];
-        MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
-        canvas->CameraSetLocal(0, *(const Matrix *) (uintptr_t) this->cameraId74);
+        this->cameraRotX += this->rotationSpeed * (float) this->frameDelta;
+        Matrix camera = *(Matrix *) Globals::Canvas->CameraGetLocal(this->cameraId74);
+        AbyssEngine::AEMath::MatrixSetRotation(camera, 0.0f, this->cameraRotX, 0.0f);
+        Globals::Canvas->CameraSetLocal(this->cameraId74, camera);
 
-        long long pt = Globals::status->getPlayingTime();
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
-            unsigned int n = enemies->size();
-            KIPlayer *e0 = (*enemies)[n - 2];
-
-            if (e0 != nullptr && e0->geometry != nullptr) {
-                AEGeometry *g0 = e0->geometry;
-                float f = VectorSignedToFloat(this->frameDelta, 0);
-                g0->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
-                float f1 = VectorSignedToFloat(this->frameDelta, 0);
-                float f2 = VectorSignedToFloat(-(int) this->frameDelta, 0);
-                g0->rotate(f1 * CutScene_proc_rx0, 0.0f, f2 * CutScene_proc_rz0);
-            }
-            KIPlayer *e1 = (*enemies)[n - 1];
-            if (e1 != nullptr && e1->geometry != nullptr) {
-                AEGeometry *g1 = e1->geometry;
-                float f = VectorSignedToFloat(this->frameDelta, 0);
-                g1->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
-                float f1 = VectorSignedToFloat(this->frameDelta, 0);
-                float f2 = VectorSignedToFloat(-(int) this->frameDelta, 0);
-                g1->rotate(f1 * CutScene_proc_rx0, 0.0f, f2 * CutScene_proc_rz1);
+        if (Globals::status->getPlayingTime() > 0) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr && enemies->size() >= 2) {
+                KIPlayer *first = (*enemies)[enemies->size() - 2];
+                if (first != nullptr && first->geometry != nullptr) {
+                    first->geometry->translate((float) this->frameDelta * 0.1f, 0.0f,
+                                               (float) this->frameDelta * 0.001f);
+                    (*enemies)[enemies->size() - 2]->geometry->rotate((float) -this->frameDelta * 0.0002f,
+                                                                      (float) this->frameDelta * 0.0002f,
+                                                                      (float) -this->frameDelta * 0.00018f);
+                }
+                KIPlayer *second = (*enemies)[enemies->size() - 1];
+                if (second != nullptr && second->geometry != nullptr) {
+                    second->geometry->translate((float) this->frameDelta * 0.1f, 0.0f, 0.0f);
+                    (*enemies)[enemies->size() - 1]->geometry->rotate((float) this->frameDelta * 0.0002f,
+                                                                      (float) -this->frameDelta * 0.0005f,
+                                                                      (float) -this->frameDelta * 0.0003f);
+                }
             }
         }
-    } else if (this->mode == 0x17) {
-        unsigned int kind;
-        Station *st = Globals::status->getStation();
-        if (Station_getIndex(st) == 0x65) {
+    } else if (this->mode == 23) {
+        int kind;
+        if (Globals::status->getStation()->getIndex() == 101)
             kind = 10;
-        } else {
-            st = Globals::status->getStation();
-            if (Station_getIndex(st) == 100) {
-                kind = 7;
-            } else {
-                kind = (unsigned int) ((SolarSystem *) (long) Globals::status->getSystem())->getRace() | 2;
-            }
-        }
-        this->fogTimer84 = this->frameDelta + this->fogTimer84;
-        if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 1) {
-            canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode17, 1.0f,
-                                    CutScene_fogDensityMode17);
+        else if (Globals::status->getStation()->getIndex() == 100)
+            kind = 7;
+        else
+            kind = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() | 2;
+
+        this->fogTimer84 += this->frameDelta;
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1) {
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 30000.0f, 1.0f, 0x11e0cff);
         } else if (kind == 2 && this->geometries != nullptr) {
-            unsigned int n = this->geometries->size();
-            for (unsigned int i = 0; i < n; i++) {
-                AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                n = this->geometries->size();
-            }
+            for (unsigned int i = 0; i < this->geometries->size(); ++i)
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))->Update(this->frameDelta, false);
+
             if (this->fogTimer84 > 3000) {
                 this->fogTimer84 = 0;
-                AERandom *rng = Globals::rnd;
-                for (unsigned int i = 0; i < n; i++) {
-                    if (rng->nextInt() < 0x14) {
-                        AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                        if (t->IsRunning() == 0) {
-                            AEGeometry *c0 = (*this->geometries)[i];
-                            AbyssEngine::Transform *tr;
-                            tr = (AbyssEngine::Transform *) ((PaintCanvas *) (uintptr_t) c0->transform)->
-                                    TransformGetTransform(0);
-                            tr->SetAnimationState((AnimationMode) 3, nullptr);
-                            tr = (AbyssEngine::Transform *) ((PaintCanvas *) (uintptr_t) c0->transform)->
-                                    TransformGetTransform(0);
-                            tr->SetAnimationState((AnimationMode) 1, nullptr);
-                            tr = (AbyssEngine::Transform *) ((PaintCanvas *) (uintptr_t) c0->childTransform)->
-                                    TransformGetTransform(0);
-                            tr->SetAnimationState((AnimationMode) 3, nullptr);
-                            tr = (AbyssEngine::Transform *) ((PaintCanvas *) (uintptr_t) c0->childTransform)->
-                                    TransformGetTransform(0);
-                            tr->SetAnimationState((AnimationMode) 1, nullptr);
-                        }
+                for (unsigned int i = 0; i < this->geometries->size(); ++i) {
+                    if (Globals::rnd->nextInt(100) < 20 &&
+                        !((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))->IsRunning()) {
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->childTransform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->geometries)[i]->childTransform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
                     }
-                    n = this->geometries->size();
                 }
             }
         }
 
-        char tmp[0x3c];
-        memcpy(tmp, canvas->TransformGetLocal(0), 0x3c);
-        char mtx[0x3c];
-        MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
+        Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(
+                (*this->level->getEnemies())[0]->geometry->transform);
+        AbyssEngine::AEMath::MatrixSetRotation(local, 0.0f, this->cameraRotX, 0.0f);
+        Globals::Canvas->TransformSetLocal((*this->level->getEnemies())[0]->geometry->transform, local);
 
-        AEGeometry *leadGeom = (*enemies)[0]->geometry;
-        canvas->TransformSetLocal(0, *(const Matrix *) (uintptr_t) leadGeom->transform);
-        Array<KIPlayer *> *arr = this->level->getEnemies();
-        for (unsigned int i = 0; i < arr->size(); i++) {
-            Array<KIPlayer *> *en = this->level->getEnemies();
-            if ((*en)[i] != nullptr) {
-                AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-            }
-            arr = this->level->getEnemies();
+        for (unsigned int i = 0; i < this->level->getEnemies()->size(); ++i) {
+            if ((*this->level->getEnemies())[i] != nullptr)
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->level->getEnemies())[i]->geometry->transform))->Update(this->frameDelta, false);
         }
     } else if (this->mode == 4) {
-        Array<KIPlayer *> *arr = this->level->getEnemies();
-        for (unsigned int i = 0; i < arr->size(); i++) {
-            Array<KIPlayer *> *en = this->level->getEnemies();
-            if ((*en)[i] != nullptr) {
-                AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-            }
-            arr = this->level->getEnemies();
+        for (unsigned int i = 0; i < this->level->getEnemies()->size(); ++i) {
+            if ((*this->level->getEnemies())[i] != nullptr)
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->level->getEnemies())[i]->geometry->transform))->Update(this->frameDelta, false);
         }
 
-        int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        if (race == 0) {
-            AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-            t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-        } else {
-            int race1 = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-            if (race1 == 1) {
-                canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode4, 1.0f,
-                                        CutScene_fogDensityMode4);
-                canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
-                this->level->getEnemies();
-                this->level->getEnemies();
-                AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                if (this->geom30 != nullptr) {
-                    AbyssEngine::Transform *t2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                    t2->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                    int acc = this->frameDelta + this->animTimer7c;
-                    this->animTimer7c = acc;
-                    if (acc > 20000) {
-                        this->animTimer7c = 0;
-                        if (Globals::rnd->nextInt() < 100) {
-                            AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                            a->SetAnimationState((AnimationMode) 3, nullptr);
-                            a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                            a->SetAnimationState((AnimationMode) 1, nullptr);
-                        }
-                    }
-                }
-                if (this->geom34 != nullptr) {
-                    AbyssEngine::Transform *t2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                    t2->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                    int acc = this->frameDelta + this->animTimer80;
-                    this->animTimer80 = acc;
-                    if (acc > 22000) {
-                        this->animTimer80 = 0;
-                        if (Globals::rnd->nextInt() < 100) {
-                            AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                            a->SetAnimationState((AnimationMode) 3, nullptr);
-                            canvas->TransformGetTransform(0);
-                            if (this->level != nullptr) this->level->getEnemies();
-                            return;
-                        }
-                    }
-                }
-                if (this->level != nullptr) this->level->getEnemies();
-                return;
-            }
-            int race3 = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-            if (race3 == 3) {
-                this->level->getEnemies();
-                this->level->getEnemies();
-                AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                if (this->geom28 != nullptr) {
-                    AbyssEngine::Transform *t2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                    t2->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                }
-                AbyssEngine::Transform *t3 = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                t3->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-                int acc7c = this->animTimer7c + this->frameDelta;
-                int acc80 = this->frameDelta + this->animTimer80;
-                this->animTimer7c = acc7c;
-                this->animTimer80 = acc80;
-                if (acc7c > 1000 && this->geom28 != nullptr) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 0) {
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom30->transform))->Update(this->frameDelta, false);
+        } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1) {
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 5000.0f, 1.0f, 0x11e0cff);
+            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+                    (*this->level->getEnemies())[this->level->getEnemies()->size() - 3]->geometry->transform))
+                    ->Update(this->frameDelta, false);
+
+            if (this->geom30 != nullptr) {
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom30->transform))->Update(this->frameDelta, false);
+                this->animTimer7c += this->frameDelta;
+                if (this->animTimer7c > 20000) {
                     this->animTimer7c = 0;
-                    if (Globals::rnd->nextInt() < 0x28) {
-                        AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                        a->SetAnimationState((AnimationMode) 3, nullptr);
-                        a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                        a->SetAnimationState((AnimationMode) 1, nullptr);
-                    }
-                    acc80 = this->animTimer80;
-                }
-                if (acc80 > 2000) {
-                    this->animTimer80 = 0;
-                    if (Globals::rnd->nextInt() < 0x1e) {
-                        AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-                        a->SetAnimationState((AnimationMode) 3, nullptr);
-                        canvas->TransformGetTransform(0);
-                        if (this->level != nullptr) this->level->getEnemies();
-                        return;
+                    if (Globals::rnd->nextInt(100) < 100) {
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom30->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom30->transform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
                     }
                 }
-                if (this->level != nullptr) this->level->getEnemies();
-                return;
             }
-            if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() != 2)
-                return;
-            if (this->level != nullptr) this->level->getEnemies();
-            if (this->level != nullptr) this->level->getEnemies();
-            AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-            t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
-            if (this->level != nullptr) this->level->getEnemies();
-            if (this->level != nullptr) this->level->getEnemies();
-            AbyssEngine::Transform *t2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-            t2->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
+            if (this->geom34 != nullptr) {
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom34->transform))->Update(this->frameDelta, false);
+                this->animTimer80 += this->frameDelta;
+                if (this->animTimer80 > 22000) {
+                    this->animTimer80 = 0;
+                    if (Globals::rnd->nextInt(100) < 100) {
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom34->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom34->transform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
+                    }
+                }
+            }
+        } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 3) {
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+                    (*this->level->getEnemies())[this->level->getEnemies()->size() - 3]->geometry->transform))
+                    ->Update(this->frameDelta, false);
+            if (this->geom28 != nullptr)
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom28->transform))->Update(this->frameDelta, false);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom2c->transform))->Update(this->frameDelta, false);
+
+            this->animTimer7c += this->frameDelta;
+            this->animTimer80 += this->frameDelta;
+            if (this->animTimer7c > 1000 && this->geom28 != nullptr) {
+                this->animTimer7c = 0;
+                if (Globals::rnd->nextInt(100) < 40) {
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom28->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom28->transform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
+                }
+            }
+            if (this->animTimer80 > 2000) {
+                this->animTimer80 = 0;
+                if (Globals::rnd->nextInt(100) < 30) {
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom2c->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom2c->transform))->SetAnimationState(AbyssEngine::AnimationMode(1), nullptr);
+                }
+            }
+        } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+                    (*this->level->getEnemies())[this->level->getEnemies()->size() - 2]->geometry->transform))
+                    ->Update(this->frameDelta, false);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+                    (*this->level->getEnemies())[this->level->getEnemies()->size() - 1]->geometry->transform))
+                    ->Update(this->frameDelta, false);
         }
     }
 }
@@ -372,43 +269,22 @@ void CutScene::renderBG() {
     this->level->renderBG((int) this->frameDelta);
 }
 
-void CutScene::replacePlayerShip(int a, int b) {
+void CutScene::replacePlayerShip(int shipIndex, int race) {
     if (this->level->getEnemies() == nullptr)
         return;
 
-    Array<KIPlayer *> *enemies = this->level->getEnemies();
-
-    AEGeometry *oldGeom = (*enemies)[0]->geometry;
+    AEGeometry *oldGeom = (*this->level->getEnemies())[0]->geometry;
     if (oldGeom != nullptr) {
-        if (this->turretGeom != nullptr) {
-            PaintCanvas *canvas = Globals::Canvas;
-            Array<KIPlayer *> *en2 = this->level->getEnemies();
-            AEGeometry *lead = (*en2)[0]->geometry;
-            canvas->TransformRemoveChild(lead->childTransform, this->turretGeom->childTransform);
-        }
+        if (this->turretGeom != nullptr)
+            Globals::Canvas->TransformRemoveChild((*this->level->getEnemies())[0]->geometry->transform,
+                                                  this->turretGeom->transform);
 
-        char matrix[0x3c];
-        memcpy(matrix, &oldGeom->getMatrix(), 0x3c);
-
-        AEGeometry *grp = Globals::globals->getShipGroup(a, b, false);
-
-        Array<KIPlayer *> *en3 = this->level->getEnemies();
-        (*en3)[0]->geometry = grp;
-
-        Array<KIPlayer *> *en4 = this->level->getEnemies();
-
-        (*en4)[0]->geometry->setMatrix(*(const Matrix *) matrix);
-
-        Array<KIPlayer *> *en5 = this->level->getEnemies();
-        KIPlayer *ship = (*en5)[0];
-        float bank = (float) CutScene_shipBankTable[a];
-
-        ship->setPosition(0.0f, bank, 0.0f);
-
-        Array<KIPlayer *> *en6 = this->level->getEnemies();
-        ((PlayerFighter *) ((*en6)[0]))->setExhaustVisible(false);
-
-        (*(LODManager **) this)->removeObject(oldGeom);
+        Matrix matrix = oldGeom->getMatrix();
+        (*this->level->getEnemies())[0]->geometry = Globals::globals->getShipGroup(shipIndex, race, false);
+        (*this->level->getEnemies())[0]->geometry->setMatrix(matrix);
+        (*this->level->getEnemies())[0]->setPosition(0.0f, (float) CUTSCENE_SHIP_HEIGHT[shipIndex], 0.0f);
+        ((PlayerFighter *) (*this->level->getEnemies())[0])->setExhaustVisible(false);
+        this->level->lodManager->removeObject(oldGeom);
         delete oldGeom;
     }
 
@@ -418,286 +294,246 @@ void CutScene::replacePlayerShip(int a, int b) {
 void CutScene::initialize() {
     if (this->level == nullptr)
         this->level = new Level(this->mode);
-    while (this->level->init() == 0) {
+    while (!this->level->init()) {
     }
 
-    this->player = (PlayerEgo *) (intptr_t) this->level->getPlayer();
+    this->player = this->level->getPlayer();
     if (this->player != nullptr)
         this->player->setActive(false);
 
     this->level->initParticleSystems();
 
-    PaintCanvas *canvas = Globals::Canvas;
-
-    if (this->mode == 2) {
-        canvas->CameraCreate(this->cameraId74);
-        canvas->CameraSetPerspective(
-            this->cameraId74, 0.9200000167f, 200.0f, 200000.0f);
-        canvas->CameraSetCurrent(this->cameraId74);
-        char tmp[0x3c];
-        memcpy(tmp, canvas->CameraGetLocal(this->cameraId74), 0x3c);
-
-        AERandom *rng = Globals::rnd;
-        int rx = rng->nextInt(20000);
-        int ry = rng->nextInt(60000);
-        AbyssEngine::AEMath::MatrixSetTranslation(
-            *(Matrix *) tmp, (float) (rx - 20000), (float) (ry + 40000), 0.0f);
-        this->cameraRotX = -0.7853981853f;
-        AbyssEngine::AEMath::MatrixSetRotation(
-            *(Matrix *) tmp, 0.0f, -0.7853981853f, 0.0f);
-        canvas->CameraSetLocal(this->cameraId74, *(const Matrix *) tmp);
-
-        long long pt = Globals::status->getPlayingTime();
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
-            unsigned int n = enemies->size();
-            KIPlayer *e0 = (*enemies)[n - 2];
-            if (e0 != nullptr && (*enemies)[n - 1] != nullptr) {
-                float v[3];
-                v[0] = (float) (rx - 24000);
-                v[1] = -30.0f;
-                v[2] = (float) (ry + 0x9a4c);
-
-                e0->setPosition(v[0], v[1], v[2]);
-                v[0] = (float) (rx - 0x5b68);
-                v[1] = 50.0f;
-                v[2] = (float) (ry + 0x96c8);
-                ((KIPlayer *) (*enemies)[n - 1])->setPosition(v[0], v[1], v[2]);
-            }
-        }
-    } else if (this->mode == 0x17) {
-        this->turretGeom = nullptr;
-        canvas->CameraCreate(this->cameraId70);
-        canvas->CameraSetPerspective(
-            this->cameraId70, 0.8000000119f, 200.0f, 100000.0f);
-        canvas->CameraSetCurrent(this->cameraId70);
-        char tmp[0x3c];
-        memcpy(tmp, canvas->CameraGetLocal(this->cameraId70), 0x3c);
-        AbyssEngine::AEMath::MatrixSetRotation(
-            *(Matrix *) tmp, 0.0f, 0.3926990926f, 0.0f);
-        AbyssEngine::AEMath::MatrixSetTranslation(
-            *(Matrix *) tmp, 300.0f, 700.0f, 3000.0f);
-        canvas->CameraSetLocal(this->cameraId70, *(const Matrix *) tmp);
-        canvas->TransformCreate(this->transformId78);
-        Vector position = (*this->level->getEnemies())[0]->geometry->getPosition();
-        AbyssEngine::AEMath::MatrixSetTranslation(
-            *(Matrix *) canvas->TransformGetLocal(this->transformId78),
-            position.x, position.y, position.z);
-        canvas->TransformAddChild(this->transformId78, this->cameraId70);
-        this->resetCamera();
-        this->checkForTurret();
-    } else if (this->mode == 4) {
-        canvas->CameraCreate(this->cameraId6c);
-        canvas->CameraSetPerspective(
-            this->cameraId6c, 1.2000000477f, 200.0f, 48000.0f);
+    if (this->mode == 4) {
+        Globals::Canvas->CameraCreate(this->cameraId6c);
+        Globals::Canvas->CameraSetPerspective(this->cameraId6c, 1.2f, 200.0f, 48000.0f);
         if (this->followCamera != nullptr) {
             delete this->followCamera;
             this->followCamera = nullptr;
         }
-        canvas->CameraSetCurrent(this->cameraId6c);
+        Globals::Canvas->CameraSetCurrent(this->cameraId6c);
         this->resetCamera();
-        int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        if (race == 3) {
-            this->geom2c = new AEGeometry((uint16_t) 0x36d6, canvas, false);
-            AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
-            t->SetAnimationState((AnimationMode) 0, nullptr);
-        } else {
-            if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 0) {
-                this->geom30 = new AEGeometry((uint16_t) 0x37c8, canvas, false);
-                this->geom34 = new AEGeometry((uint16_t) 0x37c7, canvas, false);
-                this->geom30->addChild(this->geom34->childTransform);
-                delete this->geom34;
-                this->geom34 = nullptr;
-            } else {
-                ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 3) {
+            this->geom2c = new AEGeometry((uint16_t) 14038, Globals::Canvas, false);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom2c->transform))->SetAnimationState(AbyssEngine::AnimationMode(0), nullptr);
+        } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 0) {
+            this->geom30 = new AEGeometry((uint16_t) 14280, Globals::Canvas, false);
+            this->geom34 = new AEGeometry((uint16_t) 14279, Globals::Canvas, false);
+            this->geom30->addChild(this->geom34->transform);
+            delete this->geom34;
+            this->geom34 = nullptr;
+        } else if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
+        }
+    } else if (this->mode == 2) {
+        Globals::Canvas->CameraCreate(this->cameraId74);
+        Globals::Canvas->CameraSetPerspective(this->cameraId74, 0.92f, 200.0f, 200000.0f);
+        Globals::Canvas->CameraSetCurrent(this->cameraId74);
+        Matrix camera = *(Matrix *) Globals::Canvas->CameraGetLocal(this->cameraId74);
+        int offsetX = Globals::rnd->nextInt(20000);
+        int cameraX = offsetX - 20000;
+        int offsetZ = Globals::rnd->nextInt(60000);
+        AbyssEngine::AEMath::MatrixSetTranslation(camera, (float) cameraX, 0.0f, (float) (offsetZ + 40000));
+        this->cameraRotX = -0.7853982f;
+        AbyssEngine::AEMath::MatrixSetRotation(camera, 0.0f, -0.7853982f, 0.0f);
+        Globals::Canvas->CameraSetLocal(this->cameraId74, camera);
+
+        if (Globals::status->getPlayingTime() > 0) {
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr && enemies->size() >= 2 && (*enemies)[enemies->size() - 2] != nullptr &&
+                (*enemies)[enemies->size() - 1] != nullptr) {
+                Vector position;
+                position.x = (float) (offsetX - 24000);
+                position.y = -30.0f;
+                position.z = (float) (offsetZ + 39500);
+                (*enemies)[enemies->size() - 2]->setPosition(position);
+                position.x = (float) (offsetX - 23400);
+                position.y = 50.0f;
+                position.z = (float) (offsetZ + 38600);
+                (*enemies)[enemies->size() - 1]->setPosition(position);
             }
         }
+    } else if (this->mode == 23) {
+        this->turretGeom = nullptr;
+        Globals::Canvas->CameraCreate(this->cameraId70);
+        Globals::Canvas->CameraSetPerspective(this->cameraId70, 0.8f, 200.0f, 100000.0f);
+        Globals::Canvas->CameraSetCurrent(this->cameraId70);
+        Matrix camera = *(Matrix *) Globals::Canvas->CameraGetLocal(this->cameraId70);
+        AbyssEngine::AEMath::MatrixSetRotation(camera, 0.0f, 0.39269908f, 0.0f);
+        AbyssEngine::AEMath::MatrixSetTranslation(camera, 300.0f, 700.0f, 3000.0f);
+        Globals::Canvas->CameraSetLocal(this->cameraId70, camera);
+        Globals::Canvas->TransformCreate(this->transformId78);
+        Vector position = (*this->level->getEnemies())[0]->geometry->getPosition();
+        AbyssEngine::AEMath::MatrixSetTranslation(*(Matrix *) Globals::Canvas->TransformGetLocal(this->transformId78),
+                                                  position.x, position.y, position.z);
+        Globals::Canvas->TransformAddChild(this->transformId78, this->cameraId70);
+        this->resetCamera();
+        this->checkForTurret();
     }
 
-    this->rootGeom = new AEGeometry(canvas);
+    this->rootGeom = new AEGeometry(Globals::Canvas);
     this->rootGeom->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-
-    this->accumLo = 0;
-    this->accumHi = 0;
+    this->totalTime = 0;
     this->animTimer7c = 0;
     this->animTimer80 = 0;
     this->fogTimer84 = 0;
-
-    unsigned int now = (unsigned int) Globals::appManager->GetCurrentTimeMillis();
+    this->currentTime = Globals::appManager->GetCurrentTimeMillis();
     this->initialized = 1;
-    this->renderAtTimeLo = now & 0xffff;
-    this->renderAtTimeHi = 0;
-    this->prevTimeLo = now & 0xffff;
-    this->prevTimeHi = 0;
+    this->lastTime = this->currentTime;
 }
 
 void CutScene::resetCamera() {
-    PaintCanvas *canvas = Globals::Canvas;
-
-    if (this->mode == 0x17) {
-        if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 1) {
-            canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode17);
-            canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
+    if (this->mode == 4) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1) {
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 5000.0f, 1.0f, 0x11e0cff);
+            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
         }
-        canvas->CameraSetCurrent(this->cameraId70);
-        canvas->CameraSetPerspective(0, CutScene_persp_fov_mode17, CutScene_persp_znear, CutScene_persp_zfar);
-
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        KIPlayer *lead = (*enemies)[0];
-        (void) lead;
-        return;
+        Globals::Canvas->CameraSetCurrent(this->cameraId6c);
+        Globals::Canvas->CameraSetPerspective(this->cameraId6c, 1.2f, 200.0f, 48000.0f);
+    } else if (this->mode == 23) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1) {
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 30000.0f, 1.0f, 0x11e0cff);
+            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
+        }
+        Globals::Canvas->CameraSetCurrent(this->cameraId70);
+        Globals::Canvas->CameraSetPerspective(this->cameraId70, 0.8f, 200.0f, 100000.0f);
+        (*this->level->getEnemies())[0]->getType();
     }
-
-    if (this->mode != 4)
-        return;
-
-    if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 1) {
-        canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode4);
-        canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
-    }
-    canvas->CameraSetCurrent(this->cameraId6c);
-    canvas->CameraSetPerspective(0, CutScene_persp_fov_mode4, CutScene_persp_znear, CutScene_persp_zfar);
 }
 
-class FileRead {
-public:
-    FileRead();
-
-    ~FileRead();
-
-    Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);
-};
-
 void CutScene::checkForTurret() {
-    PaintCanvas *canvas = Globals::Canvas;
+    if (this->turretGeom != nullptr)
+        Globals::Canvas->TransformRemoveChild((*this->level->getEnemies())[0]->geometry->transform,
+                                              this->turretGeom->transform);
 
-    if (this->turretGeom != nullptr) {
-        Array<KIPlayer *> *enemies = this->level->getEnemies();
-        AEGeometry *lead = (*enemies)[0]->geometry;
-        canvas->TransformRemoveChild(lead->childTransform, this->turretGeom->childTransform);
-    }
-
-    Ship *ship = Globals::status->getShip();
-    Array<Item *> *equip = ship->getEquipment(2);
-    if (equip == nullptr || equip->size() == 0)
-        return;
-    Item *item = (*equip)[0];
-    if (item == nullptr)
+    Array<Item *> *turrets = Globals::status->getShip()->getEquipment(2);
+    if (turrets == nullptr || turrets->size() == 0 || (*turrets)[0] == nullptr)
         return;
 
-    int idx = item->getIndex();
-
-    unsigned short id0 = 0xffff;
-    unsigned short id1 = 0xffff;
-    int child0 = -1;
-    int child1 = -1;
-    int child2 = -1;
-
-    switch (idx) {
-        case 0xe0:
-            id0 = 0x499a;
-            id1 = 0x499b;
-            child0 = 0x499c;
-            child1 = 0x499d;
-            child2 = -1;
+    // Per-turret meshes: base, barrel and up to three child parts, plus the offset of the
+    // turret on its mounting point.
+    int index = (*turrets)[0]->getIndex();
+    int baseMesh = 0xffff;
+    int barrelMesh = 0xffff;
+    int baseChild = -1;
+    int barrelChild = -1;
+    int barrelChild2 = -1;
+    float offsetX = 0.0f;
+    float offsetY = 0.0f;
+    float offsetZ = 0.0f;
+    switch (index) {
+        case 47:
+            baseMesh = 6770;
+            barrelMesh = 6771;
+            offsetY = 60.0f;
             break;
-        case 0x30: id0 = 0x1a74;
-            id1 = 0x1a75;
+        case 224:
+            baseMesh = 18842;
+            barrelMesh = 18843;
+            baseChild = 18844;
+            barrelChild = 18845;
+            offsetY = 82.0f;
             break;
-        case 0x31: id0 = 0x1a76;
-            id1 = 0x1a77;
+        case 49:
+            baseMesh = 6774;
+            barrelMesh = 6775;
+            offsetY = 60.0f;
             break;
-        case 0xb4: id0 = 0x1a95;
-            id1 = 0x1a96;
+        case 180:
+            baseMesh = 6805;
+            barrelMesh = 6806;
+            offsetY = 84.0f;
             break;
-        case 0xb5: id0 = 0x1a97;
-            id1 = 0x1a98;
+        case 181:
+            baseMesh = 6807;
+            barrelMesh = 6808;
+            offsetY = 88.0f;
+            offsetZ = -11.0f;
             break;
-        case 0xb6: id0 = 0x1a99;
-            id1 = 0x1a9a;
+        case 182:
+            baseMesh = 6809;
+            barrelMesh = 6810;
+            offsetX = 34.0f;
+            offsetY = 88.0f;
+            offsetZ = 1.6f;
             break;
-        case 0xc6:
-            id0 = 0x4963;
-            id1 = 0x4967;
-            child0 = 0x4964;
-            child1 = 0x4966;
-            child2 = -1;
+        case 198:
+            baseMesh = 18787;
+            barrelMesh = 18791;
+            baseChild = 18788;
+            barrelChild = 18790;
+            offsetY = 80.0f;
             break;
         case 199:
-            id0 = 0x4968;
-            id1 = 0x496b;
-            child0 = 0x4969;
-            child1 = 0x496a;
-            child2 = -1;
+            baseMesh = 18792;
+            barrelMesh = 18795;
+            baseChild = 18793;
+            barrelChild = 18794;
+            offsetY = 38.0f;
             break;
         case 200:
-            id0 = 0x496c;
-            id1 = 0x496f;
-            child0 = 0x496d;
-            child1 = 0x496e;
-            child2 = 0x4970;
+            baseMesh = 18796;
+            barrelMesh = 18799;
+            baseChild = 18797;
+            barrelChild = 18798;
+            barrelChild2 = 18800;
+            offsetY = 75.0f;
             break;
-        case 0x2f: id0 = 0x1a72;
-            id1 = 0x1a73;
+        case 48:
+            baseMesh = 6772;
+            barrelMesh = 6773;
+            offsetY = 55.0f;
             break;
-        default: id0 = 0xffff;
-            id1 = 0xffff;
+        default:
             break;
     }
 
-    AEGeometry *geom0 = new AEGeometry(id0, canvas, false);
-    AEGeometry *geom1 = new AEGeometry(id1, canvas, false);
-    geom1->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-
-    if (child0 != -1) {
-        AEGeometry *c = new AEGeometry((uint16_t)(unsigned short)child0, canvas, false);
-        geom0->addChild(c->childTransform);
-        delete c;
+    AEGeometry *base = new AEGeometry((uint16_t) baseMesh, Globals::Canvas, false);
+    AEGeometry *barrel = new AEGeometry((uint16_t) barrelMesh, Globals::Canvas, false);
+    barrel->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+    if (baseChild != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) baseChild, Globals::Canvas, false);
+        base->addChild(part->transform);
+        delete part;
     }
-    if (child1 != -1) {
-        AEGeometry *c = new AEGeometry((uint16_t)(unsigned short)child1, canvas, false);
-        geom1->addChild(c->childTransform);
-        delete c;
+    if (barrelChild != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) barrelChild, Globals::Canvas, false);
+        barrel->addChild(part->transform);
+        delete part;
     }
-    if (child2 != -1) {
-        AEGeometry *c = new AEGeometry((uint16_t)(unsigned short)child2, canvas, false);
-        geom1->addChild(c->childTransform);
-        delete c;
+    if (barrelChild2 != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) barrelChild2, Globals::Canvas, false);
+        barrel->addChild(part->transform);
+        delete part;
     }
 
     delete this->turretGeom;
-    this->turretGeom = new AEGeometry(canvas);
+    this->turretGeom = nullptr;
+    this->turretGeom = new AEGeometry(Globals::Canvas);
 
-    FileRead fr;
-    int shipIdx = Globals::status->getShip()->getIndex();
-    Array<Array<Vector *> *> *positions = fr.loadWeaponPositions(shipIdx);
+    FileRead *fileRead = new FileRead();
+    Array<Array<Vector *> *> *positions = fileRead->loadWeaponPositions(Globals::status->getShip()->getIndex());
+    delete fileRead;
 
-    Vector *posVec = (*(*positions)[0])[0];
-    geom0->setPosition(*posVec);
-    geom1->setPosition(*posVec);
-    geom0->translate(CutScene_turret_tx, CutScene_turret_ty, CutScene_turret_tz);
-
-    int idx2 = item->getIndex();
-    if (idx2 >= 0xc6 && item->getIndex() <= 200) {
-        geom0->rotate(CutScene_turret_rx, CutScene_turret_ry, CutScene_turret_rz);
-        geom1->rotate(CutScene_turret_rx2, CutScene_turret_ry2, CutScene_turret_rz2);
+    base->setPosition(*(*(*positions)[2])[0]);
+    barrel->setPosition(*(*(*positions)[2])[0]);
+    barrel->translate(offsetX, offsetY, offsetZ);
+    if ((*turrets)[0]->getIndex() >= 198 && (*turrets)[0]->getIndex() < 201) {
+        base->rotate(0.0f, 3.1415927f, 0.0f);
+        barrel->rotate(0.0f, 3.1415927f, 0.0f);
     }
 
-    this->turretGeom->addChild(geom0->childTransform);
-    this->turretGeom->addChild(geom1->childTransform);
-    Array<KIPlayer *> *enemies2 = this->level->getEnemies();
-    (*enemies2)[0]->geometry->addChild(this->turretGeom->childTransform);
+    this->turretGeom->addChild(base->transform);
+    this->turretGeom->addChild(barrel->transform);
+    (*this->level->getEnemies())[0]->geometry->addChild(this->turretGeom->transform);
 
-    if (positions == nullptr)
-        return;
-
-    for (unsigned int i = 0; i < positions->size(); i++) {
-        Array<Vector *> *slot = (*positions)[i];
-        if (slot != nullptr) {
-            ArrayReleaseClasses(*slot);
-            delete (*positions)[i];
-            (*positions)[i] = nullptr;
+    if (positions != nullptr) {
+        for (unsigned int i = 0; i < positions->size(); ++i) {
+            if ((*positions)[i] != nullptr) {
+                ArrayReleaseClasses(*(*positions)[i]);
+                delete (*positions)[i];
+                (*positions)[i] = nullptr;
+            }
         }
+        ArrayReleaseClasses(*positions);
+        delete positions;
     }
-    delete positions;
 }

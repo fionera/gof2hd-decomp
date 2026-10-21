@@ -48,7 +48,7 @@ public:
           bool male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
           int sellItemPrice);
 
-    ~Agent() noexcept(false);
+    ~Agent();
 
     int *getImageParts();
 
