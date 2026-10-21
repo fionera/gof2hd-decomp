@@ -1681,7 +1681,9 @@ bool LevelScript::process(int delta) {
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 10000.0f;
-                    camPos += Vector{600.0f, 300.0f, 1000.0f};
+                    camPos.x += 600.0f;
+                    camPos.y += 300.0f;
+                    camPos.z += 1000.0f;
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
@@ -1894,7 +1896,9 @@ bool LevelScript::process(int delta) {
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 3000.0f;
-                    camPos += Vector{-600.0f, -300.0f, -1000.0f};
+                    camPos.x += -600.0f;
+                    camPos.y += -300.0f;
+                    camPos.z += -1000.0f;
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
@@ -1940,7 +1944,9 @@ bool LevelScript::process(int delta) {
                         Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();          // vtable+0x28
                         Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                         camPos += dir * 2000.0f;
-                        camPos += Vector{-600.0f, 800.0f, -1000.0f};
+                        camPos.x += -600.0f;
+                        camPos.y += 800.0f;
+                        camPos.z += -1000.0f;
                         m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nState = 2;
