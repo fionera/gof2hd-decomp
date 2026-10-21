@@ -1,5 +1,28 @@
 # Byte-matching campaign log
 
+## Session 2026-10-21 (wave 9/10 — linked 4334->4348, byte 1337->1338)
+
+- Started from the wave7/8 end state: byte 1337, linked 4334, avg 99.02.
+- Refreshed the checked-in `report.json` (the previous merge commits had only updated the
+  baseline, not the root report), then ran two disjoint worker fleets.
+- Wave 9 landed gated exactness gains: HangarWindow::selectItem, PlayerFixedObject::update,
+  MGame::freeCamTouchBegin, PaintCanvas::FontCreate/GetScreenPosition, PlayerGasCloud::update,
+  HangarList::initShipTab, Hud::catchCargo, FileRead::loadWanted.
+- Wave 10 landed: ModStation::OnRender3D, ApplicationManager::OnUpdate,
+  Generator::getItemBuyList, ImageFontCheckString (byte + linked exact),
+  StarSystem::render; plus pct-only improvements in StatusWindow::draw, MenuTouchWindow::update,
+  Globals::init, Transform::InternUpdate, ObjectGun::update, Layout ctor, StarMap,
+  TouchButton, GameInit/MGame bootstrap, Mesh/FileRead, and ParticleSettings::init.
+- End: byte 1338, linked 4348, avg 99.09, stubs 0, missing/extra 0, imports 207, data 843/843.
+- Fleet policy: 24 + 31 workers in disjoint worktrees; the orchestrator serialized every merge,
+  build, ratchet check, baseline lock, and docs update.
+- Remaining top near misses are mostly compiler scheduling/register-allocation blockers:
+  NewsTicker ctor, BombGun/PlayerEgo/MiningGame ctors, FModSound, TextureCreateFromFileIntern,
+  WantedWindow/MissionsWindow/StatusWindow touch handlers, SpaceLounge updateScreenPositions,
+  AEFile::Open/String::Compare, Radar ctor, TargetFollowCamera, Level creators, and PlayerEgo.
+- Push attempted but GitHub SSH auth is unavailable on this host (`Permission denied (publickey)`);
+  `gh` is logged in over HTTPS, so push with the gh credential helper.
+
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
 ## Session 2026-10-21 (wave 7/8 — linked 4324->4334, byte 1337)
