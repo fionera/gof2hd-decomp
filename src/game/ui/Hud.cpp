@@ -1673,10 +1673,6 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 29:
             this->field_0x276 = 0;
             return;
-        case 30:
-            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
-            this->clearQueue();
-            break;
         case 31:
             this->field_0x1e0 = *Globals::gameText->getText(324);
             break;
@@ -1709,6 +1705,10 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             break;
         case 47:
             this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1476);
+            this->clearQueue();
+            break;
+        case 30:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
             this->clearQueue();
             break;
     }
