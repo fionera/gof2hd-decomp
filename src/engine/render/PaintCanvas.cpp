@@ -36,6 +36,7 @@ namespace AbyssEngine {
                                     Camera *camera);
     int CameraIsPointinViewFrustum(const AEMath::Vector &point, AEMath::Matrix *view, Camera *camera);
     void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTextures);
+    PickedTextureRegion MeshIntersect(float qx, float qz, Mesh *mesh);
 }
 
 namespace AbyssEngine {
@@ -438,10 +439,6 @@ static inline void paintcanvas_ext_dr3_gldisable(unsigned int cap) { glDisable(c
 static inline void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_dr3_glenable(unsigned int cap) { glEnable(cap); }
-
-void paintcanvas_ext_tg2d_errmsg(void *out); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int pc_GetWidth(AbyssEngine::PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(AbyssEngine::PaintCanvas *self) { return self->GetHeight(); }
@@ -3779,33 +3776,21 @@ AbyssEngine::ResourceTransform::~ResourceTransform() {
     this->dataB = nullptr;
 }
 
-static const unsigned int g_tg2d_defval_7b590 = 0;
-
 AbyssEngine::PickedTextureRegion
 PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,
-                                               int w) {
-    PickedTextureRegion result;
-    char vecbuf[64];
-
-    if (transformIndex < this->transforms.count) {
-        char *tf = ((char **) this->transforms.data_)[transformIndex];
-        memcpy(vecbuf, tf, 0x3c);
-        float fy = (float)y;
-        float fz = (float)z;
-        float fx = (float)w;
-        float vin[3];
-        vin[0] = fy;
-        vin[1] = fz;
-        vin[2] = fx;
-        *(AbyssEngine::AEMath::Vector*)vin = AbyssEngine::AEMath::MatrixInverseTransformVector(*(const AbyssEngine::AEMath::Matrix*)vecbuf, *(const AbyssEngine::AEMath::Vector*)vin);
-        result = this->TransformGet2DPickedTextureRegion(
-            reinterpret_cast<Transform *>(tf), x, (int) vin[0], (int) vin[1], 0);
-    } else {
-        result.u = *(const float *) &g_tg2d_defval_7b590;
-        result.v = *(const float *) &g_tg2d_defval_7b590;
-        paintcanvas_ext_tg2d_errmsg(&result);
+                                               int shift) {
+    if (transformIndex >= this->transforms.count) {
+        AbyssEngine::PickedTextureRegion none;
+        none.u = -1.0f;
+        none.v = -1.0f;
+        fprintf(stderr, "TransformGet2DPickedTextureRegion Error %d >= %d\n", transformIndex, this->transforms.count);
+        return none;
     }
-    return result;
+    AbyssEngine::Transform *transform = this->transforms.data_[transformIndex];
+    AbyssEngine::AEMath::Matrix world = transform->worldMatrix;
+    AbyssEngine::AEMath::Vector local = {(float) x, (float) y, (float) z};
+    local = AbyssEngine::AEMath::MatrixInverseTransformVector(world, local);
+    return this->TransformGet2DPickedTextureRegion(transform, (int) local.x, (int) local.y, (int) local.z, shift);
 }
 
 void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str) {
@@ -3865,55 +3850,30 @@ void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
     out = (unsigned int) res->handle;
 }
 
-static const unsigned int g_tg2di_neg1_8b588 = 0;
-
 AbyssEngine::PickedTextureRegion
-PaintCanvas::TransformGet2DPickedTextureRegion(Transform *transform, int x, int y, int z, int w) {
-    PickedTextureRegion result;
-    PCTransformView *tf = (PCTransformView *) transform;
-    int shift = w;
-    float vy = (float)((y >> shift) >> shift);
-    float vx = (float)((z >> shift) >> shift);
-
-    unsigned int i = 0;
-    bool found = false;
-    while (i < tf->meshCount) {
-        char *mesh = tf->meshData[i];
-        paintcanvas_ext_tg2di_meshintersect(&result, vx, vy, mesh);
-        i++;
-        if (result.u != -1.0f && result.v != -1.0f) {
-            found = true;
-            break;
+PaintCanvas::TransformGet2DPickedTextureRegion(Transform *transform, int x, int y, int z, int shift) {
+    float qx = (float) ((x >> shift) >> shift);
+    float qz = (float) ((z >> shift) >> shift);
+    for (unsigned int i = 0; i < transform->meshes.count; i++) {
+        AbyssEngine::PickedTextureRegion hit = AbyssEngine::MeshIntersect(qx, qz, transform->meshes.data_[i]);
+        if (hit.u != -1.0f && hit.v != -1.0f) {
+            return hit;
         }
     }
-    if (found) {
-        return result;
-    }
-
-    float fy = (float)z;
-    float fx = (float)y;
-    float fz = (float)w;
-
-    i = 0;
-    while (i < tf->childCount) {
-        char vecbuf[64];
-        char *child = (char *) tf->childData[i];
-        memcpy(vecbuf, child, 0x3c);
-        float vin[3];
-        vin[0] = fx;
-        vin[1] = fy;
-        vin[2] = fz;
-        *(AbyssEngine::AEMath::Vector*)vin = AbyssEngine::AEMath::MatrixInverseTransformVector(*(const AbyssEngine::AEMath::Matrix*)vecbuf, *(const AbyssEngine::AEMath::Vector*)vin);
-        result = this->TransformGet2DPickedTextureRegion(
-            reinterpret_cast<Transform *>(child), x, (int) vin[0], (int) vin[1], 0);
-        i++;
-        if (result.u != -1.0f && result.v != -1.0f) {
-            return result;
+    for (unsigned int i = 0; i < transform->children.count; i++) {
+        AbyssEngine::AEMath::Matrix world = transform->children.data_[i]->worldMatrix;
+        AbyssEngine::AEMath::Vector local = {(float) x, (float) y, (float) z};
+        local = AbyssEngine::AEMath::MatrixInverseTransformVector(world, local);
+        AbyssEngine::PickedTextureRegion hit = this->TransformGet2DPickedTextureRegion(
+                transform->children.data_[i], (int) local.x, (int) local.y, (int) local.z, shift);
+        if (hit.u != -1.0f && hit.v != -1.0f) {
+            return hit;
         }
     }
-    result.u = *(const float *) &g_tg2di_neg1_8b588;
-    result.v = *(const float *) &g_tg2di_neg1_8b588;
-    return result;
+    AbyssEngine::PickedTextureRegion none;
+    none.u = -1.0f;
+    none.v = -1.0f;
+    return none;
 }
 
 void PaintCanvas::DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *viewMatrix) {
