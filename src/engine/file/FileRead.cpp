@@ -505,16 +505,20 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
     uint32_t handle;
     AEFile::OpenRead("data/bin/stations.bin", &handle);
 
-    Array<int32_t> *ids = system->stationIds;
+    Array<int32_t> *ids = (Array<int32_t> *) system->getStations();
     ArraySetLength<Station *>(ids->size(), *stations);
 
     String name;
     uint32_t out = 0;
-    for (uint32_t stationId = 0; stationId < 0x87; stationId++) {
-        int32_t a;
-        int32_t b;
-        int32_t c;
-        int32_t d;
+    int32_t a;
+    int32_t b;
+    int32_t c;
+    int32_t d;
+    for (uint32_t stationId = 0;; stationId++) {
+        if (stationId >= 0x87) {
+            AEFile::Close(handle);
+            return stations;
+        }
         AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
@@ -531,8 +535,6 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
             }
         }
     }
-    AEFile::Close(handle);
-    return stations;
 }
 
 Array<Agent *> *FileRead::loadAgents() {
