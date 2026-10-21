@@ -24,12 +24,6 @@
 #include "game/world/Wanted.h"
 #include "game/ship/PlayerFixedObject.h"
 
-int AERandom_nextInt_nobound(int rng);
-
-static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
-
-float VectorSignedToFloat(int v, int mode);
-
 int *RH_op_new_arr(unsigned int n);
 
 void RH_op_delete_arr(void *p); // lint: void_ptr (external symbol; generic deallocator, param type load-bearing)
@@ -47,32 +41,9 @@ namespace AbyssEngine {
 }
 
 
-
-
-
-static inline int PF_getRefMatrix(int geom) {
-    return (int) (intptr_t) &((AEGeometry *) (intptr_t) geom)->getReferenceMatrix();
-}
-static inline int PF_addSystem(int base, int matrix, int kind, int flag) {
-    return ((ParticleSystemManager *) (intptr_t) base)
-        ->addSystem((const AbyssEngine::AEMath::Matrix *) (intptr_t) matrix,
-                    (ParticleSettings::ParticleSet) kind, flag);
-}
-static inline void PF_enableEmit(int base, int handle, int enable) {
-    ((ParticleSystemManager *) (intptr_t) base)->enableSystemEmit(handle, enable);
-}
-
-
-static inline void AEMath_VectorScale(AbyssEngine::AEMath::Vector *out, float s,
-                                      const AbyssEngine::AEMath::Vector *v) {
-    *out = s * *v;
-}
-
-
 static const float gIP_strength = 5000.0f;
 
 
-static unsigned **const gR_g3 = nullptr;
 static unsigned **const gR_g4 = nullptr;
 static unsigned **const gR_g5 = nullptr;
 
@@ -88,215 +59,146 @@ int PlayerFighter::stationRouteAliens;
 
 PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
                              float x, float y, float z, bool flag)
-    : KIPlayer(faction, wingmanCmd, player, geom, x, y, z, flag) {
-    PlayerFighter * self = this;
-
-    self->field_0x200 = 0;
-    self->field_0x204 = 0;
-    self->field_0x208 = 0;
-
-    self->workingPosition = (Vector)
-    {
-        0, 0, 0
-    };
-    self->resetVecB = (Vector)
-    {
-        0, 0, 0
-    };
-    self->resetVecC = (Vector)
-    {
-        0, 0, 0
-    };
-    self->easeBaseMatrix = AbyssEngine::AEMath::Matrix();
-    self->rollMatrix = AbyssEngine::AEMath::Matrix();
-
-    float wp[12];
-    int r;
-    r = Globals::rnd->nextInt(25000);
-    wp[0] = (float)(r - 30000);
-    int r1 = Globals::rnd->nextInt(10000);
-    int r2 = Globals::rnd->nextInt(25000);
-    wp[2] = (float)(r2 + 20000);
-    wp[1] = (float)(r1 - 10000);
-    r = Globals::rnd->nextInt(25000);
-    wp[3] = (float)(r + 5000);
-    r1 = Globals::rnd->nextInt(10000);
-    r2 = Globals::rnd->nextInt(25000);
-    wp[5] = (float)(r2 + 20000);
-    wp[4] = (float)(r1 - 10000);
-    r = Globals::rnd->nextInt(25000);
-    wp[6] = (float)(r + 5000);
-    r1 = Globals::rnd->nextInt(10000);
-    r2 = Globals::rnd->nextInt(25000);
-    wp[8] = (float)(r2 + 55000);
-    wp[7] = (float)(r1 - 10000);
-    r = Globals::rnd->nextInt(25000);
-    wp[9] = (float)(r - 30000);
-    r1 = Globals::rnd->nextInt(10000);
-    r2 = Globals::rnd->nextInt(25000);
-    wp[10] = (float)(r1 - 10000);
-    wp[11] = (float)(r2 + 55000);
-
+    : KIPlayer(faction, -1, player, geom, x, y, z, flag),
+      field_0x200(0), field_0x204(0), field_0x208(0),
+      workingPosition(), resetVecB(), resetVecC(), field_0x17c(), field_0x188(), field_0x194() {
+    // patrol route: the four corners of a box in random order, visited 2-4 times
+    Vector c0 = {(float) (Globals::rnd->nextInt(25000) - 30000), (float) (Globals::rnd->nextInt(10000) - 10000),
+                 (float) (Globals::rnd->nextInt(25000) + 20000)};
+    Vector c1 = {(float) (Globals::rnd->nextInt(25000) + 5000), (float) (Globals::rnd->nextInt(10000) - 10000),
+                 (float) (Globals::rnd->nextInt(25000) + 20000)};
+    Vector c2 = {(float) (Globals::rnd->nextInt(25000) + 5000), (float) (Globals::rnd->nextInt(10000) - 10000),
+                 (float) (Globals::rnd->nextInt(25000) + 55000)};
+    Vector c3 = {(float) (Globals::rnd->nextInt(25000) - 30000), (float) (Globals::rnd->nextInt(10000) - 10000),
+                 (float) (Globals::rnd->nextInt(25000) + 55000)};
+    Vector corners[4] = {c0, c1, c2, c3};
     int count = Globals::rnd->nextInt(3) * 3 + 6;
     char used[4] = {0, 0, 0, 0};
-    unsigned long long bytes = (unsigned long long) (unsigned) count * 4;
-    unsigned sz = (int) (bytes >> 32) != 0 ? 0xffffffff : (unsigned) bytes;
-    int *pts = RH_op_new_arr(sz);
+    int *points = new int[count];
     for (int i = 0; i < count; i += 3) {
-        int idx;
+        int corner;
         do {
-            idx = Globals::rnd->nextInt(4);
-        } while (used[idx] != 0);
-        used[idx] = 1;
-        pts[i] = (int) wp[idx * 3];
-        pts[i + 1] = (int) wp[idx * 3 + 1];
-        pts[i + 2] = (int) wp[idx * 3 + 2];
+            corner = Globals::rnd->nextInt(4);
+        } while (used[corner] != 0);
+        used[corner] = 1;
+        points[i] = (int) corners[corner].x;
+        points[i + 1] = (int) corners[corner].y;
+        points[i + 2] = (int) corners[corner].z;
     }
-    self->route = new Route(pts, (unsigned) count);
-    RH_op_delete_arr(pts);
+    this->route = new Route(points, count);
+    delete[] points;
 
-    // Block 3b: stationRouteAliens lazy init (dc576..dc5a0)
     if (PlayerFighter::stationRouteAliens == 0) {
-        static const int stationWaypoints[12] = {
+        int stationWaypoints[12] = {
             40000, 0, 40000,
             40000, 0, -40000,
             -40000, 0, -40000,
             -40000, 0, 40000
         };
-        int wpcopy[12];
-        memcpy(wpcopy, stationWaypoints, sizeof(wpcopy));
-        PlayerFighter::stationRouteAliens = (int)(intptr_t)new Route(wpcopy, 12);
+        PlayerFighter::stationRouteAliens = (int) (intptr_t) new Route(stationWaypoints, 12);
     }
 
-    // Block 4: field initialization (dc5a0..dc636)
-    self->field_0x130 = -1;
-    self->field_0x134 = -1;
-    self->field_0x138 = -1;
-    self->field_0x128 = 50000;
-    self->rotate = 2.0f;
-    self->shootError = 0x1.f3ffec0000000p-8f;
-    self->speed = 2.0f;
-    self->field_0x1b0 = 0x5dc;
-    self->boostProb = 5;
-    self->field_0x38 = 0;
-    self->field_0x140 = 0;
-    // Binary: strh zeros [+0x12d] which covers field_0x12d + field_0x12e
-    self->field_0x12d = 0;
-    self->field_0x12e = 0;
-    // Binary: strh zeros [+0x13d] which covers field_0x13d + field_0x13e
-    self->field_0x13d = 0;
-    self->field_0x13e = 0;
-    self->field_0x1f8 = 0;
-    self->deathTimer() = 0;
-    self->field_0x12f = 0;
-    self->field_0x1fc = 0;
-    self->field_0x1c8 = 0;
-    self->field_0x1e0 = 0;
-    self->field_0x1f4 = 0;
-    self->wingmanCommand() = wingmanCmd;
+    this->field_0x130 = -1;
+    this->field_0x134 = -1;
+    this->field_0x138 = -1;
+    this->field_0x128 = 50000;
+    this->rotate = 2.0f;
+    this->shootError = 500.0f / 65536.0f;
+    this->speed = 2.0f;
+    this->field_0x1b0 = 1500;
+    this->boostProb = 5;
+    this->field_0x38 = 0;
+    this->field_0x140 = 0;
+    this->field_0x12d = 0;
+    this->field_0x12e = 0;
+    this->field_0x13d = 0;
+    this->field_0x13e = 0;
+    this->field_0x1f8 = 0;
+    this->deathTimer() = 0;
+    this->field_0x12f = 0;
+    this->field_0x1fc = 0;
+    this->field_0x1c8 = 0;
+    this->field_0x1e0 = 0;
+    this->field_0x1f4 = 0;
+    this->wingmanCommand() = wingmanCmd;
+    this->maneuverTimer = 0;
+    this->field_0x1bc = 0;
+    this->field_0x1c0 = 0;
+    this->field_0x1c4 = 0;
+    this->targetPlayer = nullptr;
+    this->commandRoute = nullptr;
+    this->boundingVolumes = nullptr;
+    this->trail = nullptr;
+    this->deltaTime = 0;
+    this->hitpoints = 0;
+    this->field_0x1dc = 0;
+    this->field_0x1e4 = 0;
+    this->currentSpeed = 0;
+    this->field_0x1ec = 0;
+    this->currentRotate = 0;
 
-    // Binary: vst1 q8=0 zeros +0x1b8..+0x1c7 (maneuverTimer, field_0x1bc, field_0x1c0, field_0x1c4)
-    self->maneuverTimer = 0;
-    self->field_0x1bc = 0;
-    self->field_0x1c0 = 0;
-    self->field_0x1c4 = 0;
-    // Binary: vst1 q8=0 zeros +0x148..+0x157 (targetPlayer, commandRoute, boundingVolumes, trail)
-    self->targetPlayer = nullptr;
-    self->commandRoute = 0;
-    self->boundingVolumes = 0;
-    self->trail = 0;
-    // Binary: vst1 q8=0 zeros +0x1d0..+0x1df (deltaTime, deltaTimeHi, hitpoints, field_0x1dc)
-    self->deltaTime = 0;
-    self->hitpoints = 0;
-    self->field_0x1dc = 0;
-    // Binary: vst1.32 q8=0 zeros +0x1e4..+0x1eb (field_0x1e4, currentSpeed)
-    self->field_0x1e4 = 0;
-    self->currentSpeed = 0;
-
-    // Block 5: workingPosition from params, then route setup (dc622..dc692)
-    self->workingPosition = Vector{x, y, z};
-    self->field_0x13d = 1;
-    self->crateCaptured() = 1;
-    self->currentSpeed = self->speed;
-    self->currentRotate = self->rotate;
-    // Binary dc656: route->setLoop(true); dc65c: stationRouteAliens->setLoop(true)
-    self->route->setLoop(1);
-    ((Route *)(intptr_t)PlayerFighter::stationRouteAliens)->setLoop(1);
-    self->routeClone() = 0;
-
-    if (Globals::status->getCurrentCampaignMission() != 0x29) {
+    this->workingPosition = Vector{x, y, z};
+    this->field_0x13d = 1;
+    this->crateCaptured() = 1;
+    this->currentSpeed = this->speed;
+    this->currentRotate = this->rotate;
+    this->route->setLoop(true);
+    ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->setLoop(true);
+    this->routeClone() = nullptr;
+    if (Globals::status->getCurrentCampaignMission() != 41) {
         if (wingmanCmd == 9) {
-            // Binary: clones stationRouteAliens ([r5,#0])
-            self->routeClone() = ((Route *)(intptr_t)PlayerFighter::stationRouteAliens)->clone();
+            this->routeClone() = ((Route *) (intptr_t) PlayerFighter::stationRouteAliens)->clone();
         } else {
-            self->routeClone() = self->route->clone();
+            this->routeClone() = this->route->clone();
         }
     }
-    self->field_0x12d = 0;
-
+    this->field_0x12d = 0;
     if (wingmanCmd == 9) {
-        self->lootList() = 0;
+        this->lootList() = nullptr;
     } else {
-        Generator *g = new Generator();
-        self->lootList() = g->getLootList(-1, -1);
-        delete g;
+        Generator *generator = new Generator();
+        this->lootList() = generator->getLootList(-1, -1);
+        delete generator;
     }
-
-    self->field_0x128 = (Globals::status->inAlienOrbit() != 0) ? 100000 : 50000;
-
-    Explosion *exp = new Explosion(0);
-    self->explosion = exp;
-    exp->addFireStreaks();
-    self->field_0x13e = 1;
-    self->hitpoints = ((Player *) (self->player()))->getHitpoints();
-    self->field_0x1dc = 0;
-    self->field_0x1e0 = 0;
-    self->field_0xe4 = 1;
-    self->field_0x25 = 1;
-    self->engineTrailSystem = -1;
-
-    int fov;
+    this->field_0x128 = Globals::status->inAlienOrbit() ? 100000 : 50000;
+    this->explosion = new Explosion(0);
+    this->explosion->addFireStreaks();
+    this->field_0x13e = 1;
+    this->hitpoints = ((Player *) (this->player()))->getHitpoints();
+    this->field_0x1dc = 0;
+    this->field_0x1e0 = 0;
+    this->field_0xe4 = 1;
+    this->field_0x25 = 1;
+    this->engineTrailSystem = -1;
     if (Globals::status->getCurrentCampaignMission() == 1) {
-        fov = -1;
+        this->fov() = -1;
     } else {
-        fov = (self->field_0xdc() == 0) ? 0x2e : 0x30;
+        this->fov() = this->field_0xdc() == 0 ? 46 : 48;
     }
-    self->fov() = fov;
-
-    // Binary: strd zeros targetRoll+smoothRoll together, then field_0x214
-    self->targetRoll = 0;
-    self->smoothRoll = 0;
-    self->field_0x214 = 0;
-    // Binary: strd stores int bit patterns for roll threshold and rate constants
-    self->field_0x294 = 0x443b8000;  // 750.0f stored as int bits
-    self->field_0x298 = 0x41723ace;  // ~15.14f stored as int bits
-    // Binary: loop str zeros [r8+r1] for r1=0x29c..0x2af (5 words = rollSamples array)
-    self->rollSamples[0] = 0;
-    self->rollSamples[1] = 0;
-    self->rollSamples[2] = 0;
-    self->rollSamples[3] = 0;
-    self->rollSamples[4] = 0;
-    self->rollBufferFilled = 0;
-    self->rollSampleIndex = 0;
-    self->rollActive() = 0;
-    // Binary: strh zeros [+0x254] covering field_0x254 + field_0x255 together
-    self->field_0x254 = 0;
-    self->field_0x255 = 0;
-    self->easeMatrix = 0;
-    // Binary: strd zeros spacePoint + cloakTimer; then overlapping stores zero cloakDuration + cloakActive
-    self->field_0x2bc = 0;
-    self->field_0x2c0 = 0;
-    self->spacePoint = 0;
-    self->cloakTimer = 0;
-    self->cloakDuration = 0;
-    self->cloakActive = 0;
-    self->cloakCooldown = 0;
-    self->cloakingPossible = 1;
-    self->cloakMaterial = -1;
-    self->aiDisabled = 0;
-    self->gunSwitchTimer = 0;
-
-    return;
+    this->targetRoll = 0;
+    this->smoothRoll = 0;
+    this->field_0x214 = 0;
+    this->field_0x294 = 0x443b8000; // 750.0f
+    this->field_0x298 = 0x41723ace; // 15.139357f
+    for (int i = 0; i < 5; ++i) {
+        this->rollSamples[i] = 0;
+    }
+    this->rollBufferFilled = 0;
+    this->rollSampleIndex = 0;
+    this->rollActive() = 0;
+    this->field_0x254 = 0;
+    this->field_0x255 = 0;
+    this->easeMatrix = nullptr;
+    this->field_0x13c = 0;
+    this->spacePoint = 0;
+    this->cloakTimer = 0;
+    this->cloakDuration = 0;
+    this->cloakActive = 0;
+    this->cloakCooldown = 0;
+    this->cloakingPossible = 1;
+    this->cloakMaterial = 0xffffffff;
+    this->aiDisabled = 0;
+    this->gunSwitchTimer = 0;
 }
 PlayerFighter::~PlayerFighter() {
     delete this->route;
@@ -2063,41 +1965,16 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
     return 0;
 }
 void PlayerFighter::initPush(const Vector &target, int radius) {
-
-    AbyssEngine::AEMath::Vector gp = this->getPosition();
-    float pos[3] = {gp.x, gp.y, gp.z};
-
-    float diff[3];
-    *reinterpret_cast<Vector *>(diff) = target - *reinterpret_cast<const Vector *>(pos);
-    float len = AbyssEngine::AEMath::VectorLength(*reinterpret_cast<const AbyssEngine::AEMath::Vector *>(diff));
-    float r = VectorSignedToFloat(radius, 0);
-    float t = 1.0f;
-    if (len / r < 1.0f) t = len / r;
-    int strength = (int) ((1.0f - t) * gIP_strength);
-    this->pushTimer() = strength;
-    this->pushDuration() = strength;
-
-    AbyssEngine::AEMath::Vector gp2 = this->getPosition();
-    float pos2[3] = {gp2.x, gp2.y, gp2.z};
-    float dir[3];
-    *reinterpret_cast<Vector *>(dir) =
-            *reinterpret_cast<const Vector *>(pos) - *reinterpret_cast<const Vector *>(pos2);
-    float norm[3];
-    AbyssEngine::AEMath::VectorNormalize((Vector *) norm, (Vector *) dir);
-    this->pushNormal() = *(Vector *) norm;
-
-    float rx = (float) (Globals::rnd->nextInt(200) - 100);
-    float ry = (float) (Globals::rnd->nextInt(200) - 100);
-    float rz = (float) (Globals::rnd->nextInt(200) - 100);
-    float rvec[3] = {rx, ry, rz};
-    float rnorm[3];
-    AbyssEngine::AEMath::VectorNormalize((Vector *) rnorm, (Vector *) rvec);
-    float scaled[3];
-    AEMath_VectorScale((AbyssEngine::AEMath::Vector *) scaled, (float) strength,
-                       (const AbyssEngine::AEMath::Vector *) rnorm);
-    this->pushImpulse() = *(Vector *) scaled;
-
-    return;
+    float t = AbyssEngine::AEMath::VectorLength(target - this->getPosition()) / (float) radius;
+    t = t < 1.0f ? t : 1.0f;
+    int duration = (int) ((1.0f - t) * gIP_strength);
+    this->pushTimer() = duration;
+    this->pushDuration() = duration;
+    this->pushNormal() = AbyssEngine::AEMath::VectorNormalize(this->getPosition() - target);
+    float x = (float) (Globals::rnd->nextInt(200) - 100);
+    float y = (float) (Globals::rnd->nextInt(200) - 100);
+    float z = (float) (Globals::rnd->nextInt(200) - 100);
+    this->pushImpulse() = 0.2f * AbyssEngine::AEMath::VectorNormalize(Vector{x, y, z});
 }
 void PlayerFighter::push(int dt) {
     if (this->pushTimer() > 0) {
