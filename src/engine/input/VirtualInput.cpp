@@ -196,40 +196,39 @@ void keyEventPressed(AbyssEngine::Engine *engine, char *name) {
     }
 }
 
-static inline bool keyMatches(const VirtualKey &k, int code) {
-    return k.keyCode == code || k.altCode1 == code || k.altCode2 == code || k.altCode3 == code;
-}
-
 void keyPressed(AbyssEngine::Engine *engine, int key) {
     if (engine == nullptr)
         return;
 
     // Cheat sequence: 14, 0x40000000, 1, 0x11, 14, 0xf, 14, 5, 5 unlocks speed control.
-    int &combo = g_input.comboProgress;
+    const int progress = g_input.comboProgress;
     if (key == 14) {
-        switch (combo) {
-            case 4: combo = 5;
+        switch (progress) {
+            case 4:
+                g_input.comboProgress = 5;
                 break;
-            case 6: combo = 7;
+            case 6:
+                g_input.comboProgress = 7;
                 break;
-            case 9: break;
-            default: combo = 1;
+            default:
+                if (progress != 9)
+                    g_input.comboProgress = 1; // restart the sequence
                 break;
         }
-    } else if (key == 0x40000000 && combo == 1) {
-        combo = 2;
-    } else if (key == 1 && combo == 2) {
-        combo = 3;
-    } else if (key == 0x11 && combo == 3) {
-        combo = 4;
-    } else if (key == 0xf && combo == 5) {
-        combo = 6;
-    } else if (key == 5 && combo == 7) {
-        combo = 8;
-    } else if (combo == 8 && key == 5) {
-        combo = 9;
-    } else if (combo != 9) {
-        combo = 0;
+    } else if (key == 0x40000000 && progress == 1) {
+        g_input.comboProgress = 2;
+    } else if (key == 1 && progress == 2) {
+        g_input.comboProgress = 3;
+    } else if (key == 0x11 && progress == 3) {
+        g_input.comboProgress = 4;
+    } else if (key == 0xf && progress == 5) {
+        g_input.comboProgress = 6;
+    } else if (key == 5 && progress == 7) {
+        g_input.comboProgress = 8;
+    } else if (progress == 8 && key == 5) {
+        g_input.comboProgress = 9;
+    } else if (progress != 9) {
+        g_input.comboProgress = 0;
     }
 
     const unsigned int module = Globals::appManager->GetCurrentApplicationModule();
@@ -237,9 +236,13 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
     for (int priority = 2; priority >= 0; --priority) {
         for (int i = 0; i < kVirtualKeyCount; ++i) {
             VirtualKey &k = keys[i];
-            if (k.priority != priority || !keyMatches(k, key) || k.pressed != 0)
+            if (priority != k.priority)
                 continue;
-            if (static_cast<unsigned int>(k.moduleId) != module && k.moduleId != -1)
+            if (k.keyCode != key && k.altCode1 != key && k.altCode2 != key && k.altCode3 != key)
+                continue;
+            if (k.pressed != 0)
+                continue;
+            if (module != static_cast<unsigned int>(k.moduleId) && k.moduleId != -1)
                 continue;
             if (k.requiredTouch != 0 && g_input.requiredTouch != k.requiredTouch)
                 continue;
@@ -252,7 +255,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
             if (i == 19)
                 pressed = 19;
             if (k.touchX != nullptr) {
-                engine->appManager->OnTouchBegin(k.touchOffsetX + *k.touchX, k.touchOffsetY + *k.touchY,
+                engine->appManager->OnTouchBegin(*k.touchX + k.touchOffsetX, k.touchOffsetY + *k.touchY,
                                                  reinterpret_cast<void *>(k.touchWindowHandle)); // lint: void_ptr (opaque touch handle for OnTouchBegin ABI)
                 k.lastTouchX = *k.touchX;
                 k.lastTouchY = *k.touchY;
@@ -265,11 +268,11 @@ done:
 
     if (g_input.comboProgress == 9) {
         if (GetKeyState(const_cast<char *>("Accelerate")) != 0) {
-            g_slowMotion = 0;
             g_speedUp = 1;
+            g_slowMotion = 0;
         } else if (GetKeyState(const_cast<char *>("Decelerate")) != 0) {
-            g_speedUp = 0;
             g_slowMotion = 1;
+            g_speedUp = 0;
         } else if (Globals::keys[42] != 0) {
             g_speedUp = 0;
             g_slowMotion = 0;
@@ -311,8 +314,8 @@ void keyEventReleased(AbyssEngine::Engine *engine, char *name) {
 }
 
 void keyReleased(AbyssEngine::Engine *engine, int key) {
-    Globals::is_choice_window_visible = 0;
     Globals::is_dialogue_window_visible = 0;
+    Globals::is_choice_window_visible = 0;
     Globals::is_menu_visible = 0;
     Globals::is_hacking_visible = 0;
     if (engine == nullptr)
@@ -322,7 +325,9 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
     int released = -1;
     for (int i = 0; i < kVirtualKeyCount; ++i) {
         VirtualKey &k = keys[i];
-        if (!keyMatches(k, key) || k.pressed != 1)
+        if (k.keyCode != key && k.altCode1 != key && k.altCode2 != key && k.altCode3 != key)
+            continue;
+        if (k.pressed != 1)
             continue;
         k.pressed = 0;
         if (i < 0xb)
