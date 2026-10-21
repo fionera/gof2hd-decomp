@@ -464,124 +464,83 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
 }
 
 int SpaceLounge::getSoundId(Agent *agent) {
-    String missionText;
-
     int race = agent->getRace();
     bool male = agent->isMale();
     int offer = agent->getOffer();
-    Mission *mission = agent->getMission();
     int missionType;
-    if (mission == 0) {
+    if (agent->getMission() == 0 || agent->getMission()->isEmpty()) {
         missionType = -1;
     } else {
-        mission = agent->getMission();
-        if (mission->isEmpty() != 0) {
-            missionType = -1;
-        } else {
-            mission = agent->getMission();
-            missionType = mission->getType();
-        }
+        missionType = agent->getMission()->getType();
     }
+    String missionText = Globals::globals->getAgentMissionText(agent);
 
-    missionText = Globals::globals->getAgentMissionText(static_cast<Agent *>(agent));
-
-    bool checkSpecialText = true;
+    // Greeting by offer kind.
+    bool canBeSpecial = true;
     int soundId;
     switch (offer) {
         case 0:
-            if (missionType == 0 || missionType == 0xb) {
-                soundId = SpaceLounge_getSoundId_offer0_11->nextInt(4) + 0x301;
-            } else if (missionType == 0xc) {
-                soundId = SpaceLounge_getSoundId_offer0_else->nextInt(4) + 0x2fa;
+            if (missionType == 0 || missionType == 11) {
+                soundId = Globals::rnd->nextInt(4) + 769;
+            } else if (missionType == 12) {
+                soundId = Globals::rnd->nextInt(4) + 762;
+            } else if (Globals::rnd->nextInt(2) != 0) {
+                soundId = Globals::rnd->nextInt(4) + 777;
             } else {
-                AbyssEngine::AERandom *random = SpaceLounge_getSoundId_offer0_else;
-                int first = random->nextInt(2);
-                if (first == 0) {
-                    soundId = random->nextInt(4) + 0x31f;
-                } else {
-                    soundId = random->nextInt(4) + 0x309;
-                }
+                soundId = Globals::rnd->nextInt(4) + 799;
             }
             break;
         case 1:
-            soundId = SpaceLounge_getSoundId_offer1->nextInt(2) + 0x30d;
+            soundId = Globals::rnd->nextInt(2) + 781;
             break;
         case 2:
         case 3:
         case 8:
         case 9:
         case 10:
-            soundId = SpaceLounge_getSoundId_offer2358910->nextInt(2) + 0x2f7;
+            soundId = Globals::rnd->nextInt(2) + 759;
             break;
         case 4:
-            soundId = SpaceLounge_getSoundId_offer4->nextInt(2) + 0x2fe;
+            soundId = Globals::rnd->nextInt(2) + 766;
             break;
         case 5:
-            soundId = SpaceLounge_getSoundId_offer5->nextInt(4) + 0x31b;
+            soundId = Globals::rnd->nextInt(4) + 795;
             break;
         case 6:
-            soundId = SpaceLounge_getSoundId_offer6->nextInt(4) + 0x323;
+            soundId = Globals::rnd->nextInt(4) + 803;
             break;
         case 7:
-            soundId = SpaceLounge_getSoundId_offer7->nextInt(4) + 0x305;
+            soundId = Globals::rnd->nextInt(4) + 773;
             break;
         default:
             soundId = -1;
             break;
     }
-
     if (offer != 1) {
-        checkSpecialText = false;
-        if (SpaceLounge_getSoundId_chance->nextInt(100) < 30) {
-            soundId = SpaceLounge_getSoundId_offer1->nextInt(2) + 0x30d;
-            checkSpecialText = true;
+        canBeSpecial = false;
+        if (Globals::rnd->nextInt(100) < 30) {
+            soundId = Globals::rnd->nextInt(2) + 781;
         }
     }
-
-    int dummy = 0;
-    if (agent->hasAcceptedOffer() != 0) {
-        dummy = SpaceLounge_getSoundId_accepted->nextInt(2);
-        soundId = dummy + 0x30d;
+    if (agent->hasAcceptedOffer()) {
+        soundId = Globals::rnd->nextInt(2) + 781;
+    }
+    if (canBeSpecial && (missionText.Compare(*Globals::gameText->getText(820)) == 0 ||
+                         missionText.Compare(*Globals::gameText->getText(824)) == 0 ||
+                         missionText.Compare(*Globals::gameText->getText(827)) == 0 ||
+                         missionText.Compare(*Globals::gameText->getText(833)) == 0)) {
+        soundId = Globals::rnd->nextInt(2) + 788;
     }
 
-    if (checkSpecialText) {
-        GameText **texts = SpaceLounge_getSoundId_specialText;
-        String *text = (*texts)->getText(0x334);
-        if (missionText.Compare(*text) != 0) {
-            text = (*texts)->getText(0x338);
-            if (missionText.Compare(*text) != 0) {
-                text = (*texts)->getText(0x33b);
-                if (missionText.Compare(*text) != 0) {
-                    text = (*texts)->getText(0x341);
-                    dummy = missionText.Compare(*text);
-                    if (dummy != 0) {
-                        goto special_done;
-                    }
-                }
-            }
-        }
-        dummy = SpaceLounge_getSoundId_specialRandom->nextInt(2);
-        soundId = dummy + 0x314;
-    }
-
-special_done:
     if (race == 3) {
-        int *parts = agent->getImageParts();
-        if (parts == 0) {
+        // Midorian voices: only the type-2 face uses the race-3 bank.
+        if (agent->getImageParts() == 0) {
             race = 3;
-            dummy = 0;
         } else {
-            parts = agent->getImageParts();
-            dummy = parts[0];
-            race = 0;
-            if (dummy == 2) {
-                race = 3;
-            }
+            race = agent->getImageParts()[0] == 2 ? 3 : 0;
         }
     }
-
-    int result = this->getSpecificSoundForRace(soundId, race, male);
-    return result;
+    return this->getSpecificSoundForRace(soundId, race, male);
 }
 
 static inline Agent *key_agent(SpaceLounge *self) {
