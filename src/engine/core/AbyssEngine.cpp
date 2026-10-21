@@ -408,36 +408,20 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count) {
-        int total = 0;
         if (font == 0 || str == 0)
             return 0;
 
-        unsigned short glyphCount = font->glyphCount;
+        int total = 0;
         for (unsigned short i = 0; i < count; ++i) {
-            unsigned short idx = 0;
-            unsigned short code;
-            for (;;) {
-                unsigned int u = idx;
-                if (glyphCount <= u)
-                    goto next;
-                idx = idx + 1;
-                code = font->codes[u];
-                if (code == str[i])
+            for (unsigned short g = 0; g < font->glyphCount; ++g) {
+                if (font->codes[g] == str[i]) {
+                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int adv = font->spacing + w;
+                    // A narrow (11 px) space glyph is drawn two pixels tighter.
+                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
                     break;
+                }
             }
-            {
-                unsigned int found = (unsigned int) (unsigned short) (idx - 1);
-                Mesh *glyph = font->glyphMeshes[found];
-                int w = (int) ((float *) glyph->positions)[3];
-                int adv = (int) font->spacing + w;
-                int contrib = adv;
-                if (w == 0xb)
-                    contrib = adv - 2;
-                if (code != 0x20)
-                    contrib = adv;
-                total += contrib;
-            }
-        next:;
         }
         return total;
     }
@@ -646,38 +630,16 @@ namespace AbyssEngine {
         if (font == 0 || str == 0)
             return 0;
 
-        unsigned int end = len + start;
-        unsigned short glyphCount = font->glyphCount;
         int total = 0;
-
-        for (; (start & 0xffff) < end; ++start) {
-            unsigned short idx = 0;
-            unsigned short code;
-            bool found = false;
-            for (;;) {
-                unsigned int u = idx;
-                if (glyphCount <= u)
-                    break;
-                idx = idx + 1;
-                code = font->codes[u];
-                if (code == str[start & 0xffff]) {
-                    found = true;
+        for (unsigned short i = start; i < start + len; ++i) {
+            for (unsigned short g = 0; g < font->glyphCount; ++g) {
+                if (font->codes[g] == str[i]) {
+                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int adv = font->spacing + w;
+                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
                     break;
                 }
             }
-            if (!found)
-                continue;
-
-            unsigned int gi = (unsigned int) (unsigned short) (idx - 1);
-            Mesh *glyph = font->glyphMeshes[gi];
-            int w = (int) ((float *) glyph->positions)[3];
-            int adv = (int) font->spacing + w;
-            int contrib = adv;
-            if (w == 0xb)
-                contrib = adv - 2;
-            if (code != 0x20)
-                contrib = adv;
-            total += contrib;
         }
         return total;
     }
