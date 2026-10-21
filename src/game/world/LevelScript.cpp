@@ -4340,19 +4340,16 @@ bool LevelScript::process(int delta) {
                         (*enemies)[2]->setPosition(playerPos.x + lightDir.x * 100000.0f, 0.0f,
                                                    playerPos.z + lightDir.z * 100000.0f);
                         (*enemies)[2]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                        {
-                            AEGeometry *ref = (*enemies)[2]->geometry;
-                            Vector pos2 = (*enemies)[2]->getPosition();
-                            (*enemies)[3]->setPosition(pos2 + ref->getRightVector() * 2200.0f +
-                                                       ref->getUpVector() * -200.0f +
-                                                       ref->getDirection() * -2200.0f);
-                            (*enemies)[3]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                            pos2 = (*enemies)[2]->getPosition();
-                            (*enemies)[4]->setPosition(pos2 + ref->getRightVector() * -2200.0f +
-                                                       +ref->getUpVector() * -200.0f +
-                                                       ref->getDirection() * -2200.0f);
-                            (*enemies)[4]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
-                        }
+                        (*enemies)[3]->setPosition((*enemies)[2]->getPosition()
+                                                   + (*enemies)[2]->geometry->getRightVector() * 2200.0f
+                                                   + (*enemies)[2]->geometry->getUpVector() * -200.0f
+                                                   + (*enemies)[2]->geometry->getDirection() * -2200.0f);
+                        (*enemies)[3]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
+                        (*enemies)[4]->setPosition((*enemies)[2]->getPosition()
+                                                   + (*enemies)[2]->geometry->getRightVector() * -2200.0f
+                                                   + +(*enemies)[2]->geometry->getUpVector() * -200.0f
+                                                   + (*enemies)[2]->geometry->getDirection() * -2200.0f);
+                        (*enemies)[4]->geometry->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
                         for (int i = 2; i < 5; ++i) {
                             (*enemies)[i]->geometry->translate(
                                     (*enemies)[i]->geometry->getRightVector() * -30000.0f);
