@@ -900,138 +900,107 @@ void RecordHandler::saveOptions() {
 }
 
 void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    int costs = 0, sellSys = 0, sellBp = 0, event = 0, idx = 0, offer = 0, race = 0;
-    int sellItemIdx = 0, sellItemPrice = 0, sellItemQty = 0, station = 0, system = 0;
-    unsigned wingmen = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(costs), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellSys), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellBp), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(event), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(offer), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(race), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemIdx), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemPrice), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemQty), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(station), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(system), fd);
+    int costs = 0;
+    AEFile::Read(costs, fd);
+    int sellSystem = 0;
+    AEFile::Read(sellSystem, fd);
+    int sellBluePrint = 0;
+    AEFile::Read(sellBluePrint, fd);
+    int event = 0;
+    AEFile::Read(event, fd);
+    int kind = 0;
+    AEFile::Read(kind, fd);
+    int offer = 0;
+    AEFile::Read(offer, fd);
+    int race = 0;
+    AEFile::Read(race, fd);
+    int sellItemIndex = 0;
+    AEFile::Read(sellItemIndex, fd);
+    int sellItemPrice = 0;
+    AEFile::Read(sellItemPrice, fd);
+    int sellItemQuantity = 0;
+    AEFile::Read(sellItemQuantity, fd);
+    int station = 0;
+    AEFile::Read(station, fd);
+    int system = 0;
+    AEFile::Read(system, fd);
+    int wingmen = 0;
     AEFile::Read(wingmen, fd);
-
-    unsigned char male = 0;
-    bool hasReward = false, accepted = false;
-    unsigned char raw24 = 0, raw25 = 0;
+    bool male = false;
     AEFile::Read(male, fd);
+    bool hasReward = false;
     AEFile::Read(hasReward, fd);
+    bool accepted = false;
     AEFile::Read(accepted, fd);
-    AEFile::Read(raw24, fd);
-    AEFile::Read(raw25, fd);
+    bool askedForDifficulty = false;
+    AEFile::Read(askedForDifficulty, fd);
+    bool askedForLocation = false;
+    AEFile::Read(askedForLocation, fd);
 
-    unsigned imgCount = 0;
-    AEFile::Read(imgCount, fd);
-    int *img = 0;
-    if (0 < (int) imgCount) {
-        img = new int[imgCount];
-        int *p = img;
-        for (int i = 0; i < (int) imgCount; i++) {
-            AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-            p++;
+    int imageCount = 0;
+    AEFile::Read(imageCount, fd);
+    int *imageParts = 0;
+    if (imageCount >= 1) {
+        imageParts = new int[imageCount];
+        for (int i = 0; i < imageCount; i++) {
+            AEFile::Read(imageParts[i], fd);
         }
     }
-
     int sellMod = -1;
-    if (0x12 < idx) {
-        AEFile::Read(reinterpret_cast<int32_t &>(sellMod), fd);
+    if (kind >= 19) {
+        AEFile::Read(sellMod, fd);
     }
 
-    String missionStr, name, stationName, systemName, strE, strF;
-    {
-        if (missionStr.data) delete[] missionStr.data;
-        missionStr.data = nullptr;
-        missionStr.length = 0;
-    }
-    {
-        if (name.data) delete[] name.data;
-        name.data = nullptr;
-        name.length = 0;
-    }
-    {
-        if (stationName.data) delete[] stationName.data;
-        stationName.data = nullptr;
-        stationName.length = 0;
-    }
-    {
-        if (systemName.data) delete[] systemName.data;
-        systemName.data = nullptr;
-        systemName.length = 0;
-    }
-    {
-        if (strE.data) delete[] strE.data;
-        strE.data = nullptr;
-        strE.length = 0;
-    }
-    {
-        if (strF.data) delete[] strF.data;
-        strF.data = nullptr;
-        strF.length = 0;
-    }
-    AEFile::Read(missionStr, fd, (bool)true);
-    AEFile::Read(name, fd, (bool)true);
-    AEFile::Read(stationName, fd, (bool)true);
-    AEFile::Read(systemName, fd, (bool)true);
-    AEFile::Read(strE, fd, (bool)true);
-    AEFile::Read(strF, fd, (bool)true);
+    String missionString;
+    String name;
+    String stationName;
+    String systemName;
+    String wingmanName1;
+    String wingmanName2;
+    AEFile::Read(missionString, fd, true);
+    AEFile::Read(name, fd, true);
+    AEFile::Read(stationName, fd, true);
+    AEFile::Read(systemName, fd, true);
+    AEFile::Read(wingmanName1, fd, true);
+    AEFile::Read(wingmanName2, fd, true);
 
+    Mission *mission;
     int hasMission = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(hasMission), fd);
-    Mission *mission = (hasMission < 1) ? 0 : (Mission *) this->readMission(fd);
-
-    String nameCopy;
-    nameCopy.Set((name).data);
-    Agent *agent = new Agent(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
-
-    ((Agent *) (agent))->setCosts(costs);
-    ((Agent *) (agent))->setEvent(event);
-    ((Agent *) (agent))->setOffer(offer);
-    ((Agent *) (agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
-
-    if (strE.size() != 0) {
-        String *s = new String();
-        s->Set((strE).data);
-        agent->wingman1 = s;
+    AEFile::Read(hasMission, fd);
+    if (hasMission >= 1) {
+        mission = (Mission *) this->readMission(fd);
+    } else {
+        mission = 0;
     }
-    if (strF.size() != 0) {
-        String *s = new String();
-        s->Set((strF).data);
-        agent->wingman2 = s;
+
+    Agent *agent = new Agent(kind, name, station, system, race, male, sellSystem, sellBluePrint, sellMod,
+                             sellItemPrice);
+    agent->setCosts(costs);
+    agent->setEvent(event);
+    agent->setOffer(offer);
+    agent->setSellItemData(sellItemIndex, sellItemQuantity, sellItemPrice);
+    if (wingmanName1.length != 0) {
+        agent->wingman1 = new String(wingmanName1);
+    }
+    if (wingmanName2.length != 0) {
+        agent->wingman2 = new String(wingmanName2);
     }
     agent->wingmanCount = wingmen;
-
-    Array<String *> *arr = new Array<String *>();
-    ArraySetLength(wingmen, *arr);
-    for (int i = 0; i < (int) wingmen; i++) {
-        String *s = new String();
-        String *src = (i == 0) ? &strE : &strF;
-        s->Set((src)->data);
-        (*arr)[i] = s;
+    Array<String *> *friendNames = new Array<String *>();
+    ArraySetLength(wingmen, *friendNames);
+    for (int i = 0; i < wingmen; i++) {
+        (*friendNames)[i] = new String(i == 0 ? wingmanName1 : wingmanName2);
     }
-    ((Agent *) (agent))->setWingmanFriendNames(arr);
-    ((Agent *) (agent))->giveRewardAtNextChat(hasReward);
-    ((Agent *) (agent))->setOfferAccepted(accepted);
-    ((Agent *) (agent))->setImageParts(img);
-
-    String tmp;
-    tmp.Set((missionStr).data);
-    ((Agent *) (agent))->setMissionString(tmp);
-    tmp.Set((stationName).data);
-    ((Agent *) (agent))->setStationName(tmp);
-    tmp.Set((systemName).data);
-    ((Agent *) (agent))->setSystemName(tmp);
-    ((Agent *) (agent))->setMission((Mission *) mission);
-
-    agent->wasAskedForDifficulty = raw24;
-    agent->wasAskedForLocation = raw25;
-
+    agent->setWingmanFriendNames(friendNames);
+    agent->giveRewardAtNextChat(hasReward);
+    agent->setOfferAccepted(accepted);
+    agent->setImageParts(imageParts);
+    agent->setMissionString(missionString);
+    agent->setStationName(stationName);
+    agent->setSystemName(systemName);
+    agent->setMission(mission);
+    agent->wasAskedForDifficulty = askedForDifficulty;
+    agent->wasAskedForLocation = askedForLocation;
     return agent;
 }
 
