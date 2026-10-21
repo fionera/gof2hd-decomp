@@ -45,7 +45,7 @@ static const char *const kBumpShaderRefractFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int BumpShaderRefract::ShaderIndex;
+    int BumpShaderRefract::ShaderIndex = -1;
 
     void BumpShaderRefract::SetInActive() {
         if (aPositionLoc >= 0)

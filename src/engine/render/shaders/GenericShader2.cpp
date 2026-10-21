@@ -10,7 +10,7 @@ static const char *const kGenericShader2FragmentSource =
     "precision lowp float;uniform sampler2D  s_texture;uniform lowp vec4  glColor;uniform lowp vec4  u_AmbientColor;uniform lowp vec4  u_DiffuseColor;uniform lowp vec4  u_SpecularColor;varying mediump    vec2 v_texCoord;void main(){\tgl_FragColor =  texture2D( s_texture, v_texCoord );}";
 
 namespace AbyssEngine {
-    int GenericShader2::ShaderIndex;
+    int GenericShader2::ShaderIndex = -1;
 
     void GenericShader2::SetInActive() {
         if (aPositionLoc >= 0)

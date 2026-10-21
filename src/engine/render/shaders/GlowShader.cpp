@@ -24,7 +24,7 @@ static const char *const kGlowShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int GlowShader::ShaderIndex;
+    int GlowShader::ShaderIndex = -1;
 
     GlowShader::GlowShader() {
         GlowShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

@@ -14,6 +14,11 @@ set(CMAKE_CXX_COMPILER "${GOF2_NDK_CLANGXX}")
 set(CMAKE_CXX_COMPILER_ID Clang)
 set(CMAKE_CXX_COMPILER_WORKS TRUE)     # skip CMake's try_compile probe (cross compiler)
 set(CMAKE_CXX_COMPILER_FORCED TRUE)
+# C TUs (the original's NDK glue was C: unprototyped calls, first-reference placement).
+set(CMAKE_C_COMPILER "${GOF2_NDK_CLANG}")
+set(CMAKE_C_COMPILER_ID Clang)
+set(CMAKE_C_COMPILER_WORKS TRUE)
+set(CMAKE_C_COMPILER_FORCED TRUE)
 set(CMAKE_AR "${GOF2_NDK_AR}" CACHE FILEPATH "NDK llvm-ar" FORCE)
 
 # Optimization level is the main byte-matching knob (the original was built -Oz). Override to A/B.
@@ -52,3 +57,20 @@ set(CMAKE_CXX_FLAGS
 -I${_gof2_root}/third_party/libzip \
 -I${_gof2_root}/third_party/crypto"
     CACHE STRING "matching ARM compile flags" FORCE)
+set(CMAKE_C_FLAGS
+    "-target armv7-none-linux-androideabi${_match_api} \
+-march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp \
+-fPIC -fstack-protector-strong ${GOF2_MATCH_OPT} -g \
+-isystem ${GOF2_NDK_SUPPORT_INC} \
+--sysroot=${GOF2_NDK_SYSROOT} \
+-isystem ${GOF2_NDK_SYSROOT}/usr/include \
+-isystem ${GOF2_NDK_SYSROOT}/usr/include/arm-linux-androideabi \
+-D__ANDROID_API__=${_match_api} \
+-Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast \
+-I${_gof2_root}/src \
+-I${_gof2_root}/third_party/fmod/inc \
+-I${_gof2_root}/third_party/gl \
+-I${_gof2_root}/third_party/jni \
+-I${_gof2_root}/third_party/libzip \
+-I${_gof2_root}/third_party/crypto"
+    CACHE STRING "matching ARM C compile flags" FORCE)

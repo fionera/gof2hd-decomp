@@ -51,7 +51,7 @@ static const char *const kSimpleRefractionShaderFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int SimpleRefractionShader::ShaderIndex;
+    int SimpleRefractionShader::ShaderIndex = -1;
 
     SimpleRefractionShader::SimpleRefractionShader() {
         SimpleRefractionShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

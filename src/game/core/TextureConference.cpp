@@ -34,7 +34,7 @@ static const char *const kTextureConferenceFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int TextureConference::ShaderIndex;
+    int TextureConference::ShaderIndex = -1;
 
     TextureConference::TextureConference() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

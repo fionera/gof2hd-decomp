@@ -65,7 +65,7 @@ static const char *const kTextureAlphaTestShaderFogFragmentSource =
     "}   \t\t  \n";
 
 namespace AbyssEngine {
-    int TextureAlphaTestShader::ShaderIndex;
+    int TextureAlphaTestShader::ShaderIndex = -1;
 
     TextureAlphaTestShader::TextureAlphaTestShader() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

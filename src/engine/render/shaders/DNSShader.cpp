@@ -21,7 +21,7 @@ static const char *const kDNSShaderFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int DNSShader::ShaderIndex;
+    int DNSShader::ShaderIndex = -1;
 
     DNSShader::DNSShader() {
         DNSShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;

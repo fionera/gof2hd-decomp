@@ -8,7 +8,7 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain.cmake")
 endif()
 
-project(GalaxyOnFire2 LANGUAGES CXX)
+project(GalaxyOnFire2 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # compile_commands.json for clangd/CLion code intelligence
 
@@ -22,7 +22,7 @@ set(GOF2_FMOD_LIBDIR "${_orig_dir}/apk_libs" CACHE PATH "Directory holding the A
 
 # One OBJECT library feeds both the per-function ASM verify (diff vs the original) and the whole-.so
 # link (gold link below). The original .so is -fPIC, so these objects match it and link cleanly.
-file(GLOB_RECURSE _srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE _srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")
 add_library(gof2 OBJECT ${_srcs})
 
 # Whole-.so byte/hash identity requires reproducing the original's (interleaved) .text function

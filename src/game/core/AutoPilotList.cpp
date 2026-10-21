@@ -13,7 +13,6 @@
 
 
 
-static const char kEmpty[] = "";
 static const char kApLit1[] = ": ";
 static const char kApLit2[] = " ";
 
@@ -115,7 +114,7 @@ String AutoPilotList::getTargetString() {
     int idx = this->selected;
     if (idx >= 0 && (uint32_t) idx < this->entries->size())
         return String(*(*this->entries)[idx], false);
-    return String(kEmpty, false);
+    return String("", false);
 }
 
 void AutoPilotList::draw() {
