@@ -803,9 +803,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -825,9 +828,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             if (idx == 181) {
                 z = -300.0f;
                 x = 0.0f;
+            } else if (idx == 48) {
+                z = 300.0f;
+                x = 80.0f;
             } else {
                 z = 300.0f;
-                x = idx == 48 ? 80.0f : 0.0f;
+                x = 0.0f;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
@@ -5483,6 +5489,8 @@ Level::Level(int mission)
     flashColor[2] = 0;
     flashDurationA = 0;
     flashDurationB = 0;
+    field_18a = 0;
+    field_188 = 0;
     flashActive = 0;
     asteroidWaypoint = nullptr;
     field_dc = 0;
@@ -5518,8 +5526,6 @@ Level::Level(int mission)
     friendCount = 0;
     field_164 = 0;
     field_168 = 0;
-    field_18a = 0;
-    field_188 = 0;
     alarmRequested = 0;
     movingStarsIndex = -1;
     field_284 = -1;
@@ -6289,7 +6295,7 @@ void Level::assignGuns() {
                 || campaignMission == 56) {
                 damage = 5;
             }
-            if (campaignMission == 80 && (*enemies)[i]->field_0x3e) {
+            if ((*enemies)[i]->field_0x3e && campaignMission == 80) {
                 damage = (int) (damage * 1.7f);
             }
             if (Globals::status->getCurrentCampaignMission() == 70 && !(*enemies)[i]->isWingMan()) {

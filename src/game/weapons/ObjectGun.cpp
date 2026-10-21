@@ -215,15 +215,13 @@ void ObjectGun::update(int dt) {
                     barrelLength = 172.0f;
                 else if (item == 0x30)
                     barrelLength = 170.0f;
-                else if (item == 0xb6)
-                    barrelLength = 115.0f;
                 else
-                    barrelLength = 205.0f;
+                    barrelLength = item == 0xb6 ? 115.0f : 205.0f;
                 Vector muzzle = {0.0f, 0.0f, barrelLength};
-                if (item == 0xe0)
-                    muzzle.z = 147.0f;
-                else if (item == 0xb6)
+                if (item == 0xb6)
                     muzzle.z = 150.0f;
+                else if (item == 0xe0)
+                    muzzle.z = 147.0f;
                 if (gun->field_0xa4_b0) {
                     if (item == 0xb5)
                         muzzle.x = gun->field_0xa6 ? -35.0f : 35.0f;
