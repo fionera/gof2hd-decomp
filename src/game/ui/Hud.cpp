@@ -965,54 +965,263 @@ static int **g_Hud_initOutX = nullptr;
 
 static int **g_Hud_initOutY = nullptr;
 
-static const unsigned short g_Hud_raceBadge[16] = {0};
+static const int g_Hud_raceBadge[4] = {1190, 1187, 1189, 1188};
 static const char g_Hud_initMsg[1] = {0};
 
 int Hud::init() {
-    Hud_loadImages(this);
+    Globals::Canvas->Image2DCreate(1196, this->shieldFrameImage);
+    Globals::Canvas->Image2DCreate(1197, this->shieldFrameHitImage);
+    Globals::Canvas->Image2DCreate(1198, this->shieldBarBgImage);
+    Globals::Canvas->Image2DCreate(1199, this->shieldBarFillImage);
+    Globals::Canvas->Image2DCreate(1194, this->armorFrameImage);
+    Globals::Canvas->Image2DCreate(1195, this->armorFrameLowImage);
+    Globals::Canvas->Image2DCreate(1191, this->armorBarBgImage);
+    Globals::Canvas->Image2DCreate(1192, this->armorRegenFillImage);
+    Globals::Canvas->Image2DCreate(1316, this->armorBarFillImage);
+    Globals::Canvas->Image2DCreate(8025, this->image_0x2d0);
+    Globals::Canvas->Image2DCreate(8026, this->image_0x2cc);
+    Globals::Canvas->Image2DCreate(8027, this->barDividerImage);
+    Globals::Canvas->Image2DCreate(1193, this->lockBracketImage);
+    Globals::Canvas->Image2DCreate(1211, this->image_0x34c);
+    Globals::Canvas->Image2DCreate(1210, this->image_0x350);
+    if (Globals::iPad != 0) {
+        Globals::Canvas->Image2DCreate(1222, this->image_0x4);
+        Globals::Canvas->Image2DCreate(1706, this->image_0x8);
+        this->image_0x348 = this->image_0x4;
+    } else {
+        Globals::Canvas->Image2DCreate(1222, this->image_0x348);
+    }
+    Globals::Canvas->Image2DCreate(1205, this->orbitMarkerIdleImage);
+    Globals::Canvas->Image2DCreate(1204, this->autoTurretOnImage);
+    Globals::Canvas->Image2DCreate(1334, this->autoTurretOffImage);
+    Globals::Canvas->Image2DCreate(1213, this->reticleImage);
+    Globals::Canvas->Image2DCreate(1212, this->missionBannerImage);
+    Globals::Canvas->Image2DCreate(1209, this->pauseButtonPressedImage);
+    Globals::Canvas->Image2DCreate(1208, this->pauseButtonImage);
+    Globals::Canvas->Image2DCreate(1203, this->fuelGaugeIconImage);
+    Globals::Canvas->Image2DCreate(1202, this->fuelGaugeBarImage);
+    Globals::Canvas->Image2DCreate(1201, this->image_0x30c);
+    Globals::Canvas->Image2DCreate(1200, this->image_0x310);
+    Globals::Canvas->Image2DCreate(1207, this->image_0x304);
+    Globals::Canvas->Image2DCreate(1206, this->image_0x308);
+    Globals::Canvas->Image2DCreate(1217, this->image_0x31c);
+    Globals::Canvas->Image2DCreate(1221, this->image_0x320);
+    Globals::Canvas->Image2DCreate(1312, this->image_0x324);
+    Globals::Canvas->Image2DCreate(1219, this->image_0x354);
+    Globals::Canvas->Image2DCreate(1218, this->image_0x358);
+    Globals::Canvas->Image2DCreate(1231, this->quickMenuTopImage);
+    Globals::Canvas->Image2DCreate(1233, this->quickMenuMiddleImage);
+    Globals::Canvas->Image2DCreate(1232, this->quickMenuBottomImage);
+    Globals::Canvas->Image2DCreate(1335, this->image_0x370);
+    Globals::Canvas->Image2DCreate(1336, this->image_0x374);
+    Globals::Canvas->Image2DCreate(1337, this->image_0x37c);
+    Globals::Canvas->Image2DCreate(1338, this->image_0x378);
+    Globals::Canvas->Image2DCreate(1338, this->image_0x388);
+    Globals::Canvas->Image2DCreate(8001, this->image_0x38c);
+    Globals::Canvas->Image2DCreate(1317, this->image_0x360);
+    Globals::Canvas->Image2DCreate(1318, this->image_0x364);
+    Globals::Canvas->Image2DCreate(1323, this->image_0x368);
+    Globals::Canvas->Image2DCreate(1324, this->image_0x36c);
+    Globals::Canvas->Image2DCreate(1320, this->image_0x4f4);
+    Globals::Canvas->Image2DCreate(1319, this->image_0x504);
+    Globals::Canvas->Image2DCreate(1257, this->image_0x4f8);
+    Globals::Canvas->Image2DCreate(1258, this->image_0x508);
+    Globals::Canvas->Image2DCreate(1214, this->image_0x4fc);
+    Globals::Canvas->Image2DCreate(1215, this->image_0x50c);
+    Globals::Canvas->Image2DCreate(1322, this->image_0x500);
+    Globals::Canvas->Image2DCreate(1321, this->image_0x510);
+    Globals::Canvas->Image2DCreate(1344, this->image_0x390);
+    Globals::Canvas->Image2DCreate(1345, this->image_0x394);
+    Globals::Canvas->Image2DCreate(1343, this->image_0x398);
+    Globals::Canvas->Image2DCreate(1346, this->image_0x39c);
+    Globals::Canvas->Image2DCreate(1347, this->image_0x3a0);
+    Globals::Canvas->Image2DCreate(1350, this->image_0x314);
+    Globals::Canvas->Image2DCreate(1351, this->image_0x318);
+    Globals::Canvas->Image2DCreate(8024, this->image_0x3a4);
+    Globals::Canvas->Image2DCreate(8023, this->image_0x3a8);
+    Globals::Canvas->Image2DCreate(1201, this->image_0x3ac);
+    Globals::Canvas->Image2DCreate(1200, this->image_0x3b0);
+    Globals::Canvas->Image2DCreate(8003, this->image_0x334);
+    Globals::Canvas->Image2DCreate(8002, this->image_0x344);
+    Globals::Canvas->Image2DCreate(8000, this->image_0x380);
+    Globals::Canvas->Image2DCreate(8033, this->image_0x338);
+    Globals::Canvas->Image2DCreate(8032, this->image_0x33c);
+    Globals::Canvas->Image2DCreate(8031, this->image_0x384);
+    Globals::Canvas->Image2DCreate(8028, this->image_0x340);
 
-    this->messageActive = 0;
+    this->field_0x4ac = 0;
+    this->field_0x4b0 = 0;
+    this->field_0x4b4 = 0;
+    this->field_0x4b8 = 0;
+    this->field_0x4a1 = 0;
+    this->field_0x4a2 = 0;
+    this->field_0x4a3 = 0;
+    this->field_0x4a4 = 0;
+    this->field_0x4d4 = Globals::layout->field_0x12c;
+    this->field_0x4d8 = Globals::layout->field_0x130;
+    this->field_0x4dc = Globals::layout->field_0x134;
+    this->analogStickRadius = Globals::layout->field_0x138;
+    this->field_0x4e4 = Globals::layout->field_0x13c;
+    this->field_0x4e8 = Globals::layout->field_0x140;
+    this->field_0x4ec = Globals::layout->field_0x144;
+    this->field_0x4f0 = Globals::layout->field_0x148;
+    this->field_0x434 = Globals::w - Globals::layout->field_0x14c;
+    this->field_0x436 = Globals::h - this->field_0x4d4 - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) - Globals::layout->field_0x150;
+    this->field_0x3f0 = Globals::Canvas->GetImage2DWidth(this->reticleImage);
+    this->field_0x3e4 = Globals::w - Globals::layout->field_0x154 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
+    this->field_0x3e6 = Globals::h - Globals::layout->field_0x158 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
+    this->field_0x3ec = Globals::w - Globals::layout->field_0x15c - this->field_0x3f0;
+    this->field_0x3ee = Globals::h - Globals::layout->field_0x160 - this->field_0x3f0;
+    this->field_0x3ea = Globals::layout->field_0x164;
+    this->field_0x3e0 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0x354) / 2;
+    this->field_0x3e2 = Globals::layout->field_0x168;
+    this->field_0x3f6 = Globals::Canvas->GetImage2DWidth(this->image_0x4f4);
+    this->field_0x3f2 = Globals::w - this->field_0x3f6 - Globals::layout->field_0x16c;
+    this->field_0x3f4 = Globals::h - Globals::layout->field_0x170 - Globals::Canvas->GetImage2DHeight(this->image_0x4f4);
+    this->field_0x41a = Globals::Canvas->GetImage2DWidth(this->image_0x34c);
+    this->field_0x41c = Globals::layout->field_0x174;
+    this->field_0x416 = Globals::w - Globals::layout->field_0x178 - this->field_0x41a;
+    this->field_0x418 = Globals::h - Globals::layout->field_0x17c - Globals::Canvas->GetImage2DHeight(this->image_0x34c);
+    this->field_0x3fc = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3f8 = Globals::layout->field_0x180;
+    this->field_0x3fa = Globals::h - Globals::layout->field_0x184 - Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x402 = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3fe = Globals::w - Globals::layout->field_0x180 - this->field_0x3fc;
+    this->field_0x400 = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
+    this->field_0x40e = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
+    this->field_0x40a = Globals::w - this->field_0x40e - Globals::layout->field_0x194;
+    this->field_0x40c = Globals::layout->field_0x198;
+    this->field_0x438 = Globals::w - Globals::Canvas->GetImage2DWidth(this->image_0x320) - Globals::layout->field_0x19c;
+    this->field_0x43a = Globals::layout->field_0x1a0;
+    this->field_0x430 = Globals::Canvas->GetImage2DWidth(this->image_0x31c);
+    this->field_0x45c = Globals::Canvas->GetImage2DWidth(this->image_0x3a4);
+    this->field_0x454 = Globals::w / 2 - this->field_0x45c / 2 - Globals::layout->helpWindowX;
+    this->field_0x458 = Globals::layout->helpWindowX + Globals::w / 2 - this->field_0x45c / 2;
+    this->field_0x460 = this->field_0x3ee;
+    this->field_0x45e = Globals::w / 2 - this->field_0x45c / 2;
+    this->field_0x45a = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x456 = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x42c = Globals::layout->field_0x1a4;
+    this->field_0x42e = Globals::h - Globals::layout->field_0x1a8 - Globals::Canvas->GetImage2DHeight(this->image_0x31c);
+    this->field_0x422 = Globals::Canvas->GetImage2DWidth(this->image_0x304);
+    this->reticleX = this->field_0x42c + this->field_0x430 / 2;
+    this->lockBracketX = this->field_0x42c + this->field_0x430 / 2;
+    this->reticleY = this->field_0x42e + this->field_0x430 / 2;
+    this->lockBracketY = this->field_0x42e + this->field_0x430 / 2;
+    this->field_0x414 = Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
+    this->field_0x410 = Globals::layout->field_0x1ac;
+    this->field_0x412 = Globals::h - Globals::layout->field_0x1b0 - Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
+    this->field_0x408 = Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x404 = Globals::layout->field_0x188;
+    this->field_0x406 = Globals::h - Globals::layout->field_0x18c - Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x450 = Globals::layout->field_0x190;
+
+    if (Globals::iPad != 0) {
+        this->field_0x3c4 = Globals::w - Globals::layout->buttonInsetX - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage);
+        this->menuOriginY = this->field_0x418 - Globals::layout->field_0x2c_rowHeight - 6 * Globals::layout->field_0x30_rowHeight - Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
+        Globals::globals->setCoordsSteer(*(int *) &Globals::options[84], Globals::Canvas->GetImage2DWidth(this->image_0x31c),
+                                         Globals::Canvas->GetImage2DWidth(this->image_0x310),
+                                         Globals::Canvas->GetImage2DWidth(this->fuelGaugeBarImage), this->field_0x3f8, this->field_0x3fa, this->field_0x42c,
+                                         this->field_0x42e, this->reticleX, this->reticleY, this->field_0x410, this->field_0x412, this->field_0x404, this->field_0x406);
+        this->lockBracketX = this->reticleX;
+        this->lockBracketY = this->reticleY;
+        Globals::globals->setCoordsFire(*(int *) &Globals::options[88], Globals::Canvas->GetImage2DWidth(this->image_0x4),
+                                        this->image_0x4, this->image_0x8, this->image_0x348, this->field_0xc, this->field_0xe, this->field_0x3e4, this->field_0x3e6, this->field_0x416,
+                                        this->field_0x418, this->field_0x3f2, this->field_0x3f4, this->field_0x3ec, this->field_0x3ee, this->field_0x3fe, this->field_0x400);
+        this->steerOption = *(int *) &Globals::options[84];
+        this->fireOption = *(int *) &Globals::options[88];
+    } else {
+        this->field_0x3c4 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage) / 2;
+        this->menuOriginY = Globals::layout->field_0x1b4;
+    }
+    this->menuRowHeight = Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
+    this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
+    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
+    this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
+    this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
+    this->field_0x43c = Globals::layout->field_0x1c4;
+    this->field_0x43e = Globals::Canvas->GetImage2DWidth(this->shieldFrameImage) + Globals::layout->field_0x1c4;
+    this->field_0x444 = Globals::layout->field_0x1c8;
+    this->field_0x448 = Globals::layout->field_0x1cc;
+    this->field_0x442 = Globals::layout->field_0x1d0;
+    this->field_0x44a = Globals::layout->field_0x1d4;
+    this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
+    this->field_0x440 = this->field_0x43e;
+    this->field_0x44c = Globals::Canvas->GetImage2DHeight(this->shieldBarFillImage);
+    this->menuOriginX = 0;
+    this->menuOriginYBase = 0;
+    this->touchHalfExtent = 0;
+    this->touchHalfExtentSmall = 0;
+    this->autofireEnabled = 0;
+    this->field_0x476 = 1;
+    this->field_0x474 = 1;
+    this->eventLineMargin = 0;
+    this->eventLineMarginAlt = 0;
+    this->timeExtenderTimer = 0;
+    this->field_0x4c4 = 0;
+    this->fireForTutorial = 0;
+    this->quickMenuOpen = 0;
+    this->field_0x15c = -1;
+    this->eventQueue = new Array<ListItem *>();
+    ArraySetLength(20, *this->eventQueue);
+    this->field_0x160 = Globals::w >> 1;
+    this->field_0x164 = Globals::h - this->field_0x4e4;
+    Hud::RADAR_WIDTH = Globals::w - 28;
+    Hud::RADAR_HEIGHT = Globals::h - 33 - this->field_0x4e4 - this->field_0x4ec - Globals::layout->field_0x1d8;
+    this->field_0x1d0 = 10000;
+    this->field_0x1dc[2] = 0;
+    this->field_0x218 = Globals::w - 5;
+    this->hasBoostButton = Globals::status->getShip()->getBoostDelay() > 0;
+    this->hasShieldBar = Globals::status->getShip()->getMaxShieldHP() > 0;
+    this->hasArmorRegen = Globals::status->getShip()->getMaxArmorHP() > 0;
+    this->hasAutofireUI = Globals::status->getShip()->getFirePower() > 0.0f;
+    this->hasCloak = Globals::status->getShip()->hasCloak();
+    this->eventQueueDirty = 0;
+    this->field_0x234 = 0;
+    this->cargoFullFlag = 0;
+    this->field_0x236 = 0;
+    this->visible = 1;
+    this->jumpMapSelectedFlag = 0;
+    this->eventQueueTimer = 0;
+    this->eventQueuePaused = 0;
+    this->shieldHitFlash = 0;
+    this->hitFlashTimer = 0;
+    this->currentSecondaryWeapon = 0;
+    this->menuButtons = 0;
+    this->field_0x4cc = 0;
+    this->field_0x4d0 = 0;
+    this->field_0x276 = 0;
+    this->weaponSelectState = 0;
+    this->fuelGaugeValue = 0;
+    this->factionLogoImage = -1;
+    this->field_0x0 = 0;
+    this->field_0x280 = 1;
+    this->field_0x281 = 0;
+    this->timeExtenderTimer = -1;
+    this->timeExtenderDuration = -1;
+    this->cargoAggregateCount = 0;
+    this->field_0x4c8 = 0;
     this->hackingGameActive = 0;
-
     this->keyArray = new Array<void *>(); // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
-    // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
-    ArraySetLength(0x19, *(this->keyArray));
-    this->elementBits = new int[0x19];
-    for (int i = 0; i != 0x19; i++) {
+    ArraySetLength(25, *this->keyArray);
+    this->elementBits = new int[25];
+    for (int i = 0; i < 25; i++) {
         (*this->keyArray)[i] = 0;
         this->elementBits[i] = 0;
     }
     this->touchFlags = 0;
-
-    if (Globals::status->inAlienOrbit() == 0) {
-        int race = ((SolarSystem *) ((long) Globals::status->getSystem()))->getRace();
-        Image2DCreate(Globals::Canvas, g_Hud_raceBadge[race], &this->factionLogoImage);
-    }
-
+    if (Globals::status->inAlienOrbit() == 0)
+        Globals::Canvas->Image2DCreate(g_Hud_raceBadge[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()],
+                                       this->factionLogoImage);
     this->secondaryLabelTimerSeed = -1;
     this->secondaryLabelTimer = 0;
-    {
-        char tmp[12];
-        ((String *) (tmp))->ctor_char(g_Hud_initMsg, false);
-        *((String *) (&this->field_0x51c)) = *((String *) (tmp));
-        {
-            String *_s = ((String *) (tmp));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-
-    closeHudMenu();
-    checkIfQuickMenuIsEmpty();
-    releaseAllKeys();
+    this->field_0x51c = String("");
+    this->closeHudMenu();
+    this->checkIfQuickMenuIsEmpty();
+    this->releaseAllKeys();
     this->uintArray = 0;
-
-    int *layout = (int *) Globals::layout;
-    int w = Globals::Canvas->GetImage2DWidth((unsigned) (0));
-    int bound = *(int *) &Globals::w;
-    *(int *) *g_Hud_initOutX = (bound - w) - layout[0x65];
-    *(int *) *g_Hud_initOutY = layout[0x66];
+    Globals::pause_x = Globals::w - Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage) - Globals::layout->field_0x194;
+    Globals::pause_y = Globals::layout->field_0x198;
     return 0;
 }
 
