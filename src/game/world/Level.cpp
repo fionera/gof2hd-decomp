@@ -4382,175 +4382,154 @@ void Level::update(long long dt, bool skipLod) {
 }
 
 void Level::connectPlayers() {
-    if (Globals::appManager->currentModuleId == 5)
+    if ((int) (intptr_t) Globals::appManager->GetCurrentApplicationModule() == 5) {
         return;
-
-    if (this->enemies != nullptr && this->player != nullptr) {
-        Array<Player *> arr;
-        ArraySetLength(this->enemies->size(), arr);
-        for (unsigned j = 0; j < arr.size(); j = j + 1)
-            arr[j] = (*this->enemies)[j]->player;
-        ((Player *) this->player->player)->setEnemies(&arr);
     }
 
-    if (this->asteroids != nullptr && this->player != nullptr) {
-        Array<Player *> arr;
-        ArraySetLength(this->asteroids->size(), arr);
-        for (unsigned j = 0; j < arr.size(); j = j + 1)
-            arr[j] = (*this->asteroids)[j]->player;
-        ((Player *) this->player->player)->addEnemies(&arr);
+    if (enemies != nullptr && player != nullptr) {
+        Array<Player *> *targets = new Array<Player *>();
+        ArraySetLength(enemies->size(), *targets);
+        for (unsigned int i = 0; i < targets->size(); i++) {
+            (*targets)[i] = (*enemies)[i]->player;
+        }
+        player->player->setEnemies(targets);
+        delete targets;
     }
-    if (this->gasClouds != nullptr && this->player != nullptr) {
-        Array<Player *> arr;
-        ArraySetLength(this->gasClouds->size(), arr);
-        for (unsigned j = 0; j < arr.size(); j = j + 1)
-            arr[j] = (*this->gasClouds)[j]->player;
-        ((Player *) this->player->player)->addEnemies(&arr);
+    if (asteroids != nullptr && player != nullptr) {
+        Array<Player *> *targets = new Array<Player *>();
+        ArraySetLength(asteroids->size(), *targets);
+        for (unsigned int i = 0; i < targets->size(); i++) {
+            (*targets)[i] = (*asteroids)[i]->player;
+        }
+        player->player->addEnemies(targets);
+        delete targets;
     }
-
-    if (this->enemies == nullptr)
+    if (gasClouds != nullptr && player != nullptr) {
+        Array<Player *> *targets = new Array<Player *>();
+        ArraySetLength(gasClouds->size(), *targets);
+        for (unsigned int i = 0; i < targets->size(); i++) {
+            (*targets)[i] = (*gasClouds)[i]->player;
+        }
+        player->player->addEnemies(targets);
+        delete targets;
+    }
+    if (enemies == nullptr) {
         return;
+    }
 
-    int camp = Globals::status->getCurrentCampaignMission();
-    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-        int e = (int) (intptr_t)(*this->enemies)[i];
-        int eFaction = ((KIPlayer *) (intptr_t) e)->shipGroup;
-        int wmAll = ((KIPlayer *) e)->isWingMan();
-        unsigned count = 0;
-        bool notM24 = camp != 0x24;
-        bool notFirst = i != 0;
+    int campaignMission = Globals::status->getCurrentCampaignMission();
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        KIPlayer *ship = (*enemies)[i];
+        int group = ship->shipGroup;
+        bool wingman = ship->isWingMan();
+        bool firstOfMission24 = campaignMission == 0x24 && i == 0;
 
-        for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
-            int o = (int) (intptr_t)(*this->enemies)[k];
-            if (o != e && (((~wmAll) & (((KIPlayer *) (intptr_t) o)->shipGroup == eFaction)) == 0)) {
-                bool consider;
-                if (notM24 || notFirst) {
-                    consider = true;
-                    if (camp == 0x9a) {
-                        int alien = Globals::status->inAlienOrbit();
-                        if (k == 8 && alien != 0 && ((KIPlayer *) (intptr_t) e)->shipGroup == 8)
-                            consider = false;
-                    } else if (camp == 0x40 && !(i != 0 && e != 0 && k != 0)) {
-                        consider = false;
-                    }
-                } else {
-                    consider = ((KIPlayer *) o)->isWingMan() == 0;
-                }
-                if (consider) {
-                    bool skip = false;
-                    if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x40) != 0 && ((PlayerFixedObject *) (intptr_t) e)->
-                        getDockingType() == 3) {
-                        Station *st = (Station *) Globals::status->getStation();
-                        if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
-                            skip = true;
-                    }
-                    if (!skip)
-                        count = count + 1;
-                }
+        unsigned int count = 0;
+        for (unsigned int k = 0; k < enemies->size(); k++) {
+            KIPlayer *other = (*enemies)[k];
+            if (other == ship || (!wingman & (other->shipGroup == group))) {
+                continue;
             }
+            if (firstOfMission24) {
+                if (other->isWingMan()) {
+                    continue;
+                }
+            } else if (campaignMission == 0x9a) {
+                bool alienOrbit = Globals::status->inAlienOrbit();
+                if (k == 8 && alienOrbit && ship->shipGroup == 8) {
+                    continue;
+                }
+            } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
+                continue;
+            }
+            if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
+                && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
+                continue;
+            }
+            count++;
         }
 
-        Array<Player *> arr;
-        if (this->player != nullptr)
-            count = count + 1;
-        ArraySetLength(count, arr);
-
-        Mission *m = (Mission *) Globals::status->getMission();
-        int mtype = ((Mission *) Globals::status->getMission())->getType();
-        bool branchA = !(((i & 1) == 0 && mtype == 0xc)) &&
-                       ((Mission *) Globals::status->getMission())->getType() != 2 && ((Mission *) Globals::status->
-                           getMission())->
-                       getType() != 9;
-
-        bool jumpAlwaysFriend = false;
-        if (branchA) {
-            int tmp;
-            if (m->isCampaignMission() != 0) {
-                tmp = Globals::status->getCurrentCampaignMission();
-                if (tmp == 0x10 && ((KIPlayer *) (intptr_t) e)->shipGroup == 9) jumpAlwaysFriend = true;
-            }
-            if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
-                tmp = Globals::status->getCurrentCampaignMission();
-                if (tmp == 0x18 && ((KIPlayer *) (intptr_t) e)->shipGroup == 9) jumpAlwaysFriend = true;
-            }
-            if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
-                tmp = Globals::status->getCurrentCampaignMission();
-                if (tmp == 0x1c && ((KIPlayer *) (intptr_t) e)->shipGroup == 9) jumpAlwaysFriend = true;
-            }
-            if (!jumpAlwaysFriend) {
-                if (m->isCampaignMission() != 0) Globals::status->getCurrentCampaignMission();
-                if (m->isCampaignMission() != 0) Globals::status->getCurrentCampaignMission();
-
-                int slot = 0;
-                PlayerEgo *ego = this->player;
-                if (ego != nullptr) {
-                    arr[0] = (Player *) ego->player;
-                    slot = 1;
-                }
-                for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
-                    int o = (int) (intptr_t)(*this->enemies)[k];
-                    if (o != e && (((~wmAll) & (((KIPlayer *) (intptr_t) o)->shipGroup == eFaction)) == 0)) {
-                        bool consider;
-                        if (notM24 || notFirst) {
-                            consider = true;
-                            if (camp == 0x9a) {
-                                int alien = Globals::status->inAlienOrbit();
-                                if (k == 8 && alien != 0 && ((KIPlayer *) (intptr_t) e)->shipGroup == 8)
-                                    consider = false;
-                            } else if (camp == 0x40 && !(i != 0 && e != 0 && k != 0)) {
-                                consider = false;
-                            }
-                        } else {
-                            consider = ((KIPlayer *) o)->isWingMan() == 0;
-                        }
-                        if (consider) {
-                            bool skip = false;
-                            if ((char) reinterpret_cast<int &>(((KIPlayer *) (intptr_t) e)->field_0x40) != 0 &&
-                                ((PlayerFixedObject *) (intptr_t) e)->getDockingType() == 3) {
-                                Station *st = (Station *) Globals::status->getStation();
-                                if (((Station *) st)->stationHasHiddenBlueprint(1) != 0)
-                                    skip = true;
-                            }
-                            if (!skip) {
-                                arr[slot] = (*this->enemies)[k]->player;
-                                slot = slot + 1;
-                            }
-                        }
-                    }
-                }
-            }
+        Array<Player *> *targets = new Array<Player *>();
+        if (player != nullptr) {
+            count++;
         }
+        ArraySetLength(count, *targets);
 
-        if (!branchA || jumpAlwaysFriend) {
-            if (((KIPlayer *) (intptr_t) e)->player->isAlwaysFriend() == 0) {
-                int slot = 0;
-                for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
-                    int o = (int) (intptr_t)(*this->enemies)[k];
-                    if (o != e && ((KIPlayer *) (intptr_t) o)->stealFlagByte == 0 &&
-                        (((~wmAll) & (((KIPlayer *) (intptr_t) o)->shipGroup == eFaction)) == 0)) {
-                        bool add;
-                        if (notM24 || notFirst) {
-                            add = !(camp == 0x40 && !(i != 0 && e != 0 && k != 0));
-                        } else {
-                            add = ((KIPlayer *) o)->isWingMan() == 0;
-                        }
-                        if (add) {
-                            arr[slot] = (*this->enemies)[k]->player;
-                            slot = slot + 1;
-                        }
-                    }
+        Mission *mission = Globals::status->getMission();
+        bool friendly = ((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
+                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
+                            && ship->shipGroup == 9)
+                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
+                            && ship->shipGroup == 9)
+                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x1c
+                            && ship->shipGroup == 9);
+        if (!friendly) {
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            int slot = 0;
+            if (player != nullptr) {
+                (*targets)[0] = player->player;
+                slot = 1;
+            }
+            for (unsigned int k = 0; k < enemies->size(); k++) {
+                KIPlayer *other = (*enemies)[k];
+                if (other == ship || (!wingman & (other->shipGroup == group))) {
+                    continue;
                 }
+                if (firstOfMission24) {
+                    if (other->isWingMan()) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x9a) {
+                    bool alienOrbit = Globals::status->inAlienOrbit();
+                    if (k == 8 && alienOrbit && ship->shipGroup == 8) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
+                    continue;
+                }
+                if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
+                    && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
+                    continue;
+                }
+                (*targets)[slot++] = (*enemies)[k]->player;
+            }
+        } else {
+            if (ship->player->isAlwaysFriend()) {
+                delete targets;
+                targets = new Array<Player *>();
+                ArraySetLength(1, *targets);
             } else {
-                ArraySetLength(1, arr);
+                int slot = 0;
+                for (unsigned int k = 0; k < enemies->size(); k++) {
+                    KIPlayer *other = (*enemies)[k];
+                    if (other == ship || other->stealFlagByte || (!wingman & (other->shipGroup == group))) {
+                        continue;
+                    }
+                    if (firstOfMission24) {
+                        if (other->isWingMan()) {
+                            continue;
+                        }
+                    } else if (campaignMission == 0x40) {
+                        if (i == 0 || ship == nullptr || k == 0) {
+                            continue;
+                        }
+                    }
+                    (*targets)[slot++] = (*enemies)[k]->player;
+                }
             }
-            arr[arr.size() - 1] = (Player *) this->player->player;
+            (*targets)[targets->size() - 1] = player->player;
         }
+        ship->player->addEnemies(targets);
+        delete targets;
 
-        ((KIPlayer *) (intptr_t) e)->player->addEnemies(&arr);
-
-        Globals::status->getMission();
-        if (eFaction == 10 && ((Mission *) Globals::status->getMission())->isEmpty() != 0)
-            ((KIPlayer *) (intptr_t) e)->player->setEnemy((Player *) this->player->player);
+        if (Globals::status->getMission()->isEmpty() && group == 10) {
+            ship->player->setEnemy(player->player);
+        }
     }
 }
 
