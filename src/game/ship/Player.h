@@ -202,7 +202,7 @@ public:
 
     void setEmpForce(float value);
 
-    float *setHitVector(float x, float y, float z);
+    void setHitVector(float x, float y, float z);
 
     void setHitpoints(int value);
 
@@ -250,7 +250,7 @@ public:
 
     void damageShield(int damage);
 
-    float damageGamma(float amount);
+    void damageGamma(float amount);
 
     Array<Player *> *getEnemies();
 

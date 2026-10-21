@@ -443,24 +443,18 @@ void Player::heal(float amount) {
 }
 
 void Player::setShieldHP(int value) {
-    float maxF = (float) this->maxShieldHP;
     this->shieldHP = (float) value;
-    if ((float) value > maxF) {
-        this->shieldHP = maxF;
-    }
+    if (this->shieldHP > (float) this->maxShieldHP)
+        this->shieldHP = (float) this->maxShieldHP;
     this->updateDamageRate();
 }
 
 void Player::refillGunDelay(int slot) {
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns != 0 && slot >= 0 && (unsigned int) slot < guns->size()) {
-        Array<Gun *> *arr = guns->data()[slot];
-        if (arr != 0) {
-            int n = arr->size();
-            for (int i = 0; n != i; i++) {
-                Gun *gun = arr->data()[i];
-                gun->timer = gun->fireDelay;
-            }
+    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+        && (*this->guns)[slot] != nullptr) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            gun->timer = gun->fireDelay;
         }
     }
 }
@@ -572,18 +566,13 @@ Vector Player::getPosition() {
     return out;
 }
 
-float Player::damageGamma(float amount) {
-    if (this->vulnerable) {
-        if (this->active) {
-            amount = this->gammaHP - amount;
-            this->gammaHit = 1;
-            this->gammaHP = amount;
-            if (!(amount > 0.0f)) {
-                this->gammaHP = 0;
-            }
-        }
+void Player::damageGamma(float amount) {
+    if (this->vulnerable && this->active) {
+        this->gammaHP = this->gammaHP - amount;
+        this->gammaHit = 1;
+        if (this->gammaHP <= 0.0f)
+            this->gammaHP = 0;
     }
-    return amount;
 }
 
 void Player::damageEmp(int amount, bool flag) {
@@ -759,15 +748,10 @@ Player::~Player() {
 }
 
 void Player::setGammaHP(int value) {
-    float f = (float) value;
-    float sel = f;
-    if (value != 9999999) {
-        sel = 100.0f;
-    }
-    if (value > 100) {
-        f = sel;
-    }
-    this->gammaHP = f;
+    float hp = (float) value;
+    if (value > 100 && value != 9999999)
+        hp = 100.0f;
+    this->gammaHP = hp;
     this->updateDamageRate();
 }
 
@@ -1414,31 +1398,17 @@ void Player::stopShooting(int slot) {
     }
 }
 
-float *Player::setHitVector(float x, float y, float z) {
-    float *p = this->hitVector;
-    *p++ = x;
-    *p++ = y;
-    *p++ = z;
-    return p;
+void Player::setHitVector(float x, float y, float z) {
+    this->hitVector[0] = x;
+    this->hitVector[1] = y;
+    this->hitVector[2] = z;
 }
 
 void Player::resetGunDelay(int slot) {
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns == 0) {
-        return;
-    }
-    if (slot < 0) {
-        return;
-    }
-    if ((unsigned int) slot >= guns->size()) {
-        return;
-    }
-    Array<Gun *> *arr = guns->data()[slot];
-    if (arr != 0) {
-        int n = arr->size();
-        for (int i = 0; n != i; i++) {
-            arr->data()[i]->timer = 0;
-        }
+    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+        && (*this->guns)[slot] != nullptr) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++)
+            (*(*this->guns)[slot])[i]->timer = 0;
     }
 }
 
