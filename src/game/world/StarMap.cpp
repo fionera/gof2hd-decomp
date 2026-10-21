@@ -116,8 +116,8 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     this->pitch = 0.0f;
     this->field_0x190 = 0;
 
-    this->mode = 0;
     this->hitRadius = Globals::layout->field_0x88;
+    this->mode = 0;
     this->selectedSystem = -1;
     this->starSystemRoot = (AEGeometry *) 0;
     this->stations = (Array<Station *> *) 0;
@@ -152,13 +152,14 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         }
         (*this->systemGeoms)[i] = new AEGeometry((uint16_t) image, Globals::Canvas, false);
 
-        float scale;
         if ((*this->systems)[i]->getTextureIndex() == 15 && Globals::status->getCurrentCampaignMission() <= 157) {
-            scale = Globals::status->getCurrentCampaignMission() > 105 ? 0.025f : 0.018f;
+            if (Globals::status->getCurrentCampaignMission() <= 105)
+                (*this->systemGeoms)[i]->setScaling(0.018f, 0.018f, 0.018f);
+            else
+                (*this->systemGeoms)[i]->setScaling(0.025f, 0.025f, 0.025f);
         } else {
-            scale = 0.012f;
+            (*this->systemGeoms)[i]->setScaling(0.012f, 0.012f, 0.012f);
         }
-        (*this->systemGeoms)[i]->setScaling(scale, scale, scale);
 
         (*this->systemGeoms)[i]->setPosition(
                 (float) ((int) ((float) (100 - (*this->systems)[i]->getX()) / 100.0f * 14000.0f) - 10000),
@@ -169,8 +170,8 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     }
 
     Globals::rnd->reset();
-    this->markerGeom = (AEGeometry *) 0;
     this->choiceVisible = 0;
+    this->markerGeom = (AEGeometry *) 0;
     if (Globals::status->getCurrentCampaignMission() > 31 && Globals::status->field_7c >= 0) {
         this->markerGeom = new AEGeometry((uint16_t) 0x4262, Globals::Canvas, false);
         this->markerGeom->setPosition((*this->systemGeoms)[Globals::status->field_7c]->getPosition());
