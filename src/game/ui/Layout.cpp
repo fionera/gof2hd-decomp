@@ -569,26 +569,26 @@ String Layout::formatNumber(int value) {
     return out;
 }
 
-static int *gW1 = nullptr;
-
-static int *gW2 = nullptr;
-
-static int *gW3 = nullptr;
 
 
 
 
-void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
-    this->windowX = p1;
-    this->windowY = p2;
-    this->windowWidth = p3;
-    this->windowHeight = p4;
-    this->helpButton->setPosition(p3 + p1, p2, 0x12);
-    int *tb = (int *) Globals::layout;
-    this->backButton->setPosition(tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
-    this->secondaryButton->setPosition(tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
+
+
+void Layout::setWindowDimensions(int x, int y, int w, int h) {
+    this->windowX = x;
+    this->windowY = y;
+    this->windowWidth = w;
+    this->windowHeight = h;
+    this->helpButton->setPosition(w + x, y, 0x12);
+    this->backButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                  this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    this->secondaryButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                       this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    if (this->backButton != nullptr) {
+        Globals::other_buttons_x[0] = (int) this->backButton->getPosition().x;
+        Globals::other_buttons_y[0] = (int) this->backButton->getPosition().y;
+    }
 }
 
 
@@ -870,30 +870,22 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
 
 
 
-static const char g_dwCmpLit[] = "";
 
 
 void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned saved = pc->GetColor();
-    if (drawBG) {
-        int top = ((int *) Globals::layout)[8 / 4];
-        this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
-    }
-    Globals::Canvas->SetColor(*(unsigned *) &Globals::Canvas);
-    int *m = (int *) Globals::layout;
-    int top = m[8 / 4];
-    pc->DrawRectangle(x, top + y, w, h - top);
+    unsigned int saved = Globals::Canvas->GetColor();
+    if (drawBG)
+        this->drawBGPattern(this->bgPatternImage, x, Globals::layout->windowTopInset + y, w,
+                            h - Globals::layout->windowTopInset);
+    Globals::Canvas->SetColor(0x255d8dff);
+    Globals::Canvas->DrawRectangle(x, Globals::layout->windowTopInset + y, w, h - Globals::layout->windowTopInset);
     Globals::Canvas->SetColor(this->drawColor);
-    pc->DrawImage2D(this->headerIconImage, x, 0);
-    if (title.size() != 0 && title.Compare_char(g_dwCmpLit) == 0) {
-        int *mm = (int *) Globals::layout;
-        int half = mm[8 / 4];
-        half += half >> 31;
-        int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), title, mm[0x28 / 4] + x, ty, false);
+    Globals::Canvas->DrawImage2D(this->headerIconImage, x, y);
+    if (title.size() != 0 && title.Compare("") == 0) {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, title, Globals::layout->buttonInsetX + x,
+                                    y + Globals::layout->windowTopInset / 2 + 1 - this->textBaselineAdjust, false);
     }
-    pc->SetColor(saved);
+    Globals::Canvas->SetColor(saved);
 }
 
 
@@ -947,32 +939,19 @@ void Layout::initHelpWindow(String text) {
 
 
 
-static int *g_rwOutX = nullptr;
-
-static int *g_rwOutY = nullptr;
-
 void Layout::resetWindowDimensions() {
-    int h = Globals::h;
-    int w = Globals::w;
-
     this->windowX = 0;
     this->windowY = 0;
-    this->windowWidth = w;
-    this->windowHeight = h;
-
-    this->helpButton->setPosition(w, 0, (unsigned char) 0x12);
-
-    int *m = (int *) Globals::layout;
-    int inset = m[0x28 / 4];
-    int btnY = (this->windowY + this->windowHeight) - this->footerButtonOffset;
-    this->backButton->setPosition(inset + this->windowX, btnY, (unsigned char) 0x21);
-    this->secondaryButton->setPosition(inset + this->windowX, btnY, (unsigned char) 0x21);
-
+    this->windowWidth = Globals::w;
+    this->windowHeight = Globals::h;
+    this->helpButton->setPosition(Globals::w, 0, 0x12);
+    this->backButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                  this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
+    this->secondaryButton->setPosition(Globals::layout->buttonInsetX + this->windowX,
+                                       this->windowY + this->windowHeight - this->footerButtonOffset, 0x21);
     if (this->backButton != nullptr) {
-        Vector pos = this->backButton->getPosition();
-        *g_rwOutX = (int) pos[0];
-        pos = this->backButton->getPosition();
-        *g_rwOutY = (int) pos[1];
+        Globals::other_buttons_x[0] = (int) this->backButton->getPosition().x;
+        Globals::other_buttons_y[0] = (int) this->backButton->getPosition().y;
     }
 }
 
@@ -1284,8 +1263,7 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
 }
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text) {
-    String tmp(text);
-    this->drawBox(style, x, y, w, h, tmp, 0u);
+    this->drawBox(style, x, y, w, h, text, 1);
 }
 
 void Layout::drawFooter(bool stationMode_, bool showBack_) {
@@ -1368,13 +1346,9 @@ void Layout::drawMask(int x, int y, int w, int h) {
 }
 
 void Layout::drawWindow(String title) {
-    String tmp(title);
-    this->drawWindow(tmp, true);
+    this->drawWindow(title, false);
 }
 
 void Layout::drawWindow(String title, bool drawBG) {
-    String tmp(title);
-    int p4 = *gW2;
-    int p5 = *gW3 - ((int *) gW1)[2];
-    this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
+    this->drawWindow(title, 0, 0, Globals::w, Globals::h - Globals::layout->windowTopInset, drawBG);
 }
