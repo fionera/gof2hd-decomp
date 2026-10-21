@@ -1600,13 +1600,14 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             } else if (Globals::status->inSupernovaSystem()) {
                 if (Globals::status->getCurrentCampaignMission() == 89) {
                     Globals::sound->play(2238, nullptr, nullptr, 0.0f);
-                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
-                           Globals::status->getMission()->getTargetStation() ==
+                } else if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty() ||
+                           Globals::status->getMission()->getTargetStation() !=
                            Globals::status->getStation()->getIndex()) {
-                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
-                                         nullptr, 0.0f);
-                } else {
                     Globals::sound->play(148, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getCurrentCampaignMission() >= 106) {
+                    Globals::sound->play(2242, nullptr, nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(2241, nullptr, nullptr, 0.0f);
                 }
             } else if (Globals::status->inDeepScienceOrbit()) {
                 Globals::sound->play(152, nullptr, nullptr, 0.0f);
