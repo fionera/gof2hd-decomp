@@ -1798,7 +1798,7 @@ void PlayerFighter::roll(int angle) {
         bank = -0.00075f;
     } else if (rightX > 0.0f && rightY > 0.0f) {
         bank = rightX > 0.3f ? -0.00035f : -0.00025f;
-    } else if (rightX < 0.0f) {
+    } else if (rightX < 0.0f && rightY >= 0.0f) {
         bank = rightX > -0.3f ? 0.00025f : 0.00035f;
     }
 
@@ -1989,50 +1989,41 @@ void PlayerFighter::render() {
         this->wreckGeometry()->render();
     }
     bool active = ((Player *) (this->player()))->isActive();
-    if (active) {
-        if (this->state != 3 && this->state != 4) {
-            goto normal;
+    if (active ? (this->state != 3 && this->state != 4) : this->state == 5) {
+        if (this->parentGeometry != nullptr) {
+            Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
+            Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
+                                               reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+            this->parentGeometry->render();
+            Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
+        } else {
+            this->KIPlayer::geometry->render();
         }
+        if (this->trail != 0) {
+            this->trail->render();
+        }
+    } else if (active) {
+        // dying (3) / exploding (4): explosion plus the sub-geometry (cockpit/debris)
         if (this->explosion != 0) {
             this->explosion->render();
         }
-        if (this->state == 4) {
-            if (this->field_0x1f8 >= 300) {
-                return;
+        if (this->state == 3) {
+            if (this->parentGeometry == nullptr) {
+                this->KIPlayer::geometry->render();
+            } else {
+                Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
+                Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
+                                                   reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
+                this->parentGeometry->render();
+                Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
             }
-        } else if (this->state == 3) {
-            if (this->subGeometry() == 0) {
-                ((AEGeometry *) this->geometry())->render();
-                return;
-            }
-        } else {
-            return;
-        }
-        // render the sub-geometry (cockpit/debris) at the player's transform
-        {
-            Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(((AEGeometry *) this->subGeometry())->transform);
-            Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform,
+        } else if (this->state == 4 && this->field_0x1f8 < 300) {
+            Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(this->parentGeometry->transform);
+            Globals::Canvas->TransformSetLocal(this->parentGeometry->transform,
                                                reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
-            ((AEGeometry *) this->subGeometry())->render();
-            Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform, saved);
+            this->parentGeometry->render();
+            Globals::Canvas->TransformSetLocal(this->parentGeometry->transform, saved);
         }
-        return;
-    }
-    if (this->state != 5) {
-        return;
-    }
-normal:
-    if (this->subGeometry() == 0) {
-        ((AEGeometry *) this->geometry())->render();
-    } else {
-        Matrix saved = *(Matrix *) Globals::Canvas->TransformGetLocal(((AEGeometry *) this->subGeometry())->transform);
-        Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform,
-                                           reinterpret_cast<Matrix &>(((Player *) this->player())->transform[0]));
-        ((AEGeometry *) this->subGeometry())->render();
-        Globals::Canvas->TransformSetLocal(((AEGeometry *) this->subGeometry())->transform, saved);
-    }
-    if (this->trail != 0) {
-        this->trail->render();
     }
 }
 
@@ -2194,20 +2185,18 @@ void PlayerFighter::revive() {
     this->pushTimer() = 0;
     this->setExhaustVisible(true);
 
-    AEGeometry *visibleGeometry = (AEGeometry *) this->subGeometry();
     this->field_0xf5() = 1;
-    if (visibleGeometry == nullptr) {
-        visibleGeometry = (AEGeometry *) this->geometry();
-    }
-    visibleGeometry->setVisible(true);
+    (this->parentGeometry != nullptr ? this->parentGeometry : this->KIPlayer::geometry)->setVisible(true);
 
     if ((unsigned) (this->wingmanCommand() - 9) < 2) {
         delete this->lootList();
         this->lootList() = 0;
     } else {
         Generator *g = new Generator();
-        delete this->lootList();
-        this->lootList() = 0;
+        if (this->lootList() != nullptr) {
+            delete this->lootList();
+            this->lootList() = 0;
+        }
         this->lootList() = g->getLootList(-1, -1);
         delete g;
     }
