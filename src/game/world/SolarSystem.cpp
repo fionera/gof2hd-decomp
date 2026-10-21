@@ -7,23 +7,20 @@
 
 static const int kPirateBaseStations[4] = {1, 33, 47, 86};
 
-static char **gPirateBaseRoot = nullptr;
-
 static const int kAttackRaceTable[4] = {0, 0, 0, 0};
 
 static const int kBlueprintStations[5] = {132, 133, 134, 129, 123};
 
-static char **gBlueprintRoot = nullptr;
 
 SolarSystem::SolarSystem(int unk0, String displayName, int security,
                          bool isVisible, int factionId, int x, int y, int z,
                          int jumpgateId, int texture, int *starRGB,
                          Array<int> *stations, Array<int> *linkedSystems,
                          Array<int> *forbidden) {
-    this->name = displayName;
     this->systemId = unk0;
-    this->visible = isVisible;
+    this->name = String(displayName, false);
     this->securityLevel = security;
+    this->visible = isVisible;
     this->faction = factionId;
     this->mapX = x;
     this->mapY = y;
@@ -85,13 +82,9 @@ int SolarSystem::getAttackRace() {
 }
 
 int SolarSystem::hasPirateBase() {
-    char *base = *gPirateBaseRoot;
-    for (uint32_t i = 0; i <= 3; i++) {
-        if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
-            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
-            if (flags[i] == 0)
-                return 1;
-        }
+    for (uint32_t i = 0; i < 4; i++) {
+        if (stationIsInSystem(kPirateBaseStations[i]) && !(*Globals::status->field_4c)[i])
+            return 1;
     }
     return 0;
 }
@@ -107,13 +100,9 @@ int SolarSystem::stationIsInSystem(int idx) {
 }
 
 int SolarSystem::hasHiddenBlueprint() {
-    char *base = *gBlueprintRoot;
-    for (uint32_t i = 0; i <= 4; i++) {
-        if (stationIsInSystem(kBlueprintStations[i]) != 0) {
-            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
-            if (flags[i] == 0)
-                return 1;
-        }
+    for (uint32_t i = 0; i < 5; i++) {
+        if (stationIsInSystem(kBlueprintStations[i]) && !(*Globals::status->field_58)[i])
+            return 1;
     }
     return 0;
 }
@@ -144,19 +133,11 @@ int SolarSystem::stationIsInSystem(Station *station) {
 }
 
 int SolarSystem::isFullyDiscovered() {
-    Array<int> *arr = this->stationIds;
-    uint32_t i = 0;
-    Galaxy *gal = Globals::galaxy;
-    while (true) {
-        if (i >= arr->size())
-            return 1;
-        char *visited = (char *) gal->getVisited();
-        arr = this->stationIds;
-        uint32_t flagIdx = (*arr)[i];
-        i++;
-        if (visited[flagIdx] == 0)
+    for (uint32_t i = 0; i < this->stationIds->size(); i++) {
+        if (!Globals::galaxy->getVisited()[(*this->stationIds)[i]])
             return 0;
     }
+    return 1;
 }
 
 void SolarSystem::setCoords(int x, int y) {
