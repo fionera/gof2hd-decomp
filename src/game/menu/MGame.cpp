@@ -2159,8 +2159,8 @@ afterCam:
             if (self->usingJumpDrive == 0)
                 Globals::status->jumpgateUsed();
             if (Level::programmedStation->equals(Globals::status->playerStation) != 0) {
-                Level::comingFromAlienWorld = 1;
                 Level::initStreamOutPosition = 1;
+                Level::comingFromAlienWorld = 1;
                 Globals::status->setStation(Globals::status->playerStation);
             }
             Level::programmedStation = nullptr;
@@ -2361,125 +2361,107 @@ static int **g_r2dRewardLayout;
 static Layout ***g_r2dFadeLayout;
 
 void MGame::OnRender2D() {
-    MGame * self = this;
-    if (self->active == 0) {
+    if (!this->active)
         return;
-    }
-
     Globals::Canvas->Begin2d();
-
-    if (self->pauseOpen != 0 && self->menuTouchOpen != 0) {
-        bool drawSS = true;
-        if (self->freeCamMode != 0 && self->freeCamDragging != 0 &&
-            self->menuWindow->pendingActivate == 0) {
-            drawSS = true;
-        } else {
-            self->menuWindow->draw();
-            drawSS = (self->freeCamMode != 0);
+    if (this->pauseOpen && this->menuTouchOpen) {
+        if (!this->freeCamMode || !this->freeCamDragging || this->menuWindow->pendingActivate) {
+            this->menuWindow->draw();
+            if (!this->freeCamMode)
+                goto resetFocus;
         }
-        if (drawSS) {
-            self->level->getStarSystem();
-            ((StarSystem *) (0))->render2D();
-        }
-        float v[4];
-        v[0] = 0.5f;
-        v[1] = 0.5f;
-        v[2] = 0;
-        Engine *eng = (Engine *) self->applicationManager->GetEngine();
-        *(Vector *) &eng->field_0x3cc = *(const Vector *) (v);
+        this->level->getStarSystem()->render2D();
+    resetFocus:
+        static_cast<Engine *>(this->applicationManager->GetEngine())->field_0x3cc = Vector{0.5f, 0.5f, 0.0f};
         Globals::Canvas->End2d();
-
+        return;
+    }
+    if (this->needsRedraw) {
+        if (this->starMapOpen) {
+            this->starMap->draw();
+            if (Globals::layout->choiceWindowOpen)
+                Globals::layout->drawHelpWindow();
+            Globals::Canvas->End2d();
+            return;
+        }
+    } else {
+        this->level->getStarSystem()->render2D();
+        if (this->levelScript->startSequenceOver() || !this->levelScript->startSequence())
+            this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
+        Globals::Canvas->End2d();
         return;
     }
 
-    if (self->pauseOpen == 0 || self->menuTouchOpen == 0) {
-        if (self->needsRedraw == 0) {
-            self->level->getStarSystem();
-            ((StarSystem *) (0))->render2D();
-            if (self->levelScript->startSequenceOver() != 0 ||
-                self->levelScript->startSequence() == 0) {
-                long long now = (long long) self->applicationManager->GetSystemTimeMillis();
-                self->radio->draw(now, (PlayerEgo *) (self->player),
-                                  (LevelScript *) (self->levelScript));
-            }
-        } else if (self->starMapOpen != 0) {
-            self->starMap->draw();
-            Layout *hl = **g_r2dHelpLayout;
-            if (*(uint8_t *) hl != 0)
-                ((Layout *) (hl))->drawHelpWindow();
-        } else {
-            self->level->render2D();
-            if (**g_r2dPauseFlag == 0)
-                self->hud->drawPauseButton();
-
-            if (((Mission *) ((Mission *) Globals::status->getCampaignMission()))->getType() == 0xaa) {
-                if (self->levelScript->getEvent() == 0)
-                    self->hud->drawOrbitInformation();
-                {
-                    long long now = (long long) self->applicationManager->GetSystemTimeMillis();
-                    self->radio->draw(now, (PlayerEgo *) (self->player),
-                                      (LevelScript *) (self->levelScript));
-                }
-                if (self->cutsceneActive != 0)
-                    self->dialogueWindow->draw();
-                self->field_0x110 = 0;
-                self->pauseOpen = 0;
-            } else if (self->jumpActive != 0 || self->jumpDriveActive != 0) {
-                int cm = Globals::status->getCurrentCampaignMission();
-                if (cm > 7 && (uint8_t) self->levelScript->m_nFlags == 0 &&
-                    self->jumpDriveActive == 0 &&
-                    self->player->isDockingToPlanet() == 0 &&
-                    self->levelScript->getEvent() == 0)
-                    self->hud->drawOrbitInformation();
-                if (self->levelScript->startSequenceOver() != 0 ||
-                    self->levelScript->startSequence() == 0) {
-                    long long now = (long long) self->applicationManager->GetSystemTimeMillis();
-                    self->radio->draw(now, (PlayerEgo *) (self->player),
-                                      (LevelScript *) (self->levelScript));
-                }
-                if (self->cutsceneActive != 0)
-                    self->dialogueWindow->draw();
-                self->field_0x110 = 0;
-                self->pauseOpen = 0;
-            } else if (self->gameOverActive == 0) {
-                self->player->draw(1 /* allowHud: arg lost in decomp */);
-                if (self->player->isMining() == 0 &&
-                    self->starMapOpen == 0 &&
-                    (self->player->isHacking() == 0 ||
-                     self->menuTouchOpen != 0))
-                    self->radar->draw((Player *) (self->player), (Hud *) (self->hud),
-                                      (int) (intptr_t)(self->level));
-                if (self->cutsceneActive == 0) {
-                    ((MGame *) (self))->nextCamId(self->cameraMode);
-                    {
-                        long long now = (long long) self->applicationManager->GetSystemTimeMillis();
-                        self->hud->draw(now, (long long) self->deltaTime, self->player,
-                                        self->pauseOpen != 0, 0, 0);
-                    }
-                    {
-                        long long now = (long long) self->applicationManager->GetSystemTimeMillis();
-                        self->radio->draw(now, (PlayerEgo *) (self->player),
-                                          (LevelScript *) (self->levelScript));
-                    }
-                    self->radar->drawCurrentLock((Hud *) (self->hud) /* hud: arg lost in decomp */);
-                    ((Layout *) (**g_r2dRewardLayout))->
-                            drawMissionRewardMessage(1 /* transition: arg lost in decomp */);
+    this->level->render2D();
+    if (!Globals::mouseCursorActivated)
+        this->hud->drawPauseButton();
+    if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 170) {
+        if (!this->levelScript->getEvent())
+            this->hud->drawOrbitInformation();
+        this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
+        if (this->cutsceneActive)
+            this->dialogueWindow->draw();
+        this->field_0x110 = 0;
+        this->_b5c = 0;
+    } else if (this->jumpActive || this->jumpDriveActive) {
+        if (Globals::status->getCurrentCampaignMission() >= 8 && !(uint8_t) this->levelScript->m_nFlags &&
+            !this->jumpDriveActive && !this->player->isDockingToPlanet() && !this->levelScript->getEvent())
+            this->hud->drawOrbitInformation();
+        if (this->levelScript->startSequenceOver() || !this->levelScript->startSequence())
+            this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
+        if (this->cutsceneActive)
+            this->dialogueWindow->draw();
+        this->field_0x110 = 0;
+        this->_b5c = 0;
+    } else if (this->gameOverActive) {
+        if (this->elapsedTime >= 3001) {
+            this->paintCanvas->SetColor(this->loadingTime < 4000
+                                            ? (int) ((float) this->loadingTime / 4000.0f * 255.0f) - 256
+                                            : -1);
+            Globals::Canvas->DrawImage2D(this->loadingImage, 0, 0, 68, 68);
+            if (this->loadingTime >= 4000) {
+                float wave = AbyssEngine::AEMath::Sinf(
+                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
+                float pulse = AbyssEngine::AEMath::Sinf(
+                    (float) (long long) Globals::appManager->GetSystemTimeMillis() * 0.003f);
+                Globals::Canvas->SetColor(255, 255, 255, (unsigned char) ((wave > 0.0f ? pulse : -pulse) * 255.0f));
+                String text(*Globals::gameText->getText(199), false);
+                if (this->gameRecord != nullptr) {
+                    Globals::globals->drawLines(reinterpret_cast<unsigned int &>(Globals::font), this->missionInfoLines,
+                                                Globals::w >> 1,
+                                                (Globals::h >> 1) +
+                                                (Globals::Canvas->GetImage2DHeight(this->loadingImage) >> 1) + 10,
+                                                true);
                 } else {
-                    self->dialogueWindow->draw();
+                    Globals::Canvas->DrawString(
+                        reinterpret_cast<unsigned int &>(Globals::font), text,
+                        (Globals::w >> 1) -
+                        (Globals::Canvas->GetTextWidth(reinterpret_cast<unsigned int &>(Globals::font), text) >> 1),
+                        (Globals::h >> 1) + (Globals::Canvas->GetImage2DHeight(this->loadingImage) >> 1) + 10,
+                        false);
                 }
-                if (self->autopilotMenuOpen != 0 || self->field_0xc6 != 0 ||
-                    self->choiceWindowOpen != 0 || reinterpret_cast<int &>(self->field_0xc4) != 0)
-                    self->choiceWindow->draw();
-                if (reinterpret_cast<int &>(self->_bca) != 0)
-                    self->hud->drawMenu(0);
-            } else if (self->elapsedTime >= 3001) {
-                Globals::Canvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
-                Globals::Canvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
             }
-            ((Layout *) (**g_r2dFadeLayout))->drawFade();
         }
+    } else {
+        this->player->draw(true);
+        if (!this->player->isMining() && !this->starMapOpen && (!this->player->isHacking() || this->turretMode))
+            this->radar->draw(this->player->player, this->hud, this->pauseOpen ? 0 : this->deltaTime);
+        if (this->cutsceneActive) {
+            this->dialogueWindow->draw();
+        } else {
+            this->hud->draw(this->pauseOpen ? 0 : this->deltaTime,
+                            this->levelScript->m_nTimeLimit - this->levelScript->m_nScriptTime, this->player,
+                            this->_b5c, this->cameraMode, nextCamId(this->cameraMode));
+            this->radio->draw(this->levelScript->m_nScriptTime, this->player, this->levelScript);
+            this->radar->drawCurrentLock(this->hud);
+            Globals::layout->drawMissionRewardMessage(false);
+        }
+        if (this->autopilotMenuOpen || this->field_0xc6 || this->choiceWindowOpen || this->field_0xc4)
+            this->choiceWindow->draw();
+        if (this->hudMenuOpen)
+            this->hud->drawMenu(this->deltaTime);
     }
-
+    Globals::layout->drawFade();
     Globals::Canvas->End2d();
 }
 
