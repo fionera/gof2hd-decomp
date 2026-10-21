@@ -1082,9 +1082,10 @@ int Hud::init() {
     this->field_0x41c = Globals::layout->field_0x174;
     this->field_0x416 = Globals::w - Globals::layout->field_0x178 - this->field_0x41a;
     this->field_0x418 = Globals::h - Globals::layout->field_0x17c - Globals::Canvas->GetImage2DHeight(this->image_0x34c);
-    this->field_0x3fc = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    int imageW = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3fc = imageW;
     this->field_0x3f8 = Globals::layout->field_0x180;
-    this->field_0x3fa = Globals::h - Globals::layout->field_0x184 - Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3fa = Globals::h - Globals::layout->field_0x184 - imageW;
     this->field_0x402 = Globals::Canvas->GetImage2DWidth(this->image_0x310);
     this->field_0x3fe = Globals::w - Globals::layout->field_0x180 - this->field_0x3fc;
     this->field_0x400 = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
@@ -1108,12 +1109,14 @@ int Hud::init() {
     this->lockBracketX = this->field_0x42c + this->field_0x430 / 2;
     this->reticleY = this->field_0x42e + this->field_0x430 / 2;
     this->lockBracketY = this->field_0x42e + this->field_0x430 / 2;
-    this->field_0x414 = Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
+    imageW = Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
+    this->field_0x414 = imageW;
     this->field_0x410 = Globals::layout->field_0x1ac;
-    this->field_0x412 = Globals::h - Globals::layout->field_0x1b0 - Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
-    this->field_0x408 = Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x412 = Globals::h - Globals::layout->field_0x1b0 - imageW;
+    imageW = Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x408 = imageW;
     this->field_0x404 = Globals::layout->field_0x188;
-    this->field_0x406 = Globals::h - Globals::layout->field_0x18c - Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x406 = Globals::h - Globals::layout->field_0x18c - imageW;
     this->field_0x450 = Globals::layout->field_0x190;
 
     if (Globals::iPad != 0) {
