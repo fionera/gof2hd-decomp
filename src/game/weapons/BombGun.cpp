@@ -86,7 +86,7 @@ void BombGun::update(int elapsed) {
                                            : *this->gun->positions.data();
     }
 
-    Gun *gun = this->gun;
+    Gun *gun = *reinterpret_cast<Gun *volatile *>(&this->gun);
     if (this->useEgoOrientation != 0) {
         if (gun->active != 0) {
             if (gun->ignited != 0) {
