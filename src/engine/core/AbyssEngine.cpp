@@ -1569,8 +1569,8 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x,
-                            int y, PaintCanvas *canvas, Engine *engine, bool flag);
+    void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x,
+                             int y, PaintCanvas *canvas, Engine *engine, bool flag);
 
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y,
                              PaintCanvas *canvas, Engine *engine, bool flag) {
@@ -1592,131 +1592,143 @@ namespace AbyssEngine {
     int ImageFontGetHeight(ImageFont * font);
     int MeshDraw(Engine * engine, Mesh * mesh);
 
-    int ImageFontDrawString(ImageFont *font, const unsigned short *text, unsigned int len, int x, int y,
-                            PaintCanvas *canvas, Engine *engine, bool rtl) {
-        if (text == 0 || font == 0)
-            return 0;
+    void ImageFontDrawString(ImageFont *font, const unsigned short *text, unsigned int len, int x, int y,
+                             PaintCanvas *canvas, Engine *engine, bool rtl) {
+        bool valid = text != 0 && font != 0;
 
-        unsigned char mode = 0;
+        if (engine->statsBucketFlag == 0) {
+            // Immediate mode: one draw call per glyph mesh, translated by the world-view matrix.
+            if (!valid)
+                return;
+            if (ImageFontGetWidth(font, text, len) + x < 0)
+                return;
+            int top = font->yOffset;
+            int height = ImageFontGetHeight(font);
+            if ((int) engine->GetDisplayWidth() < x)
+                return;
+            top += y;
+            if (height + top < 0)
+                return;
+            if (top > (int) engine->GetDisplayHeight())
+                return;
 
-        int w = ImageFontGetWidth(font, text, len);
-        if (w + x < 0)
-            return 0;
+            AEMath::Matrix placement;
+            float glyphY = (float) (top - 2);
+            placement.m[3] = (float) x;
+            placement.m[7] = glyphY;
+            bool forward = (canvas->field_0x1c | rtl) != 0;
+            int step = forward ? 1 : -1;
+            int index = forward ? 0 : len - 1;
 
-        int top = (int) (short) font->yOffset;
-        int h = ImageFontGetHeight(font);
-        int dispW = engine->GetDisplayWidth();
-        int bottom = dispW;
-        if (x <= dispW) {
-            top = top + y;
-            bottom = h + top;
-        }
-        int side = (x <= dispW) ? bottom : (dispW - x);
-
-        if ((side < 0) != (dispW < x))
-            return 0;
-        if (top > (int) engine->GetDisplayHeight())
-            return 0;
-
-        int step = -1;
-        int idx = (int) len - 1;
-        bool batched = (canvas->field_0x1c != 0) || rtl;
-        if (batched) {
-            step = 1;
-            idx = 0;
-        }
-
-        bool shaderMode = (engine->shaderModeFlag != 0);
-        if (shaderMode) {
-            if (*g_GameText_arabicEnabledFlag != 0 && GameText::getLanguage() == 9 &&
-                GameText::isNonArabicString(text, len) != 0) {
-                idx = 0;
-                step = 1;
-            }
-        }
-
-        float baseY = AbyssEngine::AEMath::VectorSignedToFloat(top - 2, mode);
-
-        for (unsigned int i = 0; i < len; ++i) {
-            unsigned int slot = 0;
-            unsigned short glyphCount = font->glyphCount;
-            bool found = false;
-            while (slot < glyphCount) {
-                if (font->codes[slot] == text[idx]) {
-                    found = true;
+            for (unsigned short i = 0; i < len; i++) {
+                for (unsigned short slot = 0; slot < font->glyphCount; slot++) {
+                    if (font->codes[slot] != text[index])
+                        continue;
+                    placement.m[7] = glyphY;
+                    placement.m[3] = (float) x;
+                    int advance = (int) ((float *) font->glyphMeshes[slot]->positions)[3];
+                    if (x + advance >= 0 && x <= (int) engine->GetDisplayWidth()) {
+                        canvas->SetWorldViewMatrix(placement);
+                        MeshDraw(engine, font->glyphMeshes[slot]);
+                    }
+                    int width = font->spacing + advance;
+                    int stepX = width;
+                    if (text[index] == ' ')
+                        stepX = width - 2;
+                    if (advance != 11)
+                        stepX = width;
+                    x += stepX;
                     break;
                 }
-                ++slot;
+                index += step;
             }
+            return;
+        }
 
-            if (found) {
-                Mesh *glyphMesh = font->glyphMeshes[slot];
-                int advance = (int) ((float *) glyphMesh->positions)[3];
+        // Batched mode: glyph quads are appended to the canvas' 2D quad mesh and flushed per 100.
+        if (!valid)
+            return;
+        if (ImageFontGetWidth(font, text, len) + x < 0)
+            return;
+        int top = font->yOffset;
+        int height = ImageFontGetHeight(font);
+        if ((int) engine->GetDisplayWidth() < x)
+            return;
+        top += y;
+        if (height + top < 0)
+            return;
+        if (top > (int) engine->GetDisplayHeight())
+            return;
 
+        bool forward = (canvas->field_0x1c | rtl) != 0;
+        int step = forward ? 1 : -1;
+        int index = forward ? 0 : len - 1;
+        if (Engine::enableReverseFlag != 0 && GameText::getLanguage() == 9 &&
+            GameText::isNonArabicString(text, len) != 0) {
+            index = 0;
+            step = 1;
+        }
+
+        float glyphY = (float) (top - 2);
+        for (unsigned short i = 0; i < len; i++) {
+            for (unsigned short slot = 0; slot < font->glyphCount; slot++) {
+                if (font->codes[slot] != text[index])
+                    continue;
+                int advance = (int) ((float *) font->glyphMeshes[slot]->positions)[3];
                 if (x + advance >= 0 && x <= (int) engine->GetDisplayWidth()) {
-                    if (!shaderMode) {
-                        ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
-                        MeshDraw(engine, font->glyphMeshes[slot]);
-                    } else {
-                        Mesh *spr = (Mesh *) canvas->quad2dMesh;
-                        int n = canvas->field_0xc;
-                        float fx = AbyssEngine::AEMath::VectorSignedToFloat(x, mode);
-                        float *vsrc = (float *) glyphMesh->positions;
-                        float *vdst = (float *) spr->positions + n * 12;
-                        vdst[0] = vsrc[0] + fx;
-                        vdst[1] = vsrc[1] + baseY;
-                        vdst[3] = vsrc[3] + fx;
-                        vdst[4] = vsrc[4] + baseY;
-                        vdst[6] = vsrc[6] + fx;
-                        vdst[7] = vsrc[7] + baseY;
-                        vdst[9] = vsrc[9] + fx;
-                        vdst[10] = vsrc[10] + baseY;
+                    Mesh *batch = (Mesh *) canvas->quad2dMesh;
+                    int n = canvas->field_0xc;
+                    Mesh *glyph = font->glyphMeshes[slot];
+                    float glyphX = (float) x;
+                    float *src = (float *) glyph->positions;
+                    float *dst = (float *) batch->positions + n * 12;
+                    dst[0] = src[0] + glyphX;
+                    dst[1] = src[1] + glyphY;
+                    dst[3] = src[3] + glyphX;
+                    dst[4] = src[4] + glyphY;
+                    dst[6] = src[6] + glyphX;
+                    dst[7] = src[7] + glyphY;
+                    dst[9] = src[9] + glyphX;
+                    dst[10] = src[10] + glyphY;
 
-                        unsigned int *csrc = (unsigned int *) glyphMesh->texCoords;
-                        unsigned int *cdst = (unsigned int *) spr->texCoords + n * 8;
-                        for (int k = 0; k < 8; ++k) cdst[k] = csrc[k];
+                    unsigned int *uvSrc = (unsigned int *) glyph->texCoords;
+                    unsigned int *uvDst = (unsigned int *) batch->texCoords;
+                    for (int k = 0; k < 8; k++)
+                        uvDst[n * 8 + k] = uvSrc[k];
 
-                        unsigned int *mdst = (unsigned int *) spr->colors + n * 16;
-                        for (int r = 0; r < 4; ++r) {
-                            mdst[r * 4 + 0] = *(uint32_t *) &engine->glColor[0];
-                            mdst[r * 4 + 1] = *(uint32_t *) &engine->glColor[1];
-                            mdst[r * 4 + 2] = *(uint32_t *) &engine->glColor[2];
-                            mdst[r * 4 + 3] = *(uint32_t *) &engine->glColor[3];
-                        }
-                        canvas->field_0xc = n + 1;
+                    float *colors = (float *) batch->colors;
+                    for (int k = 0; k < 16; k++)
+                        colors[n * 16 + k] = engine->glColor[k & 3];
+                    canvas->field_0xc = n + 1;
 
-                        if (n > 0x62) {
-                            ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + 1) * 6);
-                            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
-                            MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
-                            canvas->field_0xc = 0;
-                        }
+                    if (n >= 99) {
+                        batch->indexCount = (short) ((n + 1) * 6);
+                        AEMath::Matrix identity;
+                        canvas->SetWorldViewMatrix(identity);
+                        MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
+                        canvas->field_0xc = 0;
                     }
                 }
-
-                int adv = (int) (short) font->spacing + advance;
-                int eff = adv;
-                if (text[idx] == 0x20)
-                    eff = adv - 2;
-                if (advance != 0xb)
-                    eff = adv;
-                x += eff;
+                int width = font->spacing + advance;
+                int stepX = width;
+                if (text[index] == ' ')
+                    stepX = width - 2;
+                if (advance != 11)
+                    stepX = width;
+                x += stepX;
+                break;
             }
-
-            idx += step;
+            index += step;
         }
 
-        if (shaderMode) {
-            int n = canvas->field_0xc;
-            if (n > 0) {
-                ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + (n << 1)) * 2);
-                ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
-                MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
-                canvas->field_0xc = 0;
-            }
+        int pending = canvas->field_0xc;
+        if (pending > 0) {
+            ((Mesh *) canvas->quad2dMesh)->indexCount = (short) (pending * 6);
+            AEMath::Matrix identity;
+            canvas->SetWorldViewMatrix(identity);
+            MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
+            canvas->field_0xc = 0;
         }
-
-        return 1;
     }
 }
 
