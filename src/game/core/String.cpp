@@ -376,7 +376,7 @@ void String::ConvertFromUTF8() {
 
 Array<String *> *String::SplitTags(String tag) {
     if (this->data != nullptr && this->length != 0 && tag.length != 0) {
-        tag = String("<") + tag + String(">");
+        tag = String("<") + tag + String(":");
         Array<String *> *arr = new Array<String *>();
 
         unsigned int endPos = 0;
@@ -385,7 +385,7 @@ Array<String *> *String::SplitTags(String tag) {
         while ((idx = IndexOf(pos, tag)) != 0xffffffff) {
             if (pos <= idx) {
                 ArrayAdd(new String(SubString(pos, idx)), *arr);
-                endPos = IndexOf(tag.length + idx, String("</"));
+                endPos = IndexOf(tag.length + idx, String(">"));
                 if (endPos == 0xffffffff)
                     return arr;
                 ArrayAdd(new String(SubString(tag.length + idx, endPos)), *arr);

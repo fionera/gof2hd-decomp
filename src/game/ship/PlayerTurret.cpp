@@ -81,7 +81,8 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     this->helperGeometry = new AEGeometry(Globals::Canvas);
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->helperGeometry->transform))
             ->boundingRadius = 1000000.0f;
-    this->setPosition(Vector{x, y, z});
+    Vector position = {x, y, z};
+    this->setPosition(position);
 
     if (mesh == 14363) {
         this->baseGeometry->rotate(0.0f, 3.1415927f, 0.0f);
