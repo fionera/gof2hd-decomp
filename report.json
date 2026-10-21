@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 96.91,
+  "avg_match": 96.93,
   "byte_exact": 1314,
   "linked_exact": 4081,
   "fuzzy_perfect": 4081,
@@ -424,14 +424,6 @@
    "usize": 500
   },
   {
-   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
-   "pct": 36.4,
-   "byte": false,
-   "linked": false,
-   "osize": 736,
-   "usize": 764
-  },
-  {
    "name": "_ZN14PendingProductC1EP9BluePrint",
    "pct": 36.6,
    "byte": false,
@@ -534,14 +526,6 @@
    "linked": false,
    "osize": 148,
    "usize": 162
-  },
-  {
-   "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
-   "pct": 39.7,
-   "byte": false,
-   "linked": false,
-   "osize": 728,
-   "usize": 808
   },
   {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
@@ -894,6 +878,14 @@
    "linked": false,
    "osize": 612,
    "usize": 612
+  },
+  {
+   "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
+   "pct": 53.0,
+   "byte": false,
+   "linked": false,
+   "osize": 728,
+   "usize": 740
   },
   {
    "name": "_ZN6Layout13drawBGPatternEjiiii",
@@ -3086,6 +3078,14 @@
    "linked": false,
    "osize": 60,
    "usize": 60
+  },
+  {
+   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
+   "pct": 94.9,
+   "byte": false,
+   "linked": false,
+   "osize": 736,
+   "usize": 736
   },
   {
    "name": "_ZN11HackingGame6reInitEv",
