@@ -17,2495 +17,2496 @@ void BuildResourceList(AbyssEngine::Engine *engine) {
     engine->appManager->paintCanvas->TextureCreateGlobal(
         String("data/assets/main/3d/textures/low/etc/fx/cloak_map.aei"), 6);
 
-    Resource *resources[2488];
-    resources[0] = new Resource(11742, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/suns/sn_sun_011.aei", 0.0f));
-    resources[1] = new Resource(27335, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_diffuse.aei", 0.0f));
-    resources[2] = new Resource(27336, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_normal_specular.aei", 0.0f));
-    resources[3] = new Resource(27337, RESOURCE_MATERIAL, new ResourceMaterial(27335, 27336, static_cast<BlendMode>(28)));
-    resources[4] = new Resource(27338, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_fireworks_rocket.aem", 27337, false));
-    resources[5] = new Resource(27309, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_fireworks.aei", 0.0f));
-    resources[6] = new Resource(27308, RESOURCE_MATERIAL, new ResourceMaterial(27309, BlendMode_2));
-    resources[7] = new Resource(16809, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_fireworks_lookat_anim_add.aem", 27308, false));
-    resources[8] = new Resource(27320, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sprite_fireworks_rocket_sparks.aei", 0.0f));
-    resources[9] = new Resource(27321, RESOURCE_MATERIAL, new ResourceMaterial(27320, BlendMode_2));
-    resources[10] = new Resource(29100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_projectiles.aei", 0.0f));
-    resources[11] = new Resource(29101, RESOURCE_MATERIAL, new ResourceMaterial(29100, BlendMode_2));
-    resources[12] = new Resource(29102, RESOURCE_MATERIAL, new ResourceMaterial(29100, BlendMode_1));
-    resources[13] = new Resource(19090, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_228_anim_add.aem", 29101, false));
-    resources[14] = new Resource(19091, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_229_anim_alpha.aem", 29102, false));
-    resources[15] = new Resource(19094, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_231_anim_add.aem", 29101, false));
-    resources[16] = new Resource(19092, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_207_anim_add.aem", 29101, false));
-    resources[17] = new Resource(19093, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_222_anim_add.aem", 29101, false));
-    resources[18] = new Resource(29001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream.aei", 0.0f));
-    resources[19] = new Resource(29002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream_normal.aei", 0.0f));
-    resources[20] = new Resource(29003, RESOURCE_MATERIAL, new ResourceMaterial(29001, static_cast<BlendMode>(3)));
-    resources[21] = new Resource(19071, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_stream_anim_add.aem", 29003, false));
-    resources[22] = new Resource(29004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_explosion.aei", 0.0f));
-    resources[23] = new Resource(29005, RESOURCE_MATERIAL, new ResourceMaterial(29004, static_cast<BlendMode>(3)));
-    resources[24] = new Resource(19070, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_explosion_anim_lookat_add.aem", 29005, false));
-    resources[25] = new Resource(29006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_sphere.aei", 0.0f));
-    resources[26] = new Resource(29008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_glow.aei", 0.0f));
-    resources[27] = new Resource(29007, RESOURCE_MATERIAL, new ResourceMaterial(29006, static_cast<BlendMode>(3)));
-    resources[28] = new Resource(29009, RESOURCE_MATERIAL, new ResourceMaterial(29008, static_cast<BlendMode>(3)));
-    resources[29] = new Resource(18995, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_sphere_anim_add.aem", 29007, false));
-    resources[30] = new Resource(18996, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_glow_anim_lookat_add.aem", 29009, false));
-    resources[31] = new Resource(29046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_diffuse.aei", 0.0f));
-    resources[32] = new Resource(29047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_normal_specular.aei", 0.0f));
-    resources[33] = new Resource(29048, RESOURCE_MATERIAL, new ResourceMaterial(29046, 29047, static_cast<BlendMode>(28)));
-    resources[34] = new Resource(29049, RESOURCE_MATERIAL, new ResourceMaterial(29046, BlendMode_2));
-    resources[35] = new Resource(18880, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001.aem", 29048, false));
-    resources[36] = new Resource(18883, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim.aem", 29048, false));
-    resources[37] = new Resource(18886, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_add.aem", 29049, false));
-    resources[38] = new Resource(18889, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim_add.aem", 29049, false));
-    resources[39] = new Resource(29050, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_diffuse.aei", 0.0f));
-    resources[40] = new Resource(29051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_normal_specular.aei", 0.0f));
-    resources[41] = new Resource(29052, RESOURCE_MATERIAL, new ResourceMaterial(29050, 29051, static_cast<BlendMode>(28)));
-    resources[42] = new Resource(29053, RESOURCE_MATERIAL, new ResourceMaterial(29050, BlendMode_2));
-    resources[43] = new Resource(18881, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002.aem", 29052, false));
-    resources[44] = new Resource(18884, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim.aem", 29052, false));
-    resources[45] = new Resource(18887, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_add.aem", 29053, false));
-    resources[46] = new Resource(18890, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim_add.aem", 29053, false));
-    resources[47] = new Resource(29054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_diffuse.aei", 0.0f));
-    resources[48] = new Resource(29055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_normal_specular.aei", 0.0f));
-    resources[49] = new Resource(29056, RESOURCE_MATERIAL, new ResourceMaterial(29054, 29055, static_cast<BlendMode>(28)));
-    resources[50] = new Resource(29057, RESOURCE_MATERIAL, new ResourceMaterial(29054, BlendMode_2));
-    resources[51] = new Resource(18882, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003.aem", 29056, false));
-    resources[52] = new Resource(18885, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim.aem", 29056, false));
-    resources[53] = new Resource(18888, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_add.aem", 29057, false));
-    resources[54] = new Resource(18891, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim_add.aem", 29057, false));
-    resources[55] = new Resource(18847, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_planet_ring_alpha.aem", 65535, false));
-    resources[56] = new Resource(29018, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_planet_ring.aei", 0.0f));
-    resources[57] = new Resource(18848, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_storms_anim_add.aem", 65535, false));
-    resources[58] = new Resource(29019, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_storms.aei", 0.0f));
-    resources[59] = new Resource(11700, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_diffuse.aei", 0.0f));
-    resources[60] = new Resource(11702, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_diffuse.aei", 0.0f));
-    resources[61] = new Resource(11701, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_normal_specular.aei", 0.0f));
-    resources[62] = new Resource(11703, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_normal_specular.aei", 0.0f));
-    resources[63] = new Resource(11704, RESOURCE_MATERIAL, new ResourceMaterial(11700, 11701, static_cast<BlendMode>(28)));
-    resources[64] = new Resource(11708, RESOURCE_MATERIAL, new ResourceMaterial(11702, 11703, static_cast<BlendMode>(28)));
-    resources[65] = new Resource(11705, RESOURCE_MATERIAL, new ResourceMaterial(11700, BlendMode_2));
-    resources[66] = new Resource(11706, RESOURCE_MATERIAL, new ResourceMaterial(11700, BlendMode_1));
-    resources[67] = new Resource(11707, RESOURCE_MATERIAL, new ResourceMaterial(11700, static_cast<BlendMode>(0)));
-    resources[68] = new Resource(11709, RESOURCE_MATERIAL, new ResourceMaterial(11702, BlendMode_2));
-    resources[69] = new Resource(11710, RESOURCE_MATERIAL, new ResourceMaterial(11702, BlendMode_1));
-    resources[70] = new Resource(11711, RESOURCE_MATERIAL, new ResourceMaterial(11702, static_cast<BlendMode>(0)));
-    resources[71] = new Resource(19080, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1.aem", 11704, false));
-    resources[72] = new Resource(19081, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_add.aem", 11705, false));
-    resources[73] = new Resource(19084, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_alpha.aem", 11706, false));
-    resources[74] = new Resource(19085, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_emissive.aem", 11707, false));
-    resources[75] = new Resource(19082, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_glow_anim_add.aem", 11705, false));
-    resources[76] = new Resource(19083, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_fire_anim_add.aem", 11705, false));
-    resources[77] = new Resource(19086, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2.aem", 11708, false));
-    resources[78] = new Resource(19087, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_add.aem", 11709, false));
-    resources[79] = new Resource(19088, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_emissive.aem", 11711, false));
-    resources[80] = new Resource(11712, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_diffuse.aei", 0.0f));
-    resources[81] = new Resource(11713, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_normal_specular.aei", 0.0f));
-    resources[82] = new Resource(11714, RESOURCE_MATERIAL, new ResourceMaterial(11712, 11713, static_cast<BlendMode>(28)));
-    resources[83] = new Resource(11715, RESOURCE_MATERIAL, new ResourceMaterial(11712, BlendMode_2));
-    resources[84] = new Resource(11716, RESOURCE_MATERIAL, new ResourceMaterial(11712, BlendMode_1));
-    resources[85] = new Resource(18750, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001.aem", 11714, false));
-    resources[86] = new Resource(18751, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_anim_add.aem", 11715, false));
-    resources[87] = new Resource(18752, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_alpha.aem", 11716, false));
-    resources[88] = new Resource(18753, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002.aem", 11714, false));
-    resources[89] = new Resource(18754, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_anim_add.aem", 11715, false));
-    resources[90] = new Resource(18755, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_alpha.aem", 11716, false));
-    resources[91] = new Resource(18756, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003.aem", 11714, false));
-    resources[92] = new Resource(18757, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_anim_add.aem", 11715, false));
-    resources[93] = new Resource(18758, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_alpha.aem", 11716, false));
-    resources[94] = new Resource(18759, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004.aem", 11714, false));
-    resources[95] = new Resource(18760, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_anim_add.aem", 11715, false));
-    resources[96] = new Resource(18761, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_alpha.aem", 11716, false));
-    resources[97] = new Resource(18762, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005.aem", 11714, false));
-    resources[98] = new Resource(18763, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_lights_anim_add.aem", 11715, false));
-    resources[99] = new Resource(18765, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_glow_anim_add.aem", 11715, false));
-    resources[100] = new Resource(18764, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_alpha.aem", 11716, false));
-    resources[101] = new Resource(19050, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_explosion_anim.aem", 11714, false));
-    resources[102] = new Resource(11725, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_diffuse.aei", 0.0f));
-    resources[103] = new Resource(11726, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_normal_specular.aei", 0.0f));
-    resources[104] = new Resource(11727, RESOURCE_MATERIAL, new ResourceMaterial(11725, 11726, static_cast<BlendMode>(28)));
-    resources[105] = new Resource(11728, RESOURCE_MATERIAL, new ResourceMaterial(11725, BlendMode_2));
-    resources[106] = new Resource(11729, RESOURCE_MATERIAL, new ResourceMaterial(11725, static_cast<BlendMode>(10)));
-    resources[107] = new Resource(18768, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie.aem", 11727, false));
-    resources[108] = new Resource(18769, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_lights_add.aem", 11728, false));
-    resources[109] = new Resource(18770, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_alpha.aem", 11729, false));
-    resources[110] = new Resource(11850, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_gun_fx_valkyrie.aei", 0.0f));
-    resources[111] = new Resource(11851, RESOURCE_MATERIAL, new ResourceMaterial(11850, static_cast<BlendMode>(3)));
-    resources[112] = new Resource(19061, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_beam_anim_add.aem", 11851, false));
-    resources[113] = new Resource(19062, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_cone_anim_add.aem", 11851, false));
-    resources[114] = new Resource(19063, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_star_add.aem", 11851, false));
-    resources[115] = new Resource(29093, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_diffuse.aei", 0.0f));
-    resources[116] = new Resource(29094, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_normal_specular.aei", 0.0f));
-    resources[117] = new Resource(29090, RESOURCE_MATERIAL, new ResourceMaterial(29093, 29094, static_cast<BlendMode>(28)));
-    resources[118] = new Resource(29091, RESOURCE_MATERIAL, new ResourceMaterial(29093, BlendMode_2));
-    resources[119] = new Resource(29092, RESOURCE_MATERIAL, new ResourceMaterial(29093, static_cast<BlendMode>(0)));
-    resources[120] = new Resource(18766, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked.aem", 29090, false));
-    resources[121] = new Resource(19072, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_anim.aem", 29090, false));
-    resources[122] = new Resource(19073, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_add.aem", 29091, false));
-    resources[123] = new Resource(19074, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_anim_add.aem", 29091, false));
-    resources[124] = new Resource(19075, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_add.aem", 34701, false));
-    resources[125] = new Resource(19076, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_emissive.aem", 29092, false));
-    resources[126] = new Resource(11730, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_diffuse.aei", 0.0f));
-    resources[127] = new Resource(11731, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_normal_specular.aei", 0.0f));
-    resources[128] = new Resource(11732, RESOURCE_MATERIAL, new ResourceMaterial(11730, 11731, static_cast<BlendMode>(28)));
-    resources[129] = new Resource(11733, RESOURCE_MATERIAL, new ResourceMaterial(11730, static_cast<BlendMode>(10)));
-    resources[130] = new Resource(18771, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked.aem", 11732, false));
-    resources[131] = new Resource(18772, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked_alpha_emissive.aem", 11733, false));
-    resources[132] = new Resource(11747, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire.aei", 0.0f));
-    resources[133] = new Resource(11750, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire_normal.aei", 0.0f));
-    resources[134] = new Resource(11748, RESOURCE_MATERIAL, new ResourceMaterial(11747, static_cast<BlendMode>(3)));
-    resources[135] = new Resource(11749, RESOURCE_MATERIAL, new ResourceMaterial(11747, BlendMode_1));
-    resources[136] = new Resource(18781, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station.aem", 20007, false));
-    resources[137] = new Resource(18782, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_emissive.aem", 20008, false));
-    resources[138] = new Resource(18783, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_add.aem", 11748, false));
-    resources[139] = new Resource(18784, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_alpha.aem", 11749, false));
-    resources[140] = new Resource(18832, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_add.aem", 11748, false));
-    resources[141] = new Resource(18833, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_alpha.aem", 11749, false));
-    resources[142] = new Resource(19095, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_fire_anim_add.aem", 11748, false));
-    resources[143] = new Resource(19096, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_smoke_anim_alpha.aem", 11749, false));
-    resources[144] = new Resource(19097, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_fire_anim_add.aem", 11748, false));
-    resources[145] = new Resource(19098, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_smoke_anim_alpha.aem", 11749, false));
-    resources[146] = new Resource(18785, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian.aem", 34704, false));
-    resources[147] = new Resource(18831, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian_add.aem", 34705, false));
-    resources[148] = new Resource(29095, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_diffuse.aei", 0.0f));
-    resources[149] = new Resource(29096, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_normal_specular.aei", 0.0f));
-    resources[150] = new Resource(29097, RESOURCE_MATERIAL, new ResourceMaterial(29095, 29096, static_cast<BlendMode>(28)));
-    resources[151] = new Resource(18786, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_junk_field.aem", 29097, false));
-    resources[152] = new Resource(11755, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames.aei", 0.0f));
-    resources[153] = new Resource(11759, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames_normal.aei", 0.0f));
-    resources[154] = new Resource(11756, RESOURCE_MATERIAL, new ResourceMaterial(11755, static_cast<BlendMode>(3)));
-    resources[155] = new Resource(11757, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_glow.aei", 0.0f));
-    resources[156] = new Resource(11758, RESOURCE_MATERIAL, new ResourceMaterial(11757, static_cast<BlendMode>(3)));
-    resources[157] = new Resource(18803, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_flames_anim_add.aem", 11756, false));
-    resources[158] = new Resource(18802, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_glow_anim_add.aem", 11758, false));
-    resources[159] = new Resource(29021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_diffuse.aei", 0.0f));
-    resources[160] = new Resource(29022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_normal_specular.aei", 0.0f));
-    resources[161] = new Resource(29023, RESOURCE_MATERIAL, new ResourceMaterial(29021, 29022, static_cast<BlendMode>(28)));
-    resources[162] = new Resource(29024, RESOURCE_MATERIAL, new ResourceMaterial(29021, BlendMode_2));
-    resources[163] = new Resource(29025, RESOURCE_MATERIAL, new ResourceMaterial(29021, BlendMode_8));
-    resources[164] = new Resource(18787, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001.aem", 29023, false));
-    resources[165] = new Resource(18788, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_add.aem", 29024, false));
-    resources[166] = new Resource(18791, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim.aem", 29023, false));
-    resources[167] = new Resource(18790, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim_add.aem", 29024, false));
-    resources[168] = new Resource(29027, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_diffuse.aei", 0.0f));
-    resources[169] = new Resource(29028, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_normal_specular.aei", 0.0f));
-    resources[170] = new Resource(29029, RESOURCE_MATERIAL, new ResourceMaterial(29027, 29028, static_cast<BlendMode>(28)));
-    resources[171] = new Resource(29030, RESOURCE_MATERIAL, new ResourceMaterial(29027, BlendMode_2));
-    resources[172] = new Resource(29031, RESOURCE_MATERIAL, new ResourceMaterial(29027, BlendMode_8));
-    resources[173] = new Resource(18792, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002.aem", 29029, false));
-    resources[174] = new Resource(18793, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_add.aem", 29030, false));
-    resources[175] = new Resource(18795, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim.aem", 29029, false));
-    resources[176] = new Resource(18794, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim_add.aem", 29030, false));
-    resources[177] = new Resource(29033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_diffuse.aei", 0.0f));
-    resources[178] = new Resource(29034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_normal_specular.aei", 0.0f));
-    resources[179] = new Resource(29035, RESOURCE_MATERIAL, new ResourceMaterial(29033, 29034, static_cast<BlendMode>(28)));
-    resources[180] = new Resource(29036, RESOURCE_MATERIAL, new ResourceMaterial(29033, BlendMode_2));
-    resources[181] = new Resource(29037, RESOURCE_MATERIAL, new ResourceMaterial(29033, BlendMode_8));
-    resources[182] = new Resource(29038, RESOURCE_MATERIAL, new ResourceMaterial(29033, static_cast<BlendMode>(0)));
-    resources[183] = new Resource(18796, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003.aem", 29035, false));
-    resources[184] = new Resource(18797, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_add.aem", 29036, false));
-    resources[185] = new Resource(18799, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim.aem", 29035, false));
-    resources[186] = new Resource(18800, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_emissive.aem", 29038, false));
-    resources[187] = new Resource(18798, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim_add.aem", 29036, false));
-    resources[188] = new Resource(11770, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_diffuse.aei", 0.0f));
-    resources[189] = new Resource(11771, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_diffuse.aei", 0.0f));
-    resources[190] = new Resource(11772, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_diffuse.aei", 0.0f));
-    resources[191] = new Resource(11773, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_normal_specular.aei", 0.0f));
-    resources[192] = new Resource(11774, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_normal_specular.aei", 0.0f));
-    resources[193] = new Resource(11775, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_normal_specular.aei", 0.0f));
-    resources[194] = new Resource(11776, RESOURCE_MATERIAL, new ResourceMaterial(11770, 11773, static_cast<BlendMode>(28)));
-    resources[195] = new Resource(11777, RESOURCE_MATERIAL, new ResourceMaterial(11771, 11774, static_cast<BlendMode>(28)));
-    resources[196] = new Resource(11778, RESOURCE_MATERIAL, new ResourceMaterial(11772, 11775, static_cast<BlendMode>(28)));
-    resources[197] = new Resource(11779, RESOURCE_MATERIAL, new ResourceMaterial(11770, static_cast<BlendMode>(0)));
-    resources[198] = new Resource(11780, RESOURCE_MATERIAL, new ResourceMaterial(11771, static_cast<BlendMode>(0)));
-    resources[199] = new Resource(11781, RESOURCE_MATERIAL, new ResourceMaterial(11772, static_cast<BlendMode>(0)));
-    resources[200] = new Resource(11782, RESOURCE_MATERIAL, new ResourceMaterial(11772, BlendMode_2));
-    resources[201] = new Resource(18804, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1.aem", 11776, false));
-    resources[202] = new Resource(18805, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2.aem", 11777, false));
-    resources[203] = new Resource(18807, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3.aem", 11778, false));
-    resources[204] = new Resource(18808, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1_emissive.aem", 11779, false));
-    resources[205] = new Resource(18809, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2_emissive.aem", 11780, false));
-    resources[206] = new Resource(18810, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3_emissive.aem", 11781, false));
-    resources[207] = new Resource(18806, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_lights_add.aem", 11782, false));
-    resources[208] = new Resource(29039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_diffuse.aei", 0.0f));
-    resources[209] = new Resource(29040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_normal_specular.aei", 0.0f));
-    resources[210] = new Resource(29041, RESOURCE_MATERIAL, new ResourceMaterial(29039, 29040, static_cast<BlendMode>(28)));
-    resources[211] = new Resource(29042, RESOURCE_MATERIAL, new ResourceMaterial(29039, BlendMode_2));
-    resources[212] = new Resource(19052, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_add.aem", 29042, false));
-    resources[213] = new Resource(19053, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_lights_add.aem", 29042, false));
-    resources[214] = new Resource(19051, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk.aem", 29041, false));
-    resources[215] = new Resource(17251, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian.aem", 34244, false));
-    resources[216] = new Resource(18779, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lights.aem", 32544, false));
-    resources[217] = new Resource(18044, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_add.aem", 32544, false));
-    resources[218] = new Resource(17252, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_1.aem", 34244, false));
-    resources[219] = new Resource(17253, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_2.aem", 34244, false));
-    resources[220] = new Resource(17257, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted.aem", 34245, false));
-    resources[221] = new Resource(18045, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_add.aem", 32545, false));
-    resources[222] = new Resource(18811, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_lights.aem", 32545, false));
-    resources[223] = new Resource(17263, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted.aem", 34246, false));
-    resources[224] = new Resource(18046, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_add.aem", 32546, false));
-    resources[225] = new Resource(18812, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_lights_add.aem", 32546, false));
-    resources[226] = new Resource(17269, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted.aem", 34247, false));
-    resources[227] = new Resource(18813, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_lights_add.aem", 32547, false));
-    resources[228] = new Resource(18047, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_add.aem", 32547, false));
-    resources[229] = new Resource(17275, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted.aem", 34248, false));
-    resources[230] = new Resource(18780, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_lights.aem", 32548, false));
-    resources[231] = new Resource(18048, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_add.aem", 32548, false));
-    resources[232] = new Resource(17281, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian.aem", 34249, false));
-    resources[233] = new Resource(18049, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_add.aem", 32549, false));
-    resources[234] = new Resource(17286, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_lights_add.aem", 32549, false));
-    resources[235] = new Resource(17293, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran.aem", 34251, false));
-    resources[236] = new Resource(18051, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_add.aem", 32551, false));
-    resources[237] = new Resource(18814, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_lights.aem", 32551, false));
-    resources[238] = new Resource(17299, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro.aem", 34252, false));
-    resources[239] = new Resource(18052, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_add.aem", 32552, false));
-    resources[240] = new Resource(18815, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_lights_add.aem", 32552, false));
-    resources[241] = new Resource(17311, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk.aem", 34254, false));
-    resources[242] = new Resource(18054, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_add.aem", 32554, false));
-    resources[243] = new Resource(17316, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_emissive.aem", 34354, false));
-    resources[244] = new Resource(17317, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified.aem", 34255, false));
-    resources[245] = new Resource(18818, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_lights_add.aem", 32555, false));
-    resources[246] = new Resource(17323, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified.aem", 34256, false));
-    resources[247] = new Resource(18819, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_lights_add.aem", 32556, false));
-    resources[248] = new Resource(17329, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified.aem", 34257, false));
-    resources[249] = new Resource(18820, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_lights_add.aem", 32557, false));
-    resources[250] = new Resource(17335, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified.aem", 34258, false));
-    resources[251] = new Resource(18821, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_lights_add.aem", 32558, false));
-    resources[252] = new Resource(17341, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified.aem", 34259, false));
-    resources[253] = new Resource(18822, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_lights_add.aem", 32559, false));
-    resources[254] = new Resource(17347, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified.aem", 34260, false));
-    resources[255] = new Resource(18823, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_lights_add.aem", 34602, false));
-    resources[256] = new Resource(17353, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype.aem", 34261, false));
-    resources[257] = new Resource(18824, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_lights_add.aem", 32561, false));
-    resources[258] = new Resource(17359, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype.aem", 34262, false));
-    resources[259] = new Resource(18825, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_lights_add.aem", 32562, false));
-    resources[260] = new Resource(17365, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype.aem", 34263, false));
-    resources[261] = new Resource(18826, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_add.aem", 32563, false));
-    resources[262] = new Resource(17370, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_emissive.aem", 34363, false));
-    resources[263] = new Resource(11741, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_supernova.aei", 0.0f));
-    resources[264] = new Resource(11761, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_ring_anim_add.aem", 0.0f));
-    resources[265] = new Resource(11762, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_core_anim_add.aem", 0.0f));
-    resources[266] = new Resource(11764, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_ring.aei", 0.0f));
-    resources[267] = new Resource(11763, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_core.aei", 0.0f));
-    resources[268] = new Resource(11870, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma.aei", 0.0f));
-    resources[269] = new Resource(11871, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma_normal.aei", 0.0f));
-    resources[270] = new Resource(29045, RESOURCE_MATERIAL, new ResourceMaterial(11870, BlendMode_2));
-    resources[271] = new Resource(18997, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_green_anim_lookat_add.aem", 29045, false));
-    resources[272] = new Resource(18998, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_blue_anim_lookat_add.aem", 29045, false));
-    resources[273] = new Resource(18999, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_violet_anim_lookat_add.aem", 29045, false));
-    resources[274] = new Resource(19000, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_red_anim_lookat_add.aem", 29045, false));
-    resources[275] = new Resource(19001, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_green_anim_lookat_add.aem", 29045, false));
-    resources[276] = new Resource(19002, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_blue_anim_lookat_add.aem", 29045, false));
-    resources[277] = new Resource(19003, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_violet_anim_lookat_add.aem", 29045, false));
-    resources[278] = new Resource(19004, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_red_anim_lookat_add.aem", 29045, false));
-    resources[279] = new Resource(11753, RESOURCE_MATERIAL, new ResourceMaterial(10080, static_cast<BlendMode>(0)));
-    resources[280] = new Resource(11754, RESOURCE_MATERIAL, new ResourceMaterial(10084, static_cast<BlendMode>(0)));
-    resources[281] = new Resource(11783, RESOURCE_MATERIAL, new ResourceMaterial(10081, static_cast<BlendMode>(0)));
-    resources[282] = new Resource(29060, RESOURCE_MATERIAL, new ResourceMaterial(10082, static_cast<BlendMode>(0)));
-    resources[283] = new Resource(29061, RESOURCE_MATERIAL, new ResourceMaterial(10083, static_cast<BlendMode>(0)));
-    resources[284] = new Resource(17815, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015.aem", 11753, false));
-    resources[285] = new Resource(17824, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_1_anim.aem", 65535, false));
-    resources[286] = new Resource(17825, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_2_anim.aem", 65535, false));
-    resources[287] = new Resource(17816, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_016.aem", 11783, false));
-    resources[288] = new Resource(17817, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_017.aem", 29060, false));
-    resources[289] = new Resource(17818, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_018.aem", 29061, false));
-    resources[290] = new Resource(10150, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_0.aei", 65535, false));
-    resources[291] = new Resource(10151, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_1.aei", 65535, false));
-    resources[292] = new Resource(10152, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_2.aei", 65535, false));
-    resources[293] = new Resource(34500, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_midorian.aei", 0.0f));
-    resources[294] = new Resource(34501, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_nivelian.aei", 0.0f));
-    resources[295] = new Resource(34502, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_pirates.aei", 0.0f));
-    resources[296] = new Resource(34503, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_terran.aei", 0.0f));
-    resources[297] = new Resource(34504, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_vossk.aei", 0.0f));
-    resources[298] = new Resource(34505, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_void.aei", 0.0f));
-    resources[299] = new Resource(10031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_000.aei", 0.0f));
-    resources[300] = new Resource(10032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_001.aei", 0.0f));
-    resources[301] = new Resource(10033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_002.aei", 0.0f));
-    resources[302] = new Resource(10034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_003.aei", 0.0f));
-    resources[303] = new Resource(10035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_004.aei", 0.0f));
-    resources[304] = new Resource(10036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_005.aei", 0.0f));
-    resources[305] = new Resource(10037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_006.aei", 0.0f));
-    resources[306] = new Resource(10038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_007.aei", 0.0f));
-    resources[307] = new Resource(10039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_008.aei", 0.0f));
-    resources[308] = new Resource(10040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_009.aei", 0.0f));
-    resources[309] = new Resource(10041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_010.aei", 0.0f));
-    resources[310] = new Resource(33010, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_terran_diffuse.aei", -1.0f));
-    resources[311] = new Resource(33011, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_terran_normal_specular.aei", -1.0f));
-    resources[312] = new Resource(33008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_diffuse.aei", 0.0f));
-    resources[313] = new Resource(33009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_normal_specular.aei", 0.0f));
-    resources[314] = new Resource(33006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_diffuse.aei", -1.0f));
-    resources[315] = new Resource(33007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_normal_specular.aei", -1.0f));
-    resources[316] = new Resource(33004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_diffuse.aei", -1.0f));
-    resources[317] = new Resource(33005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_normal_specular.aei", -1.0f));
-    resources[318] = new Resource(33014, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_diffuse.aei", -1.0f));
-    resources[319] = new Resource(33015, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_normal_specular.aei", -1.0f));
-    resources[320] = new Resource(33012, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_diffuse.aei", -1.0f));
-    resources[321] = new Resource(33013, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_normal_specular.aei", -1.0f));
-    resources[322] = new Resource(33016, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_glow.aei", -1.0f));
-    resources[323] = new Resource(20048, RESOURCE_MATERIAL, new ResourceMaterial(33016, static_cast<BlendMode>(0)));
-    resources[324] = new Resource(34000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_diffuse.aei", -1.0f));
-    resources[325] = new Resource(34001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_diffuse.aei", -1.0f));
-    resources[326] = new Resource(34002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_diffuse.aei", -1.0f));
-    resources[327] = new Resource(34003, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_diffuse.aei", -1.0f));
-    resources[328] = new Resource(34004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_diffuse.aei", -1.0f));
-    resources[329] = new Resource(34005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_diffuse.aei", -1.0f));
-    resources[330] = new Resource(34006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_diffuse.aei", -1.0f));
-    resources[331] = new Resource(34007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_diffuse.aei", -1.0f));
-    resources[332] = new Resource(34008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_diffuse.aei", -1.0f));
-    resources[333] = new Resource(34009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_diffuse.aei", -1.0f));
-    resources[334] = new Resource(34010, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_diffuse.aei", -1.0f));
-    resources[335] = new Resource(34011, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_diffuse.aei", -1.0f));
-    resources[336] = new Resource(34012, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_diffuse.aei", -1.0f));
-    resources[337] = new Resource(34016, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_diffuse.aei", -1.0f));
-    resources[338] = new Resource(34017, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_diffuse.aei", -1.0f));
-    resources[339] = new Resource(34018, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_diffuse.aei", -1.0f));
-    resources[340] = new Resource(34019, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_diffuse.aei", -1.0f));
-    resources[341] = new Resource(34020, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_diffuse.aei", -1.0f));
-    resources[342] = new Resource(34021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_diffuse.aei", -1.0f));
-    resources[343] = new Resource(34022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_diffuse.aei", -1.0f));
-    resources[344] = new Resource(34023, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_diffuse.aei", -1.0f));
-    resources[345] = new Resource(34024, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_diffuse.aei", -1.0f));
-    resources[346] = new Resource(34025, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_diffuse.aei", -1.0f));
-    resources[347] = new Resource(34026, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_diffuse.aei", -1.0f));
-    resources[348] = new Resource(34027, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_diffuse.aei", -1.0f));
-    resources[349] = new Resource(34028, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_diffuse.aei", -1.0f));
-    resources[350] = new Resource(34029, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_diffuse.aei", -1.0f));
-    resources[351] = new Resource(34030, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_diffuse.aei", -1.0f));
-    resources[352] = new Resource(34031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_diffuse.aei", -1.0f));
-    resources[353] = new Resource(34032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_diffuse.aei", -1.0f));
-    resources[354] = new Resource(34033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_diffuse.aei", -1.0f));
-    resources[355] = new Resource(34034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_diffuse.aei", -1.0f));
-    resources[356] = new Resource(34035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_diffuse.aei", -1.0f));
-    resources[357] = new Resource(34036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_diffuse.aei", -1.0f));
-    resources[358] = new Resource(34037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_diffuse.aei", -1.0f));
-    resources[359] = new Resource(34038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_diffuse.aei", -1.0f));
-    resources[360] = new Resource(34039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_diffuse.aei", -1.0f));
-    resources[361] = new Resource(34040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_diffuse.aei", -1.0f));
-    resources[362] = new Resource(34041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_diffuse.aei", -1.0f));
-    resources[363] = new Resource(34042, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_042_retro_diffuse.aei", -1.0f));
-    resources[364] = new Resource(34043, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_diffuse.aei", -1.0f));
-    resources[365] = new Resource(34044, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_diffuse.aei", -1.0f));
-    resources[366] = new Resource(34045, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_diffuse.aei", -1.0f));
-    resources[367] = new Resource(34046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_diffuse.aei", -1.0f));
-    resources[368] = new Resource(34047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_diffuse.aei", -1.0f));
-    resources[369] = new Resource(34048, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_diffuse.aei", -1.0f));
-    resources[370] = new Resource(34049, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_diffuse.aei", -1.0f));
-    resources[371] = new Resource(34051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_diffuse.aei", -1.0f));
-    resources[372] = new Resource(34052, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_diffuse.aei", -1.0f));
-    resources[373] = new Resource(34054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_diffuse.aei", -1.0f));
-    resources[374] = new Resource(34055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_diffuse.aei", -1.0f));
-    resources[375] = new Resource(34056, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_diffuse.aei", -1.0f));
-    resources[376] = new Resource(34057, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_diffuse.aei", -1.0f));
-    resources[377] = new Resource(34058, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_diffuse.aei", -1.0f));
-    resources[378] = new Resource(34059, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_diffuse.aei", -1.0f));
-    resources[379] = new Resource(34060, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_diffuse.aei", -1.0f));
-    resources[380] = new Resource(34061, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_diffuse.aei", -1.0f));
-    resources[381] = new Resource(34062, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_diffuse.aei", -1.0f));
-    resources[382] = new Resource(34063, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_diffuse.aei", -1.0f));
-    resources[383] = new Resource(34100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_normal_specular.aei", -1.0f));
-    resources[384] = new Resource(34101, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_normal_specular.aei", -1.0f));
-    resources[385] = new Resource(34102, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_normal_specular.aei", -1.0f));
-    resources[386] = new Resource(34103, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_normal_specular.aei", -1.0f));
-    resources[387] = new Resource(34104, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_normal_specular.aei", -1.0f));
-    resources[388] = new Resource(34105, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_normal_specular.aei", -1.0f));
-    resources[389] = new Resource(34106, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_normal_specular.aei", -1.0f));
-    resources[390] = new Resource(34107, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_normal_specular.aei", -1.0f));
-    resources[391] = new Resource(34108, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_normal_specular.aei", -1.0f));
-    resources[392] = new Resource(34109, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_normal_specular.aei", -1.0f));
-    resources[393] = new Resource(34110, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_normal_specular.aei", -1.0f));
-    resources[394] = new Resource(34111, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_normal_specular.aei", -1.0f));
-    resources[395] = new Resource(34112, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_normal_specular.aei", -1.0f));
-    resources[396] = new Resource(34116, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_normal_specular.aei", -1.0f));
-    resources[397] = new Resource(34117, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_normal_specular.aei", -1.0f));
-    resources[398] = new Resource(34118, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_normal_specular.aei", -1.0f));
-    resources[399] = new Resource(34119, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_normal_specular.aei", -1.0f));
-    resources[400] = new Resource(34120, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_normal_specular.aei", -1.0f));
-    resources[401] = new Resource(34121, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_normal_specular.aei", -1.0f));
-    resources[402] = new Resource(34122, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_normal_specular.aei", -1.0f));
-    resources[403] = new Resource(34123, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_normal_specular.aei", -1.0f));
-    resources[404] = new Resource(34124, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_normal_specular.aei", -1.0f));
-    resources[405] = new Resource(34125, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_normal_specular.aei", -1.0f));
-    resources[406] = new Resource(34126, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_normal_specular.aei", -1.0f));
-    resources[407] = new Resource(34127, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_normal_specular.aei", -1.0f));
-    resources[408] = new Resource(34128, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_normal_specular.aei", -1.0f));
-    resources[409] = new Resource(34129, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_normal_specular.aei", -1.0f));
-    resources[410] = new Resource(34130, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_normal_specular.aei", -1.0f));
-    resources[411] = new Resource(34131, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_normal_specular.aei", -1.0f));
-    resources[412] = new Resource(34132, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_normal_specular.aei", -1.0f));
-    resources[413] = new Resource(34133, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_normal_specular.aei", -1.0f));
-    resources[414] = new Resource(34134, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_normal_specular.aei", -1.0f));
-    resources[415] = new Resource(34135, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_normal_specular.aei", -1.0f));
-    resources[416] = new Resource(34136, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_normal_specular.aei", -1.0f));
-    resources[417] = new Resource(34137, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_normal_specular.aei", -1.0f));
-    resources[418] = new Resource(34138, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_normal_specular.aei", -1.0f));
-    resources[419] = new Resource(34139, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_normal_specular.aei", -1.0f));
-    resources[420] = new Resource(34140, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_normal_specular.aei", -1.0f));
-    resources[421] = new Resource(34141, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_normal_specular.aei", -1.0f));
-    resources[422] = new Resource(34142, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_042_retro_normal_specular.aei", -1.0f));
-    resources[423] = new Resource(34143, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_normal_specular.aei", -1.0f));
-    resources[424] = new Resource(34144, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_normal_specular.aei", -1.0f));
-    resources[425] = new Resource(34145, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_normal_specular.aei", -1.0f));
-    resources[426] = new Resource(34146, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_normal_specular.aei", -1.0f));
-    resources[427] = new Resource(34147, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_normal_specular.aei", -1.0f));
-    resources[428] = new Resource(34148, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_normal_specular.aei", -1.0f));
-    resources[429] = new Resource(34149, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_normal_specular.aei", -1.0f));
-    resources[430] = new Resource(34151, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_normal_specular.aei", -1.0f));
-    resources[431] = new Resource(34152, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_normal_specular.aei", -1.0f));
-    resources[432] = new Resource(34154, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_normal_specular.aei", -1.0f));
-    resources[433] = new Resource(34155, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_normal_specular.aei", -1.0f));
-    resources[434] = new Resource(34156, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_normal_specular.aei", -1.0f));
-    resources[435] = new Resource(34157, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_normal_specular.aei", -1.0f));
-    resources[436] = new Resource(34158, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_normal_specular.aei", -1.0f));
-    resources[437] = new Resource(34159, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_normal_specular.aei", -1.0f));
-    resources[438] = new Resource(34160, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_normal_specular.aei", -1.0f));
-    resources[439] = new Resource(34161, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_normal_specular.aei", -1.0f));
-    resources[440] = new Resource(34162, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_normal_specular.aei", -1.0f));
-    resources[441] = new Resource(34163, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_normal_specular.aei", -1.0f));
-    resources[442] = new Resource(10107, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/asteroid_explosion.aei", -1.0f));
-    resources[443] = new Resource(10155, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_diffuse.aei", -1.0f));
-    resources[444] = new Resource(10156, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_normal_specular.aei", -1.0f));
-    resources[445] = new Resource(27314, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_explosion.aei", -1.0f));
-    resources[446] = new Resource(28999, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_diffuse.aei", -1.0f));
-    resources[447] = new Resource(29000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_normal_specular.aei", -1.0f));
-    resources[448] = new Resource(10104, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/wormhole.aei", 0.0f));
-    resources[449] = new Resource(10121, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/fog.aei", 0.0f));
-    resources[450] = new Resource(10132, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_fog_ice.aei", 0.0f));
-    resources[451] = new Resource(10100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_bg.aei", 0.0f));
-    resources[452] = new Resource(10101, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_0.aei", 0.0f));
-    resources[453] = new Resource(10102, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_1.aei", 0.0f));
-    resources[454] = new Resource(10145, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_planets_diffuse.aei", 0.0f));
-    resources[455] = new Resource(10144, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_orbit.aei", 0.0f));
-    resources[456] = new Resource(10159, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/galaxymap/v_galaxymap_planets.aei", 0.0f));
-    resources[457] = new Resource(33400, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_terran.aei", 0.0f));
-    resources[458] = new Resource(33401, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_vossk.aei", 0.0f));
-    resources[459] = new Resource(33402, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_nivelian.aei", 0.0f));
-    resources[460] = new Resource(33403, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_midorian.aei", 0.0f));
-    resources[461] = new Resource(33404, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_shadow.aei", 0.0f));
-    resources[462] = new Resource(10161, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/galaxymap/sn_galaxymap_planets.aei", 0.0f));
-    resources[463] = new Resource(11606, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_bobolan.aei", 0.0f));
-    resources[464] = new Resource(11607, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_grey.aei", 0.0f));
-    resources[465] = new Resource(11608, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_multipod.aei", 0.0f));
-    resources[466] = new Resource(11609, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_nivelian.aei", 0.0f));
-    resources[467] = new Resource(11610, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_f.aei", 0.0f));
-    resources[468] = new Resource(11611, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_m.aei", 0.0f));
-    resources[469] = new Resource(11612, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_vossk.aei", 0.0f));
-    resources[470] = new Resource(10157, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_diffuse.aei", 0.0f));
-    resources[471] = new Resource(10158, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_normal_specular.aei", 0.0f));
-    resources[472] = new Resource(10134, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_diffuse.aei", 0.0f));
-    resources[473] = new Resource(10135, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_normal_specular.aei", 0.0f));
-    resources[474] = new Resource(11600, RESOURCE_TEXTURE, new ResourceTexture("data/textures/col_test.aei", 0.0f));
-    resources[475] = new Resource(12000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_diffuse.aei", 0.0f));
-    resources[476] = new Resource(12001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_normal_specular.aei", 0.0f));
-    resources[477] = new Resource(11601, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_explosion.aei", 0.0f));
-    resources[478] = new Resource(11602, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_smoke.aei", 0.0f));
-    resources[479] = new Resource(11599, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_fire.aei", 0.0f));
-    resources[480] = new Resource(11598, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion.aei", 0.0f));
-    resources[481] = new Resource(12002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_diffuse.aei", 0.0f));
-    resources[482] = new Resource(12003, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_normal_specular.aei", 0.0f));
-    resources[483] = new Resource(12004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_diffuse.aei", 0.0f));
-    resources[484] = new Resource(12005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_normal_specular.aei", 0.0f));
-    resources[485] = new Resource(12006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_diffuse.aei", 0.0f));
-    resources[486] = new Resource(12007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_normal_specular.aei", 0.0f));
-    resources[487] = new Resource(11860, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_diffuse.aei", 0.0f));
-    resources[488] = new Resource(11861, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_normal_specular.aei", 0.0f));
-    resources[489] = new Resource(12050, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_diffuse.aei", 0.0f));
-    resources[490] = new Resource(12051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_normal_specular.aei", 0.0f));
-    resources[491] = new Resource(12052, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_diffuse.aei", 0.0f));
-    resources[492] = new Resource(12053, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_normal_specular.aei", 0.0f));
-    resources[493] = new Resource(12054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_diffuse.aei", 0.0f));
-    resources[494] = new Resource(12055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_normal_specular.aei", 0.0f));
-    resources[495] = new Resource(12008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_diffuse.aei", 0.0f));
-    resources[496] = new Resource(12009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_normal_specular.aei", 0.0f));
-    resources[497] = new Resource(11594, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_diffuse.aei", 0.0f));
-    resources[498] = new Resource(11595, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_normal_specular.aei", 0.0f));
-    resources[499] = new Resource(10148, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_diffuse.aei", 0.0f));
-    resources[500] = new Resource(10149, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_normal_specular.aei", 0.0f));
-    resources[501] = new Resource(10126, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_000_explosion.aei", 0.0f));
-    resources[502] = new Resource(10127, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_001_explosion.aei", 0.0f));
-    resources[503] = new Resource(10128, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_002_explosion.aei", 0.0f));
-    resources[504] = new Resource(24210, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_diffuse.aei", 0.0f));
-    resources[505] = new Resource(24211, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_normal_specular.aei", 0.0f));
-    resources[506] = new Resource(24212, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_diffuse.aei", 0.0f));
-    resources[507] = new Resource(24213, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_normal_specular.aei", 0.0f));
-    resources[508] = new Resource(24214, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_diffuse.aei", 0.0f));
-    resources[509] = new Resource(24215, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_normal_specular.aei", 0.0f));
-    resources[510] = new Resource(11617, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_diffuse.aei", -1.0f));
-    resources[511] = new Resource(11618, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_normal_specular.aei", -1.0f));
-    resources[512] = new Resource(11615, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_diffuse.aei", -1.0f));
-    resources[513] = new Resource(11616, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_normal_specular.aei", -1.0f));
-    resources[514] = new Resource(11620, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_glow.aei", 0.0f));
-    resources[515] = new Resource(34816, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_emitters.aei", 0.0f));
-    resources[516] = new Resource(11628, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/tex_player_station_fx.aei", -1.0f));
-    resources[517] = new Resource(11633, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_normal.aei", -1.0f));
-    resources[518] = new Resource(11634, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_noise.aei", -1.0f));
-    resources[519] = new Resource(33300, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/khador_jump.aei", -1.0f));
-    resources[520] = new Resource(24203, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/hyper_drive.aei", -1.0f));
-    resources[521] = new Resource(11647, RESOURCE_TEXTURE, new ResourceTexture("data/textures/gas_cloud.aei", 0.0f));
-    resources[522] = new Resource(33410, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_diffuse.aei", 0.0f));
-    resources[523] = new Resource(33411, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_normal_specular.aei", 0.0f));
-    resources[524] = new Resource(27160, RESOURCE_MATERIAL, new ResourceMaterial(33410, 33411, static_cast<BlendMode>(28)));
-    resources[525] = new Resource(33240, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_003_terran_diffuse.aei", 0.0f));
-    resources[526] = new Resource(33241, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_003_terran_normal_specular.aei", 0.0f));
-    resources[527] = new Resource(33242, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_diffuse.aei", 0.0f));
-    resources[528] = new Resource(33243, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_normal_specular.aei", 0.0f));
-    resources[529] = new Resource(33244, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_diffuse.aei", 0.0f));
-    resources[530] = new Resource(33245, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_normal_specular.aei", 0.0f));
-    resources[531] = new Resource(33246, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_diffuse.aei", 0.0f));
-    resources[532] = new Resource(33247, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_normal_specular.aei", 0.0f));
-    resources[533] = new Resource(24202, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/particles.aei", 0.0f));
-    resources[534] = new Resource(24208, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_diffuse.aei", 0.0f));
-    resources[535] = new Resource(24209, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_normal_specular.aei", 0.0f));
-    resources[536] = new Resource(20092, RESOURCE_MATERIAL, new ResourceMaterial(24208, 24209, static_cast<BlendMode>(36)));
-    resources[537] = new Resource(20090, RESOURCE_MATERIAL, new ResourceMaterial(24202, static_cast<BlendMode>(3)));
-    resources[538] = new Resource(33301, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion_emp.aei", 0.0f));
-    resources[539] = new Resource(27300, RESOURCE_MATERIAL, new ResourceMaterial(33301, BlendMode_2));
-    resources[540] = new Resource(33340, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_diffuse.aei", 0.0f));
-    resources[541] = new Resource(33341, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_normal_specular.aei", 0.0f));
-    resources[542] = new Resource(33357, RESOURCE_MATERIAL, new ResourceMaterial(33340, 33341, static_cast<BlendMode>(28)));
-    resources[543] = new Resource(33352, RESOURCE_MATERIAL, new ResourceMaterial(33342, 33343, static_cast<BlendMode>(28)));
-    resources[544] = new Resource(33353, RESOURCE_MATERIAL, new ResourceMaterial(33344, 33345, static_cast<BlendMode>(28)));
-    resources[545] = new Resource(33354, RESOURCE_MATERIAL, new ResourceMaterial(33346, 33347, static_cast<BlendMode>(28)));
-    resources[546] = new Resource(33355, RESOURCE_MATERIAL, new ResourceMaterial(33348, 33349, static_cast<BlendMode>(28)));
-    resources[547] = new Resource(33356, RESOURCE_MATERIAL, new ResourceMaterial(33350, 33351, static_cast<BlendMode>(28)));
-    resources[548] = new Resource(12020, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_terran.aei", 0.0f));
-    resources[549] = new Resource(12021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_vossk.aei", 0.0f));
-    resources[550] = new Resource(12022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_nivelian.aei", 0.0f));
-    resources[551] = new Resource(12023, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_midorian.aei", 0.0f));
-    resources[552] = new Resource(12030, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_000.aei", 0.0f));
-    resources[553] = new Resource(12031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_001.aei", 0.0f));
-    resources[554] = new Resource(12032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_002.aei", 0.0f));
-    resources[555] = new Resource(12033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_003.aei", 0.0f));
-    resources[556] = new Resource(12034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_004.aei", 0.0f));
-    resources[557] = new Resource(12035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_005.aei", 0.0f));
-    resources[558] = new Resource(12036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_006.aei", 0.0f));
-    resources[559] = new Resource(12037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_007.aei", 0.0f));
-    resources[560] = new Resource(12038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_008.aei", 0.0f));
-    resources[561] = new Resource(12039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_009.aei", 0.0f));
-    resources[562] = new Resource(12040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_010.aei", 0.0f));
-    resources[563] = new Resource(12041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_011.aei", 0.0f));
-    resources[564] = new Resource(12042, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_012.aei", 0.0f));
-    resources[565] = new Resource(12043, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_013.aei", 0.0f));
-    resources[566] = new Resource(12044, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_014.aei", 0.0f));
-    resources[567] = new Resource(12045, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_015.aei", 0.0f));
-    resources[568] = new Resource(12046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_016.aei", 0.0f));
-    resources[569] = new Resource(12047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_017.aei", 0.0f));
-    resources[570] = new Resource(12048, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_018.aei", 0.0f));
-    resources[571] = new Resource(33302, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/bomb_rocket_fx.aei", 0.0f));
-    resources[572] = new Resource(33304, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_diffuse.aei", 0.0f));
-    resources[573] = new Resource(33305, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_normal_specular.aei", 0.0f));
-    resources[574] = new Resource(33307, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_diffuse.aei", 0.0f));
-    resources[575] = new Resource(33308, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_normal_specular.aei", 0.0f));
-    resources[576] = new Resource(33310, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_diffuse.aei", 0.0f));
-    resources[577] = new Resource(33311, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_normal_specular.aei", 0.0f));
-    resources[578] = new Resource(24204, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_diffuse.aei", 0.0f));
-    resources[579] = new Resource(24205, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_normal_specular.aei", 0.0f));
-    resources[580] = new Resource(24206, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_diffuse.aei", 0.0f));
-    resources[581] = new Resource(24207, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_normal_specular.aei", 0.0f));
-    resources[582] = new Resource(33330, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion_void_station.aei", 0.0f));
-    resources[583] = new Resource(34812, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/ship_engine_glow.aei", 0.0f));
-    resources[584] = new Resource(34813, RESOURCE_MATERIAL, new ResourceMaterial(34812, BlendMode_2));
-    resources[585] = new Resource(34814, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_ship_engine_glow.aei", 0.0f));
-    resources[586] = new Resource(34815, RESOURCE_MATERIAL, new ResourceMaterial(34814, BlendMode_2));
-    resources[587] = new Resource(27301, RESOURCE_MATERIAL, new ResourceMaterial(33330, static_cast<BlendMode>(3)));
-    resources[588] = new Resource(27302, RESOURCE_MATERIAL, new ResourceMaterial(33330, BlendMode_1));
-    resources[589] = new Resource(33303, RESOURCE_MATERIAL, new ResourceMaterial(33302, BlendMode_2));
-    resources[590] = new Resource(33306, RESOURCE_MATERIAL, new ResourceMaterial(33304, 33305, static_cast<BlendMode>(28)));
-    resources[591] = new Resource(33309, RESOURCE_MATERIAL, new ResourceMaterial(33307, 33308, static_cast<BlendMode>(28)));
-    resources[592] = new Resource(33312, RESOURCE_MATERIAL, new ResourceMaterial(33310, 33311, static_cast<BlendMode>(28)));
-    resources[593] = new Resource(20004, RESOURCE_MATERIAL, new ResourceMaterial(33010, 33011, static_cast<BlendMode>(28)));
-    resources[594] = new Resource(20003, RESOURCE_MATERIAL, new ResourceMaterial(33010, static_cast<BlendMode>(0)));
-    resources[595] = new Resource(20005, RESOURCE_MATERIAL, new ResourceMaterial(33006, 33007, static_cast<BlendMode>(28)));
-    resources[596] = new Resource(20006, RESOURCE_MATERIAL, new ResourceMaterial(33006, static_cast<BlendMode>(0)));
-    resources[597] = new Resource(20104, RESOURCE_MATERIAL, new ResourceMaterial(33008, 33009, static_cast<BlendMode>(28)));
-    resources[598] = new Resource(20105, RESOURCE_MATERIAL, new ResourceMaterial(33008, static_cast<BlendMode>(0)));
-    resources[599] = new Resource(20007, RESOURCE_MATERIAL, new ResourceMaterial(33004, 33005, static_cast<BlendMode>(28)));
-    resources[600] = new Resource(20008, RESOURCE_MATERIAL, new ResourceMaterial(33004, static_cast<BlendMode>(0)));
-    resources[601] = new Resource(20046, RESOURCE_MATERIAL, new ResourceMaterial(10094, static_cast<BlendMode>(0)));
-    resources[602] = new Resource(20045, RESOURCE_MATERIAL, new ResourceMaterial(33012, 33013, static_cast<BlendMode>(28)));
-    resources[603] = new Resource(20047, RESOURCE_MATERIAL, new ResourceMaterial(33012, BlendMode_2));
-    resources[604] = new Resource(20082, RESOURCE_MATERIAL, new ResourceMaterial(33012, BlendMode_1));
-    resources[605] = new Resource(20032, RESOURCE_MATERIAL, new ResourceMaterial(33014, 33015, static_cast<BlendMode>(28)));
-    resources[606] = new Resource(20031, RESOURCE_MATERIAL, new ResourceMaterial(33014, static_cast<BlendMode>(0)));
-    resources[607] = new Resource(20033, RESOURCE_MATERIAL, new ResourceMaterial(33014, BlendMode_2));
-    resources[608] = new Resource(34700, RESOURCE_MATERIAL, new ResourceMaterial(33120, 33121, static_cast<BlendMode>(28)));
-    resources[609] = new Resource(34701, RESOURCE_MATERIAL, new ResourceMaterial(34500, BlendMode_2));
-    resources[610] = new Resource(34702, RESOURCE_MATERIAL, new ResourceMaterial(33120, BlendMode_8));
-    resources[611] = new Resource(34703, RESOURCE_MATERIAL, new ResourceMaterial(33120, static_cast<BlendMode>(0)));
-    resources[612] = new Resource(34704, RESOURCE_MATERIAL, new ResourceMaterial(33122, 33123, static_cast<BlendMode>(28)));
-    resources[613] = new Resource(34705, RESOURCE_MATERIAL, new ResourceMaterial(34501, BlendMode_2));
-    resources[614] = new Resource(34706, RESOURCE_MATERIAL, new ResourceMaterial(33122, BlendMode_8));
-    resources[615] = new Resource(34707, RESOURCE_MATERIAL, new ResourceMaterial(34501, static_cast<BlendMode>(0)));
-    resources[616] = new Resource(34708, RESOURCE_MATERIAL, new ResourceMaterial(33124, 33125, static_cast<BlendMode>(28)));
-    resources[617] = new Resource(34709, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2));
-    resources[618] = new Resource(34710, RESOURCE_MATERIAL, new ResourceMaterial(33124, BlendMode_8));
-    resources[619] = new Resource(34711, RESOURCE_MATERIAL, new ResourceMaterial(34501, static_cast<BlendMode>(0)));
-    resources[620] = new Resource(34712, RESOURCE_MATERIAL, new ResourceMaterial(33126, 33127, static_cast<BlendMode>(28)));
-    resources[621] = new Resource(34713, RESOURCE_MATERIAL, new ResourceMaterial(34504, BlendMode_2));
-    resources[622] = new Resource(34714, RESOURCE_MATERIAL, new ResourceMaterial(33126, BlendMode_8));
-    resources[623] = new Resource(34715, RESOURCE_MATERIAL, new ResourceMaterial(33126, static_cast<BlendMode>(0)));
-    resources[624] = new Resource(34716, RESOURCE_MATERIAL, new ResourceMaterial(33128, 33129, static_cast<BlendMode>(28)));
-    resources[625] = new Resource(34717, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2));
-    resources[626] = new Resource(34718, RESOURCE_MATERIAL, new ResourceMaterial(33128, BlendMode_8));
-    resources[627] = new Resource(34719, RESOURCE_MATERIAL, new ResourceMaterial(33128, static_cast<BlendMode>(0)));
-    resources[628] = new Resource(34600, RESOURCE_MATERIAL, new ResourceMaterial(34500, BlendMode_2));
-    resources[629] = new Resource(34601, RESOURCE_MATERIAL, new ResourceMaterial(34501, BlendMode_2));
-    resources[630] = new Resource(34602, RESOURCE_MATERIAL, new ResourceMaterial(34502, BlendMode_2));
-    resources[631] = new Resource(34603, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2));
-    resources[632] = new Resource(34604, RESOURCE_MATERIAL, new ResourceMaterial(34504, BlendMode_2));
-    resources[633] = new Resource(34605, RESOURCE_MATERIAL, new ResourceMaterial(34505, BlendMode_2));
-    resources[634] = new Resource(34200, RESOURCE_MATERIAL, new ResourceMaterial(34000, 34100, static_cast<BlendMode>(28)));
-    resources[635] = new Resource(34201, RESOURCE_MATERIAL, new ResourceMaterial(34001, 34101, static_cast<BlendMode>(28)));
-    resources[636] = new Resource(34202, RESOURCE_MATERIAL, new ResourceMaterial(34002, 34102, static_cast<BlendMode>(28)));
-    resources[637] = new Resource(34203, RESOURCE_MATERIAL, new ResourceMaterial(34003, 34103, static_cast<BlendMode>(28)));
-    resources[638] = new Resource(34204, RESOURCE_MATERIAL, new ResourceMaterial(34004, 34104, static_cast<BlendMode>(28)));
-    resources[639] = new Resource(34205, RESOURCE_MATERIAL, new ResourceMaterial(34005, 34105, static_cast<BlendMode>(28)));
-    resources[640] = new Resource(34206, RESOURCE_MATERIAL, new ResourceMaterial(34006, 34106, static_cast<BlendMode>(28)));
-    resources[641] = new Resource(34207, RESOURCE_MATERIAL, new ResourceMaterial(34007, 34107, static_cast<BlendMode>(28)));
-    resources[642] = new Resource(34208, RESOURCE_MATERIAL, new ResourceMaterial(34008, 34108, static_cast<BlendMode>(28)));
-    resources[643] = new Resource(34209, RESOURCE_MATERIAL, new ResourceMaterial(34009, 34109, static_cast<BlendMode>(28)));
-    resources[644] = new Resource(34210, RESOURCE_MATERIAL, new ResourceMaterial(34010, 34110, static_cast<BlendMode>(28)));
-    resources[645] = new Resource(34211, RESOURCE_MATERIAL, new ResourceMaterial(34011, 34111, static_cast<BlendMode>(28)));
-    resources[646] = new Resource(34212, RESOURCE_MATERIAL, new ResourceMaterial(34012, 34112, static_cast<BlendMode>(28)));
-    resources[647] = new Resource(34216, RESOURCE_MATERIAL, new ResourceMaterial(34016, 34116, static_cast<BlendMode>(28)));
-    resources[648] = new Resource(34217, RESOURCE_MATERIAL, new ResourceMaterial(34017, 34117, static_cast<BlendMode>(28)));
-    resources[649] = new Resource(34218, RESOURCE_MATERIAL, new ResourceMaterial(34018, 34118, static_cast<BlendMode>(28)));
-    resources[650] = new Resource(34219, RESOURCE_MATERIAL, new ResourceMaterial(34019, 34119, static_cast<BlendMode>(28)));
-    resources[651] = new Resource(34220, RESOURCE_MATERIAL, new ResourceMaterial(34020, 34120, static_cast<BlendMode>(28)));
-    resources[652] = new Resource(34221, RESOURCE_MATERIAL, new ResourceMaterial(34021, 34121, static_cast<BlendMode>(28)));
-    resources[653] = new Resource(34222, RESOURCE_MATERIAL, new ResourceMaterial(34022, 34122, static_cast<BlendMode>(28)));
-    resources[654] = new Resource(34223, RESOURCE_MATERIAL, new ResourceMaterial(34023, 34123, static_cast<BlendMode>(28)));
-    resources[655] = new Resource(34224, RESOURCE_MATERIAL, new ResourceMaterial(34024, 34124, static_cast<BlendMode>(28)));
-    resources[656] = new Resource(34225, RESOURCE_MATERIAL, new ResourceMaterial(34025, 34125, static_cast<BlendMode>(28)));
-    resources[657] = new Resource(34226, RESOURCE_MATERIAL, new ResourceMaterial(34026, 34126, static_cast<BlendMode>(28)));
-    resources[658] = new Resource(34227, RESOURCE_MATERIAL, new ResourceMaterial(34027, 34127, static_cast<BlendMode>(28)));
-    resources[659] = new Resource(34228, RESOURCE_MATERIAL, new ResourceMaterial(34028, 34128, static_cast<BlendMode>(28)));
-    resources[660] = new Resource(34229, RESOURCE_MATERIAL, new ResourceMaterial(34029, 34129, static_cast<BlendMode>(28)));
-    resources[661] = new Resource(34230, RESOURCE_MATERIAL, new ResourceMaterial(34030, 34130, static_cast<BlendMode>(28)));
-    resources[662] = new Resource(34231, RESOURCE_MATERIAL, new ResourceMaterial(34031, 34131, static_cast<BlendMode>(28)));
-    resources[663] = new Resource(34232, RESOURCE_MATERIAL, new ResourceMaterial(34032, 34132, static_cast<BlendMode>(28)));
-    resources[664] = new Resource(34233, RESOURCE_MATERIAL, new ResourceMaterial(34033, 34133, static_cast<BlendMode>(28)));
-    resources[665] = new Resource(34234, RESOURCE_MATERIAL, new ResourceMaterial(34034, 34134, static_cast<BlendMode>(28)));
-    resources[666] = new Resource(34235, RESOURCE_MATERIAL, new ResourceMaterial(34035, 34135, static_cast<BlendMode>(28)));
-    resources[667] = new Resource(34236, RESOURCE_MATERIAL, new ResourceMaterial(34036, 34136, static_cast<BlendMode>(28)));
-    resources[668] = new Resource(34237, RESOURCE_MATERIAL, new ResourceMaterial(34037, 34137, static_cast<BlendMode>(28)));
-    resources[669] = new Resource(34238, RESOURCE_MATERIAL, new ResourceMaterial(34038, 34138, static_cast<BlendMode>(28)));
-    resources[670] = new Resource(34239, RESOURCE_MATERIAL, new ResourceMaterial(34039, 34139, static_cast<BlendMode>(28)));
-    resources[671] = new Resource(34240, RESOURCE_MATERIAL, new ResourceMaterial(34040, 34140, static_cast<BlendMode>(28)));
-    resources[672] = new Resource(34241, RESOURCE_MATERIAL, new ResourceMaterial(34041, 34141, static_cast<BlendMode>(28)));
-    resources[673] = new Resource(34242, RESOURCE_MATERIAL, new ResourceMaterial(34042, 34142, static_cast<BlendMode>(28)));
-    resources[674] = new Resource(34243, RESOURCE_MATERIAL, new ResourceMaterial(34043, 34143, static_cast<BlendMode>(28)));
-    resources[675] = new Resource(34244, RESOURCE_MATERIAL, new ResourceMaterial(34044, 34144, static_cast<BlendMode>(28)));
-    resources[676] = new Resource(34245, RESOURCE_MATERIAL, new ResourceMaterial(34045, 34145, static_cast<BlendMode>(28)));
-    resources[677] = new Resource(34246, RESOURCE_MATERIAL, new ResourceMaterial(34046, 34146, static_cast<BlendMode>(28)));
-    resources[678] = new Resource(34247, RESOURCE_MATERIAL, new ResourceMaterial(34047, 34147, static_cast<BlendMode>(28)));
-    resources[679] = new Resource(34248, RESOURCE_MATERIAL, new ResourceMaterial(34048, 34148, static_cast<BlendMode>(28)));
-    resources[680] = new Resource(34249, RESOURCE_MATERIAL, new ResourceMaterial(34049, 34149, static_cast<BlendMode>(28)));
-    resources[681] = new Resource(34250, RESOURCE_MATERIAL, new ResourceMaterial(34050, 34150, static_cast<BlendMode>(28)));
-    resources[682] = new Resource(34251, RESOURCE_MATERIAL, new ResourceMaterial(34051, 34151, static_cast<BlendMode>(28)));
-    resources[683] = new Resource(34252, RESOURCE_MATERIAL, new ResourceMaterial(34052, 34152, static_cast<BlendMode>(28)));
-    resources[684] = new Resource(34253, RESOURCE_MATERIAL, new ResourceMaterial(34053, 34153, static_cast<BlendMode>(28)));
-    resources[685] = new Resource(34254, RESOURCE_MATERIAL, new ResourceMaterial(34054, 34154, static_cast<BlendMode>(28)));
-    resources[686] = new Resource(34255, RESOURCE_MATERIAL, new ResourceMaterial(34055, 34155, static_cast<BlendMode>(28)));
-    resources[687] = new Resource(34256, RESOURCE_MATERIAL, new ResourceMaterial(34056, 34156, static_cast<BlendMode>(28)));
-    resources[688] = new Resource(34257, RESOURCE_MATERIAL, new ResourceMaterial(34057, 34157, static_cast<BlendMode>(28)));
-    resources[689] = new Resource(34258, RESOURCE_MATERIAL, new ResourceMaterial(34058, 34158, static_cast<BlendMode>(28)));
-    resources[690] = new Resource(34259, RESOURCE_MATERIAL, new ResourceMaterial(34059, 34159, static_cast<BlendMode>(28)));
-    resources[691] = new Resource(34260, RESOURCE_MATERIAL, new ResourceMaterial(34060, 34160, static_cast<BlendMode>(28)));
-    resources[692] = new Resource(34261, RESOURCE_MATERIAL, new ResourceMaterial(34061, 34161, static_cast<BlendMode>(28)));
-    resources[693] = new Resource(34262, RESOURCE_MATERIAL, new ResourceMaterial(34062, 34162, static_cast<BlendMode>(28)));
-    resources[694] = new Resource(34263, RESOURCE_MATERIAL, new ResourceMaterial(34063, 34163, static_cast<BlendMode>(28)));
-    resources[695] = new Resource(34400, RESOURCE_MATERIAL, new ResourceMaterial(34000, BlendMode_8));
-    resources[696] = new Resource(34401, RESOURCE_MATERIAL, new ResourceMaterial(34001, BlendMode_8));
-    resources[697] = new Resource(34402, RESOURCE_MATERIAL, new ResourceMaterial(34002, BlendMode_8));
-    resources[698] = new Resource(34403, RESOURCE_MATERIAL, new ResourceMaterial(34003, BlendMode_8));
-    resources[699] = new Resource(34404, RESOURCE_MATERIAL, new ResourceMaterial(34004, BlendMode_8));
-    resources[700] = new Resource(34405, RESOURCE_MATERIAL, new ResourceMaterial(34005, BlendMode_8));
-    resources[701] = new Resource(34406, RESOURCE_MATERIAL, new ResourceMaterial(34006, BlendMode_8));
-    resources[702] = new Resource(34407, RESOURCE_MATERIAL, new ResourceMaterial(34007, BlendMode_8));
-    resources[703] = new Resource(34408, RESOURCE_MATERIAL, new ResourceMaterial(34008, BlendMode_8));
-    resources[704] = new Resource(34409, RESOURCE_MATERIAL, new ResourceMaterial(34009, BlendMode_8));
-    resources[705] = new Resource(34410, RESOURCE_MATERIAL, new ResourceMaterial(34010, BlendMode_8));
-    resources[706] = new Resource(34411, RESOURCE_MATERIAL, new ResourceMaterial(34011, BlendMode_8));
-    resources[707] = new Resource(34412, RESOURCE_MATERIAL, new ResourceMaterial(34012, BlendMode_8));
-    resources[708] = new Resource(34416, RESOURCE_MATERIAL, new ResourceMaterial(34016, BlendMode_8));
-    resources[709] = new Resource(34417, RESOURCE_MATERIAL, new ResourceMaterial(34017, BlendMode_8));
-    resources[710] = new Resource(34418, RESOURCE_MATERIAL, new ResourceMaterial(34018, BlendMode_8));
-    resources[711] = new Resource(34419, RESOURCE_MATERIAL, new ResourceMaterial(34019, BlendMode_8));
-    resources[712] = new Resource(34420, RESOURCE_MATERIAL, new ResourceMaterial(34020, BlendMode_8));
-    resources[713] = new Resource(34421, RESOURCE_MATERIAL, new ResourceMaterial(34021, BlendMode_8));
-    resources[714] = new Resource(34422, RESOURCE_MATERIAL, new ResourceMaterial(34022, BlendMode_8));
-    resources[715] = new Resource(34423, RESOURCE_MATERIAL, new ResourceMaterial(34023, BlendMode_8));
-    resources[716] = new Resource(34424, RESOURCE_MATERIAL, new ResourceMaterial(34024, BlendMode_8));
-    resources[717] = new Resource(34425, RESOURCE_MATERIAL, new ResourceMaterial(34025, BlendMode_8));
-    resources[718] = new Resource(34426, RESOURCE_MATERIAL, new ResourceMaterial(34026, BlendMode_8));
-    resources[719] = new Resource(34427, RESOURCE_MATERIAL, new ResourceMaterial(34027, BlendMode_8));
-    resources[720] = new Resource(34428, RESOURCE_MATERIAL, new ResourceMaterial(34028, BlendMode_8));
-    resources[721] = new Resource(34429, RESOURCE_MATERIAL, new ResourceMaterial(34029, BlendMode_8));
-    resources[722] = new Resource(34430, RESOURCE_MATERIAL, new ResourceMaterial(34030, BlendMode_8));
-    resources[723] = new Resource(34431, RESOURCE_MATERIAL, new ResourceMaterial(34031, BlendMode_8));
-    resources[724] = new Resource(34432, RESOURCE_MATERIAL, new ResourceMaterial(34032, BlendMode_8));
-    resources[725] = new Resource(34433, RESOURCE_MATERIAL, new ResourceMaterial(34033, BlendMode_8));
-    resources[726] = new Resource(34434, RESOURCE_MATERIAL, new ResourceMaterial(34034, BlendMode_8));
-    resources[727] = new Resource(34435, RESOURCE_MATERIAL, new ResourceMaterial(34035, BlendMode_8));
-    resources[728] = new Resource(34436, RESOURCE_MATERIAL, new ResourceMaterial(34036, BlendMode_8));
-    resources[729] = new Resource(34442, RESOURCE_MATERIAL, new ResourceMaterial(34042, BlendMode_8));
-    resources[730] = new Resource(34443, RESOURCE_MATERIAL, new ResourceMaterial(34043, BlendMode_8));
-    resources[731] = new Resource(34444, RESOURCE_MATERIAL, new ResourceMaterial(34044, BlendMode_8));
-    resources[732] = new Resource(34445, RESOURCE_MATERIAL, new ResourceMaterial(34045, BlendMode_8));
-    resources[733] = new Resource(34446, RESOURCE_MATERIAL, new ResourceMaterial(34046, BlendMode_8));
-    resources[734] = new Resource(34447, RESOURCE_MATERIAL, new ResourceMaterial(34047, BlendMode_8));
-    resources[735] = new Resource(34448, RESOURCE_MATERIAL, new ResourceMaterial(34048, BlendMode_8));
-    resources[736] = new Resource(34449, RESOURCE_MATERIAL, new ResourceMaterial(34049, BlendMode_8));
-    resources[737] = new Resource(34450, RESOURCE_MATERIAL, new ResourceMaterial(34050, BlendMode_8));
-    resources[738] = new Resource(34451, RESOURCE_MATERIAL, new ResourceMaterial(34051, BlendMode_8));
-    resources[739] = new Resource(34452, RESOURCE_MATERIAL, new ResourceMaterial(34052, BlendMode_8));
-    resources[740] = new Resource(34453, RESOURCE_MATERIAL, new ResourceMaterial(34053, BlendMode_8));
-    resources[741] = new Resource(34454, RESOURCE_MATERIAL, new ResourceMaterial(34054, BlendMode_8));
-    resources[742] = new Resource(34455, RESOURCE_MATERIAL, new ResourceMaterial(34055, BlendMode_8));
-    resources[743] = new Resource(34456, RESOURCE_MATERIAL, new ResourceMaterial(34056, BlendMode_8));
-    resources[744] = new Resource(34457, RESOURCE_MATERIAL, new ResourceMaterial(34057, BlendMode_8));
-    resources[745] = new Resource(34458, RESOURCE_MATERIAL, new ResourceMaterial(34058, BlendMode_8));
-    resources[746] = new Resource(34459, RESOURCE_MATERIAL, new ResourceMaterial(34059, BlendMode_8));
-    resources[747] = new Resource(34460, RESOURCE_MATERIAL, new ResourceMaterial(34060, BlendMode_8));
-    resources[748] = new Resource(34461, RESOURCE_MATERIAL, new ResourceMaterial(34061, BlendMode_8));
-    resources[749] = new Resource(34462, RESOURCE_MATERIAL, new ResourceMaterial(34062, BlendMode_8));
-    resources[750] = new Resource(34463, RESOURCE_MATERIAL, new ResourceMaterial(34063, BlendMode_8));
-    resources[751] = new Resource(34300, RESOURCE_MATERIAL, new ResourceMaterial(34000, static_cast<BlendMode>(0)));
-    resources[752] = new Resource(34301, RESOURCE_MATERIAL, new ResourceMaterial(34001, static_cast<BlendMode>(0)));
-    resources[753] = new Resource(34302, RESOURCE_MATERIAL, new ResourceMaterial(34002, static_cast<BlendMode>(0)));
-    resources[754] = new Resource(34303, RESOURCE_MATERIAL, new ResourceMaterial(34003, static_cast<BlendMode>(0)));
-    resources[755] = new Resource(34304, RESOURCE_MATERIAL, new ResourceMaterial(34004, static_cast<BlendMode>(0)));
-    resources[756] = new Resource(34305, RESOURCE_MATERIAL, new ResourceMaterial(34005, static_cast<BlendMode>(0)));
-    resources[757] = new Resource(34306, RESOURCE_MATERIAL, new ResourceMaterial(34006, static_cast<BlendMode>(0)));
-    resources[758] = new Resource(34307, RESOURCE_MATERIAL, new ResourceMaterial(34007, static_cast<BlendMode>(0)));
-    resources[759] = new Resource(34308, RESOURCE_MATERIAL, new ResourceMaterial(34008, static_cast<BlendMode>(0)));
-    resources[760] = new Resource(34309, RESOURCE_MATERIAL, new ResourceMaterial(34009, static_cast<BlendMode>(0)));
-    resources[761] = new Resource(34310, RESOURCE_MATERIAL, new ResourceMaterial(34010, static_cast<BlendMode>(0)));
-    resources[762] = new Resource(34311, RESOURCE_MATERIAL, new ResourceMaterial(34011, static_cast<BlendMode>(0)));
-    resources[763] = new Resource(34312, RESOURCE_MATERIAL, new ResourceMaterial(34012, static_cast<BlendMode>(0)));
-    resources[764] = new Resource(34313, RESOURCE_MATERIAL, new ResourceMaterial(34013, static_cast<BlendMode>(0)));
-    resources[765] = new Resource(34314, RESOURCE_MATERIAL, new ResourceMaterial(34014, static_cast<BlendMode>(0)));
-    resources[766] = new Resource(34315, RESOURCE_MATERIAL, new ResourceMaterial(34015, static_cast<BlendMode>(0)));
-    resources[767] = new Resource(34316, RESOURCE_MATERIAL, new ResourceMaterial(34016, static_cast<BlendMode>(0)));
-    resources[768] = new Resource(34317, RESOURCE_MATERIAL, new ResourceMaterial(34017, static_cast<BlendMode>(0)));
-    resources[769] = new Resource(34318, RESOURCE_MATERIAL, new ResourceMaterial(34018, static_cast<BlendMode>(0)));
-    resources[770] = new Resource(34319, RESOURCE_MATERIAL, new ResourceMaterial(34019, static_cast<BlendMode>(0)));
-    resources[771] = new Resource(34320, RESOURCE_MATERIAL, new ResourceMaterial(34020, static_cast<BlendMode>(0)));
-    resources[772] = new Resource(34321, RESOURCE_MATERIAL, new ResourceMaterial(34021, static_cast<BlendMode>(0)));
-    resources[773] = new Resource(34322, RESOURCE_MATERIAL, new ResourceMaterial(34022, static_cast<BlendMode>(0)));
-    resources[774] = new Resource(34323, RESOURCE_MATERIAL, new ResourceMaterial(34023, static_cast<BlendMode>(0)));
-    resources[775] = new Resource(34324, RESOURCE_MATERIAL, new ResourceMaterial(34024, static_cast<BlendMode>(0)));
-    resources[776] = new Resource(34325, RESOURCE_MATERIAL, new ResourceMaterial(34025, static_cast<BlendMode>(0)));
-    resources[777] = new Resource(34326, RESOURCE_MATERIAL, new ResourceMaterial(34026, static_cast<BlendMode>(0)));
-    resources[778] = new Resource(34327, RESOURCE_MATERIAL, new ResourceMaterial(34027, static_cast<BlendMode>(0)));
-    resources[779] = new Resource(34328, RESOURCE_MATERIAL, new ResourceMaterial(34028, static_cast<BlendMode>(0)));
-    resources[780] = new Resource(34329, RESOURCE_MATERIAL, new ResourceMaterial(34029, static_cast<BlendMode>(0)));
-    resources[781] = new Resource(34330, RESOURCE_MATERIAL, new ResourceMaterial(34030, static_cast<BlendMode>(0)));
-    resources[782] = new Resource(34331, RESOURCE_MATERIAL, new ResourceMaterial(34031, static_cast<BlendMode>(0)));
-    resources[783] = new Resource(34332, RESOURCE_MATERIAL, new ResourceMaterial(34032, static_cast<BlendMode>(0)));
-    resources[784] = new Resource(34333, RESOURCE_MATERIAL, new ResourceMaterial(34033, static_cast<BlendMode>(0)));
-    resources[785] = new Resource(34334, RESOURCE_MATERIAL, new ResourceMaterial(34034, static_cast<BlendMode>(0)));
-    resources[786] = new Resource(34335, RESOURCE_MATERIAL, new ResourceMaterial(34035, static_cast<BlendMode>(0)));
-    resources[787] = new Resource(34336, RESOURCE_MATERIAL, new ResourceMaterial(34036, static_cast<BlendMode>(0)));
-    resources[788] = new Resource(32537, RESOURCE_MATERIAL, new ResourceMaterial(34037, BlendMode_2));
-    resources[789] = new Resource(32538, RESOURCE_MATERIAL, new ResourceMaterial(34038, BlendMode_2));
-    resources[790] = new Resource(32539, RESOURCE_MATERIAL, new ResourceMaterial(34039, BlendMode_2));
-    resources[791] = new Resource(32540, RESOURCE_MATERIAL, new ResourceMaterial(34040, BlendMode_2));
-    resources[792] = new Resource(32541, RESOURCE_MATERIAL, new ResourceMaterial(34041, BlendMode_2));
-    resources[793] = new Resource(34342, RESOURCE_MATERIAL, new ResourceMaterial(34042, static_cast<BlendMode>(0)));
-    resources[794] = new Resource(32542, RESOURCE_MATERIAL, new ResourceMaterial(34042, BlendMode_2));
-    resources[795] = new Resource(34343, RESOURCE_MATERIAL, new ResourceMaterial(34043, static_cast<BlendMode>(0)));
-    resources[796] = new Resource(32543, RESOURCE_MATERIAL, new ResourceMaterial(34043, BlendMode_2));
-    resources[797] = new Resource(34344, RESOURCE_MATERIAL, new ResourceMaterial(34044, static_cast<BlendMode>(0)));
-    resources[798] = new Resource(32544, RESOURCE_MATERIAL, new ResourceMaterial(34044, BlendMode_2));
-    resources[799] = new Resource(34345, RESOURCE_MATERIAL, new ResourceMaterial(34045, static_cast<BlendMode>(0)));
-    resources[800] = new Resource(32545, RESOURCE_MATERIAL, new ResourceMaterial(34045, BlendMode_2));
-    resources[801] = new Resource(34346, RESOURCE_MATERIAL, new ResourceMaterial(34046, static_cast<BlendMode>(0)));
-    resources[802] = new Resource(32546, RESOURCE_MATERIAL, new ResourceMaterial(34046, BlendMode_2));
-    resources[803] = new Resource(34347, RESOURCE_MATERIAL, new ResourceMaterial(34047, static_cast<BlendMode>(0)));
-    resources[804] = new Resource(32547, RESOURCE_MATERIAL, new ResourceMaterial(34047, BlendMode_2));
-    resources[805] = new Resource(34348, RESOURCE_MATERIAL, new ResourceMaterial(34048, static_cast<BlendMode>(0)));
-    resources[806] = new Resource(32548, RESOURCE_MATERIAL, new ResourceMaterial(34048, BlendMode_2));
-    resources[807] = new Resource(34349, RESOURCE_MATERIAL, new ResourceMaterial(34049, static_cast<BlendMode>(0)));
-    resources[808] = new Resource(32549, RESOURCE_MATERIAL, new ResourceMaterial(34049, BlendMode_2));
-    resources[809] = new Resource(34350, RESOURCE_MATERIAL, new ResourceMaterial(34050, static_cast<BlendMode>(0)));
-    resources[810] = new Resource(32550, RESOURCE_MATERIAL, new ResourceMaterial(34050, BlendMode_2));
-    resources[811] = new Resource(34351, RESOURCE_MATERIAL, new ResourceMaterial(34051, static_cast<BlendMode>(0)));
-    resources[812] = new Resource(32551, RESOURCE_MATERIAL, new ResourceMaterial(34051, BlendMode_2));
-    resources[813] = new Resource(34352, RESOURCE_MATERIAL, new ResourceMaterial(34052, static_cast<BlendMode>(0)));
-    resources[814] = new Resource(32552, RESOURCE_MATERIAL, new ResourceMaterial(34052, BlendMode_2));
-    resources[815] = new Resource(34353, RESOURCE_MATERIAL, new ResourceMaterial(34053, static_cast<BlendMode>(0)));
-    resources[816] = new Resource(32553, RESOURCE_MATERIAL, new ResourceMaterial(34053, BlendMode_2));
-    resources[817] = new Resource(34354, RESOURCE_MATERIAL, new ResourceMaterial(34054, static_cast<BlendMode>(0)));
-    resources[818] = new Resource(32554, RESOURCE_MATERIAL, new ResourceMaterial(34054, BlendMode_2));
-    resources[819] = new Resource(34355, RESOURCE_MATERIAL, new ResourceMaterial(34055, static_cast<BlendMode>(0)));
-    resources[820] = new Resource(32555, RESOURCE_MATERIAL, new ResourceMaterial(34055, BlendMode_2));
-    resources[821] = new Resource(34356, RESOURCE_MATERIAL, new ResourceMaterial(34056, static_cast<BlendMode>(0)));
-    resources[822] = new Resource(32556, RESOURCE_MATERIAL, new ResourceMaterial(34056, BlendMode_2));
-    resources[823] = new Resource(34357, RESOURCE_MATERIAL, new ResourceMaterial(34057, static_cast<BlendMode>(0)));
-    resources[824] = new Resource(32557, RESOURCE_MATERIAL, new ResourceMaterial(34057, BlendMode_2));
-    resources[825] = new Resource(34358, RESOURCE_MATERIAL, new ResourceMaterial(34058, static_cast<BlendMode>(0)));
-    resources[826] = new Resource(32558, RESOURCE_MATERIAL, new ResourceMaterial(34058, BlendMode_2));
-    resources[827] = new Resource(34359, RESOURCE_MATERIAL, new ResourceMaterial(34059, static_cast<BlendMode>(0)));
-    resources[828] = new Resource(32559, RESOURCE_MATERIAL, new ResourceMaterial(34059, BlendMode_2));
-    resources[829] = new Resource(34360, RESOURCE_MATERIAL, new ResourceMaterial(34060, static_cast<BlendMode>(0)));
-    resources[830] = new Resource(32560, RESOURCE_MATERIAL, new ResourceMaterial(34060, BlendMode_2));
-    resources[831] = new Resource(34361, RESOURCE_MATERIAL, new ResourceMaterial(34061, static_cast<BlendMode>(0)));
-    resources[832] = new Resource(32561, RESOURCE_MATERIAL, new ResourceMaterial(34061, BlendMode_2));
-    resources[833] = new Resource(34362, RESOURCE_MATERIAL, new ResourceMaterial(34062, static_cast<BlendMode>(0)));
-    resources[834] = new Resource(32562, RESOURCE_MATERIAL, new ResourceMaterial(34062, BlendMode_2));
-    resources[835] = new Resource(34363, RESOURCE_MATERIAL, new ResourceMaterial(34063, static_cast<BlendMode>(0)));
-    resources[836] = new Resource(32563, RESOURCE_MATERIAL, new ResourceMaterial(34063, BlendMode_2));
-    resources[837] = new Resource(20128, RESOURCE_MATERIAL, new ResourceMaterial(10129, static_cast<BlendMode>(6)));
-    resources[838] = new Resource(20129, RESOURCE_MATERIAL, new ResourceMaterial(10129, BlendMode_2));
-    resources[839] = new Resource(20001, RESOURCE_MATERIAL, new ResourceMaterial(10031, BlendMode_2));
-    resources[840] = new Resource(27280, RESOURCE_MATERIAL, new ResourceMaterial(10031, BlendMode_2));
-    resources[841] = new Resource(27281, RESOURCE_MATERIAL, new ResourceMaterial(10032, BlendMode_2));
-    resources[842] = new Resource(27282, RESOURCE_MATERIAL, new ResourceMaterial(10033, BlendMode_2));
-    resources[843] = new Resource(27283, RESOURCE_MATERIAL, new ResourceMaterial(10034, BlendMode_2));
-    resources[844] = new Resource(27284, RESOURCE_MATERIAL, new ResourceMaterial(10035, BlendMode_2));
-    resources[845] = new Resource(27285, RESOURCE_MATERIAL, new ResourceMaterial(10036, BlendMode_2));
-    resources[846] = new Resource(27286, RESOURCE_MATERIAL, new ResourceMaterial(10037, BlendMode_2));
-    resources[847] = new Resource(27287, RESOURCE_MATERIAL, new ResourceMaterial(10038, BlendMode_2));
-    resources[848] = new Resource(27288, RESOURCE_MATERIAL, new ResourceMaterial(10039, BlendMode_2));
-    resources[849] = new Resource(27289, RESOURCE_MATERIAL, new ResourceMaterial(10040, BlendMode_2));
-    resources[850] = new Resource(27290, RESOURCE_MATERIAL, new ResourceMaterial(10041, BlendMode_2));
-    resources[851] = new Resource(20093, RESOURCE_MATERIAL, new ResourceMaterial(10104, BlendMode_2));
-    resources[852] = new Resource(20094, RESOURCE_MATERIAL, new ResourceMaterial(12000, 12001, static_cast<BlendMode>(28)));
-    resources[853] = new Resource(20095, RESOURCE_MATERIAL, new ResourceMaterial(10121, BlendMode_2));
-    resources[854] = new Resource(20137, RESOURCE_MATERIAL, new ResourceMaterial(10132, BlendMode_2));
-    resources[855] = new Resource(20009, RESOURCE_MATERIAL, new ResourceMaterial(10065, static_cast<BlendMode>(0)));
-    resources[856] = new Resource(20010, RESOURCE_MATERIAL, new ResourceMaterial(10066, static_cast<BlendMode>(0)));
-    resources[857] = new Resource(20011, RESOURCE_MATERIAL, new ResourceMaterial(10067, static_cast<BlendMode>(0)));
-    resources[858] = new Resource(20012, RESOURCE_MATERIAL, new ResourceMaterial(10068, static_cast<BlendMode>(0)));
-    resources[859] = new Resource(20013, RESOURCE_MATERIAL, new ResourceMaterial(10069, static_cast<BlendMode>(0)));
-    resources[860] = new Resource(20014, RESOURCE_MATERIAL, new ResourceMaterial(10070, static_cast<BlendMode>(0)));
-    resources[861] = new Resource(20015, RESOURCE_MATERIAL, new ResourceMaterial(10071, static_cast<BlendMode>(0)));
-    resources[862] = new Resource(20016, RESOURCE_MATERIAL, new ResourceMaterial(10072, static_cast<BlendMode>(0)));
-    resources[863] = new Resource(20017, RESOURCE_MATERIAL, new ResourceMaterial(10073, static_cast<BlendMode>(0)));
-    resources[864] = new Resource(20018, RESOURCE_MATERIAL, new ResourceMaterial(10074, static_cast<BlendMode>(0)));
-    resources[865] = new Resource(20019, RESOURCE_MATERIAL, new ResourceMaterial(10075, static_cast<BlendMode>(0)));
-    resources[866] = new Resource(20130, RESOURCE_MATERIAL, new ResourceMaterial(10076, static_cast<BlendMode>(0)));
-    resources[867] = new Resource(20131, RESOURCE_MATERIAL, new ResourceMaterial(10077, static_cast<BlendMode>(0)));
-    resources[868] = new Resource(20132, RESOURCE_MATERIAL, new ResourceMaterial(10078, static_cast<BlendMode>(0)));
-    resources[869] = new Resource(27149, RESOURCE_MATERIAL, new ResourceMaterial(10079, static_cast<BlendMode>(0)));
-    resources[870] = new Resource(27200, RESOURCE_MATERIAL, new ResourceMaterial(10086, static_cast<BlendMode>(0)));
-    resources[871] = new Resource(27201, RESOURCE_MATERIAL, new ResourceMaterial(10087, static_cast<BlendMode>(0)));
-    resources[872] = new Resource(27202, RESOURCE_MATERIAL, new ResourceMaterial(10088, static_cast<BlendMode>(0)));
-    resources[873] = new Resource(20021, RESOURCE_MATERIAL, new ResourceMaterial(10001, BlendMode_1));
-    resources[874] = new Resource(20022, RESOURCE_MATERIAL, new ResourceMaterial(10001, BlendMode_2));
-    resources[875] = new Resource(20052, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(3)));
-    resources[876] = new Resource(20100, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(6)));
-    resources[877] = new Resource(20108, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(0)));
-    resources[878] = new Resource(20124, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(4)));
-    resources[879] = new Resource(20023, RESOURCE_MATERIAL, new ResourceMaterial(33000, 33001, static_cast<BlendMode>(28)));
-    resources[880] = new Resource(20049, RESOURCE_MATERIAL, new ResourceMaterial(33000, 33001, static_cast<BlendMode>(28)));
-    resources[881] = new Resource(20050, RESOURCE_MATERIAL, new ResourceMaterial(10107, BlendMode_2));
-    resources[882] = new Resource(20051, RESOURCE_MATERIAL, new ResourceMaterial(10107, BlendMode_1));
-    resources[883] = new Resource(20134, RESOURCE_MATERIAL, new ResourceMaterial(10155, 10156, static_cast<BlendMode>(28)));
-    resources[884] = new Resource(20133, RESOURCE_MATERIAL, new ResourceMaterial(10155, BlendMode_1));
-    resources[885] = new Resource(27312, RESOURCE_MATERIAL, new ResourceMaterial(28999, 29000, static_cast<BlendMode>(28)));
-    resources[886] = new Resource(27313, RESOURCE_MATERIAL, new ResourceMaterial(27314, BlendMode_1));
-    resources[887] = new Resource(20024, RESOURCE_MATERIAL, new ResourceMaterial(10100, static_cast<BlendMode>(0)));
-    resources[888] = new Resource(20025, RESOURCE_MATERIAL, new ResourceMaterial(10101, BlendMode_2));
-    resources[889] = new Resource(20026, RESOURCE_MATERIAL, new ResourceMaterial(10102, BlendMode_2));
-    resources[890] = new Resource(20027, RESOURCE_MATERIAL, new ResourceMaterial(10145, static_cast<BlendMode>(6)));
-    resources[891] = new Resource(27305, RESOURCE_MATERIAL, new ResourceMaterial(10159, static_cast<BlendMode>(6)));
-    resources[892] = new Resource(20029, RESOURCE_MATERIAL, new ResourceMaterial(10144, BlendMode_2));
-    resources[893] = new Resource(20030, RESOURCE_MATERIAL, new ResourceMaterial(10145, BlendMode_1));
-    resources[894] = new Resource(27306, RESOURCE_MATERIAL, new ResourceMaterial(10161, static_cast<BlendMode>(6)));
-    resources[895] = new Resource(27307, RESOURCE_MATERIAL, new ResourceMaterial(10161, BlendMode_2));
-    resources[896] = new Resource(34800, RESOURCE_MATERIAL, new ResourceMaterial(33400, BlendMode_2));
-    resources[897] = new Resource(34801, RESOURCE_MATERIAL, new ResourceMaterial(33401, BlendMode_2));
-    resources[898] = new Resource(34802, RESOURCE_MATERIAL, new ResourceMaterial(33402, BlendMode_2));
-    resources[899] = new Resource(34803, RESOURCE_MATERIAL, new ResourceMaterial(33403, BlendMode_2));
-    resources[900] = new Resource(34804, RESOURCE_MATERIAL, new ResourceMaterial(33404, BlendMode_1));
-    resources[901] = new Resource(20114, RESOURCE_MATERIAL, new ResourceMaterial(11606, static_cast<BlendMode>(10)));
-    resources[902] = new Resource(20115, RESOURCE_MATERIAL, new ResourceMaterial(11607, static_cast<BlendMode>(10)));
-    resources[903] = new Resource(20116, RESOURCE_MATERIAL, new ResourceMaterial(11608, static_cast<BlendMode>(10)));
-    resources[904] = new Resource(20117, RESOURCE_MATERIAL, new ResourceMaterial(11609, static_cast<BlendMode>(10)));
-    resources[905] = new Resource(20118, RESOURCE_MATERIAL, new ResourceMaterial(11610, static_cast<BlendMode>(10)));
-    resources[906] = new Resource(20119, RESOURCE_MATERIAL, new ResourceMaterial(11611, static_cast<BlendMode>(10)));
-    resources[907] = new Resource(20120, RESOURCE_MATERIAL, new ResourceMaterial(11612, static_cast<BlendMode>(10)));
-    resources[908] = new Resource(20056, RESOURCE_MATERIAL, new ResourceMaterial(10136, 10140, static_cast<BlendMode>(28)));
-    resources[909] = new Resource(20057, RESOURCE_MATERIAL, new ResourceMaterial(10136, BlendMode_2));
-    resources[910] = new Resource(20058, RESOURCE_MATERIAL, new ResourceMaterial(10136, BlendMode_1));
-    resources[911] = new Resource(20059, RESOURCE_MATERIAL, new ResourceMaterial(10137, 10141, static_cast<BlendMode>(28)));
-    resources[912] = new Resource(20060, RESOURCE_MATERIAL, new ResourceMaterial(10137, BlendMode_2));
-    resources[913] = new Resource(20061, RESOURCE_MATERIAL, new ResourceMaterial(10137, static_cast<BlendMode>(24)));
-    resources[914] = new Resource(20062, RESOURCE_MATERIAL, new ResourceMaterial(10138, 10142, static_cast<BlendMode>(28)));
-    resources[915] = new Resource(20063, RESOURCE_MATERIAL, new ResourceMaterial(10138, BlendMode_2));
-    resources[916] = new Resource(20064, RESOURCE_MATERIAL, new ResourceMaterial(10138, BlendMode_1));
-    resources[917] = new Resource(20065, RESOURCE_MATERIAL, new ResourceMaterial(10139, 10143, static_cast<BlendMode>(28)));
-    resources[918] = new Resource(20066, RESOURCE_MATERIAL, new ResourceMaterial(10139, BlendMode_2));
-    resources[919] = new Resource(20067, RESOURCE_MATERIAL, new ResourceMaterial(10139, BlendMode_1));
-    resources[920] = new Resource(24070, RESOURCE_MATERIAL, new ResourceMaterial(33136, 33137, static_cast<BlendMode>(28)));
-    resources[921] = new Resource(20077, RESOURCE_MATERIAL, new ResourceMaterial(33136, BlendMode_1));
-    resources[922] = new Resource(20078, RESOURCE_MATERIAL, new ResourceMaterial(33136, BlendMode_2));
-    resources[923] = new Resource(24074, RESOURCE_MATERIAL, new ResourceMaterial(33132, 33133, static_cast<BlendMode>(28)));
-    resources[924] = new Resource(20071, RESOURCE_MATERIAL, new ResourceMaterial(33132, BlendMode_2));
-    resources[925] = new Resource(24073, RESOURCE_MATERIAL, new ResourceMaterial(33134, 33135, static_cast<BlendMode>(28)));
-    resources[926] = new Resource(20074, RESOURCE_MATERIAL, new ResourceMaterial(33134, BlendMode_1));
-    resources[927] = new Resource(20075, RESOURCE_MATERIAL, new ResourceMaterial(33134, BlendMode_2));
-    resources[928] = new Resource(24071, RESOURCE_MATERIAL, new ResourceMaterial(33130, 33131, static_cast<BlendMode>(28)));
-    resources[929] = new Resource(20106, RESOURCE_MATERIAL, new ResourceMaterial(33130, BlendMode_1));
-    resources[930] = new Resource(20069, RESOURCE_MATERIAL, new ResourceMaterial(33130, BlendMode_2));
-    resources[931] = new Resource(20157, RESOURCE_MATERIAL, new ResourceMaterial(10157, 10158, static_cast<BlendMode>(28)));
-    resources[932] = new Resource(27138, RESOURCE_MATERIAL, new ResourceMaterial(10157, static_cast<BlendMode>(0)));
-    resources[933] = new Resource(27139, RESOURCE_MATERIAL, new ResourceMaterial(10157, BlendMode_1));
-    resources[934] = new Resource(27140, RESOURCE_MATERIAL, new ResourceMaterial(10157, BlendMode_2));
-    resources[935] = new Resource(27141, RESOURCE_MATERIAL, new ResourceMaterial(10134, static_cast<BlendMode>(0)));
-    resources[936] = new Resource(27142, RESOURCE_MATERIAL, new ResourceMaterial(10134, BlendMode_1));
-    resources[937] = new Resource(27143, RESOURCE_MATERIAL, new ResourceMaterial(10134, BlendMode_2));
-    resources[938] = new Resource(27144, RESOURCE_MATERIAL, new ResourceMaterial(10134, 10135, static_cast<BlendMode>(28)));
-    resources[939] = new Resource(20087, RESOURCE_MATERIAL, new ResourceMaterial(11600, BlendMode_2));
-    resources[940] = new Resource(27252, RESOURCE_MATERIAL, new ResourceMaterial(11598, BlendMode_2));
-    resources[941] = new Resource(27253, RESOURCE_MATERIAL, new ResourceMaterial(11598, static_cast<BlendMode>(18)));
-    resources[942] = new Resource(27250, RESOURCE_MATERIAL, new ResourceMaterial(11599, BlendMode_2));
-    resources[943] = new Resource(20099, RESOURCE_MATERIAL, new ResourceMaterial(11601, BlendMode_2));
-    resources[944] = new Resource(20101, RESOURCE_MATERIAL, new ResourceMaterial(11602, BlendMode_1));
-    resources[945] = new Resource(24075, RESOURCE_MATERIAL, new ResourceMaterial(12002, 12003, static_cast<BlendMode>(28)));
-    resources[946] = new Resource(24076, RESOURCE_MATERIAL, new ResourceMaterial(12004, 12005, static_cast<BlendMode>(28)));
-    resources[947] = new Resource(24077, RESOURCE_MATERIAL, new ResourceMaterial(12006, 12007, static_cast<BlendMode>(28)));
-    resources[948] = new Resource(24078, RESOURCE_MATERIAL, new ResourceMaterial(12002, BlendMode_8));
-    resources[949] = new Resource(24079, RESOURCE_MATERIAL, new ResourceMaterial(12004, BlendMode_8));
-    resources[950] = new Resource(24080, RESOURCE_MATERIAL, new ResourceMaterial(12006, BlendMode_8));
-    resources[951] = new Resource(24085, RESOURCE_MATERIAL, new ResourceMaterial(11860, 11861, static_cast<BlendMode>(28)));
-    resources[952] = new Resource(24086, RESOURCE_MATERIAL, new ResourceMaterial(11860, BlendMode_2));
-    resources[953] = new Resource(24087, RESOURCE_MATERIAL, new ResourceMaterial(11860, BlendMode_8));
-    resources[954] = new Resource(24081, RESOURCE_MATERIAL, new ResourceMaterial(12050, 12051, static_cast<BlendMode>(28)));
-    resources[955] = new Resource(24082, RESOURCE_MATERIAL, new ResourceMaterial(12052, 12053, static_cast<BlendMode>(28)));
-    resources[956] = new Resource(24083, RESOURCE_MATERIAL, new ResourceMaterial(12054, 12055, static_cast<BlendMode>(28)));
-    resources[957] = new Resource(20103, RESOURCE_MATERIAL, new ResourceMaterial(33002, 33003, static_cast<BlendMode>(28)));
-    resources[958] = new Resource(20111, RESOURCE_MATERIAL, new ResourceMaterial(11594, 11595, static_cast<BlendMode>(28)));
-    resources[959] = new Resource(20113, RESOURCE_MATERIAL, new ResourceMaterial(12008, 12009, static_cast<BlendMode>(28)));
-    resources[960] = new Resource(20121, RESOURCE_MATERIAL, new ResourceMaterial(24210, 24211, static_cast<BlendMode>(28)));
-    resources[961] = new Resource(20122, RESOURCE_MATERIAL, new ResourceMaterial(24212, 24213, static_cast<BlendMode>(28)));
-    resources[962] = new Resource(20123, RESOURCE_MATERIAL, new ResourceMaterial(24214, 24215, static_cast<BlendMode>(28)));
-    resources[963] = new Resource(20154, RESOURCE_MATERIAL, new ResourceMaterial(24210, BlendMode_2));
-    resources[964] = new Resource(20155, RESOURCE_MATERIAL, new ResourceMaterial(24212, BlendMode_2));
-    resources[965] = new Resource(20156, RESOURCE_MATERIAL, new ResourceMaterial(24214, BlendMode_2));
-    resources[966] = new Resource(20125, RESOURCE_MATERIAL, new ResourceMaterial(10148, 10149, static_cast<BlendMode>(28)));
-    resources[967] = new Resource(20126, RESOURCE_MATERIAL, new ResourceMaterial(10148, BlendMode_2));
-    resources[968] = new Resource(20151, RESOURCE_MATERIAL, new ResourceMaterial(10126, BlendMode_2));
-    resources[969] = new Resource(20152, RESOURCE_MATERIAL, new ResourceMaterial(10127, BlendMode_2));
-    resources[970] = new Resource(20153, RESOURCE_MATERIAL, new ResourceMaterial(10128, BlendMode_2));
-    resources[971] = new Resource(20135, RESOURCE_MATERIAL, new ResourceMaterial(11617, 11618, static_cast<BlendMode>(28)));
-    resources[972] = new Resource(20136, RESOURCE_MATERIAL, new ResourceMaterial(11617, static_cast<BlendMode>(0)));
-    resources[973] = new Resource(20158, RESOURCE_MATERIAL, new ResourceMaterial(11617, BlendMode_2));
-    resources[974] = new Resource(27145, RESOURCE_MATERIAL, new ResourceMaterial(11615, 11616, static_cast<BlendMode>(28)));
-    resources[975] = new Resource(27146, RESOURCE_MATERIAL, new ResourceMaterial(11615, static_cast<BlendMode>(0)));
-    resources[976] = new Resource(27147, RESOURCE_MATERIAL, new ResourceMaterial(11620, BlendMode_2));
-    resources[977] = new Resource(34817, RESOURCE_MATERIAL, new ResourceMaterial(34816, BlendMode_2));
-    resources[978] = new Resource(27162, RESOURCE_MATERIAL, new ResourceMaterial(11628, static_cast<BlendMode>(6)));
-    resources[979] = new Resource(27163, RESOURCE_MATERIAL, new ResourceMaterial(11628, static_cast<BlendMode>(0)));
-    resources[980] = new Resource(27164, RESOURCE_MATERIAL, new ResourceMaterial(11628, BlendMode_2));
-    resources[981] = new Resource(27165, RESOURCE_MATERIAL, new ResourceMaterial(11628, BlendMode_1));
-    resources[982] = new Resource(27148, RESOURCE_MATERIAL, new ResourceMaterial(10129, BlendMode_8));
-    resources[983] = new Resource(27150, RESOURCE_MATERIAL, new ResourceMaterial(11634, 11633, static_cast<BlendMode>(34)));
-    resources[984] = new Resource(27154, RESOURCE_MATERIAL, new ResourceMaterial(11629, static_cast<BlendMode>(6)));
-    resources[985] = new Resource(27155, RESOURCE_MATERIAL, new ResourceMaterial(11629, static_cast<BlendMode>(0)));
-    resources[986] = new Resource(27156, RESOURCE_MATERIAL, new ResourceMaterial(11629, BlendMode_8));
-    resources[987] = new Resource(27157, RESOURCE_MATERIAL, new ResourceMaterial(11631, static_cast<BlendMode>(6)));
-    resources[988] = new Resource(27158, RESOURCE_MATERIAL, new ResourceMaterial(11631, static_cast<BlendMode>(0)));
-    resources[989] = new Resource(27159, RESOURCE_MATERIAL, new ResourceMaterial(11631, BlendMode_8));
-    resources[990] = new Resource(27311, RESOURCE_MATERIAL, new ResourceMaterial(11647, BlendMode_2));
-    resources[991] = new Resource(27254, RESOURCE_MATERIAL, new ResourceMaterial(33240, 33241, static_cast<BlendMode>(28)));
-    resources[992] = new Resource(27255, RESOURCE_MATERIAL, new ResourceMaterial(33242, 33243, static_cast<BlendMode>(28)));
-    resources[993] = new Resource(27256, RESOURCE_MATERIAL, new ResourceMaterial(33244, 33245, static_cast<BlendMode>(28)));
-    resources[994] = new Resource(27257, RESOURCE_MATERIAL, new ResourceMaterial(33246, 33247, static_cast<BlendMode>(28)));
-    resources[995] = new Resource(27260, RESOURCE_MATERIAL, new ResourceMaterial(33300, BlendMode_2));
-    resources[996] = new Resource(27262, RESOURCE_MATERIAL, new ResourceMaterial(24203, BlendMode_2));
-    resources[997] = new Resource(34810, RESOURCE_MATERIAL, new ResourceMaterial(24204, 24205, static_cast<BlendMode>(28)));
-    resources[998] = new Resource(34811, RESOURCE_MATERIAL, new ResourceMaterial(24206, 24207, static_cast<BlendMode>(28)));
-    resources[999] = new Resource(11636, RESOURCE_FONT, new ResourceImage(11635, 0));
-    resources[1000] = new Resource(11638, RESOURCE_FONT, new ResourceImage(11637, 0));
-    resources[1001] = new Resource(11640, RESOURCE_FONT, new ResourceImage(11639, 0));
-    resources[1002] = new Resource(11642, RESOURCE_FONT, new ResourceImage(11641, 0));
-    resources[1003] = new Resource(11644, RESOURCE_FONT, new ResourceImage(11643, 0));
-    resources[1004] = new Resource(11646, RESOURCE_FONT, new ResourceImage(11645, 0));
-    resources[1005] = new Resource(1102, RESOURCE_IMAGE, new ResourceImage(10062, 2));
-    resources[1006] = new Resource(1106, RESOURCE_IMAGE, new ResourceImage(10062, 6));
-    resources[1007] = new Resource(1108, RESOURCE_IMAGE, new ResourceImage(10062, 8));
-    resources[1008] = new Resource(1109, RESOURCE_IMAGE, new ResourceImage(10062, 9));
-    resources[1009] = new Resource(1110, RESOURCE_IMAGE, new ResourceImage(10062, 10));
-    resources[1010] = new Resource(1111, RESOURCE_FONT, new ResourceImage(10062, 0));
-    resources[1011] = new Resource(1112, RESOURCE_IMAGE, new ResourceImage(10062, 11));
-    resources[1012] = new Resource(1113, RESOURCE_IMAGE, new ResourceImage(10062, 12));
-    resources[1013] = new Resource(1114, RESOURCE_IMAGE, new ResourceImage(10062, 13));
-    resources[1014] = new Resource(1115, RESOURCE_IMAGE, new ResourceImage(10062, 14));
-    resources[1015] = new Resource(1116, RESOURCE_IMAGE, new ResourceImage(10062, 15));
-    resources[1016] = new Resource(1117, RESOURCE_IMAGE, new ResourceImage(10062, 16));
-    resources[1017] = new Resource(1118, RESOURCE_IMAGE, new ResourceImage(10062, 17));
-    resources[1018] = new Resource(1119, RESOURCE_IMAGE, new ResourceImage(10062, 18));
-    resources[1019] = new Resource(1120, RESOURCE_IMAGE, new ResourceImage(10062, 19));
-    resources[1020] = new Resource(1121, RESOURCE_IMAGE, new ResourceImage(10062, 20));
-    resources[1021] = new Resource(1122, RESOURCE_IMAGE, new ResourceImage(10062, 21));
-    resources[1022] = new Resource(1123, RESOURCE_IMAGE, new ResourceImage(10062, 22));
-    resources[1023] = new Resource(1124, RESOURCE_IMAGE, new ResourceImage(10062, 23));
-    resources[1024] = new Resource(1125, RESOURCE_IMAGE, new ResourceImage(10062, 24));
-    resources[1025] = new Resource(1126, RESOURCE_IMAGE, new ResourceImage(10062, 25));
-    resources[1026] = new Resource(1127, RESOURCE_IMAGE, new ResourceImage(10062, 26));
-    resources[1027] = new Resource(1128, RESOURCE_IMAGE, new ResourceImage(10062, 27));
-    resources[1028] = new Resource(1129, RESOURCE_IMAGE, new ResourceImage(10062, 28));
-    resources[1029] = new Resource(1130, RESOURCE_IMAGE, new ResourceImage(10062, 29));
-    resources[1030] = new Resource(1131, RESOURCE_IMAGE, new ResourceImage(10062, 30));
-    resources[1031] = new Resource(1132, RESOURCE_IMAGE, new ResourceImage(10062, 31));
-    resources[1032] = new Resource(1133, RESOURCE_IMAGE, new ResourceImage(10062, 32));
-    resources[1033] = new Resource(1134, RESOURCE_IMAGE, new ResourceImage(10062, 33));
-    resources[1034] = new Resource(1135, RESOURCE_IMAGE, new ResourceImage(10062, 34));
-    resources[1035] = new Resource(1136, RESOURCE_IMAGE, new ResourceImage(10062, 35));
-    resources[1036] = new Resource(1137, RESOURCE_IMAGE, new ResourceImage(10062, 36));
-    resources[1037] = new Resource(1138, RESOURCE_IMAGE, new ResourceImage(10062, 37));
-    resources[1038] = new Resource(1139, RESOURCE_IMAGE, new ResourceImage(10062, 38));
-    resources[1039] = new Resource(1140, RESOURCE_IMAGE, new ResourceImage(10062, 39));
-    resources[1040] = new Resource(1141, RESOURCE_IMAGE, new ResourceImage(10062, 40));
-    resources[1041] = new Resource(1142, RESOURCE_IMAGE, new ResourceImage(10062, 41));
-    resources[1042] = new Resource(1143, RESOURCE_IMAGE, new ResourceImage(10062, 42));
-    resources[1043] = new Resource(1144, RESOURCE_IMAGE, new ResourceImage(10062, 43));
-    resources[1044] = new Resource(1145, RESOURCE_IMAGE, new ResourceImage(10062, 44));
-    resources[1045] = new Resource(1146, RESOURCE_IMAGE, new ResourceImage(10062, 45));
-    resources[1046] = new Resource(1147, RESOURCE_IMAGE, new ResourceImage(10062, 46));
-    resources[1047] = new Resource(1148, RESOURCE_IMAGE, new ResourceImage(10062, 47));
-    resources[1048] = new Resource(1149, RESOURCE_IMAGE, new ResourceImage(10062, 48));
-    resources[1049] = new Resource(1150, RESOURCE_IMAGE, new ResourceImage(10062, 49));
-    resources[1050] = new Resource(1151, RESOURCE_IMAGE, new ResourceImage(10062, 50));
-    resources[1051] = new Resource(1152, RESOURCE_IMAGE, new ResourceImage(10062, 51));
-    resources[1052] = new Resource(1153, RESOURCE_IMAGE, new ResourceImage(10062, 52));
-    resources[1053] = new Resource(1154, RESOURCE_IMAGE, new ResourceImage(10062, 53));
-    resources[1054] = new Resource(1155, RESOURCE_IMAGE, new ResourceImage(10062, 54));
-    resources[1055] = new Resource(1156, RESOURCE_IMAGE, new ResourceImage(10062, 55));
-    resources[1056] = new Resource(1158, RESOURCE_IMAGE, new ResourceImage(10062, 57));
-    resources[1057] = new Resource(1159, RESOURCE_IMAGE, new ResourceImage(10062, 58));
-    resources[1058] = new Resource(1160, RESOURCE_IMAGE, new ResourceImage(10062, 59));
-    resources[1059] = new Resource(1161, RESOURCE_IMAGE, new ResourceImage(10062, 60));
-    resources[1060] = new Resource(1162, RESOURCE_IMAGE, new ResourceImage(10062, 61));
-    resources[1061] = new Resource(1163, RESOURCE_IMAGE, new ResourceImage(10062, 62));
-    resources[1062] = new Resource(1164, RESOURCE_IMAGE, new ResourceImage(10062, 63));
-    resources[1063] = new Resource(1165, RESOURCE_IMAGE, new ResourceImage(10062, 64));
-    resources[1064] = new Resource(1166, RESOURCE_IMAGE, new ResourceImage(10062, 65));
-    resources[1065] = new Resource(1167, RESOURCE_IMAGE, new ResourceImage(10062, 66));
-    resources[1066] = new Resource(1168, RESOURCE_IMAGE, new ResourceImage(10062, 67));
-    resources[1067] = new Resource(1169, RESOURCE_IMAGE, new ResourceImage(10062, 68));
-    resources[1068] = new Resource(1170, RESOURCE_IMAGE, new ResourceImage(10062, 69));
-    resources[1069] = new Resource(1171, RESOURCE_IMAGE, new ResourceImage(10062, 70));
-    resources[1070] = new Resource(1172, RESOURCE_IMAGE, new ResourceImage(10062, 71));
-    resources[1071] = new Resource(1173, RESOURCE_IMAGE, new ResourceImage(10062, 72));
-    resources[1072] = new Resource(1174, RESOURCE_IMAGE, new ResourceImage(10062, 73));
-    resources[1073] = new Resource(1175, RESOURCE_IMAGE, new ResourceImage(10062, 74));
-    resources[1074] = new Resource(1176, RESOURCE_IMAGE, new ResourceImage(10062, 75));
-    resources[1075] = new Resource(1177, RESOURCE_IMAGE, new ResourceImage(10062, 76));
-    resources[1076] = new Resource(1178, RESOURCE_IMAGE, new ResourceImage(10062, 77));
-    resources[1077] = new Resource(1179, RESOURCE_IMAGE, new ResourceImage(10062, 78));
-    resources[1078] = new Resource(1180, RESOURCE_IMAGE, new ResourceImage(10062, 79));
-    resources[1079] = new Resource(1181, RESOURCE_IMAGE, new ResourceImage(10062, 80));
-    resources[1080] = new Resource(1182, RESOURCE_IMAGE, new ResourceImage(10062, 81));
-    resources[1081] = new Resource(1183, RESOURCE_IMAGE, new ResourceImage(10062, 82));
-    resources[1082] = new Resource(1184, RESOURCE_IMAGE, new ResourceImage(10062, 83));
-    resources[1083] = new Resource(1185, RESOURCE_IMAGE, new ResourceImage(10062, 84));
-    resources[1084] = new Resource(1186, RESOURCE_IMAGE, new ResourceImage(10062, 85));
-    resources[1085] = new Resource(1187, RESOURCE_IMAGE, new ResourceImage(10062, 86));
-    resources[1086] = new Resource(1188, RESOURCE_IMAGE, new ResourceImage(10062, 87));
-    resources[1087] = new Resource(1189, RESOURCE_IMAGE, new ResourceImage(10062, 88));
-    resources[1088] = new Resource(1190, RESOURCE_IMAGE, new ResourceImage(10062, 89));
-    resources[1089] = new Resource(1194, RESOURCE_IMAGE, new ResourceImage(10062, 93));
-    resources[1090] = new Resource(1195, RESOURCE_IMAGE, new ResourceImage(10062, 94));
-    resources[1091] = new Resource(1196, RESOURCE_IMAGE, new ResourceImage(10062, 95));
-    resources[1092] = new Resource(1197, RESOURCE_IMAGE, new ResourceImage(10062, 96));
-    resources[1093] = new Resource(1216, RESOURCE_IMAGE, new ResourceImage(10062, 115));
-    resources[1094] = new Resource(1218, RESOURCE_IMAGE, new ResourceImage(10062, 117));
-    resources[1095] = new Resource(1219, RESOURCE_IMAGE, new ResourceImage(10062, 118));
-    resources[1096] = new Resource(1220, RESOURCE_IMAGE, new ResourceImage(10062, 119));
-    resources[1097] = new Resource(1221, RESOURCE_IMAGE, new ResourceImage(10062, 120));
-    resources[1098] = new Resource(1230, RESOURCE_IMAGE, new ResourceImage(10062, 129));
-    resources[1099] = new Resource(1231, RESOURCE_IMAGE, new ResourceImage(10062, 130));
-    resources[1100] = new Resource(1232, RESOURCE_IMAGE, new ResourceImage(10062, 131));
-    resources[1101] = new Resource(1233, RESOURCE_IMAGE, new ResourceImage(10062, 132));
-    resources[1102] = new Resource(1245, RESOURCE_IMAGE, new ResourceImage(10062, 144));
-    resources[1103] = new Resource(1246, RESOURCE_IMAGE, new ResourceImage(10062, 145));
-    resources[1104] = new Resource(1247, RESOURCE_IMAGE, new ResourceImage(10062, 146));
-    resources[1105] = new Resource(1248, RESOURCE_IMAGE, new ResourceImage(10062, 147));
-    resources[1106] = new Resource(1249, RESOURCE_IMAGE, new ResourceImage(10062, 148));
-    resources[1107] = new Resource(1250, RESOURCE_IMAGE, new ResourceImage(10062, 149));
-    resources[1108] = new Resource(1251, RESOURCE_IMAGE, new ResourceImage(10062, 150));
-    resources[1109] = new Resource(1252, RESOURCE_IMAGE, new ResourceImage(10062, 151));
-    resources[1110] = new Resource(1253, RESOURCE_IMAGE, new ResourceImage(10062, 152));
-    resources[1111] = new Resource(1254, RESOURCE_IMAGE, new ResourceImage(10062, 153));
-    resources[1112] = new Resource(1255, RESOURCE_IMAGE, new ResourceImage(10062, 154));
-    resources[1113] = new Resource(1256, RESOURCE_IMAGE, new ResourceImage(10062, 155));
-    resources[1114] = new Resource(1259, RESOURCE_IMAGE, new ResourceImage(10062, 158));
-    resources[1115] = new Resource(1260, RESOURCE_IMAGE, new ResourceImage(10062, 159));
-    resources[1116] = new Resource(1261, RESOURCE_IMAGE, new ResourceImage(10062, 160));
-    resources[1117] = new Resource(1267, RESOURCE_IMAGE, new ResourceImage(10062, 166));
-    resources[1118] = new Resource(1268, RESOURCE_IMAGE, new ResourceImage(10062, 167));
-    resources[1119] = new Resource(1269, RESOURCE_IMAGE, new ResourceImage(10062, 168));
-    resources[1120] = new Resource(1270, RESOURCE_IMAGE, new ResourceImage(10062, 169));
-    resources[1121] = new Resource(1277, RESOURCE_IMAGE, new ResourceImage(10062, 176));
-    resources[1122] = new Resource(1278, RESOURCE_IMAGE, new ResourceImage(10062, 177));
-    resources[1123] = new Resource(1279, RESOURCE_IMAGE, new ResourceImage(10062, 178));
-    resources[1124] = new Resource(1280, RESOURCE_IMAGE, new ResourceImage(10062, 179));
-    resources[1125] = new Resource(1281, RESOURCE_IMAGE, new ResourceImage(10062, 180));
-    resources[1126] = new Resource(1282, RESOURCE_IMAGE, new ResourceImage(10062, 181));
-    resources[1127] = new Resource(1283, RESOURCE_IMAGE, new ResourceImage(10062, 182));
-    resources[1128] = new Resource(1284, RESOURCE_IMAGE, new ResourceImage(10062, 183));
-    resources[1129] = new Resource(1285, RESOURCE_IMAGE, new ResourceImage(10062, 184));
-    resources[1130] = new Resource(1286, RESOURCE_IMAGE, new ResourceImage(10062, 185));
-    resources[1131] = new Resource(1287, RESOURCE_IMAGE, new ResourceImage(10062, 186));
-    resources[1132] = new Resource(1288, RESOURCE_IMAGE, new ResourceImage(10062, 187));
-    resources[1133] = new Resource(1289, RESOURCE_IMAGE, new ResourceImage(10062, 188));
-    resources[1134] = new Resource(1290, RESOURCE_IMAGE, new ResourceImage(10062, 189));
-    resources[1135] = new Resource(1291, RESOURCE_IMAGE, new ResourceImage(10062, 190));
-    resources[1136] = new Resource(1292, RESOURCE_IMAGE, new ResourceImage(10062, 191));
-    resources[1137] = new Resource(1293, RESOURCE_IMAGE, new ResourceImage(10062, 192));
-    resources[1138] = new Resource(1294, RESOURCE_IMAGE, new ResourceImage(10062, 193));
-    resources[1139] = new Resource(1295, RESOURCE_IMAGE, new ResourceImage(10062, 194));
-    resources[1140] = new Resource(1296, RESOURCE_IMAGE, new ResourceImage(10062, 195));
-    resources[1141] = new Resource(1298, RESOURCE_IMAGE, new ResourceImage(10062, 197));
-    resources[1142] = new Resource(1299, RESOURCE_IMAGE, new ResourceImage(10062, 198));
-    resources[1143] = new Resource(1300, RESOURCE_IMAGE, new ResourceImage(10062, 199));
-    resources[1144] = new Resource(1301, RESOURCE_IMAGE, new ResourceImage(10062, 200));
-    resources[1145] = new Resource(1302, RESOURCE_IMAGE, new ResourceImage(10062, 201));
-    resources[1146] = new Resource(1303, RESOURCE_IMAGE, new ResourceImage(10062, 202));
-    resources[1147] = new Resource(1304, RESOURCE_IMAGE, new ResourceImage(10062, 203));
-    resources[1148] = new Resource(1305, RESOURCE_IMAGE, new ResourceImage(10062, 204));
-    resources[1149] = new Resource(1306, RESOURCE_IMAGE, new ResourceImage(10062, 205));
-    resources[1150] = new Resource(1307, RESOURCE_IMAGE, new ResourceImage(10062, 206));
-    resources[1151] = new Resource(1308, RESOURCE_IMAGE, new ResourceImage(10062, 207));
-    resources[1152] = new Resource(1309, RESOURCE_IMAGE, new ResourceImage(10062, 208));
-    resources[1153] = new Resource(1310, RESOURCE_FONT, new ResourceImage(10062, 1));
-    resources[1154] = new Resource(1311, RESOURCE_IMAGE, new ResourceImage(10062, 209));
-    resources[1155] = new Resource(1313, RESOURCE_IMAGE, new ResourceImage(10062, 211));
-    resources[1156] = new Resource(1314, RESOURCE_IMAGE, new ResourceImage(10062, 212));
-    resources[1157] = new Resource(1315, RESOURCE_IMAGE, new ResourceImage(10062, 213));
-    resources[1158] = new Resource(1335, RESOURCE_IMAGE, new ResourceImage(10062, 233));
-    resources[1159] = new Resource(1336, RESOURCE_IMAGE, new ResourceImage(10062, 234));
-    resources[1160] = new Resource(1337, RESOURCE_IMAGE, new ResourceImage(10062, 235));
-    resources[1161] = new Resource(1338, RESOURCE_IMAGE, new ResourceImage(10062, 236));
-    resources[1162] = new Resource(1339, RESOURCE_IMAGE, new ResourceImage(10062, 237));
-    resources[1163] = new Resource(1340, RESOURCE_IMAGE, new ResourceImage(10062, 238));
-    resources[1164] = new Resource(1341, RESOURCE_IMAGE, new ResourceImage(10062, 239));
-    resources[1165] = new Resource(1342, RESOURCE_IMAGE, new ResourceImage(10062, 240));
-    resources[1166] = new Resource(1349, RESOURCE_IMAGE, new ResourceImage(10062, 247));
-    resources[1167] = new Resource(1352, RESOURCE_IMAGE, new ResourceImage(10062, 250));
-    resources[1168] = new Resource(8000, RESOURCE_IMAGE, new ResourceImage(10089, 0));
-    resources[1169] = new Resource(8001, RESOURCE_IMAGE, new ResourceImage(10089, 1));
-    resources[1170] = new Resource(8002, RESOURCE_IMAGE, new ResourceImage(10089, 2));
-    resources[1171] = new Resource(8003, RESOURCE_IMAGE, new ResourceImage(10089, 3));
-    resources[1172] = new Resource(8004, RESOURCE_IMAGE, new ResourceImage(10089, 4));
-    resources[1173] = new Resource(8005, RESOURCE_IMAGE, new ResourceImage(10089, 5));
-    resources[1174] = new Resource(8006, RESOURCE_IMAGE, new ResourceImage(10089, 6));
-    resources[1175] = new Resource(8007, RESOURCE_IMAGE, new ResourceImage(10089, 7));
-    resources[1176] = new Resource(8008, RESOURCE_IMAGE, new ResourceImage(10089, 8));
-    resources[1177] = new Resource(8009, RESOURCE_IMAGE, new ResourceImage(10089, 9));
-    resources[1178] = new Resource(8010, RESOURCE_IMAGE, new ResourceImage(10089, 10));
-    resources[1179] = new Resource(8011, RESOURCE_IMAGE, new ResourceImage(10089, 11));
-    resources[1180] = new Resource(8012, RESOURCE_IMAGE, new ResourceImage(10089, 12));
-    resources[1181] = new Resource(8013, RESOURCE_IMAGE, new ResourceImage(10089, 13));
-    resources[1182] = new Resource(8014, RESOURCE_IMAGE, new ResourceImage(10089, 14));
-    resources[1183] = new Resource(8015, RESOURCE_IMAGE, new ResourceImage(10089, 15));
-    resources[1184] = new Resource(8016, RESOURCE_IMAGE, new ResourceImage(10089, 16));
-    resources[1185] = new Resource(8017, RESOURCE_IMAGE, new ResourceImage(10089, 17));
-    resources[1186] = new Resource(8018, RESOURCE_IMAGE, new ResourceImage(10089, 18));
-    resources[1187] = new Resource(8019, RESOURCE_IMAGE, new ResourceImage(10089, 19));
-    resources[1188] = new Resource(8020, RESOURCE_IMAGE, new ResourceImage(10089, 20));
-    resources[1189] = new Resource(8021, RESOURCE_IMAGE, new ResourceImage(10089, 21));
-    resources[1190] = new Resource(8022, RESOURCE_IMAGE, new ResourceImage(10089, 22));
-    resources[1191] = new Resource(8023, RESOURCE_IMAGE, new ResourceImage(10089, 23));
-    resources[1192] = new Resource(8024, RESOURCE_IMAGE, new ResourceImage(10089, 24));
-    resources[1193] = new Resource(2200, RESOURCE_IMAGE, new ResourceImage(10064, 0));
-    resources[1194] = new Resource(2201, RESOURCE_IMAGE, new ResourceImage(10064, 1));
-    resources[1195] = new Resource(2202, RESOURCE_IMAGE, new ResourceImage(10064, 2));
-    resources[1196] = new Resource(2203, RESOURCE_IMAGE, new ResourceImage(10064, 3));
-    resources[1197] = new Resource(2204, RESOURCE_IMAGE, new ResourceImage(10064, 4));
-    resources[1198] = new Resource(2205, RESOURCE_IMAGE, new ResourceImage(10064, 5));
-    resources[1199] = new Resource(2206, RESOURCE_IMAGE, new ResourceImage(10064, 6));
-    resources[1200] = new Resource(2207, RESOURCE_IMAGE, new ResourceImage(10064, 7));
-    resources[1201] = new Resource(2208, RESOURCE_IMAGE, new ResourceImage(10064, 8));
-    resources[1202] = new Resource(2209, RESOURCE_IMAGE, new ResourceImage(10064, 9));
-    resources[1203] = new Resource(2210, RESOURCE_IMAGE, new ResourceImage(10064, 10));
-    resources[1204] = new Resource(2211, RESOURCE_IMAGE, new ResourceImage(10064, 11));
-    resources[1205] = new Resource(2212, RESOURCE_IMAGE, new ResourceImage(10064, 12));
-    resources[1206] = new Resource(2213, RESOURCE_IMAGE, new ResourceImage(10064, 13));
-    resources[1207] = new Resource(2214, RESOURCE_IMAGE, new ResourceImage(10064, 14));
-    resources[1208] = new Resource(2215, RESOURCE_IMAGE, new ResourceImage(10064, 15));
-    resources[1209] = new Resource(2216, RESOURCE_IMAGE, new ResourceImage(10064, 16));
-    resources[1210] = new Resource(2217, RESOURCE_IMAGE, new ResourceImage(10064, 17));
-    resources[1211] = new Resource(2218, RESOURCE_IMAGE, new ResourceImage(10064, 18));
-    resources[1212] = new Resource(2219, RESOURCE_IMAGE, new ResourceImage(10064, 19));
-    resources[1213] = new Resource(2220, RESOURCE_IMAGE, new ResourceImage(10064, 20));
-    resources[1214] = new Resource(2221, RESOURCE_IMAGE, new ResourceImage(10064, 21));
-    resources[1215] = new Resource(2222, RESOURCE_IMAGE, new ResourceImage(10064, 22));
-    resources[1216] = new Resource(2223, RESOURCE_IMAGE, new ResourceImage(10064, 23));
-    resources[1217] = new Resource(2224, RESOURCE_IMAGE, new ResourceImage(10064, 24));
-    resources[1218] = new Resource(2225, RESOURCE_IMAGE, new ResourceImage(10064, 25));
-    resources[1219] = new Resource(2226, RESOURCE_IMAGE, new ResourceImage(10064, 26));
-    resources[1220] = new Resource(2227, RESOURCE_IMAGE, new ResourceImage(10064, 27));
-    resources[1221] = new Resource(2228, RESOURCE_IMAGE, new ResourceImage(10064, 28));
-    resources[1222] = new Resource(2229, RESOURCE_IMAGE, new ResourceImage(10064, 29));
-    resources[1223] = new Resource(2230, RESOURCE_IMAGE, new ResourceImage(10064, 30));
-    resources[1224] = new Resource(2231, RESOURCE_IMAGE, new ResourceImage(10064, 31));
-    resources[1225] = new Resource(2232, RESOURCE_IMAGE, new ResourceImage(10064, 32));
-    resources[1226] = new Resource(2233, RESOURCE_IMAGE, new ResourceImage(10064, 33));
-    resources[1227] = new Resource(2234, RESOURCE_IMAGE, new ResourceImage(10064, 34));
-    resources[1228] = new Resource(2235, RESOURCE_IMAGE, new ResourceImage(10064, 35));
-    resources[1229] = new Resource(2236, RESOURCE_IMAGE, new ResourceImage(10064, 36));
-    resources[1230] = new Resource(2237, RESOURCE_IMAGE, new ResourceImage(10064, 37));
-    resources[1231] = new Resource(2238, RESOURCE_IMAGE, new ResourceImage(10064, 38));
-    resources[1232] = new Resource(2239, RESOURCE_IMAGE, new ResourceImage(10064, 39));
-    resources[1233] = new Resource(2240, RESOURCE_IMAGE, new ResourceImage(10064, 40));
-    resources[1234] = new Resource(2241, RESOURCE_IMAGE, new ResourceImage(10064, 41));
-    resources[1235] = new Resource(2242, RESOURCE_IMAGE, new ResourceImage(10064, 42));
-    resources[1236] = new Resource(2243, RESOURCE_IMAGE, new ResourceImage(10064, 43));
-    resources[1237] = new Resource(2244, RESOURCE_IMAGE, new ResourceImage(10064, 44));
-    resources[1238] = new Resource(2245, RESOURCE_IMAGE, new ResourceImage(10064, 45));
-    resources[1239] = new Resource(2246, RESOURCE_IMAGE, new ResourceImage(10064, 46));
-    resources[1240] = new Resource(2247, RESOURCE_IMAGE, new ResourceImage(10064, 47));
-    resources[1241] = new Resource(2248, RESOURCE_IMAGE, new ResourceImage(10064, 48));
-    resources[1242] = new Resource(2249, RESOURCE_IMAGE, new ResourceImage(10064, 49));
-    resources[1243] = new Resource(2250, RESOURCE_IMAGE, new ResourceImage(10064, 50));
-    resources[1244] = new Resource(2251, RESOURCE_IMAGE, new ResourceImage(10064, 51));
-    resources[1245] = new Resource(2252, RESOURCE_IMAGE, new ResourceImage(10064, 52));
-    resources[1246] = new Resource(2253, RESOURCE_IMAGE, new ResourceImage(10064, 53));
-    resources[1247] = new Resource(2254, RESOURCE_IMAGE, new ResourceImage(10064, 54));
-    resources[1248] = new Resource(2255, RESOURCE_IMAGE, new ResourceImage(10064, 55));
-    resources[1249] = new Resource(2256, RESOURCE_IMAGE, new ResourceImage(10064, 56));
-    resources[1250] = new Resource(2257, RESOURCE_IMAGE, new ResourceImage(10064, 57));
-    resources[1251] = new Resource(2258, RESOURCE_IMAGE, new ResourceImage(10064, 58));
-    resources[1252] = new Resource(2259, RESOURCE_IMAGE, new ResourceImage(10064, 59));
-    resources[1253] = new Resource(2260, RESOURCE_IMAGE, new ResourceImage(10064, 60));
-    resources[1254] = new Resource(2261, RESOURCE_IMAGE, new ResourceImage(10064, 61));
-    resources[1255] = new Resource(2262, RESOURCE_IMAGE, new ResourceImage(10064, 62));
-    resources[1256] = new Resource(2263, RESOURCE_IMAGE, new ResourceImage(10064, 63));
-    resources[1257] = new Resource(2264, RESOURCE_IMAGE, new ResourceImage(10064, 64));
-    resources[1258] = new Resource(2265, RESOURCE_IMAGE, new ResourceImage(10064, 65));
-    resources[1259] = new Resource(2266, RESOURCE_IMAGE, new ResourceImage(10064, 66));
-    resources[1260] = new Resource(2267, RESOURCE_IMAGE, new ResourceImage(10064, 67));
-    resources[1261] = new Resource(2268, RESOURCE_IMAGE, new ResourceImage(10064, 68));
-    resources[1262] = new Resource(2269, RESOURCE_IMAGE, new ResourceImage(10064, 69));
-    resources[1263] = new Resource(2270, RESOURCE_IMAGE, new ResourceImage(10064, 70));
-    resources[1264] = new Resource(2271, RESOURCE_IMAGE, new ResourceImage(10064, 71));
-    resources[1265] = new Resource(2272, RESOURCE_IMAGE, new ResourceImage(10064, 72));
-    resources[1266] = new Resource(2273, RESOURCE_IMAGE, new ResourceImage(10064, 73));
-    resources[1267] = new Resource(2274, RESOURCE_IMAGE, new ResourceImage(10064, 74));
-    resources[1268] = new Resource(2275, RESOURCE_IMAGE, new ResourceImage(10064, 75));
-    resources[1269] = new Resource(2276, RESOURCE_IMAGE, new ResourceImage(10064, 76));
-    resources[1270] = new Resource(2277, RESOURCE_IMAGE, new ResourceImage(10064, 77));
-    resources[1271] = new Resource(2278, RESOURCE_IMAGE, new ResourceImage(10064, 78));
-    resources[1272] = new Resource(2279, RESOURCE_IMAGE, new ResourceImage(10064, 79));
-    resources[1273] = new Resource(2280, RESOURCE_IMAGE, new ResourceImage(10064, 80));
-    resources[1274] = new Resource(2281, RESOURCE_IMAGE, new ResourceImage(10064, 81));
-    resources[1275] = new Resource(2282, RESOURCE_IMAGE, new ResourceImage(10064, 82));
-    resources[1276] = new Resource(2283, RESOURCE_IMAGE, new ResourceImage(10064, 83));
-    resources[1277] = new Resource(2284, RESOURCE_IMAGE, new ResourceImage(10064, 84));
-    resources[1278] = new Resource(2285, RESOURCE_IMAGE, new ResourceImage(10064, 85));
-    resources[1279] = new Resource(2286, RESOURCE_IMAGE, new ResourceImage(10064, 86));
-    resources[1280] = new Resource(2287, RESOURCE_IMAGE, new ResourceImage(10064, 87));
-    resources[1281] = new Resource(2288, RESOURCE_IMAGE, new ResourceImage(10064, 88));
-    resources[1282] = new Resource(2289, RESOURCE_IMAGE, new ResourceImage(10064, 89));
-    resources[1283] = new Resource(2290, RESOURCE_IMAGE, new ResourceImage(10064, 90));
-    resources[1284] = new Resource(2291, RESOURCE_IMAGE, new ResourceImage(10064, 91));
-    resources[1285] = new Resource(2292, RESOURCE_IMAGE, new ResourceImage(10064, 92));
-    resources[1286] = new Resource(2293, RESOURCE_IMAGE, new ResourceImage(10064, 93));
-    resources[1287] = new Resource(2294, RESOURCE_IMAGE, new ResourceImage(10064, 94));
-    resources[1288] = new Resource(2295, RESOURCE_IMAGE, new ResourceImage(10064, 95));
-    resources[1289] = new Resource(2296, RESOURCE_IMAGE, new ResourceImage(10064, 96));
-    resources[1290] = new Resource(2297, RESOURCE_IMAGE, new ResourceImage(10064, 97));
-    resources[1291] = new Resource(2298, RESOURCE_IMAGE, new ResourceImage(10064, 98));
-    resources[1292] = new Resource(2299, RESOURCE_IMAGE, new ResourceImage(10064, 99));
-    resources[1293] = new Resource(2300, RESOURCE_IMAGE, new ResourceImage(10064, 100));
-    resources[1294] = new Resource(2301, RESOURCE_IMAGE, new ResourceImage(10064, 101));
-    resources[1295] = new Resource(2302, RESOURCE_IMAGE, new ResourceImage(10064, 102));
-    resources[1296] = new Resource(2303, RESOURCE_IMAGE, new ResourceImage(10064, 103));
-    resources[1297] = new Resource(2304, RESOURCE_IMAGE, new ResourceImage(10064, 104));
-    resources[1298] = new Resource(2305, RESOURCE_IMAGE, new ResourceImage(10064, 105));
-    resources[1299] = new Resource(2306, RESOURCE_IMAGE, new ResourceImage(10064, 106));
-    resources[1300] = new Resource(2307, RESOURCE_IMAGE, new ResourceImage(10064, 107));
-    resources[1301] = new Resource(2308, RESOURCE_IMAGE, new ResourceImage(10064, 108));
-    resources[1302] = new Resource(2309, RESOURCE_IMAGE, new ResourceImage(10064, 109));
-    resources[1303] = new Resource(2310, RESOURCE_IMAGE, new ResourceImage(10064, 110));
-    resources[1304] = new Resource(2311, RESOURCE_IMAGE, new ResourceImage(10064, 111));
-    resources[1305] = new Resource(2312, RESOURCE_IMAGE, new ResourceImage(10064, 112));
-    resources[1306] = new Resource(2313, RESOURCE_IMAGE, new ResourceImage(10064, 113));
-    resources[1307] = new Resource(2314, RESOURCE_IMAGE, new ResourceImage(10064, 114));
-    resources[1308] = new Resource(2315, RESOURCE_IMAGE, new ResourceImage(10064, 115));
-    resources[1309] = new Resource(2316, RESOURCE_IMAGE, new ResourceImage(10064, 116));
-    resources[1310] = new Resource(2317, RESOURCE_IMAGE, new ResourceImage(10064, 117));
-    resources[1311] = new Resource(2318, RESOURCE_IMAGE, new ResourceImage(10064, 118));
-    resources[1312] = new Resource(2319, RESOURCE_IMAGE, new ResourceImage(10064, 119));
-    resources[1313] = new Resource(2320, RESOURCE_IMAGE, new ResourceImage(10064, 120));
-    resources[1314] = new Resource(2321, RESOURCE_IMAGE, new ResourceImage(10064, 121));
-    resources[1315] = new Resource(2322, RESOURCE_IMAGE, new ResourceImage(10064, 122));
-    resources[1316] = new Resource(2323, RESOURCE_IMAGE, new ResourceImage(10064, 123));
-    resources[1317] = new Resource(2324, RESOURCE_IMAGE, new ResourceImage(10064, 124));
-    resources[1318] = new Resource(2325, RESOURCE_IMAGE, new ResourceImage(10064, 125));
-    resources[1319] = new Resource(2326, RESOURCE_IMAGE, new ResourceImage(10064, 126));
-    resources[1320] = new Resource(2327, RESOURCE_IMAGE, new ResourceImage(10064, 127));
-    resources[1321] = new Resource(2328, RESOURCE_IMAGE, new ResourceImage(10064, 128));
-    resources[1322] = new Resource(2329, RESOURCE_IMAGE, new ResourceImage(10064, 129));
-    resources[1323] = new Resource(2330, RESOURCE_IMAGE, new ResourceImage(10064, 130));
-    resources[1324] = new Resource(2331, RESOURCE_IMAGE, new ResourceImage(10064, 131));
-    resources[1325] = new Resource(2332, RESOURCE_IMAGE, new ResourceImage(10064, 132));
-    resources[1326] = new Resource(2333, RESOURCE_IMAGE, new ResourceImage(10064, 133));
-    resources[1327] = new Resource(2334, RESOURCE_IMAGE, new ResourceImage(10064, 134));
-    resources[1328] = new Resource(2335, RESOURCE_IMAGE, new ResourceImage(10064, 135));
-    resources[1329] = new Resource(2336, RESOURCE_IMAGE, new ResourceImage(10064, 136));
-    resources[1330] = new Resource(2337, RESOURCE_IMAGE, new ResourceImage(10064, 137));
-    resources[1331] = new Resource(2338, RESOURCE_IMAGE, new ResourceImage(10064, 138));
-    resources[1332] = new Resource(2339, RESOURCE_IMAGE, new ResourceImage(10064, 139));
-    resources[1333] = new Resource(2340, RESOURCE_IMAGE, new ResourceImage(10064, 140));
-    resources[1334] = new Resource(2341, RESOURCE_IMAGE, new ResourceImage(10064, 141));
-    resources[1335] = new Resource(2342, RESOURCE_IMAGE, new ResourceImage(10064, 142));
-    resources[1336] = new Resource(2343, RESOURCE_IMAGE, new ResourceImage(10064, 143));
-    resources[1337] = new Resource(2344, RESOURCE_IMAGE, new ResourceImage(10064, 144));
-    resources[1338] = new Resource(2345, RESOURCE_IMAGE, new ResourceImage(10064, 145));
-    resources[1339] = new Resource(2346, RESOURCE_IMAGE, new ResourceImage(10064, 146));
-    resources[1340] = new Resource(2347, RESOURCE_IMAGE, new ResourceImage(10064, 147));
-    resources[1341] = new Resource(2348, RESOURCE_IMAGE, new ResourceImage(10064, 148));
-    resources[1342] = new Resource(2349, RESOURCE_IMAGE, new ResourceImage(10064, 149));
-    resources[1343] = new Resource(2350, RESOURCE_IMAGE, new ResourceImage(10064, 150));
-    resources[1344] = new Resource(2351, RESOURCE_IMAGE, new ResourceImage(10064, 151));
-    resources[1345] = new Resource(2352, RESOURCE_IMAGE, new ResourceImage(10064, 152));
-    resources[1346] = new Resource(2353, RESOURCE_IMAGE, new ResourceImage(10064, 153));
-    resources[1347] = new Resource(2354, RESOURCE_IMAGE, new ResourceImage(10064, 154));
-    resources[1348] = new Resource(2355, RESOURCE_IMAGE, new ResourceImage(10064, 155));
-    resources[1349] = new Resource(2356, RESOURCE_IMAGE, new ResourceImage(10064, 156));
-    resources[1350] = new Resource(2357, RESOURCE_IMAGE, new ResourceImage(10064, 157));
-    resources[1351] = new Resource(2358, RESOURCE_IMAGE, new ResourceImage(10064, 158));
-    resources[1352] = new Resource(2359, RESOURCE_IMAGE, new ResourceImage(10064, 159));
-    resources[1353] = new Resource(2360, RESOURCE_IMAGE, new ResourceImage(10064, 160));
-    resources[1354] = new Resource(2361, RESOURCE_IMAGE, new ResourceImage(10064, 161));
-    resources[1355] = new Resource(2362, RESOURCE_IMAGE, new ResourceImage(10064, 162));
-    resources[1356] = new Resource(2363, RESOURCE_IMAGE, new ResourceImage(10064, 163));
-    resources[1357] = new Resource(2364, RESOURCE_IMAGE, new ResourceImage(10064, 164));
-    resources[1358] = new Resource(2365, RESOURCE_IMAGE, new ResourceImage(10064, 165));
-    resources[1359] = new Resource(2366, RESOURCE_IMAGE, new ResourceImage(10064, 166));
-    resources[1360] = new Resource(2367, RESOURCE_IMAGE, new ResourceImage(10064, 167));
-    resources[1361] = new Resource(2368, RESOURCE_IMAGE, new ResourceImage(10064, 168));
-    resources[1362] = new Resource(2369, RESOURCE_IMAGE, new ResourceImage(10064, 169));
-    resources[1363] = new Resource(2370, RESOURCE_IMAGE, new ResourceImage(10064, 170));
-    resources[1364] = new Resource(2371, RESOURCE_IMAGE, new ResourceImage(10064, 171));
-    resources[1365] = new Resource(2372, RESOURCE_IMAGE, new ResourceImage(10064, 172));
-    resources[1366] = new Resource(2373, RESOURCE_IMAGE, new ResourceImage(10064, 173));
-    resources[1367] = new Resource(2374, RESOURCE_IMAGE, new ResourceImage(10064, 174));
-    resources[1368] = new Resource(2375, RESOURCE_IMAGE, new ResourceImage(10064, 175));
-    resources[1369] = new Resource(2376, RESOURCE_IMAGE, new ResourceImage(10064, 176));
-    resources[1370] = new Resource(2377, RESOURCE_IMAGE, new ResourceImage(10064, 177));
-    resources[1371] = new Resource(2378, RESOURCE_IMAGE, new ResourceImage(10064, 178));
-    resources[1372] = new Resource(2379, RESOURCE_IMAGE, new ResourceImage(10064, 179));
-    resources[1373] = new Resource(2380, RESOURCE_IMAGE, new ResourceImage(10064, 180));
-    resources[1374] = new Resource(2381, RESOURCE_IMAGE, new ResourceImage(10064, 181));
-    resources[1375] = new Resource(2382, RESOURCE_IMAGE, new ResourceImage(10064, 182));
-    resources[1376] = new Resource(2383, RESOURCE_IMAGE, new ResourceImage(10064, 183));
-    resources[1377] = new Resource(2384, RESOURCE_IMAGE, new ResourceImage(10064, 184));
-    resources[1378] = new Resource(2385, RESOURCE_IMAGE, new ResourceImage(10064, 185));
-    resources[1379] = new Resource(2386, RESOURCE_IMAGE, new ResourceImage(10064, 186));
-    resources[1380] = new Resource(2387, RESOURCE_IMAGE, new ResourceImage(10064, 187));
-    resources[1381] = new Resource(2388, RESOURCE_IMAGE, new ResourceImage(10064, 188));
-    resources[1382] = new Resource(2389, RESOURCE_IMAGE, new ResourceImage(10064, 189));
-    resources[1383] = new Resource(2390, RESOURCE_IMAGE, new ResourceImage(10064, 190));
-    resources[1384] = new Resource(2391, RESOURCE_IMAGE, new ResourceImage(10064, 191));
-    resources[1385] = new Resource(2392, RESOURCE_IMAGE, new ResourceImage(10064, 192));
-    resources[1386] = new Resource(2393, RESOURCE_IMAGE, new ResourceImage(10064, 193));
-    resources[1387] = new Resource(2394, RESOURCE_IMAGE, new ResourceImage(10064, 194));
-    resources[1388] = new Resource(2395, RESOURCE_IMAGE, new ResourceImage(10064, 195));
-    resources[1389] = new Resource(2396, RESOURCE_IMAGE, new ResourceImage(10064, 196));
-    resources[1390] = new Resource(2397, RESOURCE_IMAGE, new ResourceImage(10064, 197));
-    resources[1391] = new Resource(2398, RESOURCE_IMAGE, new ResourceImage(10064, 198));
-    resources[1392] = new Resource(2399, RESOURCE_IMAGE, new ResourceImage(10064, 199));
-    resources[1393] = new Resource(2400, RESOURCE_IMAGE, new ResourceImage(10064, 200));
-    resources[1394] = new Resource(2401, RESOURCE_IMAGE, new ResourceImage(10064, 201));
-    resources[1395] = new Resource(2402, RESOURCE_IMAGE, new ResourceImage(10064, 202));
-    resources[1396] = new Resource(2403, RESOURCE_IMAGE, new ResourceImage(10064, 203));
-    resources[1397] = new Resource(2404, RESOURCE_IMAGE, new ResourceImage(10064, 204));
-    resources[1398] = new Resource(2405, RESOURCE_IMAGE, new ResourceImage(10064, 205));
-    resources[1399] = new Resource(2406, RESOURCE_IMAGE, new ResourceImage(10064, 206));
-    resources[1400] = new Resource(2407, RESOURCE_IMAGE, new ResourceImage(10064, 207));
-    resources[1401] = new Resource(2408, RESOURCE_IMAGE, new ResourceImage(10064, 208));
-    resources[1402] = new Resource(2409, RESOURCE_IMAGE, new ResourceImage(10064, 209));
-    resources[1403] = new Resource(2410, RESOURCE_IMAGE, new ResourceImage(10064, 210));
-    resources[1404] = new Resource(2411, RESOURCE_IMAGE, new ResourceImage(10064, 211));
-    resources[1405] = new Resource(2412, RESOURCE_IMAGE, new ResourceImage(10064, 212));
-    resources[1406] = new Resource(2413, RESOURCE_IMAGE, new ResourceImage(10064, 213));
-    resources[1407] = new Resource(2414, RESOURCE_IMAGE, new ResourceImage(10064, 214));
-    resources[1408] = new Resource(2415, RESOURCE_IMAGE, new ResourceImage(10064, 215));
-    resources[1409] = new Resource(2416, RESOURCE_IMAGE, new ResourceImage(10064, 216));
-    resources[1410] = new Resource(2417, RESOURCE_IMAGE, new ResourceImage(10064, 217));
-    resources[1411] = new Resource(2418, RESOURCE_IMAGE, new ResourceImage(10064, 218));
-    resources[1412] = new Resource(2419, RESOURCE_IMAGE, new ResourceImage(10064, 219));
-    resources[1413] = new Resource(2420, RESOURCE_IMAGE, new ResourceImage(10064, 220));
-    resources[1414] = new Resource(2421, RESOURCE_IMAGE, new ResourceImage(10064, 221));
-    resources[1415] = new Resource(2422, RESOURCE_IMAGE, new ResourceImage(10064, 222));
-    resources[1416] = new Resource(2423, RESOURCE_IMAGE, new ResourceImage(10064, 223));
-    resources[1417] = new Resource(2424, RESOURCE_IMAGE, new ResourceImage(10064, 224));
-    resources[1418] = new Resource(2425, RESOURCE_IMAGE, new ResourceImage(10064, 225));
-    resources[1419] = new Resource(2426, RESOURCE_IMAGE, new ResourceImage(10064, 226));
-    resources[1420] = new Resource(2427, RESOURCE_IMAGE, new ResourceImage(10064, 227));
-    resources[1421] = new Resource(2428, RESOURCE_IMAGE, new ResourceImage(10064, 228));
-    resources[1422] = new Resource(2429, RESOURCE_IMAGE, new ResourceImage(10064, 229));
-    resources[1423] = new Resource(2430, RESOURCE_IMAGE, new ResourceImage(10064, 230));
-    resources[1424] = new Resource(2431, RESOURCE_IMAGE, new ResourceImage(10064, 231));
-    resources[1425] = new Resource(2432, RESOURCE_IMAGE, new ResourceImage(10064, 232));
-    resources[1426] = new Resource(2433, RESOURCE_IMAGE, new ResourceImage(10064, 233));
-    resources[1427] = new Resource(2434, RESOURCE_IMAGE, new ResourceImage(10064, 234));
-    resources[1428] = new Resource(2435, RESOURCE_IMAGE, new ResourceImage(10064, 235));
-    resources[1429] = new Resource(2436, RESOURCE_IMAGE, new ResourceImage(10064, 236));
-    resources[1430] = new Resource(2437, RESOURCE_IMAGE, new ResourceImage(10064, 237));
-    resources[1431] = new Resource(2438, RESOURCE_IMAGE, new ResourceImage(10064, 238));
-    resources[1432] = new Resource(2439, RESOURCE_IMAGE, new ResourceImage(10064, 239));
-    resources[1433] = new Resource(2440, RESOURCE_IMAGE, new ResourceImage(10064, 240));
-    resources[1434] = new Resource(2441, RESOURCE_IMAGE, new ResourceImage(10064, 241));
-    resources[1435] = new Resource(2442, RESOURCE_IMAGE, new ResourceImage(10064, 242));
-    resources[1436] = new Resource(2443, RESOURCE_IMAGE, new ResourceImage(10064, 243));
-    resources[1437] = new Resource(2444, RESOURCE_IMAGE, new ResourceImage(10064, 244));
-    resources[1438] = new Resource(2445, RESOURCE_IMAGE, new ResourceImage(10064, 245));
-    resources[1439] = new Resource(2446, RESOURCE_IMAGE, new ResourceImage(10064, 246));
-    resources[1440] = new Resource(2447, RESOURCE_IMAGE, new ResourceImage(10064, 247));
-    resources[1441] = new Resource(2448, RESOURCE_IMAGE, new ResourceImage(10064, 248));
-    resources[1442] = new Resource(2449, RESOURCE_IMAGE, new ResourceImage(10064, 249));
-    resources[1443] = new Resource(2450, RESOURCE_IMAGE, new ResourceImage(10064, 250));
-    resources[1444] = new Resource(2451, RESOURCE_IMAGE, new ResourceImage(10064, 251));
-    resources[1445] = new Resource(2452, RESOURCE_IMAGE, new ResourceImage(10064, 252));
-    resources[1446] = new Resource(2453, RESOURCE_IMAGE, new ResourceImage(10064, 253));
-    resources[1447] = new Resource(2454, RESOURCE_IMAGE, new ResourceImage(10064, 254));
-    resources[1448] = new Resource(2455, RESOURCE_IMAGE, new ResourceImage(10064, 255));
-    resources[1449] = new Resource(2456, RESOURCE_IMAGE, new ResourceImage(10064, 256));
-    resources[1450] = new Resource(2457, RESOURCE_IMAGE, new ResourceImage(10064, 257));
-    resources[1451] = new Resource(2458, RESOURCE_IMAGE, new ResourceImage(10064, 258));
-    resources[1452] = new Resource(2459, RESOURCE_IMAGE, new ResourceImage(10064, 259));
-    resources[1453] = new Resource(2460, RESOURCE_IMAGE, new ResourceImage(10064, 260));
-    resources[1454] = new Resource(2461, RESOURCE_IMAGE, new ResourceImage(10064, 261));
-    resources[1455] = new Resource(2462, RESOURCE_IMAGE, new ResourceImage(10064, 262));
-    resources[1456] = new Resource(2463, RESOURCE_IMAGE, new ResourceImage(10064, 263));
-    resources[1457] = new Resource(2464, RESOURCE_IMAGE, new ResourceImage(10064, 264));
-    resources[1458] = new Resource(2465, RESOURCE_IMAGE, new ResourceImage(10064, 265));
-    resources[1459] = new Resource(2466, RESOURCE_IMAGE, new ResourceImage(10064, 266));
-    resources[1460] = new Resource(2467, RESOURCE_IMAGE, new ResourceImage(10064, 267));
-    resources[1461] = new Resource(2468, RESOURCE_IMAGE, new ResourceImage(10064, 268));
-    resources[1462] = new Resource(2469, RESOURCE_IMAGE, new ResourceImage(10064, 269));
-    resources[1463] = new Resource(2470, RESOURCE_IMAGE, new ResourceImage(10064, 270));
-    resources[1464] = new Resource(2471, RESOURCE_IMAGE, new ResourceImage(10064, 271));
-    resources[1465] = new Resource(4000, RESOURCE_IMAGE, new ResourceImage(11632, 0));
-    resources[1466] = new Resource(4001, RESOURCE_IMAGE, new ResourceImage(11632, 1));
-    resources[1467] = new Resource(4002, RESOURCE_IMAGE, new ResourceImage(11632, 2));
-    resources[1468] = new Resource(4003, RESOURCE_IMAGE, new ResourceImage(11632, 3));
-    resources[1469] = new Resource(4004, RESOURCE_IMAGE, new ResourceImage(11632, 4));
-    resources[1470] = new Resource(4005, RESOURCE_IMAGE, new ResourceImage(11632, 5));
-    resources[1471] = new Resource(4006, RESOURCE_IMAGE, new ResourceImage(11632, 6));
-    resources[1472] = new Resource(4007, RESOURCE_IMAGE, new ResourceImage(11632, 7));
-    resources[1473] = new Resource(4008, RESOURCE_IMAGE, new ResourceImage(11632, 8));
-    resources[1474] = new Resource(4009, RESOURCE_IMAGE, new ResourceImage(11632, 9));
-    resources[1475] = new Resource(4010, RESOURCE_IMAGE, new ResourceImage(11632, 10));
-    resources[1476] = new Resource(4011, RESOURCE_IMAGE, new ResourceImage(11632, 11));
-    resources[1477] = new Resource(4012, RESOURCE_IMAGE, new ResourceImage(11632, 12));
-    resources[1478] = new Resource(4013, RESOURCE_IMAGE, new ResourceImage(11632, 13));
-    resources[1479] = new Resource(4014, RESOURCE_IMAGE, new ResourceImage(11632, 14));
-    resources[1480] = new Resource(4015, RESOURCE_IMAGE, new ResourceImage(11632, 15));
-    resources[1481] = new Resource(4016, RESOURCE_IMAGE, new ResourceImage(11632, 16));
-    resources[1482] = new Resource(4017, RESOURCE_IMAGE, new ResourceImage(11632, 17));
-    resources[1483] = new Resource(4018, RESOURCE_IMAGE, new ResourceImage(11632, 18));
-    resources[1484] = new Resource(4019, RESOURCE_IMAGE, new ResourceImage(11632, 19));
-    resources[1485] = new Resource(4020, RESOURCE_IMAGE, new ResourceImage(11632, 20));
-    resources[1486] = new Resource(4021, RESOURCE_IMAGE, new ResourceImage(11632, 21));
-    resources[1487] = new Resource(4022, RESOURCE_IMAGE, new ResourceImage(11632, 22));
-    resources[1488] = new Resource(4023, RESOURCE_IMAGE, new ResourceImage(11632, 23));
-    resources[1489] = new Resource(4024, RESOURCE_IMAGE, new ResourceImage(11632, 24));
-    resources[1490] = new Resource(4025, RESOURCE_IMAGE, new ResourceImage(11632, 25));
-    resources[1491] = new Resource(4026, RESOURCE_IMAGE, new ResourceImage(11632, 26));
-    resources[1492] = new Resource(4027, RESOURCE_IMAGE, new ResourceImage(11632, 27));
-    resources[1493] = new Resource(4028, RESOURCE_IMAGE, new ResourceImage(11632, 28));
-    resources[1494] = new Resource(4029, RESOURCE_IMAGE, new ResourceImage(11632, 29));
-    resources[1495] = new Resource(4030, RESOURCE_IMAGE, new ResourceImage(11632, 30));
-    resources[1496] = new Resource(4031, RESOURCE_IMAGE, new ResourceImage(11632, 31));
-    resources[1497] = new Resource(4032, RESOURCE_IMAGE, new ResourceImage(11632, 32));
-    resources[1498] = new Resource(4033, RESOURCE_IMAGE, new ResourceImage(11632, 33));
-    resources[1499] = new Resource(4034, RESOURCE_IMAGE, new ResourceImage(11632, 34));
-    resources[1500] = new Resource(4035, RESOURCE_IMAGE, new ResourceImage(11632, 35));
-    resources[1501] = new Resource(4036, RESOURCE_IMAGE, new ResourceImage(11632, 36));
-    resources[1502] = new Resource(4037, RESOURCE_IMAGE, new ResourceImage(11632, 37));
-    resources[1503] = new Resource(4038, RESOURCE_IMAGE, new ResourceImage(11632, 38));
-    resources[1504] = new Resource(4039, RESOURCE_IMAGE, new ResourceImage(11632, 39));
-    resources[1505] = new Resource(4040, RESOURCE_IMAGE, new ResourceImage(11632, 40));
-    resources[1506] = new Resource(4041, RESOURCE_IMAGE, new ResourceImage(11632, 41));
-    resources[1507] = new Resource(4042, RESOURCE_IMAGE, new ResourceImage(11632, 42));
-    resources[1508] = new Resource(4043, RESOURCE_IMAGE, new ResourceImage(11632, 43));
-    resources[1509] = new Resource(4044, RESOURCE_IMAGE, new ResourceImage(11632, 44));
-    resources[1510] = new Resource(4045, RESOURCE_IMAGE, new ResourceImage(11632, 45));
-    resources[1511] = new Resource(4046, RESOURCE_IMAGE, new ResourceImage(11632, 46));
-    resources[1512] = new Resource(4047, RESOURCE_IMAGE, new ResourceImage(11632, 47));
-    resources[1513] = new Resource(4048, RESOURCE_IMAGE, new ResourceImage(11632, 48));
-    resources[1514] = new Resource(4049, RESOURCE_IMAGE, new ResourceImage(11632, 49));
-    resources[1515] = new Resource(4050, RESOURCE_IMAGE, new ResourceImage(11632, 50));
-    resources[1516] = new Resource(4051, RESOURCE_IMAGE, new ResourceImage(11632, 51));
-    resources[1517] = new Resource(4052, RESOURCE_IMAGE, new ResourceImage(11632, 52));
-    resources[1518] = new Resource(4053, RESOURCE_IMAGE, new ResourceImage(11632, 53));
-    resources[1519] = new Resource(4054, RESOURCE_IMAGE, new ResourceImage(11632, 54));
-    resources[1520] = new Resource(4055, RESOURCE_IMAGE, new ResourceImage(11632, 55));
-    resources[1521] = new Resource(4056, RESOURCE_IMAGE, new ResourceImage(11632, 56));
-    resources[1522] = new Resource(2472, RESOURCE_IMAGE, new ResourceImage(11632, 57));
-    resources[1523] = new Resource(2473, RESOURCE_IMAGE, new ResourceImage(11632, 58));
-    resources[1524] = new Resource(2474, RESOURCE_IMAGE, new ResourceImage(11632, 59));
-    resources[1525] = new Resource(2475, RESOURCE_IMAGE, new ResourceImage(11632, 60));
-    resources[1526] = new Resource(2476, RESOURCE_IMAGE, new ResourceImage(11632, 61));
-    resources[1527] = new Resource(2477, RESOURCE_IMAGE, new ResourceImage(11632, 62));
-    resources[1528] = new Resource(2478, RESOURCE_IMAGE, new ResourceImage(11632, 63));
-    resources[1529] = new Resource(2479, RESOURCE_IMAGE, new ResourceImage(11632, 64));
-    resources[1530] = new Resource(2480, RESOURCE_IMAGE, new ResourceImage(11632, 65));
-    resources[1531] = new Resource(5500, RESOURCE_IMAGE, new ResourceImage(10064, 0));
-    resources[1532] = new Resource(5501, RESOURCE_IMAGE, new ResourceImage(10064, 1));
-    resources[1533] = new Resource(5502, RESOURCE_IMAGE, new ResourceImage(10064, 2));
-    resources[1534] = new Resource(7000, RESOURCE_IMAGE, new ResourceImage(10002, 0));
-    resources[1535] = new Resource(7001, RESOURCE_IMAGE, new ResourceImage(10002, 1));
-    resources[1536] = new Resource(7002, RESOURCE_IMAGE, new ResourceImage(10002, 2));
-    resources[1537] = new Resource(7003, RESOURCE_IMAGE, new ResourceImage(10002, 3));
-    resources[1538] = new Resource(7004, RESOURCE_IMAGE, new ResourceImage(10002, 4));
-    resources[1539] = new Resource(6000, RESOURCE_IMAGE, new ResourceImage(27341, 0));
-    resources[1540] = new Resource(6001, RESOURCE_IMAGE, new ResourceImage(27341, 1));
-    resources[1541] = new Resource(6002, RESOURCE_IMAGE, new ResourceImage(27341, 2));
-    resources[1542] = new Resource(6003, RESOURCE_IMAGE, new ResourceImage(27341, 3));
-    resources[1543] = new Resource(6004, RESOURCE_IMAGE, new ResourceImage(27341, 4));
-    resources[1544] = new Resource(6005, RESOURCE_IMAGE, new ResourceImage(27341, 5));
-    resources[1545] = new Resource(6006, RESOURCE_IMAGE, new ResourceImage(27341, 6));
-    resources[1546] = new Resource(6007, RESOURCE_IMAGE, new ResourceImage(27341, 7));
-    resources[1547] = new Resource(6008, RESOURCE_IMAGE, new ResourceImage(27341, 8));
-    resources[1548] = new Resource(6009, RESOURCE_IMAGE, new ResourceImage(27341, 9));
-    resources[1549] = new Resource(6010, RESOURCE_IMAGE, new ResourceImage(27341, 10));
-    resources[1550] = new Resource(6600, RESOURCE_IMAGE, new ResourceImage(29500, 0));
-    resources[1551] = new Resource(6601, RESOURCE_IMAGE, new ResourceImage(29500, 1));
-    resources[1552] = new Resource(6602, RESOURCE_IMAGE, new ResourceImage(29500, 2));
-    resources[1553] = new Resource(6603, RESOURCE_IMAGE, new ResourceImage(29500, 3));
-    resources[1554] = new Resource(6604, RESOURCE_IMAGE, new ResourceImage(29500, 4));
-    resources[1555] = new Resource(6605, RESOURCE_IMAGE, new ResourceImage(29500, 5));
-    resources[1556] = new Resource(6606, RESOURCE_IMAGE, new ResourceImage(29500, 6));
-    resources[1557] = new Resource(6607, RESOURCE_IMAGE, new ResourceImage(29500, 7));
-    resources[1558] = new Resource(6650, RESOURCE_IMAGE, new ResourceImage(29501, 0));
-    resources[1559] = new Resource(14379, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian.aem", 24071, false));
-    resources[1560] = new Resource(14310, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_add.aem", 20069, false));
-    resources[1561] = new Resource(14264, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_alpha.aem", 20106, false));
-    resources[1562] = new Resource(14377, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk.aem", 24074, false));
-    resources[1563] = new Resource(14304, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk_anim_add.aem", 20071, false));
-    resources[1564] = new Resource(14378, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian.aem", 24073, false));
-    resources[1565] = new Resource(14307, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_alpha.aem", 20074, false));
-    resources[1566] = new Resource(14308, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_add.aem", 20075, false));
-    resources[1567] = new Resource(14376, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran.aem", 24070, false));
-    resources[1568] = new Resource(14301, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_alpha.aem", 20077, false));
-    resources[1569] = new Resource(14302, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_add.aem", 20078, false));
-    resources[1570] = new Resource(14354, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation.aem", 20157, false));
-    resources[1571] = new Resource(14355, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_emissive.aem", 27138, false));
-    resources[1572] = new Resource(14356, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_alpha.aem", 27139, false));
-    resources[1573] = new Resource(14357, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_add.aem", 27140, false));
-    resources[1574] = new Resource(14358, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_emissive.aem", 27141, false));
-    resources[1575] = new Resource(14359, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_alpha.aem", 27142, false));
-    resources[1576] = new Resource(14360, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_anim_add.aem", 27143, false));
-    resources[1577] = new Resource(14362, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science.aem", 27144, false));
-    resources[1578] = new Resource(14265, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim.aem", 24070, false));
-    resources[1579] = new Resource(14266, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim.aem", 24070, false));
-    resources[1580] = new Resource(14267, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim.aem", 24070, false));
-    resources[1581] = new Resource(14268, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim.aem", 24070, false));
-    resources[1582] = new Resource(14269, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim_add.aem", 20078, false));
-    resources[1583] = new Resource(14270, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim_add.aem", 20078, false));
-    resources[1584] = new Resource(14271, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim_add.aem", 20078, false));
-    resources[1585] = new Resource(14272, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim_add.aem", 20078, false));
-    resources[1586] = new Resource(14273, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim.aem", 24073, false));
-    resources[1587] = new Resource(14274, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim.aem", 24073, false));
-    resources[1588] = new Resource(14275, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim.aem", 24073, false));
-    resources[1589] = new Resource(14276, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim_add.aem", 20075, false));
-    resources[1590] = new Resource(14277, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim_add.aem", 20075, false));
-    resources[1591] = new Resource(14278, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim_add.aem", 20075, false));
-    resources[1592] = new Resource(14380, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1.aem", 24070, false));
-    resources[1593] = new Resource(14381, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1_shadow_alpha.aem", 20077, false));
-    resources[1594] = new Resource(14382, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2.aem", 24070, false));
-    resources[1595] = new Resource(14383, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2_shadow_alpha.aem", 20077, false));
-    resources[1596] = new Resource(14384, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3.aem", 24070, false));
-    resources[1597] = new Resource(14385, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3_shadow_alpha.aem", 20077, false));
-    resources[1598] = new Resource(14386, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4.aem", 24070, false));
-    resources[1599] = new Resource(14387, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4_shadow_alpha.aem", 20077, false));
-    resources[1600] = new Resource(14388, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5.aem", 24070, false));
-    resources[1601] = new Resource(14389, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5_shadow_alpha.aem", 20077, false));
-    resources[1602] = new Resource(14390, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x6.aem", 24070, false));
-    resources[1603] = new Resource(14391, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1.aem", 24071, false));
-    resources[1604] = new Resource(14392, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1_shadow_alpha.aem", 20106, false));
-    resources[1605] = new Resource(14393, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2.aem", 24071, false));
-    resources[1606] = new Resource(14394, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2_shadow_alpha.aem", 20106, false));
-    resources[1607] = new Resource(14395, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3.aem", 24071, false));
-    resources[1608] = new Resource(14396, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3_shadow_alpha.aem", 20106, false));
-    resources[1609] = new Resource(14397, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4.aem", 24071, false));
-    resources[1610] = new Resource(14398, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4_shadow_alpha.aem", 20106, false));
-    resources[1611] = new Resource(14399, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false));
-    resources[1612] = new Resource(14400, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
-    resources[1613] = new Resource(14401, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false));
-    resources[1614] = new Resource(14402, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
-    resources[1615] = new Resource(14403, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1.aem", 24073, false));
-    resources[1616] = new Resource(14404, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1_shadow_alpha.aem", 20074, false));
-    resources[1617] = new Resource(14405, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2.aem", 24073, false));
-    resources[1618] = new Resource(14406, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2_shadow_alpha.aem", 20074, false));
-    resources[1619] = new Resource(14407, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3.aem", 24073, false));
-    resources[1620] = new Resource(14408, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3_shadow_alpha.aem", 20074, false));
-    resources[1621] = new Resource(14409, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4.aem", 24073, false));
-    resources[1622] = new Resource(14410, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4_shadow_alpha.aem", 20074, false));
-    resources[1623] = new Resource(14411, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5.aem", 24073, false));
-    resources[1624] = new Resource(14412, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5_shadow_alpha.aem", 20074, false));
-    resources[1625] = new Resource(14025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran.aem", 20056, false));
-    resources[1626] = new Resource(14026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_add.aem", 20057, false));
-    resources[1627] = new Resource(14027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_alpha.aem", 20058, false));
-    resources[1628] = new Resource(14280, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim.aem", 20056, false));
-    resources[1629] = new Resource(14279, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim_add.aem", 20057, false));
-    resources[1630] = new Resource(14028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk.aem", 20059, false));
-    resources[1631] = new Resource(14029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk_anim_add.aem", 20060, false));
-    resources[1632] = new Resource(14031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian.aem", 20062, false));
-    resources[1633] = new Resource(14032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_anim_add.aem", 20063, false));
-    resources[1634] = new Resource(14033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_alpha.aem", 20064, false));
-    resources[1635] = new Resource(14034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_anim.aem", 20065, false));
-    resources[1636] = new Resource(14035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_add.aem", 20066, false));
-    resources[1637] = new Resource(14036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha.aem", 20067, false));
-    resources[1638] = new Resource(14038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha_anim.aem", 20067, false));
-    resources[1639] = new Resource(14725, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_m.aem", 20119, false));
-    resources[1640] = new Resource(14724, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_f.aem", 20118, false));
-    resources[1641] = new Resource(14726, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_vossk.aem", 20120, false));
-    resources[1642] = new Resource(14723, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_nivelian.aem", 20117, false));
-    resources[1643] = new Resource(14722, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_multipod.aem", 20116, false));
-    resources[1644] = new Resource(14720, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_bobolan.aem", 20114, false));
-    resources[1645] = new Resource(14721, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_grey.aem", 20115, false));
-    resources[1646] = new Resource(14281, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34800, false));
-    resources[1647] = new Resource(14282, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34801, false));
-    resources[1648] = new Resource(14283, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34802, false));
-    resources[1649] = new Resource(14284, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34803, false));
-    resources[1650] = new Resource(14348, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_shadow.aem", 34804, false));
-    resources[1651] = new Resource(17800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_000.aem", 20009, false));
-    resources[1652] = new Resource(17801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_001.aem", 20010, false));
-    resources[1653] = new Resource(17802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_002.aem", 20011, false));
-    resources[1654] = new Resource(17803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_003.aem", 20012, false));
-    resources[1655] = new Resource(17804, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_004.aem", 20013, false));
-    resources[1656] = new Resource(17805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_005.aem", 20014, false));
-    resources[1657] = new Resource(17806, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_006.aem", 20015, false));
-    resources[1658] = new Resource(17807, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_007.aem", 20016, false));
-    resources[1659] = new Resource(17808, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_008.aem", 20017, false));
-    resources[1660] = new Resource(17809, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_009.aem", 20018, false));
-    resources[1661] = new Resource(17810, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_010.aem", 20019, false));
-    resources[1662] = new Resource(17811, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_011.aem", 20130, false));
-    resources[1663] = new Resource(17812, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_012.aem", 20131, false));
-    resources[1664] = new Resource(17813, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 20132, false));
-    resources[1665] = new Resource(17814, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 27149, false));
-    resources[1666] = new Resource(17850, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20009, false));
-    resources[1667] = new Resource(17851, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20010, false));
-    resources[1668] = new Resource(17852, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20011, false));
-    resources[1669] = new Resource(6768, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 65535, false));
-    resources[1670] = new Resource(16916, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_005_void.aem", 34208, false));
-    resources[1671] = new Resource(16805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_emp_anim_lookat_add.aem", 27300, false));
-    resources[1672] = new Resource(16820, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_add.aem", 27252, false));
-    resources[1673] = new Resource(16821, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_alpha.aem", 27253, false));
-    resources[1674] = new Resource(16806, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20151, false));
-    resources[1675] = new Resource(16807, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20152, false));
-    resources[1676] = new Resource(16808, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20153, false));
-    resources[1677] = new Resource(6754, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_000_anim_add.aem", 24201, false));
-    resources[1678] = new Resource(6755, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_001_anim_add.aem", 24201, false));
-    resources[1679] = new Resource(6756, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_002_anim_add.aem", 24201, false));
-    resources[1680] = new Resource(6760, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_003_anim_add.aem", 24201, false));
-    resources[1681] = new Resource(6761, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_004_anim_add.aem", 24201, false));
-    resources[1682] = new Resource(6762, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_005_anim_add.aem", 24201, false));
-    resources[1683] = new Resource(6763, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_006_anim_add.aem", 24201, false));
-    resources[1684] = new Resource(6764, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_007_anim_add.aem", 24201, false));
-    resources[1685] = new Resource(6765, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_008_anim_add.aem", 24201, false));
-    resources[1686] = new Resource(14297, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_183_anim_add.aem", 24096, false));
-    resources[1687] = new Resource(6788, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_012_anim_add.aem", 24201, false));
-    resources[1688] = new Resource(6789, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_013_anim_add.aem", 24201, false));
-    resources[1689] = new Resource(6790, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_014_anim_add.aem", 24201, false));
-    resources[1690] = new Resource(6791, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_015_anim_add.aem", 24201, false));
-    resources[1691] = new Resource(6792, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_016_anim_add.aem", 24201, false));
-    resources[1692] = new Resource(6793, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_017_anim_add.aem", 24201, false));
-    resources[1693] = new Resource(6794, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_018_anim_add.aem", 24201, false));
-    resources[1694] = new Resource(6795, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_019_anim_add.aem", 24201, false));
-    resources[1695] = new Resource(6796, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_020_anim_add.aem", 24201, false));
-    resources[1696] = new Resource(6797, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_021_anim_add.aem", 24201, false));
-    resources[1697] = new Resource(6798, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_022_anim_add.aem", 24201, false));
-    resources[1698] = new Resource(6799, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_023_anim_add.aem", 24201, false));
-    resources[1699] = new Resource(6800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_024_anim_add.aem", 24201, false));
-    resources[1700] = new Resource(6801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_025_anim_add.aem", 24201, false));
-    resources[1701] = new Resource(6802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_026_anim_add.aem", 24201, false));
-    resources[1702] = new Resource(6803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_027_anim_add.aem", 24201, false));
-    resources[1703] = new Resource(14232, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_068_anim_add.aem", 24201, false));
-    resources[1704] = new Resource(14233, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_069_anim_add.aem", 24201, false));
-    resources[1705] = new Resource(14234, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_070_anim_add.aem", 24201, false));
-    resources[1706] = new Resource(14229, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_009_anim_add.aem", 24201, false));
-    resources[1707] = new Resource(14230, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_010_anim_add.aem", 24201, false));
-    resources[1708] = new Resource(14231, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_011_anim_add.aem", 24201, false));
-    resources[1709] = new Resource(14236, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_028_anim_add.aem", 24201, false));
-    resources[1710] = new Resource(14237, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_029_anim_add.aem", 24201, false));
-    resources[1711] = new Resource(14238, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_030_anim_add.aem", 24201, false));
-    resources[1712] = new Resource(6900, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_176_anim_add.aem", 24096, false));
-    resources[1713] = new Resource(6901, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_177_anim_add.aem", 24096, false));
-    resources[1714] = new Resource(6902, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_178_anim_add.aem", 24096, false));
-    resources[1715] = new Resource(6905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_180_anim_add.aem", 24096, false));
-    resources[1716] = new Resource(6906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_181_anim_add.aem", 24096, false));
-    resources[1717] = new Resource(14239, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_193_anim_add.aem", 24096, false));
-    resources[1718] = new Resource(14235, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_194_anim_add.aem", 24096, false));
-    resources[1719] = new Resource(14247, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive.aem", 34810, false));
-    resources[1720] = new Resource(14248, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive_add.aem", 33303, false));
-    resources[1721] = new Resource(14249, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp.aem", 34811, false));
-    resources[1722] = new Resource(14250, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp_add.aem", 33303, false));
-    resources[1723] = new Resource(14680, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a.aem", 33306, false));
-    resources[1724] = new Resource(14681, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a_add.aem", 33303, false));
-    resources[1725] = new Resource(14682, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b.aem", 33309, false));
-    resources[1726] = new Resource(14683, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b_add.aem", 33303, false));
-    resources[1727] = new Resource(14684, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a.aem", 33312, false));
-    resources[1728] = new Resource(14685, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a_add.aem", 33303, false));
-    resources[1729] = new Resource(14293, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_anim.aem", 20125, false));
-    resources[1730] = new Resource(14294, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_add.aem", 20126, false));
-    resources[1731] = new Resource(15000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran.aem", 20004, false));
-    resources[1732] = new Resource(15016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_1.aem", 20004, false));
-    resources[1733] = new Resource(15020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_2.aem", 20004, false));
-    resources[1734] = new Resource(15002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_emissive.aem", 20003, false));
-    resources[1735] = new Resource(15001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_anim_add.aem", 34603, false));
-    resources[1736] = new Resource(15003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_jump_anim_add.aem", 34603, false));
-    resources[1737] = new Resource(15004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim.aem", 20032, false));
-    resources[1738] = new Resource(15017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_anim.aem", 20032, false));
-    resources[1739] = new Resource(15021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_anim.aem", 20032, false));
-    resources[1740] = new Resource(15006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_emissive.aem", 20031, false));
-    resources[1741] = new Resource(15024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_emissive.aem", 20031, false));
-    resources[1742] = new Resource(15025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_emissive.aem", 20031, false));
-    resources[1743] = new Resource(15005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim_add.aem", 20033, false));
-    resources[1744] = new Resource(15007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_jump_anim_add.aem", 20033, false));
-    resources[1745] = new Resource(15008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian.aem", 20005, false));
-    resources[1746] = new Resource(15018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_1.aem", 20005, false));
-    resources[1747] = new Resource(15022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_2.aem", 20005, false));
-    resources[1748] = new Resource(15010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_emissive.aem", 20006, false));
-    resources[1749] = new Resource(15009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_anim_add.aem", 34601, false));
-    resources[1750] = new Resource(15011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_jump_anim_add.aem", 34601, false));
-    resources[1751] = new Resource(15012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian.aem", 20007, false));
-    resources[1752] = new Resource(15019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_1.aem", 20007, false));
-    resources[1753] = new Resource(15023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_2.aem", 20007, false));
-    resources[1754] = new Resource(15014, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_emissive.aem", 20008, false));
-    resources[1755] = new Resource(15013, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_anim_add.aem", 34600, false));
-    resources[1756] = new Resource(15015, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_jump_anim_add.aem", 34600, false));
-    resources[1757] = new Resource(15026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/khador_jump.aem", 27260, false));
-    resources[1758] = new Resource(15027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/hyper_drive.aem", 27262, false));
-    resources[1759] = new Resource(16917, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_001.aem", 20094, false));
-    resources[1760] = new Resource(16918, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_002.aem", 20094, false));
-    resources[1761] = new Resource(16919, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_003.aem", 20094, false));
-    resources[1762] = new Resource(16920, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_004.aem", 20094, false));
-    resources[1763] = new Resource(16926, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_junk.aem", 20023, false));
-    resources[1764] = new Resource(16927, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_junk.aem", 20103, false));
-    resources[1765] = new Resource(16992, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_003_terran.aem", 27254, false));
-    resources[1766] = new Resource(16990, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_001_midorian.aem", 27257, false));
-    resources[1767] = new Resource(16991, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_004_vossk.aem", 27255, false));
-    resources[1768] = new Resource(16993, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_002_nivelian.aem", 27256, false));
-    resources[1769] = new Resource(16994, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/wormhole_anim_add.aem", 20093, false));
-    resources[1770] = new Resource(16921, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void.aem", 20103, false));
-    resources[1771] = new Resource(16922, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_1.aem", 20103, false));
-    resources[1772] = new Resource(16923, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_2.aem", 20103, false));
-    resources[1773] = new Resource(16924, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_3.aem", 20103, false));
-    resources[1774] = new Resource(16925, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_explosion_anim.aem", 20103, false));
-    resources[1775] = new Resource(14311, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran.aem", 34716, false));
-    resources[1776] = new Resource(14312, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_1.aem", 34716, false));
-    resources[1777] = new Resource(14313, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_2.aem", 34716, false));
-    resources[1778] = new Resource(14315, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_add.aem", 34717, false));
-    resources[1779] = new Resource(14316, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_emissive.aem", 34719, false));
-    resources[1780] = new Resource(18304, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_explosion_anim.aem", 34716, false));
-    resources[1781] = new Resource(17060, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian.aem", 34704, false));
-    resources[1782] = new Resource(17062, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_1.aem", 34704, false));
-    resources[1783] = new Resource(17063, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_2.aem", 34704, false));
-    resources[1784] = new Resource(17064, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_engine_add.aem", 34601, false));
-    resources[1785] = new Resource(17061, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lights_add.aem", 34705, false));
-    resources[1786] = new Resource(18301, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_explosion_anim.aem", 34704, false));
-    resources[1787] = new Resource(17065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran.aem", 34708, false));
-    resources[1788] = new Resource(17066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_1.aem", 34708, false));
-    resources[1789] = new Resource(17067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_2.aem", 34708, false));
-    resources[1790] = new Resource(17069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_engine_add.aem", 34603, false));
-    resources[1791] = new Resource(17074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_add.aem", 34709, false));
-    resources[1792] = new Resource(17070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_emissive.aem", 34709, false));
-    resources[1793] = new Resource(18302, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_explosion_anim.aem", 34708, false));
-    resources[1794] = new Resource(17049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian.aem", 34700, false));
-    resources[1795] = new Resource(17050, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_1.aem", 34700, false));
-    resources[1796] = new Resource(17051, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_2.aem", 34700, false));
-    resources[1797] = new Resource(17052, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container.aem", 34700, false));
-    resources[1798] = new Resource(17053, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container_lod_1.aem", 34700, false));
-    resources[1799] = new Resource(17054, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_engine_add.aem", 34701, false));
-    resources[1800] = new Resource(17055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lights_emissive.aem", 34703, false));
-    resources[1801] = new Resource(18300, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_explosion_anim.aem", 34700, false));
-    resources[1802] = new Resource(17038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_engine_add.aem", 34713, false));
-    resources[1803] = new Resource(18303, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_explosion_anim.aem", 34712, false));
-    resources[1804] = new Resource(17139, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_1.aem", 34712, false));
-    resources[1805] = new Resource(17140, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_2.aem", 34712, false));
-    resources[1806] = new Resource(18713, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lights_emissive.aem", 34715, false));
-    resources[1807] = new Resource(17013, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk.aem", 34712, false));
-    resources[1808] = new Resource(14363, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret.aem", 20135, false));
-    resources[1809] = new Resource(14364, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret_gun.aem", 20135, false));
-    resources[1810] = new Resource(14365, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_shield.aem", 20135, false));
-    resources[1811] = new Resource(14366, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_laser_anim_add.aem", 20158, false));
-    resources[1812] = new Resource(6770, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001.aem", 24075, false));
-    resources[1813] = new Resource(6771, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001_gun.aem", 24075, false));
-    resources[1814] = new Resource(6772, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002.aem", 24076, false));
-    resources[1815] = new Resource(6773, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002_gun.aem", 24076, false));
-    resources[1816] = new Resource(6774, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003.aem", 24077, false));
-    resources[1817] = new Resource(6775, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003_gun.aem", 24077, false));
-    resources[1818] = new Resource(18842, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004.aem", 24085, false));
-    resources[1819] = new Resource(18843, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun.aem", 24085, false));
-    resources[1820] = new Resource(18844, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_add.aem", 24086, false));
-    resources[1821] = new Resource(18845, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun_add.aem", 24086, false));
-    resources[1822] = new Resource(6805, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_anim.aem", 24081, false));
-    resources[1823] = new Resource(6806, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_gun_anim.aem", 24081, false));
-    resources[1824] = new Resource(6807, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002.aem", 24082, false));
-    resources[1825] = new Resource(6808, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002_gun.aem", 24082, false));
-    resources[1826] = new Resource(6809, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003.aem", 24083, false));
-    resources[1827] = new Resource(6810, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003_gun.aem", 24083, false));
-    resources[1828] = new Resource(14050, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001.aem", 20121, false));
-    resources[1829] = new Resource(14051, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001_add.aem", 20154, false));
-    resources[1830] = new Resource(14054, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002.aem", 20122, false));
-    resources[1831] = new Resource(14055, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002_add.aem", 20155, false));
-    resources[1832] = new Resource(14052, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003.aem", 20123, false));
-    resources[1833] = new Resource(14053, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003_add.aem", 20156, false));
-    resources[1834] = new Resource(6779, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_orbit.aem", 20029, false));
-    resources[1835] = new Resource(14288, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/beer.aem", 20111, false));
-    resources[1836] = new Resource(14289, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bra.aem", 20111, false));
-    resources[1837] = new Resource(14290, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/scanner_probe.aem", 20113, false));
-    resources[1838] = new Resource(14291, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_alpha.aem", 27253, false));
-    resources[1839] = new Resource(14292, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_add.aem", 27252, false));
-    resources[1840] = new Resource(14600, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_000_lookat_anim_add.aem", 24201, false));
-    resources[1841] = new Resource(14601, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_001_lookat_anim_add.aem", 24201, false));
-    resources[1842] = new Resource(14602, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_002_lookat_anim_add.aem", 24201, false));
-    resources[1843] = new Resource(14603, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_003_lookat_anim_add.aem", 24201, false));
-    resources[1844] = new Resource(14604, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_004_lookat_anim_add.aem", 24201, false));
-    resources[1845] = new Resource(14605, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_005_lookat_anim_add.aem", 24201, false));
-    resources[1846] = new Resource(14606, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_006_lookat_anim_add.aem", 24201, false));
-    resources[1847] = new Resource(14500, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_000_anim_add.aem", 24201, false));
-    resources[1848] = new Resource(14501, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_001_anim_add.aem", 24201, false));
-    resources[1849] = new Resource(14502, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_002_anim_add.aem", 24201, false));
-    resources[1850] = new Resource(14503, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_003_anim_add.aem", 24201, false));
-    resources[1851] = new Resource(14504, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_004_anim_add.aem", 24201, false));
-    resources[1852] = new Resource(14505, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_005_anim_add.aem", 24201, false));
-    resources[1853] = new Resource(14506, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_006_anim_add.aem", 24201, false));
-    resources[1854] = new Resource(14507, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_007_anim_add.aem", 24201, false));
-    resources[1855] = new Resource(14508, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_008_anim_add.aem", 24201, false));
-    resources[1856] = new Resource(14509, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_009_anim_add.aem", 24096, false));
-    resources[1857] = new Resource(14510, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_010_anim_add.aem", 24096, false));
-    resources[1858] = new Resource(18070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
-    resources[1859] = new Resource(18071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
-    resources[1860] = new Resource(18072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
-    resources[1861] = new Resource(18073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27283, false));
-    resources[1862] = new Resource(18074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
-    resources[1863] = new Resource(18075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
-    resources[1864] = new Resource(18076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
-    resources[1865] = new Resource(18077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
-    resources[1866] = new Resource(18078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
-    resources[1867] = new Resource(18079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27289, false));
-    resources[1868] = new Resource(18080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27290, false));
-    resources[1869] = new Resource(18081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
-    resources[1870] = new Resource(18082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
-    resources[1871] = new Resource(18083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
-    resources[1872] = new Resource(18084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
-    resources[1873] = new Resource(18085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
-    resources[1874] = new Resource(18086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
-    resources[1875] = new Resource(18087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
-    resources[1876] = new Resource(18088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
-    resources[1877] = new Resource(18180, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_000.aem", 20027, false));
-    resources[1878] = new Resource(18181, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_001.aem", 20027, false));
-    resources[1879] = new Resource(18182, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_002.aem", 20027, false));
-    resources[1880] = new Resource(18183, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_003.aem", 20027, false));
-    resources[1881] = new Resource(18184, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_004.aem", 20027, false));
-    resources[1882] = new Resource(18185, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_005.aem", 20027, false));
-    resources[1883] = new Resource(18186, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_006.aem", 20027, false));
-    resources[1884] = new Resource(18187, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_007.aem", 20027, false));
-    resources[1885] = new Resource(18188, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_008.aem", 20027, false));
-    resources[1886] = new Resource(18189, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_009.aem", 20027, false));
-    resources[1887] = new Resource(18190, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_010.aem", 20027, false));
-    resources[1888] = new Resource(18191, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_011.aem", 20027, false));
-    resources[1889] = new Resource(18192, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_012.aem", 20027, false));
-    resources[1890] = new Resource(18193, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_013.aem", 20027, false));
-    resources[1891] = new Resource(18194, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_014.aem", 20027, false));
-    resources[1892] = new Resource(18195, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_015.aem", 20027, false));
-    resources[1893] = new Resource(18196, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_016.aem", 20027, false));
-    resources[1894] = new Resource(18197, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_017.aem", 20027, false));
-    resources[1895] = new Resource(18198, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_018.aem", 20027, false));
-    resources[1896] = new Resource(18199, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_019.aem", 20027, false));
-    resources[1897] = new Resource(18200, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_020.aem", 27305, false));
-    resources[1898] = new Resource(18201, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_021.aem", 27305, false));
-    resources[1899] = new Resource(18202, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_022.aem", 27305, false));
-    resources[1900] = new Resource(18204, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_024.aem", 27306, false));
-    resources[1901] = new Resource(18205, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_025.aem", 27306, false));
-    resources[1902] = new Resource(18206, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_026.aem", 27306, false));
-    resources[1903] = new Resource(17900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_glow_add.aem", 34813, false));
-    resources[1904] = new Resource(17901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_glow_add.aem", 34813, false));
-    resources[1905] = new Resource(17902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_glow_add.aem", 34813, false));
-    resources[1906] = new Resource(17903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_glow_add.aem", 34813, false));
-    resources[1907] = new Resource(17904, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1908] = new Resource(17905, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_glow_add.aem", 34813, false));
-    resources[1909] = new Resource(17906, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_glow_add.aem", 34813, false));
-    resources[1910] = new Resource(17907, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_glow_add.aem", 34813, false));
-    resources[1911] = new Resource(17908, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_glow_add.aem", 34813, false));
-    resources[1912] = new Resource(17909, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_glow_add.aem", 34813, false));
-    resources[1913] = new Resource(17910, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_glow_add.aem", 34813, false));
-    resources[1914] = new Resource(17911, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_glow_add.aem", 34813, false));
-    resources[1915] = new Resource(17912, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1916] = new Resource(17916, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1917] = new Resource(17917, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_glow_add.aem", 34813, false));
-    resources[1918] = new Resource(17918, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1919] = new Resource(17919, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_glow_add.aem", 34813, false));
-    resources[1920] = new Resource(17920, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_glow_add.aem", 34813, false));
-    resources[1921] = new Resource(17921, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1922] = new Resource(17922, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_glow_add.aem", 34813, false));
-    resources[1923] = new Resource(17923, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_glow_add.aem", 34813, false));
-    resources[1924] = new Resource(17924, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_glow_add.aem", 34813, false));
-    resources[1925] = new Resource(17925, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_glow_add.aem", 34813, false));
-    resources[1926] = new Resource(17926, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_glow_add.aem", 34813, false));
-    resources[1927] = new Resource(17927, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_glow_add.aem", 34813, false));
-    resources[1928] = new Resource(17928, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_glow_add.aem", 34813, false));
-    resources[1929] = new Resource(17929, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_glow_add.aem", 34813, false));
-    resources[1930] = new Resource(17930, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_glow_add.aem", 34813, false));
-    resources[1931] = new Resource(17931, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1932] = new Resource(17932, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_glow_add.aem", 34813, false));
-    resources[1933] = new Resource(17933, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_glow_add.aem", 34813, false));
-    resources[1934] = new Resource(17934, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_glow_add.aem", 34813, false));
-    resources[1935] = new Resource(17935, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_glow_add.aem", 34813, false));
-    resources[1936] = new Resource(17936, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_glow_add.aem", 34813, false));
-    resources[1937] = new Resource(17937, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_glow_add.aem", 34815, false));
-    resources[1938] = new Resource(17938, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_glow_add.aem", 34815, false));
-    resources[1939] = new Resource(17940, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_glow_add.aem", 34815, false));
-    resources[1940] = new Resource(17942, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_engine_glow_add.aem", 34813, false));
-    resources[1941] = new Resource(17943, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_engine_glow_add.aem", 34813, false));
-    resources[1942] = new Resource(17944, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_glow_add.aem", 32544, false));
-    resources[1943] = new Resource(17945, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_glow_add.aem", 32545, false));
-    resources[1944] = new Resource(17946, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_glow_add.aem", 32546, false));
-    resources[1945] = new Resource(17947, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_glow_add.aem", 32547, false));
-    resources[1946] = new Resource(17948, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_glow_add.aem", 32548, false));
-    resources[1947] = new Resource(17949, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_glow_add.aem", 32549, false));
-    resources[1948] = new Resource(17951, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_glow_add.aem", 32551, false));
-    resources[1949] = new Resource(17952, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_glow_add.aem", 32552, false));
-    resources[1950] = new Resource(17954, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_glow_add.aem", 32554, false));
-    resources[1951] = new Resource(17955, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_engine_glow_add.aem", 34813, false));
-    resources[1952] = new Resource(17956, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_engine_glow_add.aem", 34813, false));
-    resources[1953] = new Resource(17957, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_engine_glow_add.aem", 34813, false));
-    resources[1954] = new Resource(17958, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_engine_glow_add.aem", 34813, false));
-    resources[1955] = new Resource(17959, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_engine_glow_add.aem", 34813, false));
-    resources[1956] = new Resource(17960, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_engine_glow_add.aem", 34813, false));
-    resources[1957] = new Resource(17961, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_engine_glow_add.aem", 32561, false));
-    resources[1958] = new Resource(17962, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_engine_glow_add.aem", 32562, false));
-    resources[1959] = new Resource(17963, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_engine_glow_add.aem", 32563, false));
-    resources[1960] = new Resource(17000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian.aem", 34200, false));
-    resources[1961] = new Resource(17100, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_1.aem", 34200, false));
-    resources[1962] = new Resource(17101, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_2.aem", 34200, false));
-    resources[1963] = new Resource(18000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_add.aem", 34600, false));
-    resources[1964] = new Resource(18700, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lights_add.aem", 34600, false));
-    resources[1965] = new Resource(17001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran.aem", 34201, false));
-    resources[1966] = new Resource(17103, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_1.aem", 34201, false));
-    resources[1967] = new Resource(17104, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_2.aem", 34201, false));
-    resources[1968] = new Resource(18001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_add.aem", 34603, false));
-    resources[1969] = new Resource(18701, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lights_add.aem", 34603, false));
-    resources[1970] = new Resource(17002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates.aem", 34202, false));
-    resources[1971] = new Resource(17106, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_1.aem", 34202, false));
-    resources[1972] = new Resource(17107, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_2.aem", 34202, false));
-    resources[1973] = new Resource(18002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_add.aem", 34602, false));
-    resources[1974] = new Resource(18702, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lights_add.aem", 34602, false));
-    resources[1975] = new Resource(17003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian.aem", 34203, false));
-    resources[1976] = new Resource(17109, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_1.aem", 34203, false));
-    resources[1977] = new Resource(17110, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_2.aem", 34203, false));
-    resources[1978] = new Resource(18003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_add.aem", 34600, false));
-    resources[1979] = new Resource(18703, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lights_add.aem", 34600, false));
-    resources[1980] = new Resource(17004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian.aem", 34204, false));
-    resources[1981] = new Resource(17112, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_1.aem", 34204, false));
-    resources[1982] = new Resource(17113, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_2.aem", 34204, false));
-    resources[1983] = new Resource(18004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_add.aem", 34601, false));
-    resources[1984] = new Resource(18704, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lights_add.aem", 34601, false));
-    resources[1985] = new Resource(17005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran.aem", 34205, false));
-    resources[1986] = new Resource(17115, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_1.aem", 34205, false));
-    resources[1987] = new Resource(17116, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_2.aem", 34205, false));
-    resources[1988] = new Resource(18005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_add.aem", 34603, false));
-    resources[1989] = new Resource(18705, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lights_add.aem", 34603, false));
-    resources[1990] = new Resource(17006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian.aem", 34206, false));
-    resources[1991] = new Resource(17118, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_1.aem", 34206, false));
-    resources[1992] = new Resource(17119, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_2.aem", 34206, false));
-    resources[1993] = new Resource(18006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_add.aem", 34600, false));
-    resources[1994] = new Resource(18706, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lights_add.aem", 34600, false));
-    resources[1995] = new Resource(17007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran.aem", 34207, false));
-    resources[1996] = new Resource(17121, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_1.aem", 34207, false));
-    resources[1997] = new Resource(17122, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_2.aem", 34207, false));
-    resources[1998] = new Resource(18007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_add.aem", 34603, false));
-    resources[1999] = new Resource(18707, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lights_add.aem", 34603, false));
-    resources[2000] = new Resource(17008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void.aem", 34208, false));
-    resources[2001] = new Resource(17124, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_1.aem", 34208, false));
-    resources[2002] = new Resource(17125, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_2.aem", 34208, false));
-    resources[2003] = new Resource(18008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_add.aem", 34605, false));
-    resources[2004] = new Resource(18708, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lights_add.aem", 34605, false));
-    resources[2005] = new Resource(17009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk.aem", 34209, false));
-    resources[2006] = new Resource(17127, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_1.aem", 34209, false));
-    resources[2007] = new Resource(17128, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_2.aem", 34209, false));
-    resources[2008] = new Resource(18009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_add.aem", 34604, false));
-    resources[2009] = new Resource(18709, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lights_add.aem", 34309, false));
-    resources[2010] = new Resource(17010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran.aem", 34210, false));
-    resources[2011] = new Resource(17130, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_1.aem", 34210, false));
-    resources[2012] = new Resource(17131, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_2.aem", 34210, false));
-    resources[2013] = new Resource(18010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_add.aem", 34603, false));
-    resources[2014] = new Resource(18710, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lights_add.aem", 34603, false));
-    resources[2015] = new Resource(17011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates.aem", 34211, false));
-    resources[2016] = new Resource(17133, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_1.aem", 34211, false));
-    resources[2017] = new Resource(17134, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_2.aem", 34211, false));
-    resources[2018] = new Resource(18011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_add.aem", 34602, false));
-    resources[2019] = new Resource(18711, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lights_add.aem", 34602, false));
-    resources[2020] = new Resource(17012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian.aem", 34212, false));
-    resources[2021] = new Resource(17136, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_1.aem", 34212, false));
-    resources[2022] = new Resource(17137, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_2.aem", 34212, false));
-    resources[2023] = new Resource(18012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_add.aem", 34601, false));
-    resources[2024] = new Resource(18712, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lights_add.aem", 34601, false));
-    resources[2025] = new Resource(17016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian.aem", 34216, false));
-    resources[2026] = new Resource(17148, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_1.aem", 34216, false));
-    resources[2027] = new Resource(17149, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_2.aem", 34216, false));
-    resources[2028] = new Resource(18016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_add.aem", 34601, false));
-    resources[2029] = new Resource(18716, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lights_add.aem", 34601, false));
-    resources[2030] = new Resource(17017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran.aem", 34217, false));
-    resources[2031] = new Resource(17151, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_1.aem", 34217, false));
-    resources[2032] = new Resource(17152, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_2.aem", 34217, false));
-    resources[2033] = new Resource(18017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_add.aem", 34603, false));
-    resources[2034] = new Resource(18717, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lights_add.aem", 34603, false));
-    resources[2035] = new Resource(17018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian.aem", 34218, false));
-    resources[2036] = new Resource(17154, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_1.aem", 34218, false));
-    resources[2037] = new Resource(17155, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_2.aem", 34218, false));
-    resources[2038] = new Resource(18018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_add.aem", 34601, false));
-    resources[2039] = new Resource(18718, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lights_add.aem", 34601, false));
-    resources[2040] = new Resource(17019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian.aem", 34219, false));
-    resources[2041] = new Resource(17157, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_1.aem", 34219, false));
-    resources[2042] = new Resource(17158, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_2.aem", 34219, false));
-    resources[2043] = new Resource(18019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_add.aem", 34600, false));
-    resources[2044] = new Resource(18719, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lights_add.aem", 34600, false));
-    resources[2045] = new Resource(17020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian.aem", 34220, false));
-    resources[2046] = new Resource(17160, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_1.aem", 34220, false));
-    resources[2047] = new Resource(17161, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_2.aem", 34220, false));
-    resources[2048] = new Resource(18020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_add.aem", 34600, false));
-    resources[2049] = new Resource(18720, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lights_add.aem", 34600, false));
-    resources[2050] = new Resource(17021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian.aem", 34221, false));
-    resources[2051] = new Resource(17163, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_1.aem", 34221, false));
-    resources[2052] = new Resource(17164, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_2.aem", 34221, false));
-    resources[2053] = new Resource(18021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_add.aem", 34601, false));
-    resources[2054] = new Resource(18721, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lights_add.aem", 34601, false));
-    resources[2055] = new Resource(17022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran.aem", 34222, false));
-    resources[2056] = new Resource(17166, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_1.aem", 34222, false));
-    resources[2057] = new Resource(17167, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_2.aem", 34222, false));
-    resources[2058] = new Resource(18022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_add.aem", 34603, false));
-    resources[2059] = new Resource(18722, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lights_add.aem", 34603, false));
-    resources[2060] = new Resource(17023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates.aem", 34223, false));
-    resources[2061] = new Resource(17169, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_1.aem", 34223, false));
-    resources[2062] = new Resource(17170, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_2.aem", 34223, false));
-    resources[2063] = new Resource(18023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_add.aem", 34602, false));
-    resources[2064] = new Resource(18723, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lights_add.aem", 34602, false));
-    resources[2065] = new Resource(17024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates.aem", 34224, false));
-    resources[2066] = new Resource(17172, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_1.aem", 34224, false));
-    resources[2067] = new Resource(17173, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_2.aem", 34224, false));
-    resources[2068] = new Resource(18024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_add.aem", 34602, false));
-    resources[2069] = new Resource(18724, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lights_add.aem", 34602, false));
-    resources[2070] = new Resource(17025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates.aem", 34225, false));
-    resources[2071] = new Resource(17175, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_1.aem", 34225, false));
-    resources[2072] = new Resource(17176, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_2.aem", 34225, false));
-    resources[2073] = new Resource(18025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_add.aem", 34602, false));
-    resources[2074] = new Resource(18725, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lights_add.aem", 34602, false));
-    resources[2075] = new Resource(17026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran.aem", 34226, false));
-    resources[2076] = new Resource(17178, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_1.aem", 34226, false));
-    resources[2077] = new Resource(17179, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_2.aem", 34226, false));
-    resources[2078] = new Resource(18026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_add.aem", 34603, false));
-    resources[2079] = new Resource(18726, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lights_add.aem", 34603, false));
-    resources[2080] = new Resource(17027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran.aem", 34227, false));
-    resources[2081] = new Resource(17181, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_1.aem", 34227, false));
-    resources[2082] = new Resource(17182, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_2.aem", 34227, false));
-    resources[2083] = new Resource(18027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_add.aem", 34603, false));
-    resources[2084] = new Resource(18727, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lights_add.aem", 34603, false));
-    resources[2085] = new Resource(17028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran.aem", 34228, false));
-    resources[2086] = new Resource(17184, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_1.aem", 34228, false));
-    resources[2087] = new Resource(17185, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_2.aem", 34228, false));
-    resources[2088] = new Resource(18028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_add.aem", 34603, false));
-    resources[2089] = new Resource(18728, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lights_add.aem", 34603, false));
-    resources[2090] = new Resource(17029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates.aem", 34229, false));
-    resources[2091] = new Resource(17187, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_1.aem", 34229, false));
-    resources[2092] = new Resource(17188, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_2.aem", 34229, false));
-    resources[2093] = new Resource(18029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_add.aem", 34602, false));
-    resources[2094] = new Resource(18729, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lights_add.aem", 34602, false));
-    resources[2095] = new Resource(17030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian.aem", 34230, false));
-    resources[2096] = new Resource(17190, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_1.aem", 34230, false));
-    resources[2097] = new Resource(17191, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_2.aem", 34230, false));
-    resources[2098] = new Resource(18030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_add.aem", 34600, false));
-    resources[2099] = new Resource(18730, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lights_add.aem", 34600, false));
-    resources[2100] = new Resource(17031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian.aem", 34231, false));
-    resources[2101] = new Resource(17193, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_1.aem", 34231, false));
-    resources[2102] = new Resource(17194, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_2.aem", 34231, false));
-    resources[2103] = new Resource(18031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_add.aem", 34601, false));
-    resources[2104] = new Resource(18731, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lights_add.aem", 34601, false));
-    resources[2105] = new Resource(17032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates.aem", 34232, false));
-    resources[2106] = new Resource(17196, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_1.aem", 34232, false));
-    resources[2107] = new Resource(17197, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_2.aem", 34232, false));
-    resources[2108] = new Resource(18032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_add.aem", 34602, false));
-    resources[2109] = new Resource(18732, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lights_add.aem", 34602, false));
-    resources[2110] = new Resource(17033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran.aem", 34233, false));
-    resources[2111] = new Resource(17199, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_1.aem", 34233, false));
-    resources[2112] = new Resource(17200, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_2.aem", 34233, false));
-    resources[2113] = new Resource(18033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_add.aem", 34603, false));
-    resources[2114] = new Resource(18733, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lights_add.aem", 34603, false));
-    resources[2115] = new Resource(17034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran.aem", 34234, false));
-    resources[2116] = new Resource(17202, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_1.aem", 34234, false));
-    resources[2117] = new Resource(17203, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_2.aem", 34234, false));
-    resources[2118] = new Resource(18034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_add.aem", 34603, false));
-    resources[2119] = new Resource(18734, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lights_add.aem", 34603, false));
-    resources[2120] = new Resource(17035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian.aem", 34235, false));
-    resources[2121] = new Resource(17205, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_1.aem", 34235, false));
-    resources[2122] = new Resource(17206, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_2.aem", 34235, false));
-    resources[2123] = new Resource(18035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_add.aem", 34601, false));
-    resources[2124] = new Resource(18735, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lights_add.aem", 34601, false));
-    resources[2125] = new Resource(17036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran.aem", 34236, false));
-    resources[2126] = new Resource(17208, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_1.aem", 34236, false));
-    resources[2127] = new Resource(17209, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_2.aem", 34236, false));
-    resources[2128] = new Resource(18036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_add.aem", 34603, false));
-    resources[2129] = new Resource(18736, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lights_add.aem", 34603, false));
-    resources[2130] = new Resource(17211, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science.aem", 34237, false));
-    resources[2131] = new Resource(17215, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_lights_anim_add.aem", 32537, false));
-    resources[2132] = new Resource(18037, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_add.aem", 32537, false));
-    resources[2133] = new Resource(17216, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science.aem", 34238, false));
-    resources[2134] = new Resource(18738, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_lights_anim_add.aem", 32538, false));
-    resources[2135] = new Resource(18038, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_add.aem", 32538, false));
-    resources[2136] = new Resource(17221, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk.aem", 34239, false));
-    resources[2137] = new Resource(17222, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_1.aem", 34239, false));
-    resources[2138] = new Resource(17223, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_2.aem", 34239, false));
-    resources[2139] = new Resource(18739, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lights_add.aem", 32539, false));
-    resources[2140] = new Resource(18039, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_engine_add.aem", 32539, false));
-    resources[2141] = new Resource(17227, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science.aem", 34240, false));
-    resources[2142] = new Resource(17231, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_lights_add.aem", 32540, false));
-    resources[2143] = new Resource(18040, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_add.aem", 32540, false));
-    resources[2144] = new Resource(17233, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk.aem", 34241, false));
-    resources[2145] = new Resource(17234, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_1.aem", 34241, false));
-    resources[2146] = new Resource(17235, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_2.aem", 34241, false));
-    resources[2147] = new Resource(18741, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lights_add.aem", 32541, false));
-    resources[2148] = new Resource(18041, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_engine_add.aem", 32541, false));
-    resources[2149] = new Resource(17239, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro.aem", 34242, false));
-    resources[2150] = new Resource(17240, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_1.aem", 34242, false));
-    resources[2151] = new Resource(17241, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_2.aem", 34242, false));
-    resources[2152] = new Resource(17243, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lights_add.aem", 32542, false));
-    resources[2153] = new Resource(17245, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro.aem", 34243, false));
-    resources[2154] = new Resource(17246, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_1.aem", 34243, false));
-    resources[2155] = new Resource(17247, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_2.aem", 34243, false));
-    resources[2156] = new Resource(17249, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lights_add.aem", 32543, false));
-    resources[2157] = new Resource(16800, RESOURCE_MESH, new ResourceMesh("data/meshes/col_box.aem", 20087, false));
-    resources[2158] = new Resource(16801, RESOURCE_MESH, new ResourceMesh("data/meshes/col_sphere.aem", 20087, false));
-    resources[2159] = new Resource(14243, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates.aem", 20104, false));
-    resources[2160] = new Resource(14244, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_emissive.aem", 20105, false));
-    resources[2161] = new Resource(14245, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_lights_add.aem", 34602, false));
-    resources[2162] = new Resource(14246, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_explosion_anim.aem", 20104, false));
-    resources[2163] = new Resource(16851, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_0.aem", 20025, false));
-    resources[2164] = new Resource(16852, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_1.aem", 20026, false));
-    resources[2165] = new Resource(16850, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_bg_plane.aem", 20024, false));
-    resources[2166] = new Resource(16853, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_ring.aem", 20030, false));
-    resources[2167] = new Resource(16904, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice.aem", 20134, false));
-    resources[2168] = new Resource(16905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_1.aem", 20134, false));
-    resources[2169] = new Resource(16906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_2.aem", 20134, false));
-    resources[2170] = new Resource(16907, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_3.aem", 20134, false));
-    resources[2171] = new Resource(16908, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim.aem", 20134, false));
-    resources[2172] = new Resource(16909, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim_alpha.aem", 20133, false));
-    resources[2173] = new Resource(16900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01.aem", 20023, false));
-    resources[2174] = new Resource(16901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_1.aem", 20023, false));
-    resources[2175] = new Resource(16902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_2.aem", 20023, false));
-    resources[2176] = new Resource(16903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_3.aem", 20023, false));
-    resources[2177] = new Resource(16913, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_explosion_anim.aem", 20023, false));
-    resources[2178] = new Resource(16915, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_explosion_anim_alpha.aem", 20051, false));
-    resources[2179] = new Resource(18836, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma.aem", 27312, false));
-    resources[2180] = new Resource(18837, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_1.aem", 27312, false));
-    resources[2181] = new Resource(18838, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_2.aem", 27312, false));
-    resources[2182] = new Resource(18839, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_3.aem", 27312, false));
-    resources[2183] = new Resource(18840, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim.aem", 27312, false));
-    resources[2184] = new Resource(18841, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim_alpha.aem", 27313, false));
-    resources[2185] = new Resource(16928, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim.aem", 20135, false));
-    resources[2186] = new Resource(16929, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_emissive.aem", 20136, false));
-    resources[2187] = new Resource(16930, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_add.aem", 20158, false));
-    resources[2188] = new Resource(16931, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science.aem", 27145, false));
-    resources[2189] = new Resource(16932, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emissive.aem", 27146, false));
-    resources[2190] = new Resource(16933, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_add.aem", 27147, false));
-    resources[2191] = new Resource(16936, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emitters_anim_add.aem", 34817, false));
-    resources[2192] = new Resource(16934, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1.aem", 27145, false));
-    resources[2193] = new Resource(16935, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1_emissive.aem", 27146, false));
-    resources[2194] = new Resource(14367, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim.aem", 27145, false));
-    resources[2195] = new Resource(14368, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emissive.aem", 27146, false));
-    resources[2196] = new Resource(14369, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim_add.aem", 27147, false));
-    resources[2197] = new Resource(14370, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_laser_anim_add.aem", 27147, false));
-    resources[2198] = new Resource(16937, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emitters_anim_add.aem", 34817, false));
-    resources[2199] = new Resource(14371, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged.aem", 27145, false));
-    resources[2200] = new Resource(14372, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emissive.aem", 27146, false));
-    resources[2201] = new Resource(14373, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_add.aem", 27147, false));
-    resources[2202] = new Resource(16938, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emitters_anim_add.aem", 34817, false));
-    resources[2203] = new Resource(14374, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_shield.aem", 27150, false));
-    resources[2204] = new Resource(14375, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_asteroid_belt_alpha.aem", 27160, false));
-    resources[2205] = new Resource(21108, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club.aem", 20007, false));
-    resources[2206] = new Resource(21908, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_emissive.aem", 20008, false));
-    resources[2207] = new Resource(22900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim.aem", 27162, false));
-    resources[2208] = new Resource(22901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_emissive.aem", 27163, false));
-    resources[2209] = new Resource(22902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_add.aem", 27164, false));
-    resources[2210] = new Resource(22903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_alpha.aem", 27165, false));
-    resources[2211] = new Resource(19080, RESOURCE_MESH, new ResourceMesh("data/meshes/test_dock.aem", 20004, false));
-    resources[2212] = new Resource(18830, RESOURCE_MESH, new ResourceMesh("data/meshes/carrier.aem", 20034, false));
-    resources[2213] = new Resource(18834, RESOURCE_MESH, new ResourceMesh("data/meshes/gas_cloud_a_anim_lookat_add.aem", 27311, false));
-    resources[2214] = new Resource(18835, RESOURCE_MESH, new ResourceMesh("data/meshes/gas_cloud_b_anim_lookat_add.aem", 27311, false));
-    resources[2215] = new Resource(21000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian.aem", 20005, false));
-    resources[2216] = new Resource(21001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian.aem", 20005, false));
-    resources[2217] = new Resource(21002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian.aem", 20005, false));
-    resources[2218] = new Resource(21003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian.aem", 20005, false));
-    resources[2219] = new Resource(21004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian.aem", 20005, false));
-    resources[2220] = new Resource(21005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran.aem", 20004, false));
-    resources[2221] = new Resource(21006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran.aem", 20004, false));
-    resources[2222] = new Resource(21007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran.aem", 20004, false));
-    resources[2223] = new Resource(21008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran.aem", 20004, false));
-    resources[2224] = new Resource(21009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran.aem", 20004, false));
-    resources[2225] = new Resource(21010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran.aem", 20004, false));
-    resources[2226] = new Resource(21020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian.aem", 20007, false));
-    resources[2227] = new Resource(21021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian.aem", 20007, false));
-    resources[2228] = new Resource(21022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian.aem", 20007, false));
-    resources[2229] = new Resource(21023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian.aem", 20007, false));
-    resources[2230] = new Resource(21024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian.aem", 20007, false));
-    resources[2231] = new Resource(21030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian.aem", 20005, false));
-    resources[2232] = new Resource(21031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian.aem", 20005, false));
-    resources[2233] = new Resource(21032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian.aem", 20005, false));
-    resources[2234] = new Resource(21033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian.aem", 20005, false));
-    resources[2235] = new Resource(21035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran.aem", 20004, false));
-    resources[2236] = new Resource(21036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran.aem", 20004, false));
-    resources[2237] = new Resource(21037, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran.aem", 20004, false));
-    resources[2238] = new Resource(21038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran.aem", 20004, false));
-    resources[2239] = new Resource(21039, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran.aem", 20004, false));
-    resources[2240] = new Resource(21040, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran.aem", 20004, false));
-    resources[2241] = new Resource(21041, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran.aem", 20004, false));
-    resources[2242] = new Resource(21042, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran.aem", 20004, false));
-    resources[2243] = new Resource(21043, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran.aem", 20004, false));
-    resources[2244] = new Resource(21044, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran.aem", 20004, false));
-    resources[2245] = new Resource(21045, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian.aem", 20005, false));
-    resources[2246] = new Resource(21046, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian.aem", 20005, false));
-    resources[2247] = new Resource(21047, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian.aem", 20005, false));
-    resources[2248] = new Resource(21048, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian.aem", 20005, false));
-    resources[2249] = new Resource(21049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian.aem", 20005, false));
-    resources[2250] = new Resource(21055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran.aem", 20004, false));
-    resources[2251] = new Resource(21056, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran.aem", 20004, false));
-    resources[2252] = new Resource(21057, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran.aem", 20004, false));
-    resources[2253] = new Resource(21065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran.aem", 20004, false));
-    resources[2254] = new Resource(21066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran.aem", 20004, false));
-    resources[2255] = new Resource(21067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran.aem", 20004, false));
-    resources[2256] = new Resource(21068, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran.aem", 20004, false));
-    resources[2257] = new Resource(21069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran.aem", 20004, false));
-    resources[2258] = new Resource(21070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran.aem", 20004, false));
-    resources[2259] = new Resource(21071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran.aem", 20004, false));
-    resources[2260] = new Resource(21072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran.aem", 20004, false));
-    resources[2261] = new Resource(21073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran.aem", 20004, false));
-    resources[2262] = new Resource(21074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran.aem", 20004, false));
-    resources[2263] = new Resource(21075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian.aem", 20007, false));
-    resources[2264] = new Resource(21076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian.aem", 20007, false));
-    resources[2265] = new Resource(21077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian.aem", 20007, false));
-    resources[2266] = new Resource(21078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian.aem", 20007, false));
-    resources[2267] = new Resource(21079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian.aem", 20007, false));
-    resources[2268] = new Resource(21080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran.aem", 20004, false));
-    resources[2269] = new Resource(21081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran.aem", 20004, false));
-    resources[2270] = new Resource(21082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran.aem", 20004, false));
-    resources[2271] = new Resource(21083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran.aem", 20004, false));
-    resources[2272] = new Resource(21084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran.aem", 20004, false));
-    resources[2273] = new Resource(21085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian.aem", 20005, false));
-    resources[2274] = new Resource(21086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian.aem", 20005, false));
-    resources[2275] = new Resource(21087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian.aem", 20005, false));
-    resources[2276] = new Resource(21088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian.aem", 20005, false));
-    resources[2277] = new Resource(21089, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian.aem", 20005, false));
-    resources[2278] = new Resource(21090, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran.aem", 20004, false));
-    resources[2279] = new Resource(21091, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran.aem", 20004, false));
-    resources[2280] = new Resource(21092, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran.aem", 20004, false));
-    resources[2281] = new Resource(21093, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran.aem", 20004, false));
-    resources[2282] = new Resource(21094, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran.aem", 20004, false));
-    resources[2283] = new Resource(21095, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran.aem", 20004, false));
-    resources[2284] = new Resource(21096, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran.aem", 20004, false));
-    resources[2285] = new Resource(21097, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran.aem", 20004, false));
-    resources[2286] = new Resource(21098, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran.aem", 20004, false));
-    resources[2287] = new Resource(21099, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran.aem", 20004, false));
-    resources[2288] = new Resource(21105, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma.aem", 20007, false));
-    resources[2289] = new Resource(21106, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma.aem", 20007, false));
-    resources[2290] = new Resource(21107, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma.aem", 20007, false));
-    resources[2291] = new Resource(21112, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian.aem", 20007, false));
-    resources[2292] = new Resource(21113, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian.aem", 20007, false));
-    resources[2293] = new Resource(21114, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian.aem", 20007, false));
-    resources[2294] = new Resource(21115, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian.aem", 20007, false));
-    resources[2295] = new Resource(21116, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian.aem", 20007, false));
-    resources[2296] = new Resource(21117, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian.aem", 20007, false));
-    resources[2297] = new Resource(21118, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian.aem", 20007, false));
-    resources[2298] = new Resource(21119, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian.aem", 20005, false));
-    resources[2299] = new Resource(21120, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian.aem", 20005, false));
-    resources[2300] = new Resource(21121, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian.aem", 20005, false));
-    resources[2301] = new Resource(21122, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian.aem", 20005, false));
-    resources[2302] = new Resource(21123, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian.aem", 20005, false));
-    resources[2303] = new Resource(21800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_emissive.aem", 20006, false));
-    resources[2304] = new Resource(21801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_emissive.aem", 20006, false));
-    resources[2305] = new Resource(21802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_emissive.aem", 20006, false));
-    resources[2306] = new Resource(21803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_emissive.aem", 20006, false));
-    resources[2307] = new Resource(21804, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_emissive.aem", 20006, false));
-    resources[2308] = new Resource(21805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_emissive.aem", 20003, false));
-    resources[2309] = new Resource(21806, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_emissive.aem", 20003, false));
-    resources[2310] = new Resource(21807, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_emissive.aem", 20003, false));
-    resources[2311] = new Resource(21808, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_emissive.aem", 20003, false));
-    resources[2312] = new Resource(21809, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_emissive.aem", 20003, false));
-    resources[2313] = new Resource(21810, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_emissive.aem", 20003, false));
-    resources[2314] = new Resource(21820, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_emissive.aem", 20008, false));
-    resources[2315] = new Resource(21821, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_emissive.aem", 20008, false));
-    resources[2316] = new Resource(21822, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_emissive.aem", 20008, false));
-    resources[2317] = new Resource(21823, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_emissive.aem", 20008, false));
-    resources[2318] = new Resource(21824, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_emissive.aem", 20008, false));
-    resources[2319] = new Resource(21830, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_emissive.aem", 20006, false));
-    resources[2320] = new Resource(21831, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_emissive.aem", 20006, false));
-    resources[2321] = new Resource(21832, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_emissive.aem", 20006, false));
-    resources[2322] = new Resource(21833, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_emissive.aem", 20006, false));
-    resources[2323] = new Resource(21835, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_emissive.aem", 20003, false));
-    resources[2324] = new Resource(21836, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_emissive.aem", 20003, false));
-    resources[2325] = new Resource(21837, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_emissive.aem", 20003, false));
-    resources[2326] = new Resource(21838, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_emissive.aem", 20003, false));
-    resources[2327] = new Resource(21839, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_emissive.aem", 20003, false));
-    resources[2328] = new Resource(21840, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_emissive.aem", 20003, false));
-    resources[2329] = new Resource(21841, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_emissive.aem", 20003, false));
-    resources[2330] = new Resource(21842, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_emissive.aem", 20003, false));
-    resources[2331] = new Resource(21843, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_emissive.aem", 20003, false));
-    resources[2332] = new Resource(21844, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_emissive.aem", 20003, false));
-    resources[2333] = new Resource(21845, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_emissive.aem", 20006, false));
-    resources[2334] = new Resource(21846, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_emissive.aem", 20006, false));
-    resources[2335] = new Resource(21847, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_emissive.aem", 20006, false));
-    resources[2336] = new Resource(21848, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_emissive.aem", 20006, false));
-    resources[2337] = new Resource(21849, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_emissive.aem", 20006, false));
-    resources[2338] = new Resource(21855, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_emissive.aem", 20003, false));
-    resources[2339] = new Resource(21856, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_emissive.aem", 20003, false));
-    resources[2340] = new Resource(21857, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_emissive.aem", 20003, false));
-    resources[2341] = new Resource(21865, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_emissive.aem", 20003, false));
-    resources[2342] = new Resource(21866, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_emissive.aem", 20003, false));
-    resources[2343] = new Resource(21867, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_emissive.aem", 20003, false));
-    resources[2344] = new Resource(21868, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_emissive.aem", 20003, false));
-    resources[2345] = new Resource(21869, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_emissive.aem", 20003, false));
-    resources[2346] = new Resource(21870, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_emissive.aem", 20003, false));
-    resources[2347] = new Resource(21871, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_emissive.aem", 20003, false));
-    resources[2348] = new Resource(21872, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_emissive.aem", 20003, false));
-    resources[2349] = new Resource(21873, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_emissive.aem", 20003, false));
-    resources[2350] = new Resource(21874, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_emissive.aem", 20003, false));
-    resources[2351] = new Resource(21875, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_emissive.aem", 20008, false));
-    resources[2352] = new Resource(21876, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_emissive.aem", 20008, false));
-    resources[2353] = new Resource(21877, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_emissive.aem", 20008, false));
-    resources[2354] = new Resource(21878, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_emissive.aem", 20008, false));
-    resources[2355] = new Resource(21879, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_emissive.aem", 20008, false));
-    resources[2356] = new Resource(21880, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_emissive.aem", 20003, false));
-    resources[2357] = new Resource(21881, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_emissive.aem", 20003, false));
-    resources[2358] = new Resource(21882, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_emissive.aem", 20003, false));
-    resources[2359] = new Resource(21883, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_emissive.aem", 20003, false));
-    resources[2360] = new Resource(21884, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_emissive.aem", 20003, false));
-    resources[2361] = new Resource(21885, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_emissive.aem", 20006, false));
-    resources[2362] = new Resource(21886, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_emissive.aem", 20006, false));
-    resources[2363] = new Resource(21887, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_emissive.aem", 20006, false));
-    resources[2364] = new Resource(21888, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_emissive.aem", 20006, false));
-    resources[2365] = new Resource(21889, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_emissive.aem", 20006, false));
-    resources[2366] = new Resource(21890, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_emissive.aem", 20003, false));
-    resources[2367] = new Resource(21891, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_emissive.aem", 20003, false));
-    resources[2368] = new Resource(21892, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_emissive.aem", 20003, false));
-    resources[2369] = new Resource(21893, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_emissive.aem", 20003, false));
-    resources[2370] = new Resource(21894, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_emissive.aem", 20003, false));
-    resources[2371] = new Resource(21895, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_emissive.aem", 20003, false));
-    resources[2372] = new Resource(21896, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_emissive.aem", 20003, false));
-    resources[2373] = new Resource(21897, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_emissive.aem", 20003, false));
-    resources[2374] = new Resource(21898, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_emissive.aem", 20003, false));
-    resources[2375] = new Resource(21899, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_emissive.aem", 20003, false));
-    resources[2376] = new Resource(21905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_emissive.aem", 20008, false));
-    resources[2377] = new Resource(21906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_emissive.aem", 20008, false));
-    resources[2378] = new Resource(21907, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_emissive.aem", 20008, false));
-    resources[2379] = new Resource(21912, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_emissive.aem", 20008, false));
-    resources[2380] = new Resource(21913, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_emissive.aem", 20008, false));
-    resources[2381] = new Resource(21914, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_emissive.aem", 20008, false));
-    resources[2382] = new Resource(21915, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_emissive.aem", 20008, false));
-    resources[2383] = new Resource(21916, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_emissive.aem", 20008, false));
-    resources[2384] = new Resource(21917, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_emissive.aem", 20008, false));
-    resources[2385] = new Resource(21918, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_emissive.aem", 20008, false));
-    resources[2386] = new Resource(21919, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_emissive.aem", 20006, false));
-    resources[2387] = new Resource(21920, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_emissive.aem", 20006, false));
-    resources[2388] = new Resource(21921, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_emissive.aem", 20006, false));
-    resources[2389] = new Resource(21922, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_emissive.aem", 20006, false));
-    resources[2390] = new Resource(21923, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_emissive.aem", 20006, false));
-    resources[2391] = new Resource(22000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_lights_add.aem", 34601, false));
-    resources[2392] = new Resource(22001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_lights_add.aem", 34601, false));
-    resources[2393] = new Resource(22002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_lights_add.aem", 34601, false));
-    resources[2394] = new Resource(22003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_lights_add.aem", 34601, false));
-    resources[2395] = new Resource(22004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_lights_add.aem", 34601, false));
-    resources[2396] = new Resource(22005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_lights_add.aem", 34603, false));
-    resources[2397] = new Resource(22006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_lights_add.aem", 34603, false));
-    resources[2398] = new Resource(22007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_lights_add.aem", 34603, false));
-    resources[2399] = new Resource(22008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_lights_add.aem", 34603, false));
-    resources[2400] = new Resource(22009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_lights_add.aem", 34603, false));
-    resources[2401] = new Resource(22010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_lights_add.aem", 34603, false));
-    resources[2402] = new Resource(22020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_lights_add.aem", 34600, false));
-    resources[2403] = new Resource(22021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_lights_add.aem", 34600, false));
-    resources[2404] = new Resource(22022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_lights_add.aem", 34600, false));
-    resources[2405] = new Resource(22023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_lights_add.aem", 34600, false));
-    resources[2406] = new Resource(22024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_lights_add.aem", 34600, false));
-    resources[2407] = new Resource(22030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_lights_add.aem", 34601, false));
-    resources[2408] = new Resource(22031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_lights_add.aem", 34601, false));
-    resources[2409] = new Resource(22032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_lights_add.aem", 34601, false));
-    resources[2410] = new Resource(22033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_lights_add.aem", 34601, false));
-    resources[2411] = new Resource(22035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_lights_add.aem", 34603, false));
-    resources[2412] = new Resource(22036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_lights_add.aem", 34603, false));
-    resources[2413] = new Resource(22037, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_lights_add.aem", 34603, false));
-    resources[2414] = new Resource(22038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_lights_add.aem", 34603, false));
-    resources[2415] = new Resource(22039, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_lights_add.aem", 34603, false));
-    resources[2416] = new Resource(22040, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_lights_add.aem", 34603, false));
-    resources[2417] = new Resource(22041, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_lights_add.aem", 34603, false));
-    resources[2418] = new Resource(22042, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_lights_add.aem", 34603, false));
-    resources[2419] = new Resource(22043, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_lights_add.aem", 34603, false));
-    resources[2420] = new Resource(22044, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_lights_add.aem", 34603, false));
-    resources[2421] = new Resource(22045, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_lights_add.aem", 34601, false));
-    resources[2422] = new Resource(22046, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_lights_add.aem", 34601, false));
-    resources[2423] = new Resource(22047, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_lights_add.aem", 34601, false));
-    resources[2424] = new Resource(22048, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_lights_add.aem", 34601, false));
-    resources[2425] = new Resource(22049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_lights_add.aem", 34601, false));
-    resources[2426] = new Resource(22055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_lights_add.aem", 34603, false));
-    resources[2427] = new Resource(22056, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_lights_add.aem", 34603, false));
-    resources[2428] = new Resource(22057, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_lights_add.aem", 34603, false));
-    resources[2429] = new Resource(22065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_lights_add.aem", 34603, false));
-    resources[2430] = new Resource(22066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_lights_add.aem", 34603, false));
-    resources[2431] = new Resource(22067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_lights_add.aem", 34603, false));
-    resources[2432] = new Resource(22068, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_lights_add.aem", 34603, false));
-    resources[2433] = new Resource(22069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_lights_add.aem", 34603, false));
-    resources[2434] = new Resource(22070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_lights_add.aem", 34603, false));
-    resources[2435] = new Resource(22071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_lights_add.aem", 34603, false));
-    resources[2436] = new Resource(22072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_lights_add.aem", 34603, false));
-    resources[2437] = new Resource(22073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_lights_add.aem", 34603, false));
-    resources[2438] = new Resource(22074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_lights_add.aem", 34603, false));
-    resources[2439] = new Resource(22075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_lights_add.aem", 34600, false));
-    resources[2440] = new Resource(22076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_lights_add.aem", 34600, false));
-    resources[2441] = new Resource(22077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_lights_add.aem", 34600, false));
-    resources[2442] = new Resource(22078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_lights_add.aem", 34600, false));
-    resources[2443] = new Resource(22079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_lights_add.aem", 34600, false));
-    resources[2444] = new Resource(22080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_lights_add.aem", 34603, false));
-    resources[2445] = new Resource(22081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_lights_add.aem", 34603, false));
-    resources[2446] = new Resource(22082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_lights_add.aem", 34603, false));
-    resources[2447] = new Resource(22083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_lights_add.aem", 34603, false));
-    resources[2448] = new Resource(22084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_lights_add.aem", 34603, false));
-    resources[2449] = new Resource(22085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_lights_add.aem", 34601, false));
-    resources[2450] = new Resource(22086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_lights_add.aem", 34601, false));
-    resources[2451] = new Resource(22087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_lights_add.aem", 34601, false));
-    resources[2452] = new Resource(22088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_lights_add.aem", 34601, false));
-    resources[2453] = new Resource(22089, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_lights_add.aem", 34601, false));
-    resources[2454] = new Resource(22090, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_lights_add.aem", 34603, false));
-    resources[2455] = new Resource(22091, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_lights_add.aem", 34603, false));
-    resources[2456] = new Resource(22092, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_lights_add.aem", 34603, false));
-    resources[2457] = new Resource(22093, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_lights_add.aem", 34603, false));
-    resources[2458] = new Resource(22094, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_lights_add.aem", 34603, false));
-    resources[2459] = new Resource(22095, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_lights_add.aem", 34603, false));
-    resources[2460] = new Resource(22096, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_lights_add.aem", 34603, false));
-    resources[2461] = new Resource(22097, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_lights_add.aem", 34603, false));
-    resources[2462] = new Resource(22098, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_lights_add.aem", 34603, false));
-    resources[2463] = new Resource(22099, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_lights_add.aem", 34603, false));
-    resources[2464] = new Resource(22105, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_lights_add.aem", 34600, false));
-    resources[2465] = new Resource(22106, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_lights_add.aem", 34600, false));
-    resources[2466] = new Resource(22107, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_lights_add.aem", 34600, false));
-    resources[2467] = new Resource(22112, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_add.aem", 34600, false));
-    resources[2468] = new Resource(22113, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_add.aem", 34600, false));
-    resources[2469] = new Resource(22114, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_add.aem", 34600, false));
-    resources[2470] = new Resource(22115, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_add.aem", 34600, false));
-    resources[2471] = new Resource(22116, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_add.aem", 34600, false));
-    resources[2472] = new Resource(22117, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_add.aem", 34600, false));
-    resources[2473] = new Resource(22118, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_add.aem", 34600, false));
-    resources[2474] = new Resource(22119, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_add.aem", 34601, false));
-    resources[2475] = new Resource(22120, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_add.aem", 34601, false));
-    resources[2476] = new Resource(22121, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_add.aem", 34601, false));
-    resources[2477] = new Resource(22122, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_add.aem", 34601, false));
-    resources[2478] = new Resource(22123, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_add.aem", 34601, false));
-    resources[2479] = new Resource(16436, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk.aem", 20032, false));
-    resources[2480] = new Resource(16439, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_emissive.aem", 20031, false));
-    resources[2481] = new Resource(16442, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_lights_add.aem", 20033, false));
-    resources[2482] = new Resource(16443, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void.aem", 20045, false));
-    resources[2483] = new Resource(16446, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void_emissive.aem", 20048, false));
-    resources[2484] = new Resource(16449, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void_add.aem", 20047, false));
-    resources[2485] = new Resource(14285, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add.aem", 27301, false));
-    resources[2486] = new Resource(14286, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add_lookat.aem", 27301, false));
-    resources[2487] = new Resource(14287, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_alpha_lookat.aem", 27302, false));
+    Resource *resources[] = {
+        new Resource(11742, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/suns/sn_sun_011.aei", 0.0f)),
+        new Resource(27335, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_diffuse.aei", 0.0f)),
+        new Resource(27336, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_normal_specular.aei", 0.0f)),
+        new Resource(27337, RESOURCE_MATERIAL, new ResourceMaterial(27335, 27336, static_cast<BlendMode>(28))),
+        new Resource(27338, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_fireworks_rocket.aem", 27337, false)),
+        new Resource(27309, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_fireworks.aei", 0.0f)),
+        new Resource(27308, RESOURCE_MATERIAL, new ResourceMaterial(27309, BlendMode_2)),
+        new Resource(16809, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_fireworks_lookat_anim_add.aem", 27308, false)),
+        new Resource(27320, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sprite_fireworks_rocket_sparks.aei", 0.0f)),
+        new Resource(27321, RESOURCE_MATERIAL, new ResourceMaterial(27320, BlendMode_2)),
+        new Resource(29100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_projectiles.aei", 0.0f)),
+        new Resource(29101, RESOURCE_MATERIAL, new ResourceMaterial(29100, BlendMode_2)),
+        new Resource(29102, RESOURCE_MATERIAL, new ResourceMaterial(29100, BlendMode_1)),
+        new Resource(19090, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_228_anim_add.aem", 29101, false)),
+        new Resource(19091, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_229_anim_alpha.aem", 29102, false)),
+        new Resource(19094, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_231_anim_add.aem", 29101, false)),
+        new Resource(19092, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_207_anim_add.aem", 29101, false)),
+        new Resource(19093, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_222_anim_add.aem", 29101, false)),
+        new Resource(29001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream.aei", 0.0f)),
+        new Resource(29002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream_normal.aei", 0.0f)),
+        new Resource(29003, RESOURCE_MATERIAL, new ResourceMaterial(29001, static_cast<BlendMode>(3))),
+        new Resource(19071, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_stream_anim_add.aem", 29003, false)),
+        new Resource(29004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_explosion.aei", 0.0f)),
+        new Resource(29005, RESOURCE_MATERIAL, new ResourceMaterial(29004, static_cast<BlendMode>(3))),
+        new Resource(19070, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_explosion_anim_lookat_add.aem", 29005, false)),
+        new Resource(29006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_sphere.aei", 0.0f)),
+        new Resource(29008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_glow.aei", 0.0f)),
+        new Resource(29007, RESOURCE_MATERIAL, new ResourceMaterial(29006, static_cast<BlendMode>(3))),
+        new Resource(29009, RESOURCE_MATERIAL, new ResourceMaterial(29008, static_cast<BlendMode>(3))),
+        new Resource(18995, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_sphere_anim_add.aem", 29007, false)),
+        new Resource(18996, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_glow_anim_lookat_add.aem", 29009, false)),
+        new Resource(29046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_diffuse.aei", 0.0f)),
+        new Resource(29047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_normal_specular.aei", 0.0f)),
+        new Resource(29048, RESOURCE_MATERIAL, new ResourceMaterial(29046, 29047, static_cast<BlendMode>(28))),
+        new Resource(29049, RESOURCE_MATERIAL, new ResourceMaterial(29046, BlendMode_2)),
+        new Resource(18880, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001.aem", 29048, false)),
+        new Resource(18883, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim.aem", 29048, false)),
+        new Resource(18886, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_add.aem", 29049, false)),
+        new Resource(18889, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim_add.aem", 29049, false)),
+        new Resource(29050, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_diffuse.aei", 0.0f)),
+        new Resource(29051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_normal_specular.aei", 0.0f)),
+        new Resource(29052, RESOURCE_MATERIAL, new ResourceMaterial(29050, 29051, static_cast<BlendMode>(28))),
+        new Resource(29053, RESOURCE_MATERIAL, new ResourceMaterial(29050, BlendMode_2)),
+        new Resource(18881, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002.aem", 29052, false)),
+        new Resource(18884, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim.aem", 29052, false)),
+        new Resource(18887, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_add.aem", 29053, false)),
+        new Resource(18890, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim_add.aem", 29053, false)),
+        new Resource(29054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_diffuse.aei", 0.0f)),
+        new Resource(29055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_normal_specular.aei", 0.0f)),
+        new Resource(29056, RESOURCE_MATERIAL, new ResourceMaterial(29054, 29055, static_cast<BlendMode>(28))),
+        new Resource(29057, RESOURCE_MATERIAL, new ResourceMaterial(29054, BlendMode_2)),
+        new Resource(18882, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003.aem", 29056, false)),
+        new Resource(18885, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim.aem", 29056, false)),
+        new Resource(18888, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_add.aem", 29057, false)),
+        new Resource(18891, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim_add.aem", 29057, false)),
+        new Resource(18847, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_planet_ring_alpha.aem", 65535, false)),
+        new Resource(29018, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_planet_ring.aei", 0.0f)),
+        new Resource(18848, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_storms_anim_add.aem", 65535, false)),
+        new Resource(29019, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_storms.aei", 0.0f)),
+        new Resource(11700, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_diffuse.aei", 0.0f)),
+        new Resource(11702, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_diffuse.aei", 0.0f)),
+        new Resource(11701, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_normal_specular.aei", 0.0f)),
+        new Resource(11703, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_normal_specular.aei", 0.0f)),
+        new Resource(11704, RESOURCE_MATERIAL, new ResourceMaterial(11700, 11701, static_cast<BlendMode>(28))),
+        new Resource(11708, RESOURCE_MATERIAL, new ResourceMaterial(11702, 11703, static_cast<BlendMode>(28))),
+        new Resource(11705, RESOURCE_MATERIAL, new ResourceMaterial(11700, BlendMode_2)),
+        new Resource(11706, RESOURCE_MATERIAL, new ResourceMaterial(11700, BlendMode_1)),
+        new Resource(11707, RESOURCE_MATERIAL, new ResourceMaterial(11700, static_cast<BlendMode>(0))),
+        new Resource(11709, RESOURCE_MATERIAL, new ResourceMaterial(11702, BlendMode_2)),
+        new Resource(11710, RESOURCE_MATERIAL, new ResourceMaterial(11702, BlendMode_1)),
+        new Resource(11711, RESOURCE_MATERIAL, new ResourceMaterial(11702, static_cast<BlendMode>(0))),
+        new Resource(19080, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1.aem", 11704, false)),
+        new Resource(19081, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_add.aem", 11705, false)),
+        new Resource(19084, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_alpha.aem", 11706, false)),
+        new Resource(19085, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_emissive.aem", 11707, false)),
+        new Resource(19082, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_glow_anim_add.aem", 11705, false)),
+        new Resource(19083, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_fire_anim_add.aem", 11705, false)),
+        new Resource(19086, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2.aem", 11708, false)),
+        new Resource(19087, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_add.aem", 11709, false)),
+        new Resource(19088, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_emissive.aem", 11711, false)),
+        new Resource(11712, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_diffuse.aei", 0.0f)),
+        new Resource(11713, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_normal_specular.aei", 0.0f)),
+        new Resource(11714, RESOURCE_MATERIAL, new ResourceMaterial(11712, 11713, static_cast<BlendMode>(28))),
+        new Resource(11715, RESOURCE_MATERIAL, new ResourceMaterial(11712, BlendMode_2)),
+        new Resource(11716, RESOURCE_MATERIAL, new ResourceMaterial(11712, BlendMode_1)),
+        new Resource(18750, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001.aem", 11714, false)),
+        new Resource(18751, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_anim_add.aem", 11715, false)),
+        new Resource(18752, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_alpha.aem", 11716, false)),
+        new Resource(18753, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002.aem", 11714, false)),
+        new Resource(18754, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_anim_add.aem", 11715, false)),
+        new Resource(18755, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_alpha.aem", 11716, false)),
+        new Resource(18756, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003.aem", 11714, false)),
+        new Resource(18757, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_anim_add.aem", 11715, false)),
+        new Resource(18758, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_alpha.aem", 11716, false)),
+        new Resource(18759, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004.aem", 11714, false)),
+        new Resource(18760, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_anim_add.aem", 11715, false)),
+        new Resource(18761, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_alpha.aem", 11716, false)),
+        new Resource(18762, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005.aem", 11714, false)),
+        new Resource(18763, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_lights_anim_add.aem", 11715, false)),
+        new Resource(18765, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_glow_anim_add.aem", 11715, false)),
+        new Resource(18764, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_alpha.aem", 11716, false)),
+        new Resource(19050, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_explosion_anim.aem", 11714, false)),
+        new Resource(11725, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_diffuse.aei", 0.0f)),
+        new Resource(11726, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_normal_specular.aei", 0.0f)),
+        new Resource(11727, RESOURCE_MATERIAL, new ResourceMaterial(11725, 11726, static_cast<BlendMode>(28))),
+        new Resource(11728, RESOURCE_MATERIAL, new ResourceMaterial(11725, BlendMode_2)),
+        new Resource(11729, RESOURCE_MATERIAL, new ResourceMaterial(11725, static_cast<BlendMode>(10))),
+        new Resource(18768, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie.aem", 11727, false)),
+        new Resource(18769, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_lights_add.aem", 11728, false)),
+        new Resource(18770, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_alpha.aem", 11729, false)),
+        new Resource(11850, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_gun_fx_valkyrie.aei", 0.0f)),
+        new Resource(11851, RESOURCE_MATERIAL, new ResourceMaterial(11850, static_cast<BlendMode>(3))),
+        new Resource(19061, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_beam_anim_add.aem", 11851, false)),
+        new Resource(19062, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_cone_anim_add.aem", 11851, false)),
+        new Resource(19063, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_star_add.aem", 11851, false)),
+        new Resource(29093, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_diffuse.aei", 0.0f)),
+        new Resource(29094, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_normal_specular.aei", 0.0f)),
+        new Resource(29090, RESOURCE_MATERIAL, new ResourceMaterial(29093, 29094, static_cast<BlendMode>(28))),
+        new Resource(29091, RESOURCE_MATERIAL, new ResourceMaterial(29093, BlendMode_2)),
+        new Resource(29092, RESOURCE_MATERIAL, new ResourceMaterial(29093, static_cast<BlendMode>(0))),
+        new Resource(18766, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked.aem", 29090, false)),
+        new Resource(19072, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_anim.aem", 29090, false)),
+        new Resource(19073, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_add.aem", 29091, false)),
+        new Resource(19074, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_anim_add.aem", 29091, false)),
+        new Resource(19075, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_add.aem", 34701, false)),
+        new Resource(19076, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_emissive.aem", 29092, false)),
+        new Resource(11730, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_diffuse.aei", 0.0f)),
+        new Resource(11731, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_normal_specular.aei", 0.0f)),
+        new Resource(11732, RESOURCE_MATERIAL, new ResourceMaterial(11730, 11731, static_cast<BlendMode>(28))),
+        new Resource(11733, RESOURCE_MATERIAL, new ResourceMaterial(11730, static_cast<BlendMode>(10))),
+        new Resource(18771, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked.aem", 11732, false)),
+        new Resource(18772, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked_alpha_emissive.aem", 11733, false)),
+        new Resource(11747, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire.aei", 0.0f)),
+        new Resource(11750, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire_normal.aei", 0.0f)),
+        new Resource(11748, RESOURCE_MATERIAL, new ResourceMaterial(11747, static_cast<BlendMode>(3))),
+        new Resource(11749, RESOURCE_MATERIAL, new ResourceMaterial(11747, BlendMode_1)),
+        new Resource(18781, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station.aem", 20007, false)),
+        new Resource(18782, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_emissive.aem", 20008, false)),
+        new Resource(18783, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_add.aem", 11748, false)),
+        new Resource(18784, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_alpha.aem", 11749, false)),
+        new Resource(18832, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_add.aem", 11748, false)),
+        new Resource(18833, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_alpha.aem", 11749, false)),
+        new Resource(19095, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_fire_anim_add.aem", 11748, false)),
+        new Resource(19096, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_smoke_anim_alpha.aem", 11749, false)),
+        new Resource(19097, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_fire_anim_add.aem", 11748, false)),
+        new Resource(19098, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_smoke_anim_alpha.aem", 11749, false)),
+        new Resource(18785, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian.aem", 34704, false)),
+        new Resource(18831, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian_add.aem", 34705, false)),
+        new Resource(29095, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_diffuse.aei", 0.0f)),
+        new Resource(29096, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_normal_specular.aei", 0.0f)),
+        new Resource(29097, RESOURCE_MATERIAL, new ResourceMaterial(29095, 29096, static_cast<BlendMode>(28))),
+        new Resource(18786, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_junk_field.aem", 29097, false)),
+        new Resource(11755, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames.aei", 0.0f)),
+        new Resource(11759, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames_normal.aei", 0.0f)),
+        new Resource(11756, RESOURCE_MATERIAL, new ResourceMaterial(11755, static_cast<BlendMode>(3))),
+        new Resource(11757, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_glow.aei", 0.0f)),
+        new Resource(11758, RESOURCE_MATERIAL, new ResourceMaterial(11757, static_cast<BlendMode>(3))),
+        new Resource(18803, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_flames_anim_add.aem", 11756, false)),
+        new Resource(18802, RESOURCE_MATERIAL, new ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_glow_anim_add.aem", 11758, false)),
+        new Resource(29021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_diffuse.aei", 0.0f)),
+        new Resource(29022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_normal_specular.aei", 0.0f)),
+        new Resource(29023, RESOURCE_MATERIAL, new ResourceMaterial(29021, 29022, static_cast<BlendMode>(28))),
+        new Resource(29024, RESOURCE_MATERIAL, new ResourceMaterial(29021, BlendMode_2)),
+        new Resource(29025, RESOURCE_MATERIAL, new ResourceMaterial(29021, BlendMode_8)),
+        new Resource(18787, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001.aem", 29023, false)),
+        new Resource(18788, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_add.aem", 29024, false)),
+        new Resource(18791, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim.aem", 29023, false)),
+        new Resource(18790, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim_add.aem", 29024, false)),
+        new Resource(29027, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_diffuse.aei", 0.0f)),
+        new Resource(29028, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_normal_specular.aei", 0.0f)),
+        new Resource(29029, RESOURCE_MATERIAL, new ResourceMaterial(29027, 29028, static_cast<BlendMode>(28))),
+        new Resource(29030, RESOURCE_MATERIAL, new ResourceMaterial(29027, BlendMode_2)),
+        new Resource(29031, RESOURCE_MATERIAL, new ResourceMaterial(29027, BlendMode_8)),
+        new Resource(18792, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002.aem", 29029, false)),
+        new Resource(18793, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_add.aem", 29030, false)),
+        new Resource(18795, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim.aem", 29029, false)),
+        new Resource(18794, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim_add.aem", 29030, false)),
+        new Resource(29033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_diffuse.aei", 0.0f)),
+        new Resource(29034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_normal_specular.aei", 0.0f)),
+        new Resource(29035, RESOURCE_MATERIAL, new ResourceMaterial(29033, 29034, static_cast<BlendMode>(28))),
+        new Resource(29036, RESOURCE_MATERIAL, new ResourceMaterial(29033, BlendMode_2)),
+        new Resource(29037, RESOURCE_MATERIAL, new ResourceMaterial(29033, BlendMode_8)),
+        new Resource(29038, RESOURCE_MATERIAL, new ResourceMaterial(29033, static_cast<BlendMode>(0))),
+        new Resource(18796, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003.aem", 29035, false)),
+        new Resource(18797, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_add.aem", 29036, false)),
+        new Resource(18799, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim.aem", 29035, false)),
+        new Resource(18800, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_emissive.aem", 29038, false)),
+        new Resource(18798, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim_add.aem", 29036, false)),
+        new Resource(11770, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_diffuse.aei", 0.0f)),
+        new Resource(11771, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_diffuse.aei", 0.0f)),
+        new Resource(11772, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_diffuse.aei", 0.0f)),
+        new Resource(11773, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_normal_specular.aei", 0.0f)),
+        new Resource(11774, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_normal_specular.aei", 0.0f)),
+        new Resource(11775, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_normal_specular.aei", 0.0f)),
+        new Resource(11776, RESOURCE_MATERIAL, new ResourceMaterial(11770, 11773, static_cast<BlendMode>(28))),
+        new Resource(11777, RESOURCE_MATERIAL, new ResourceMaterial(11771, 11774, static_cast<BlendMode>(28))),
+        new Resource(11778, RESOURCE_MATERIAL, new ResourceMaterial(11772, 11775, static_cast<BlendMode>(28))),
+        new Resource(11779, RESOURCE_MATERIAL, new ResourceMaterial(11770, static_cast<BlendMode>(0))),
+        new Resource(11780, RESOURCE_MATERIAL, new ResourceMaterial(11771, static_cast<BlendMode>(0))),
+        new Resource(11781, RESOURCE_MATERIAL, new ResourceMaterial(11772, static_cast<BlendMode>(0))),
+        new Resource(11782, RESOURCE_MATERIAL, new ResourceMaterial(11772, BlendMode_2)),
+        new Resource(18804, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1.aem", 11776, false)),
+        new Resource(18805, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2.aem", 11777, false)),
+        new Resource(18807, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3.aem", 11778, false)),
+        new Resource(18808, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1_emissive.aem", 11779, false)),
+        new Resource(18809, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2_emissive.aem", 11780, false)),
+        new Resource(18810, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3_emissive.aem", 11781, false)),
+        new Resource(18806, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_lights_add.aem", 11782, false)),
+        new Resource(29039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_diffuse.aei", 0.0f)),
+        new Resource(29040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_normal_specular.aei", 0.0f)),
+        new Resource(29041, RESOURCE_MATERIAL, new ResourceMaterial(29039, 29040, static_cast<BlendMode>(28))),
+        new Resource(29042, RESOURCE_MATERIAL, new ResourceMaterial(29039, BlendMode_2)),
+        new Resource(19052, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_add.aem", 29042, false)),
+        new Resource(19053, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_lights_add.aem", 29042, false)),
+        new Resource(19051, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk.aem", 29041, false)),
+        new Resource(17251, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian.aem", 34244, false)),
+        new Resource(18779, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lights.aem", 32544, false)),
+        new Resource(18044, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_add.aem", 32544, false)),
+        new Resource(17252, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_1.aem", 34244, false)),
+        new Resource(17253, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_2.aem", 34244, false)),
+        new Resource(17257, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted.aem", 34245, false)),
+        new Resource(18045, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_add.aem", 32545, false)),
+        new Resource(18811, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_lights.aem", 32545, false)),
+        new Resource(17263, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted.aem", 34246, false)),
+        new Resource(18046, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_add.aem", 32546, false)),
+        new Resource(18812, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_lights_add.aem", 32546, false)),
+        new Resource(17269, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted.aem", 34247, false)),
+        new Resource(18813, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_lights_add.aem", 32547, false)),
+        new Resource(18047, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_add.aem", 32547, false)),
+        new Resource(17275, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted.aem", 34248, false)),
+        new Resource(18780, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_lights.aem", 32548, false)),
+        new Resource(18048, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_add.aem", 32548, false)),
+        new Resource(17281, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian.aem", 34249, false)),
+        new Resource(18049, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_add.aem", 32549, false)),
+        new Resource(17286, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_lights_add.aem", 32549, false)),
+        new Resource(17293, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran.aem", 34251, false)),
+        new Resource(18051, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_add.aem", 32551, false)),
+        new Resource(18814, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_lights.aem", 32551, false)),
+        new Resource(17299, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro.aem", 34252, false)),
+        new Resource(18052, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_add.aem", 32552, false)),
+        new Resource(18815, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_lights_add.aem", 32552, false)),
+        new Resource(17311, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk.aem", 34254, false)),
+        new Resource(18054, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_add.aem", 32554, false)),
+        new Resource(17316, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_emissive.aem", 34354, false)),
+        new Resource(17317, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified.aem", 34255, false)),
+        new Resource(18818, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_lights_add.aem", 32555, false)),
+        new Resource(17323, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified.aem", 34256, false)),
+        new Resource(18819, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_lights_add.aem", 32556, false)),
+        new Resource(17329, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified.aem", 34257, false)),
+        new Resource(18820, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_lights_add.aem", 32557, false)),
+        new Resource(17335, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified.aem", 34258, false)),
+        new Resource(18821, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_lights_add.aem", 32558, false)),
+        new Resource(17341, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified.aem", 34259, false)),
+        new Resource(18822, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_lights_add.aem", 32559, false)),
+        new Resource(17347, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified.aem", 34260, false)),
+        new Resource(18823, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_lights_add.aem", 34602, false)),
+        new Resource(17353, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype.aem", 34261, false)),
+        new Resource(18824, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_lights_add.aem", 32561, false)),
+        new Resource(17359, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype.aem", 34262, false)),
+        new Resource(18825, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_lights_add.aem", 32562, false)),
+        new Resource(17365, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype.aem", 34263, false)),
+        new Resource(18826, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_add.aem", 32563, false)),
+        new Resource(17370, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_emissive.aem", 34363, false)),
+        new Resource(11741, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_supernova.aei", 0.0f)),
+        new Resource(11761, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_ring_anim_add.aem", 0.0f)),
+        new Resource(11762, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_core_anim_add.aem", 0.0f)),
+        new Resource(11764, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_ring.aei", 0.0f)),
+        new Resource(11763, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_core.aei", 0.0f)),
+        new Resource(11870, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma.aei", 0.0f)),
+        new Resource(11871, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma_normal.aei", 0.0f)),
+        new Resource(29045, RESOURCE_MATERIAL, new ResourceMaterial(11870, BlendMode_2)),
+        new Resource(18997, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_green_anim_lookat_add.aem", 29045, false)),
+        new Resource(18998, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_blue_anim_lookat_add.aem", 29045, false)),
+        new Resource(18999, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_violet_anim_lookat_add.aem", 29045, false)),
+        new Resource(19000, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_red_anim_lookat_add.aem", 29045, false)),
+        new Resource(19001, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_green_anim_lookat_add.aem", 29045, false)),
+        new Resource(19002, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_blue_anim_lookat_add.aem", 29045, false)),
+        new Resource(19003, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_violet_anim_lookat_add.aem", 29045, false)),
+        new Resource(19004, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_red_anim_lookat_add.aem", 29045, false)),
+        new Resource(11753, RESOURCE_MATERIAL, new ResourceMaterial(10080, static_cast<BlendMode>(0))),
+        new Resource(11754, RESOURCE_MATERIAL, new ResourceMaterial(10084, static_cast<BlendMode>(0))),
+        new Resource(11783, RESOURCE_MATERIAL, new ResourceMaterial(10081, static_cast<BlendMode>(0))),
+        new Resource(29060, RESOURCE_MATERIAL, new ResourceMaterial(10082, static_cast<BlendMode>(0))),
+        new Resource(29061, RESOURCE_MATERIAL, new ResourceMaterial(10083, static_cast<BlendMode>(0))),
+        new Resource(17815, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015.aem", 11753, false)),
+        new Resource(17824, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_1_anim.aem", 65535, false)),
+        new Resource(17825, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_2_anim.aem", 65535, false)),
+        new Resource(17816, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_016.aem", 11783, false)),
+        new Resource(17817, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_017.aem", 29060, false)),
+        new Resource(17818, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_018.aem", 29061, false)),
+        new Resource(10150, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_0.aei", 65535, false)),
+        new Resource(10151, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_1.aei", 65535, false)),
+        new Resource(10152, RESOURCE_MESH, new ResourceMesh("data/textures/lens_flare_2.aei", 65535, false)),
+        new Resource(34500, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_midorian.aei", 0.0f)),
+        new Resource(34501, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_nivelian.aei", 0.0f)),
+        new Resource(34502, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_pirates.aei", 0.0f)),
+        new Resource(34503, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_terran.aei", 0.0f)),
+        new Resource(34504, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_vossk.aei", 0.0f)),
+        new Resource(34505, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_void.aei", 0.0f)),
+        new Resource(10031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_000.aei", 0.0f)),
+        new Resource(10032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_001.aei", 0.0f)),
+        new Resource(10033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_002.aei", 0.0f)),
+        new Resource(10034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_003.aei", 0.0f)),
+        new Resource(10035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_004.aei", 0.0f)),
+        new Resource(10036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_005.aei", 0.0f)),
+        new Resource(10037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_006.aei", 0.0f)),
+        new Resource(10038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_007.aei", 0.0f)),
+        new Resource(10039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_008.aei", 0.0f)),
+        new Resource(10040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_009.aei", 0.0f)),
+        new Resource(10041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_010.aei", 0.0f)),
+        new Resource(33010, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_terran_diffuse.aei", -1.0f)),
+        new Resource(33011, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_terran_normal_specular.aei", -1.0f)),
+        new Resource(33008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_diffuse.aei", 0.0f)),
+        new Resource(33009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_normal_specular.aei", 0.0f)),
+        new Resource(33006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_diffuse.aei", -1.0f)),
+        new Resource(33007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(33004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_diffuse.aei", -1.0f)),
+        new Resource(33005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_normal_specular.aei", -1.0f)),
+        new Resource(33014, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_diffuse.aei", -1.0f)),
+        new Resource(33015, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_normal_specular.aei", -1.0f)),
+        new Resource(33012, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_diffuse.aei", -1.0f)),
+        new Resource(33013, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_normal_specular.aei", -1.0f)),
+        new Resource(33016, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_glow.aei", -1.0f)),
+        new Resource(20048, RESOURCE_MATERIAL, new ResourceMaterial(33016, static_cast<BlendMode>(0))),
+        new Resource(34000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_diffuse.aei", -1.0f)),
+        new Resource(34001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_diffuse.aei", -1.0f)),
+        new Resource(34002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_diffuse.aei", -1.0f)),
+        new Resource(34003, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_diffuse.aei", -1.0f)),
+        new Resource(34004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_diffuse.aei", -1.0f)),
+        new Resource(34006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_diffuse.aei", -1.0f)),
+        new Resource(34007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_diffuse.aei", -1.0f)),
+        new Resource(34008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_diffuse.aei", -1.0f)),
+        new Resource(34009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_diffuse.aei", -1.0f)),
+        new Resource(34010, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_diffuse.aei", -1.0f)),
+        new Resource(34011, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_diffuse.aei", -1.0f)),
+        new Resource(34012, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34016, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34017, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_diffuse.aei", -1.0f)),
+        new Resource(34018, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34019, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_diffuse.aei", -1.0f)),
+        new Resource(34020, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_diffuse.aei", -1.0f)),
+        new Resource(34021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_diffuse.aei", -1.0f)),
+        new Resource(34023, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_diffuse.aei", -1.0f)),
+        new Resource(34024, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_diffuse.aei", -1.0f)),
+        new Resource(34025, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_diffuse.aei", -1.0f)),
+        new Resource(34026, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_diffuse.aei", -1.0f)),
+        new Resource(34027, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_diffuse.aei", -1.0f)),
+        new Resource(34028, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_diffuse.aei", -1.0f)),
+        new Resource(34029, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_diffuse.aei", -1.0f)),
+        new Resource(34030, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_diffuse.aei", -1.0f)),
+        new Resource(34031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_diffuse.aei", -1.0f)),
+        new Resource(34033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_diffuse.aei", -1.0f)),
+        new Resource(34034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_diffuse.aei", -1.0f)),
+        new Resource(34035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_diffuse.aei", -1.0f)),
+        new Resource(34037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_diffuse.aei", -1.0f)),
+        new Resource(34038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_diffuse.aei", -1.0f)),
+        new Resource(34039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_diffuse.aei", -1.0f)),
+        new Resource(34040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_diffuse.aei", -1.0f)),
+        new Resource(34041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_diffuse.aei", -1.0f)),
+        new Resource(34042, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_042_retro_diffuse.aei", -1.0f)),
+        new Resource(34043, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_diffuse.aei", -1.0f)),
+        new Resource(34044, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34045, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_diffuse.aei", -1.0f)),
+        new Resource(34046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_diffuse.aei", -1.0f)),
+        new Resource(34047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_diffuse.aei", -1.0f)),
+        new Resource(34048, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_diffuse.aei", -1.0f)),
+        new Resource(34049, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_diffuse.aei", -1.0f)),
+        new Resource(34051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_diffuse.aei", -1.0f)),
+        new Resource(34052, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_diffuse.aei", -1.0f)),
+        new Resource(34054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_diffuse.aei", -1.0f)),
+        new Resource(34055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_diffuse.aei", -1.0f)),
+        new Resource(34056, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_diffuse.aei", -1.0f)),
+        new Resource(34057, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_diffuse.aei", -1.0f)),
+        new Resource(34058, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_diffuse.aei", -1.0f)),
+        new Resource(34059, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_diffuse.aei", -1.0f)),
+        new Resource(34060, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_diffuse.aei", -1.0f)),
+        new Resource(34061, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_diffuse.aei", -1.0f)),
+        new Resource(34062, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_diffuse.aei", -1.0f)),
+        new Resource(34063, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_diffuse.aei", -1.0f)),
+        new Resource(34100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34101, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_normal_specular.aei", -1.0f)),
+        new Resource(34102, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34103, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34104, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34105, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_normal_specular.aei", -1.0f)),
+        new Resource(34106, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34107, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_normal_specular.aei", -1.0f)),
+        new Resource(34108, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_normal_specular.aei", -1.0f)),
+        new Resource(34109, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_normal_specular.aei", -1.0f)),
+        new Resource(34110, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_normal_specular.aei", -1.0f)),
+        new Resource(34111, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34112, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34116, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34117, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_normal_specular.aei", -1.0f)),
+        new Resource(34118, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34119, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34120, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34121, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34122, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_normal_specular.aei", -1.0f)),
+        new Resource(34123, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34124, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34125, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34126, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_normal_specular.aei", -1.0f)),
+        new Resource(34127, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_normal_specular.aei", -1.0f)),
+        new Resource(34128, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_normal_specular.aei", -1.0f)),
+        new Resource(34129, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34130, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_normal_specular.aei", -1.0f)),
+        new Resource(34131, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34132, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_normal_specular.aei", -1.0f)),
+        new Resource(34133, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_normal_specular.aei", -1.0f)),
+        new Resource(34134, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_normal_specular.aei", -1.0f)),
+        new Resource(34135, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34136, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_normal_specular.aei", -1.0f)),
+        new Resource(34137, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_normal_specular.aei", -1.0f)),
+        new Resource(34138, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_normal_specular.aei", -1.0f)),
+        new Resource(34139, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_normal_specular.aei", -1.0f)),
+        new Resource(34140, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_normal_specular.aei", -1.0f)),
+        new Resource(34141, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_normal_specular.aei", -1.0f)),
+        new Resource(34142, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_042_retro_normal_specular.aei", -1.0f)),
+        new Resource(34143, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_normal_specular.aei", -1.0f)),
+        new Resource(34144, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34145, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_normal_specular.aei", -1.0f)),
+        new Resource(34146, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_normal_specular.aei", -1.0f)),
+        new Resource(34147, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_normal_specular.aei", -1.0f)),
+        new Resource(34148, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_normal_specular.aei", -1.0f)),
+        new Resource(34149, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_normal_specular.aei", -1.0f)),
+        new Resource(34151, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_normal_specular.aei", -1.0f)),
+        new Resource(34152, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_normal_specular.aei", -1.0f)),
+        new Resource(34154, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_normal_specular.aei", -1.0f)),
+        new Resource(34155, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_normal_specular.aei", -1.0f)),
+        new Resource(34156, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_normal_specular.aei", -1.0f)),
+        new Resource(34157, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_normal_specular.aei", -1.0f)),
+        new Resource(34158, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_normal_specular.aei", -1.0f)),
+        new Resource(34159, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_normal_specular.aei", -1.0f)),
+        new Resource(34160, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_normal_specular.aei", -1.0f)),
+        new Resource(34161, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_normal_specular.aei", -1.0f)),
+        new Resource(34162, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_normal_specular.aei", -1.0f)),
+        new Resource(34163, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_normal_specular.aei", -1.0f)),
+        new Resource(10107, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/asteroid_explosion.aei", -1.0f)),
+        new Resource(10155, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_diffuse.aei", -1.0f)),
+        new Resource(10156, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_normal_specular.aei", -1.0f)),
+        new Resource(27314, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_explosion.aei", -1.0f)),
+        new Resource(28999, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_diffuse.aei", -1.0f)),
+        new Resource(29000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_normal_specular.aei", -1.0f)),
+        new Resource(10104, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/wormhole.aei", 0.0f)),
+        new Resource(10121, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/fog.aei", 0.0f)),
+        new Resource(10132, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_fog_ice.aei", 0.0f)),
+        new Resource(10100, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_bg.aei", 0.0f)),
+        new Resource(10101, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_0.aei", 0.0f)),
+        new Resource(10102, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_1.aei", 0.0f)),
+        new Resource(10145, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_planets_diffuse.aei", 0.0f)),
+        new Resource(10144, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_orbit.aei", 0.0f)),
+        new Resource(10159, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/galaxymap/v_galaxymap_planets.aei", 0.0f)),
+        new Resource(33400, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_terran.aei", 0.0f)),
+        new Resource(33401, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_vossk.aei", 0.0f)),
+        new Resource(33402, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_nivelian.aei", 0.0f)),
+        new Resource(33403, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_midorian.aei", 0.0f)),
+        new Resource(33404, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_shadow.aei", 0.0f)),
+        new Resource(10161, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/galaxymap/sn_galaxymap_planets.aei", 0.0f)),
+        new Resource(11606, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_bobolan.aei", 0.0f)),
+        new Resource(11607, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_grey.aei", 0.0f)),
+        new Resource(11608, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_multipod.aei", 0.0f)),
+        new Resource(11609, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_nivelian.aei", 0.0f)),
+        new Resource(11610, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_f.aei", 0.0f)),
+        new Resource(11611, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_m.aei", 0.0f)),
+        new Resource(11612, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_vossk.aei", 0.0f)),
+        new Resource(10157, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_diffuse.aei", 0.0f)),
+        new Resource(10158, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_normal_specular.aei", 0.0f)),
+        new Resource(10134, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_diffuse.aei", 0.0f)),
+        new Resource(10135, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_normal_specular.aei", 0.0f)),
+        new Resource(11600, RESOURCE_TEXTURE, new ResourceTexture("data/textures/col_test.aei", 0.0f)),
+        new Resource(12000, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_diffuse.aei", 0.0f)),
+        new Resource(12001, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_normal_specular.aei", 0.0f)),
+        new Resource(11601, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_explosion.aei", 0.0f)),
+        new Resource(11602, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_smoke.aei", 0.0f)),
+        new Resource(11599, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_fire.aei", 0.0f)),
+        new Resource(11598, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion.aei", 0.0f)),
+        new Resource(12002, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_diffuse.aei", 0.0f)),
+        new Resource(12003, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_normal_specular.aei", 0.0f)),
+        new Resource(12004, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_diffuse.aei", 0.0f)),
+        new Resource(12005, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_normal_specular.aei", 0.0f)),
+        new Resource(12006, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_diffuse.aei", 0.0f)),
+        new Resource(12007, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_normal_specular.aei", 0.0f)),
+        new Resource(11860, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_diffuse.aei", 0.0f)),
+        new Resource(11861, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_normal_specular.aei", 0.0f)),
+        new Resource(12050, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_diffuse.aei", 0.0f)),
+        new Resource(12051, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_normal_specular.aei", 0.0f)),
+        new Resource(12052, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_diffuse.aei", 0.0f)),
+        new Resource(12053, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_normal_specular.aei", 0.0f)),
+        new Resource(12054, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_diffuse.aei", 0.0f)),
+        new Resource(12055, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_normal_specular.aei", 0.0f)),
+        new Resource(12008, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_diffuse.aei", 0.0f)),
+        new Resource(12009, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_normal_specular.aei", 0.0f)),
+        new Resource(11594, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_diffuse.aei", 0.0f)),
+        new Resource(11595, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_normal_specular.aei", 0.0f)),
+        new Resource(10148, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_diffuse.aei", 0.0f)),
+        new Resource(10149, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_normal_specular.aei", 0.0f)),
+        new Resource(10126, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_000_explosion.aei", 0.0f)),
+        new Resource(10127, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_001_explosion.aei", 0.0f)),
+        new Resource(10128, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_002_explosion.aei", 0.0f)),
+        new Resource(24210, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_diffuse.aei", 0.0f)),
+        new Resource(24211, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_normal_specular.aei", 0.0f)),
+        new Resource(24212, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_diffuse.aei", 0.0f)),
+        new Resource(24213, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_normal_specular.aei", 0.0f)),
+        new Resource(24214, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_diffuse.aei", 0.0f)),
+        new Resource(24215, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_normal_specular.aei", 0.0f)),
+        new Resource(11617, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_diffuse.aei", -1.0f)),
+        new Resource(11618, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_normal_specular.aei", -1.0f)),
+        new Resource(11615, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_diffuse.aei", -1.0f)),
+        new Resource(11616, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_normal_specular.aei", -1.0f)),
+        new Resource(11620, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_glow.aei", 0.0f)),
+        new Resource(34816, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_emitters.aei", 0.0f)),
+        new Resource(11628, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/tex_player_station_fx.aei", -1.0f)),
+        new Resource(11633, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_normal.aei", -1.0f)),
+        new Resource(11634, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_noise.aei", -1.0f)),
+        new Resource(33300, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/khador_jump.aei", -1.0f)),
+        new Resource(24203, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/hyper_drive.aei", -1.0f)),
+        new Resource(11647, RESOURCE_TEXTURE, new ResourceTexture("data/textures/gas_cloud.aei", 0.0f)),
+        new Resource(33410, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_diffuse.aei", 0.0f)),
+        new Resource(33411, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_normal_specular.aei", 0.0f)),
+        new Resource(27160, RESOURCE_MATERIAL, new ResourceMaterial(33410, 33411, static_cast<BlendMode>(28))),
+        new Resource(33240, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_003_terran_diffuse.aei", 0.0f)),
+        new Resource(33241, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_003_terran_normal_specular.aei", 0.0f)),
+        new Resource(33242, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_diffuse.aei", 0.0f)),
+        new Resource(33243, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_normal_specular.aei", 0.0f)),
+        new Resource(33244, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_diffuse.aei", 0.0f)),
+        new Resource(33245, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_normal_specular.aei", 0.0f)),
+        new Resource(33246, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_diffuse.aei", 0.0f)),
+        new Resource(33247, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_normal_specular.aei", 0.0f)),
+        new Resource(24202, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/particles.aei", 0.0f)),
+        new Resource(24208, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_diffuse.aei", 0.0f)),
+        new Resource(24209, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_normal_specular.aei", 0.0f)),
+        new Resource(20092, RESOURCE_MATERIAL, new ResourceMaterial(24208, 24209, static_cast<BlendMode>(36))),
+        new Resource(20090, RESOURCE_MATERIAL, new ResourceMaterial(24202, static_cast<BlendMode>(3))),
+        new Resource(33301, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion_emp.aei", 0.0f)),
+        new Resource(27300, RESOURCE_MATERIAL, new ResourceMaterial(33301, BlendMode_2)),
+        new Resource(33340, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_diffuse.aei", 0.0f)),
+        new Resource(33341, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_normal_specular.aei", 0.0f)),
+        new Resource(33357, RESOURCE_MATERIAL, new ResourceMaterial(33340, 33341, static_cast<BlendMode>(28))),
+        new Resource(33352, RESOURCE_MATERIAL, new ResourceMaterial(33342, 33343, static_cast<BlendMode>(28))),
+        new Resource(33353, RESOURCE_MATERIAL, new ResourceMaterial(33344, 33345, static_cast<BlendMode>(28))),
+        new Resource(33354, RESOURCE_MATERIAL, new ResourceMaterial(33346, 33347, static_cast<BlendMode>(28))),
+        new Resource(33355, RESOURCE_MATERIAL, new ResourceMaterial(33348, 33349, static_cast<BlendMode>(28))),
+        new Resource(33356, RESOURCE_MATERIAL, new ResourceMaterial(33350, 33351, static_cast<BlendMode>(28))),
+        new Resource(12020, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_terran.aei", 0.0f)),
+        new Resource(12021, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_vossk.aei", 0.0f)),
+        new Resource(12022, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_nivelian.aei", 0.0f)),
+        new Resource(12023, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_midorian.aei", 0.0f)),
+        new Resource(12030, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_000.aei", 0.0f)),
+        new Resource(12031, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_001.aei", 0.0f)),
+        new Resource(12032, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_002.aei", 0.0f)),
+        new Resource(12033, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_003.aei", 0.0f)),
+        new Resource(12034, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_004.aei", 0.0f)),
+        new Resource(12035, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_005.aei", 0.0f)),
+        new Resource(12036, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_006.aei", 0.0f)),
+        new Resource(12037, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_007.aei", 0.0f)),
+        new Resource(12038, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_008.aei", 0.0f)),
+        new Resource(12039, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_009.aei", 0.0f)),
+        new Resource(12040, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_010.aei", 0.0f)),
+        new Resource(12041, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_011.aei", 0.0f)),
+        new Resource(12042, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_012.aei", 0.0f)),
+        new Resource(12043, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_013.aei", 0.0f)),
+        new Resource(12044, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_014.aei", 0.0f)),
+        new Resource(12045, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_015.aei", 0.0f)),
+        new Resource(12046, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_016.aei", 0.0f)),
+        new Resource(12047, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_017.aei", 0.0f)),
+        new Resource(12048, RESOURCE_TEXTURE, new ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_018.aei", 0.0f)),
+        new Resource(33302, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/bomb_rocket_fx.aei", 0.0f)),
+        new Resource(33304, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_diffuse.aei", 0.0f)),
+        new Resource(33305, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_normal_specular.aei", 0.0f)),
+        new Resource(33307, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_diffuse.aei", 0.0f)),
+        new Resource(33308, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_normal_specular.aei", 0.0f)),
+        new Resource(33310, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_diffuse.aei", 0.0f)),
+        new Resource(33311, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_normal_specular.aei", 0.0f)),
+        new Resource(24204, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_diffuse.aei", 0.0f)),
+        new Resource(24205, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_normal_specular.aei", 0.0f)),
+        new Resource(24206, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_diffuse.aei", 0.0f)),
+        new Resource(24207, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_normal_specular.aei", 0.0f)),
+        new Resource(33330, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion_void_station.aei", 0.0f)),
+        new Resource(34812, RESOURCE_TEXTURE, new ResourceTexture("data/assets/main/3d/textures/low/etc/fx/ship_engine_glow.aei", 0.0f)),
+        new Resource(34813, RESOURCE_MATERIAL, new ResourceMaterial(34812, BlendMode_2)),
+        new Resource(34814, RESOURCE_TEXTURE, new ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_ship_engine_glow.aei", 0.0f)),
+        new Resource(34815, RESOURCE_MATERIAL, new ResourceMaterial(34814, BlendMode_2)),
+        new Resource(27301, RESOURCE_MATERIAL, new ResourceMaterial(33330, static_cast<BlendMode>(3))),
+        new Resource(27302, RESOURCE_MATERIAL, new ResourceMaterial(33330, BlendMode_1)),
+        new Resource(33303, RESOURCE_MATERIAL, new ResourceMaterial(33302, BlendMode_2)),
+        new Resource(33306, RESOURCE_MATERIAL, new ResourceMaterial(33304, 33305, static_cast<BlendMode>(28))),
+        new Resource(33309, RESOURCE_MATERIAL, new ResourceMaterial(33307, 33308, static_cast<BlendMode>(28))),
+        new Resource(33312, RESOURCE_MATERIAL, new ResourceMaterial(33310, 33311, static_cast<BlendMode>(28))),
+        new Resource(20004, RESOURCE_MATERIAL, new ResourceMaterial(33010, 33011, static_cast<BlendMode>(28))),
+        new Resource(20003, RESOURCE_MATERIAL, new ResourceMaterial(33010, static_cast<BlendMode>(0))),
+        new Resource(20005, RESOURCE_MATERIAL, new ResourceMaterial(33006, 33007, static_cast<BlendMode>(28))),
+        new Resource(20006, RESOURCE_MATERIAL, new ResourceMaterial(33006, static_cast<BlendMode>(0))),
+        new Resource(20104, RESOURCE_MATERIAL, new ResourceMaterial(33008, 33009, static_cast<BlendMode>(28))),
+        new Resource(20105, RESOURCE_MATERIAL, new ResourceMaterial(33008, static_cast<BlendMode>(0))),
+        new Resource(20007, RESOURCE_MATERIAL, new ResourceMaterial(33004, 33005, static_cast<BlendMode>(28))),
+        new Resource(20008, RESOURCE_MATERIAL, new ResourceMaterial(33004, static_cast<BlendMode>(0))),
+        new Resource(20046, RESOURCE_MATERIAL, new ResourceMaterial(10094, static_cast<BlendMode>(0))),
+        new Resource(20045, RESOURCE_MATERIAL, new ResourceMaterial(33012, 33013, static_cast<BlendMode>(28))),
+        new Resource(20047, RESOURCE_MATERIAL, new ResourceMaterial(33012, BlendMode_2)),
+        new Resource(20082, RESOURCE_MATERIAL, new ResourceMaterial(33012, BlendMode_1)),
+        new Resource(20032, RESOURCE_MATERIAL, new ResourceMaterial(33014, 33015, static_cast<BlendMode>(28))),
+        new Resource(20031, RESOURCE_MATERIAL, new ResourceMaterial(33014, static_cast<BlendMode>(0))),
+        new Resource(20033, RESOURCE_MATERIAL, new ResourceMaterial(33014, BlendMode_2)),
+        new Resource(34700, RESOURCE_MATERIAL, new ResourceMaterial(33120, 33121, static_cast<BlendMode>(28))),
+        new Resource(34701, RESOURCE_MATERIAL, new ResourceMaterial(34500, BlendMode_2)),
+        new Resource(34702, RESOURCE_MATERIAL, new ResourceMaterial(33120, BlendMode_8)),
+        new Resource(34703, RESOURCE_MATERIAL, new ResourceMaterial(33120, static_cast<BlendMode>(0))),
+        new Resource(34704, RESOURCE_MATERIAL, new ResourceMaterial(33122, 33123, static_cast<BlendMode>(28))),
+        new Resource(34705, RESOURCE_MATERIAL, new ResourceMaterial(34501, BlendMode_2)),
+        new Resource(34706, RESOURCE_MATERIAL, new ResourceMaterial(33122, BlendMode_8)),
+        new Resource(34707, RESOURCE_MATERIAL, new ResourceMaterial(34501, static_cast<BlendMode>(0))),
+        new Resource(34708, RESOURCE_MATERIAL, new ResourceMaterial(33124, 33125, static_cast<BlendMode>(28))),
+        new Resource(34709, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2)),
+        new Resource(34710, RESOURCE_MATERIAL, new ResourceMaterial(33124, BlendMode_8)),
+        new Resource(34711, RESOURCE_MATERIAL, new ResourceMaterial(34501, static_cast<BlendMode>(0))),
+        new Resource(34712, RESOURCE_MATERIAL, new ResourceMaterial(33126, 33127, static_cast<BlendMode>(28))),
+        new Resource(34713, RESOURCE_MATERIAL, new ResourceMaterial(34504, BlendMode_2)),
+        new Resource(34714, RESOURCE_MATERIAL, new ResourceMaterial(33126, BlendMode_8)),
+        new Resource(34715, RESOURCE_MATERIAL, new ResourceMaterial(33126, static_cast<BlendMode>(0))),
+        new Resource(34716, RESOURCE_MATERIAL, new ResourceMaterial(33128, 33129, static_cast<BlendMode>(28))),
+        new Resource(34717, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2)),
+        new Resource(34718, RESOURCE_MATERIAL, new ResourceMaterial(33128, BlendMode_8)),
+        new Resource(34719, RESOURCE_MATERIAL, new ResourceMaterial(33128, static_cast<BlendMode>(0))),
+        new Resource(34600, RESOURCE_MATERIAL, new ResourceMaterial(34500, BlendMode_2)),
+        new Resource(34601, RESOURCE_MATERIAL, new ResourceMaterial(34501, BlendMode_2)),
+        new Resource(34602, RESOURCE_MATERIAL, new ResourceMaterial(34502, BlendMode_2)),
+        new Resource(34603, RESOURCE_MATERIAL, new ResourceMaterial(34503, BlendMode_2)),
+        new Resource(34604, RESOURCE_MATERIAL, new ResourceMaterial(34504, BlendMode_2)),
+        new Resource(34605, RESOURCE_MATERIAL, new ResourceMaterial(34505, BlendMode_2)),
+        new Resource(34200, RESOURCE_MATERIAL, new ResourceMaterial(34000, 34100, static_cast<BlendMode>(28))),
+        new Resource(34201, RESOURCE_MATERIAL, new ResourceMaterial(34001, 34101, static_cast<BlendMode>(28))),
+        new Resource(34202, RESOURCE_MATERIAL, new ResourceMaterial(34002, 34102, static_cast<BlendMode>(28))),
+        new Resource(34203, RESOURCE_MATERIAL, new ResourceMaterial(34003, 34103, static_cast<BlendMode>(28))),
+        new Resource(34204, RESOURCE_MATERIAL, new ResourceMaterial(34004, 34104, static_cast<BlendMode>(28))),
+        new Resource(34205, RESOURCE_MATERIAL, new ResourceMaterial(34005, 34105, static_cast<BlendMode>(28))),
+        new Resource(34206, RESOURCE_MATERIAL, new ResourceMaterial(34006, 34106, static_cast<BlendMode>(28))),
+        new Resource(34207, RESOURCE_MATERIAL, new ResourceMaterial(34007, 34107, static_cast<BlendMode>(28))),
+        new Resource(34208, RESOURCE_MATERIAL, new ResourceMaterial(34008, 34108, static_cast<BlendMode>(28))),
+        new Resource(34209, RESOURCE_MATERIAL, new ResourceMaterial(34009, 34109, static_cast<BlendMode>(28))),
+        new Resource(34210, RESOURCE_MATERIAL, new ResourceMaterial(34010, 34110, static_cast<BlendMode>(28))),
+        new Resource(34211, RESOURCE_MATERIAL, new ResourceMaterial(34011, 34111, static_cast<BlendMode>(28))),
+        new Resource(34212, RESOURCE_MATERIAL, new ResourceMaterial(34012, 34112, static_cast<BlendMode>(28))),
+        new Resource(34216, RESOURCE_MATERIAL, new ResourceMaterial(34016, 34116, static_cast<BlendMode>(28))),
+        new Resource(34217, RESOURCE_MATERIAL, new ResourceMaterial(34017, 34117, static_cast<BlendMode>(28))),
+        new Resource(34218, RESOURCE_MATERIAL, new ResourceMaterial(34018, 34118, static_cast<BlendMode>(28))),
+        new Resource(34219, RESOURCE_MATERIAL, new ResourceMaterial(34019, 34119, static_cast<BlendMode>(28))),
+        new Resource(34220, RESOURCE_MATERIAL, new ResourceMaterial(34020, 34120, static_cast<BlendMode>(28))),
+        new Resource(34221, RESOURCE_MATERIAL, new ResourceMaterial(34021, 34121, static_cast<BlendMode>(28))),
+        new Resource(34222, RESOURCE_MATERIAL, new ResourceMaterial(34022, 34122, static_cast<BlendMode>(28))),
+        new Resource(34223, RESOURCE_MATERIAL, new ResourceMaterial(34023, 34123, static_cast<BlendMode>(28))),
+        new Resource(34224, RESOURCE_MATERIAL, new ResourceMaterial(34024, 34124, static_cast<BlendMode>(28))),
+        new Resource(34225, RESOURCE_MATERIAL, new ResourceMaterial(34025, 34125, static_cast<BlendMode>(28))),
+        new Resource(34226, RESOURCE_MATERIAL, new ResourceMaterial(34026, 34126, static_cast<BlendMode>(28))),
+        new Resource(34227, RESOURCE_MATERIAL, new ResourceMaterial(34027, 34127, static_cast<BlendMode>(28))),
+        new Resource(34228, RESOURCE_MATERIAL, new ResourceMaterial(34028, 34128, static_cast<BlendMode>(28))),
+        new Resource(34229, RESOURCE_MATERIAL, new ResourceMaterial(34029, 34129, static_cast<BlendMode>(28))),
+        new Resource(34230, RESOURCE_MATERIAL, new ResourceMaterial(34030, 34130, static_cast<BlendMode>(28))),
+        new Resource(34231, RESOURCE_MATERIAL, new ResourceMaterial(34031, 34131, static_cast<BlendMode>(28))),
+        new Resource(34232, RESOURCE_MATERIAL, new ResourceMaterial(34032, 34132, static_cast<BlendMode>(28))),
+        new Resource(34233, RESOURCE_MATERIAL, new ResourceMaterial(34033, 34133, static_cast<BlendMode>(28))),
+        new Resource(34234, RESOURCE_MATERIAL, new ResourceMaterial(34034, 34134, static_cast<BlendMode>(28))),
+        new Resource(34235, RESOURCE_MATERIAL, new ResourceMaterial(34035, 34135, static_cast<BlendMode>(28))),
+        new Resource(34236, RESOURCE_MATERIAL, new ResourceMaterial(34036, 34136, static_cast<BlendMode>(28))),
+        new Resource(34237, RESOURCE_MATERIAL, new ResourceMaterial(34037, 34137, static_cast<BlendMode>(28))),
+        new Resource(34238, RESOURCE_MATERIAL, new ResourceMaterial(34038, 34138, static_cast<BlendMode>(28))),
+        new Resource(34239, RESOURCE_MATERIAL, new ResourceMaterial(34039, 34139, static_cast<BlendMode>(28))),
+        new Resource(34240, RESOURCE_MATERIAL, new ResourceMaterial(34040, 34140, static_cast<BlendMode>(28))),
+        new Resource(34241, RESOURCE_MATERIAL, new ResourceMaterial(34041, 34141, static_cast<BlendMode>(28))),
+        new Resource(34242, RESOURCE_MATERIAL, new ResourceMaterial(34042, 34142, static_cast<BlendMode>(28))),
+        new Resource(34243, RESOURCE_MATERIAL, new ResourceMaterial(34043, 34143, static_cast<BlendMode>(28))),
+        new Resource(34244, RESOURCE_MATERIAL, new ResourceMaterial(34044, 34144, static_cast<BlendMode>(28))),
+        new Resource(34245, RESOURCE_MATERIAL, new ResourceMaterial(34045, 34145, static_cast<BlendMode>(28))),
+        new Resource(34246, RESOURCE_MATERIAL, new ResourceMaterial(34046, 34146, static_cast<BlendMode>(28))),
+        new Resource(34247, RESOURCE_MATERIAL, new ResourceMaterial(34047, 34147, static_cast<BlendMode>(28))),
+        new Resource(34248, RESOURCE_MATERIAL, new ResourceMaterial(34048, 34148, static_cast<BlendMode>(28))),
+        new Resource(34249, RESOURCE_MATERIAL, new ResourceMaterial(34049, 34149, static_cast<BlendMode>(28))),
+        new Resource(34250, RESOURCE_MATERIAL, new ResourceMaterial(34050, 34150, static_cast<BlendMode>(28))),
+        new Resource(34251, RESOURCE_MATERIAL, new ResourceMaterial(34051, 34151, static_cast<BlendMode>(28))),
+        new Resource(34252, RESOURCE_MATERIAL, new ResourceMaterial(34052, 34152, static_cast<BlendMode>(28))),
+        new Resource(34253, RESOURCE_MATERIAL, new ResourceMaterial(34053, 34153, static_cast<BlendMode>(28))),
+        new Resource(34254, RESOURCE_MATERIAL, new ResourceMaterial(34054, 34154, static_cast<BlendMode>(28))),
+        new Resource(34255, RESOURCE_MATERIAL, new ResourceMaterial(34055, 34155, static_cast<BlendMode>(28))),
+        new Resource(34256, RESOURCE_MATERIAL, new ResourceMaterial(34056, 34156, static_cast<BlendMode>(28))),
+        new Resource(34257, RESOURCE_MATERIAL, new ResourceMaterial(34057, 34157, static_cast<BlendMode>(28))),
+        new Resource(34258, RESOURCE_MATERIAL, new ResourceMaterial(34058, 34158, static_cast<BlendMode>(28))),
+        new Resource(34259, RESOURCE_MATERIAL, new ResourceMaterial(34059, 34159, static_cast<BlendMode>(28))),
+        new Resource(34260, RESOURCE_MATERIAL, new ResourceMaterial(34060, 34160, static_cast<BlendMode>(28))),
+        new Resource(34261, RESOURCE_MATERIAL, new ResourceMaterial(34061, 34161, static_cast<BlendMode>(28))),
+        new Resource(34262, RESOURCE_MATERIAL, new ResourceMaterial(34062, 34162, static_cast<BlendMode>(28))),
+        new Resource(34263, RESOURCE_MATERIAL, new ResourceMaterial(34063, 34163, static_cast<BlendMode>(28))),
+        new Resource(34400, RESOURCE_MATERIAL, new ResourceMaterial(34000, BlendMode_8)),
+        new Resource(34401, RESOURCE_MATERIAL, new ResourceMaterial(34001, BlendMode_8)),
+        new Resource(34402, RESOURCE_MATERIAL, new ResourceMaterial(34002, BlendMode_8)),
+        new Resource(34403, RESOURCE_MATERIAL, new ResourceMaterial(34003, BlendMode_8)),
+        new Resource(34404, RESOURCE_MATERIAL, new ResourceMaterial(34004, BlendMode_8)),
+        new Resource(34405, RESOURCE_MATERIAL, new ResourceMaterial(34005, BlendMode_8)),
+        new Resource(34406, RESOURCE_MATERIAL, new ResourceMaterial(34006, BlendMode_8)),
+        new Resource(34407, RESOURCE_MATERIAL, new ResourceMaterial(34007, BlendMode_8)),
+        new Resource(34408, RESOURCE_MATERIAL, new ResourceMaterial(34008, BlendMode_8)),
+        new Resource(34409, RESOURCE_MATERIAL, new ResourceMaterial(34009, BlendMode_8)),
+        new Resource(34410, RESOURCE_MATERIAL, new ResourceMaterial(34010, BlendMode_8)),
+        new Resource(34411, RESOURCE_MATERIAL, new ResourceMaterial(34011, BlendMode_8)),
+        new Resource(34412, RESOURCE_MATERIAL, new ResourceMaterial(34012, BlendMode_8)),
+        new Resource(34416, RESOURCE_MATERIAL, new ResourceMaterial(34016, BlendMode_8)),
+        new Resource(34417, RESOURCE_MATERIAL, new ResourceMaterial(34017, BlendMode_8)),
+        new Resource(34418, RESOURCE_MATERIAL, new ResourceMaterial(34018, BlendMode_8)),
+        new Resource(34419, RESOURCE_MATERIAL, new ResourceMaterial(34019, BlendMode_8)),
+        new Resource(34420, RESOURCE_MATERIAL, new ResourceMaterial(34020, BlendMode_8)),
+        new Resource(34421, RESOURCE_MATERIAL, new ResourceMaterial(34021, BlendMode_8)),
+        new Resource(34422, RESOURCE_MATERIAL, new ResourceMaterial(34022, BlendMode_8)),
+        new Resource(34423, RESOURCE_MATERIAL, new ResourceMaterial(34023, BlendMode_8)),
+        new Resource(34424, RESOURCE_MATERIAL, new ResourceMaterial(34024, BlendMode_8)),
+        new Resource(34425, RESOURCE_MATERIAL, new ResourceMaterial(34025, BlendMode_8)),
+        new Resource(34426, RESOURCE_MATERIAL, new ResourceMaterial(34026, BlendMode_8)),
+        new Resource(34427, RESOURCE_MATERIAL, new ResourceMaterial(34027, BlendMode_8)),
+        new Resource(34428, RESOURCE_MATERIAL, new ResourceMaterial(34028, BlendMode_8)),
+        new Resource(34429, RESOURCE_MATERIAL, new ResourceMaterial(34029, BlendMode_8)),
+        new Resource(34430, RESOURCE_MATERIAL, new ResourceMaterial(34030, BlendMode_8)),
+        new Resource(34431, RESOURCE_MATERIAL, new ResourceMaterial(34031, BlendMode_8)),
+        new Resource(34432, RESOURCE_MATERIAL, new ResourceMaterial(34032, BlendMode_8)),
+        new Resource(34433, RESOURCE_MATERIAL, new ResourceMaterial(34033, BlendMode_8)),
+        new Resource(34434, RESOURCE_MATERIAL, new ResourceMaterial(34034, BlendMode_8)),
+        new Resource(34435, RESOURCE_MATERIAL, new ResourceMaterial(34035, BlendMode_8)),
+        new Resource(34436, RESOURCE_MATERIAL, new ResourceMaterial(34036, BlendMode_8)),
+        new Resource(34442, RESOURCE_MATERIAL, new ResourceMaterial(34042, BlendMode_8)),
+        new Resource(34443, RESOURCE_MATERIAL, new ResourceMaterial(34043, BlendMode_8)),
+        new Resource(34444, RESOURCE_MATERIAL, new ResourceMaterial(34044, BlendMode_8)),
+        new Resource(34445, RESOURCE_MATERIAL, new ResourceMaterial(34045, BlendMode_8)),
+        new Resource(34446, RESOURCE_MATERIAL, new ResourceMaterial(34046, BlendMode_8)),
+        new Resource(34447, RESOURCE_MATERIAL, new ResourceMaterial(34047, BlendMode_8)),
+        new Resource(34448, RESOURCE_MATERIAL, new ResourceMaterial(34048, BlendMode_8)),
+        new Resource(34449, RESOURCE_MATERIAL, new ResourceMaterial(34049, BlendMode_8)),
+        new Resource(34450, RESOURCE_MATERIAL, new ResourceMaterial(34050, BlendMode_8)),
+        new Resource(34451, RESOURCE_MATERIAL, new ResourceMaterial(34051, BlendMode_8)),
+        new Resource(34452, RESOURCE_MATERIAL, new ResourceMaterial(34052, BlendMode_8)),
+        new Resource(34453, RESOURCE_MATERIAL, new ResourceMaterial(34053, BlendMode_8)),
+        new Resource(34454, RESOURCE_MATERIAL, new ResourceMaterial(34054, BlendMode_8)),
+        new Resource(34455, RESOURCE_MATERIAL, new ResourceMaterial(34055, BlendMode_8)),
+        new Resource(34456, RESOURCE_MATERIAL, new ResourceMaterial(34056, BlendMode_8)),
+        new Resource(34457, RESOURCE_MATERIAL, new ResourceMaterial(34057, BlendMode_8)),
+        new Resource(34458, RESOURCE_MATERIAL, new ResourceMaterial(34058, BlendMode_8)),
+        new Resource(34459, RESOURCE_MATERIAL, new ResourceMaterial(34059, BlendMode_8)),
+        new Resource(34460, RESOURCE_MATERIAL, new ResourceMaterial(34060, BlendMode_8)),
+        new Resource(34461, RESOURCE_MATERIAL, new ResourceMaterial(34061, BlendMode_8)),
+        new Resource(34462, RESOURCE_MATERIAL, new ResourceMaterial(34062, BlendMode_8)),
+        new Resource(34463, RESOURCE_MATERIAL, new ResourceMaterial(34063, BlendMode_8)),
+        new Resource(34300, RESOURCE_MATERIAL, new ResourceMaterial(34000, static_cast<BlendMode>(0))),
+        new Resource(34301, RESOURCE_MATERIAL, new ResourceMaterial(34001, static_cast<BlendMode>(0))),
+        new Resource(34302, RESOURCE_MATERIAL, new ResourceMaterial(34002, static_cast<BlendMode>(0))),
+        new Resource(34303, RESOURCE_MATERIAL, new ResourceMaterial(34003, static_cast<BlendMode>(0))),
+        new Resource(34304, RESOURCE_MATERIAL, new ResourceMaterial(34004, static_cast<BlendMode>(0))),
+        new Resource(34305, RESOURCE_MATERIAL, new ResourceMaterial(34005, static_cast<BlendMode>(0))),
+        new Resource(34306, RESOURCE_MATERIAL, new ResourceMaterial(34006, static_cast<BlendMode>(0))),
+        new Resource(34307, RESOURCE_MATERIAL, new ResourceMaterial(34007, static_cast<BlendMode>(0))),
+        new Resource(34308, RESOURCE_MATERIAL, new ResourceMaterial(34008, static_cast<BlendMode>(0))),
+        new Resource(34309, RESOURCE_MATERIAL, new ResourceMaterial(34009, static_cast<BlendMode>(0))),
+        new Resource(34310, RESOURCE_MATERIAL, new ResourceMaterial(34010, static_cast<BlendMode>(0))),
+        new Resource(34311, RESOURCE_MATERIAL, new ResourceMaterial(34011, static_cast<BlendMode>(0))),
+        new Resource(34312, RESOURCE_MATERIAL, new ResourceMaterial(34012, static_cast<BlendMode>(0))),
+        new Resource(34313, RESOURCE_MATERIAL, new ResourceMaterial(34013, static_cast<BlendMode>(0))),
+        new Resource(34314, RESOURCE_MATERIAL, new ResourceMaterial(34014, static_cast<BlendMode>(0))),
+        new Resource(34315, RESOURCE_MATERIAL, new ResourceMaterial(34015, static_cast<BlendMode>(0))),
+        new Resource(34316, RESOURCE_MATERIAL, new ResourceMaterial(34016, static_cast<BlendMode>(0))),
+        new Resource(34317, RESOURCE_MATERIAL, new ResourceMaterial(34017, static_cast<BlendMode>(0))),
+        new Resource(34318, RESOURCE_MATERIAL, new ResourceMaterial(34018, static_cast<BlendMode>(0))),
+        new Resource(34319, RESOURCE_MATERIAL, new ResourceMaterial(34019, static_cast<BlendMode>(0))),
+        new Resource(34320, RESOURCE_MATERIAL, new ResourceMaterial(34020, static_cast<BlendMode>(0))),
+        new Resource(34321, RESOURCE_MATERIAL, new ResourceMaterial(34021, static_cast<BlendMode>(0))),
+        new Resource(34322, RESOURCE_MATERIAL, new ResourceMaterial(34022, static_cast<BlendMode>(0))),
+        new Resource(34323, RESOURCE_MATERIAL, new ResourceMaterial(34023, static_cast<BlendMode>(0))),
+        new Resource(34324, RESOURCE_MATERIAL, new ResourceMaterial(34024, static_cast<BlendMode>(0))),
+        new Resource(34325, RESOURCE_MATERIAL, new ResourceMaterial(34025, static_cast<BlendMode>(0))),
+        new Resource(34326, RESOURCE_MATERIAL, new ResourceMaterial(34026, static_cast<BlendMode>(0))),
+        new Resource(34327, RESOURCE_MATERIAL, new ResourceMaterial(34027, static_cast<BlendMode>(0))),
+        new Resource(34328, RESOURCE_MATERIAL, new ResourceMaterial(34028, static_cast<BlendMode>(0))),
+        new Resource(34329, RESOURCE_MATERIAL, new ResourceMaterial(34029, static_cast<BlendMode>(0))),
+        new Resource(34330, RESOURCE_MATERIAL, new ResourceMaterial(34030, static_cast<BlendMode>(0))),
+        new Resource(34331, RESOURCE_MATERIAL, new ResourceMaterial(34031, static_cast<BlendMode>(0))),
+        new Resource(34332, RESOURCE_MATERIAL, new ResourceMaterial(34032, static_cast<BlendMode>(0))),
+        new Resource(34333, RESOURCE_MATERIAL, new ResourceMaterial(34033, static_cast<BlendMode>(0))),
+        new Resource(34334, RESOURCE_MATERIAL, new ResourceMaterial(34034, static_cast<BlendMode>(0))),
+        new Resource(34335, RESOURCE_MATERIAL, new ResourceMaterial(34035, static_cast<BlendMode>(0))),
+        new Resource(34336, RESOURCE_MATERIAL, new ResourceMaterial(34036, static_cast<BlendMode>(0))),
+        new Resource(32537, RESOURCE_MATERIAL, new ResourceMaterial(34037, BlendMode_2)),
+        new Resource(32538, RESOURCE_MATERIAL, new ResourceMaterial(34038, BlendMode_2)),
+        new Resource(32539, RESOURCE_MATERIAL, new ResourceMaterial(34039, BlendMode_2)),
+        new Resource(32540, RESOURCE_MATERIAL, new ResourceMaterial(34040, BlendMode_2)),
+        new Resource(32541, RESOURCE_MATERIAL, new ResourceMaterial(34041, BlendMode_2)),
+        new Resource(34342, RESOURCE_MATERIAL, new ResourceMaterial(34042, static_cast<BlendMode>(0))),
+        new Resource(32542, RESOURCE_MATERIAL, new ResourceMaterial(34042, BlendMode_2)),
+        new Resource(34343, RESOURCE_MATERIAL, new ResourceMaterial(34043, static_cast<BlendMode>(0))),
+        new Resource(32543, RESOURCE_MATERIAL, new ResourceMaterial(34043, BlendMode_2)),
+        new Resource(34344, RESOURCE_MATERIAL, new ResourceMaterial(34044, static_cast<BlendMode>(0))),
+        new Resource(32544, RESOURCE_MATERIAL, new ResourceMaterial(34044, BlendMode_2)),
+        new Resource(34345, RESOURCE_MATERIAL, new ResourceMaterial(34045, static_cast<BlendMode>(0))),
+        new Resource(32545, RESOURCE_MATERIAL, new ResourceMaterial(34045, BlendMode_2)),
+        new Resource(34346, RESOURCE_MATERIAL, new ResourceMaterial(34046, static_cast<BlendMode>(0))),
+        new Resource(32546, RESOURCE_MATERIAL, new ResourceMaterial(34046, BlendMode_2)),
+        new Resource(34347, RESOURCE_MATERIAL, new ResourceMaterial(34047, static_cast<BlendMode>(0))),
+        new Resource(32547, RESOURCE_MATERIAL, new ResourceMaterial(34047, BlendMode_2)),
+        new Resource(34348, RESOURCE_MATERIAL, new ResourceMaterial(34048, static_cast<BlendMode>(0))),
+        new Resource(32548, RESOURCE_MATERIAL, new ResourceMaterial(34048, BlendMode_2)),
+        new Resource(34349, RESOURCE_MATERIAL, new ResourceMaterial(34049, static_cast<BlendMode>(0))),
+        new Resource(32549, RESOURCE_MATERIAL, new ResourceMaterial(34049, BlendMode_2)),
+        new Resource(34350, RESOURCE_MATERIAL, new ResourceMaterial(34050, static_cast<BlendMode>(0))),
+        new Resource(32550, RESOURCE_MATERIAL, new ResourceMaterial(34050, BlendMode_2)),
+        new Resource(34351, RESOURCE_MATERIAL, new ResourceMaterial(34051, static_cast<BlendMode>(0))),
+        new Resource(32551, RESOURCE_MATERIAL, new ResourceMaterial(34051, BlendMode_2)),
+        new Resource(34352, RESOURCE_MATERIAL, new ResourceMaterial(34052, static_cast<BlendMode>(0))),
+        new Resource(32552, RESOURCE_MATERIAL, new ResourceMaterial(34052, BlendMode_2)),
+        new Resource(34353, RESOURCE_MATERIAL, new ResourceMaterial(34053, static_cast<BlendMode>(0))),
+        new Resource(32553, RESOURCE_MATERIAL, new ResourceMaterial(34053, BlendMode_2)),
+        new Resource(34354, RESOURCE_MATERIAL, new ResourceMaterial(34054, static_cast<BlendMode>(0))),
+        new Resource(32554, RESOURCE_MATERIAL, new ResourceMaterial(34054, BlendMode_2)),
+        new Resource(34355, RESOURCE_MATERIAL, new ResourceMaterial(34055, static_cast<BlendMode>(0))),
+        new Resource(32555, RESOURCE_MATERIAL, new ResourceMaterial(34055, BlendMode_2)),
+        new Resource(34356, RESOURCE_MATERIAL, new ResourceMaterial(34056, static_cast<BlendMode>(0))),
+        new Resource(32556, RESOURCE_MATERIAL, new ResourceMaterial(34056, BlendMode_2)),
+        new Resource(34357, RESOURCE_MATERIAL, new ResourceMaterial(34057, static_cast<BlendMode>(0))),
+        new Resource(32557, RESOURCE_MATERIAL, new ResourceMaterial(34057, BlendMode_2)),
+        new Resource(34358, RESOURCE_MATERIAL, new ResourceMaterial(34058, static_cast<BlendMode>(0))),
+        new Resource(32558, RESOURCE_MATERIAL, new ResourceMaterial(34058, BlendMode_2)),
+        new Resource(34359, RESOURCE_MATERIAL, new ResourceMaterial(34059, static_cast<BlendMode>(0))),
+        new Resource(32559, RESOURCE_MATERIAL, new ResourceMaterial(34059, BlendMode_2)),
+        new Resource(34360, RESOURCE_MATERIAL, new ResourceMaterial(34060, static_cast<BlendMode>(0))),
+        new Resource(32560, RESOURCE_MATERIAL, new ResourceMaterial(34060, BlendMode_2)),
+        new Resource(34361, RESOURCE_MATERIAL, new ResourceMaterial(34061, static_cast<BlendMode>(0))),
+        new Resource(32561, RESOURCE_MATERIAL, new ResourceMaterial(34061, BlendMode_2)),
+        new Resource(34362, RESOURCE_MATERIAL, new ResourceMaterial(34062, static_cast<BlendMode>(0))),
+        new Resource(32562, RESOURCE_MATERIAL, new ResourceMaterial(34062, BlendMode_2)),
+        new Resource(34363, RESOURCE_MATERIAL, new ResourceMaterial(34063, static_cast<BlendMode>(0))),
+        new Resource(32563, RESOURCE_MATERIAL, new ResourceMaterial(34063, BlendMode_2)),
+        new Resource(20128, RESOURCE_MATERIAL, new ResourceMaterial(10129, static_cast<BlendMode>(6))),
+        new Resource(20129, RESOURCE_MATERIAL, new ResourceMaterial(10129, BlendMode_2)),
+        new Resource(20001, RESOURCE_MATERIAL, new ResourceMaterial(10031, BlendMode_2)),
+        new Resource(27280, RESOURCE_MATERIAL, new ResourceMaterial(10031, BlendMode_2)),
+        new Resource(27281, RESOURCE_MATERIAL, new ResourceMaterial(10032, BlendMode_2)),
+        new Resource(27282, RESOURCE_MATERIAL, new ResourceMaterial(10033, BlendMode_2)),
+        new Resource(27283, RESOURCE_MATERIAL, new ResourceMaterial(10034, BlendMode_2)),
+        new Resource(27284, RESOURCE_MATERIAL, new ResourceMaterial(10035, BlendMode_2)),
+        new Resource(27285, RESOURCE_MATERIAL, new ResourceMaterial(10036, BlendMode_2)),
+        new Resource(27286, RESOURCE_MATERIAL, new ResourceMaterial(10037, BlendMode_2)),
+        new Resource(27287, RESOURCE_MATERIAL, new ResourceMaterial(10038, BlendMode_2)),
+        new Resource(27288, RESOURCE_MATERIAL, new ResourceMaterial(10039, BlendMode_2)),
+        new Resource(27289, RESOURCE_MATERIAL, new ResourceMaterial(10040, BlendMode_2)),
+        new Resource(27290, RESOURCE_MATERIAL, new ResourceMaterial(10041, BlendMode_2)),
+        new Resource(20093, RESOURCE_MATERIAL, new ResourceMaterial(10104, BlendMode_2)),
+        new Resource(20094, RESOURCE_MATERIAL, new ResourceMaterial(12000, 12001, static_cast<BlendMode>(28))),
+        new Resource(20095, RESOURCE_MATERIAL, new ResourceMaterial(10121, BlendMode_2)),
+        new Resource(20137, RESOURCE_MATERIAL, new ResourceMaterial(10132, BlendMode_2)),
+        new Resource(20009, RESOURCE_MATERIAL, new ResourceMaterial(10065, static_cast<BlendMode>(0))),
+        new Resource(20010, RESOURCE_MATERIAL, new ResourceMaterial(10066, static_cast<BlendMode>(0))),
+        new Resource(20011, RESOURCE_MATERIAL, new ResourceMaterial(10067, static_cast<BlendMode>(0))),
+        new Resource(20012, RESOURCE_MATERIAL, new ResourceMaterial(10068, static_cast<BlendMode>(0))),
+        new Resource(20013, RESOURCE_MATERIAL, new ResourceMaterial(10069, static_cast<BlendMode>(0))),
+        new Resource(20014, RESOURCE_MATERIAL, new ResourceMaterial(10070, static_cast<BlendMode>(0))),
+        new Resource(20015, RESOURCE_MATERIAL, new ResourceMaterial(10071, static_cast<BlendMode>(0))),
+        new Resource(20016, RESOURCE_MATERIAL, new ResourceMaterial(10072, static_cast<BlendMode>(0))),
+        new Resource(20017, RESOURCE_MATERIAL, new ResourceMaterial(10073, static_cast<BlendMode>(0))),
+        new Resource(20018, RESOURCE_MATERIAL, new ResourceMaterial(10074, static_cast<BlendMode>(0))),
+        new Resource(20019, RESOURCE_MATERIAL, new ResourceMaterial(10075, static_cast<BlendMode>(0))),
+        new Resource(20130, RESOURCE_MATERIAL, new ResourceMaterial(10076, static_cast<BlendMode>(0))),
+        new Resource(20131, RESOURCE_MATERIAL, new ResourceMaterial(10077, static_cast<BlendMode>(0))),
+        new Resource(20132, RESOURCE_MATERIAL, new ResourceMaterial(10078, static_cast<BlendMode>(0))),
+        new Resource(27149, RESOURCE_MATERIAL, new ResourceMaterial(10079, static_cast<BlendMode>(0))),
+        new Resource(27200, RESOURCE_MATERIAL, new ResourceMaterial(10086, static_cast<BlendMode>(0))),
+        new Resource(27201, RESOURCE_MATERIAL, new ResourceMaterial(10087, static_cast<BlendMode>(0))),
+        new Resource(27202, RESOURCE_MATERIAL, new ResourceMaterial(10088, static_cast<BlendMode>(0))),
+        new Resource(20021, RESOURCE_MATERIAL, new ResourceMaterial(10001, BlendMode_1)),
+        new Resource(20022, RESOURCE_MATERIAL, new ResourceMaterial(10001, BlendMode_2)),
+        new Resource(20052, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(3))),
+        new Resource(20100, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(6))),
+        new Resource(20108, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(0))),
+        new Resource(20124, RESOURCE_MATERIAL, new ResourceMaterial(10001, static_cast<BlendMode>(4))),
+        new Resource(20023, RESOURCE_MATERIAL, new ResourceMaterial(33000, 33001, static_cast<BlendMode>(28))),
+        new Resource(20049, RESOURCE_MATERIAL, new ResourceMaterial(33000, 33001, static_cast<BlendMode>(28))),
+        new Resource(20050, RESOURCE_MATERIAL, new ResourceMaterial(10107, BlendMode_2)),
+        new Resource(20051, RESOURCE_MATERIAL, new ResourceMaterial(10107, BlendMode_1)),
+        new Resource(20134, RESOURCE_MATERIAL, new ResourceMaterial(10155, 10156, static_cast<BlendMode>(28))),
+        new Resource(20133, RESOURCE_MATERIAL, new ResourceMaterial(10155, BlendMode_1)),
+        new Resource(27312, RESOURCE_MATERIAL, new ResourceMaterial(28999, 29000, static_cast<BlendMode>(28))),
+        new Resource(27313, RESOURCE_MATERIAL, new ResourceMaterial(27314, BlendMode_1)),
+        new Resource(20024, RESOURCE_MATERIAL, new ResourceMaterial(10100, static_cast<BlendMode>(0))),
+        new Resource(20025, RESOURCE_MATERIAL, new ResourceMaterial(10101, BlendMode_2)),
+        new Resource(20026, RESOURCE_MATERIAL, new ResourceMaterial(10102, BlendMode_2)),
+        new Resource(20027, RESOURCE_MATERIAL, new ResourceMaterial(10145, static_cast<BlendMode>(6))),
+        new Resource(27305, RESOURCE_MATERIAL, new ResourceMaterial(10159, static_cast<BlendMode>(6))),
+        new Resource(20029, RESOURCE_MATERIAL, new ResourceMaterial(10144, BlendMode_2)),
+        new Resource(20030, RESOURCE_MATERIAL, new ResourceMaterial(10145, BlendMode_1)),
+        new Resource(27306, RESOURCE_MATERIAL, new ResourceMaterial(10161, static_cast<BlendMode>(6))),
+        new Resource(27307, RESOURCE_MATERIAL, new ResourceMaterial(10161, BlendMode_2)),
+        new Resource(34800, RESOURCE_MATERIAL, new ResourceMaterial(33400, BlendMode_2)),
+        new Resource(34801, RESOURCE_MATERIAL, new ResourceMaterial(33401, BlendMode_2)),
+        new Resource(34802, RESOURCE_MATERIAL, new ResourceMaterial(33402, BlendMode_2)),
+        new Resource(34803, RESOURCE_MATERIAL, new ResourceMaterial(33403, BlendMode_2)),
+        new Resource(34804, RESOURCE_MATERIAL, new ResourceMaterial(33404, BlendMode_1)),
+        new Resource(20114, RESOURCE_MATERIAL, new ResourceMaterial(11606, static_cast<BlendMode>(10))),
+        new Resource(20115, RESOURCE_MATERIAL, new ResourceMaterial(11607, static_cast<BlendMode>(10))),
+        new Resource(20116, RESOURCE_MATERIAL, new ResourceMaterial(11608, static_cast<BlendMode>(10))),
+        new Resource(20117, RESOURCE_MATERIAL, new ResourceMaterial(11609, static_cast<BlendMode>(10))),
+        new Resource(20118, RESOURCE_MATERIAL, new ResourceMaterial(11610, static_cast<BlendMode>(10))),
+        new Resource(20119, RESOURCE_MATERIAL, new ResourceMaterial(11611, static_cast<BlendMode>(10))),
+        new Resource(20120, RESOURCE_MATERIAL, new ResourceMaterial(11612, static_cast<BlendMode>(10))),
+        new Resource(20056, RESOURCE_MATERIAL, new ResourceMaterial(10136, 10140, static_cast<BlendMode>(28))),
+        new Resource(20057, RESOURCE_MATERIAL, new ResourceMaterial(10136, BlendMode_2)),
+        new Resource(20058, RESOURCE_MATERIAL, new ResourceMaterial(10136, BlendMode_1)),
+        new Resource(20059, RESOURCE_MATERIAL, new ResourceMaterial(10137, 10141, static_cast<BlendMode>(28))),
+        new Resource(20060, RESOURCE_MATERIAL, new ResourceMaterial(10137, BlendMode_2)),
+        new Resource(20061, RESOURCE_MATERIAL, new ResourceMaterial(10137, static_cast<BlendMode>(24))),
+        new Resource(20062, RESOURCE_MATERIAL, new ResourceMaterial(10138, 10142, static_cast<BlendMode>(28))),
+        new Resource(20063, RESOURCE_MATERIAL, new ResourceMaterial(10138, BlendMode_2)),
+        new Resource(20064, RESOURCE_MATERIAL, new ResourceMaterial(10138, BlendMode_1)),
+        new Resource(20065, RESOURCE_MATERIAL, new ResourceMaterial(10139, 10143, static_cast<BlendMode>(28))),
+        new Resource(20066, RESOURCE_MATERIAL, new ResourceMaterial(10139, BlendMode_2)),
+        new Resource(20067, RESOURCE_MATERIAL, new ResourceMaterial(10139, BlendMode_1)),
+        new Resource(24070, RESOURCE_MATERIAL, new ResourceMaterial(33136, 33137, static_cast<BlendMode>(28))),
+        new Resource(20077, RESOURCE_MATERIAL, new ResourceMaterial(33136, BlendMode_1)),
+        new Resource(20078, RESOURCE_MATERIAL, new ResourceMaterial(33136, BlendMode_2)),
+        new Resource(24074, RESOURCE_MATERIAL, new ResourceMaterial(33132, 33133, static_cast<BlendMode>(28))),
+        new Resource(20071, RESOURCE_MATERIAL, new ResourceMaterial(33132, BlendMode_2)),
+        new Resource(24073, RESOURCE_MATERIAL, new ResourceMaterial(33134, 33135, static_cast<BlendMode>(28))),
+        new Resource(20074, RESOURCE_MATERIAL, new ResourceMaterial(33134, BlendMode_1)),
+        new Resource(20075, RESOURCE_MATERIAL, new ResourceMaterial(33134, BlendMode_2)),
+        new Resource(24071, RESOURCE_MATERIAL, new ResourceMaterial(33130, 33131, static_cast<BlendMode>(28))),
+        new Resource(20106, RESOURCE_MATERIAL, new ResourceMaterial(33130, BlendMode_1)),
+        new Resource(20069, RESOURCE_MATERIAL, new ResourceMaterial(33130, BlendMode_2)),
+        new Resource(20157, RESOURCE_MATERIAL, new ResourceMaterial(10157, 10158, static_cast<BlendMode>(28))),
+        new Resource(27138, RESOURCE_MATERIAL, new ResourceMaterial(10157, static_cast<BlendMode>(0))),
+        new Resource(27139, RESOURCE_MATERIAL, new ResourceMaterial(10157, BlendMode_1)),
+        new Resource(27140, RESOURCE_MATERIAL, new ResourceMaterial(10157, BlendMode_2)),
+        new Resource(27141, RESOURCE_MATERIAL, new ResourceMaterial(10134, static_cast<BlendMode>(0))),
+        new Resource(27142, RESOURCE_MATERIAL, new ResourceMaterial(10134, BlendMode_1)),
+        new Resource(27143, RESOURCE_MATERIAL, new ResourceMaterial(10134, BlendMode_2)),
+        new Resource(27144, RESOURCE_MATERIAL, new ResourceMaterial(10134, 10135, static_cast<BlendMode>(28))),
+        new Resource(20087, RESOURCE_MATERIAL, new ResourceMaterial(11600, BlendMode_2)),
+        new Resource(27252, RESOURCE_MATERIAL, new ResourceMaterial(11598, BlendMode_2)),
+        new Resource(27253, RESOURCE_MATERIAL, new ResourceMaterial(11598, static_cast<BlendMode>(18))),
+        new Resource(27250, RESOURCE_MATERIAL, new ResourceMaterial(11599, BlendMode_2)),
+        new Resource(20099, RESOURCE_MATERIAL, new ResourceMaterial(11601, BlendMode_2)),
+        new Resource(20101, RESOURCE_MATERIAL, new ResourceMaterial(11602, BlendMode_1)),
+        new Resource(24075, RESOURCE_MATERIAL, new ResourceMaterial(12002, 12003, static_cast<BlendMode>(28))),
+        new Resource(24076, RESOURCE_MATERIAL, new ResourceMaterial(12004, 12005, static_cast<BlendMode>(28))),
+        new Resource(24077, RESOURCE_MATERIAL, new ResourceMaterial(12006, 12007, static_cast<BlendMode>(28))),
+        new Resource(24078, RESOURCE_MATERIAL, new ResourceMaterial(12002, BlendMode_8)),
+        new Resource(24079, RESOURCE_MATERIAL, new ResourceMaterial(12004, BlendMode_8)),
+        new Resource(24080, RESOURCE_MATERIAL, new ResourceMaterial(12006, BlendMode_8)),
+        new Resource(24085, RESOURCE_MATERIAL, new ResourceMaterial(11860, 11861, static_cast<BlendMode>(28))),
+        new Resource(24086, RESOURCE_MATERIAL, new ResourceMaterial(11860, BlendMode_2)),
+        new Resource(24087, RESOURCE_MATERIAL, new ResourceMaterial(11860, BlendMode_8)),
+        new Resource(24081, RESOURCE_MATERIAL, new ResourceMaterial(12050, 12051, static_cast<BlendMode>(28))),
+        new Resource(24082, RESOURCE_MATERIAL, new ResourceMaterial(12052, 12053, static_cast<BlendMode>(28))),
+        new Resource(24083, RESOURCE_MATERIAL, new ResourceMaterial(12054, 12055, static_cast<BlendMode>(28))),
+        new Resource(20103, RESOURCE_MATERIAL, new ResourceMaterial(33002, 33003, static_cast<BlendMode>(28))),
+        new Resource(20111, RESOURCE_MATERIAL, new ResourceMaterial(11594, 11595, static_cast<BlendMode>(28))),
+        new Resource(20113, RESOURCE_MATERIAL, new ResourceMaterial(12008, 12009, static_cast<BlendMode>(28))),
+        new Resource(20121, RESOURCE_MATERIAL, new ResourceMaterial(24210, 24211, static_cast<BlendMode>(28))),
+        new Resource(20122, RESOURCE_MATERIAL, new ResourceMaterial(24212, 24213, static_cast<BlendMode>(28))),
+        new Resource(20123, RESOURCE_MATERIAL, new ResourceMaterial(24214, 24215, static_cast<BlendMode>(28))),
+        new Resource(20154, RESOURCE_MATERIAL, new ResourceMaterial(24210, BlendMode_2)),
+        new Resource(20155, RESOURCE_MATERIAL, new ResourceMaterial(24212, BlendMode_2)),
+        new Resource(20156, RESOURCE_MATERIAL, new ResourceMaterial(24214, BlendMode_2)),
+        new Resource(20125, RESOURCE_MATERIAL, new ResourceMaterial(10148, 10149, static_cast<BlendMode>(28))),
+        new Resource(20126, RESOURCE_MATERIAL, new ResourceMaterial(10148, BlendMode_2)),
+        new Resource(20151, RESOURCE_MATERIAL, new ResourceMaterial(10126, BlendMode_2)),
+        new Resource(20152, RESOURCE_MATERIAL, new ResourceMaterial(10127, BlendMode_2)),
+        new Resource(20153, RESOURCE_MATERIAL, new ResourceMaterial(10128, BlendMode_2)),
+        new Resource(20135, RESOURCE_MATERIAL, new ResourceMaterial(11617, 11618, static_cast<BlendMode>(28))),
+        new Resource(20136, RESOURCE_MATERIAL, new ResourceMaterial(11617, static_cast<BlendMode>(0))),
+        new Resource(20158, RESOURCE_MATERIAL, new ResourceMaterial(11617, BlendMode_2)),
+        new Resource(27145, RESOURCE_MATERIAL, new ResourceMaterial(11615, 11616, static_cast<BlendMode>(28))),
+        new Resource(27146, RESOURCE_MATERIAL, new ResourceMaterial(11615, static_cast<BlendMode>(0))),
+        new Resource(27147, RESOURCE_MATERIAL, new ResourceMaterial(11620, BlendMode_2)),
+        new Resource(34817, RESOURCE_MATERIAL, new ResourceMaterial(34816, BlendMode_2)),
+        new Resource(27162, RESOURCE_MATERIAL, new ResourceMaterial(11628, static_cast<BlendMode>(6))),
+        new Resource(27163, RESOURCE_MATERIAL, new ResourceMaterial(11628, static_cast<BlendMode>(0))),
+        new Resource(27164, RESOURCE_MATERIAL, new ResourceMaterial(11628, BlendMode_2)),
+        new Resource(27165, RESOURCE_MATERIAL, new ResourceMaterial(11628, BlendMode_1)),
+        new Resource(27148, RESOURCE_MATERIAL, new ResourceMaterial(10129, BlendMode_8)),
+        new Resource(27150, RESOURCE_MATERIAL, new ResourceMaterial(11634, 11633, static_cast<BlendMode>(34))),
+        new Resource(27154, RESOURCE_MATERIAL, new ResourceMaterial(11629, static_cast<BlendMode>(6))),
+        new Resource(27155, RESOURCE_MATERIAL, new ResourceMaterial(11629, static_cast<BlendMode>(0))),
+        new Resource(27156, RESOURCE_MATERIAL, new ResourceMaterial(11629, BlendMode_8)),
+        new Resource(27157, RESOURCE_MATERIAL, new ResourceMaterial(11631, static_cast<BlendMode>(6))),
+        new Resource(27158, RESOURCE_MATERIAL, new ResourceMaterial(11631, static_cast<BlendMode>(0))),
+        new Resource(27159, RESOURCE_MATERIAL, new ResourceMaterial(11631, BlendMode_8)),
+        new Resource(27311, RESOURCE_MATERIAL, new ResourceMaterial(11647, BlendMode_2)),
+        new Resource(27254, RESOURCE_MATERIAL, new ResourceMaterial(33240, 33241, static_cast<BlendMode>(28))),
+        new Resource(27255, RESOURCE_MATERIAL, new ResourceMaterial(33242, 33243, static_cast<BlendMode>(28))),
+        new Resource(27256, RESOURCE_MATERIAL, new ResourceMaterial(33244, 33245, static_cast<BlendMode>(28))),
+        new Resource(27257, RESOURCE_MATERIAL, new ResourceMaterial(33246, 33247, static_cast<BlendMode>(28))),
+        new Resource(27260, RESOURCE_MATERIAL, new ResourceMaterial(33300, BlendMode_2)),
+        new Resource(27262, RESOURCE_MATERIAL, new ResourceMaterial(24203, BlendMode_2)),
+        new Resource(34810, RESOURCE_MATERIAL, new ResourceMaterial(24204, 24205, static_cast<BlendMode>(28))),
+        new Resource(34811, RESOURCE_MATERIAL, new ResourceMaterial(24206, 24207, static_cast<BlendMode>(28))),
+        new Resource(11636, RESOURCE_FONT, new ResourceImage(11635, 0)),
+        new Resource(11638, RESOURCE_FONT, new ResourceImage(11637, 0)),
+        new Resource(11640, RESOURCE_FONT, new ResourceImage(11639, 0)),
+        new Resource(11642, RESOURCE_FONT, new ResourceImage(11641, 0)),
+        new Resource(11644, RESOURCE_FONT, new ResourceImage(11643, 0)),
+        new Resource(11646, RESOURCE_FONT, new ResourceImage(11645, 0)),
+        new Resource(1102, RESOURCE_IMAGE, new ResourceImage(10062, 2)),
+        new Resource(1106, RESOURCE_IMAGE, new ResourceImage(10062, 6)),
+        new Resource(1108, RESOURCE_IMAGE, new ResourceImage(10062, 8)),
+        new Resource(1109, RESOURCE_IMAGE, new ResourceImage(10062, 9)),
+        new Resource(1110, RESOURCE_IMAGE, new ResourceImage(10062, 10)),
+        new Resource(1111, RESOURCE_FONT, new ResourceImage(10062, 0)),
+        new Resource(1112, RESOURCE_IMAGE, new ResourceImage(10062, 11)),
+        new Resource(1113, RESOURCE_IMAGE, new ResourceImage(10062, 12)),
+        new Resource(1114, RESOURCE_IMAGE, new ResourceImage(10062, 13)),
+        new Resource(1115, RESOURCE_IMAGE, new ResourceImage(10062, 14)),
+        new Resource(1116, RESOURCE_IMAGE, new ResourceImage(10062, 15)),
+        new Resource(1117, RESOURCE_IMAGE, new ResourceImage(10062, 16)),
+        new Resource(1118, RESOURCE_IMAGE, new ResourceImage(10062, 17)),
+        new Resource(1119, RESOURCE_IMAGE, new ResourceImage(10062, 18)),
+        new Resource(1120, RESOURCE_IMAGE, new ResourceImage(10062, 19)),
+        new Resource(1121, RESOURCE_IMAGE, new ResourceImage(10062, 20)),
+        new Resource(1122, RESOURCE_IMAGE, new ResourceImage(10062, 21)),
+        new Resource(1123, RESOURCE_IMAGE, new ResourceImage(10062, 22)),
+        new Resource(1124, RESOURCE_IMAGE, new ResourceImage(10062, 23)),
+        new Resource(1125, RESOURCE_IMAGE, new ResourceImage(10062, 24)),
+        new Resource(1126, RESOURCE_IMAGE, new ResourceImage(10062, 25)),
+        new Resource(1127, RESOURCE_IMAGE, new ResourceImage(10062, 26)),
+        new Resource(1128, RESOURCE_IMAGE, new ResourceImage(10062, 27)),
+        new Resource(1129, RESOURCE_IMAGE, new ResourceImage(10062, 28)),
+        new Resource(1130, RESOURCE_IMAGE, new ResourceImage(10062, 29)),
+        new Resource(1131, RESOURCE_IMAGE, new ResourceImage(10062, 30)),
+        new Resource(1132, RESOURCE_IMAGE, new ResourceImage(10062, 31)),
+        new Resource(1133, RESOURCE_IMAGE, new ResourceImage(10062, 32)),
+        new Resource(1134, RESOURCE_IMAGE, new ResourceImage(10062, 33)),
+        new Resource(1135, RESOURCE_IMAGE, new ResourceImage(10062, 34)),
+        new Resource(1136, RESOURCE_IMAGE, new ResourceImage(10062, 35)),
+        new Resource(1137, RESOURCE_IMAGE, new ResourceImage(10062, 36)),
+        new Resource(1138, RESOURCE_IMAGE, new ResourceImage(10062, 37)),
+        new Resource(1139, RESOURCE_IMAGE, new ResourceImage(10062, 38)),
+        new Resource(1140, RESOURCE_IMAGE, new ResourceImage(10062, 39)),
+        new Resource(1141, RESOURCE_IMAGE, new ResourceImage(10062, 40)),
+        new Resource(1142, RESOURCE_IMAGE, new ResourceImage(10062, 41)),
+        new Resource(1143, RESOURCE_IMAGE, new ResourceImage(10062, 42)),
+        new Resource(1144, RESOURCE_IMAGE, new ResourceImage(10062, 43)),
+        new Resource(1145, RESOURCE_IMAGE, new ResourceImage(10062, 44)),
+        new Resource(1146, RESOURCE_IMAGE, new ResourceImage(10062, 45)),
+        new Resource(1147, RESOURCE_IMAGE, new ResourceImage(10062, 46)),
+        new Resource(1148, RESOURCE_IMAGE, new ResourceImage(10062, 47)),
+        new Resource(1149, RESOURCE_IMAGE, new ResourceImage(10062, 48)),
+        new Resource(1150, RESOURCE_IMAGE, new ResourceImage(10062, 49)),
+        new Resource(1151, RESOURCE_IMAGE, new ResourceImage(10062, 50)),
+        new Resource(1152, RESOURCE_IMAGE, new ResourceImage(10062, 51)),
+        new Resource(1153, RESOURCE_IMAGE, new ResourceImage(10062, 52)),
+        new Resource(1154, RESOURCE_IMAGE, new ResourceImage(10062, 53)),
+        new Resource(1155, RESOURCE_IMAGE, new ResourceImage(10062, 54)),
+        new Resource(1156, RESOURCE_IMAGE, new ResourceImage(10062, 55)),
+        new Resource(1158, RESOURCE_IMAGE, new ResourceImage(10062, 57)),
+        new Resource(1159, RESOURCE_IMAGE, new ResourceImage(10062, 58)),
+        new Resource(1160, RESOURCE_IMAGE, new ResourceImage(10062, 59)),
+        new Resource(1161, RESOURCE_IMAGE, new ResourceImage(10062, 60)),
+        new Resource(1162, RESOURCE_IMAGE, new ResourceImage(10062, 61)),
+        new Resource(1163, RESOURCE_IMAGE, new ResourceImage(10062, 62)),
+        new Resource(1164, RESOURCE_IMAGE, new ResourceImage(10062, 63)),
+        new Resource(1165, RESOURCE_IMAGE, new ResourceImage(10062, 64)),
+        new Resource(1166, RESOURCE_IMAGE, new ResourceImage(10062, 65)),
+        new Resource(1167, RESOURCE_IMAGE, new ResourceImage(10062, 66)),
+        new Resource(1168, RESOURCE_IMAGE, new ResourceImage(10062, 67)),
+        new Resource(1169, RESOURCE_IMAGE, new ResourceImage(10062, 68)),
+        new Resource(1170, RESOURCE_IMAGE, new ResourceImage(10062, 69)),
+        new Resource(1171, RESOURCE_IMAGE, new ResourceImage(10062, 70)),
+        new Resource(1172, RESOURCE_IMAGE, new ResourceImage(10062, 71)),
+        new Resource(1173, RESOURCE_IMAGE, new ResourceImage(10062, 72)),
+        new Resource(1174, RESOURCE_IMAGE, new ResourceImage(10062, 73)),
+        new Resource(1175, RESOURCE_IMAGE, new ResourceImage(10062, 74)),
+        new Resource(1176, RESOURCE_IMAGE, new ResourceImage(10062, 75)),
+        new Resource(1177, RESOURCE_IMAGE, new ResourceImage(10062, 76)),
+        new Resource(1178, RESOURCE_IMAGE, new ResourceImage(10062, 77)),
+        new Resource(1179, RESOURCE_IMAGE, new ResourceImage(10062, 78)),
+        new Resource(1180, RESOURCE_IMAGE, new ResourceImage(10062, 79)),
+        new Resource(1181, RESOURCE_IMAGE, new ResourceImage(10062, 80)),
+        new Resource(1182, RESOURCE_IMAGE, new ResourceImage(10062, 81)),
+        new Resource(1183, RESOURCE_IMAGE, new ResourceImage(10062, 82)),
+        new Resource(1184, RESOURCE_IMAGE, new ResourceImage(10062, 83)),
+        new Resource(1185, RESOURCE_IMAGE, new ResourceImage(10062, 84)),
+        new Resource(1186, RESOURCE_IMAGE, new ResourceImage(10062, 85)),
+        new Resource(1187, RESOURCE_IMAGE, new ResourceImage(10062, 86)),
+        new Resource(1188, RESOURCE_IMAGE, new ResourceImage(10062, 87)),
+        new Resource(1189, RESOURCE_IMAGE, new ResourceImage(10062, 88)),
+        new Resource(1190, RESOURCE_IMAGE, new ResourceImage(10062, 89)),
+        new Resource(1194, RESOURCE_IMAGE, new ResourceImage(10062, 93)),
+        new Resource(1195, RESOURCE_IMAGE, new ResourceImage(10062, 94)),
+        new Resource(1196, RESOURCE_IMAGE, new ResourceImage(10062, 95)),
+        new Resource(1197, RESOURCE_IMAGE, new ResourceImage(10062, 96)),
+        new Resource(1216, RESOURCE_IMAGE, new ResourceImage(10062, 115)),
+        new Resource(1218, RESOURCE_IMAGE, new ResourceImage(10062, 117)),
+        new Resource(1219, RESOURCE_IMAGE, new ResourceImage(10062, 118)),
+        new Resource(1220, RESOURCE_IMAGE, new ResourceImage(10062, 119)),
+        new Resource(1221, RESOURCE_IMAGE, new ResourceImage(10062, 120)),
+        new Resource(1230, RESOURCE_IMAGE, new ResourceImage(10062, 129)),
+        new Resource(1231, RESOURCE_IMAGE, new ResourceImage(10062, 130)),
+        new Resource(1232, RESOURCE_IMAGE, new ResourceImage(10062, 131)),
+        new Resource(1233, RESOURCE_IMAGE, new ResourceImage(10062, 132)),
+        new Resource(1245, RESOURCE_IMAGE, new ResourceImage(10062, 144)),
+        new Resource(1246, RESOURCE_IMAGE, new ResourceImage(10062, 145)),
+        new Resource(1247, RESOURCE_IMAGE, new ResourceImage(10062, 146)),
+        new Resource(1248, RESOURCE_IMAGE, new ResourceImage(10062, 147)),
+        new Resource(1249, RESOURCE_IMAGE, new ResourceImage(10062, 148)),
+        new Resource(1250, RESOURCE_IMAGE, new ResourceImage(10062, 149)),
+        new Resource(1251, RESOURCE_IMAGE, new ResourceImage(10062, 150)),
+        new Resource(1252, RESOURCE_IMAGE, new ResourceImage(10062, 151)),
+        new Resource(1253, RESOURCE_IMAGE, new ResourceImage(10062, 152)),
+        new Resource(1254, RESOURCE_IMAGE, new ResourceImage(10062, 153)),
+        new Resource(1255, RESOURCE_IMAGE, new ResourceImage(10062, 154)),
+        new Resource(1256, RESOURCE_IMAGE, new ResourceImage(10062, 155)),
+        new Resource(1259, RESOURCE_IMAGE, new ResourceImage(10062, 158)),
+        new Resource(1260, RESOURCE_IMAGE, new ResourceImage(10062, 159)),
+        new Resource(1261, RESOURCE_IMAGE, new ResourceImage(10062, 160)),
+        new Resource(1267, RESOURCE_IMAGE, new ResourceImage(10062, 166)),
+        new Resource(1268, RESOURCE_IMAGE, new ResourceImage(10062, 167)),
+        new Resource(1269, RESOURCE_IMAGE, new ResourceImage(10062, 168)),
+        new Resource(1270, RESOURCE_IMAGE, new ResourceImage(10062, 169)),
+        new Resource(1277, RESOURCE_IMAGE, new ResourceImage(10062, 176)),
+        new Resource(1278, RESOURCE_IMAGE, new ResourceImage(10062, 177)),
+        new Resource(1279, RESOURCE_IMAGE, new ResourceImage(10062, 178)),
+        new Resource(1280, RESOURCE_IMAGE, new ResourceImage(10062, 179)),
+        new Resource(1281, RESOURCE_IMAGE, new ResourceImage(10062, 180)),
+        new Resource(1282, RESOURCE_IMAGE, new ResourceImage(10062, 181)),
+        new Resource(1283, RESOURCE_IMAGE, new ResourceImage(10062, 182)),
+        new Resource(1284, RESOURCE_IMAGE, new ResourceImage(10062, 183)),
+        new Resource(1285, RESOURCE_IMAGE, new ResourceImage(10062, 184)),
+        new Resource(1286, RESOURCE_IMAGE, new ResourceImage(10062, 185)),
+        new Resource(1287, RESOURCE_IMAGE, new ResourceImage(10062, 186)),
+        new Resource(1288, RESOURCE_IMAGE, new ResourceImage(10062, 187)),
+        new Resource(1289, RESOURCE_IMAGE, new ResourceImage(10062, 188)),
+        new Resource(1290, RESOURCE_IMAGE, new ResourceImage(10062, 189)),
+        new Resource(1291, RESOURCE_IMAGE, new ResourceImage(10062, 190)),
+        new Resource(1292, RESOURCE_IMAGE, new ResourceImage(10062, 191)),
+        new Resource(1293, RESOURCE_IMAGE, new ResourceImage(10062, 192)),
+        new Resource(1294, RESOURCE_IMAGE, new ResourceImage(10062, 193)),
+        new Resource(1295, RESOURCE_IMAGE, new ResourceImage(10062, 194)),
+        new Resource(1296, RESOURCE_IMAGE, new ResourceImage(10062, 195)),
+        new Resource(1298, RESOURCE_IMAGE, new ResourceImage(10062, 197)),
+        new Resource(1299, RESOURCE_IMAGE, new ResourceImage(10062, 198)),
+        new Resource(1300, RESOURCE_IMAGE, new ResourceImage(10062, 199)),
+        new Resource(1301, RESOURCE_IMAGE, new ResourceImage(10062, 200)),
+        new Resource(1302, RESOURCE_IMAGE, new ResourceImage(10062, 201)),
+        new Resource(1303, RESOURCE_IMAGE, new ResourceImage(10062, 202)),
+        new Resource(1304, RESOURCE_IMAGE, new ResourceImage(10062, 203)),
+        new Resource(1305, RESOURCE_IMAGE, new ResourceImage(10062, 204)),
+        new Resource(1306, RESOURCE_IMAGE, new ResourceImage(10062, 205)),
+        new Resource(1307, RESOURCE_IMAGE, new ResourceImage(10062, 206)),
+        new Resource(1308, RESOURCE_IMAGE, new ResourceImage(10062, 207)),
+        new Resource(1309, RESOURCE_IMAGE, new ResourceImage(10062, 208)),
+        new Resource(1310, RESOURCE_FONT, new ResourceImage(10062, 1)),
+        new Resource(1311, RESOURCE_IMAGE, new ResourceImage(10062, 209)),
+        new Resource(1313, RESOURCE_IMAGE, new ResourceImage(10062, 211)),
+        new Resource(1314, RESOURCE_IMAGE, new ResourceImage(10062, 212)),
+        new Resource(1315, RESOURCE_IMAGE, new ResourceImage(10062, 213)),
+        new Resource(1335, RESOURCE_IMAGE, new ResourceImage(10062, 233)),
+        new Resource(1336, RESOURCE_IMAGE, new ResourceImage(10062, 234)),
+        new Resource(1337, RESOURCE_IMAGE, new ResourceImage(10062, 235)),
+        new Resource(1338, RESOURCE_IMAGE, new ResourceImage(10062, 236)),
+        new Resource(1339, RESOURCE_IMAGE, new ResourceImage(10062, 237)),
+        new Resource(1340, RESOURCE_IMAGE, new ResourceImage(10062, 238)),
+        new Resource(1341, RESOURCE_IMAGE, new ResourceImage(10062, 239)),
+        new Resource(1342, RESOURCE_IMAGE, new ResourceImage(10062, 240)),
+        new Resource(1349, RESOURCE_IMAGE, new ResourceImage(10062, 247)),
+        new Resource(1352, RESOURCE_IMAGE, new ResourceImage(10062, 250)),
+        new Resource(8000, RESOURCE_IMAGE, new ResourceImage(10089, 0)),
+        new Resource(8001, RESOURCE_IMAGE, new ResourceImage(10089, 1)),
+        new Resource(8002, RESOURCE_IMAGE, new ResourceImage(10089, 2)),
+        new Resource(8003, RESOURCE_IMAGE, new ResourceImage(10089, 3)),
+        new Resource(8004, RESOURCE_IMAGE, new ResourceImage(10089, 4)),
+        new Resource(8005, RESOURCE_IMAGE, new ResourceImage(10089, 5)),
+        new Resource(8006, RESOURCE_IMAGE, new ResourceImage(10089, 6)),
+        new Resource(8007, RESOURCE_IMAGE, new ResourceImage(10089, 7)),
+        new Resource(8008, RESOURCE_IMAGE, new ResourceImage(10089, 8)),
+        new Resource(8009, RESOURCE_IMAGE, new ResourceImage(10089, 9)),
+        new Resource(8010, RESOURCE_IMAGE, new ResourceImage(10089, 10)),
+        new Resource(8011, RESOURCE_IMAGE, new ResourceImage(10089, 11)),
+        new Resource(8012, RESOURCE_IMAGE, new ResourceImage(10089, 12)),
+        new Resource(8013, RESOURCE_IMAGE, new ResourceImage(10089, 13)),
+        new Resource(8014, RESOURCE_IMAGE, new ResourceImage(10089, 14)),
+        new Resource(8015, RESOURCE_IMAGE, new ResourceImage(10089, 15)),
+        new Resource(8016, RESOURCE_IMAGE, new ResourceImage(10089, 16)),
+        new Resource(8017, RESOURCE_IMAGE, new ResourceImage(10089, 17)),
+        new Resource(8018, RESOURCE_IMAGE, new ResourceImage(10089, 18)),
+        new Resource(8019, RESOURCE_IMAGE, new ResourceImage(10089, 19)),
+        new Resource(8020, RESOURCE_IMAGE, new ResourceImage(10089, 20)),
+        new Resource(8021, RESOURCE_IMAGE, new ResourceImage(10089, 21)),
+        new Resource(8022, RESOURCE_IMAGE, new ResourceImage(10089, 22)),
+        new Resource(8023, RESOURCE_IMAGE, new ResourceImage(10089, 23)),
+        new Resource(8024, RESOURCE_IMAGE, new ResourceImage(10089, 24)),
+        new Resource(2200, RESOURCE_IMAGE, new ResourceImage(10064, 0)),
+        new Resource(2201, RESOURCE_IMAGE, new ResourceImage(10064, 1)),
+        new Resource(2202, RESOURCE_IMAGE, new ResourceImage(10064, 2)),
+        new Resource(2203, RESOURCE_IMAGE, new ResourceImage(10064, 3)),
+        new Resource(2204, RESOURCE_IMAGE, new ResourceImage(10064, 4)),
+        new Resource(2205, RESOURCE_IMAGE, new ResourceImage(10064, 5)),
+        new Resource(2206, RESOURCE_IMAGE, new ResourceImage(10064, 6)),
+        new Resource(2207, RESOURCE_IMAGE, new ResourceImage(10064, 7)),
+        new Resource(2208, RESOURCE_IMAGE, new ResourceImage(10064, 8)),
+        new Resource(2209, RESOURCE_IMAGE, new ResourceImage(10064, 9)),
+        new Resource(2210, RESOURCE_IMAGE, new ResourceImage(10064, 10)),
+        new Resource(2211, RESOURCE_IMAGE, new ResourceImage(10064, 11)),
+        new Resource(2212, RESOURCE_IMAGE, new ResourceImage(10064, 12)),
+        new Resource(2213, RESOURCE_IMAGE, new ResourceImage(10064, 13)),
+        new Resource(2214, RESOURCE_IMAGE, new ResourceImage(10064, 14)),
+        new Resource(2215, RESOURCE_IMAGE, new ResourceImage(10064, 15)),
+        new Resource(2216, RESOURCE_IMAGE, new ResourceImage(10064, 16)),
+        new Resource(2217, RESOURCE_IMAGE, new ResourceImage(10064, 17)),
+        new Resource(2218, RESOURCE_IMAGE, new ResourceImage(10064, 18)),
+        new Resource(2219, RESOURCE_IMAGE, new ResourceImage(10064, 19)),
+        new Resource(2220, RESOURCE_IMAGE, new ResourceImage(10064, 20)),
+        new Resource(2221, RESOURCE_IMAGE, new ResourceImage(10064, 21)),
+        new Resource(2222, RESOURCE_IMAGE, new ResourceImage(10064, 22)),
+        new Resource(2223, RESOURCE_IMAGE, new ResourceImage(10064, 23)),
+        new Resource(2224, RESOURCE_IMAGE, new ResourceImage(10064, 24)),
+        new Resource(2225, RESOURCE_IMAGE, new ResourceImage(10064, 25)),
+        new Resource(2226, RESOURCE_IMAGE, new ResourceImage(10064, 26)),
+        new Resource(2227, RESOURCE_IMAGE, new ResourceImage(10064, 27)),
+        new Resource(2228, RESOURCE_IMAGE, new ResourceImage(10064, 28)),
+        new Resource(2229, RESOURCE_IMAGE, new ResourceImage(10064, 29)),
+        new Resource(2230, RESOURCE_IMAGE, new ResourceImage(10064, 30)),
+        new Resource(2231, RESOURCE_IMAGE, new ResourceImage(10064, 31)),
+        new Resource(2232, RESOURCE_IMAGE, new ResourceImage(10064, 32)),
+        new Resource(2233, RESOURCE_IMAGE, new ResourceImage(10064, 33)),
+        new Resource(2234, RESOURCE_IMAGE, new ResourceImage(10064, 34)),
+        new Resource(2235, RESOURCE_IMAGE, new ResourceImage(10064, 35)),
+        new Resource(2236, RESOURCE_IMAGE, new ResourceImage(10064, 36)),
+        new Resource(2237, RESOURCE_IMAGE, new ResourceImage(10064, 37)),
+        new Resource(2238, RESOURCE_IMAGE, new ResourceImage(10064, 38)),
+        new Resource(2239, RESOURCE_IMAGE, new ResourceImage(10064, 39)),
+        new Resource(2240, RESOURCE_IMAGE, new ResourceImage(10064, 40)),
+        new Resource(2241, RESOURCE_IMAGE, new ResourceImage(10064, 41)),
+        new Resource(2242, RESOURCE_IMAGE, new ResourceImage(10064, 42)),
+        new Resource(2243, RESOURCE_IMAGE, new ResourceImage(10064, 43)),
+        new Resource(2244, RESOURCE_IMAGE, new ResourceImage(10064, 44)),
+        new Resource(2245, RESOURCE_IMAGE, new ResourceImage(10064, 45)),
+        new Resource(2246, RESOURCE_IMAGE, new ResourceImage(10064, 46)),
+        new Resource(2247, RESOURCE_IMAGE, new ResourceImage(10064, 47)),
+        new Resource(2248, RESOURCE_IMAGE, new ResourceImage(10064, 48)),
+        new Resource(2249, RESOURCE_IMAGE, new ResourceImage(10064, 49)),
+        new Resource(2250, RESOURCE_IMAGE, new ResourceImage(10064, 50)),
+        new Resource(2251, RESOURCE_IMAGE, new ResourceImage(10064, 51)),
+        new Resource(2252, RESOURCE_IMAGE, new ResourceImage(10064, 52)),
+        new Resource(2253, RESOURCE_IMAGE, new ResourceImage(10064, 53)),
+        new Resource(2254, RESOURCE_IMAGE, new ResourceImage(10064, 54)),
+        new Resource(2255, RESOURCE_IMAGE, new ResourceImage(10064, 55)),
+        new Resource(2256, RESOURCE_IMAGE, new ResourceImage(10064, 56)),
+        new Resource(2257, RESOURCE_IMAGE, new ResourceImage(10064, 57)),
+        new Resource(2258, RESOURCE_IMAGE, new ResourceImage(10064, 58)),
+        new Resource(2259, RESOURCE_IMAGE, new ResourceImage(10064, 59)),
+        new Resource(2260, RESOURCE_IMAGE, new ResourceImage(10064, 60)),
+        new Resource(2261, RESOURCE_IMAGE, new ResourceImage(10064, 61)),
+        new Resource(2262, RESOURCE_IMAGE, new ResourceImage(10064, 62)),
+        new Resource(2263, RESOURCE_IMAGE, new ResourceImage(10064, 63)),
+        new Resource(2264, RESOURCE_IMAGE, new ResourceImage(10064, 64)),
+        new Resource(2265, RESOURCE_IMAGE, new ResourceImage(10064, 65)),
+        new Resource(2266, RESOURCE_IMAGE, new ResourceImage(10064, 66)),
+        new Resource(2267, RESOURCE_IMAGE, new ResourceImage(10064, 67)),
+        new Resource(2268, RESOURCE_IMAGE, new ResourceImage(10064, 68)),
+        new Resource(2269, RESOURCE_IMAGE, new ResourceImage(10064, 69)),
+        new Resource(2270, RESOURCE_IMAGE, new ResourceImage(10064, 70)),
+        new Resource(2271, RESOURCE_IMAGE, new ResourceImage(10064, 71)),
+        new Resource(2272, RESOURCE_IMAGE, new ResourceImage(10064, 72)),
+        new Resource(2273, RESOURCE_IMAGE, new ResourceImage(10064, 73)),
+        new Resource(2274, RESOURCE_IMAGE, new ResourceImage(10064, 74)),
+        new Resource(2275, RESOURCE_IMAGE, new ResourceImage(10064, 75)),
+        new Resource(2276, RESOURCE_IMAGE, new ResourceImage(10064, 76)),
+        new Resource(2277, RESOURCE_IMAGE, new ResourceImage(10064, 77)),
+        new Resource(2278, RESOURCE_IMAGE, new ResourceImage(10064, 78)),
+        new Resource(2279, RESOURCE_IMAGE, new ResourceImage(10064, 79)),
+        new Resource(2280, RESOURCE_IMAGE, new ResourceImage(10064, 80)),
+        new Resource(2281, RESOURCE_IMAGE, new ResourceImage(10064, 81)),
+        new Resource(2282, RESOURCE_IMAGE, new ResourceImage(10064, 82)),
+        new Resource(2283, RESOURCE_IMAGE, new ResourceImage(10064, 83)),
+        new Resource(2284, RESOURCE_IMAGE, new ResourceImage(10064, 84)),
+        new Resource(2285, RESOURCE_IMAGE, new ResourceImage(10064, 85)),
+        new Resource(2286, RESOURCE_IMAGE, new ResourceImage(10064, 86)),
+        new Resource(2287, RESOURCE_IMAGE, new ResourceImage(10064, 87)),
+        new Resource(2288, RESOURCE_IMAGE, new ResourceImage(10064, 88)),
+        new Resource(2289, RESOURCE_IMAGE, new ResourceImage(10064, 89)),
+        new Resource(2290, RESOURCE_IMAGE, new ResourceImage(10064, 90)),
+        new Resource(2291, RESOURCE_IMAGE, new ResourceImage(10064, 91)),
+        new Resource(2292, RESOURCE_IMAGE, new ResourceImage(10064, 92)),
+        new Resource(2293, RESOURCE_IMAGE, new ResourceImage(10064, 93)),
+        new Resource(2294, RESOURCE_IMAGE, new ResourceImage(10064, 94)),
+        new Resource(2295, RESOURCE_IMAGE, new ResourceImage(10064, 95)),
+        new Resource(2296, RESOURCE_IMAGE, new ResourceImage(10064, 96)),
+        new Resource(2297, RESOURCE_IMAGE, new ResourceImage(10064, 97)),
+        new Resource(2298, RESOURCE_IMAGE, new ResourceImage(10064, 98)),
+        new Resource(2299, RESOURCE_IMAGE, new ResourceImage(10064, 99)),
+        new Resource(2300, RESOURCE_IMAGE, new ResourceImage(10064, 100)),
+        new Resource(2301, RESOURCE_IMAGE, new ResourceImage(10064, 101)),
+        new Resource(2302, RESOURCE_IMAGE, new ResourceImage(10064, 102)),
+        new Resource(2303, RESOURCE_IMAGE, new ResourceImage(10064, 103)),
+        new Resource(2304, RESOURCE_IMAGE, new ResourceImage(10064, 104)),
+        new Resource(2305, RESOURCE_IMAGE, new ResourceImage(10064, 105)),
+        new Resource(2306, RESOURCE_IMAGE, new ResourceImage(10064, 106)),
+        new Resource(2307, RESOURCE_IMAGE, new ResourceImage(10064, 107)),
+        new Resource(2308, RESOURCE_IMAGE, new ResourceImage(10064, 108)),
+        new Resource(2309, RESOURCE_IMAGE, new ResourceImage(10064, 109)),
+        new Resource(2310, RESOURCE_IMAGE, new ResourceImage(10064, 110)),
+        new Resource(2311, RESOURCE_IMAGE, new ResourceImage(10064, 111)),
+        new Resource(2312, RESOURCE_IMAGE, new ResourceImage(10064, 112)),
+        new Resource(2313, RESOURCE_IMAGE, new ResourceImage(10064, 113)),
+        new Resource(2314, RESOURCE_IMAGE, new ResourceImage(10064, 114)),
+        new Resource(2315, RESOURCE_IMAGE, new ResourceImage(10064, 115)),
+        new Resource(2316, RESOURCE_IMAGE, new ResourceImage(10064, 116)),
+        new Resource(2317, RESOURCE_IMAGE, new ResourceImage(10064, 117)),
+        new Resource(2318, RESOURCE_IMAGE, new ResourceImage(10064, 118)),
+        new Resource(2319, RESOURCE_IMAGE, new ResourceImage(10064, 119)),
+        new Resource(2320, RESOURCE_IMAGE, new ResourceImage(10064, 120)),
+        new Resource(2321, RESOURCE_IMAGE, new ResourceImage(10064, 121)),
+        new Resource(2322, RESOURCE_IMAGE, new ResourceImage(10064, 122)),
+        new Resource(2323, RESOURCE_IMAGE, new ResourceImage(10064, 123)),
+        new Resource(2324, RESOURCE_IMAGE, new ResourceImage(10064, 124)),
+        new Resource(2325, RESOURCE_IMAGE, new ResourceImage(10064, 125)),
+        new Resource(2326, RESOURCE_IMAGE, new ResourceImage(10064, 126)),
+        new Resource(2327, RESOURCE_IMAGE, new ResourceImage(10064, 127)),
+        new Resource(2328, RESOURCE_IMAGE, new ResourceImage(10064, 128)),
+        new Resource(2329, RESOURCE_IMAGE, new ResourceImage(10064, 129)),
+        new Resource(2330, RESOURCE_IMAGE, new ResourceImage(10064, 130)),
+        new Resource(2331, RESOURCE_IMAGE, new ResourceImage(10064, 131)),
+        new Resource(2332, RESOURCE_IMAGE, new ResourceImage(10064, 132)),
+        new Resource(2333, RESOURCE_IMAGE, new ResourceImage(10064, 133)),
+        new Resource(2334, RESOURCE_IMAGE, new ResourceImage(10064, 134)),
+        new Resource(2335, RESOURCE_IMAGE, new ResourceImage(10064, 135)),
+        new Resource(2336, RESOURCE_IMAGE, new ResourceImage(10064, 136)),
+        new Resource(2337, RESOURCE_IMAGE, new ResourceImage(10064, 137)),
+        new Resource(2338, RESOURCE_IMAGE, new ResourceImage(10064, 138)),
+        new Resource(2339, RESOURCE_IMAGE, new ResourceImage(10064, 139)),
+        new Resource(2340, RESOURCE_IMAGE, new ResourceImage(10064, 140)),
+        new Resource(2341, RESOURCE_IMAGE, new ResourceImage(10064, 141)),
+        new Resource(2342, RESOURCE_IMAGE, new ResourceImage(10064, 142)),
+        new Resource(2343, RESOURCE_IMAGE, new ResourceImage(10064, 143)),
+        new Resource(2344, RESOURCE_IMAGE, new ResourceImage(10064, 144)),
+        new Resource(2345, RESOURCE_IMAGE, new ResourceImage(10064, 145)),
+        new Resource(2346, RESOURCE_IMAGE, new ResourceImage(10064, 146)),
+        new Resource(2347, RESOURCE_IMAGE, new ResourceImage(10064, 147)),
+        new Resource(2348, RESOURCE_IMAGE, new ResourceImage(10064, 148)),
+        new Resource(2349, RESOURCE_IMAGE, new ResourceImage(10064, 149)),
+        new Resource(2350, RESOURCE_IMAGE, new ResourceImage(10064, 150)),
+        new Resource(2351, RESOURCE_IMAGE, new ResourceImage(10064, 151)),
+        new Resource(2352, RESOURCE_IMAGE, new ResourceImage(10064, 152)),
+        new Resource(2353, RESOURCE_IMAGE, new ResourceImage(10064, 153)),
+        new Resource(2354, RESOURCE_IMAGE, new ResourceImage(10064, 154)),
+        new Resource(2355, RESOURCE_IMAGE, new ResourceImage(10064, 155)),
+        new Resource(2356, RESOURCE_IMAGE, new ResourceImage(10064, 156)),
+        new Resource(2357, RESOURCE_IMAGE, new ResourceImage(10064, 157)),
+        new Resource(2358, RESOURCE_IMAGE, new ResourceImage(10064, 158)),
+        new Resource(2359, RESOURCE_IMAGE, new ResourceImage(10064, 159)),
+        new Resource(2360, RESOURCE_IMAGE, new ResourceImage(10064, 160)),
+        new Resource(2361, RESOURCE_IMAGE, new ResourceImage(10064, 161)),
+        new Resource(2362, RESOURCE_IMAGE, new ResourceImage(10064, 162)),
+        new Resource(2363, RESOURCE_IMAGE, new ResourceImage(10064, 163)),
+        new Resource(2364, RESOURCE_IMAGE, new ResourceImage(10064, 164)),
+        new Resource(2365, RESOURCE_IMAGE, new ResourceImage(10064, 165)),
+        new Resource(2366, RESOURCE_IMAGE, new ResourceImage(10064, 166)),
+        new Resource(2367, RESOURCE_IMAGE, new ResourceImage(10064, 167)),
+        new Resource(2368, RESOURCE_IMAGE, new ResourceImage(10064, 168)),
+        new Resource(2369, RESOURCE_IMAGE, new ResourceImage(10064, 169)),
+        new Resource(2370, RESOURCE_IMAGE, new ResourceImage(10064, 170)),
+        new Resource(2371, RESOURCE_IMAGE, new ResourceImage(10064, 171)),
+        new Resource(2372, RESOURCE_IMAGE, new ResourceImage(10064, 172)),
+        new Resource(2373, RESOURCE_IMAGE, new ResourceImage(10064, 173)),
+        new Resource(2374, RESOURCE_IMAGE, new ResourceImage(10064, 174)),
+        new Resource(2375, RESOURCE_IMAGE, new ResourceImage(10064, 175)),
+        new Resource(2376, RESOURCE_IMAGE, new ResourceImage(10064, 176)),
+        new Resource(2377, RESOURCE_IMAGE, new ResourceImage(10064, 177)),
+        new Resource(2378, RESOURCE_IMAGE, new ResourceImage(10064, 178)),
+        new Resource(2379, RESOURCE_IMAGE, new ResourceImage(10064, 179)),
+        new Resource(2380, RESOURCE_IMAGE, new ResourceImage(10064, 180)),
+        new Resource(2381, RESOURCE_IMAGE, new ResourceImage(10064, 181)),
+        new Resource(2382, RESOURCE_IMAGE, new ResourceImage(10064, 182)),
+        new Resource(2383, RESOURCE_IMAGE, new ResourceImage(10064, 183)),
+        new Resource(2384, RESOURCE_IMAGE, new ResourceImage(10064, 184)),
+        new Resource(2385, RESOURCE_IMAGE, new ResourceImage(10064, 185)),
+        new Resource(2386, RESOURCE_IMAGE, new ResourceImage(10064, 186)),
+        new Resource(2387, RESOURCE_IMAGE, new ResourceImage(10064, 187)),
+        new Resource(2388, RESOURCE_IMAGE, new ResourceImage(10064, 188)),
+        new Resource(2389, RESOURCE_IMAGE, new ResourceImage(10064, 189)),
+        new Resource(2390, RESOURCE_IMAGE, new ResourceImage(10064, 190)),
+        new Resource(2391, RESOURCE_IMAGE, new ResourceImage(10064, 191)),
+        new Resource(2392, RESOURCE_IMAGE, new ResourceImage(10064, 192)),
+        new Resource(2393, RESOURCE_IMAGE, new ResourceImage(10064, 193)),
+        new Resource(2394, RESOURCE_IMAGE, new ResourceImage(10064, 194)),
+        new Resource(2395, RESOURCE_IMAGE, new ResourceImage(10064, 195)),
+        new Resource(2396, RESOURCE_IMAGE, new ResourceImage(10064, 196)),
+        new Resource(2397, RESOURCE_IMAGE, new ResourceImage(10064, 197)),
+        new Resource(2398, RESOURCE_IMAGE, new ResourceImage(10064, 198)),
+        new Resource(2399, RESOURCE_IMAGE, new ResourceImage(10064, 199)),
+        new Resource(2400, RESOURCE_IMAGE, new ResourceImage(10064, 200)),
+        new Resource(2401, RESOURCE_IMAGE, new ResourceImage(10064, 201)),
+        new Resource(2402, RESOURCE_IMAGE, new ResourceImage(10064, 202)),
+        new Resource(2403, RESOURCE_IMAGE, new ResourceImage(10064, 203)),
+        new Resource(2404, RESOURCE_IMAGE, new ResourceImage(10064, 204)),
+        new Resource(2405, RESOURCE_IMAGE, new ResourceImage(10064, 205)),
+        new Resource(2406, RESOURCE_IMAGE, new ResourceImage(10064, 206)),
+        new Resource(2407, RESOURCE_IMAGE, new ResourceImage(10064, 207)),
+        new Resource(2408, RESOURCE_IMAGE, new ResourceImage(10064, 208)),
+        new Resource(2409, RESOURCE_IMAGE, new ResourceImage(10064, 209)),
+        new Resource(2410, RESOURCE_IMAGE, new ResourceImage(10064, 210)),
+        new Resource(2411, RESOURCE_IMAGE, new ResourceImage(10064, 211)),
+        new Resource(2412, RESOURCE_IMAGE, new ResourceImage(10064, 212)),
+        new Resource(2413, RESOURCE_IMAGE, new ResourceImage(10064, 213)),
+        new Resource(2414, RESOURCE_IMAGE, new ResourceImage(10064, 214)),
+        new Resource(2415, RESOURCE_IMAGE, new ResourceImage(10064, 215)),
+        new Resource(2416, RESOURCE_IMAGE, new ResourceImage(10064, 216)),
+        new Resource(2417, RESOURCE_IMAGE, new ResourceImage(10064, 217)),
+        new Resource(2418, RESOURCE_IMAGE, new ResourceImage(10064, 218)),
+        new Resource(2419, RESOURCE_IMAGE, new ResourceImage(10064, 219)),
+        new Resource(2420, RESOURCE_IMAGE, new ResourceImage(10064, 220)),
+        new Resource(2421, RESOURCE_IMAGE, new ResourceImage(10064, 221)),
+        new Resource(2422, RESOURCE_IMAGE, new ResourceImage(10064, 222)),
+        new Resource(2423, RESOURCE_IMAGE, new ResourceImage(10064, 223)),
+        new Resource(2424, RESOURCE_IMAGE, new ResourceImage(10064, 224)),
+        new Resource(2425, RESOURCE_IMAGE, new ResourceImage(10064, 225)),
+        new Resource(2426, RESOURCE_IMAGE, new ResourceImage(10064, 226)),
+        new Resource(2427, RESOURCE_IMAGE, new ResourceImage(10064, 227)),
+        new Resource(2428, RESOURCE_IMAGE, new ResourceImage(10064, 228)),
+        new Resource(2429, RESOURCE_IMAGE, new ResourceImage(10064, 229)),
+        new Resource(2430, RESOURCE_IMAGE, new ResourceImage(10064, 230)),
+        new Resource(2431, RESOURCE_IMAGE, new ResourceImage(10064, 231)),
+        new Resource(2432, RESOURCE_IMAGE, new ResourceImage(10064, 232)),
+        new Resource(2433, RESOURCE_IMAGE, new ResourceImage(10064, 233)),
+        new Resource(2434, RESOURCE_IMAGE, new ResourceImage(10064, 234)),
+        new Resource(2435, RESOURCE_IMAGE, new ResourceImage(10064, 235)),
+        new Resource(2436, RESOURCE_IMAGE, new ResourceImage(10064, 236)),
+        new Resource(2437, RESOURCE_IMAGE, new ResourceImage(10064, 237)),
+        new Resource(2438, RESOURCE_IMAGE, new ResourceImage(10064, 238)),
+        new Resource(2439, RESOURCE_IMAGE, new ResourceImage(10064, 239)),
+        new Resource(2440, RESOURCE_IMAGE, new ResourceImage(10064, 240)),
+        new Resource(2441, RESOURCE_IMAGE, new ResourceImage(10064, 241)),
+        new Resource(2442, RESOURCE_IMAGE, new ResourceImage(10064, 242)),
+        new Resource(2443, RESOURCE_IMAGE, new ResourceImage(10064, 243)),
+        new Resource(2444, RESOURCE_IMAGE, new ResourceImage(10064, 244)),
+        new Resource(2445, RESOURCE_IMAGE, new ResourceImage(10064, 245)),
+        new Resource(2446, RESOURCE_IMAGE, new ResourceImage(10064, 246)),
+        new Resource(2447, RESOURCE_IMAGE, new ResourceImage(10064, 247)),
+        new Resource(2448, RESOURCE_IMAGE, new ResourceImage(10064, 248)),
+        new Resource(2449, RESOURCE_IMAGE, new ResourceImage(10064, 249)),
+        new Resource(2450, RESOURCE_IMAGE, new ResourceImage(10064, 250)),
+        new Resource(2451, RESOURCE_IMAGE, new ResourceImage(10064, 251)),
+        new Resource(2452, RESOURCE_IMAGE, new ResourceImage(10064, 252)),
+        new Resource(2453, RESOURCE_IMAGE, new ResourceImage(10064, 253)),
+        new Resource(2454, RESOURCE_IMAGE, new ResourceImage(10064, 254)),
+        new Resource(2455, RESOURCE_IMAGE, new ResourceImage(10064, 255)),
+        new Resource(2456, RESOURCE_IMAGE, new ResourceImage(10064, 256)),
+        new Resource(2457, RESOURCE_IMAGE, new ResourceImage(10064, 257)),
+        new Resource(2458, RESOURCE_IMAGE, new ResourceImage(10064, 258)),
+        new Resource(2459, RESOURCE_IMAGE, new ResourceImage(10064, 259)),
+        new Resource(2460, RESOURCE_IMAGE, new ResourceImage(10064, 260)),
+        new Resource(2461, RESOURCE_IMAGE, new ResourceImage(10064, 261)),
+        new Resource(2462, RESOURCE_IMAGE, new ResourceImage(10064, 262)),
+        new Resource(2463, RESOURCE_IMAGE, new ResourceImage(10064, 263)),
+        new Resource(2464, RESOURCE_IMAGE, new ResourceImage(10064, 264)),
+        new Resource(2465, RESOURCE_IMAGE, new ResourceImage(10064, 265)),
+        new Resource(2466, RESOURCE_IMAGE, new ResourceImage(10064, 266)),
+        new Resource(2467, RESOURCE_IMAGE, new ResourceImage(10064, 267)),
+        new Resource(2468, RESOURCE_IMAGE, new ResourceImage(10064, 268)),
+        new Resource(2469, RESOURCE_IMAGE, new ResourceImage(10064, 269)),
+        new Resource(2470, RESOURCE_IMAGE, new ResourceImage(10064, 270)),
+        new Resource(2471, RESOURCE_IMAGE, new ResourceImage(10064, 271)),
+        new Resource(4000, RESOURCE_IMAGE, new ResourceImage(11632, 0)),
+        new Resource(4001, RESOURCE_IMAGE, new ResourceImage(11632, 1)),
+        new Resource(4002, RESOURCE_IMAGE, new ResourceImage(11632, 2)),
+        new Resource(4003, RESOURCE_IMAGE, new ResourceImage(11632, 3)),
+        new Resource(4004, RESOURCE_IMAGE, new ResourceImage(11632, 4)),
+        new Resource(4005, RESOURCE_IMAGE, new ResourceImage(11632, 5)),
+        new Resource(4006, RESOURCE_IMAGE, new ResourceImage(11632, 6)),
+        new Resource(4007, RESOURCE_IMAGE, new ResourceImage(11632, 7)),
+        new Resource(4008, RESOURCE_IMAGE, new ResourceImage(11632, 8)),
+        new Resource(4009, RESOURCE_IMAGE, new ResourceImage(11632, 9)),
+        new Resource(4010, RESOURCE_IMAGE, new ResourceImage(11632, 10)),
+        new Resource(4011, RESOURCE_IMAGE, new ResourceImage(11632, 11)),
+        new Resource(4012, RESOURCE_IMAGE, new ResourceImage(11632, 12)),
+        new Resource(4013, RESOURCE_IMAGE, new ResourceImage(11632, 13)),
+        new Resource(4014, RESOURCE_IMAGE, new ResourceImage(11632, 14)),
+        new Resource(4015, RESOURCE_IMAGE, new ResourceImage(11632, 15)),
+        new Resource(4016, RESOURCE_IMAGE, new ResourceImage(11632, 16)),
+        new Resource(4017, RESOURCE_IMAGE, new ResourceImage(11632, 17)),
+        new Resource(4018, RESOURCE_IMAGE, new ResourceImage(11632, 18)),
+        new Resource(4019, RESOURCE_IMAGE, new ResourceImage(11632, 19)),
+        new Resource(4020, RESOURCE_IMAGE, new ResourceImage(11632, 20)),
+        new Resource(4021, RESOURCE_IMAGE, new ResourceImage(11632, 21)),
+        new Resource(4022, RESOURCE_IMAGE, new ResourceImage(11632, 22)),
+        new Resource(4023, RESOURCE_IMAGE, new ResourceImage(11632, 23)),
+        new Resource(4024, RESOURCE_IMAGE, new ResourceImage(11632, 24)),
+        new Resource(4025, RESOURCE_IMAGE, new ResourceImage(11632, 25)),
+        new Resource(4026, RESOURCE_IMAGE, new ResourceImage(11632, 26)),
+        new Resource(4027, RESOURCE_IMAGE, new ResourceImage(11632, 27)),
+        new Resource(4028, RESOURCE_IMAGE, new ResourceImage(11632, 28)),
+        new Resource(4029, RESOURCE_IMAGE, new ResourceImage(11632, 29)),
+        new Resource(4030, RESOURCE_IMAGE, new ResourceImage(11632, 30)),
+        new Resource(4031, RESOURCE_IMAGE, new ResourceImage(11632, 31)),
+        new Resource(4032, RESOURCE_IMAGE, new ResourceImage(11632, 32)),
+        new Resource(4033, RESOURCE_IMAGE, new ResourceImage(11632, 33)),
+        new Resource(4034, RESOURCE_IMAGE, new ResourceImage(11632, 34)),
+        new Resource(4035, RESOURCE_IMAGE, new ResourceImage(11632, 35)),
+        new Resource(4036, RESOURCE_IMAGE, new ResourceImage(11632, 36)),
+        new Resource(4037, RESOURCE_IMAGE, new ResourceImage(11632, 37)),
+        new Resource(4038, RESOURCE_IMAGE, new ResourceImage(11632, 38)),
+        new Resource(4039, RESOURCE_IMAGE, new ResourceImage(11632, 39)),
+        new Resource(4040, RESOURCE_IMAGE, new ResourceImage(11632, 40)),
+        new Resource(4041, RESOURCE_IMAGE, new ResourceImage(11632, 41)),
+        new Resource(4042, RESOURCE_IMAGE, new ResourceImage(11632, 42)),
+        new Resource(4043, RESOURCE_IMAGE, new ResourceImage(11632, 43)),
+        new Resource(4044, RESOURCE_IMAGE, new ResourceImage(11632, 44)),
+        new Resource(4045, RESOURCE_IMAGE, new ResourceImage(11632, 45)),
+        new Resource(4046, RESOURCE_IMAGE, new ResourceImage(11632, 46)),
+        new Resource(4047, RESOURCE_IMAGE, new ResourceImage(11632, 47)),
+        new Resource(4048, RESOURCE_IMAGE, new ResourceImage(11632, 48)),
+        new Resource(4049, RESOURCE_IMAGE, new ResourceImage(11632, 49)),
+        new Resource(4050, RESOURCE_IMAGE, new ResourceImage(11632, 50)),
+        new Resource(4051, RESOURCE_IMAGE, new ResourceImage(11632, 51)),
+        new Resource(4052, RESOURCE_IMAGE, new ResourceImage(11632, 52)),
+        new Resource(4053, RESOURCE_IMAGE, new ResourceImage(11632, 53)),
+        new Resource(4054, RESOURCE_IMAGE, new ResourceImage(11632, 54)),
+        new Resource(4055, RESOURCE_IMAGE, new ResourceImage(11632, 55)),
+        new Resource(4056, RESOURCE_IMAGE, new ResourceImage(11632, 56)),
+        new Resource(2472, RESOURCE_IMAGE, new ResourceImage(11632, 57)),
+        new Resource(2473, RESOURCE_IMAGE, new ResourceImage(11632, 58)),
+        new Resource(2474, RESOURCE_IMAGE, new ResourceImage(11632, 59)),
+        new Resource(2475, RESOURCE_IMAGE, new ResourceImage(11632, 60)),
+        new Resource(2476, RESOURCE_IMAGE, new ResourceImage(11632, 61)),
+        new Resource(2477, RESOURCE_IMAGE, new ResourceImage(11632, 62)),
+        new Resource(2478, RESOURCE_IMAGE, new ResourceImage(11632, 63)),
+        new Resource(2479, RESOURCE_IMAGE, new ResourceImage(11632, 64)),
+        new Resource(2480, RESOURCE_IMAGE, new ResourceImage(11632, 65)),
+        new Resource(5500, RESOURCE_IMAGE, new ResourceImage(10064, 0)),
+        new Resource(5501, RESOURCE_IMAGE, new ResourceImage(10064, 1)),
+        new Resource(5502, RESOURCE_IMAGE, new ResourceImage(10064, 2)),
+        new Resource(7000, RESOURCE_IMAGE, new ResourceImage(10002, 0)),
+        new Resource(7001, RESOURCE_IMAGE, new ResourceImage(10002, 1)),
+        new Resource(7002, RESOURCE_IMAGE, new ResourceImage(10002, 2)),
+        new Resource(7003, RESOURCE_IMAGE, new ResourceImage(10002, 3)),
+        new Resource(7004, RESOURCE_IMAGE, new ResourceImage(10002, 4)),
+        new Resource(6000, RESOURCE_IMAGE, new ResourceImage(27341, 0)),
+        new Resource(6001, RESOURCE_IMAGE, new ResourceImage(27341, 1)),
+        new Resource(6002, RESOURCE_IMAGE, new ResourceImage(27341, 2)),
+        new Resource(6003, RESOURCE_IMAGE, new ResourceImage(27341, 3)),
+        new Resource(6004, RESOURCE_IMAGE, new ResourceImage(27341, 4)),
+        new Resource(6005, RESOURCE_IMAGE, new ResourceImage(27341, 5)),
+        new Resource(6006, RESOURCE_IMAGE, new ResourceImage(27341, 6)),
+        new Resource(6007, RESOURCE_IMAGE, new ResourceImage(27341, 7)),
+        new Resource(6008, RESOURCE_IMAGE, new ResourceImage(27341, 8)),
+        new Resource(6009, RESOURCE_IMAGE, new ResourceImage(27341, 9)),
+        new Resource(6010, RESOURCE_IMAGE, new ResourceImage(27341, 10)),
+        new Resource(6600, RESOURCE_IMAGE, new ResourceImage(29500, 0)),
+        new Resource(6601, RESOURCE_IMAGE, new ResourceImage(29500, 1)),
+        new Resource(6602, RESOURCE_IMAGE, new ResourceImage(29500, 2)),
+        new Resource(6603, RESOURCE_IMAGE, new ResourceImage(29500, 3)),
+        new Resource(6604, RESOURCE_IMAGE, new ResourceImage(29500, 4)),
+        new Resource(6605, RESOURCE_IMAGE, new ResourceImage(29500, 5)),
+        new Resource(6606, RESOURCE_IMAGE, new ResourceImage(29500, 6)),
+        new Resource(6607, RESOURCE_IMAGE, new ResourceImage(29500, 7)),
+        new Resource(6650, RESOURCE_IMAGE, new ResourceImage(29501, 0)),
+        new Resource(14379, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian.aem", 24071, false)),
+        new Resource(14310, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_add.aem", 20069, false)),
+        new Resource(14264, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_alpha.aem", 20106, false)),
+        new Resource(14377, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk.aem", 24074, false)),
+        new Resource(14304, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk_anim_add.aem", 20071, false)),
+        new Resource(14378, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian.aem", 24073, false)),
+        new Resource(14307, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_alpha.aem", 20074, false)),
+        new Resource(14308, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_add.aem", 20075, false)),
+        new Resource(14376, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran.aem", 24070, false)),
+        new Resource(14301, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_alpha.aem", 20077, false)),
+        new Resource(14302, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_add.aem", 20078, false)),
+        new Resource(14354, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation.aem", 20157, false)),
+        new Resource(14355, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_emissive.aem", 27138, false)),
+        new Resource(14356, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_alpha.aem", 27139, false)),
+        new Resource(14357, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_add.aem", 27140, false)),
+        new Resource(14358, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_emissive.aem", 27141, false)),
+        new Resource(14359, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_alpha.aem", 27142, false)),
+        new Resource(14360, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_anim_add.aem", 27143, false)),
+        new Resource(14362, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science.aem", 27144, false)),
+        new Resource(14265, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim.aem", 24070, false)),
+        new Resource(14266, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim.aem", 24070, false)),
+        new Resource(14267, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim.aem", 24070, false)),
+        new Resource(14268, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim.aem", 24070, false)),
+        new Resource(14269, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim_add.aem", 20078, false)),
+        new Resource(14270, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim_add.aem", 20078, false)),
+        new Resource(14271, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim_add.aem", 20078, false)),
+        new Resource(14272, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim_add.aem", 20078, false)),
+        new Resource(14273, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim.aem", 24073, false)),
+        new Resource(14274, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim.aem", 24073, false)),
+        new Resource(14275, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim.aem", 24073, false)),
+        new Resource(14276, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim_add.aem", 20075, false)),
+        new Resource(14277, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim_add.aem", 20075, false)),
+        new Resource(14278, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim_add.aem", 20075, false)),
+        new Resource(14380, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1.aem", 24070, false)),
+        new Resource(14381, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1_shadow_alpha.aem", 20077, false)),
+        new Resource(14382, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2.aem", 24070, false)),
+        new Resource(14383, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2_shadow_alpha.aem", 20077, false)),
+        new Resource(14384, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3.aem", 24070, false)),
+        new Resource(14385, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3_shadow_alpha.aem", 20077, false)),
+        new Resource(14386, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4.aem", 24070, false)),
+        new Resource(14387, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4_shadow_alpha.aem", 20077, false)),
+        new Resource(14388, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5.aem", 24070, false)),
+        new Resource(14389, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5_shadow_alpha.aem", 20077, false)),
+        new Resource(14390, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x6.aem", 24070, false)),
+        new Resource(14391, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1.aem", 24071, false)),
+        new Resource(14392, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1_shadow_alpha.aem", 20106, false)),
+        new Resource(14393, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2.aem", 24071, false)),
+        new Resource(14394, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2_shadow_alpha.aem", 20106, false)),
+        new Resource(14395, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3.aem", 24071, false)),
+        new Resource(14396, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3_shadow_alpha.aem", 20106, false)),
+        new Resource(14397, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4.aem", 24071, false)),
+        new Resource(14398, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4_shadow_alpha.aem", 20106, false)),
+        new Resource(14399, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false)),
+        new Resource(14400, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false)),
+        new Resource(14401, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false)),
+        new Resource(14402, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false)),
+        new Resource(14403, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1.aem", 24073, false)),
+        new Resource(14404, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1_shadow_alpha.aem", 20074, false)),
+        new Resource(14405, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2.aem", 24073, false)),
+        new Resource(14406, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2_shadow_alpha.aem", 20074, false)),
+        new Resource(14407, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3.aem", 24073, false)),
+        new Resource(14408, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3_shadow_alpha.aem", 20074, false)),
+        new Resource(14409, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4.aem", 24073, false)),
+        new Resource(14410, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4_shadow_alpha.aem", 20074, false)),
+        new Resource(14411, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5.aem", 24073, false)),
+        new Resource(14412, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5_shadow_alpha.aem", 20074, false)),
+        new Resource(14025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran.aem", 20056, false)),
+        new Resource(14026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_add.aem", 20057, false)),
+        new Resource(14027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_alpha.aem", 20058, false)),
+        new Resource(14280, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim.aem", 20056, false)),
+        new Resource(14279, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim_add.aem", 20057, false)),
+        new Resource(14028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk.aem", 20059, false)),
+        new Resource(14029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk_anim_add.aem", 20060, false)),
+        new Resource(14031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian.aem", 20062, false)),
+        new Resource(14032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_anim_add.aem", 20063, false)),
+        new Resource(14033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_alpha.aem", 20064, false)),
+        new Resource(14034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_anim.aem", 20065, false)),
+        new Resource(14035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_add.aem", 20066, false)),
+        new Resource(14036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha.aem", 20067, false)),
+        new Resource(14038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha_anim.aem", 20067, false)),
+        new Resource(14725, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_m.aem", 20119, false)),
+        new Resource(14724, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_f.aem", 20118, false)),
+        new Resource(14726, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_vossk.aem", 20120, false)),
+        new Resource(14723, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_nivelian.aem", 20117, false)),
+        new Resource(14722, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_multipod.aem", 20116, false)),
+        new Resource(14720, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_bobolan.aem", 20114, false)),
+        new Resource(14721, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_grey.aem", 20115, false)),
+        new Resource(14281, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34800, false)),
+        new Resource(14282, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34801, false)),
+        new Resource(14283, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34802, false)),
+        new Resource(14284, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 34803, false)),
+        new Resource(14348, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_shadow.aem", 34804, false)),
+        new Resource(17800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_000.aem", 20009, false)),
+        new Resource(17801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_001.aem", 20010, false)),
+        new Resource(17802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_002.aem", 20011, false)),
+        new Resource(17803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_003.aem", 20012, false)),
+        new Resource(17804, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_004.aem", 20013, false)),
+        new Resource(17805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_005.aem", 20014, false)),
+        new Resource(17806, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_006.aem", 20015, false)),
+        new Resource(17807, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_007.aem", 20016, false)),
+        new Resource(17808, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_008.aem", 20017, false)),
+        new Resource(17809, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_009.aem", 20018, false)),
+        new Resource(17810, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_010.aem", 20019, false)),
+        new Resource(17811, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_011.aem", 20130, false)),
+        new Resource(17812, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_012.aem", 20131, false)),
+        new Resource(17813, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 20132, false)),
+        new Resource(17814, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 27149, false)),
+        new Resource(17850, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20009, false)),
+        new Resource(17851, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20010, false)),
+        new Resource(17852, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20011, false)),
+        new Resource(6768, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 65535, false)),
+        new Resource(16916, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_005_void.aem", 34208, false)),
+        new Resource(16805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_emp_anim_lookat_add.aem", 27300, false)),
+        new Resource(16820, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_add.aem", 27252, false)),
+        new Resource(16821, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_alpha.aem", 27253, false)),
+        new Resource(16806, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20151, false)),
+        new Resource(16807, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20152, false)),
+        new Resource(16808, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20153, false)),
+        new Resource(6754, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_000_anim_add.aem", 24201, false)),
+        new Resource(6755, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_001_anim_add.aem", 24201, false)),
+        new Resource(6756, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_002_anim_add.aem", 24201, false)),
+        new Resource(6760, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_003_anim_add.aem", 24201, false)),
+        new Resource(6761, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_004_anim_add.aem", 24201, false)),
+        new Resource(6762, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_005_anim_add.aem", 24201, false)),
+        new Resource(6763, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_006_anim_add.aem", 24201, false)),
+        new Resource(6764, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_007_anim_add.aem", 24201, false)),
+        new Resource(6765, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_008_anim_add.aem", 24201, false)),
+        new Resource(14297, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_183_anim_add.aem", 24096, false)),
+        new Resource(6788, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_012_anim_add.aem", 24201, false)),
+        new Resource(6789, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_013_anim_add.aem", 24201, false)),
+        new Resource(6790, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_014_anim_add.aem", 24201, false)),
+        new Resource(6791, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_015_anim_add.aem", 24201, false)),
+        new Resource(6792, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_016_anim_add.aem", 24201, false)),
+        new Resource(6793, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_017_anim_add.aem", 24201, false)),
+        new Resource(6794, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_018_anim_add.aem", 24201, false)),
+        new Resource(6795, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_019_anim_add.aem", 24201, false)),
+        new Resource(6796, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_020_anim_add.aem", 24201, false)),
+        new Resource(6797, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_021_anim_add.aem", 24201, false)),
+        new Resource(6798, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_022_anim_add.aem", 24201, false)),
+        new Resource(6799, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_023_anim_add.aem", 24201, false)),
+        new Resource(6800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_024_anim_add.aem", 24201, false)),
+        new Resource(6801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_025_anim_add.aem", 24201, false)),
+        new Resource(6802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_026_anim_add.aem", 24201, false)),
+        new Resource(6803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_027_anim_add.aem", 24201, false)),
+        new Resource(14232, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_068_anim_add.aem", 24201, false)),
+        new Resource(14233, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_069_anim_add.aem", 24201, false)),
+        new Resource(14234, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_070_anim_add.aem", 24201, false)),
+        new Resource(14229, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_009_anim_add.aem", 24201, false)),
+        new Resource(14230, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_010_anim_add.aem", 24201, false)),
+        new Resource(14231, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_011_anim_add.aem", 24201, false)),
+        new Resource(14236, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_028_anim_add.aem", 24201, false)),
+        new Resource(14237, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_029_anim_add.aem", 24201, false)),
+        new Resource(14238, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/projectile_030_anim_add.aem", 24201, false)),
+        new Resource(6900, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_176_anim_add.aem", 24096, false)),
+        new Resource(6901, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_177_anim_add.aem", 24096, false)),
+        new Resource(6902, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_178_anim_add.aem", 24096, false)),
+        new Resource(6905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_180_anim_add.aem", 24096, false)),
+        new Resource(6906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_181_anim_add.aem", 24096, false)),
+        new Resource(14239, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_193_anim_add.aem", 24096, false)),
+        new Resource(14235, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_194_anim_add.aem", 24096, false)),
+        new Resource(14247, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive.aem", 34810, false)),
+        new Resource(14248, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive_add.aem", 33303, false)),
+        new Resource(14249, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp.aem", 34811, false)),
+        new Resource(14250, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp_add.aem", 33303, false)),
+        new Resource(14680, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a.aem", 33306, false)),
+        new Resource(14681, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a_add.aem", 33303, false)),
+        new Resource(14682, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b.aem", 33309, false)),
+        new Resource(14683, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b_add.aem", 33303, false)),
+        new Resource(14684, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a.aem", 33312, false)),
+        new Resource(14685, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a_add.aem", 33303, false)),
+        new Resource(14293, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_anim.aem", 20125, false)),
+        new Resource(14294, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_add.aem", 20126, false)),
+        new Resource(15000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran.aem", 20004, false)),
+        new Resource(15016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_1.aem", 20004, false)),
+        new Resource(15020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_2.aem", 20004, false)),
+        new Resource(15002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_emissive.aem", 20003, false)),
+        new Resource(15001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_anim_add.aem", 34603, false)),
+        new Resource(15003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_jump_anim_add.aem", 34603, false)),
+        new Resource(15004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim.aem", 20032, false)),
+        new Resource(15017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_anim.aem", 20032, false)),
+        new Resource(15021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_anim.aem", 20032, false)),
+        new Resource(15006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_emissive.aem", 20031, false)),
+        new Resource(15024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_emissive.aem", 20031, false)),
+        new Resource(15025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_emissive.aem", 20031, false)),
+        new Resource(15005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim_add.aem", 20033, false)),
+        new Resource(15007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_jump_anim_add.aem", 20033, false)),
+        new Resource(15008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian.aem", 20005, false)),
+        new Resource(15018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_1.aem", 20005, false)),
+        new Resource(15022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_2.aem", 20005, false)),
+        new Resource(15010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_emissive.aem", 20006, false)),
+        new Resource(15009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_anim_add.aem", 34601, false)),
+        new Resource(15011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_jump_anim_add.aem", 34601, false)),
+        new Resource(15012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian.aem", 20007, false)),
+        new Resource(15019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_1.aem", 20007, false)),
+        new Resource(15023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_2.aem", 20007, false)),
+        new Resource(15014, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_emissive.aem", 20008, false)),
+        new Resource(15013, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_anim_add.aem", 34600, false)),
+        new Resource(15015, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_jump_anim_add.aem", 34600, false)),
+        new Resource(15026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/khador_jump.aem", 27260, false)),
+        new Resource(15027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/hyper_drive.aem", 27262, false)),
+        new Resource(16917, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_001.aem", 20094, false)),
+        new Resource(16918, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_002.aem", 20094, false)),
+        new Resource(16919, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_003.aem", 20094, false)),
+        new Resource(16920, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_004.aem", 20094, false)),
+        new Resource(16926, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_junk.aem", 20023, false)),
+        new Resource(16927, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_junk.aem", 20103, false)),
+        new Resource(16992, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_003_terran.aem", 27254, false)),
+        new Resource(16990, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_001_midorian.aem", 27257, false)),
+        new Resource(16991, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_004_vossk.aem", 27255, false)),
+        new Resource(16993, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/container_002_nivelian.aem", 27256, false)),
+        new Resource(16994, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/wormhole_anim_add.aem", 20093, false)),
+        new Resource(16921, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void.aem", 20103, false)),
+        new Resource(16922, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_1.aem", 20103, false)),
+        new Resource(16923, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_2.aem", 20103, false)),
+        new Resource(16924, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_3.aem", 20103, false)),
+        new Resource(16925, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_explosion_anim.aem", 20103, false)),
+        new Resource(14311, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran.aem", 34716, false)),
+        new Resource(14312, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_1.aem", 34716, false)),
+        new Resource(14313, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_2.aem", 34716, false)),
+        new Resource(14315, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_add.aem", 34717, false)),
+        new Resource(14316, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_emissive.aem", 34719, false)),
+        new Resource(18304, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_explosion_anim.aem", 34716, false)),
+        new Resource(17060, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian.aem", 34704, false)),
+        new Resource(17062, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_1.aem", 34704, false)),
+        new Resource(17063, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_2.aem", 34704, false)),
+        new Resource(17064, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_engine_add.aem", 34601, false)),
+        new Resource(17061, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lights_add.aem", 34705, false)),
+        new Resource(18301, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_explosion_anim.aem", 34704, false)),
+        new Resource(17065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran.aem", 34708, false)),
+        new Resource(17066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_1.aem", 34708, false)),
+        new Resource(17067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_2.aem", 34708, false)),
+        new Resource(17069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_engine_add.aem", 34603, false)),
+        new Resource(17074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_add.aem", 34709, false)),
+        new Resource(17070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_emissive.aem", 34709, false)),
+        new Resource(18302, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_explosion_anim.aem", 34708, false)),
+        new Resource(17049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian.aem", 34700, false)),
+        new Resource(17050, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_1.aem", 34700, false)),
+        new Resource(17051, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_2.aem", 34700, false)),
+        new Resource(17052, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container.aem", 34700, false)),
+        new Resource(17053, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container_lod_1.aem", 34700, false)),
+        new Resource(17054, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_engine_add.aem", 34701, false)),
+        new Resource(17055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lights_emissive.aem", 34703, false)),
+        new Resource(18300, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_explosion_anim.aem", 34700, false)),
+        new Resource(17038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_engine_add.aem", 34713, false)),
+        new Resource(18303, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_explosion_anim.aem", 34712, false)),
+        new Resource(17139, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_1.aem", 34712, false)),
+        new Resource(17140, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_2.aem", 34712, false)),
+        new Resource(18713, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lights_emissive.aem", 34715, false)),
+        new Resource(17013, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk.aem", 34712, false)),
+        new Resource(14363, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret.aem", 20135, false)),
+        new Resource(14364, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret_gun.aem", 20135, false)),
+        new Resource(14365, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_shield.aem", 20135, false)),
+        new Resource(14366, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_laser_anim_add.aem", 20158, false)),
+        new Resource(6770, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001.aem", 24075, false)),
+        new Resource(6771, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001_gun.aem", 24075, false)),
+        new Resource(6772, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002.aem", 24076, false)),
+        new Resource(6773, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002_gun.aem", 24076, false)),
+        new Resource(6774, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003.aem", 24077, false)),
+        new Resource(6775, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003_gun.aem", 24077, false)),
+        new Resource(18842, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004.aem", 24085, false)),
+        new Resource(18843, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun.aem", 24085, false)),
+        new Resource(18844, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_add.aem", 24086, false)),
+        new Resource(18845, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun_add.aem", 24086, false)),
+        new Resource(6805, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_anim.aem", 24081, false)),
+        new Resource(6806, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_gun_anim.aem", 24081, false)),
+        new Resource(6807, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002.aem", 24082, false)),
+        new Resource(6808, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002_gun.aem", 24082, false)),
+        new Resource(6809, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003.aem", 24083, false)),
+        new Resource(6810, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003_gun.aem", 24083, false)),
+        new Resource(14050, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001.aem", 20121, false)),
+        new Resource(14051, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001_add.aem", 20154, false)),
+        new Resource(14054, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002.aem", 20122, false)),
+        new Resource(14055, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002_add.aem", 20155, false)),
+        new Resource(14052, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003.aem", 20123, false)),
+        new Resource(14053, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003_add.aem", 20156, false)),
+        new Resource(6779, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_orbit.aem", 20029, false)),
+        new Resource(14288, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/beer.aem", 20111, false)),
+        new Resource(14289, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/bra.aem", 20111, false)),
+        new Resource(14290, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/scanner_probe.aem", 20113, false)),
+        new Resource(14291, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_alpha.aem", 27253, false)),
+        new Resource(14292, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_add.aem", 27252, false)),
+        new Resource(14600, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_000_lookat_anim_add.aem", 24201, false)),
+        new Resource(14601, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_001_lookat_anim_add.aem", 24201, false)),
+        new Resource(14602, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_002_lookat_anim_add.aem", 24201, false)),
+        new Resource(14603, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_003_lookat_anim_add.aem", 24201, false)),
+        new Resource(14604, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_004_lookat_anim_add.aem", 24201, false)),
+        new Resource(14605, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_005_lookat_anim_add.aem", 24201, false)),
+        new Resource(14606, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/impact_006_lookat_anim_add.aem", 24201, false)),
+        new Resource(14500, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_000_anim_add.aem", 24201, false)),
+        new Resource(14501, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_001_anim_add.aem", 24201, false)),
+        new Resource(14502, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_002_anim_add.aem", 24201, false)),
+        new Resource(14503, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_003_anim_add.aem", 24201, false)),
+        new Resource(14504, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_004_anim_add.aem", 24201, false)),
+        new Resource(14505, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_005_anim_add.aem", 24201, false)),
+        new Resource(14506, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_006_anim_add.aem", 24201, false)),
+        new Resource(14507, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_007_anim_add.aem", 24201, false)),
+        new Resource(14508, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_008_anim_add.aem", 24201, false)),
+        new Resource(14509, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_009_anim_add.aem", 24096, false)),
+        new Resource(14510, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_010_anim_add.aem", 24096, false)),
+        new Resource(18070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false)),
+        new Resource(18071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false)),
+        new Resource(18072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false)),
+        new Resource(18073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27283, false)),
+        new Resource(18074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false)),
+        new Resource(18075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false)),
+        new Resource(18076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false)),
+        new Resource(18077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false)),
+        new Resource(18078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false)),
+        new Resource(18079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27289, false)),
+        new Resource(18080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27290, false)),
+        new Resource(18081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false)),
+        new Resource(18082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false)),
+        new Resource(18083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false)),
+        new Resource(18084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false)),
+        new Resource(18085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false)),
+        new Resource(18086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false)),
+        new Resource(18087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false)),
+        new Resource(18088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false)),
+        new Resource(18180, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_000.aem", 20027, false)),
+        new Resource(18181, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_001.aem", 20027, false)),
+        new Resource(18182, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_002.aem", 20027, false)),
+        new Resource(18183, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_003.aem", 20027, false)),
+        new Resource(18184, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_004.aem", 20027, false)),
+        new Resource(18185, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_005.aem", 20027, false)),
+        new Resource(18186, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_006.aem", 20027, false)),
+        new Resource(18187, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_007.aem", 20027, false)),
+        new Resource(18188, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_008.aem", 20027, false)),
+        new Resource(18189, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_009.aem", 20027, false)),
+        new Resource(18190, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_010.aem", 20027, false)),
+        new Resource(18191, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_011.aem", 20027, false)),
+        new Resource(18192, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_012.aem", 20027, false)),
+        new Resource(18193, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_013.aem", 20027, false)),
+        new Resource(18194, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_014.aem", 20027, false)),
+        new Resource(18195, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_015.aem", 20027, false)),
+        new Resource(18196, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_016.aem", 20027, false)),
+        new Resource(18197, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_017.aem", 20027, false)),
+        new Resource(18198, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_018.aem", 20027, false)),
+        new Resource(18199, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_019.aem", 20027, false)),
+        new Resource(18200, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_020.aem", 27305, false)),
+        new Resource(18201, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_021.aem", 27305, false)),
+        new Resource(18202, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_022.aem", 27305, false)),
+        new Resource(18204, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_024.aem", 27306, false)),
+        new Resource(18205, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_025.aem", 27306, false)),
+        new Resource(18206, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_026.aem", 27306, false)),
+        new Resource(17900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17904, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17905, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17906, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17907, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17908, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_glow_add.aem", 34813, false)),
+        new Resource(17909, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_glow_add.aem", 34813, false)),
+        new Resource(17910, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17911, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17912, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17916, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17917, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17918, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17919, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17920, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17921, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17922, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17923, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17924, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17925, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17926, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17927, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17928, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17929, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17930, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_glow_add.aem", 34813, false)),
+        new Resource(17931, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17932, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_glow_add.aem", 34813, false)),
+        new Resource(17933, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17934, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17935, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_glow_add.aem", 34813, false)),
+        new Resource(17936, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_glow_add.aem", 34813, false)),
+        new Resource(17937, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_glow_add.aem", 34815, false)),
+        new Resource(17938, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_glow_add.aem", 34815, false)),
+        new Resource(17940, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_glow_add.aem", 34815, false)),
+        new Resource(17942, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_engine_glow_add.aem", 34813, false)),
+        new Resource(17943, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_engine_glow_add.aem", 34813, false)),
+        new Resource(17944, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_glow_add.aem", 32544, false)),
+        new Resource(17945, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_glow_add.aem", 32545, false)),
+        new Resource(17946, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_glow_add.aem", 32546, false)),
+        new Resource(17947, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_glow_add.aem", 32547, false)),
+        new Resource(17948, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_glow_add.aem", 32548, false)),
+        new Resource(17949, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_glow_add.aem", 32549, false)),
+        new Resource(17951, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_glow_add.aem", 32551, false)),
+        new Resource(17952, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_glow_add.aem", 32552, false)),
+        new Resource(17954, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_glow_add.aem", 32554, false)),
+        new Resource(17955, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17956, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17957, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17958, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17959, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17960, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_engine_glow_add.aem", 34813, false)),
+        new Resource(17961, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_engine_glow_add.aem", 32561, false)),
+        new Resource(17962, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_engine_glow_add.aem", 32562, false)),
+        new Resource(17963, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_engine_glow_add.aem", 32563, false)),
+        new Resource(17000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian.aem", 34200, false)),
+        new Resource(17100, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_1.aem", 34200, false)),
+        new Resource(17101, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_2.aem", 34200, false)),
+        new Resource(18000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_add.aem", 34600, false)),
+        new Resource(18700, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lights_add.aem", 34600, false)),
+        new Resource(17001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran.aem", 34201, false)),
+        new Resource(17103, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_1.aem", 34201, false)),
+        new Resource(17104, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_2.aem", 34201, false)),
+        new Resource(18001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_add.aem", 34603, false)),
+        new Resource(18701, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lights_add.aem", 34603, false)),
+        new Resource(17002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates.aem", 34202, false)),
+        new Resource(17106, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_1.aem", 34202, false)),
+        new Resource(17107, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_2.aem", 34202, false)),
+        new Resource(18002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_add.aem", 34602, false)),
+        new Resource(18702, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lights_add.aem", 34602, false)),
+        new Resource(17003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian.aem", 34203, false)),
+        new Resource(17109, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_1.aem", 34203, false)),
+        new Resource(17110, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_2.aem", 34203, false)),
+        new Resource(18003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_add.aem", 34600, false)),
+        new Resource(18703, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lights_add.aem", 34600, false)),
+        new Resource(17004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian.aem", 34204, false)),
+        new Resource(17112, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_1.aem", 34204, false)),
+        new Resource(17113, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_2.aem", 34204, false)),
+        new Resource(18004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18704, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran.aem", 34205, false)),
+        new Resource(17115, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_1.aem", 34205, false)),
+        new Resource(17116, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_2.aem", 34205, false)),
+        new Resource(18005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_add.aem", 34603, false)),
+        new Resource(18705, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lights_add.aem", 34603, false)),
+        new Resource(17006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian.aem", 34206, false)),
+        new Resource(17118, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_1.aem", 34206, false)),
+        new Resource(17119, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_2.aem", 34206, false)),
+        new Resource(18006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_add.aem", 34600, false)),
+        new Resource(18706, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lights_add.aem", 34600, false)),
+        new Resource(17007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran.aem", 34207, false)),
+        new Resource(17121, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_1.aem", 34207, false)),
+        new Resource(17122, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_2.aem", 34207, false)),
+        new Resource(18007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_add.aem", 34603, false)),
+        new Resource(18707, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lights_add.aem", 34603, false)),
+        new Resource(17008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void.aem", 34208, false)),
+        new Resource(17124, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_1.aem", 34208, false)),
+        new Resource(17125, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_2.aem", 34208, false)),
+        new Resource(18008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_add.aem", 34605, false)),
+        new Resource(18708, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lights_add.aem", 34605, false)),
+        new Resource(17009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk.aem", 34209, false)),
+        new Resource(17127, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_1.aem", 34209, false)),
+        new Resource(17128, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_2.aem", 34209, false)),
+        new Resource(18009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_add.aem", 34604, false)),
+        new Resource(18709, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lights_add.aem", 34309, false)),
+        new Resource(17010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran.aem", 34210, false)),
+        new Resource(17130, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_1.aem", 34210, false)),
+        new Resource(17131, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_2.aem", 34210, false)),
+        new Resource(18010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_add.aem", 34603, false)),
+        new Resource(18710, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lights_add.aem", 34603, false)),
+        new Resource(17011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates.aem", 34211, false)),
+        new Resource(17133, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_1.aem", 34211, false)),
+        new Resource(17134, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_2.aem", 34211, false)),
+        new Resource(18011, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_add.aem", 34602, false)),
+        new Resource(18711, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lights_add.aem", 34602, false)),
+        new Resource(17012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian.aem", 34212, false)),
+        new Resource(17136, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_1.aem", 34212, false)),
+        new Resource(17137, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_2.aem", 34212, false)),
+        new Resource(18012, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18712, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian.aem", 34216, false)),
+        new Resource(17148, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_1.aem", 34216, false)),
+        new Resource(17149, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_2.aem", 34216, false)),
+        new Resource(18016, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18716, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran.aem", 34217, false)),
+        new Resource(17151, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_1.aem", 34217, false)),
+        new Resource(17152, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_2.aem", 34217, false)),
+        new Resource(18017, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_add.aem", 34603, false)),
+        new Resource(18717, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lights_add.aem", 34603, false)),
+        new Resource(17018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian.aem", 34218, false)),
+        new Resource(17154, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_1.aem", 34218, false)),
+        new Resource(17155, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_2.aem", 34218, false)),
+        new Resource(18018, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18718, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian.aem", 34219, false)),
+        new Resource(17157, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_1.aem", 34219, false)),
+        new Resource(17158, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_2.aem", 34219, false)),
+        new Resource(18019, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_add.aem", 34600, false)),
+        new Resource(18719, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lights_add.aem", 34600, false)),
+        new Resource(17020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian.aem", 34220, false)),
+        new Resource(17160, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_1.aem", 34220, false)),
+        new Resource(17161, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_2.aem", 34220, false)),
+        new Resource(18020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_add.aem", 34600, false)),
+        new Resource(18720, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lights_add.aem", 34600, false)),
+        new Resource(17021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian.aem", 34221, false)),
+        new Resource(17163, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_1.aem", 34221, false)),
+        new Resource(17164, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_2.aem", 34221, false)),
+        new Resource(18021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18721, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran.aem", 34222, false)),
+        new Resource(17166, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_1.aem", 34222, false)),
+        new Resource(17167, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_2.aem", 34222, false)),
+        new Resource(18022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_add.aem", 34603, false)),
+        new Resource(18722, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lights_add.aem", 34603, false)),
+        new Resource(17023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates.aem", 34223, false)),
+        new Resource(17169, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_1.aem", 34223, false)),
+        new Resource(17170, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_2.aem", 34223, false)),
+        new Resource(18023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_add.aem", 34602, false)),
+        new Resource(18723, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lights_add.aem", 34602, false)),
+        new Resource(17024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates.aem", 34224, false)),
+        new Resource(17172, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_1.aem", 34224, false)),
+        new Resource(17173, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_2.aem", 34224, false)),
+        new Resource(18024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_add.aem", 34602, false)),
+        new Resource(18724, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lights_add.aem", 34602, false)),
+        new Resource(17025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates.aem", 34225, false)),
+        new Resource(17175, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_1.aem", 34225, false)),
+        new Resource(17176, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_2.aem", 34225, false)),
+        new Resource(18025, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_add.aem", 34602, false)),
+        new Resource(18725, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lights_add.aem", 34602, false)),
+        new Resource(17026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran.aem", 34226, false)),
+        new Resource(17178, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_1.aem", 34226, false)),
+        new Resource(17179, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_2.aem", 34226, false)),
+        new Resource(18026, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_add.aem", 34603, false)),
+        new Resource(18726, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lights_add.aem", 34603, false)),
+        new Resource(17027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran.aem", 34227, false)),
+        new Resource(17181, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_1.aem", 34227, false)),
+        new Resource(17182, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_2.aem", 34227, false)),
+        new Resource(18027, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_add.aem", 34603, false)),
+        new Resource(18727, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lights_add.aem", 34603, false)),
+        new Resource(17028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran.aem", 34228, false)),
+        new Resource(17184, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_1.aem", 34228, false)),
+        new Resource(17185, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_2.aem", 34228, false)),
+        new Resource(18028, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_add.aem", 34603, false)),
+        new Resource(18728, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lights_add.aem", 34603, false)),
+        new Resource(17029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates.aem", 34229, false)),
+        new Resource(17187, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_1.aem", 34229, false)),
+        new Resource(17188, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_2.aem", 34229, false)),
+        new Resource(18029, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_add.aem", 34602, false)),
+        new Resource(18729, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lights_add.aem", 34602, false)),
+        new Resource(17030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian.aem", 34230, false)),
+        new Resource(17190, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_1.aem", 34230, false)),
+        new Resource(17191, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_2.aem", 34230, false)),
+        new Resource(18030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_add.aem", 34600, false)),
+        new Resource(18730, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lights_add.aem", 34600, false)),
+        new Resource(17031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian.aem", 34231, false)),
+        new Resource(17193, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_1.aem", 34231, false)),
+        new Resource(17194, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_2.aem", 34231, false)),
+        new Resource(18031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18731, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates.aem", 34232, false)),
+        new Resource(17196, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_1.aem", 34232, false)),
+        new Resource(17197, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_2.aem", 34232, false)),
+        new Resource(18032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_add.aem", 34602, false)),
+        new Resource(18732, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lights_add.aem", 34602, false)),
+        new Resource(17033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran.aem", 34233, false)),
+        new Resource(17199, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_1.aem", 34233, false)),
+        new Resource(17200, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_2.aem", 34233, false)),
+        new Resource(18033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_add.aem", 34603, false)),
+        new Resource(18733, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lights_add.aem", 34603, false)),
+        new Resource(17034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran.aem", 34234, false)),
+        new Resource(17202, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_1.aem", 34234, false)),
+        new Resource(17203, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_2.aem", 34234, false)),
+        new Resource(18034, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_add.aem", 34603, false)),
+        new Resource(18734, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lights_add.aem", 34603, false)),
+        new Resource(17035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian.aem", 34235, false)),
+        new Resource(17205, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_1.aem", 34235, false)),
+        new Resource(17206, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_2.aem", 34235, false)),
+        new Resource(18035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_add.aem", 34601, false)),
+        new Resource(18735, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lights_add.aem", 34601, false)),
+        new Resource(17036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran.aem", 34236, false)),
+        new Resource(17208, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_1.aem", 34236, false)),
+        new Resource(17209, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_2.aem", 34236, false)),
+        new Resource(18036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_add.aem", 34603, false)),
+        new Resource(18736, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lights_add.aem", 34603, false)),
+        new Resource(17211, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science.aem", 34237, false)),
+        new Resource(17215, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_lights_anim_add.aem", 32537, false)),
+        new Resource(18037, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_add.aem", 32537, false)),
+        new Resource(17216, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science.aem", 34238, false)),
+        new Resource(18738, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_lights_anim_add.aem", 32538, false)),
+        new Resource(18038, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_add.aem", 32538, false)),
+        new Resource(17221, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk.aem", 34239, false)),
+        new Resource(17222, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_1.aem", 34239, false)),
+        new Resource(17223, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_2.aem", 34239, false)),
+        new Resource(18739, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lights_add.aem", 32539, false)),
+        new Resource(18039, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_engine_add.aem", 32539, false)),
+        new Resource(17227, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science.aem", 34240, false)),
+        new Resource(17231, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_lights_add.aem", 32540, false)),
+        new Resource(18040, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_add.aem", 32540, false)),
+        new Resource(17233, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk.aem", 34241, false)),
+        new Resource(17234, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_1.aem", 34241, false)),
+        new Resource(17235, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_2.aem", 34241, false)),
+        new Resource(18741, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lights_add.aem", 32541, false)),
+        new Resource(18041, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_engine_add.aem", 32541, false)),
+        new Resource(17239, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro.aem", 34242, false)),
+        new Resource(17240, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_1.aem", 34242, false)),
+        new Resource(17241, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_2.aem", 34242, false)),
+        new Resource(17243, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lights_add.aem", 32542, false)),
+        new Resource(17245, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro.aem", 34243, false)),
+        new Resource(17246, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_1.aem", 34243, false)),
+        new Resource(17247, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_2.aem", 34243, false)),
+        new Resource(17249, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lights_add.aem", 32543, false)),
+        new Resource(16800, RESOURCE_MESH, new ResourceMesh("data/meshes/col_box.aem", 20087, false)),
+        new Resource(16801, RESOURCE_MESH, new ResourceMesh("data/meshes/col_sphere.aem", 20087, false)),
+        new Resource(14243, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates.aem", 20104, false)),
+        new Resource(14244, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_emissive.aem", 20105, false)),
+        new Resource(14245, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_lights_add.aem", 34602, false)),
+        new Resource(14246, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_explosion_anim.aem", 20104, false)),
+        new Resource(16851, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_0.aem", 20025, false)),
+        new Resource(16852, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_1.aem", 20026, false)),
+        new Resource(16850, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_bg_plane.aem", 20024, false)),
+        new Resource(16853, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_ring.aem", 20030, false)),
+        new Resource(16904, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice.aem", 20134, false)),
+        new Resource(16905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_1.aem", 20134, false)),
+        new Resource(16906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_2.aem", 20134, false)),
+        new Resource(16907, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_3.aem", 20134, false)),
+        new Resource(16908, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim.aem", 20134, false)),
+        new Resource(16909, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim_alpha.aem", 20133, false)),
+        new Resource(16900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01.aem", 20023, false)),
+        new Resource(16901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_1.aem", 20023, false)),
+        new Resource(16902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_2.aem", 20023, false)),
+        new Resource(16903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_3.aem", 20023, false)),
+        new Resource(16913, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_explosion_anim.aem", 20023, false)),
+        new Resource(16915, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_explosion_anim_alpha.aem", 20051, false)),
+        new Resource(18836, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma.aem", 27312, false)),
+        new Resource(18837, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_1.aem", 27312, false)),
+        new Resource(18838, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_2.aem", 27312, false)),
+        new Resource(18839, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_3.aem", 27312, false)),
+        new Resource(18840, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim.aem", 27312, false)),
+        new Resource(18841, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim_alpha.aem", 27313, false)),
+        new Resource(16928, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim.aem", 20135, false)),
+        new Resource(16929, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_emissive.aem", 20136, false)),
+        new Resource(16930, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_add.aem", 20158, false)),
+        new Resource(16931, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science.aem", 27145, false)),
+        new Resource(16932, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emissive.aem", 27146, false)),
+        new Resource(16933, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_add.aem", 27147, false)),
+        new Resource(16936, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emitters_anim_add.aem", 34817, false)),
+        new Resource(16934, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1.aem", 27145, false)),
+        new Resource(16935, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1_emissive.aem", 27146, false)),
+        new Resource(14367, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim.aem", 27145, false)),
+        new Resource(14368, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emissive.aem", 27146, false)),
+        new Resource(14369, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim_add.aem", 27147, false)),
+        new Resource(14370, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_laser_anim_add.aem", 27147, false)),
+        new Resource(16937, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emitters_anim_add.aem", 34817, false)),
+        new Resource(14371, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged.aem", 27145, false)),
+        new Resource(14372, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emissive.aem", 27146, false)),
+        new Resource(14373, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_add.aem", 27147, false)),
+        new Resource(16938, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emitters_anim_add.aem", 34817, false)),
+        new Resource(14374, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_shield.aem", 27150, false)),
+        new Resource(14375, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_asteroid_belt_alpha.aem", 27160, false)),
+        new Resource(21108, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club.aem", 20007, false)),
+        new Resource(21908, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_emissive.aem", 20008, false)),
+        new Resource(22900, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim.aem", 27162, false)),
+        new Resource(22901, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_emissive.aem", 27163, false)),
+        new Resource(22902, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_add.aem", 27164, false)),
+        new Resource(22903, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_alpha.aem", 27165, false)),
+        new Resource(19080, RESOURCE_MESH, new ResourceMesh("data/meshes/test_dock.aem", 20004, false)),
+        new Resource(18830, RESOURCE_MESH, new ResourceMesh("data/meshes/carrier.aem", 20034, false)),
+        new Resource(18834, RESOURCE_MESH, new ResourceMesh("data/meshes/gas_cloud_a_anim_lookat_add.aem", 27311, false)),
+        new Resource(18835, RESOURCE_MESH, new ResourceMesh("data/meshes/gas_cloud_b_anim_lookat_add.aem", 27311, false)),
+        new Resource(21000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian.aem", 20005, false)),
+        new Resource(21001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian.aem", 20005, false)),
+        new Resource(21002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian.aem", 20005, false)),
+        new Resource(21003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian.aem", 20005, false)),
+        new Resource(21004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian.aem", 20005, false)),
+        new Resource(21005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran.aem", 20004, false)),
+        new Resource(21006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran.aem", 20004, false)),
+        new Resource(21007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran.aem", 20004, false)),
+        new Resource(21008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran.aem", 20004, false)),
+        new Resource(21009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran.aem", 20004, false)),
+        new Resource(21010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran.aem", 20004, false)),
+        new Resource(21020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian.aem", 20007, false)),
+        new Resource(21021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian.aem", 20007, false)),
+        new Resource(21022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian.aem", 20007, false)),
+        new Resource(21023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian.aem", 20007, false)),
+        new Resource(21024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian.aem", 20007, false)),
+        new Resource(21030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian.aem", 20005, false)),
+        new Resource(21031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian.aem", 20005, false)),
+        new Resource(21032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian.aem", 20005, false)),
+        new Resource(21033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian.aem", 20005, false)),
+        new Resource(21035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran.aem", 20004, false)),
+        new Resource(21036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran.aem", 20004, false)),
+        new Resource(21037, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran.aem", 20004, false)),
+        new Resource(21038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran.aem", 20004, false)),
+        new Resource(21039, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran.aem", 20004, false)),
+        new Resource(21040, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran.aem", 20004, false)),
+        new Resource(21041, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran.aem", 20004, false)),
+        new Resource(21042, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran.aem", 20004, false)),
+        new Resource(21043, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran.aem", 20004, false)),
+        new Resource(21044, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran.aem", 20004, false)),
+        new Resource(21045, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian.aem", 20005, false)),
+        new Resource(21046, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian.aem", 20005, false)),
+        new Resource(21047, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian.aem", 20005, false)),
+        new Resource(21048, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian.aem", 20005, false)),
+        new Resource(21049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian.aem", 20005, false)),
+        new Resource(21055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran.aem", 20004, false)),
+        new Resource(21056, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran.aem", 20004, false)),
+        new Resource(21057, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran.aem", 20004, false)),
+        new Resource(21065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran.aem", 20004, false)),
+        new Resource(21066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran.aem", 20004, false)),
+        new Resource(21067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran.aem", 20004, false)),
+        new Resource(21068, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran.aem", 20004, false)),
+        new Resource(21069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran.aem", 20004, false)),
+        new Resource(21070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran.aem", 20004, false)),
+        new Resource(21071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran.aem", 20004, false)),
+        new Resource(21072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran.aem", 20004, false)),
+        new Resource(21073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran.aem", 20004, false)),
+        new Resource(21074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran.aem", 20004, false)),
+        new Resource(21075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian.aem", 20007, false)),
+        new Resource(21076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian.aem", 20007, false)),
+        new Resource(21077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian.aem", 20007, false)),
+        new Resource(21078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian.aem", 20007, false)),
+        new Resource(21079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian.aem", 20007, false)),
+        new Resource(21080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran.aem", 20004, false)),
+        new Resource(21081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran.aem", 20004, false)),
+        new Resource(21082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran.aem", 20004, false)),
+        new Resource(21083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran.aem", 20004, false)),
+        new Resource(21084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran.aem", 20004, false)),
+        new Resource(21085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian.aem", 20005, false)),
+        new Resource(21086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian.aem", 20005, false)),
+        new Resource(21087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian.aem", 20005, false)),
+        new Resource(21088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian.aem", 20005, false)),
+        new Resource(21089, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian.aem", 20005, false)),
+        new Resource(21090, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran.aem", 20004, false)),
+        new Resource(21091, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran.aem", 20004, false)),
+        new Resource(21092, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran.aem", 20004, false)),
+        new Resource(21093, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran.aem", 20004, false)),
+        new Resource(21094, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran.aem", 20004, false)),
+        new Resource(21095, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran.aem", 20004, false)),
+        new Resource(21096, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran.aem", 20004, false)),
+        new Resource(21097, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran.aem", 20004, false)),
+        new Resource(21098, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran.aem", 20004, false)),
+        new Resource(21099, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran.aem", 20004, false)),
+        new Resource(21105, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma.aem", 20007, false)),
+        new Resource(21106, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma.aem", 20007, false)),
+        new Resource(21107, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma.aem", 20007, false)),
+        new Resource(21112, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian.aem", 20007, false)),
+        new Resource(21113, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian.aem", 20007, false)),
+        new Resource(21114, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian.aem", 20007, false)),
+        new Resource(21115, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian.aem", 20007, false)),
+        new Resource(21116, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian.aem", 20007, false)),
+        new Resource(21117, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian.aem", 20007, false)),
+        new Resource(21118, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian.aem", 20007, false)),
+        new Resource(21119, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian.aem", 20005, false)),
+        new Resource(21120, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian.aem", 20005, false)),
+        new Resource(21121, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian.aem", 20005, false)),
+        new Resource(21122, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian.aem", 20005, false)),
+        new Resource(21123, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian.aem", 20005, false)),
+        new Resource(21800, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_emissive.aem", 20006, false)),
+        new Resource(21801, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_emissive.aem", 20006, false)),
+        new Resource(21802, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_emissive.aem", 20006, false)),
+        new Resource(21803, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_emissive.aem", 20006, false)),
+        new Resource(21804, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_emissive.aem", 20006, false)),
+        new Resource(21805, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_emissive.aem", 20003, false)),
+        new Resource(21806, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_emissive.aem", 20003, false)),
+        new Resource(21807, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_emissive.aem", 20003, false)),
+        new Resource(21808, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_emissive.aem", 20003, false)),
+        new Resource(21809, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_emissive.aem", 20003, false)),
+        new Resource(21810, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_emissive.aem", 20003, false)),
+        new Resource(21820, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_emissive.aem", 20008, false)),
+        new Resource(21821, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_emissive.aem", 20008, false)),
+        new Resource(21822, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_emissive.aem", 20008, false)),
+        new Resource(21823, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_emissive.aem", 20008, false)),
+        new Resource(21824, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_emissive.aem", 20008, false)),
+        new Resource(21830, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_emissive.aem", 20006, false)),
+        new Resource(21831, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_emissive.aem", 20006, false)),
+        new Resource(21832, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_emissive.aem", 20006, false)),
+        new Resource(21833, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_emissive.aem", 20006, false)),
+        new Resource(21835, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_emissive.aem", 20003, false)),
+        new Resource(21836, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_emissive.aem", 20003, false)),
+        new Resource(21837, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_emissive.aem", 20003, false)),
+        new Resource(21838, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_emissive.aem", 20003, false)),
+        new Resource(21839, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_emissive.aem", 20003, false)),
+        new Resource(21840, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_emissive.aem", 20003, false)),
+        new Resource(21841, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_emissive.aem", 20003, false)),
+        new Resource(21842, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_emissive.aem", 20003, false)),
+        new Resource(21843, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_emissive.aem", 20003, false)),
+        new Resource(21844, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_emissive.aem", 20003, false)),
+        new Resource(21845, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_emissive.aem", 20006, false)),
+        new Resource(21846, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_emissive.aem", 20006, false)),
+        new Resource(21847, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_emissive.aem", 20006, false)),
+        new Resource(21848, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_emissive.aem", 20006, false)),
+        new Resource(21849, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_emissive.aem", 20006, false)),
+        new Resource(21855, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_emissive.aem", 20003, false)),
+        new Resource(21856, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_emissive.aem", 20003, false)),
+        new Resource(21857, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_emissive.aem", 20003, false)),
+        new Resource(21865, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_emissive.aem", 20003, false)),
+        new Resource(21866, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_emissive.aem", 20003, false)),
+        new Resource(21867, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_emissive.aem", 20003, false)),
+        new Resource(21868, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_emissive.aem", 20003, false)),
+        new Resource(21869, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_emissive.aem", 20003, false)),
+        new Resource(21870, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_emissive.aem", 20003, false)),
+        new Resource(21871, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_emissive.aem", 20003, false)),
+        new Resource(21872, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_emissive.aem", 20003, false)),
+        new Resource(21873, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_emissive.aem", 20003, false)),
+        new Resource(21874, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_emissive.aem", 20003, false)),
+        new Resource(21875, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_emissive.aem", 20008, false)),
+        new Resource(21876, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_emissive.aem", 20008, false)),
+        new Resource(21877, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_emissive.aem", 20008, false)),
+        new Resource(21878, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_emissive.aem", 20008, false)),
+        new Resource(21879, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_emissive.aem", 20008, false)),
+        new Resource(21880, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_emissive.aem", 20003, false)),
+        new Resource(21881, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_emissive.aem", 20003, false)),
+        new Resource(21882, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_emissive.aem", 20003, false)),
+        new Resource(21883, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_emissive.aem", 20003, false)),
+        new Resource(21884, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_emissive.aem", 20003, false)),
+        new Resource(21885, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_emissive.aem", 20006, false)),
+        new Resource(21886, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_emissive.aem", 20006, false)),
+        new Resource(21887, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_emissive.aem", 20006, false)),
+        new Resource(21888, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_emissive.aem", 20006, false)),
+        new Resource(21889, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_emissive.aem", 20006, false)),
+        new Resource(21890, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_emissive.aem", 20003, false)),
+        new Resource(21891, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_emissive.aem", 20003, false)),
+        new Resource(21892, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_emissive.aem", 20003, false)),
+        new Resource(21893, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_emissive.aem", 20003, false)),
+        new Resource(21894, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_emissive.aem", 20003, false)),
+        new Resource(21895, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_emissive.aem", 20003, false)),
+        new Resource(21896, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_emissive.aem", 20003, false)),
+        new Resource(21897, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_emissive.aem", 20003, false)),
+        new Resource(21898, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_emissive.aem", 20003, false)),
+        new Resource(21899, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_emissive.aem", 20003, false)),
+        new Resource(21905, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_emissive.aem", 20008, false)),
+        new Resource(21906, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_emissive.aem", 20008, false)),
+        new Resource(21907, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_emissive.aem", 20008, false)),
+        new Resource(21912, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_emissive.aem", 20008, false)),
+        new Resource(21913, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_emissive.aem", 20008, false)),
+        new Resource(21914, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_emissive.aem", 20008, false)),
+        new Resource(21915, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_emissive.aem", 20008, false)),
+        new Resource(21916, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_emissive.aem", 20008, false)),
+        new Resource(21917, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_emissive.aem", 20008, false)),
+        new Resource(21918, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_emissive.aem", 20008, false)),
+        new Resource(21919, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_emissive.aem", 20006, false)),
+        new Resource(21920, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_emissive.aem", 20006, false)),
+        new Resource(21921, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_emissive.aem", 20006, false)),
+        new Resource(21922, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_emissive.aem", 20006, false)),
+        new Resource(21923, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_emissive.aem", 20006, false)),
+        new Resource(22000, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22001, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22002, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22003, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22004, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22005, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_lights_add.aem", 34603, false)),
+        new Resource(22006, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_lights_add.aem", 34603, false)),
+        new Resource(22007, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_lights_add.aem", 34603, false)),
+        new Resource(22008, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_lights_add.aem", 34603, false)),
+        new Resource(22009, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_lights_add.aem", 34603, false)),
+        new Resource(22010, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_lights_add.aem", 34603, false)),
+        new Resource(22020, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_lights_add.aem", 34600, false)),
+        new Resource(22021, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_lights_add.aem", 34600, false)),
+        new Resource(22022, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_lights_add.aem", 34600, false)),
+        new Resource(22023, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_lights_add.aem", 34600, false)),
+        new Resource(22024, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_lights_add.aem", 34600, false)),
+        new Resource(22030, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22031, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22032, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22033, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22035, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_lights_add.aem", 34603, false)),
+        new Resource(22036, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_lights_add.aem", 34603, false)),
+        new Resource(22037, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_lights_add.aem", 34603, false)),
+        new Resource(22038, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_lights_add.aem", 34603, false)),
+        new Resource(22039, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_lights_add.aem", 34603, false)),
+        new Resource(22040, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_lights_add.aem", 34603, false)),
+        new Resource(22041, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_lights_add.aem", 34603, false)),
+        new Resource(22042, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_lights_add.aem", 34603, false)),
+        new Resource(22043, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_lights_add.aem", 34603, false)),
+        new Resource(22044, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_lights_add.aem", 34603, false)),
+        new Resource(22045, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22046, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22047, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22048, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22049, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22055, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_lights_add.aem", 34603, false)),
+        new Resource(22056, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_lights_add.aem", 34603, false)),
+        new Resource(22057, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_lights_add.aem", 34603, false)),
+        new Resource(22065, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_lights_add.aem", 34603, false)),
+        new Resource(22066, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_lights_add.aem", 34603, false)),
+        new Resource(22067, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_lights_add.aem", 34603, false)),
+        new Resource(22068, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_lights_add.aem", 34603, false)),
+        new Resource(22069, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_lights_add.aem", 34603, false)),
+        new Resource(22070, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_lights_add.aem", 34603, false)),
+        new Resource(22071, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_lights_add.aem", 34603, false)),
+        new Resource(22072, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_lights_add.aem", 34603, false)),
+        new Resource(22073, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_lights_add.aem", 34603, false)),
+        new Resource(22074, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_lights_add.aem", 34603, false)),
+        new Resource(22075, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_lights_add.aem", 34600, false)),
+        new Resource(22076, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_lights_add.aem", 34600, false)),
+        new Resource(22077, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_lights_add.aem", 34600, false)),
+        new Resource(22078, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_lights_add.aem", 34600, false)),
+        new Resource(22079, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_lights_add.aem", 34600, false)),
+        new Resource(22080, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_lights_add.aem", 34603, false)),
+        new Resource(22081, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_lights_add.aem", 34603, false)),
+        new Resource(22082, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_lights_add.aem", 34603, false)),
+        new Resource(22083, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_lights_add.aem", 34603, false)),
+        new Resource(22084, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_lights_add.aem", 34603, false)),
+        new Resource(22085, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22086, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22087, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22088, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22089, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_lights_add.aem", 34601, false)),
+        new Resource(22090, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_lights_add.aem", 34603, false)),
+        new Resource(22091, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_lights_add.aem", 34603, false)),
+        new Resource(22092, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_lights_add.aem", 34603, false)),
+        new Resource(22093, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_lights_add.aem", 34603, false)),
+        new Resource(22094, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_lights_add.aem", 34603, false)),
+        new Resource(22095, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_lights_add.aem", 34603, false)),
+        new Resource(22096, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_lights_add.aem", 34603, false)),
+        new Resource(22097, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_lights_add.aem", 34603, false)),
+        new Resource(22098, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_lights_add.aem", 34603, false)),
+        new Resource(22099, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_lights_add.aem", 34603, false)),
+        new Resource(22105, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_lights_add.aem", 34600, false)),
+        new Resource(22106, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_lights_add.aem", 34600, false)),
+        new Resource(22107, RESOURCE_MESH, new ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_lights_add.aem", 34600, false)),
+        new Resource(22112, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_add.aem", 34600, false)),
+        new Resource(22113, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_add.aem", 34600, false)),
+        new Resource(22114, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_add.aem", 34600, false)),
+        new Resource(22115, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_add.aem", 34600, false)),
+        new Resource(22116, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_add.aem", 34600, false)),
+        new Resource(22117, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_add.aem", 34600, false)),
+        new Resource(22118, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_add.aem", 34600, false)),
+        new Resource(22119, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_add.aem", 34601, false)),
+        new Resource(22120, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_add.aem", 34601, false)),
+        new Resource(22121, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_add.aem", 34601, false)),
+        new Resource(22122, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_add.aem", 34601, false)),
+        new Resource(22123, RESOURCE_MESH, new ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_add.aem", 34601, false)),
+        new Resource(16436, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk.aem", 20032, false)),
+        new Resource(16439, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_emissive.aem", 20031, false)),
+        new Resource(16442, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_lights_add.aem", 20033, false)),
+        new Resource(16443, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void.aem", 20045, false)),
+        new Resource(16446, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void_emissive.aem", 20048, false)),
+        new Resource(16449, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/stations/station_void_add.aem", 20047, false)),
+        new Resource(14285, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add.aem", 27301, false)),
+        new Resource(14286, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add_lookat.aem", 27301, false)),
+        new Resource(14287, RESOURCE_MESH, new ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_alpha_lookat.aem", 27302, false))
+    };
     engine->appManager->paintCanvas->SetResourceList(resources, 2488);
 
     PaintCanvas *canvas = engine->appManager->paintCanvas;

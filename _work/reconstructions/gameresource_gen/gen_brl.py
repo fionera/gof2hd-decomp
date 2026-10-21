@@ -117,9 +117,12 @@ def main():
     w('    engine->appManager->paintCanvas->TextureCreateGlobal(')
     w('        String("data/assets/main/3d/textures/low/etc/fx/cloak_map.aei"), 6);')
     w('')
-    w('    Resource *resources[%d];' % len(table))
+    # The original initializes the table with a braced initializer list (its codegen --
+    # frame size, register assignment -- differs from element-wise assignment).
+    w('    Resource *resources[] = {')
     for k, r in enumerate(table):
-        w('    resources[%d] = %s;' % (k, entry_expr(r)))
+        w('        %s%s' % (entry_expr(r), ',' if k + 1 < len(table) else ''))
+    w('    };')
     w('    engine->appManager->paintCanvas->SetResourceList(resources, %d);' % len(table))
     w('')
     w('    PaintCanvas *canvas = engine->appManager->paintCanvas;')
