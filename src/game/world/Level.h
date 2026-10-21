@@ -362,7 +362,7 @@ public:
 
     static unsigned char doInstantJump;
     static Station *programmedStation;
-    static unsigned char comingFromAlienWorld;
+    static bool comingFromAlienWorld;
     static unsigned char initStreamOutPosition;
     static int energyCellsForNextJump;
     static int lastMissionFreighterHitpoints;

@@ -729,8 +729,8 @@ void Level::setPlayerEngineColor(short color) {
 }
 
 Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
-    AbstractGun *weapon = nullptr;
     Gun *gun = nullptr;
+    AbstractGun *weapon = nullptr;
     switch (kind) {
         case ITEM_SORT_LASER:
         case ITEM_SORT_BLASTER:
@@ -1481,14 +1481,16 @@ void Level::createFighterTurrets() {
         }
         PlayerTurret *turret;
         switch (ship->shipGroupFlag) {
-            case 0x33:
+            case 0x33: {
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
                 turret->player->setVulnerable(false);
                 turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-                turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
-                turret->shipGroup = 0;
+                Vector hostOffset = {0.0f, 470.0f, -83.0f};
+                turret->setHost(ship, hostOffset);
                 ship->field_0x10 = (int) (intptr_t) turret;
+                turret->shipGroup = 0;
                 break;
+            }
             case 0x2d:
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
                 turret->player->setVulnerable(false);
@@ -7224,7 +7226,7 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
 
 unsigned char Level::doInstantJump;
 Station *Level::programmedStation;
-unsigned char Level::comingFromAlienWorld;
+bool Level::comingFromAlienWorld;
 unsigned char Level::initStreamOutPosition;
 int Level::energyCellsForNextJump;
 int Level::lastMissionFreighterHitpoints;
