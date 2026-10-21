@@ -1217,8 +1217,8 @@ void HangarWindow::setSellMode(bool buy) {
                     if (listItem != 0 && listItem->isItem() &&
                         listItem->item->getIndex() == this->bluePrint->getIndex() &&
                         Globals::status->getShip()->hasEquipment(listItem->item->getIndex(), 1)) {
-                        this->autoEquipIndex = i;
                         this->autoEquipPending = 1;
+                        this->autoEquipIndex = i;
                         this->autoEquipSecondaryWeapons(i);
                         this->autoEquipPending = 0;
                         break;
@@ -2084,8 +2084,8 @@ bool HangarWindow::selectItem(ListItem *item) {
                                          String("#ITEM1")),
             *Globals::gameText->getText(1274 + item->item->getIndex()), String("#ITEM2"));
         this->dialog->set(message, true);
-        this->replaceEquipPending = 1;
         this->dialogActive = 1;
+        this->replaceEquipPending = 1;
         this->pendingMountItem = item->item;
         this->pendingDemountItem = mounted;
         break;

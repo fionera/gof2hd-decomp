@@ -375,7 +375,7 @@ void String::ConvertFromUTF8() {
 
 Array<String *> *String::SplitTags(String tag) {
     if (this->data != nullptr && this->length != 0 && tag.length != 0) {
-        tag = String("<") + tag + String(">");
+        tag = String("<") + tag + String(":");
         Array<String *> *arr = new Array<String *>();
 
         unsigned int endPos = 0;
@@ -384,7 +384,7 @@ Array<String *> *String::SplitTags(String tag) {
         while ((idx = IndexOf(pos, tag)) != 0xffffffff) {
             if (pos <= idx) {
                 ArrayAdd(new String(SubString(pos, idx)), *arr);
-                endPos = IndexOf(tag.length + idx, String("</"));
+                endPos = IndexOf(tag.length + idx, String(">"));
                 if (endPos == 0xffffffff)
                     return arr;
                 ArrayAdd(new String(SubString(tag.length + idx, endPos)), *arr);
@@ -461,20 +461,16 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
     uint16_t *w = out;
 
     for (int i = 0; i < len; i = i + 1) {
-        unsigned short cp = (unsigned short) (unsigned char) s[i];
-        unsigned short val = cp;
-        if ((cp & 0xe0) == 0xc0) {
-            unsigned short hi = cp & 0x1f;
-            int j = i + 1;
-            val = (unsigned short) ((hi << 6) | ((unsigned char) s[j] & 0x3f));
-            i = j;
-        } else if ((cp & 0xf0) == 0xe0) {
-            int j = i + 2;
-            unsigned short mid = (unsigned short) (((unsigned char) s[i + 1] & 0x3f) | ((cp & 0xf) << 6));
-            val = (unsigned short) ((mid << 6) | ((unsigned char) s[j] & 0x3f));
-            i = j;
+        int val = (unsigned char) s[i];
+        if ((val & 0xe0) == 0xc0) {
+            i = i + 1;
+            val = ((val & 0x1f) << 6) | ((unsigned char) s[i] & 0x3f);
+        } else if ((val & 0xf0) == 0xe0) {
+            int mid = ((val & 0xf) << 6) | ((unsigned char) s[i + 1] & 0x3f);
+            i = i + 2;
+            val = (mid << 6) | ((unsigned char) s[i] & 0x3f);
         }
-        *w = val;
+        *w = (unsigned short) val;
         w++;
     }
     out[outCount] = 0;
@@ -483,6 +479,8 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
         unsigned short c = out[i];
         unsigned short r = c;
         switch (c) {
+            case 0x60: r = 0x27;
+                break;
             case 0x410: r = 0x41;
                 break;
             case 0x412: r = 0x42;
@@ -535,8 +533,6 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
                 break;
             case 0xaa:
             case 0x430: r = 0x61;
-                break;
-            case 0x60: r = 0x27;
                 break;
             default:
                 break;
