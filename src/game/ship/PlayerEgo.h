@@ -473,7 +473,7 @@ public:
 
     bool isRechargingCloak();
 
-    void killLiberator();
+    bool killLiberator();
 
     int levelCollision();
 

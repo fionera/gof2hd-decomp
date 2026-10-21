@@ -47,16 +47,7 @@ namespace AbyssEngine {
 }
 
 namespace {
-    FModSound **g_boost_fmod;
-    FModSound **g_FMod_singleton;
-    PaintCanvas **g_setRotation_transform;
-    FModSound **g_dockToPlanet_fmod;
-    PaintCanvas **g_rotate_transform;
-    FModSound **g_stopBoost_obj;
-    static ExplosionEmitterHolder **g_explode_obj = nullptr;
 
-    static void (*g_explode_fn)(void *, int) = nullptr; // lint: void_ptr (fn-ptr slot; param type load-bearing)
-    static PlayerEgo *g_PlayerEgo_singleton = nullptr;
         static const float g_PE_rollNudge = 0.0f;
     static const float g_PE_strafeDist = 0.0f;
     static const float g_PE_cft_transformVal = 0.0f;
@@ -109,9 +100,9 @@ namespace {
     static int *g_PE_tm_hum = nullptr;
     static const float g_PE_tm_fovNormal = 0.0f;
     static const float g_PE_tm_fovAlien = 0.0f;
-    static const float g_PE_strafeLoadK = 0.0f;
-    static const float g_PE_strafeLoadB = 0.0f;
-    static const float g_PE_strafeAccelK = 0.0f;
+    static const float g_PE_strafeLoadK = 0.4f;
+    static const float g_PE_strafeLoadB = 0.6f;
+    static const float g_PE_strafeAccelK = 0.002f;
     static float *g_PE_dr_posLock = nullptr;
     static float *g_PE_dr_posNoLock = nullptr;
     static float *g_PE_dr_posBlink = nullptr;
@@ -645,23 +636,17 @@ void PlayerEgo::explode() {
     Explosion *e = new Explosion(0);
     ((int &) this->explosion) = (int) (intptr_t) e;
     static_cast<Player *>(this->player)->setActive(false);
-    ExplosionEmitterHolder **o = g_explode_obj;
-    void (*fn)(void *, int) = g_explode_fn; // lint: void_ptr (fn-ptr slot; param type load-bearing)
-    fn(*(ExplosionEmitterHolder **) o, ((ExplosionEmitterHolder *) (*(ExplosionEmitterHolder **) o))->emitterFirstId);
-    fn(*(ExplosionEmitterHolder **) o, this->field_0x1c);
-    fn(*(ExplosionEmitterHolder **) o, 0x1b);
-    fn(*(ExplosionEmitterHolder **) o, 0x23);
-    fn(*(ExplosionEmitterHolder **) o, 0x8d5);
-    fn(*(ExplosionEmitterHolder **) o, 0x8d4);
-    fn(*(ExplosionEmitterHolder **) o, 0x8cc);
-    fn(*(ExplosionEmitterHolder **) o, 0x447);
-    fn(*(ExplosionEmitterHolder **) o, 0x448);
-    fn(*(ExplosionEmitterHolder **) o, 0x449);
-    Explosion *exp = (Explosion *) this->explosion;
-    if (exp != 0) {
-        Vector pos = ((PlayerEgo *) this)->getPosition();
-        exp->update(0, pos);
-    }
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+    Globals::sound->stop(this->field_0x1c);
+    Globals::sound->stop(0x1b);
+    Globals::sound->stop(0x23);
+    Globals::sound->stop(0x8d5);
+    Globals::sound->stop(0x8d4);
+    Globals::sound->stop(0x8cc);
+    Globals::sound->stop(0x447);
+    Globals::sound->stop(0x448);
+    Globals::sound->stop(0x449);
+    this->setExhaustVisible(false);
 }
 
 unsigned char PlayerEgo::isDockingToStream() {
@@ -1837,30 +1822,21 @@ int PlayerEgo::levelCollision() {
     return 0;
 }
 
-void PlayerEgo::killLiberator() {
-    char sv[12];
-    Array<Array<Gun *> *> *p = ((Player *) this->player)->guns;
-    if (p == 0) return;
-    Array<Gun *> *arr = p->data_[1];
-    if (arr == 0) return;
-    if (p->count == 0) return;
-    if (arr->count == 0) return;
-    if (this->currentSecondaryWeaponIndex != 0xb3) return;
-    *(int *) (sv + 0) = -1;
-    *(int *) (sv + 4) = -1;
-    *(int *) (sv + 8) = -1;
-    unsigned count = arr->count;
-    for (unsigned i = 0; i < count; i++) {
-        int *e = (int *) arr->data_[i];
-        if (e[0x16] == 0xb3) {
-            *(int *) e[0xf] = -1;
-            *(Vector *) ((intptr_t) e[3]) = *(const Vector *) (sv);
-            Array<Gun *> *arr2 = p->data_[1];
-            Gun *e2 = arr2->data_[i];
-            e2->active = 0;
-            count = arr2->count;
+bool PlayerEgo::killLiberator() {
+    Array<Array<Gun *> *> *guns = this->player->guns;
+    if (guns == nullptr || (*guns)[1] == nullptr || guns->size() == 0 || (*guns)[1]->size() == 0)
+        return false;
+    if (this->currentSecondaryWeaponIndex != 179)
+        return false;
+    for (unsigned int i = 0; i < (*guns)[1]->size(); i++) {
+        Gun *gun = (*(*guns)[1])[i];
+        if (gun->itemIndex == 179) {
+            gun->lifetimes[0] = -1;
+            *(Vector *) gun->positions = Vector{50000.0f, 50000.0f, 50000.0f};
+            (*(*guns)[1])[i]->active = false;
         }
     }
+    return true;
 }
 
 void Mat_identity(void *out, const void *src); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
@@ -1959,21 +1935,19 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
 }
 
 void PlayerEgo::dockToPlanet() {
-    ((TargetFollowCamera *) (this->targetFollowCamera))->setLookAtCam((bool) (unsigned char) this->targetFollowCamera);
-    this->boostingFlag = 1;
+    ((TargetFollowCamera *) (this->targetFollowCamera))->setLookAtCam(true);
     this->boostTimer = 0;
-    this->speed = 0x41000000;
+    this->boostingFlag = 1;
+    ((float &) this->speed) = 8.0f;
     this->boostTime = 10000;
     this->boostDelay = 0;
     this->collide = 0;
-    ((Player *) this->player)->resetGunDelay(0);
-    float f = 1.0f;
-    FModSound *snd = *(FModSound **) g_dockToPlanet_fmod;
-    ((char &) this->gunMuzzleRoot) = 0;
+    this->resetGunDelay();
     this->dockingToPlanet = 1;
-    this->speed = 0x41000000;
+    ((char &) this->gunMuzzleRoot) = 0;
+    ((float &) this->speed) = 8.0f;
     this->planetDockTimer = 0;
-    ((FModSound *) (*(FModSound **) snd))->play(5, (Vector *) 0, (Vector *) 0, f);
+    Globals::sound->play(5, nullptr, nullptr, 0.0f);
 }
 
 float PlayerEgo::up(int frameTime, float delta) {
@@ -2160,7 +2134,8 @@ void PlayerEgo::rotate(float rx, float ry, float rz) {
     AbyssEngine::AEMath::MatrixSetRotation(m, this->rotateX, this->rotateY, this->rotateZ);
 }
 
-static inline float fmin_(float a, float b) { return a < b ? a : b; }
+
+static inline float PE_minf(float a, float b) { return b < a ? b : a; }
 
 void PlayerEgo::strafe(int /*dir*/, bool positive) {
     if (this->rocketControlGun != 0)
@@ -2176,12 +2151,9 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
         base = this->handling;
     }
 
-    float sign = positive ? 1.0f : -1.0f;
-    float accel = fmin_(base * 30.0f * g_PE_strafeAccelK, 2.0f);
-    float target = fmin_(((float &) this->strafeNavPoint) * 1.5f, 1.0f);
-
-    this->strafeAccel = ((float &) this->strafeNavPoint) * sign * accel;
-    ((float &) this->strafeNavPoint) = target;
+    float accel = (positive ? 1.0f : -1.0f) * PE_minf(base * 30.0f * g_PE_strafeAccelK, 2.0f);
+    this->strafeAccel = ((float &) this->strafeNavPoint) * accel;
+    ((float &) this->strafeNavPoint) = PE_minf(((float &) this->strafeNavPoint) * 1.5f, 1.0f);
 }
 
 void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
