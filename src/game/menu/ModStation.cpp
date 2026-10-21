@@ -2188,8 +2188,8 @@ void ModStation::OnUpdate() {
             if (textY > (float) (Globals::h / 2)) {
                 float scrolled = textY + (float) this->dt * -0.03f;
                 if (scrolled <= (float) (Globals::h / 2)) {
-                    textPos.y = scrolled;
                     this->field_0xb8 = 4000;
+                    textPos.y = scrolled;
                     textY = scrolled;
                 }
             }
@@ -2285,8 +2285,8 @@ void ModStation::OnUpdate() {
             }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
-                    Globals::status->getCurrentCampaignMission() >= 148 && stationIndex == 96 &&
-                    Globals::status->getCurrentCampaignMission() <= 150) {
+                    Globals::status->getCurrentCampaignMission() >= 148 &&
+                    Globals::status->getCurrentCampaignMission() <= 150 && stationIndex == 96) {
                     Globals::status->setCurrentCampaignMission(151);
                     this->dialogueWindow = new DialogueWindow();
                     this->dialogueMission = completed;
@@ -2720,7 +2720,7 @@ void ModStation::OnRender3D() {
         return;
     Globals::Canvas->ClearBuffer(0);
 
-    uint8_t *p65 = &this->flag_0x65;
+    bool *p65 = &this->flag_0x65;
     if (this->cutScene == 0 || this->flag_0x66 != 0 || this->flag_0x64 != 0 ||
         this->flag_0x68 != 0 || this->flag_0x67 != 0 || *p65 != 0 ||
         this->flag_0x62 != 0) {
