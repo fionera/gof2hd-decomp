@@ -69,38 +69,6 @@ Vector StarSystem::getLightDirection() {
     return this->lightDirection;
 }
 
-StarSystem::~StarSystem() {
-    delete this->planetsArray;
-    this->planetsArray = nullptr;
-
-    if (this->playerTargets) {
-        ArrayReleaseClasses(*this->playerTargets);
-        delete this->playerTargets;
-    }
-    this->playerTargets = nullptr;
-
-    delete this->lensFlare;
-    this->lensFlare = nullptr;
-
-    if (this->texturesArray) {
-        ArrayRelease(*this->texturesArray);
-        delete this->texturesArray;
-    }
-    this->texturesArray = nullptr;
-
-    if (this->stationIdxArray) {
-        ArrayRelease(*this->stationIdxArray);
-        delete this->stationIdxArray;
-    }
-    this->stationIdxArray = nullptr;
-
-    if (this->positionsArray) {
-        ArrayRelease(*this->positionsArray);
-        delete this->positionsArray;
-    }
-    this->positionsArray = nullptr;
-}
-
 static float g_StarSystem_init_sunColors[256] = {0};
 
 static float g_StarSystem_init_lightColors[256] = {0};
@@ -397,7 +365,6 @@ StarSystem::StarSystem(int mode) {
     Globals::rnd->setSeed((long long) status->getStation()->getIndex() * 300);
 
     int sunSlot = Globals::rnd->nextInt(14);
-    PlayerStatic **targets = (PlayerStatic **) this->playerTargets->data();
     for (uint32_t i = 0; i < this->planetsArray->size(); ++i) {
         AEGeometry *geom = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
         (*this->planetsArray)[i] = geom;
@@ -419,7 +386,7 @@ StarSystem::StarSystem(int mode) {
             usedSlots[sunSlot * 4] = 1;
         } else {
             PlayerStatic *player = new PlayerStatic(0, geom, 0.0f, 0.0f, 0.0f);
-            targets[i - 1] = player;
+            (*this->playerTargets)[i - 1] = player;
             int slot = Globals::rnd->nextInt(11) + 7;
             usedSlots[slot * 4] = 1;
             int dist = Globals::rnd->nextInt(0x4e20) + 0x4e20;
@@ -445,6 +412,38 @@ StarSystem::StarSystem(int mode) {
 
     Globals::rnd->reset();
     initLight();
+}
+
+StarSystem::~StarSystem() {
+    delete this->planetsArray;
+    this->planetsArray = nullptr;
+
+    if (this->playerTargets) {
+        ArrayReleaseClasses(*this->playerTargets);
+        delete this->playerTargets;
+    }
+    this->playerTargets = nullptr;
+
+    delete this->lensFlare;
+    this->lensFlare = nullptr;
+
+    if (this->texturesArray) {
+        ArrayRelease(*this->texturesArray);
+        delete this->texturesArray;
+    }
+    this->texturesArray = nullptr;
+
+    if (this->stationIdxArray) {
+        ArrayRelease(*this->stationIdxArray);
+        delete this->stationIdxArray;
+    }
+    this->stationIdxArray = nullptr;
+
+    if (this->positionsArray) {
+        ArrayRelease(*this->positionsArray);
+        delete this->positionsArray;
+    }
+    this->positionsArray = nullptr;
 }
 
 void StarSystem::updateSupernova(int dt) {

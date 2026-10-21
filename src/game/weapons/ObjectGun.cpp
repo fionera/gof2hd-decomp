@@ -117,7 +117,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
             if (gun->itemIndex == 0xb0)
                 explosionType = 8;
             Explosion *explosion = new Explosion(explosionType);
-            this->explosions->data()[i] = explosion;
+            (*this->explosions)[i] = explosion;
             explosion->setWeaponIndex(gun->itemIndex);
             this->explosionReady[i] = 1;
         }
