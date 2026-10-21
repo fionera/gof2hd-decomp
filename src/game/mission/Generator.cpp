@@ -321,7 +321,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     ArraySetLength(count, *list);
     int goldShip = allGold ? 8 : 10;
     bool kaamoStation = stationId == 78;
-    for (int slot = 0; slot < count; ++slot) {
+    int slot;
+    for (slot = 0; slot < count; ++slot) {
         bool first = slot == 0;
         bool fixedShip = allGold || (first && stationIndex == 41);
         bool forced = fixedShip || (kaamoStation && first);
@@ -761,7 +762,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         if (used != nullptr) {
             if (used->data()[pick]) {
                 int sum = 0;
-                for (uint32_t i = 0; i < used->size(); ++i) {
+                uint32_t i;
+                for (i = 0; i < used->size(); ++i) {
                     sum += used->data()[i];
                 }
                 if (sum == 14) {

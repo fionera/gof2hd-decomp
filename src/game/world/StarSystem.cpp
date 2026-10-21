@@ -195,7 +195,8 @@ StarSystem::StarSystem(int mode) {
         this->tintColor = kSystemTints[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex()];
     }
 
-    for (uint32_t i = 1; i < this->texturesArray->size(); ++i) {
+    uint32_t i;
+    for (i = 1; i < this->texturesArray->size(); ++i) {
         if (stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
             if (Globals::status->getCurrentCampaignMission() == 0 && mode == 3) {
                 this->selectedStationSlot = i;
