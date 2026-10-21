@@ -25,8 +25,8 @@ public:
     Vector viewDirection;
 
     Vector &initPosition() { return reinterpret_cast<Vector &>(this->posX); }
-    Vector &cameraPosition() { return reinterpret_cast<Vector &>(this->field_0x90); }
-    Vector &objectPosition() { return reinterpret_cast<Vector &>(this->field_0x9c); }
+    Vector &cameraPosition() { return this->tempVector; }
+    Vector &objectPosition() { return this->auxVector; }
 
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
 

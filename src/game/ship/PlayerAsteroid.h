@@ -89,7 +89,7 @@ private:
     int &pushDuration() { return *reinterpret_cast<int *>(reinterpret_cast<char *>(&this->field_0x104) + 4); }
     Vector &pushDirection() { return *reinterpret_cast<Vector *>(&this->field_0x10c); }
     Vector &pushSpin() { return *reinterpret_cast<Vector *>(&this->field_0x118); }
-    Vector &hitVector() { return *reinterpret_cast<Vector *>(&this->field_0x90); }
+    Vector &hitVector() { return this->tempVector; }
 
     static AbyssEngine::AEMath::Vector tmp_vector2;
     static AbyssEngine::AEMath::Vector asteroidCenter;

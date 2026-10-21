@@ -34,10 +34,8 @@ public:
     uint8_t _pad_0x26[2];
     int shipGroup;
 
-    int autoPilotState;
-
-    int field_0x30;
-    int field_0x34;
+    // 0x2c: the ship's current world position as cached by the subclasses' update()
+    Vector shipPosition;
     int field_0x38;
 
     // Former union { int stealFlag; struct{...}; } at 0x3c: the wide int
@@ -92,12 +90,8 @@ public:
     int state;
     uint8_t field_0x8c;
     uint8_t _pad_0x8d[3];
-    int field_0x90;
-    int field_0x94;
-    int field_0x98;
-    int field_0x9c;
-    int field_0xa0;
-    int field_0xa4;
+    Vector tempVector;   // 0x90: scratch vector (Java tempVector_)
+    Vector auxVector;    // 0x9c: second scratch vector (Java position)
     float rotationSpeed;
     int type;
     uint8_t _pad_0xb0;

@@ -1110,7 +1110,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     this->autoPilotTarget = v;
     this->autoPilot = (v != 0) ? 1 : 0;
     if (v == 0) {
-        ((KIPlayer *) this->field_0x14)->autoPilotState = 0;
+        ((KIPlayer *) this->field_0x14)->shipPosition.x = 0;
         if (old != 0) {
             this->bankHistoryIndex = 0;
             this->bankHistoryFilled = 0;
