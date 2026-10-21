@@ -76,8 +76,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
-    this->enabled = 1;
     this->asteroidSlots = nullptr;
+    this->enabled = 1;
     this->labelStrings = nullptr;
     this->lockedAsteroid = nullptr;
     this->field_0x10 = 0;
@@ -1266,9 +1266,11 @@ music:
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
     long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    long long dx2 = dx * dx;
     long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dz2 = dz * dz;
     long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
-    long long squared = dy * dy + dx * dx + dz * dz;
+    long long squared = dy * dy + dx2 + dz2;
     int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
     int meters = distance << 3;
 
