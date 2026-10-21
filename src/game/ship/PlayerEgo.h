@@ -152,12 +152,7 @@ public:
     int dockingState;
     int dockingPointIndex;
 
-    // `resumeFlag` is the low byte of this int slot:
-    //   reinterpret_cast<uint8_t &>(dockApproachDist)
-    int dockApproachDist;
-
-    int dockApproachThreshold;
-    int field_0x1d0;
+    AbyssEngine::AEMath::Vector miningUpVec;
     uint8_t field_0x1d4;
     int dockScaling;
     int miningSettleTimer;
@@ -609,10 +604,6 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x4) == 0x4, "PlayerEgo::trans
 static_assert(__builtin_offsetof(PlayerEgo, levelScript) == 0x10, "PlayerEgo::rocketReturnMatrix overlay offset");
 static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
 static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x88, "PlayerEgo::targetFollowCamera offset");
-// resumeFlag was the low byte of this 4-byte int slot.
-static_assert(__builtin_offsetof(PlayerEgo, dockApproachThreshold) -
-              __builtin_offsetof(PlayerEgo, dockApproachDist) == 4,
-              "PlayerEgo::dockApproachDist overlay slot width");
 
 // Former-drift fields: each now lands at the offset encoded in its name (Ghidra-verified).
 static_assert(__builtin_offsetof(PlayerEgo, field_0x80) == 0x80, "");
@@ -625,7 +616,7 @@ static_assert(__builtin_offsetof(PlayerEgo, boostSoundId) == 0xd4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x145) == 0x145, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x146) == 0x146, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x1d0) == 0x1d0, "");
+static_assert(__builtin_offsetof(PlayerEgo, miningUpVec) == 0x1c8, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
 static_assert(__builtin_offsetof(PlayerEgo, collide) == 0x144, "");

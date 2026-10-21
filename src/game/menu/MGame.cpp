@@ -1463,7 +1463,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) { // lint: void_ptr -- exp
     int wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 1.0f;
     TFC_setFastForwardMode(this->camera, 0);
-    reinterpret_cast<uint8_t &>(this->player->dockApproachDist) = 1;
+    reinterpret_cast<uint8_t &>(this->player->miningUpVec) = 1; // TODO(decomp): byte @0x1c8 of PlayerEgo, unverified
 
     unsigned hr = 0;
     if (this->pauseOpen == 0) {

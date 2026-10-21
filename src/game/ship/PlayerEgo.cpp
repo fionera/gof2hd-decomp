@@ -995,30 +995,15 @@ static inline void Vec_scale(void *out, const void *v, float s) { for(int _i=0;_
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayerEgo::initManeuver(int type) {
-    if ((unsigned) (type - 1) < 2 && this->volatileGoods != 0) {
-        Player *player = (Player *) this->player;
-        player->flShake = player->flShake + g_PE_rollNudge;
-    }
+    if ((type == 1 || type == 2) && this->volatileGoods != 0)
+        this->player->flShake += 0.17f;
 
     if (this->maneuverType == 0) {
+        this->navPoint = nullptr;
         this->maneuverType = type;
-        this->navPoint = 0;
         if (type == 3) {
-            float pos[3];
-            ((PlayerEgo *) (this))->getPosition();
-
-            float dir[3];
-            *(AbyssEngine::AEMath::Vector *) dir = ((AEGeometry *) this->geometry)->getDirection();
-
-            float scaled[3];
-            Vec_scale(scaled, dir, g_PE_strafeDist);
-
-            float target[3];
-            Vec_sub(target, pos, scaled);
-            Vec_assign(&this->strafeTargetVec, target);
-
-            *(AbyssEngine::AEMath::Vector *) target = ((AEGeometry *) this->geometry)->getDirection();
-            Vec_assign(&this->facingVec, target);
+            this->strafeTargetVec = this->getPosition() - 10000.0f * this->geometry->getDirection();
+            this->facingVec = this->geometry->getDirection();
         }
     }
 }
@@ -1287,9 +1272,7 @@ float PlayerEgo::down(int frameTime, float delta) {
 }
 
 static inline void adp_clearDockVector(PlayerEgo *self) {
-    self->dockApproachDist = 0;
-    self->dockApproachThreshold = 0;
-    self->field_0x1d0 = 0;
+    self->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
 }
 
 int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
@@ -1310,7 +1293,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
                 ((SpacePoint *) (nav))->take();
             }
             int dist = PE_adp_approach(this, station);
-            if (dist < this->dockApproachThreshold) {
+            if (dist < (int) this->miningUpVec.y) {
                 ((int &) this->emergencyVec.x) = 2;
                 ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setLookAtCam(false);
                 ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->useTargetsUpVector(false);
@@ -1452,38 +1435,26 @@ void PlayerEgo::setLevel(Level *level) {
 }
 
 void PlayerEgo::setDockingCamera() {
-    if (this->dockCameraNode == 0) {
+    if (this->dockCameraNode == nullptr) {
         Globals::Canvas->CameraCreate(this->turretCamera);
-        unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
-
-        float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_dc_fovAlien : g_PE_dc_fovNormal;
-        Globals::Canvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_dc_fovAlien);
-
-        AEGeometry *node = new AEGeometry(Globals::Canvas);
-        this->dockCameraNode = node;
-        ((AEGeometry *) node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-
+        Globals::Canvas->CameraSetPerspective(this->turretCamera, 1.22f, 20.0f,
+                                              Globals::status->inAlienOrbit() ? 450000.0f : 300000.0f);
+        this->dockCameraNode = new AEGeometry(Globals::Canvas);
+        this->dockCameraNode->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         if (this->turretOffsetVec.x == 0.0f && this->turretOffsetVec.y == 0.0f && this->turretOffsetVec.z == 0.0f) {
-            ((uint32_t &) this->turretOffsetVec.y) = g_PE_dc_defX;
-            ((uint32_t &) this->turretOffsetVec.z) = g_PE_dc_defY;
+            this->turretOffsetVec.y = 150.0f;
+            this->turretOffsetVec.z = 500.0f;
         }
-        ((AEGeometry *) (this->dockCameraNode))->translate(this->turretOffsetVec);
-
-        AEGeometry *mid = new AEGeometry(Globals::Canvas);
-        this->dockCameraMid = mid;
-        ((AEGeometry *) (mid))->translate(*(Vector *) &((AEGeometry *) mid)->transform);
-        ((AEGeometry *) (this->dockCameraNode))->addChild((uint32_t)((AEGeometry *) this->dockCameraMid)->transform);
-
-        AEGeometry *leaf = new AEGeometry(Globals::Canvas);
-        this->dockCameraLeaf = leaf;
-        ((AEGeometry *) (this->dockCameraNode))->addChild((uint32_t)((AEGeometry *) this->dockCameraNode)->transform);
+        this->dockCameraNode->translate(this->turretOffsetVec);
+        this->dockCameraMid = new AEGeometry(Globals::Canvas);
+        this->dockCameraMid->translate(0.0f, 200.0f, 500.0f);
+        this->dockCameraNode->addChild(this->dockCameraMid->transform);
+        this->dockCameraLeaf = new AEGeometry(Globals::Canvas);
+        this->dockCameraLeaf->addChild(this->dockCameraNode->transform);
     }
-
-    ((AEGeometry *) (this->dockCameraLeaf))->setPosition(this->dockOffsetVec);
-    AEGeometry *leaf = (AEGeometry *) this->dockCameraLeaf;
-    ((AEGeometry *) leaf)->setMatrix(((AEGeometry *) (this->geometry))->getMatrix());
-
-    Globals::Canvas->CameraSetCurrent((unsigned int) (this->turretCamera));
+    this->dockCameraLeaf->setPosition(this->dockOffsetVec);
+    this->dockCameraLeaf->setMatrix(this->geometry->getMatrix());
+    Globals::Canvas->CameraSetCurrent(this->turretCamera);
 }
 
 float PlayerEgo::right(int frameTime, float delta) {
@@ -1788,33 +1759,28 @@ void PlayerEgo::handleAutoTurret(int dt) {
 
 // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
-    (void) kip;
+void PlayerEgo::dockToAsteroid(KIPlayer *asteroid, Radar *radar) {
     if (((char &) this->dockingState) != 0) {
         ((PlayerAsteroid *) (((intptr_t) this->asteroidTarget)))->setRotationEnabled(true);
-        this->field_0x145 = 0;
         ((char &) this->dockingState) = 0;
+        this->field_0x145 = 0;
         this->asteroidTarget = 0;
-
-        int zero[3] = {0, 0, 0};
-        Vec_assign(&this->dockApproachDist, zero);
-
+        this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
         ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setActive(true);
-        ((Player *) (this->player))->resetGunDelay(0);
-        if (((intptr_t) this->miningGame) != 0)
+        this->player->resetGunDelay(0);
+        if (this->miningGame != 0)
             delete (MiningGame *) ((intptr_t) this->miningGame);
         this->miningGame = 0;
-        ((Radar *) (radar))->unlockAsteroid();
+        radar->unlockAsteroid();
         this->dockingPointIndex = 0;
-        ((PlayerEgo *) (this))->setExhaustVisible(true);
-    } else if (radar != 0) {
-        ((char &) this->dockingState) = 1;
+        this->setExhaustVisible(true);
+    } else if (asteroid != nullptr) {
         this->miningSettleTimer = 0;
-        this->asteroidTarget = (int) (intptr_t) radar;
-        float dist = ((PlayerAsteroid *) (radar))->getScaling() * g_PE_astApproach;
+        ((char &) this->dockingState) = 1;
+        this->asteroidTarget = (int) (intptr_t) asteroid;
+        this->dockScaling = (int) (((PlayerAsteroid *) asteroid)->getScaling() * 2500.0f);
         this->field_0x145 = 1;
         this->dockingPointIndex = 0;
-        this->dockScaling = (int) dist;
     }
 }
 
@@ -2216,8 +2182,7 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
         this->field_0x1a1 = 0;
         this->field_0x145 = 0;
         this->asteroidTarget = 0;
-        int zero[3] = {0, 0, 0};
-        Vec_assign(&this->dockApproachDist, zero);
+        this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
         ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setActive(true);
         ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setLookAtCam(false);
         ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->useTargetsUpVector(false);
@@ -2436,36 +2401,22 @@ void PlayerEgo::setTurretPosition(Vector v) {
 }
 
 void PlayerEgo::revive() {
-    ParticleSystemManager *psm = this->level->field_74;
-    bool en = ((char &) this->currentSystem) != 0;
-    psm->enableSystemEmit(this->currentSystem, en);
-    psm->enableSystemRender(this->currentSystem, en);
+    this->level->field_74->enableSystemEmit(this->currentSystem, false);
+    this->level->field_74->enableSystemRender(this->currentSystem, false);
 
-    if (this->explosion != 0)
-        delete (Explosion *) (intptr_t) this->explosion;
-    this->explosion = 0;
+    if (this->explosion != nullptr)
+        delete this->explosion;
+    this->explosion = nullptr;
 
     ((TargetFollowCamera *) (((intptr_t) this->targetFollowCamera)))->setActive(true);
-    ((Player *) (this->player))->setActive(true);
-    int v = 0;
-
-    FModSound *snd = Globals::sound;
-    ((FModSound *) (*(FModSound **) snd))->play((int) (intptr_t) * (FModSound **) snd, (Vector *) 0, (Vector *) 0,
-                                                (float) v);
-    ((FModSound *) (snd))->play((int) (intptr_t)((intptr_t) this->field_0x1c), (Vector *) 0, (Vector *) 0, (float) v);
-
-    ((PlayerEgo *) (this))->setExhaustVisible(true);
-
-    Player *player = (Player *) this->player;
-    ((Player *) (player))->setHitpoints(((Player *) (player))->getMaxHitpoints());
-    player = (Player *) this->player;
-    ((Player *) (player))->setArmorHP(((Player *) (player))->getMaxArmorHP());
-
-    ((PlayerEgo *) (this))->setPosition(0.0f, 0.0f, 10000.0f);
-
-    float fwd[3] = {0.0f, 0.0f, 1.0f};
-    float fwdUp[3] = {0.0f, 1.0f, 0.0f};
-    ((AEGeometry *) (this->geometry))->setDirection(*(Vector *) fwd, *(Vector *) fwdUp);
+    this->player->setActive(true);
+    Globals::sound->play(Globals::sound->currentMusicEvent, nullptr, nullptr, 0.0f);
+    Globals::sound->play(this->field_0x1c, nullptr, nullptr, 0.0f);
+    this->setExhaustVisible(true);
+    this->player->setHitpoints(this->player->getMaxHitpoints());
+    this->player->setArmorHP(this->player->getMaxArmorHP());
+    this->setPosition(0.0f, 0.0f, 10000.0f);
+    this->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
     this->explosionTimer = 0;
 }
 
