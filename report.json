@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 98.79,
   "byte_exact": 1336,
-  "linked_exact": 4293,
-  "fuzzy_perfect": 4293,
+  "linked_exact": 4294,
+  "fuzzy_perfect": 4294,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -1104,14 +1104,6 @@
    "usize": 1476
   },
   {
-   "name": "_ZN9ObjectGun6updateEi",
-   "pct": 83.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1092,
-   "usize": 1072
-  },
-  {
    "name": "_ZN11SpaceLounge9startChatEv",
    "pct": 84.2,
    "byte": false,
@@ -1126,6 +1118,14 @@
    "linked": false,
    "osize": 1080,
    "usize": 1084
+  },
+  {
+   "name": "_ZN9ObjectGun6updateEi",
+   "pct": 84.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1092,
+   "usize": 1092
   },
   {
    "name": "_ZN11AbyssEngine19ImageFontDrawStringEPNS_9ImageFontEPKtjiiPNS_11PaintCanvasEPNS_6EngineEb",
@@ -1326,14 +1326,6 @@
    "linked": false,
    "osize": 8580,
    "usize": 8580
-  },
-  {
-   "name": "_ZN20FileInterfaceAndroid9FileExistEN11AbyssEngine6StringE",
-   "pct": 89.8,
-   "byte": false,
-   "linked": false,
-   "osize": 308,
-   "usize": 312
   },
   {
    "name": "_ZN14PlayerAsteroid6updateEi",
@@ -19806,6 +19798,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN20FileInterfaceAndroid9FileExistEN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 308,
+   "usize": 308
   },
   {
    "name": "_ZN20FileInterfaceAndroid9OpenWriteEN11AbyssEngine6StringEibj",
