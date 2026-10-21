@@ -2457,9 +2457,8 @@ unsigned char PlayerEgo::isDockingToPlanet() {
     return ((uint8_t &) this->dockingToPlanet);
 }
 
-unsigned char PlayerEgo::isDockingToStream() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->dockingToStream);
+bool PlayerEgo::isDockingToStream() {
+    return this->dockingToStream;
 }
 
 void PlayerEgo::dockToAsteroid(KIPlayer *asteroid, Radar *radar) {
@@ -3320,9 +3319,8 @@ bool PlayerEgo::isDockedToMiningPlant() {
     return false;
 }
 
-unsigned char PlayerEgo::isDockedToStream() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->dockedToStream);
+bool PlayerEgo::isDockedToStream() {
+    return this->dockedToStream;
 }
 
 void PlayerEgo::dockToPlanet() {

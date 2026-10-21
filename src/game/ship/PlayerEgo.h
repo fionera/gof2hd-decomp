@@ -155,8 +155,8 @@ public:
     KIPlayer *dockStation;
     int miningGame;
     int hackingGame;
-    uint8_t dockingToStream;
-    uint8_t dockedToStream;
+    bool dockingToStream;
+    bool dockedToStream;
     uint8_t dockingToPlanet;
     int planetDockTimer;
     uint8_t computerControlled;
@@ -438,7 +438,7 @@ public:
 
     bool isDockedToPlanet();
 
-    unsigned char isDockedToStream();
+    bool isDockedToStream();
 
     bool isDockingToAsteroid();
 
@@ -446,7 +446,7 @@ public:
 
     unsigned char isDockingToPlanet();
 
-    unsigned char isDockingToStream();
+    bool isDockingToStream();
 
     bool isHacking();
 
