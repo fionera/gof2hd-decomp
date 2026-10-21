@@ -147,7 +147,8 @@ public:
     uint8_t flag_0x11b;
     Vector lightDirection;
     void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
-    uint32_t field_0x12c;
+    bool savedPostEffect; // post effect state saved when the hangar opens
+    uint8_t _pad_0x12d[3];
     float camKeyX;
     float camKeyY;
     float camKeyZ;
@@ -255,7 +256,7 @@ static_assert(__builtin_offsetof(ModStation, touchX) == 0x110, "");
 static_assert(__builtin_offsetof(ModStation, touchY) == 0x114, "");
 static_assert(__builtin_offsetof(ModStation, flag_0x118) == 0x118, "");
 static_assert(__builtin_offsetof(ModStation, lightDirection) == 0x11c, "");
-static_assert(__builtin_offsetof(ModStation, field_0x12c) == 0x12c, "");
+static_assert(__builtin_offsetof(ModStation, savedPostEffect) == 0x12c, "");
 static_assert(__builtin_offsetof(ModStation, camKeyX) == 0x130, "");
 static_assert(__builtin_offsetof(ModStation, field_0x148) == 0x148, "");
 static_assert(__builtin_offsetof(ModStation, field_0x14c) == 0x14c, "");
