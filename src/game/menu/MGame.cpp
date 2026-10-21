@@ -848,8 +848,10 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                  Globals::status->getShip()->getFirstEquipmentOfSort(17) == nullptr)) {
                 this->pauseOpen = 1;
                 pauseSounds();
-                delete this->dialogueWindow;
-                this->dialogueWindow = nullptr;
+                if (this->dialogueWindow != nullptr) {
+                    delete this->dialogueWindow;
+                    this->dialogueWindow = nullptr;
+                }
                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(532),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 this->cutsceneActive = 1;
