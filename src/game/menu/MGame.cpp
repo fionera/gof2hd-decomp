@@ -491,73 +491,332 @@ static_assert(offsetof(MGameAppData, modalActive) == 5, "MGameAppData::modalActi
 static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::transitionActive @ 0xc");
 #endif
 
-static Layout ***g_tbStarLayout;
+// Portrait descriptors used by MGame dialogues ([1] = planet landing refusal).
+static int gMGameFaces[2][10] = {{4, 2, 0, 2, 2, 0, 2, 3, 3, 10}, {10, 0, 0, 1, 0}};
 
-static int **g_tbRecordTrack;
+static const int gShipRace[64] = {
+    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
+    2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
+    3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
-static int **g_tbMenuTrack;
 
-void MGame::OnTouchBegin(int p1, int p2, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
-    // lint: void_ptr -- exported override signature (Pv)
-    MGame *self = this;
-
-    if (self->activeTouchId == 0)
-        self->activeTouchId = touchId;
-
-    if (self->pauseOpen == 0) {
-        if (self->gameOverActive != 0 && self->loadingTime >= 4000) {
-            int cm = Globals::status->getCurrentCampaignMission();
-            if (cm == 0x9e) {
-                self->active = 0;
-                return self->applicationManager->SetCurrentApplicationModule(2);
-            }
-            if (self->gameRecord != 0) {
-                self->gameRecord->load();
-                Globals::globals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
-                self->active = 0;
-                return self->applicationManager->SetCurrentApplicationModule(5);
-            }
-            Globals::globals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
-            self->active = 0;
-            self->applicationManager->SetCurrentApplicationModule(5);
+void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- exported override signature (Pv)
+    if (this->activeTouchId == nullptr)
+        this->activeTouchId = touch;
+    if (this->pauseOpen) {
+        if (this->starMapOpen) {
+            if (Globals::layout->choiceWindowOpen)
+                Globals::layout->OnTouchBegin(x, y);
+            else
+                this->starMapOpen = this->starMap->OnTouchBegin(x, y) ^ 1;
             return;
         }
-    } else {
-        if (self->starMapOpen != 0) {
-            Layout *hl = **g_tbStarLayout;
-            if (*(uint8_t *) hl != 0) {
-                ((Layout *) (hl))->OnTouchBegin(p1, p2);
+        if (this->autopilotMenuOpen || this->choiceWindowOpen || this->field_0xc4) {
+            this->choiceWindow->OnTouchBegin(x, y);
+            return;
+        }
+        if (this->cutsceneActive) {
+            this->dialogueWindow->OnTouchBegin(x, y);
+            return;
+        }
+        if (this->menuTouchOpen) {
+            MGameAppData *appData = (MGameAppData *) Globals::appManager->GetApplicationData();
+            if (appData->modalActive || appData->transitionActive)
                 return;
-            }
-            uint8_t r = self->starMap->OnTouchBegin(p1, p2);
-            self->starMapOpen = r ^ 1;
+            this->menuWindow->OnTouchBegin(x, y, touch);
+            if (!this->freeCamMode || this->menuWindow->isShowingMessage() || this->menuWindow->isMakingScreenshot())
+                return;
+            freeCamTouchBegin(x, y, touch);
             return;
         }
-        if (self->autopilotMenuOpen != 0 || self->choiceWindowOpen != 0 ||
-            reinterpret_cast<int &>(self->field_0xc4) != 0) {
-            self->choiceWindow->OnTouchBegin(p1, p2);
+    } else if (this->gameOverActive && this->loadingTime >= 4000) {
+        if (Globals::status->getCurrentCampaignMission() == 158) {
+            this->active = 0;
+            this->applicationManager->SetCurrentApplicationModule(2);
             return;
         }
-        if (self->cutsceneActive != 0) {
-            self->dialogueWindow->OnTouchBegin(p1, p2);
+        if (this->gameRecord != nullptr) {
+            this->gameRecord->load();
+            Globals::globals->playMusicAndFadeOutCurrent(0);
+            this->active = 0;
+            this->applicationManager->SetCurrentApplicationModule(5);
             return;
         }
-        if (self->menuTouchOpen != 0) {
-            MGameAppData *ad = (MGameAppData *) self->applicationManager->GetApplicationData();
-            if (ad->modalActive != 0) return;
-            if (ad->transitionActive != 0) return;
-            self->menuWindow->OnTouchBegin(p1, p2, touchId);
-            if (self->freeCamMode == 0) return;
-            if (self->menuWindow->isShowingMessage() != 0) return;
-            if (self->menuWindow->isMakingScreenshot() != 0) return;
-
-            return;
-        }
+        Globals::globals->playMusicAndFadeOutCurrent(2);
+        this->active = 0;
+        this->applicationManager->SetCurrentApplicationModule(1);
     }
 
-    unsigned hr = self->hud->touchBegin(p1, p2, touchId);
-    self->hudTouchFlags = hr;
-    (void) hr;
+    this->hudTouchFlags = this->hud->touchBegin(x, y, touch);
+    unsigned flags = this->hudTouchFlags;
+    if ((flags & 0x10) && !this->jumpDriveActive) {
+        // Dock / land / auto-pilot button.
+        if (this->radar->lockedStation != nullptr && !Globals::status->inAlienOrbit() &&
+            !this->player->isDockedToDockingPoint()) {
+            if (!this->player->isAutoPilot() && !this->player->isInTurretMode()) {
+                this->player->setAutoPilot(this->radar->lockedStation);
+                if (this->radar->lockedStation == (*this->level->getLandmarks())[0]) {
+                    this->hud->hudEvent(10, this->player, 0);
+                } else {
+                    this->hud->hudEvent(this->radar->lockedStation == (*this->level->getLandmarks())[3] ? 15 : 12,
+                                        this->player, 0);
+                }
+                this->hudTouchFlags = this->hud->touchEnd(x, y, touch);
+                return;
+            }
+            if (!this->player->isInTurretMode()) {
+                this->hud->hudEvent(6, this->player, 0);
+                this->player->setAutoPilot(nullptr);
+                this->radar->lockedStation = nullptr;
+                this->radar->field_0x28 = 0;
+                this->player->resetGunDelay();
+            }
+        } else if (this->radar->field_0x14 && !this->player->isDockingToPlanet() &&
+                   !this->player->isDockedToDockingPoint()) {
+            if (Globals::status->getCurrentCampaignMission() < 10 ||
+                Globals::status->getCurrentCampaignMission() == 48) {
+                this->hud->hudEvent(21, this->player, 0);
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 24 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                (Globals::status->getShip()->getFirstEquipmentOfSort(13) == nullptr ||
+                 Globals::status->getShip()->getFirstEquipmentOfSort(17) == nullptr)) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                delete this->dialogueWindow;
+                this->dialogueWindow = nullptr;
+                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(532),
+                                                          Globals::gameText->getText(1603), gMGameFaces[1]);
+                this->cutsceneActive = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 135 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                Globals::status->getShip()->getFirstEquipmentOfSort(19) == nullptr) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3213));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 91 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                Globals::status->getShip()->getMaxPassengers() <= 9) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3214));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 94 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                Globals::status->getShip()->getMaxPassengers() == 0) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3214));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 105 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                !Globals::status->getShip()->hasEquipment(206, 1)) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3217));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 139 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                Globals::status->getShip()->getIndex() != 42 &&
+                (gShipRace[Globals::status->getShip()->getIndex()] != 1 ||
+                 !Globals::status->getShip()->hasEquipment(190, 1))) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3215));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 142 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                (Globals::status->getShip()->getFirstEquipmentOfSort(33) == nullptr ||
+                 !Globals::status->getShip()->hasEquipment(197, 15) ||
+                 Globals::status->getShip()->getFirstEquipmentOfSort(35) == nullptr)) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3216));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            if (Globals::status->getCurrentCampaignMission() == 142 &&
+                this->radar->getPlanetDockIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation() &&
+                Globals::status->getShip()->getFreeSpace() == 0) {
+                this->pauseOpen = 1;
+                pauseSounds();
+                if (this->choiceWindow == nullptr)
+                    this->choiceWindow = new ChoiceWindow();
+                this->choiceWindow->set(*Globals::gameText->getText(3218));
+                this->needsRedraw = 1;
+                this->choiceWindowOpen = 1;
+                return;
+            }
+            this->camera->setLookAtCam(true);
+            this->player->dockToPlanet();
+            this->field_0x110 = 0;
+            this->_b5c = 0;
+            this->hud->enableFireForTutorial(false);
+            reinterpret_cast<uint8_t *>(&this->levelScript->m_nFlags)[1] = 1;
+            this->jumpActive = 1;
+            return;
+        } else if (!this->player->isMining() && !this->player->isDockedToDockingPoint()) {
+            if (this->radar->getLockedAsteroid() != nullptr && !this->player->isDockingToAsteroid()) {
+                if (Globals::status->getShip()->getFreeSpace() <= 0) {
+                    this->hud->hudEvent(27, this->player, 0);
+                    return;
+                }
+                this->hud->hudEvent(11, this->player, 0);
+                this->player->dockToAsteroid(this->radar->getLockedAsteroid(), this->radar);
+                this->hud->releaseAllKeys();
+                return;
+            }
+            if (this->player->isDockingToAsteroid()) {
+                this->hud->hudEvent(6, this->player, 0);
+                this->player->dockToAsteroid(this->radar->getLockedAsteroid(), this->radar);
+                this->hud->releaseAllKeys();
+                return;
+            }
+            this->player->dockToAsteroid(this->radar->getLockedAsteroid(), this->radar);
+        }
+
+        if (this->player->isMining()) {
+            Globals::status->field_124 = 0;
+            this->player->stopMining();
+            return;
+        }
+        if ((this->radar->lockedEnemy != nullptr && this->radar->lockedEnemy->field_0x70) ||
+            this->player->isDockedToDockingPoint()) {
+            if (this->radar->lockedEnemy != nullptr && !this->player->isDockingToDockingPoint() &&
+                !this->player->isDockedToDockingPoint() && this->radar->lockedEnemy->field_0x75) {
+                this->hud->hudEvent(34, this->player, 0);
+                this->player->dockToDockingPoint(this->radar->lockedEnemy, this->radar);
+                this->hud->releaseAllKeys();
+            } else if (this->player->isDockingToDockingPoint() ||
+                       (this->player->isDockedToDockingPoint() && !this->player->isInTurretMode())) {
+                if (this->player->isDockedToDockingPoint()) {
+                    this->player->dockToDockingPoint(this->radar->lockedEnemy, this->radar);
+                    this->player->setAutoPilot(nullptr);
+                    this->player->resetGunDelay();
+                    this->hud->releaseAllKeys();
+                } else if (this->player->isDockingToDockingPoint() && !this->player->isLandingOrTakingOff()) {
+                    this->hud->hudEvent(6, this->player, 0);
+                }
+            }
+            this->hud->enableFireForTutorial(false);
+            long long now = Globals::status->getPlayingTime();
+            if (now - this->lastTapTime < 250) {
+                this->_b5c = 1;
+                this->hud->enableFireForTutorial(true);
+            } else {
+                if (this->_b5c)
+                    this->hudTouchFlags = this->hud->touchEnd(x, y, touch);
+                this->_b5c = 0;
+            }
+            this->lastTapTime = now;
+            return;
+        }
+        this->hud->enableFireForTutorial(false);
+        long long now = Globals::status->getPlayingTime();
+        if (now - this->lastTapTime < 250) {
+            this->_b5c = 1;
+            this->hud->enableFireForTutorial(true);
+        } else {
+            if (this->_b5c)
+                this->hudTouchFlags = this->hud->touchEnd(x, y, touch);
+            this->_b5c = 0;
+        }
+        this->lastTapTime = now;
+        this->field_0x110 = 1;
+        return;
+    }
+    if (flags & 0x20) {
+        long long now = Globals::status->getPlayingTime();
+        if (now - this->lastAlignTime < 500)
+            this->player->alignToHorizon();
+        this->lastAlignTime = now;
+        if (this->jumpActive || this->activeTouchId == touch || this->hudTouchFlags != 32)
+            return;
+        goto beginThrust;
+    }
+    if (flags & 1) {
+        Globals::sound->play(124, nullptr, nullptr, 0.0f);
+        return;
+    }
+    if ((flags & 0x100) &&
+        (this->player->isAutoPilot() || this->player->isDockingToAsteroid() ||
+         this->player->isDockingToDockingPoint()) &&
+        !this->player->field_0x14->field_0x54 && !this->player->aboutToReachAutoTarget()) {
+        this->flFastForwardWeight = 5.0f;
+        this->camera->setFastForwardMode(true);
+        return;
+    }
+    if (this->cloakAttribute >= 1 && this->timeWarpState >= 0 && (flags & 0x100)) {
+        if (this->timeWarpState < 1) {
+            this->hud->setTimeExtender(true, false, true, true);
+            Globals::sound->setDownPitch(true);
+            this->timeWarpState = this->cloakAttribute;
+            Globals::sound->play(1120, nullptr, nullptr, 0.0f);
+        } else {
+            this->timeWarpState = -1;
+            Globals::sound->setDownPitch(false);
+            this->hud->setTimeExtender(true, false, false, false);
+            Globals::sound->play(1119, nullptr, nullptr, 0.0f);
+        }
+        return;
+    }
+    if (this->cameraMode == 3 && !this->player->isMining() && !this->jumpActive) {
+        freeCamTouchBegin(x, y, touch);
+        return;
+    }
+    if ((unsigned) this->cameraMode > 1)
+        return;
+    this->maneuverActive = 1;
+    this->maneuverStartX = x;
+    this->maneuverStartY = y;
+    this->maneuverHoldTime = 0;
+    if (this->jumpActive || this->hudTouchFlags != 0)
+        return;
+beginThrust:
+    this->_b1b8 = 1;
+    this->thrustStartX = (float) x;
+    this->thrustStartY = (float) y;
 }
 
 void MGame::OnUpdate() {
@@ -1939,7 +2198,7 @@ MGame::MGame() {
     this->egoJumpPos.x = 0.0f;
     this->egoJumpPos.y = 0.0f;
     this->egoJumpPos.z = 0.0f;
-    this->field_0x1bc = 0;
+    this->thrustStartX = 0;
     this->thrustStartY = 0;
     this->field_0x1c4 = 0;
     this->freeCamFinger0.y = 0.0f;

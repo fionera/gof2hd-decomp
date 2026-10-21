@@ -164,8 +164,8 @@ public:
     uint8_t _b1b8; // thrustActive (uint16_t) = reinterpret_cast<uint16_t &>(_b1b8)
     uint8_t thrustEngaged;
     uint8_t _pad_0x1ba[2];
-    int field_0x1bc;
-    int thrustStartY;
+    float thrustStartX;
+    float thrustStartY;
     int field_0x1c4;
     int thrustResetX;
     int thrustThreshold;
@@ -342,7 +342,7 @@ static_assert(offsetof(MGame, flFastForwardFactor) == 424, "MGame::flFastForward
 static_assert(offsetof(MGame, field_0x1ac) == 428, "MGame::field_0x1ac @ 428");
 static_assert(offsetof(MGame, _b1b8) == 440, "MGame::_b1b8 (thrustActive) @ 440");
 static_assert(offsetof(MGame, thrustEngaged) == 441, "MGame::thrustEngaged @ 441");
-static_assert(offsetof(MGame, field_0x1bc) == 444, "MGame::field_0x1bc @ 444");
+static_assert(offsetof(MGame, thrustStartX) == 444, "MGame::thrustStartX @ 444");
 static_assert(offsetof(MGame, thrustStartY) == 448, "MGame::thrustStartY @ 448");
 static_assert(offsetof(MGame, field_0x1c4) == 452, "MGame::field_0x1c4 @ 452");
 static_assert(offsetof(MGame, thrustResetX) == 456, "MGame::thrustResetX @ 456");
