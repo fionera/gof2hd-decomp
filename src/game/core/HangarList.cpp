@@ -248,7 +248,7 @@ void HangarList::fillBuyList(ListItem *item) {
         out = 2;
     }
 
-    (*list)[out] = new ListItem((*texts)->getText(isShip == 0 ? 0x11c : 0x11d));
+    (*list)[out] = new ListItem(isShip == 0 ? (*texts)->getText(0x11c) : (*texts)->getText(0x11d));
     uint32_t next = out + 1;
 
     if (count < 1) {
