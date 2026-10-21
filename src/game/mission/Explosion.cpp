@@ -25,10 +25,10 @@ static inline AbyssEngine::AERandom *explosionRandom() {
 
 Explosion::Explosion(int type) {
     this->scale = 1.0f;
-    this->type = type;
     this->primaryMesh = 0;
     this->secondaryMesh = 0;
     this->fireStreaks = 0;
+    this->type = type;
 
     switch (type) {
         case 0:
@@ -39,16 +39,6 @@ Explosion::Explosion(int type) {
             delete geometry;
             break;
         }
-        default:
-            if (type == 13) {
-                this->primaryMesh = new AEGeometry((uint16_t) 0x41a9, Globals::Canvas, false);
-                this->setScaling(0.25f);
-                ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(1.0f);
-            } else {
-                this->primaryMesh = new AEGeometry((uint16_t) 0x4213, Globals::Canvas, false);
-                this->secondaryMesh = new AEGeometry((uint16_t) 0x4211, Globals::Canvas, false);
-            }
-            break;
         case 3:
             this->primaryMesh = new AEGeometry((uint16_t) 0x4213, Globals::Canvas, false);
             this->secondaryMesh = new AEGeometry((uint16_t) 0x421d, Globals::Canvas, false);
@@ -80,6 +70,16 @@ Explosion::Explosion(int type) {
         case 12:
             this->primaryMesh = new AEGeometry((uint16_t) 0x4a7e, Globals::Canvas, false);
             break;
+        default:
+            if (type == 13) {
+                this->primaryMesh = new AEGeometry((uint16_t) 0x41a9, Globals::Canvas, false);
+                this->setScaling(0.25f);
+                ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationSpeed(1.0f);
+            } else {
+                this->primaryMesh = new AEGeometry((uint16_t) 0x4213, Globals::Canvas, false);
+                this->secondaryMesh = new AEGeometry((uint16_t) 0x4211, Globals::Canvas, false);
+            }
+            break;
     }
 
     ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->SetAnimationState(
@@ -88,7 +88,7 @@ Explosion::Explosion(int type) {
     if (this->secondaryMesh != 0) {
         ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->SetAnimationState(
             (AbyssEngine::AnimationMode) 1, 0);
-        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 10000.0f;
+        ((Transform *) Globals::Canvas->TransformGetTransform(this->secondaryMesh->transform))->boundingRadius = 20000.0f;
     }
 
     long long primaryLength =
@@ -108,7 +108,7 @@ Explosion::Explosion(int type) {
         this->duration = 0;
     }
 
-    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->boundingRadius = 10000.0f;
+    ((Transform *) Globals::Canvas->TransformGetTransform(this->primaryMesh->transform))->boundingRadius = 20000.0f;
     this->weaponIndex = -1;
     this->reset();
 }
