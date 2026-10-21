@@ -3005,14 +3005,18 @@ void ModStation::OnRender2D() {
             this->scrollBox->draw();
         }
         int time = this->field_0xb4;
-        if (time > 130000 || time < -6000 || time < 0) {
-            float fade;
-            if (time > 130000)
-                fade = (float) (time - 130000) / 6000.0f;
-            else if (time < -6000)
-                fade = (float) (time + 12000) / 6000.0f;
-            else
-                fade = (float) (time + 6000) / -6000.0f + 1.0f;
+        bool fading = true;
+        float fade = 0.0f;
+        if (time > 130000) {
+            fade = (float) (time - 130000) / 6000.0f;
+        } else if (time < -6000) {
+            fade = (float) (time + 12000) / 6000.0f;
+        } else if (time < 0) {
+            fade = (float) (time + 6000) / -6000.0f + 1.0f;
+        } else {
+            fading = false;
+        }
+        if (fading) {
             this->paintCanvas->SetColor((int) (fade * 255.0f));
             Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         }
