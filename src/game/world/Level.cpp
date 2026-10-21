@@ -1377,14 +1377,12 @@ int Level::init() {
                 } else {
                     // leaving a station: start in front of its planet, facing away from it
                     Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
-                    int planet;
-                    for (planet = 0; (unsigned int) planet < stations->size(); planet++) {
-                        if ((*stations)[planet] == (*stationStack)[1]->getIndex()) {
+                    int planet = -1;
+                    for (unsigned int k = 0; k < stations->size(); k++) {
+                        if ((*stations)[k] == (*stationStack)[1]->getIndex()) {
+                            planet = k;
                             break;
                         }
-                    }
-                    if ((unsigned int) planet >= stations->size()) {
-                        planet = -1;
                     }
                     Vector position = {0.0f, 0.0f, 25000.0f};
                     if (planet >= 0) {
@@ -1420,19 +1418,21 @@ int Level::init() {
     if (mission == nullptr) {
         Globals::status->setMission(Mission::empty);
     }
-    int mode = missionPtr;
-    if (mode != 3) {
-        createScene();
-        missionPtr = mode;
-    } else if (mission->isEmpty() || !mission->isCampaignMission()
-               || (Globals::status->gameWon() && !(Globals::options[0x35] | Globals::options[0x37]))) {
+    if ((missionPtr == 3 && (mission->isEmpty() || !mission->isCampaignMission()))
+        || (missionPtr == 3 && Globals::status->gameWon() && !(Globals::options[0x35] || Globals::options[0x37]))) {
         createMission();
         bool blackMarket = Globals::status->inBlackMarketSystem();
         if (initStreamOutPosition && blackMarket) {
             player->setPosition(player->getPosition() + Vector{0.0f, 0.0f, 40000.0f});
         }
-    } else if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->isCampaignMission()) {
-        createCampaignMission();
+    } else if (missionPtr == 3) {
+        if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->isCampaignMission()) {
+            createCampaignMission();
+        }
+    } else {
+        int mode = missionPtr;
+        createScene();
+        missionPtr = mode;
     }
 
     createStaticObjects();
@@ -1461,12 +1461,12 @@ int Level::init() {
             }
         }
     }
-    asteroidsLeft = 0;
     enemiesLeft = enemies != nullptr ? count - field_120 : 0;
+    asteroidsLeft = 0;
+    asteroidsLeft = asteroids != nullptr ? (int) asteroids->size() : 0;
     field_184 = 0;
     field_188 = 0;
     field_1c = 0;
-    asteroidsLeft = asteroids != nullptr ? (int) asteroids->size() : 0;
     kills = 0;
     friendCargoStolen = 0;
     field_70 = 1;
@@ -3452,7 +3452,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[0] = this->createStaticObject(nullptr, 16992, false);
             ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
 
-            (*this->enemies)[1] = new PlayerFixedObject(18781, 0, new Player(7500, 9999999, 0, 0, 0), nullptr, 0.0f, 0.0f, 0.0f);
+            Player *gatePlayer = new Player(7500, 9999999, 0, 0, 0);
+            (*this->enemies)[1] = new PlayerFixedObject(18781, 0, gatePlayer, nullptr, 0.0f, 0.0f, 0.0f);
             AEGeometry *gate = new AEGeometry(21076, Globals::Canvas, false);
             AEGeometry *part0 = new AEGeometry(21876, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry(22076, Globals::Canvas, false);
@@ -3464,7 +3465,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[1]->setPosition(Vector{-77000.0f, -3000.0f, 90000.0f});
             (*this->enemies)[1]->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
 
-            (*this->enemies)[2] = new PlayerFixedObject(18781, 0, new Player(7500, 9999999, 0, 0, 0), nullptr, 0.0f, 0.0f, 0.0f);
+            Player *brokenGatePlayer = new Player(7500, 9999999, 0, 0, 0);
+            (*this->enemies)[2] = new PlayerFixedObject(18781, 0, brokenGatePlayer, nullptr, 0.0f, 0.0f, 0.0f);
             AEGeometry *brokenGate = new AEGeometry(21076, Globals::Canvas, false);
             AEGeometry *part2 = new AEGeometry(21876, Globals::Canvas, false);
             AEGeometry *part3 = new AEGeometry(18832, Globals::Canvas, false);
@@ -3988,12 +3990,12 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 KIPlayer *attacker = (*this->enemies)[i];
                 if (i <= 10) {
-                    int x = (Globals::rnd->nextInt(100) + 900) * (i % 2 == 0 ? 1 : -1);
-                    attacker->setPosition(center + (float) i * Vector{(float) x, (float) (Globals::rnd->nextInt(200) - 200),
+                    attacker->setPosition(center + (float) i * Vector{(float) ((Globals::rnd->nextInt(100) + 900) * (i % 2 == 0 ? 1 : -1)),
+                                                                      (float) (Globals::rnd->nextInt(200) - 200),
                                                                       (float) (Globals::rnd->nextInt(400) - 200)});
                 } else {
-                    int x = (Globals::rnd->nextInt(100) + 1600) * (i % 2 == 0 ? 1 : -1);
-                    attacker->setPosition(center + (float) i * Vector{(float) x, (float) (Globals::rnd->nextInt(100) - 200),
+                    attacker->setPosition(center + (float) i * Vector{(float) ((Globals::rnd->nextInt(100) + 1600) * (i % 2 == 0 ? 1 : -1)),
+                                                                      (float) (Globals::rnd->nextInt(100) - 200),
                                                                       (float) (Globals::rnd->nextInt(500) + 1000)});
                 }
                 (*this->enemies)[i]->geometry->setDirection(
@@ -4179,11 +4181,11 @@ void Level::createCampaignMission() {
             ArraySetLength(15, *this->enemies);
             for (int i = 0; i < 8; i++) {
                 int type = Globals::globals->getRandomEnemyFighter(8);
-                if (i < 2) {
-                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
-                } else {
+                if (i >= 2) {
                     (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(1), true, false);
                     (*this->enemies)[i]->setToSleep();
+                } else {
+                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
                 }
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
             }
@@ -4537,6 +4539,7 @@ void Level::connectPlayers() {
         bool wingman = ship->isWingMan();
         bool firstOfMission24 = campaignMission == 0x24 && i == 0;
 
+        // count the targets this ship may engage
         unsigned int count = 0;
         for (unsigned int k = 0; k < enemies->size(); k++) {
             KIPlayer *other = (*enemies)[k];
@@ -4547,13 +4550,15 @@ void Level::connectPlayers() {
                 if (other->isWingMan()) {
                     continue;
                 }
+            } else if (campaignMission == 0x40) {
+                if (i == 0 || ship == nullptr || k == 0) {
+                    continue;
+                }
             } else if (campaignMission == 0x9a) {
                 bool alienOrbit = Globals::status->inAlienOrbit();
                 if (k == 8 && alienOrbit && ship->shipGroup == 8) {
                     continue;
                 }
-            } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
-                continue;
             }
             if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
                 && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
@@ -4569,49 +4574,14 @@ void Level::connectPlayers() {
         ArraySetLength(count, *targets);
 
         Mission *mission = Globals::status->getMission();
-        bool friendly = ((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
-                            && ship->shipGroup == 9)
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
-                            && ship->shipGroup == 9)
-                        || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x1c
-                            && ship->shipGroup == 9);
-        if (!friendly) {
-            if (mission->isCampaignMission()) {
-                Globals::status->getCurrentCampaignMission();
-            }
-            if (mission->isCampaignMission()) {
-                Globals::status->getCurrentCampaignMission();
-            }
-            int slot = 0;
-            if (player != nullptr) {
-                (*targets)[0] = player->player;
-                slot = 1;
-            }
-            for (unsigned int k = 0; k < enemies->size(); k++) {
-                KIPlayer *other = (*enemies)[k];
-                if (other == ship || (!wingman & (other->shipGroup == group))) {
-                    continue;
-                }
-                if (firstOfMission24) {
-                    if (other->isWingMan()) {
-                        continue;
-                    }
-                } else if (campaignMission == 0x9a) {
-                    bool alienOrbit = Globals::status->inAlienOrbit();
-                    if (k == 8 && alienOrbit && ship->shipGroup == 8) {
-                        continue;
-                    }
-                } else if (campaignMission == 0x40 && !(i != 0 && ship != nullptr && k != 0)) {
-                    continue;
-                }
-                if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
-                    && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
-                    continue;
-                }
-                (*targets)[slot++] = (*enemies)[k]->player;
-            }
-        } else {
+        if (((i & 1) && mission->getType() == 12) || mission->getType() == 2 || mission->getType() == 9
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x10
+                && ship->shipGroup == 9)
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x18
+                && ship->shipGroup == 9)
+            || (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 0x1c
+                && ship->shipGroup == 9)) {
+            // escort / defend: this ship only fights the player's foes
             if (ship->player->isAlwaysFriend()) {
                 delete targets;
                 targets = new Array<Player *>();
@@ -4636,6 +4606,43 @@ void Level::connectPlayers() {
                 }
             }
             (*targets)[targets->size() - 1] = player->player;
+        } else {
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            if (mission->isCampaignMission()) {
+                Globals::status->getCurrentCampaignMission();
+            }
+            int slot = 0;
+            if (player != nullptr) {
+                (*targets)[0] = player->player;
+                slot = 1;
+            }
+            for (unsigned int k = 0; k < enemies->size(); k++) {
+                KIPlayer *other = (*enemies)[k];
+                if (other == ship || (!wingman & (other->shipGroup == group))) {
+                    continue;
+                }
+                if (firstOfMission24) {
+                    if (other->isWingMan()) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x40) {
+                    if (i == 0 || ship == nullptr || k == 0) {
+                        continue;
+                    }
+                } else if (campaignMission == 0x9a) {
+                    bool alienOrbit = Globals::status->inAlienOrbit();
+                    if (k == 8 && alienOrbit && ship->shipGroup == 8) {
+                        continue;
+                    }
+                }
+                if (ship->field_0x40 && ((PlayerFixedObject *) ship)->getDockingType() == 3
+                    && Globals::status->getStation()->stationHasHiddenBlueprint(true)) {
+                    continue;
+                }
+                (*targets)[slot++] = (*enemies)[k]->player;
+            }
         }
         ship->player->addEnemies(targets);
         delete targets;
@@ -5603,16 +5610,9 @@ void Level::createStaticObjects() {
 }
 
 KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) {
-    int x, y, z;
-    if (waypoint != nullptr) {
-        x = waypoint->x;
-        y = waypoint->y;
-        z = waypoint->z;
-    } else {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
+    int x = waypoint != nullptr ? waypoint->x : 0;
+    int y = waypoint != nullptr ? waypoint->y : 0;
+    int z = waypoint != nullptr ? waypoint->z : 0;
     if (scatter) {
         x = x + Globals::rnd->nextInt(20000) - 10000;
         y = y + Globals::rnd->nextInt(20000) - 10000;
@@ -5636,7 +5636,10 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             geometry = new AEGeometry(type, Globals::Canvas, false);
         }
 
-        if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
+        if (type == 0x4a6a) {
+            new Player(1000, 9999999, 0, 0, 0);
+            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
+        } else if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
             Player *player = new Player(1000, 100, 0, 0, 0);
             object = new PlayerTurret(type, player, geometry, x, y, z);
             object->setLevel(this);
@@ -5737,9 +5740,6 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             fixed->setBV(getBoundingVolume(2000, geometry));
             fixed->player->radius = 0;
             object = fixed;
-        } else if (type == 0x4a6a) {
-            new Player(1000, 9999999, 0, 0, 0);
-            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
         } else if (type == 0x493e || type == 0x4941 || type == 0x4944 || type == 0x4947 || type == 0x494a) {
             Player *player = new Player(1000, 9999999, 0, 0, 0);
             player->setVulnerable(false);
@@ -5785,8 +5785,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             delete part3;
             delete part4;
             fixed->setShipGroup(root, -1, false);
-            fixed->field_0x40 = 1;
             fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
             Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
             ArraySetLength(2, *volumes);
             (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
@@ -5891,8 +5891,8 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             root->setLodMeshes(lodMeshes, lodDistances, 1);
             root->setLodChildTransform(firstLights);
             fixed->setShipGroup(root, -1, false);
-            fixed->field_0x40 = 1;
             fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
             Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
             ArraySetLength(2, *volumes);
             (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
@@ -6518,8 +6518,8 @@ void Level::createGasClouds() {
     gasClouds = new Array<KIPlayer *>();
     bool bossOrbit = Globals::status->getCurrentCampaignMission() == 0x8e
                      && Globals::status->getStation()->getIndex() == 0x4f;
-    ArraySetLength((unsigned int) ((bossOrbit ? 3.0f : 0.0f)
-                                   + (float) plasma[1] / 100.0f * (float) (Globals::rnd->nextInt(4) + 4)),
+    int count = Globals::rnd->nextInt(4) + 4;
+    ArraySetLength((unsigned int) ((float) plasma[1] / 100.0f * (float) count + (bossOrbit ? 3.0f : 0.0f)),
                    *gasClouds);
     for (unsigned int i = 0; i < gasClouds->size(); i++) {
         int kind = plasma[0];
@@ -6527,11 +6527,11 @@ void Level::createGasClouds() {
             position.x = (float) (Globals::rnd->nextInt(160000) - 80000);
             position.y = (float) (Globals::rnd->nextInt(160000) - 80000);
             position.z = (float) (Globals::rnd->nextInt(160000) - 80000);
-        } while (AbyssEngine::AEMath::VectorLength(position) <= 25000.0f
-                 || AbyssEngine::AEMath::VectorLength(position - reinterpret_cast<Vector &>(stationPosition.x)) <= 30000.0f);
-        if (i == 0 && bossOrbit) {
-            position.y = 0.0f;
+        } while (!(AbyssEngine::AEMath::VectorLength(position) > 25000.0f
+                   && AbyssEngine::AEMath::VectorLength(position - reinterpret_cast<Vector &>(stationPosition.x)) > 30000.0f));
+        if (bossOrbit && i == 0) {
             position.x = 92000.0f;
+            position.y = 0.0f;
             position.z = 36000.0f;
         }
         AEGeometry *geometry = new AEGeometry(0x37d1, Globals::Canvas, false);
@@ -6589,7 +6589,7 @@ void Level::updateMissionOrbit(int dt) {
         if (orbitWaveTimer > 50000) {
             orbitWaveTimer = 0;
             bool allDead = true;
-            for (unsigned int i = 0; allDead && i < enemies->size() - 1; i++) {
+            for (unsigned int i = 0; i < enemies->size() - 1 && allDead; i++) {
                 allDead = (*enemies)[i]->isDead();
             }
             if (allDead) {
@@ -6633,109 +6633,77 @@ void Level::initParticleSystems() {
         3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
         2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
     };
-    static const float g_ips_vel_78[9] = {
-        0.376953125f, 0.12890625f, 0.005859375f, 0.251953125f,
-        0.251953125f, 0.251953125f, 0.251953125f, 0.501953125f, 0.626953125f,
-    };
-    static const float g_ips_vel_7c[9] = {
-        0.001953125f, 0.005859375f, 0.005859375f, 0.001953125f,
-        0.001953125f, 0.001953125f, 0.001953125f, 0.001953125f, 0.001953125f,
-    };
-    static const float g_ips_vel_80[9] = {
-        0.498046875f, 0.24609375f, 0.119140625f, 0.373046875f,
-        0.373046875f, 0.373046875f, 0.373046875f, 0.623046875f, 0.748046875f,
-    };
-    static const float g_ips_vel_84[9] = {
-        0.123046875f, 0.12109375f, 0.119140625f, 0.123046875f,
-        0.123046875f, 0.123046875f, 0.123046875f, 0.123046875f, 0.123046875f,
-    };
 
     if (this->player != nullptr) {
         if (this->field_a4 != nullptr) {
             this->field_a8 = new Array<int>();
             ArraySetLength(this->field_a4->size(), *(this->field_a8));
 
-            unsigned char *curBase = ParticleSettingsRef::curBytes();
-            unsigned char *entryPtr = curBase + 0x12b4;
-            unsigned n = this->field_a4->size();
-            for (unsigned i = 0; i < n; i++, entryPtr += 0xa0) {
-                const Matrix *playerMat = &this->player->player->transform;
-                int slot = this->field_80->addSystem(
-                    playerMat,
-                    (ParticleSettings::ParticleSet)(i + 0x1d),
-                    false);
-                (*this->field_a8)[i] = slot;
-
-                AEGeometry *geo = (*this->field_a4)[i];
-
-                float posX = geo->getPosition().x;
-                *(int *)(entryPtr - 0x1c) = *(int *)&posX;
-                float posY = geo->getPosition().y;
-                *(int *)(entryPtr - 0x18) = *(int *)&posY;
-                float posZ = geo->getPosition().z;
-                *(int *)(entryPtr - 0x14) = *(int *)&posZ;
-
-                float sclX0 = geo->getScaling().x;
-                double sclX15 = (double)sclX0 * 1.5;
-                int intp;
-                if (sclX15 < 1.0) {
-                    float sclX1 = geo->getScaling().x;
-                    double sv = (double)sclX1 * 1.5 * 80.0;
-                    intp = (int)sv;
-                } else {
-                    intp = 0x50;
+            for (unsigned int i = 0; i < this->field_a4->size(); i++) {
+                (*this->field_a8)[i] = this->field_80->addSystem(&this->player->player->transform,
+                                                                 (ParticleSettings::ParticleSet) (i + 29), false);
+                // engine flare particle set for this anchor
+                ParticleSettings::SetDefinition &set = ParticleSettingsRef::cur.sets[i + 29];
+                set.posRight = (*this->field_a4)[i]->getPosition().x;
+                set.posUp = (*this->field_a4)[i]->getPosition().y;
+                set.lifetime = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                       ? (int) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * 80.0)
+                                       : 80;
+                set.lifeBase = (*this->field_a4)[i]->getScaling().x * 250.0f;
+                set.flLifetime = 8.0f;
+                set.count = 20;
+                set.posBase = -1000;
+                set.posDir = (*this->field_a4)[i]->getPosition().z;
+                set.velDir = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                     ? (float) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * -4000.0)
+                                     : -4000.0f;
+                set.color0 = 0xddddddff;
+                set.color1 = 0;
+                set.drag = 0.8f;
+                switch (g_ips_shipTypeMap[Globals::status->getShip()->getIndex()]) {
+                    case 1:
+                        set.uvU0 = 0.376953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.498046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 2:
+                        set.uvU0 = 0.12890625f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.24609375f;
+                        set.uvV1 = 0.12109375f;
+                        break;
+                    case 3:
+                        set.uvU0 = 0.005859375f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.119140625f;
+                        set.uvV1 = 0.119140625f;
+                        break;
+                    case 8:
+                        set.uvU0 = 0.501953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.623046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 9:
+                        set.uvU0 = 0.626953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.748046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    default:
+                        set.uvU0 = 0.251953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.373046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
                 }
-                *(int *)(entryPtr - 0x6c) = intp;
-                *(int *)(entryPtr - 0x68) = 0x41000000;
-
-                float sclX2 = geo->getScaling().x;
-                float sz250 = sclX2 * 250.0f;
-                *(float *)(entryPtr - 0x80) = sz250;
-                *(int *)(entryPtr - 0x84) = 0x14;
-
-                *(uint32_t *)(entryPtr - 0x60) = 0xddddddff;
-                *(uint32_t *)(entryPtr - 0x5c) = 0;
-
-                *(int *)(entryPtr - 0x50) = -1000;
-
-                *(float *)(entryPtr - 0x30) = 0.800000011920929f;
-
-                float sclX3 = geo->getScaling().x;
-                double sclX3_15 = (double)sclX3 * 1.5;
-                float velResult;
-                if (sclX3_15 < 1.0) {
-                    float sclX4 = geo->getScaling().x;
-                    double sv2 = (double)sclX4 * 1.5 * -4000.0;
-                    velResult = (float)sv2;
-                } else {
-                    velResult = -4000.0f;
-                }
-                *(float *)(entryPtr - 0x24) = velResult;
-
-                int shipIdx = Globals::status->getShip()->getIndex();
-                unsigned midx = (unsigned)(g_ips_shipTypeMap[shipIdx] - 1);
-                float v78, v7c, v80, v84;
-                if (midx > 8) {
-                    v78 = 0.251953125f;
-                    v7c = 0.001953125f;
-                    v80 = 0.373046875f;
-                    v84 = 0.123046875f;
-                } else {
-                    v78 = g_ips_vel_78[midx];
-                    v7c = g_ips_vel_7c[midx];
-                    v80 = g_ips_vel_80[midx];
-                    v84 = g_ips_vel_84[midx];
-                }
-                *(float *)(entryPtr - 0xc) = v78;
-                *(float *)(entryPtr - 0x8) = v7c;
-                *(float *)(entryPtr - 0x4) = v80;
-                *(float *)(entryPtr + 0x0) = v84;
             }
         }
 
-        Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-        int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
-        this->movingStarsIndex = sys;
+        this->movingStarsIndex = this->skybox2Mesh->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_4, false);
 
         if (Globals::status->getSystem() != 0) {
             SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
@@ -6743,34 +6711,34 @@ void Level::initParticleSystems() {
                 for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
                     KIPlayer *k = (*this->enemies)[i];
                     if (k != 0 && k->getType() == 0x37a3) {
-                        AEGeometry *kg = k->geometry;
-                        kg->updateReferenceMatrix();
-                        Matrix const *ref = &kg->getReferenceMatrix();
-                        this->particleSystemMgr->addSystem(ref, ParticleSettings::ParticleSet_8, false);
+                        k->geometry->updateReferenceMatrix();
+                        this->particleSystemMgr->addSystem(&k->geometry->getReferenceMatrix(),
+                                                           ParticleSettings::ParticleSet_8, false);
                         break;
                     }
                 }
             }
         }
 
-        local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-        sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
-        this->field_284 = sys;
+        this->field_284 = this->particleSystemMgr->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_7, false);
 
+        // tint the star-dust (set 7) and nebula (set 8) particles to the system's sky colour
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        ParticleSettings::SetDefinition &nebula = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_8];
         if (Globals::status->inAlienOrbit() != 0) {
-            unsigned char *cur = ParticleSettingsRef::curBytes();
-            uint32_t c1 = *(uint32_t *)(cur + 0x494);
-            uint32_t c2 = *(uint32_t *)(cur + 0x534);
+            uint32_t c1 = dust.color0;
+            uint32_t c2 = nebula.color0;
             c1 = (c1 & 0xff) | (0x9274d4u << 8);
             c2 = (c2 & 0xff) | (0x9274d4u << 8);
-            *(uint32_t *)(cur + 0x534) = c2;
-            *(uint32_t *)(cur + 0x494) = c1;
+            nebula.color0 = c2;
+            dust.color0 = c1;
         } else {
-            unsigned char *cur = ParticleSettingsRef::curBytes();
-            *(uint32_t *)(cur + 0x534) = 0xe2282880u;
-            *(uint32_t *)(cur + 0x538) = 0x00ff0080u;
+            nebula.color0 = 0xe2282880u;
+            nebula.color1 = 0x00ff0080u;
             int texIdx = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex();
-            uint32_t col = g_ips_skyColors[texIdx];
+            int col = (int) g_ips_skyColors[texIdx];
             int isSN = Globals::status->inSupernovaSystem();
             float scale = isSN ? 0.5f : 0.6f;
             int alpha = isSN ? 0xff : 0xbb;
@@ -6778,26 +6746,25 @@ void Level::initParticleSystems() {
             int comp1 = (int)((float)((col >> 16) & 0xff) * scale);
             int comp2 = (int)((float)((col >>  8) & 0xff) * scale);
             uint32_t result = (uint32_t)(((unsigned)comp0 << 24) | ((unsigned)comp1 << 16) | ((unsigned)comp2 << 8) | (unsigned)alpha);
-            *(uint32_t *)(cur + 0x494) = result;
-            *(uint32_t *)(cur + 0x498) = result;
+            dust.color0 = result;
+            dust.color1 = result;
         }
     }
 
     if (Globals::status->inSupernovaSystem() != 0 &&
         Globals::status->getCurrentCampaignMission() != 0x59 &&
         Globals::status->getCurrentCampaignMission() <= 0x9d) {
-        Vector ldir = this->starSystem->getLightDirection();
-        Vector normalized = AbyssEngine::AEMath::VectorNormalize(ldir);
-        Vector negated = AbyssEngine::AEMath::operator-(normalized);
-        unsigned char *cur = ParticleSettingsRef::curBytes();
-        *(float *)(cur + 0x4b8) = negated.x * 2000.0f;
-        *(float *)(cur + 0x4bc) = negated.y * 2000.0f;
-        *(float *)(cur + 0x4c0) = negated.z * 2000.0f;
+        // star dust drifts away from the dying star
+        Vector drift = -AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = drift.x * 2000.0f;
+        dust.velBaseY = drift.y * 2000.0f;
+        dust.velBaseZ = drift.z * 2000.0f;
     } else {
-        unsigned char *cur = ParticleSettingsRef::curBytes();
-        *(uint32_t *)(cur + 0x4b8) = 0;
-        *(uint32_t *)(cur + 0x4bc) = 0;
-        *(uint32_t *)(cur + 0x4c0) = 0;
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = 0.0f;
+        dust.velBaseY = 0.0f;
+        dust.velBaseZ = 0.0f;
     }
 
     if (this->field_80 != 0)
@@ -6811,25 +6778,23 @@ void Level::initParticleSystems() {
     if (this->field_98 != 0)
         (this->field_98)->init();
 
-    {
-        AbyssEngine::AEMath::Matrix mat_0xa;
-        this->field_38 = this->field_74->addSystem(&mat_0xa, ParticleSettings::ParticleSet_0xa, false);
-        AbyssEngine::AEMath::Matrix mat_0xb;
-        this->field_3c = this->field_74->addSystem(&mat_0xb, ParticleSettings::ParticleSet_0xb, false);
-        AbyssEngine::AEMath::Matrix mat_14;
-        this->field_48 = this->field_74->addSystem(&mat_14, ParticleSettings::ParticleSet_0x14, false);
-        AbyssEngine::AEMath::Matrix mat_15;
-        this->field_34 = this->field_74->addSystem(&mat_15, ParticleSettings::ParticleSet_0x15, false);
-        AbyssEngine::AEMath::Matrix mat_16;
-        this->field_50 = this->field_74->addSystem(&mat_16, ParticleSettings::ParticleSet_0x16, false);
-        AbyssEngine::AEMath::Matrix mat_17;
-        this->field_54 = this->field_74->addSystem(&mat_17, ParticleSettings::ParticleSet_0x17, false);
-        if (Globals::status->getCurrentCampaignMission() == 0x50) {
-            AbyssEngine::AEMath::Matrix mat_18a;
-            this->field_58 = this->field_74->addSystem(&mat_18a, ParticleSettings::ParticleSet_0x18, false);
-            AbyssEngine::AEMath::Matrix mat_18b;
-            this->field_5c = this->field_74->addSystem(&mat_18b, ParticleSettings::ParticleSet_0x18, false);
-        }
+    Matrix emitter0xa;
+    this->field_38 = this->field_74->addSystem(&emitter0xa, ParticleSettings::ParticleSet_0xa, false);
+    Matrix emitter0xb;
+    this->field_3c = this->field_74->addSystem(&emitter0xb, ParticleSettings::ParticleSet_0xb, false);
+    Matrix emitter0x14;
+    this->field_48 = this->field_74->addSystem(&emitter0x14, ParticleSettings::ParticleSet_0x14, false);
+    Matrix emitter0x15;
+    this->field_34 = this->field_74->addSystem(&emitter0x15, ParticleSettings::ParticleSet_0x15, false);
+    Matrix emitter0x16;
+    this->field_50 = this->field_74->addSystem(&emitter0x16, ParticleSettings::ParticleSet_0x16, false);
+    Matrix emitter0x17;
+    this->field_54 = this->field_74->addSystem(&emitter0x17, ParticleSettings::ParticleSet_0x17, false);
+    if (Globals::status->getCurrentCampaignMission() == 0x50) {
+        Matrix emitter0x18a;
+        this->field_58 = this->field_74->addSystem(&emitter0x18a, ParticleSettings::ParticleSet_0x18, false);
+        Matrix emitter0x18b;
+        this->field_5c = this->field_74->addSystem(&emitter0x18b, ParticleSettings::ParticleSet_0x18, false);
     }
 
     (this->field_74)->init();
@@ -7028,11 +6993,9 @@ void Level::createScene() {
                 for (int i = 0; i < 7; i++)
                     seatUsed[i] = 0;
                 for (int i = 0; i < agentCount; i++) {
-                    int look;
-                    if ((*agents)[i]->getRace() == 3)
+                    int look = (*agents)[i]->getRace();
+                    if (look == 3)
                         look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
-                    else
-                        look = (*agents)[i]->getRace();
                     int mesh = kAgentMeshes[look];
                     if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
                         mesh = 14724;
@@ -7089,8 +7052,7 @@ void Level::renderBG(int dt) {
         Vector side = {1.0f, 0.0f, 0.0f};
         Vector dir = VectorNormalize(starSystem->getLightDirection());
         Vector right = VectorNormalize(VectorCross(side, dir));
-        Vector up = VectorNormalize(VectorCross(right, dir));
-        side = -up;
+        side = -VectorNormalize(VectorCross(right, dir));
         MatrixSetRotation(cloudMatrix, side, dir, right);
     } else {
         MatrixSetRotation(cloudMatrix, skyRotX, skyRotY, skyRotZ);
@@ -7121,11 +7083,11 @@ void Level::renderBG(int dt) {
         int mission = Globals::status->getCurrentCampaignMission();
         Globals::Canvas->SetTexture(field_1a0, 0xffffffff);
         Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
-        long long time = (long long) ((mission > 0x6a ? 1.5f : 1.0f) * (float) dt);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update(time, false);
+        float time = (mission > 0x6a ? 1.5f : 1.0f) * (float) dt;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_10))->Update((long long) time, false);
         Matrix view = MatrixGetInverse(skyMatrix);
         Globals::Canvas->DrawTransform(field_10, &view);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update(time, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_18))->Update((long long) time, false);
         Globals::Canvas->DrawTransform(field_18, &view);
     }
 
@@ -7136,16 +7098,17 @@ void Level::renderBG(int dt) {
         AbyssEngine::Transform *transform = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc);
         int before = (int) transform->currentTime;
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(field_1bc))->Update(dt, false);
+        Matrix &reversal = reversalMatrix;
         if ((int) transform->currentTime < before) {
             // the animation wrapped around: pick a new random orientation
             float x = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
             float y = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
             float z = (float) Globals::rnd->nextInt(0x10000) * (1.0f / 65536.0f) * 6.2831855f;
-            MatrixSetRotation(reversalMatrix, x, y, z);
+            MatrixSetRotation(reversal, x, y, z);
         }
-        skyMatrix *= reversalMatrix;
-        skyMatrix.m[7] = 0;
+        skyMatrix *= reversal;
         skyMatrix.m[3] = 0;
+        skyMatrix.m[7] = 0;
         skyMatrix.m[11] = 0;
         Matrix view = MatrixGetInverse(skyMatrix);
         Globals::Canvas->DrawTransform(field_1bc, &view);
@@ -7158,8 +7121,7 @@ void Level::renderBG(int dt) {
         skyMatrix.m[11] = 0;
         Globals::Canvas->SetWorldViewMatrix(skyMatrix);
         Globals::Canvas->SetColor(0xffffffff);
-        Matrix identity;
-        Globals::Canvas->engine->SetModelMatrix(identity);
+        Globals::Canvas->engine->SetModelMatrix(Matrix());
         Globals::Canvas->SetTexture(supernovaFlareTexture, field_1c8);
         Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_8);
         Globals::Canvas->engine->LightSetLight(0x4000);
