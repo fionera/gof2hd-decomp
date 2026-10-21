@@ -825,7 +825,7 @@ void Hud::updateQueue(int dt) {
         if ((*this->eventQueue)[1] == 0)
             this->eventQueueDirty = 0;
         this->eventQueuePaused = 0;
-    } else if (this->eventQueueTimer > 2000 && this->eventQueuePaused == 0) {
+    } else if (this->eventQueuePaused == 0 && this->eventQueueTimer > 2000) {
         this->eventQueuePaused = 1;
     }
 }
