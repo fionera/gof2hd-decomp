@@ -212,11 +212,11 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->paintCanvas->TextureCreateGlobal(
         AbyssEngine::String("data/textures/pow_texture.aei", false), 2);
 
-    AbyssEngine::Engine::lodBiasNormal = -0.5f;
-    AbyssEngine::Engine::vboSupported = true;
-    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
     AbyssEngine::Engine::clampTextures = false;
+    AbyssEngine::Engine::vboSupported = true;
     engine->field_0x74 = false;
+    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
+    AbyssEngine::Engine::lodBiasNormal = -0.5f;
 }
 
 // Cheat callback registered with the MGame module as its context. File-local in the Android build
