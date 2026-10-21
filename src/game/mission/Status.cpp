@@ -15,38 +15,9 @@
 #include "game/world/Wanted.h"
 #include "game/world/Standing.h"
 #include "game/ship/Ship.h"
-
-struct FileRead {
-    FileRead();
-
-    ~FileRead();
-
-    int loadStationsBinary();
-
-    Array<SolarSystem *> *loadSystemsBinary();
-
-    Array<Wanted *> *loadWanted();
-
-    Array<Agent *> *loadAgents();
-};
-
-struct Generator {
-    Generator();
-
-    Array<Agent *> *createAgents(Station *station);
-
-    Array<Ship *> *getShipBuyList(Station *station);
-
-    Array<Item *> *getItemBuyList(Station *station);
-};
-
-struct SystemPathFinder {
-    SystemPathFinder();
-
-    ~SystemPathFinder();
-
-    Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
-};
+#include "engine/file/FileRead.h"
+#include "game/mission/Generator.h"
+#include "game/world/SystemPathFinder.h"
 
 static SolarSystem *asSystem(int32_t v) { return (SolarSystem *) (intptr_t) v; }
 
@@ -1020,38 +991,43 @@ bool Status::inEmptyOrbit() {
 }
 
 void Status::loadWanted() {
-    FileRead fr;
-    wanted = fr.loadWanted();
+    FileRead *fileRead = new FileRead();
+    wanted = fileRead->loadWanted();
+    delete fileRead;
 }
 
 void Status::unlockBluePrint(int index) {
     for (unsigned i = 0; i < bluePrints->size(); i = i + 1) {
-        BluePrint *bp = (*bluePrints)[i];
-        if (bp->getIndex() == index) {
-            bp->unlock();
+        if ((*bluePrints)[i]->getIndex() == index) {
+            (*bluePrints)[i]->unlock();
         }
     }
 }
 
-static const int g_gammaTableA[5] = {0x3f333333, 0x3ecccccd, 0x3ecccccd, 0x3e99999a, 0x3e4ccccd};
-static const int g_gammaTableB[5] = {0x40400000, 0x40000000, 0x3f800000, 0x3f000000, 0x3e99999a};
-
-int Status::getGammaRayDamagePerSecond(int station, int system) {
-    unsigned k = (unsigned)(station - 0x6d);
-    if (k > 4) {
-        return 0;
+float Status::getGammaRayDamagePerSecond(int station, int system) {
+    float damage = 0.0f;
+    if ((unsigned) (station - 109) <= 4) {
+        if (system <= 105) {
+            switch (station) {
+                case 109: return 0.7f;
+                case 110: return 0.4f;
+                case 111: return 0.4f;
+                case 112: return 0.3f;
+                case 113: return 0.2f;
+            }
+        } else if (currentCampaignMission <= 157) {
+            switch (station) {
+                case 109: return 3.0f;
+                case 110: return 2.0f;
+                case 111: return 1.0f;
+                case 112: return 0.5f;
+                case 113: return 0.3f;
+            }
+        } else if (station == 109) {
+            damage = 1.0f;
+        }
     }
-    if (system <= 0x69) {
-        return g_gammaTableA[k];
-    }
-    if (currentCampaignMission <= 0x9d) {
-        return g_gammaTableB[k];
-    }
-    float result = 0.0f;
-    if (station == 0x6d) result = 1.0f;
-    int r;
-    memcpy(&r, &result, sizeof(r));
-    return r;
+    return damage;
 }
 
 int Status::addStationToStack(Station *s) {
@@ -1647,8 +1623,9 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
 }
 
 void Status::loadAgents() {
-    FileRead fr;
-    agents = fr.loadAgents();
+    FileRead *fileRead = new FileRead();
+    agents = fileRead->loadAgents();
+    delete fileRead;
 }
 
 void Status::loadAgents(Array<int> *agents) {

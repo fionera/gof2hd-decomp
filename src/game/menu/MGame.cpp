@@ -1175,7 +1175,7 @@ int MGame::OnInitialize() {
 
             int stIdx = ((Station *) (Globals::status->getStation()))->getIndex();
             int cm = Globals::status->getCurrentCampaignMission();
-            if ((float) Globals::status->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
+            if (Globals::status->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
                 pl->setGammaHP(100);
         }
     }
