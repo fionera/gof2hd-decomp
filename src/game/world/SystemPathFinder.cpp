@@ -1,4 +1,5 @@
 #include "game/world/SystemPathFinder.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/render/LODManager.h"
 

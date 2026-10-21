@@ -200,13 +200,10 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
-        unsigned int i = 0;
-        unsigned short v;
-        do {
-            v = (unsigned short) i;
-            i = i + 1;
-        } while (v < count);
-        return (int) i;
+        int i = 0;
+        while ((unsigned short) i++ < count) {
+        }
+        return i;
     }
 }
 
@@ -222,7 +219,9 @@ namespace AbyssEngine {
                     int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
                     int adv = font->spacing + w;
                     // A narrow (11 px) space glyph is drawn two pixels tighter.
-                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
                     break;
                 }
             }
@@ -266,7 +265,9 @@ namespace AbyssEngine {
                 if (font->codes[g] == str[i]) {
                     int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
                     int adv = font->spacing + w;
-                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
                     break;
                 }
             }
