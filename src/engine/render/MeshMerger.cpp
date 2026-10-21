@@ -10,8 +10,8 @@
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
-    this->matrices = nullptr;
     this->canvas = canvas;
+    this->matrices = nullptr;
     this->cols = 1;
     this->flags = flags;
     this->rows = (int) transforms.size();
