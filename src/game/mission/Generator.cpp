@@ -121,7 +121,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
         priceFactor = (float) (Globals::status->getCurrentCampaignMission() + 25) / 45.0f;
     }
 
-    for (unsigned i = 0; i < items->size(); ++i) {
+    for (int i = 0; i < items->size(); ++i) {
         Item *item = (*items)[i];
         bool systemGood = item->getIndex() >= 132 && item->getIndex() < 154;
         bool stationExclusive = false;
