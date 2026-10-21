@@ -277,7 +277,6 @@ int CutScene_initialize_ou(CutScene * cs);
 
 static inline void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt) { w->update(dt); }
 
-static inline void MenuTouchWindow_dtor_ou(MenuTouchWindow *w) { w->~MenuTouchWindow(); }
 
 static inline void SpaceLounge_ctor_ou(SpaceLounge * l) { new ((void*)l) SpaceLounge(); }
 
@@ -465,7 +464,6 @@ int MissionsWindow_OnTouchEnd_ote(int w, int p1);
 
 int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3); // lint: void_ptr
 
-static inline void MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); } // lint: void_ptr
 
 int TouchButton_OnTouchEnd_ote(int btn, int p1);
 
@@ -667,7 +665,6 @@ static int *g_dlc_stack = 0;
 
 
 
-static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
 void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);
 
@@ -3172,8 +3169,7 @@ void ModStation::showCBSMessage() {
 void ModStation::showDlcMenu() {
     MenuTouchWindow *menu = this->dlcMenu;
     if (menu == nullptr) {
-        menu = (MenuTouchWindow *) ::operator new(0x240);
-        MenuTouchWindow_ctor_dlc(menu, 2);
+        menu = new MenuTouchWindow(2);
         this->dlcMenu = menu;
     }
     this->flag_0x62 = 1;

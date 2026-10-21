@@ -168,6 +168,7 @@ public:
     int field_0x230;
     int field_0x234;
     uint8_t cutsceneMode;
+    int field_0x23c; // tail field: every original `new MenuTouchWindow` allocates 576 bytes
 
     MenuTouchWindow(int menuType);
 
