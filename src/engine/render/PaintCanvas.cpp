@@ -313,57 +313,19 @@ namespace {
 
 void paintcanvas_ext_has_vibration(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_fr_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_fr_glenable(void *eng, unsigned int cap, bool on); // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_fr_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sprite_rgba(unsigned int, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sprite_alluv(float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_sprite_allsize(unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_str_text(const AbyssEngine::String *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-char *paintcanvas_ext_find_res(void *, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_change_mat(void *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_strcmp(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-unsigned int paintcanvas_ext_strlen(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_clear(int);
 
 void paintcanvas_ext_mat_intern(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_camera_apply(void *, unsigned int, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_sprite_uv(unsigned int, float, float, float, float, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_convert_vbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_di2_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_di2_settexture(void *self, unsigned int tex, int slot) { ((PaintCanvas*)self)->SetTexture(tex, slot); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_di2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
@@ -376,44 +338,6 @@ static inline void paintcanvas_ext_di2_gldisable(unsigned int cap) { glDisable(c
 static inline void paintcanvas_ext_di2_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
 
 static inline void paintcanvas_ext_di2_glenable(unsigned int cap) { glEnable(cap); }
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void *paintcanvas_ext_fc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_fc_texcreate(void *self, unsigned short id, bool b); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_blendfunc(unsigned int, unsigned int);
-
-void paintcanvas_ext_gl_color(void *, float, float, float, float); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_depthmask(unsigned int);
-
-void paintcanvas_ext_gl_disable(unsigned int);
-
-void paintcanvas_ext_gl_done();
-
-void paintcanvas_ext_gl_enable(unsigned int);
-
-void paintcanvas_ext_gl_loadmatrix(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_multmatrix(void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_ortho_persp(float, float, float);
-
-void paintcanvas_ext_gl_scalef(float, float, float);
-
-void paintcanvas_ext_gl_texenvi(unsigned int, unsigned int, unsigned int);
-
-void paintcanvas_ext_glenable2(void *, unsigned int, bool); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_rt_deletearr(char *p);
-
-char *paintcanvas_ext_rt_getAEChar(void *strField); // lint: void_ptr (external symbol; mangling must match lib)
-
-void *paintcanvas_ext_tc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_transform_dirty(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_add_resource(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -431,14 +355,6 @@ static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas
 
 static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mesh_changemat(AbyssEngine::PaintCanvas *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_transform_changemat(AbyssEngine::PaintCanvas *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_init_setorientation(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int paintcanvas_ext_init_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
@@ -448,8 +364,6 @@ static inline int paintcanvas_ext_init_dispheight(void *eng) { return ((AbyssEng
 static inline float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
 void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -463,8 +377,6 @@ static inline float paintcanvas_ext_spm_cosf(float v) { return cosf(v); }
 
 static inline float paintcanvas_ext_spm_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-void paintcanvas_ext_dss1_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void *paintcanvas_ext_dss1_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dss1_sinf(float v) { return sinf(v); }
@@ -473,67 +385,19 @@ static inline float paintcanvas_ext_dss1_cosf(float v) { return cosf(v); }
 
 static inline void paintcanvas_ext_dss1_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss1_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss1_mtx_getinv(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss1_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss1_ssdraw(void *eng, void *ident, void *m, void *ss); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-unsigned short *paintcanvas_ext_gl_strindex(const AbyssEngine::String *str, unsigned int i);
-
-void paintcanvas_ext_gl_substr(void *out, const AbyssEngine::String *str, unsigned int begin, // lint: void_ptr (external symbol; mangling must match lib)
-                               // lint: void_ptr (external symbol; mangling must match lib)
-                               unsigned int end);
-
-void paintcanvas_ext_gl_str_fromchar(void *out, const char *s, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_str_assign(AbyssEngine::String *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gl_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_end3d(AbyssEngine::PaintCanvas *);
-
-void paintcanvas_ext_material_clone(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_material_add(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_glMatrixMode(unsigned int mode) { glMatrixMode(mode); }
-
-
-static inline void paintcanvas_ext_gl_loadidentity() { glLoadIdentity(); }
-
 void paintcanvas_ext_set_reslist(AbyssEngine::Resource * const *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_child_link(void *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void tcg_glActiveTexture(unsigned unit) { glActiveTexture(unit); }
 
 static inline void tcg_glBindTexture(unsigned target, unsigned tex) { glBindTexture(target, tex); }
 
-int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **out); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
-
 namespace AbyssEngine {
     int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
 }
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_gsp_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -542,12 +406,6 @@ static inline int paintcanvas_ext_gsp_getwidth(void *self) { return ((PaintCanva
 static inline int paintcanvas_ext_gsp_getheight(void *self) { return ((PaintCanvas*)self)->GetHeight(); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
-
-int paintcanvas_ext_sscreate(void *eng, unsigned short id, bool b, void **out); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void *paintcanvas_ext_material_ctor(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_cisvf_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -559,17 +417,7 @@ static inline float paintcanvas_ext_cisvf_cosf(float v) { return cosf(v); }
 
 int paintcanvas_ext_cisvf_inner(const float *pt, float radius, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_shader_anim(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-char *paintcanvas_ext_rs_getAEChar(void *strField); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_rs_deletearr(char *p);
-
-void paintcanvas_ext_rs_glActiveTexture(unsigned int tex);
-
-static inline void paintcanvas_ext_rs_glBindTexture(unsigned int target, unsigned int tex) { glBindTexture(target, tex); }
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -605,25 +453,11 @@ static inline float paintcanvas_ext_cipvf_cosf(float v) { return cosf(v); }
 
 int paintcanvas_ext_cipvf_inner(const float *pt, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void *paintcanvas_ext_i2d_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_i2d_texcreate(void *self, unsigned short id, bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 int paintcanvas_ext_i2d_imgregion(void *eng, char *path, unsigned short region, void *img); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_gsp2_transformvec(void *out, const void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_gsp2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -635,13 +469,9 @@ static inline float paintcanvas_ext_gsp2_cosf(float v) { return cosf(v); }
 
 static inline void paintcanvas_ext_gsp2_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_gsp2_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_gsp2_invtransformvec(void *outMat, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_gsp2_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -651,43 +481,9 @@ static inline int paintcanvas_ext_gsp2_getheight(void *self) { return ((PaintCan
 
 static inline float paintcanvas_ext_gsp2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
-void paintcanvas_ext_di_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_di_settexture(void *self, unsigned int tex, int slot) { ((PaintCanvas*)self)->SetTexture(tex, slot); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_di_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_di_gldisable(unsigned int cap) { glDisable(cap); }
-
-static inline void paintcanvas_ext_di_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); }
-
-static inline void paintcanvas_ext_di_glenable(unsigned int cap) { glEnable(cap); }
-
-char *paintcanvas_ext_find_mesh(void *, unsigned short); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_remove_mesh(void *, unsigned int, int); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_array_remove(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_mtx_mul(void *out, const void *a, void *b); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_di4_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_di4_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int paintcanvas_ext_di4_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -705,11 +501,7 @@ static inline void paintcanvas_ext_di4_glenable(unsigned int cap) { glEnable(cap
 
 void paintcanvas_ext_dr2_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_dr2_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dr2_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
@@ -719,11 +511,7 @@ static inline float paintcanvas_ext_dr2_cosf(float v) { return cosf(v); }
 
 void paintcanvas_ext_dr2_setscaling(void *out, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_dr2_mtx_mul(void *out, void *a, void *b); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dr2_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -737,8 +525,6 @@ static inline void paintcanvas_ext_dr2_glenable(unsigned int cap) { glEnable(cap
 
 void paintcanvas_ext_sgo_setorientation(void *eng, int mode); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline int paintcanvas_ext_sgo_dispwidth(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int paintcanvas_ext_sgo_dispheight(void *eng) { return ((AbyssEngine::Engine*)eng)->GetDisplayHeight(); } // lint: void_ptr (external symbol; mangling must match lib)
@@ -747,15 +533,9 @@ static inline float paintcanvas_ext_sgo_signedtofloat(int v, unsigned int mode) 
 
 void paintcanvas_ext_sgo_setpersp(void *self, float a, float b, float c); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_mc_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_dm_memcpy(void *dst, const void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dm_settrans(void *out, float v); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -769,11 +549,7 @@ void paintcanvas_ext_dm_rotatevec(void *m, void *vec); // lint: void_ptr (extern
 
 void paintcanvas_ext_dm_vec_assign(void *dst, const void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 int paintcanvas_ext_dm_spherefrustum(void *self, void *pt, float radius); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dm_unsignedtofloat(unsigned int v, unsigned int mode) { (void)mode; return (float)v; }
 
@@ -783,27 +559,13 @@ void paintcanvas_ext_dm_setmodelmatrix(void *eng); // lint: void_ptr (external s
 
 static inline void paintcanvas_ext_dm_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_setortho(void *, void *, void *, bool); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_string_prep(AbyssEngine::PaintCanvas *, void *, int); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_dsc_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dsc_getcolor(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dsc_str_copy(void *out, const AbyssEngine::String *src, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_dsc_str_fromchar(void *out, const char *s, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_dsc_splittags(void *str, void *sep); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -813,15 +575,11 @@ unsigned short *paintcanvas_ext_dsc_str_cast(void *str); // lint: void_ptr (exte
 
 int paintcanvas_ext_dsc_textwidth(void *self, unsigned int font, void *str); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_dsc_setcolor(void *self); // lint: void_ptr (external symbol; mangling must match lib)
 
 char *paintcanvas_ext_dsc_getAEChar(void *str); // lint: void_ptr (external symbol; mangling must match lib)
 
 int paintcanvas_ext_dsc_sscanf(const char *s, const char *fmt, void *out); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dsc_releaseclasses(void *arr); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -831,15 +589,11 @@ void paintcanvas_ext_dsc_op_delete(void *p); // lint: void_ptr (external symbol;
 
 void paintcanvas_ext_smfg_pushmat(const float *m, void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_ec_glEnable(unsigned int cap) { glEnable(cap); }
 
 static inline void paintcanvas_ext_ec_glScissor(int x, int y, int w, int h) { glScissor(x, y, w, h); }
 
 void paintcanvas_ext_di3_restore(unsigned int flag, void *img); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int paintcanvas_ext_di3_getwidth(void *self) { return ((PaintCanvas*)self)->GetWidth(); } // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -849,23 +603,15 @@ static inline float paintcanvas_ext_di3_signedtofloat(int v, unsigned int mode) 
 
 static inline void paintcanvas_ext_di3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_di3_setwvm(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_di3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_mc2_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void paintcanvas_ext_mc2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 int paintcanvas_ext_mc2_meshfromfile(void *eng, char *path, void **out, void *mat); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_mc2_new_mesh_copy(void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -877,13 +623,9 @@ static inline void paintcanvas_ext_fsp_glFogf(unsigned int pname, float v) { glF
 
 static inline void paintcanvas_ext_fsp_glFogfv(unsigned int pname, void *v) { glFogfv(pname, (const float*)v); } // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_fsp_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dr3_signedtofloat(int v, unsigned int mode) { (void)mode; return (float)v; }
 
@@ -905,45 +647,21 @@ static inline void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh) { AbyssEn
 
 static inline void paintcanvas_ext_dr3_glenable(unsigned int cap) { glEnable(cap); }
 
-void paintcanvas_ext_tg2d_inner(void *out, void *self, void *tf, int x, int y); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_tg2d_errmsg(void *out); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_check_string(void *, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void *paintcanvas_ext_matc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void *paintcanvas_ext_matc_new_material(); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_matc_texcreate(void *self, unsigned short id, bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_matc_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_tg2di_inner(void *out, void *self, void *childtf, int x, int y); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 void paintcanvas_ext_dt2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void *paintcanvas_ext_dt2_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline float paintcanvas_ext_dt2_sinf(float v) { return sinf(v); }
-
-static inline float paintcanvas_ext_dt2_cosf(float v) { return cosf(v); }
-
 void paintcanvas_ext_dt2_mtx_getinv(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 static inline int pc_GetWidth(AbyssEngine::PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(AbyssEngine::PaintCanvas *self) { return self->GetHeight(); }
@@ -952,35 +670,11 @@ void pc_Camera_ctor(void *cam, float h, float w); // lint: void_ptr (external sy
 
 void pc_ArrayAdd_Camera(void *cam, void *arr); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_dss_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
 static inline void *paintcanvas_ext_dss_getgrav(void *eng) { return ((AbyssEngine::Engine*)eng)->GetGravValue(); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline float paintcanvas_ext_dss_sinf(float v) { return sinf(v); }
 
 static inline float paintcanvas_ext_dss_cosf(float v) { return cosf(v); }
-
-void paintcanvas_ext_dss_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss_mtx_getinv(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_dss_ssdraw(void *eng, void *ident, void *m, void *ss); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_mesh_tricount(AbyssEngine::PaintCanvas *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-int paintcanvas_ext_transform_tricount(AbyssEngine::PaintCanvas *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void paintcanvas_ext_mesh_shaderanim(AbyssEngine::PaintCanvas *, void *, float, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dss2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -999,77 +693,6 @@ void paintcanvas_ext_dss2_mtx_getinv(void *out, void *m); // lint: void_ptr (ext
 void paintcanvas_ext_dss2_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_dss2_ssdraw(void *eng, void *worldM, void *viewM, void *ss); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_dtl_textwidth(void *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dtl_drawstring(void *, unsigned int, void *, int, int, bool); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_dtl_textheight(void *, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_alloc(unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_transform_ctor(void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_add_child(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_fbo_a(void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_fbo_b(void *, int); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_fbo_c(void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_fbo_d(void *); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_text_width_range(void *, void *, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_drawtextlines6(void *, unsigned int, void *, int, int, bool); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_text_width(void *, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_font_set_yoff(void *, int); // lint: void_ptr (external symbol; mangling must match lib)
-AbyssEngine::String *paintcanvas_ext_gla_str_new();
-void paintcanvas_ext_gla_str_copy(void *out, void *src, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_str_fromchar(void *out, const char *s, bool copy); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_str_append(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_str_dtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_substr(void *out, const void *str, unsigned int begin, unsigned int end); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_getline(void *self, unsigned int font, void *line, int width, void *out); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_str_vdtor(void *s); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_arr_setlen(unsigned int n, ::Array<AbyssEngine::String *> *arr);
-unsigned short *paintcanvas_ext_gla_str_index(const void *s, int i); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gla_str_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_remove_meshid(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_tfc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
-void *paintcanvas_ext_tfc_new_transform(); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tfc_mtx_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-static inline void paintcanvas_ext_tfc_meshcreate(void *self, unsigned short id, unsigned int *out, bool b) { unsigned int o; ((PaintCanvas*)self)->MeshCreate(id, o, b); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_text_height(void *); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_font_get_yoff(void *); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_fc_fontfromfile(void *eng, char *path, unsigned short region, void **out); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_fc_fontheight(void *font); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tami_bsphere_merge(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tami_setanimlen(void *tf, int hi, int lo); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tami_setanimstate(void *tf, int a, int b); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tami_finalize(void *tf); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_start_fbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_gl_deletetextures(int, void *); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_dt_incamvf(void *tf, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dt_drawtransform_rec(void *self, void *tf, void *m, void *m3); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_mtx_mul(void *out, const void *a, const void *b); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_mtx_assign(void *dst, const void *src); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_setcolor(void *eng, float r, float g, float b, float a); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_mtx_muleq(void *m, const void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_setuvmatrix(void *eng, void *m); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_resetuvmatrix(void *eng); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_addcached_mesh(void *mesh, void *arr); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_addcached_uint(unsigned int v, void *arr); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_pushmat(const float *m, void *arr); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_dm_incamvf(void *tf, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dm_drawtransform(void *self, void *tf, void *m, void *m2); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_ec_getHeight(void *self); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_ec_getWidth(void *self); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_font_get_spacing(void *); // lint: void_ptr (external symbol; mangling must match lib)
-static inline void paintcanvas_ext_tg2d_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tg2d_invtransformvec(void *outMat, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tg2d_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-static inline void paintcanvas_ext_tg2di_memcpy(void *dst, void *src, unsigned int n) { memcpy(dst, src, n); } // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tg2di_invtransformvec(void *outMat, void *vec); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_tg2di_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
-int paintcanvas_ext_dt2_incamvf(void *tf, void *m, void *cam); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dt2_mtx_assign(void *dst, const void *src); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dt2_mtx_muleq(void *m, void *rhs); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dt2_seteye(void *eng, float a, float b, float c); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_dt2_drawrec(void *self, void *tf, void *m, void *m2); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_font_set_spacing(void *, int); // lint: void_ptr (external symbol; mangling must match lib)
-void paintcanvas_ext_transform_shaderanim(AbyssEngine::PaintCanvas *, void *, float, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 unsigned short PaintCanvas::GetImage2DWidth(unsigned int index) {
     if (index < this->images.count) {
@@ -1123,8 +746,6 @@ void PaintCanvas::DrawTextLines(unsigned int font,
 }
 
 void PaintCanvas::FillRectangle(int x, int y, int w, int h) {
-    char abuf[60];
-
     float fx = (float) x;
     float fy = (float) y;
     float fx2 = (float) (x + w);
@@ -1140,14 +761,7 @@ void PaintCanvas::FillRectangle(int x, int y, int w, int h) {
     vb[9] = fx;
     vb[10] = fy2;
 
-    float *m = (float *) abuf;
-    memset(m, 0, 60);
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[11] = 1.0f;
-    m[14] = 1.0f;
-
-    this->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) m);
+    this->SetWorldViewMatrix(AbyssEngine::AEMath::Matrix());
     this->engine->GlEnable(0xde1, false);
     AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) this->lineMesh);
     this->engine->GlEnable(0xde1, true);
@@ -1320,7 +934,6 @@ void PaintCanvas::MeshResourceChangeMaterial(unsigned short matId, unsigned shor
 }
 
 void *PaintCanvas::TransformGetLocal(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     char *result;
     if (index < this->transformCount) {
         result = (this->transforms)[index];
@@ -1355,20 +968,17 @@ int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str
 }
 
 void *PaintCanvas::MaterialGetMaterial(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     if (index < this->materials.count) {
         return (this->materials.data_)[index];
     }
     return 0;
 }
 
-
 void PaintCanvas::EndBG() {
     Engine::vfc = this->bgFlagSaved;
 }
 
 void *PaintCanvas::FindResource(unsigned short id) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     unsigned int count = this->resources.count;
     char *found = 0;
     for (unsigned int i = 0; i < count; ++i) {
@@ -2382,10 +1992,6 @@ float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
 
 static const char g_getline_empty_7c428[] = "";
 
-int paintcanvas_ext_gl_textwidth(void *self, unsigned int font, const AbyssEngine::String *str, // lint: void_ptr (external symbol; mangling must match lib)
-                                 // lint: void_ptr (external symbol; mangling must match lib)
-                                 unsigned int begin, unsigned int end);
-
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
     unsigned int lastSpace = 0;
@@ -2486,8 +2092,8 @@ void PaintCanvas::End3d() {
 void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
     int result;
     if (index < this->meshCount) {
-        PCMeshView *mesh = (PCMeshView *) (this->meshes)[index];
-        AbyssEngine::Material *obj = new AbyssEngine::Material(mesh->material);
+        AbyssEngine::Material *obj =
+                new AbyssEngine::Material(((PCMeshView *) (this->meshes)[index])->material);
         ArrayAdd<AbyssEngine::Material *>(obj, this->materials);
         result = (int) this->materials.count - 1;
     } else {
@@ -2499,7 +2105,6 @@ void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
 void PaintCanvas::GetGravValue() {
     return paintcanvas_ext_get_grav(this->engine);
 }
-
 
 void PaintCanvas::BeginBG() {
     ((Engine *) this->engine)->statsEnabled = 0;
@@ -2624,7 +2229,6 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
     ::operator delete[](path);
 }
 
-
 void PaintCanvas::Begin3d() {
     ((Engine *) this->engine)->statsEnabled = 0;
     glEnable(0xb71);
@@ -2644,7 +2248,6 @@ void PaintCanvas::Begin3d() {
 }
 
 void paintcanvas_ext_transform_addmesh(AbyssEngine::PaintCanvas *, void *, // lint: void_ptr (external symbol; mangling must match lib)
-                                       // lint: void_ptr (external symbol; mangling must match lib)
                                        unsigned short, bool);
 
 void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
@@ -2843,10 +2446,6 @@ void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value
 }
 
 static int *const g_resume_curtex_7e828 = &paintcanvas_g_cube_slot;
-
-int paintcanvas_ext_rs_texfromfile(void *eng, char *path, void *cb, void *ud, // lint: void_ptr (external symbol; mangling must match lib)
-                                   // lint: void_ptr (external symbol; mangling must match lib)
-                                   unsigned int *out, bool b, float f);
 
 void PaintCanvas::Resume() {
     unsigned int out = 0;
@@ -3336,35 +2935,27 @@ finish:
 }
 
 int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType type) {
-    unsigned int count;
     switch (type) {
         case 1:
-            count = this->fonts.count;
-            break;
+            return index < this->fonts.count;
         case 2: {
             PCResourceView *res = (PCResourceView *) (this->resources.data_)[index];
             if (res->type == 2) {
-                int handle = res->handle;
-                return handle + 1 != 0 ? 1 : 0;
+                return res->handle != -1;
             }
             return 0;
         }
         case 3:
-            count = this->images.count;
-            break;
+            return index < this->images.count;
         case 4:
-            count = this->meshCount;
-            break;
+            return index < this->meshCount;
         case 5:
-            count = this->transformCount;
-            break;
+            return index < this->transformCount;
         case 6:
-            count = this->materials.count;
-            break;
+            return index < this->materials.count;
         default:
             return 0;
     }
-    return index < count ? 1 : 0;
 }
 
 int PaintCanvas::TransformGetTriCount(unsigned int index) {
@@ -3393,48 +2984,27 @@ float PaintCanvas::SpriteSystemSetPosition(unsigned int index, unsigned short su
 }
 
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y) {
-    char abuf[60];
     if (index < this->images.count) {
         PCImage2DView *img = (PCImage2DView *) (this->images.data_)[index];
         if (img->restoreFlag) {
-            paintcanvas_ext_di_restore(img->restoreFlag, img);
-            img = (PCImage2DView *) (this->images.data_)[index];
+            this->RestoreImage2D((AbyssEngine::Image2D *) img);
         }
-        paintcanvas_ext_di_settexture(this, img->textureId, -1);
+        this->SetTexture(((PCImage2DView *) (this->images.data_)[index])->textureId, -1);
 
-        float fx = (float) x;
-        float fy = (float) y;
-        float *m = (float *) abuf;
-        m[0] = 1.0f;
-        m[1] = 0.0f;
-        m[2] = 0.0f;
-        m[3] = 0.0f;
-        m[4] = 0.0f;
-        m[5] = 1.0f;
-        m[6] = 0.0f;
-        m[7] = 0.0f;
-        m[8] = 0.0f;
-        m[9] = 0.0f;
-        m[10] = 1.0f;
-        m[11] = 0.0f;
-        m[12] = 1.0f;
-        m[13] = 1.0f;
-        m[14] = 1.0f;
-        m[3] = fx;
-        m[7] = fy;
-
-        paintcanvas_ext_di_setwvm(this, abuf);
-        paintcanvas_ext_di_gldisable(0xb44);
-        paintcanvas_ext_di_meshdraw(this->engine,
-                                    ((PCImage2DView *) (this->images.data_)[index])->mesh);
-        paintcanvas_ext_di_glenable(0xb44);
+        AbyssEngine::AEMath::Matrix m;
+        m.m[7] = (float) y;
+        m.m[3] = (float) x;
+        this->SetWorldViewMatrix(m);
+        glDisable(0xb44);
+        AbyssEngine::MeshDraw(this->engine,
+                              (AbyssEngine::Mesh *) ((PCImage2DView *) (this->images.data_)[index])->mesh);
+        glEnable(0xb44);
     }
 }
 
 void paintcanvas_ctor_matrix(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_meshcreate5(void *, unsigned short, unsigned short, // lint: void_ptr (external symbol; mangling must match lib)
-                                 // lint: void_ptr (external symbol; mangling must match lib)
                                  signed char, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
@@ -3528,22 +3098,8 @@ void PaintCanvas::TransformRemoveChild(unsigned int parent, unsigned int child) 
     }
 }
 
-int paintcanvas_ext_tc_texfromfile(void *eng, char *path, // lint: void_ptr (external symbol; mangling must match lib)
-                                   void (*cb)(AbyssEngine::Image *, void *), void *ud, // lint: void_ptr (external symbol; mangling must match lib)
-                                   // lint: void_ptr (external symbol; mangling must match lib)
-                                   unsigned int *out, bool b, float f);
-
-int paintcanvas_ext_tc_texfromfileintern(void *eng, char *path, // lint: void_ptr (external symbol; mangling must match lib)
-                                         // lint: void_ptr (external symbol; mangling must match lib)
-                                         void (*cb)(AbyssEngine::Image *, void *), void *ud, // lint: void_ptr (external symbol; mangling must match lib)
-                                         // lint: void_ptr (external symbol; mangling must match lib)
-                                         unsigned int *out, float f, void *lt, // lint: void_ptr (external symbol; mangling must match lib)
-                                         bool b); // lint: void_ptr (external symbol; mangling must match lib)
-
 void PaintCanvas::TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), // lint: void_ptr (external symbol; mangling must match lib)
-                                // lint: void_ptr (external symbol; mangling must match lib)
                                 void *userData, unsigned int &out, bool useCallbackLoader) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     Engine *eng = (Engine *) this->engine;
     eng->boundTextures[0] = -1;
     eng->boundTextures[1] = -1;
@@ -3600,20 +3156,18 @@ void PaintCanvas::Suspend() {
 
 void PaintCanvas::DrawTransform(Transform *tf, const AbyssEngine::AEMath::Matrix &m2,
                                 AbyssEngine::AEMath::Matrix &m3) {
-    char buf[60];
     if (tf && tf->visible) {
-        paintcanvas_ext_mtx_mul(buf, &m2, tf);
+        AbyssEngine::AEMath::Matrix world = m2 * tf->worldMatrix;
         if (tf->keyFrames.size() != 0) {
-            paintcanvas_ext_mtx_muleq(buf, tf->rotationMatrix);
+            world *= tf->rotationMatrix;
         }
         for (unsigned int i = 0; i < tf->meshes.size(); i++) {
-            this->DrawMesh(tf->meshes[i], *(AbyssEngine::AEMath::Matrix*)buf, m3, tf->id, tf->localMatrix);
+            this->DrawMesh(tf->meshes[i], world, m3, tf->id, tf->localMatrix);
         }
         for (unsigned int i = 0; i < tf->children.size(); i++) {
             if (this->currentCamera < this->cameras.count &&
-                tf->children[i]->InCameraVF((AbyssEngine::AEMath::Matrix*)buf,
-                                             (this->cameras.data_)[this->currentCamera])) {
-                this->DrawTransform(tf->children[i], *(const AbyssEngine::AEMath::Matrix*)buf, m3);
+                tf->children[i]->InCameraVF(&world, (this->cameras.data_)[this->currentCamera])) {
+                this->DrawTransform(tf->children[i], world, m3);
             } else {
                 this->culledCount += 1;
             }
@@ -3835,7 +3389,6 @@ static const unsigned int g_sgo_const_8e6b4 = 0;
 static const unsigned int g_sgo_const_8e6b8 = 0;
 
 static void zero16(void *p) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     memset(p, 0, 0x10);
 }
 
@@ -4100,9 +3653,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     }
 }
 
-static char paintcanvas_g_b2d_flag_storage = 0;
-static char *paintcanvas_g_b2d_flag = &paintcanvas_g_b2d_flag_storage;
-
 void PaintCanvas::Begin2d() {
     ((Engine *) this->engine)->statsEnabled = 1;
     glDisable(0xb71);
@@ -4111,29 +3661,24 @@ void PaintCanvas::Begin2d() {
     glBlendFunc(0x302, 0x303);
     this->engine->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     this->engine->GlEnable(0xde1, true);
-    if (*paintcanvas_g_b2d_flag == 0) {
-        glTexEnvi(0x2300, 0x2200, 0x2100);
-        paintcanvas_ext_glMatrixMode(0x1702);
-        paintcanvas_ext_gl_loadidentity();
-        glScalef(1.0f, 1.0f, 1.0f);
-        paintcanvas_ext_glMatrixMode(0x1701);
-        glLoadMatrixf((const float*)&this->projOrthoMatrix.m[0]);
-        if (this->gameOrientation != 2) {
-            glMultMatrixf((const float*)&this->worldViewMatrix.m[0]);
-        }
-        paintcanvas_ext_glMatrixMode(0x1700);
-        paintcanvas_ext_gl_loadidentity();
+    if (Engine::enableShader != 0) {
+        this->engine->SetOrthoMatrix(this->projOrthoMatrix.m, this->worldViewMatrix.m,
+                                     this->gameOrientation != 2);
     } else {
-        paintcanvas_ext_setortho(this->engine, &this->projOrthoMatrix.m[0],
-                                 &this->worldViewMatrix.m[0], this->gameOrientation != 2);
+        glTexEnvi(0x2300, 0x2200, 0x2100);
+        glMatrixMode(0x1702);
+        glLoadIdentity();
+        glScalef(1.0f, 1.0f, 1.0f);
+        glMatrixMode(0x1701);
+        glLoadMatrixf(this->projOrthoMatrix.m);
+        if (this->gameOrientation != 2) {
+            glMultMatrixf(this->worldViewMatrix.m);
+        }
+        glMatrixMode(0x1700);
+        glLoadIdentity();
     }
     this->field_0xc = 0;
 }
-
-void paintcanvas_ext_drawstring_raw(void *, const unsigned short *, int, int, // lint: void_ptr (external symbol; mangling must match lib)
-                                    // lint: void_ptr (external symbol; mangling must match lib)
-                                    AbyssEngine::PaintCanvas *, void *, // lint: void_ptr (external symbol; mangling must match lib)
-                                    bool); // lint: void_ptr (external symbol; mangling must match lib)
 
 void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
                              int x, int y, bool b) {
@@ -4150,7 +3695,6 @@ static const char g_dsc_pipe_882c4[] = "|";
 static const char g_dsc_fmt_882ee[] = "%x";
 
 void paintcanvas_ext_dsc_fontdraw(void *font, unsigned short *txt, unsigned int len, // lint: void_ptr (external symbol; mangling must match lib)
-                                  // lint: void_ptr (external symbol; mangling must match lib)
                                   int x, int y, void *self, void *eng, // lint: void_ptr (external symbol; mangling must match lib)
                                   bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -4357,7 +3901,6 @@ short PaintCanvas::FontGetSpacing(unsigned int index) {
 }
 
 void *PaintCanvas::TransformGetTransform(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
-    // lint: void_ptr (external symbol; mangling must match lib)
     if (index < this->transformCount) {
         return (this->transforms)[index];
     }
@@ -4386,7 +3929,6 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
         int ok = paintcanvas_ext_mc2_meshfromfile(this->engine,
                                                   info->path, (void **) &mesh, // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
                                                   matptr);
-        // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
         if (ok != 1) {
             return;
         }
@@ -4777,10 +4319,6 @@ void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str
     }
 }
 
-int paintcanvas_ext_rt_texfromfile(void *eng, char *path, void *cb, void *ud, // lint: void_ptr (external symbol; mangling must match lib)
-                                   // lint: void_ptr (external symbol; mangling must match lib)
-                                   unsigned int *out, bool b, float f);
-
 void PaintCanvas::ReloadTextures() {
     for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
         PCCubeTexView *res = (PCCubeTexView *) (this->cubeTextures.data_)[i];
@@ -5033,11 +4571,6 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matr
     ident2[14] = 1.0f;
     AbyssEngine::SpriteSystemDraw(this->engine, *(const AbyssEngine::AEMath::Matrix*)ident2, *(const AbyssEngine::AEMath::Matrix*)local, this->spriteSystems.data_[index]);
 }
-
-void paintcanvas_ext_drawstring_str(void *, unsigned int, unsigned int, int, int, // lint: void_ptr (external symbol; mangling must match lib)
-                                    // lint: void_ptr (external symbol; mangling must match lib)
-                                    AbyssEngine::PaintCanvas *, void *, // lint: void_ptr (external symbol; mangling must match lib)
-                                    bool); // lint: void_ptr (external symbol; mangling must match lib)
 
 void PaintCanvas::DrawString(unsigned int index, const AbyssEngine::String &str,
                              int x, int y, bool b) {
