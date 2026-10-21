@@ -7,15 +7,15 @@ class NFC {
 public:
     NFC();
 
-    void iap_buy_dlc_full_package();
+    static void iap_buy_dlc_full_package();
 
-    void iap_buy_dlc_vip();
+    static void iap_buy_dlc_vip();
 
-    void iap_buy_dlc_supernova();
+    static void iap_buy_dlc_supernova();
 
-    void iap_buy_dlc_kaamo_club();
+    static void iap_buy_dlc_kaamo_club();
 
-    void iap_buy_dlc_valkyrie();
+    static void iap_buy_dlc_valkyrie();
 
     static void iap_buy_credits_100_000();
 
@@ -43,9 +43,9 @@ public:
 
     static void rateGame();
 
-    void openTermsOfService();
+    static void openTermsOfService();
 
-    void openPrivacyPolicy();
+    static void openPrivacyPolicy();
 
     static bool isPad();
 

@@ -121,9 +121,6 @@ static inline bool isRocketLike(int sort) {
 }
 
 Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay, float speed, Vector dir, Vector vel) {
-    this->offset.x = 0;
-    this->offset.y = 0;
-    this->offset.z = 0;
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
@@ -136,17 +133,8 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->slotIndex = kind;
     this->damage = damage;
     this->pitchRate = speed;
-    this->targetDir.z = 0;
-    this->velocity.x = 0;
-    this->velocity.y = 0;
-    this->velocity.z = 0;
     this->field_0xd0 = 0;
     this->field_0xd4 = 0;
-    this->targetDir.x = 0;
-    this->targetDir.y = 0;
-    this->basePos.x = 0;
-    this->basePos.y = 0;
-    this->basePos.z = 0;
     this->field_0xcc = 0;
     this->ammoCount = 0;
     this->field_0x78 = 0;

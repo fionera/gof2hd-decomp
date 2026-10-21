@@ -2157,8 +2157,8 @@ void ModStation::leaveStation() {
         return;
     this->choiceWindow->set(*Globals::gameText->getText(397), true);
     this->choiceWindow->left();
-    this->flag_0xb2 = 1;
     this->flag_0x63 = 1;
+    this->flag_0xb2 = 1;
 }
 
 void ModStation::OnRelease() {
@@ -2832,8 +2832,8 @@ void ModStation::checkHints() {
                                 *Globals::gameText->getText(126), *Globals::gameText->getText(127),
                                 *Globals::gameText->getText(524), -1, -1);
         Globals::options[52] = 1;
-        this->flag_0x63 = 1;
         this->flag_0xdc = 1;
+        this->flag_0x63 = 1;
     }
 
     // Bounty hunter hints: one per terminated wanted pilot (4 targets).
@@ -3205,15 +3205,3 @@ void ModStation::OnSuspend() {
         obj->saveOptions();
 }
 
-void ModStation::OnKeyRelease(long long, long long) {
-}
-
-void ModStation::OnTouchBegin(int x, int y) {}
-
-void ModStation::OnTouchMove(int x, int y) {}
-
-void ModStation::OnTouchEnd(int x, int y) {}
-
-int ModStation::ShowLoadingScreen() {
-    return 1;
-}

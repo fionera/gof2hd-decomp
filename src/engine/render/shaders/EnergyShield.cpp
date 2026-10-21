@@ -46,7 +46,7 @@ static const char *const kEnergyShieldFragmentSource =
     "}\n";
 
 namespace AbyssEngine {
-    int EnergyShield::ShaderIndex;
+    int EnergyShield::ShaderIndex = -1;
 
     void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine) {
         ::Engine *host = (::Engine *) engine;
@@ -62,7 +62,7 @@ namespace AbyssEngine {
             if (this->uGlColorLoc >= 0)
                 glUniform4fv(this->uGlColorLoc, 1, host->glColor);
             if (this->uRimColorLoc >= 0)
-                glUniform3fv(this->uRimColorLoc, 1, (float *) &host->rimColor);
+                glUniform3fv(this->uRimColorLoc, 1, (float *) host->rimColor);
             int loc = this->uTexelSizeLoc;
             if (loc >= 0) {
                 float w = (float) (int) ((::Engine *) engine)->GetDisplayWidth();

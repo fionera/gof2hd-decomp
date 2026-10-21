@@ -97,29 +97,17 @@ void Standing::applyStealCargo(int race) {
 bool Standing::isEnemy(int race) {
     int cr = this->currentRace;
     if (cr >= 0) {
-        if (race == 1) {
-        } else if (race == 3) {
-            cr = cr - 2;
-        } else if (race == 2) {
-            cr = cr - 3;
-        } else if (race != 0) {
-            return false;
-        } else {
-            cr = cr - 1;
-        }
-        return cr == 0;
+        if (race == 1) return cr == 0;
+        if (race == 0) return cr == 1;
+        if (race == 3) return cr == 2;
+        if (race == 2) return cr == 3;
+        return false;
     }
-    if (race == 1) {
-        return 0x46 < this->standings[0];
-    }
-    if (race == 3) {
-        return 0x46 < this->standings[1];
-    }
-    if (race == 2) {
-        return this->standings[1] < -0x46;
-    }
-    if (race != 0) return false;
-    return this->standings[0] < -0x46;
+    if (race == 1) return 0x46 < this->standings[0];
+    if (race == 0) return this->standings[0] < -0x46;
+    if (race == 3) return 0x46 < this->standings[1];
+    if (race == 2) return this->standings[1] < -0x46;
+    return false;
 }
 
 void Standing::applyDelict(int kind, int severity) {
@@ -170,52 +158,39 @@ void Standing::applyKill(int kind) {
 bool Standing::isFriend(int race) {
     int cr = this->currentRace;
     if (cr >= 0) {
-        if (race == 1) {
-            cr = cr - 1;
-        } else if (race == 3) {
-            cr = cr - 3;
-        } else if (race == 2) {
-            cr = cr - 2;
-        } else if (race == 0) {
-        } else {
-            return false;
-        }
-        return cr == 0;
+        if (race == 1) return cr == 1;
+        if (race == 0) return cr == 0;
+        if (race == 3) return cr == 3;
+        if (race == 2) return cr == 2;
+        return false;
     }
-    if (race == 1) {
-        return this->standings[0] < -0x46;
-    }
-    if (race == 3) {
-        return this->standings[1] < -0x46;
-    }
-    if (race == 2) {
-        return 0x46 < this->standings[1];
-    }
-    if (race != 0) return false;
-    return 0x46 < this->standings[0];
+    if (race == 1) return this->standings[0] < -0x46;
+    if (race == 0) return 0x46 < this->standings[0];
+    if (race == 3) return this->standings[1] < -0x46;
+    if (race == 2) return 0x46 < this->standings[1];
+    return false;
 }
 
 float Standing::getMissionBonus(int race) {
-    float s0;
+    int v;
     switch (race) {
         case 0:
-            s0 = (float) (-this->standings[0]);
+            v = this->standings[0];
             break;
         case 1:
-            s0 = (float) this->standings[0];
+            v = -this->standings[0];
             break;
         case 2:
-            s0 = (float) (-this->standings[1]);
+            v = this->standings[1];
             break;
         case 3:
-            s0 = (float) this->standings[1];
+            v = -this->standings[1];
             break;
         default:
             return 0.0f;
     }
-    float r = s0 / 100.0f;
-    if (r < 0.0f) r = 0.0f;
-    return r;
+    float r = (float) v / 100.0f;
+    return r < 0.0f ? 0.0f : r;
 }
 
 void Standing::applyDisable(int race) {

@@ -50,7 +50,7 @@ namespace AbyssEngine {
     extern unsigned char performanceTest;
     extern long long performanceTime;
     extern float timeBetweenFrames;
-    extern unsigned char BiasErrorOutputFlag;
+    extern bool BiasErrorOutputFlag;
     extern unsigned char performanceTestEnded;
     extern int orientationChangeTimer;
     extern long long performanceFrameCounter;

@@ -76,8 +76,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
-    this->asteroidSlots = nullptr;
     this->enabled = 1;
+    this->asteroidSlots = nullptr;
     this->labelStrings = nullptr;
     this->lockedAsteroid = nullptr;
     this->field_0x10 = 0;

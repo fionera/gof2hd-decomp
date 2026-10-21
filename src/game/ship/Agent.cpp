@@ -95,11 +95,10 @@ void Agent::giveRewardAtNextChat(bool v) {
     this->rewardAtNextChat = v;
 }
 
-Triple *Agent::setSellItemData(int index, int quantity, int price) {
+void Agent::setSellItemData(int index, int quantity, int price) {
     this->sellItemIndex = index;
     this->sellItemQuantity = quantity;
     this->sellItemPrice = price;
-    return reinterpret_cast<Triple *>(&this->sellItemIndex);
 }
 
 void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
@@ -107,7 +106,10 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
     this->wingman1 = nullptr;
     delete this->wingman2;
     this->wingman2 = nullptr;
-    delete this->wingmanNames;
+    if (this->wingmanNames != nullptr) {
+        delete this->wingmanNames;
+        this->wingmanNames = nullptr;
+    }
 
     this->wingmanNames = new Array<AbyssEngine::String *>();
     ArrayAdd(new String(this->name), *(this->wingmanNames));
@@ -118,8 +120,8 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
     if (param->size() != 0) {
         String *w0 = (*param)[0];
         if (w0 != nullptr) {
-            this->wingmanCount = 1;
             this->wingman1 = w0;
+            this->wingmanCount = 1;
             ArrayAdd(w0, *(this->wingmanNames));
         }
         if (param->size() >= 2) {
@@ -136,11 +138,14 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
 }
 
 String Agent::getWingmanName(int idx) {
-    if (idx == 1)
-        return *this->wingman1;
+    String *src;
     if (idx == 0)
-        return this->name;
-    return *this->wingman2;
+        src = &this->name;
+    else if (idx == 1)
+        src = this->wingman1;
+    else
+        src = this->wingman2;
+    return String(*src, false);
 }
 
 void Agent::setSystemName(String src) {
@@ -157,7 +162,7 @@ Agent::~Agent() {
 }
 
 void Agent::setMissionString(String src) {
-    this->missionString = src;
+    this->missionString = String(src, false);
 }
 
 int Agent::getStation() {

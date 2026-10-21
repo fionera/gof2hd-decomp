@@ -73,42 +73,26 @@ bool Sparks::isRocket() {
     return this->kind == 1;
 }
 
-static PaintCanvas **g_Sparks_canvas_update = &Globals::Canvas;
-
 void Sparks::update(int step) {
     if (this->active == 0)
         return;
 
-    int elapsed0 = this->elapsed;
-    uint32_t i = 0;
-    elapsed0 += step;
-    this->elapsed = elapsed0;
-    for (; i < this->count; i++) {
-        int *thresholds = this->lifetimeThresholds;
-        int elapsed = this->elapsed;
-        if (elapsed <= thresholds[i])
-            continue;
-        int size = this->lifetime - (elapsed << 1);
-        (*g_Sparks_canvas_update)->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i,
-                                                       (int16_t) size);
+    this->elapsed += step;
+    for (uint32_t i = 0; i < this->count; i++) {
+        if (this->elapsed > this->lifetimeThresholds[i])
+            Globals::Canvas->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i,
+                                                 (int16_t) (this->lifetime - (this->elapsed << 1)));
     }
 
-    int elapsed = this->elapsed;
-    int kind = this->kind;
-    if (kind == 1) {
-        if (elapsed <= 0x1f4) {
-            int limit = this->lifetime;
-            elapsed += elapsed;
-            if (elapsed <= limit)
-                return;
-        }
-    } else {
-        if (elapsed <= 0x1f4)
+    if (this->kind == 1) {
+        if (this->elapsed <= 500 && this->elapsed * 2 <= this->lifetime)
             return;
+    } else if (this->elapsed <= 500) {
+        return;
     }
 
-    this->active = 0;
     this->elapsed = 0;
+    this->active = 0;
 }
 
 static PaintCanvas **g_Sparks_canvas_explode_rocket = &Globals::Canvas;
@@ -150,17 +134,13 @@ void Sparks::explode(int x, int y, int z) {
     this->active = 1;
 }
 
-static PaintCanvas **g_Sparks_canvas_render = &Globals::Canvas;
-
 void Sparks::render() {
-    Matrix matrix;
-
     if (this->active != 0) {
-        PaintCanvas **canvas = g_Sparks_canvas_render;
-        (*canvas)->SetTexture(this->texture, 0xffffffff);
-        (*canvas)->SetBlendMode(AbyssEngine::BlendMode_2);
+        Globals::Canvas->SetTexture(this->texture, 0xffffffff);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
 
-        PaintCanvas *canvasObj = *canvas;
+        PaintCanvas *canvas = Globals::Canvas;
+        Matrix matrix;
         matrix.m[0] = 1.0f;
         matrix.m[1] = 0.0f;
         matrix.m[2] = 0.0f;
@@ -177,7 +157,7 @@ void Sparks::render() {
         matrix.m[13] = 1.0f;
         matrix.m[14] = 1.0f;
 
-        canvasObj->SetWorldViewMatrix(matrix);
-        (*canvas)->DrawSpriteSystem(this->spriteSystem);
+        canvas->SetWorldViewMatrix(matrix);
+        Globals::Canvas->DrawSpriteSystem(this->spriteSystem);
     }
 }

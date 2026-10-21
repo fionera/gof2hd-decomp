@@ -85,7 +85,9 @@ public:
 
     void SetSaveDirectory(String dir) override;
 
-    String GetDirPreFix() override;
+    String GetDirPreFix() override { // inline: orig WEAK
+        return String("");
+    }
 
     static jmethodID methodRead;
     static int fileCounter;

@@ -1480,22 +1480,25 @@ void Level::createFighterTurrets() {
             continue;
         }
         PlayerTurret *turret;
-        if (ship->shipGroupFlag == 0x2d) {
-            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
-            turret->player->setVulnerable(false);
-            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-            turret->setHost(ship, Vector{0.0f, 172.25f, -460.7f});
-            ship->field_0x10 = (int) (intptr_t) turret;
-            turret->shipGroup = 8;
-        } else if (ship->shipGroupFlag == 0x33) {
-            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
-            turret->player->setVulnerable(false);
-            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-            turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
-            ship->field_0x10 = (int) (intptr_t) turret;
-            turret->shipGroup = 0;
-        } else {
-            continue;
+        switch (ship->shipGroupFlag) {
+            case 0x33:
+                turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+                turret->player->setVulnerable(false);
+                turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+                turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
+                turret->shipGroup = 0;
+                ship->field_0x10 = (int) (intptr_t) turret;
+                break;
+            case 0x2d:
+                turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+                turret->player->setVulnerable(false);
+                turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+                turret->setHost(ship, Vector{0.0f, 172.25f, -460.7f});
+                ship->field_0x10 = (int) (intptr_t) turret;
+                turret->shipGroup = 8;
+                break;
+            default:
+                continue;
         }
         turret->field_0x74 = 1;
         ArrayAdd((KIPlayer *) turret, *enemies);
@@ -4403,13 +4406,13 @@ void Level::update(long long dt, bool skipLod) {
             flashActive = 0;
         }
         float fade = (float) flashDurationA / (float) flashDurationB;
-        float red = flashColor.x * fade;
-        float green = flashColor.y * fade;
-        float blue = flashColor.z * fade;
+        float red = flashColor[0] * fade;
+        float green = flashColor[1] * fade;
+        float blue = flashColor[2] * fade;
         float alpha = flashAlpha * fade;
-        flashColor.x = i_r > red ? i_r : red;
-        flashColor.y = i_g > green ? i_g : green;
-        flashColor.z = i_b > blue ? i_b : blue;
+        flashColor[0] = i_r > red ? i_r : red;
+        flashColor[1] = i_g > green ? i_g : green;
+        flashColor[2] = i_b > blue ? i_b : blue;
         flashAlpha = i_a > alpha ? i_a : alpha;
     }
 
@@ -5279,8 +5282,8 @@ static inline float clampChannel(float scaled) {
 }
 
 void Level::flashScreen(int type) {
-    flashType = type;
     flashActive = 1;
+    flashType = type;
     int dur = 2000;
     if (type == 1) {
         dur = 7000;
@@ -5290,24 +5293,30 @@ void Level::flashScreen(int type) {
     }
     flashDurationA = dur;
     flashDurationB = dur;
-    if (flashType == 2) {
-        flashColor.x = i_r * 1.5f;
-        flashColor.y = i_g * 1.5f;
-        flashColor.z = i_b * 1.5f;
-    } else if (flashType == 4) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 255.0f;
-    } else if (flashType == 3) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 0;
-        player->hitCamera();
-    } else {
-        float k = (flashType == 1) ? 8.0f : 5.0f;
-        flashColor.x = clampChannel(k * i_r);
-        flashColor.y = clampChannel(k * i_g);
-        flashColor.z = clampChannel(k * i_b);
+    switch (flashType) {
+        case 3:
+            flashColor[0] = 0;
+            flashColor[1] = 0;
+            flashColor[2] = 0;
+            player->hitCamera();
+            break;
+        case 2:
+            flashColor[0] = i_r * 1.5f;
+            flashColor[1] = i_g * 1.5f;
+            flashColor[2] = i_b * 1.5f;
+            break;
+        case 4:
+            flashColor[0] = 0;
+            flashColor[1] = 0;
+            flashColor[2] = 255.0f;
+            break;
+        default: {
+            float k = (flashType == 1) ? 8.0f : 5.0f;
+            flashColor[0] = clampChannel(k * i_r);
+            flashColor[1] = clampChannel(k * i_g);
+            flashColor[2] = clampChannel(k * i_b);
+            break;
+        }
     }
     flashAlpha = 255.0f;
 }
@@ -5461,9 +5470,9 @@ Level::Level(int mission)
     missionPtr = mission;
     collisionVolume = nullptr;
     field_b0 = nullptr;
-    flashColor.x = 0;
-    flashColor.y = 0;
-    flashColor.z = 0;
+    flashColor[0] = 0;
+    flashColor[1] = 0;
+    flashColor[2] = 0;
     flashDurationA = 0;
     flashDurationB = 0;
     flashActive = 0;
@@ -6014,7 +6023,7 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
         Vector size = {0.0f, 0.0f, 0.0f};
         volumes = new Array<BoundingVolume *>();
         ArraySetLength(count, *volumes);
-        for (int i = 0, cursor = 1; i < count; i++) {
+        for (int cursor = 1, i = 0; i < count; i++) {
             switch ((*collision)[cursor++]) {
                 case 0: {
                     Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
@@ -6070,10 +6079,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x33) {
-        hitpoints = (int) ((float) hitpoints * 1.7f);
-    } else if (type == 0x2c) {
+    if (type == 0x2c) {
         hitpoints = (int) ((float) hitpoints * 2.25f);
+    } else if (type == 0x33) {
+        hitpoints = (int) ((float) hitpoints * 1.7f);
     } else if (type == 0x31) {
         hitpoints = (int) ((float) hitpoints * 17.0f);
     }
@@ -6100,7 +6109,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int z = wz + jitterZ - 20000;
     player->setEmpData(empPoints, empTime);
 
-    PlayerFixedObject *ship = nullptr;
+    KIPlayer *ship = nullptr;
     if (shipClass == 0) {
         PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
@@ -6108,13 +6117,16 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        if (type == 0x2c || type == 0x31) {
+        if (type == 0x2c) {
             delete fighter->cargo;
             fighter->cargo = nullptr;
         } else if (type == 0x33) {
             fighter->field_0x25 = 0;
+        } else if (type == 0x31) {
+            delete fighter->cargo;
+            fighter->cargo = nullptr;
         }
-        ship = (PlayerFixedObject *) fighter;
+        ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
         PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
@@ -6175,7 +6187,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fixed;
     }
     ship->setLevel(this);
-    return ship;
+    return (PlayerFixedObject *) ship;
 }
 
 void Level::almostKillWanted(int index) {
@@ -6888,7 +6900,8 @@ void Level::createWingmen() {
                                    nullptr, true, false);
 
         Vector position = player->geometry->getPosition();
-        position += player->geometry->getRightVector() * (i == 0 ? -1000.0f : (i == 1 ? 2000.0f : 0.0f));
+        Vector right = player->geometry->getRightVector();
+        position += right * (i == 0 ? -1000.0f : (i == 1 ? 2000.0f : 0.0f));
         position -= player->geometry->getDirection() * 2000.0f;
         position.y += i == 2 ? 1000.0f : 0.0f;
         (*wingmen)[i]->setPosition(position);

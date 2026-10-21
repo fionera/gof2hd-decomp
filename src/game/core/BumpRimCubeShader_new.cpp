@@ -113,7 +113,7 @@ static const char *const kBumpRimCubeShader_newFragmentSource =
     "}  \n";
 
 namespace AbyssEngine {
-    int BumpRimCubeShader_new::ShaderIndex;
+    int BumpRimCubeShader_new::ShaderIndex = -1;
 
     BumpRimCubeShader_new::BumpRimCubeShader_new() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -194,19 +194,19 @@ namespace AbyssEngine {
                 glUniform4fv(this->uGlColorLoc, 1, eng->glColor);
             float buf[3];
             if (this->uAmbientColorLoc >= 0) {
-                buf[0] = eng->lightAmbientShaded.x + eng->lightSpecularShaded.x;
-                buf[1] = eng->lightAmbientShaded.y + eng->lightSpecularShaded.y;
-                buf[2] = eng->lightAmbientShaded.z + eng->lightSpecularShaded.z;
+                buf[0] = eng->ambientShaded[0][0] + eng->ambientShaded[1][0];
+                buf[1] = eng->ambientShaded[0][1] + eng->ambientShaded[1][1];
+                buf[2] = eng->ambientShaded[0][2] + eng->ambientShaded[1][2];
                 glUniform3fv(this->uAmbientColorLoc, 1, buf);
             }
             if (this->uDiffuseColor0Loc >= 0)
-                glUniform3fv(this->uDiffuseColor0Loc, 1, (float *) &eng->field_0x2fc);
+                glUniform3fv(this->uDiffuseColor0Loc, 1, (float *) eng->diffuseShaded[0]);
             if (this->uSpecularColor0Loc >= 0)
-                glUniform3fv(this->uSpecularColor0Loc, 1, (float *) &eng->lightDiffuseShaded);
+                glUniform3fv(this->uSpecularColor0Loc, 1, (float *) eng->specularShaded[0]);
             if (this->uSpecularPowerLoc >= 0)
                 glUniform1f(this->uSpecularPowerLoc, eng->materialShininess);
             if (this->uRimColorLoc >= 0)
-                glUniform3fv(this->uRimColorLoc, 1, (float *) &eng->rimColor);
+                glUniform3fv(this->uRimColorLoc, 1, (float *) eng->rimColor);
             if (this->uFogColorLoc >= 0)
                 glUniform3fv(this->uFogColorLoc, 1, eng->fogColor);
             if (this->uFogMinDistLoc >= 0)
@@ -228,13 +228,13 @@ namespace AbyssEngine {
             int loc5c = this->uAmbientColorLoc;
             if (eng->lightCount >= 2) {
                 if (loc5c >= 0) {
-                    buf[0] = eng->lightAmbientShaded.x + eng->lightSpecularShaded.x;
-                    buf[1] = eng->lightAmbientShaded.y + eng->lightSpecularShaded.y;
-                    buf[2] = eng->lightAmbientShaded.z + eng->lightSpecularShaded.z;
+                    buf[0] = eng->ambientShaded[0][0] + eng->ambientShaded[1][0];
+                    buf[1] = eng->ambientShaded[0][1] + eng->ambientShaded[1][1];
+                    buf[2] = eng->ambientShaded[0][2] + eng->ambientShaded[1][2];
                     glUniform3fv(loc5c, 1, buf);
                 }
-                glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) &eng->field_0x308);
-                glUniform3fv(this->uSpecularColor1Loc, 1, (float *) &eng->particleAmbient);
+                glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) eng->diffuseShaded[1]);
+                glUniform3fv(this->uSpecularColor1Loc, 1, (float *) eng->specularShaded[1]);
                 glUniform3f(this->uLightdirmodel1Loc, eng->field_0x33c.x,
                             eng->field_0x33c.y, eng->field_0x33c.z);
             } else {

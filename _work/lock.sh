@@ -6,7 +6,7 @@ python3 tools/ratchet.py --update-baseline >/dev/null
 python3 - <<'P'
 import json
 p='tools/verify_baseline.json'; d=json.load(open(p))
-for n in ['fprintf','printf','sscanf','memalign']:   # genuine imports of the original .so
+for n in ['fprintf','printf','sscanf','memalign','__aeabi_l2d']:   # genuine imports of the original .so
     if n not in d['imports']: d['imports'].append(n)
 d['imports'].sort(); json.dump(d,open(p,'w'),indent=1)
 open(p,'a').write('\n')

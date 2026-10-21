@@ -94,6 +94,3 @@ void MineGun::update(int delta) {
     }
 }
 
-int MineGun::isMineGun() {
-    return 1;
-}

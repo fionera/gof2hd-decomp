@@ -384,8 +384,12 @@ unsigned FModSound::isChannelActive(int p1) {
     return 0;
 }
 
-bool FModSound::IsCategoryEnabled(int p1) {
-    return p1 <= 3 && this->system != 0 && this->categoryEnabled[p1] != 0;
+bool FModSound::IsCategoryEnabled(int index) {
+    FMOD::EventSystem *sys = this->system;
+    bool enabled = false;
+    if (index <= 3 && sys != nullptr)
+        enabled = this->categoryEnabled[index];
+    return enabled;
 }
 
 void FModSound::enableCategory(int index, bool enable) {
@@ -634,13 +638,14 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
 }
 
 int FModSound::pause(FMOD::Event *e) {
-    unsigned r = 0;
-    if (e != 0 && this->system != 0) {
-        unsigned state;
-        if (FMOD_Event_getState(e, &state) == 0 && (int) (state << 0x1c) < 0)
-            r = FMOD_Event_setPaused(e, 1) == 0;
+    FMOD::EventSystem *sys = this->system;
+    bool paused = false;
+    if (e != nullptr && sys != nullptr) {
+        FMOD_EVENT_STATE state;
+        if (e->getState(&state) == FMOD_OK && (state & FMOD_EVENT_STATE_PLAYING) != 0)
+            paused = e->setPaused(true) == FMOD_OK;
     }
-    return r;
+    return paused;
 }
 
 bool FModSound::resume(FMOD::Event *e) {

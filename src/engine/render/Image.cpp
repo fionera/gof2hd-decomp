@@ -46,7 +46,7 @@ namespace AbyssEngine {
         char magic[8] = "*******";
         if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
             return -1;
-        static const char want[8] = "AEimage";
+        const char *want = "AEimage";
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k])
                 return -1;
@@ -158,7 +158,7 @@ namespace AbyssEngine {
         if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
             goto fail;
         {
-            static const char want[8] = "AEimage";
+            const char *want = "AEimage";
             for (unsigned int k = 0; k < 8; ++k)
                 if (want[k] != magic[k])
                     return -1;
@@ -309,7 +309,7 @@ namespace AbyssEngine {
         unsigned int handle = 0;
         unsigned char format = 0;
         unsigned short paletteCount = 0;
-        static const char want[8] = "AEimage";
+        const char *want = "AEimage";
         char magic[8];
         unsigned int size;
         if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0) {

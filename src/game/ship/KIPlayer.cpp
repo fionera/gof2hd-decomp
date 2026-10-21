@@ -19,22 +19,13 @@ using AbyssEngine::Matrix;
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
                    float x, float y, float z, bool grouped) {
-    this->tempVector.x = 0;
-    this->tempVector.y = 0;
-    this->tempVector.z = 0;
-    this->auxVector.x = 0;
     this->field_0x10c = 0;
     this->field_0x110 = 0;
     this->field_0x114 = 0;
     this->field_0x118 = 0;
-    this->shipPosition.x = 0;
-    this->shipPosition.y = 0;
-    this->shipPosition.z = 0;
     this->level = 0;
     this->route = 0;
     this->initialRoute = 0;
-    this->auxVector.y = 0;
-    this->auxVector.z = 0;
     this->field_0x11c = 0;
     this->field_0x120 = 0;
     this->player = player;
@@ -147,10 +138,6 @@ KIPlayer::~KIPlayer() {
     }
 }
 
-int KIPlayer::getSpeed() {
-    return 0;
-}
-
 int KIPlayer::getType() {
     return this->type;
 }
@@ -229,10 +216,6 @@ void KIPlayer::setToSleep() {
     this->sleepFlag = 1;
 }
 
-void KIPlayer::setState(int state) {
-    this->state = state;
-}
-
 void KIPlayer::jump() {
     this->jumpDone = 0;
     this->jumperFlag = 1;
@@ -283,32 +266,11 @@ uint8_t KIPlayer::isJumper() {
     return this->jumperFlag;
 }
 
-int KIPlayer::collide(float, float, float) {
-    return 0;
-}
-
-void KIPlayer::update(int) {
-}
-
 void KIPlayer::setSpeed(float v) {
     this->speed = v;
 }
 
 void KIPlayer::revive() {
-}
-
-void KIPlayer::push(int) {
-}
-
-void KIPlayer::initPush(const Vector &, int) {
-}
-
-int KIPlayer::outerCollide(const Vector &v) {
-    return this->outerCollide(v.x, v.y, v.z);
-}
-
-int KIPlayer::outerCollide(float, float, float) {
-    return 0;
 }
 
 void KIPlayer::setJumper(bool b) {
@@ -547,33 +509,6 @@ Array<SpacePoint *> *KIPlayer::getSpacePoints() {
 
 void KIPlayer::setLevel(Level *lvl) {
     this->level = lvl;
-}
-
-Vector KIPlayer::getProjectionVector(const Vector &v) {
-    (void) v;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
-}
-
-Vector KIPlayer::getCollisionNormal(const Vector &position) {
-    (void) position;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
-}
-
-Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
-    (void) position;
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
 }
 
 void KIPlayer::addGun(Gun *gun, int slot) {

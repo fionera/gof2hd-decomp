@@ -821,12 +821,12 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     if (kind == 2) {
         index = Globals::rnd->nextInt(2);
         texts = &g_dw_germanSuccessTexts;
-    } else if (kind != 0) {
-        index = Globals::rnd->nextInt(2);
-        texts = &g_dw_germanOtherTexts;
-    } else {
+    } else if (kind == 0) {
         index = Globals::rnd->nextInt(2);
         texts = &g_dw_germanBriefingTexts;
+    } else {
+        index = Globals::rnd->nextInt(2);
+        texts = &g_dw_germanOtherTexts;
     }
     const int *picked = &texts->female[index];
     if (male != 0)
