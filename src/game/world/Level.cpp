@@ -5271,24 +5271,12 @@ void Level::wingmanDied(AbyssEngine::String const &name) {
     if (wingmen == nullptr) {
         return;
     }
-<<<<<<< HEAD
-    if (__builtin_expect(*list < 2, 0)) {
-        return Globals::status->setWingmen((Array<String *> *) 0);
-    }
-    String key = name;
-    for (unsigned int i = 0; i < *list; i = i + 1) {
-        String *w = ((String **) list[1])[i];
-        if (w->Compare(key) == 0) {
-            levelWingmanDiedOne(((String **) list[1])[i], list);
-            return;
-=======
     if (wingmen->count > 1) {
         for (unsigned int i = 0; i < wingmen->count; i++) {
             if (wingmen->data_[i]->Compare(name) == 0) {
                 ArrayRemove(wingmen->data_[i], *wingmen);
                 return;
             }
->>>>>>> wave1-w8
         }
     } else {
         Globals::status->setWingmen(nullptr);

@@ -177,15 +177,12 @@ void ArrayRelease(Array<T> &a) {
     a.data_ = nullptr;
 }
 
+// Declaration only: the definition lives in engine/core/ArrayReleaseClasses.h and is visible only in the
+// TUs that include it. In the original, callers that cannot see the body keep the call as potentially
+// throwing (noexcept destructors then carry a __clang_call_terminate landing pad).
 template<class T>
-void ArrayReleaseClasses(Array<T> &a) {
-    for (unsigned int i = 0; i < a.capacity_; ++i) {
-        if (a[i]) delete a[i];
-        a[i] = nullptr;
-    }
-    if (a.data_) ::operator delete[](a.data_);
-    a.data_ = nullptr;
-}
+void ArrayReleaseClasses(Array<T> &a);
+
 
 template<class T>
 void ArrayReleaseArrays(Array<T> &a) {
