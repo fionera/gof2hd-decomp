@@ -323,9 +323,9 @@ void PlayerEgo::turnHorizontal(int a, float v) {
     }
 }
 
-int PlayerEgo::getThrust() {
+float PlayerEgo::getThrust() {
     PlayerEgo *self = this;
-    return ((int &) this->thrust);
+    return this->thrust;
 }
 
 float PlayerEgo::getCloakRate() {

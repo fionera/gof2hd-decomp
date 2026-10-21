@@ -156,8 +156,8 @@ public:
     uint16_t field_0x1a4;
     uint8_t pauseSnapshot;
     uint8_t _pad_0x1a7[1];
-    float flFastForwardFactor;
-    int field_0x1ac;
+    int lastMouseX;
+    int lastMouseY;
     int field_0x1b0;
     float field_0x1b4;
 
@@ -169,7 +169,7 @@ public:
     int field_0x1c4;
     int thrustResetX;
     int thrustThreshold;
-    int thrustBase;
+    float thrustBase;
     int field_0x1d4;
     float field_0x1d8;
     uint8_t field_0x1dc;
@@ -227,7 +227,7 @@ public:
 
     void dialogueEvent();
 
-    void dockEvent(int p1, int p2);
+    bool dockEvent(int p1, int p2);
 
     void freeCamTouchBegin(int x, int y, void *id); // lint: void_ptr -- exported method signature (Pv)
 
@@ -338,8 +338,8 @@ static_assert(offsetof(MGame, maneuverStartY) == 388, "MGame::maneuverStartY @ 3
 static_assert(offsetof(MGame, field_0x19c) == 412, "MGame::field_0x19c @ 412");
 static_assert(offsetof(MGame, field_0x1a0) == 416, "MGame::field_0x1a0 @ 416");
 static_assert(offsetof(MGame, pauseSnapshot) == 422, "MGame::pauseSnapshot @ 422");
-static_assert(offsetof(MGame, flFastForwardFactor) == 424, "MGame::flFastForwardFactor @ 424");
-static_assert(offsetof(MGame, field_0x1ac) == 428, "MGame::field_0x1ac @ 428");
+static_assert(offsetof(MGame, lastMouseX) == 424, "MGame::lastMouseX @ 424");
+static_assert(offsetof(MGame, lastMouseY) == 428, "MGame::lastMouseY @ 428");
 static_assert(offsetof(MGame, _b1b8) == 440, "MGame::_b1b8 (thrustActive) @ 440");
 static_assert(offsetof(MGame, thrustEngaged) == 441, "MGame::thrustEngaged @ 441");
 static_assert(offsetof(MGame, thrustStartX) == 444, "MGame::thrustStartX @ 444");

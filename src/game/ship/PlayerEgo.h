@@ -376,7 +376,7 @@ public:
 
     Vec3 getTurretPosition();
 
-    int getThrust();
+    float getThrust();
 
     float getVolatileForce();
 
