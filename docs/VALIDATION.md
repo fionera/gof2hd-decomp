@@ -28,7 +28,11 @@ Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the ori
 order), the system `-l` libs up to libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
 (hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
 undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
-NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions).
+NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions): gold (same r18b
+binary as the original's) emits dynamic symbols by iterating its symbol hash table, so the order
+is a function of the complete symbol-insertion sequence (every object, every referenced symbol,
+in input order) and is expected to converge only as object contents/membership converge — not a
+knob to tune directly.
 
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
