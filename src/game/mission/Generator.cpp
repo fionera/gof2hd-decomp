@@ -97,167 +97,132 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
     return selected;
 }
 
-static Array<Item *> **g_Generator_agentsItems;
-static int g_Generator_offerItemIds[12];
-static int g_Generator_offerShipIds[6];
-static Array<Ship *> **g_Generator_agentsShips;
-static int *g_Generator_storyNames;
-static ImageFactory **g_Generator_storyImages;
-static int g_Generator_enemyRaces[4];
-static int *g_Generator_enemyNames;
-static ImageFactory **g_Generator_enemyImages;
+static const int kAgentOfferItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
+static const int kAgentOfferShips[6] = {55, 56, 57, 58, 59, 60};
+static const int kAgentEnemyRaces[4] = {2, 3, 0, 1};
 
 Array<Agent *> *Generator::createAgents(Station *station) {
-    Status *status = Globals::status;
-    AbyssEngine::AERandom *random = Globals::rnd;
-
     Array<Agent *> *result = nullptr;
-    if (status->inSupernovaSystem() == 0) {
-        Array<Agent *> *existing = (Array<Agent *> *) (long) status->getAgents();
-        int mission = status->getCurrentCampaignMission();
-        bool keepExisting = mission > 0x10;
-        if (!status->dlc1Won()) {
-            keepExisting = mission > 0x10 && station->getIndex() != 0x6a;
-        }
+    if (!Globals::status->inSupernovaSystem()) {
+    Array<Agent *> *existing = (Array<Agent *> *) (intptr_t) Globals::status->getAgents();
+    int mission = Globals::status->getCurrentCampaignMission();
+    bool keep = mission > 16;
+    if (!Globals::status->dlc1Won()) {
+        keep = (mission > 16) & (station->getIndex() != 106);
+    }
 
-        uint32_t count = 0;
-        for (uint32_t i = 0; i < existing->size(); ++i) {
-            if (existing->data()[i]->getStation() == station->getIndex() &&
-                keepExisting) {
-                ++count;
-            }
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < existing->size(); ++i) {
+        count += (existing->data()[i]->getStation() == station->getIndex()) & keep;
+    }
+    if (station->getIndex() != 108) {
+        if ((int) (Globals::rnd->nextInt(2) + count + 3) <= 4) {
+            count += 3 + Globals::rnd->nextInt(2);
+        } else {
+            count = 5;
         }
+    }
 
-        if (station->getIndex() != 0x6c) {
-            int roll = random->nextInt();
-            if ((int) (roll + count + 3) < 5) {
-                count += 3 + random->nextInt();
+    result = new Array<Agent *>();
+    ArraySetLength(count, *result);
+
+    uint32_t out = 0;
+    for (uint32_t i = 0; i < existing->size(); ++i) {
+        if (existing->data()[i]->getStation() != station->getIndex() || !keep) {
+            continue;
+        }
+        result->data()[out++] = existing->data()[i];
+        if (existing->data()[i]->getOffer() == 9) {
+            int index;
+            if (Globals::status->getCurrentCampaignMission() >= 142) {
+                index = Globals::rnd->nextInt(9);
             } else {
-                count = 5;
+                index = Globals::rnd->nextInt(7) + 2;
             }
-        }
-
-        result = new Array<Agent *>();
-        ArraySetLength(count, *result);
-
-        uint32_t out = 0;
-        for (uint32_t i = 0; i < existing->size(); ++i) {
-            Agent *agent = existing->data()[i];
-            if (agent->getStation() == station->getIndex() && keepExisting) {
-                result->data()[out++] = agent;
-                int offer = agent->getOffer();
-                if (offer == 9) {
-                    int index;
-                    if (status->getCurrentCampaignMission() < 0x8e) {
-                        index = random->nextInt() + 2;
-                    } else {
-                        index = random->nextInt();
-                    }
-                    int itemId = g_Generator_offerItemIds[index];
-                    Item *item = (*g_Generator_agentsItems)->data()[itemId];
-                    int amount = ((uint32_t)(index - 3) < 2) ? 10 : 1;
-                    agent->setSellItemData(itemId, amount,
-                                           item->getSinglePrice() * amount);
-                    agent->setOfferAccepted(false);
-                } else if (offer == 10) {
-                    Array<int> *choices = new Array<int>();
-                    for (int j = 0; j != 6; ++j) {
-                        int shipId = g_Generator_offerShipIds[j];
-                        if (((Station *) (intptr_t) reinterpret_cast<int32_t &>(status->voidStation))
-                            ->hasShip(shipId) == 0) {
-                            if (status->getShip()->getIndex() != shipId) {
-                                ArrayAdd(shipId, *choices);
-                            }
-                        }
-                    }
-                    if (choices->size() != 0) {
-                        int pick = random->nextInt();
-                        int shipId = choices->data()[pick];
-                        agent->setSellItemData(
-                            shipId, 1,
-                            (*g_Generator_agentsShips)->data()[shipId]->getPrice());
-                        agent->setOfferAccepted(false);
-                    } else {
-                        agent->setOfferAccepted(true);
-                    }
-                    delete choices;
+            int itemId = kAgentOfferItems[index];
+            existing->data()[i]->setSellItemData(itemId, (uint32_t) (index - 3) < 2 ? 10 : 1,
+                                                 (*Globals::items)[itemId]->getSinglePrice() *
+                                                         ((uint32_t) (index - 3) < 2 ? 10 : 1));
+            existing->data()[i]->setOfferAccepted(false);
+        } else if (existing->data()[i]->getOffer() == 10) {
+            Array<int> *choices = new Array<int>();
+            for (int j = 0; j != 6; ++j) {
+                int shipId = kAgentOfferShips[j];
+                if (!Globals::status->voidStation->hasShip(shipId) &&
+                    Globals::status->getShip()->getIndex() != shipId) {
+                    ArrayAdd(shipId, *choices);
                 }
             }
+            if (choices->size() != 0) {
+                int shipId = choices->data()[Globals::rnd->nextInt(choices->size())];
+                existing->data()[i]->setSellItemData(shipId, 1, (*Globals::ships)[shipId]->getPrice());
+                existing->data()[i]->setOfferAccepted(false);
+            } else {
+                existing->data()[i]->setOfferAccepted(true);
+            }
+            delete choices;
         }
+    }
 
-        Array<SolarSystem *> *systems =
-                Globals::galaxy->getSystems();
-        if (status->getCurrentCampaignMission() == 0x17 &&
-            station->getIndex() == 10) {
-            AbyssEngine::String name = Globals::globals->getRandomName(0, true);
-            Agent *agent = new Agent(-1, name, station->getIndex(),
-                                     status->getSystem(), 0, 1, -1, -1, -1, -1);
-            agent->setOffer(2);
-            agent->setSellItemData(0x44, 1, 0);
-            agent->setImageParts((*g_Generator_storyImages)->createChar(1, 0));
-            result->data()[out++] = agent;
-        }
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+    if (Globals::status->getCurrentCampaignMission() == 23 && station->getIndex() == 10) {
+        Agent *agent = new Agent(-1, Globals::globals->getRandomName(0, true), station->getIndex(),
+                                 ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex(), 0, true, -1,
+                                 -1, -1, -1);
+        agent->setOffer(2);
+        agent->setSellItemData(68, 1, 100000);
+        agent->setImageParts(Globals::imageFactory->createChar(true, 0));
+        result->data()[out++] = agent;
+    }
 
-        bool hasWingman = false;
-        for (uint32_t i = out; i < result->size(); ++i) {
-            result->data()[i] = createAgent(station);
+    bool hasWingman = false;
+    for (uint32_t i = out; i < result->size(); ++i) {
+        result->data()[i] = createAgent(station);
+        if (result->data()[i]->getOffer() == 6) {
+            if (hasWingman) {
+                result->data()[i]->setOffer(1);
+            }
+            hasWingman = true;
+        } else if (result->data()[i]->getOffer() == 0) {
             Agent *agent = result->data()[i];
-            if (agent->getOffer() == 6) {
-                if (hasWingman) {
-                    agent->setOffer(1);
-                } else {
-                    hasWingman = true;
-                }
-            } else if (agent->getOffer() == 0) {
-                agent->setMission(createMission(agent, systems));
-            }
+            agent->setMission(createMission(agent, systems));
         }
+    }
 
-        if (random->nextInt() < 0x23) {
-            Standing *standing = (Standing *) (intptr_t) status->getStanding();
-            for (uint32_t raceIndex = 0; raceIndex < 4; ++raceIndex) {
-                int race = g_Generator_enemyRaces[raceIndex];
-                if (standing->isEnemy(race)) {
-                    for (uint32_t i = 0; i < result->size(); ++i) {
-                        Agent *agent = result->data()[i];
-                        if (agent->isGenericAgent() && agent->getOffer() != 7) {
-                            result->data()[i] = nullptr;
-                            AbyssEngine::String name =
-                                    Globals::globals->getRandomName(race, true);
-                            agent = new Agent(-1, name, station->getIndex(),
-                                              status->getSystem(), race, 1, -1,
-                                              -1, -1, -1);
-                            result->data()[i] = agent;
-                            agent->setOffer(7);
-                            agent->setImageParts(
-                                (*g_Generator_enemyImages)->createChar(1, race));
-                            break;
-                        }
-                    }
+    if (Globals::rnd->nextInt(100) < 35) {
+        Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
+        for (uint32_t r = 0; r < 4; ++r) {
+            int race = kAgentEnemyRaces[r];
+            if (!standing->isEnemy(race)) {
+                continue;
+            }
+            for (uint32_t i = 0; i < result->size(); ++i) {
+                if (result->data()[i]->isGenericAgent() && result->data()[i]->getOffer() != 7) {
+                    result->data()[i] = nullptr;
+                    result->data()[i] = new Agent(-1, Globals::globals->getRandomName(race, true),
+                                                  station->getIndex(),
+                                                  ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex(),
+                                                  race, true, -1, -1, -1, -1);
+                    result->data()[i]->setOffer(7);
+                    result->data()[i]->setImageParts(Globals::imageFactory->createChar(true, race));
+                    break;
                 }
             }
         }
+    }
 
-        if ((status->getCurrentCampaignMission() == 0x17 &&
-             station->getIndex() == 10) ||
-            random->nextInt() == 1) {
-            for (; out < result->size(); ++out) {
-                Agent *agent = result->data()[out];
-                if (!agent->isStoryAgent() && agent->getOffer() == 0 &&
-                    agent->getMission() != nullptr) {
-                    Mission *m = agent->getMission();
-                    int reward = m->getReward();
-                    if (reward < 50000) {
-                        int newReward = 50000;
-                        if (reward * 10 < 50000) {
-                            newReward = reward * 10;
-                        }
-                        m->setReward(newReward);
-                        break;
-                    }
-                }
+    if ((Globals::status->getCurrentCampaignMission() == 23 && station->getIndex() == 10) ||
+        Globals::rnd->nextInt(100) == 1) {
+        for (uint32_t i = out; i < result->size(); ++i) {
+            Agent *agent = result->data()[i];
+            if (!agent->isStoryAgent() && agent->getOffer() == 0 && agent->getMission() != nullptr &&
+                agent->getMission()->getReward() < 50000) {
+                int reward = agent->getMission()->getReward() * 10;
+                agent->getMission()->setReward(reward < 50000 ? reward : 50000);
+                break;
             }
         }
+    }
     }
     return result;
 }
