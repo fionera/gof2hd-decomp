@@ -159,9 +159,9 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     const int width = static_cast<int>(engine->GetDeviceInfo().width);
     const int height = static_cast<int>(engine->GetDeviceInfo().height);
-    DeviceInfo dev = engine->GetDeviceInfo();
+    const bool pad = engine->GetDeviceInfo().isPad != 0;
 
-    if (height < 640 || dev.isPad != 0)
+    if (height < 640 || pad)
         Globals::retinaDisplay = engine->GetDeviceInfo().isPad != 0 && height > 800;
     else
         Globals::retinaDisplay = true;
@@ -184,12 +184,12 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     Globals::n9 = height == 480 && width == 864;
 
-    dev = engine->GetDeviceInfo();
+    const unsigned char isPad = engine->GetDeviceInfo().isPad;
     Globals::iPadHD = 0;
-    Globals::iPad = dev.isPad;
+    Globals::iPad = isPad;
     Globals::iPadLargePossible = 0;
-    Globals::iPadLarge = dev.isPad != 0 ? Globals::retinaDisplay : 0;
-    Globals::iPadAssetsWithLowerRes = dev.isPad != 0 ? (height < 768 && width < 1024) : 0;
+    Globals::iPadLarge = isPad != 0 ? Globals::retinaDisplay : 0;
+    Globals::iPadAssetsWithLowerRes = isPad != 0 ? (height < 768 && width < 1024) : 0;
     Globals::switch_to_target_setting = -1;
     Globals::enterSpaceLounge = 0;
 
