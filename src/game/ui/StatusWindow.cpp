@@ -108,7 +108,7 @@ bool StatusWindow::OnTouchEnd(int x, int y) {
             if ((*this->medalButtons)[i]->OnTouchEnd(x, y)) {
                 int *medals = Globals::achievements->getMedals();
                 bool elite = Globals::achievements->isEliteMedal(i);
-                if (elite || medals[i] != 0) {
+                if (medals[i] != 0 || elite) {
                     if (this->selectedMedal >= 0)
                         (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(false);
                     this->selectedMedal = i;
