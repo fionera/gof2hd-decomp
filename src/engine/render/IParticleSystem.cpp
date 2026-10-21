@@ -111,7 +111,7 @@ void IParticleSystem::emit(int delta) {
     Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
     Vector dir = AbyssEngine::AEMath::MatrixGetDir(*this->matrix);
 
-    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    const ParticleSettings::SetDefinition &def = ParticleSettingsRef::cur.sets[set];
     float speedSq = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
     if (speedSq < (float) def.speedThreshold)
         return;
@@ -277,7 +277,7 @@ void IParticleSystem::emit(int delta) {
 void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
     int age = this->particleAges[index];
     const ParticleSettings::SetDefinition &def =
-            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
+            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
 
     float t = (float) age / (float) def.lifetime;
     t = t > 1.0f ? 1.0f : t;
@@ -324,7 +324,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
         int set = sets[i];
         if (set != -1) {
             const ParticleSettings::SetDefinition &def =
-                    reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+                    ParticleSettingsRef::cur.sets[set];
             this->maxParticles = this->maxParticles > def.count ? this->maxParticles : def.count;
             if (this->flags == 0) {
                 this->flags = def.flags;
@@ -360,7 +360,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
 
     int set = this->particleSets[particleSet];
     this->particleSetIds[this->currentParticle] = (int8_t) set;
-    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    const ParticleSettings::SetDefinition &def = ParticleSettingsRef::cur.sets[set];
     this->particleAges[this->currentParticle] = 0;
 
     float uv[4];

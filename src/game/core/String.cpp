@@ -18,7 +18,6 @@
 #include <cmath>
 #include <cstdint>
 
-void String_printImpl(const char *s);
 
 
 void String_concat(String * out, String * a, String * b);
@@ -588,8 +587,9 @@ String::operator const unsigned short *() const {
 }
 
 void String::PrintOut() {
-    char *bytes = ((String *) (this))->GetAEChar();
-    String_printImpl(bytes);
+    // The release build compiled the actual print out; only the temporary C string remains.
+    char *bytes = this->GetAEChar();
+    delete[] bytes;
 }
 
 String::String() : data(nullptr), length(0) {

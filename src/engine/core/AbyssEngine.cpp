@@ -38,25 +38,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    // Defined in EngineFlags.cpp (separate TU). These MUST be declared in
-    // namespace AbyssEngine (external linkage) so they bind to the real
-    // definitions there; declaring them in an anonymous namespace would give
-    // them internal linkage and leave them undefined in this TU.
-    extern char *g_Camera_frustumEnabledFlag;
-    extern char *g_Engine_fboEnabledFlag;
-    extern char *g_Engine_shaderModeFlag;
-    extern char *g_GameText_arabicEnabledFlag;
-    extern char *g_MeshIntersect_flipVFlag;
-    extern char *g_Mesh_extraArraysFlag;
-    extern char *g_Mesh_keepCpuCopyFlag;
-    extern char *g_Mesh_shaderPathFlag;
-    extern char *g_Mesh_tangentDelFlag;
-    extern char *g_Mesh_tangentEnabledFlag;
-    extern int *g_Mesh_vboByteCounter;
-    extern char *g_Mesh_vboEnabledFlag;
-    extern char *g_SpriteSystem_tangentFlag;
-    extern char *g_SpriteSystem_uvFlipFlag;
-
     int currentUsedShaderIndex = -1;
 
     int currentFps;
@@ -87,12 +68,6 @@ namespace AbyssEngine {
     long long triDrawn;
     unsigned char ShaderSet;
 
-    Engine *AE_getInitGLThis();
-
-    int AE_getInitGLWidth();
-
-    int AE_getInitGLHeight();
-
     void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
                                     unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
                                     unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
@@ -106,60 +81,10 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 }
 
 namespace AbyssEngine {
+    // The original exports getAppVersion with size 0 at the same address as Engine::InitGL: an
+    // Android stub whose body the compiler dropped entirely. The previous body here was a copy of
+    // Engine::InitGL (GLES1Compat.cpp) routed through invented AE_getInitGL* shims.
     void getAppVersion() {
-        Engine *self = AE_getInitGLThis();
-        int width = AE_getInitGLWidth();
-        int height = AE_getInitGLHeight();
-
-        self->refractFBO = 0;
-        self->displayWidth = width;
-        self->displayHeight = height;
-        self->viewportWidth = width;
-        self->viewportHeight = height;
-
-        FileInterfaceAndroid *fileIface = new FileInterfaceAndroid();
-        self->fileInterface = fileIface;
-        AEFile::SetInterface((FileInterface *) fileIface);
-
-        self->lastGlError = 0;
-        self->vibrationSupported = 0;
-        self->hasVibration = false;
-
-        char *shaderFlag = g_Engine_shaderModeFlag;
-        self->viewFramebuffer = 0;
-        self->ResetLightParam();
-        glViewport(0, 0, self->viewportHeight, self->viewportWidth);
-
-        if (*shaderFlag == 0) {
-            glEnable(0x803a);
-            glDisable(0xb50);
-            glLineWidth(1.0f);
-        } else {
-            self->ShaderInit();
-        }
-
-        float zero3[3] = {0, 0, 0};
-        self->field_0x468 = *(const Vector *) zero3;
-        self->lightDirty[0] = 0;
-        self->field_0x474 = *(const Vector *) zero3;
-        self->lightDirty[1] = 0;
-
-        glEnable(0xb71);
-        self->GlEnable(0xde1, true);
-        glDisable(0xbe2);
-        glCullFace(0x405);
-        glEnable(0xb44);
-        self->AfterGLInit();
-        (*(PaintCanvas **) self->appManager)->Initialize(false);
-
-        self->maxTextureSize = 0;
-        glGetIntegerv(0xd33, reinterpret_cast<GLint *>(&self->maxTextureSize));
-
-        if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
-            FBOContainer *fbo = new FBOContainer(self, String(""));
-            self->refractFBO = fbo;
-            fbo->Create((int) self->displayWidth, (int) self->displayHeight, true, false);
-        }
     }
 }
 

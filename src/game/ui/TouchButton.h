@@ -71,7 +71,7 @@ public:
 
     unsigned int OnTouchEnd(int px, int py);
 
-    unsigned int OnTouchMove(int px, int py);
+    bool OnTouchMove(int px, int py);
 
     void draw();
 

@@ -86,7 +86,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
     }
 
     const ParticleSettings::SetDefinition &def =
-            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
+            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
     this->particleAges[index] = (int) ((float) this->particleAges[index] + dt);
     if (def.lifetime < this->particleAges[index]) {
         this->particleAges[index] = -1;
@@ -143,7 +143,7 @@ void ParticleSystemSprite::enable(bool enabled) {
 
 void ParticleSystemSprite::updateAreaExitParticle(int index, float dt) {
     const ParticleSettings::SetDefinition &def =
-            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
+            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
 
     Vector step = this->particleVelocities[index] * dt * 0.001f;
     this->canvas->SpriteSystemAddPosition(this->resource, (uint16_t)(this->idOffset + index),

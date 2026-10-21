@@ -48,8 +48,6 @@ static inline void VectorNormalize(Vector *out, const Vector *in) { *out = Abyss
 
 static inline void VectorCross(Vector *out, const Vector *a, const Vector *b) { *out = AbyssEngine::AEMath::VectorCross(*a, *b); }
 
-void ObjectGun_setEnemies_impl(void *items); // lint: void_ptr free-function signature, retype changes mangling
-
 static uint8_t *g_ObjectGunRenderScaleFlag = nullptr;
 // Projectile mesh per item index (-1: the item has no visible projectile).
 static const int kProjectileMeshes[233] = {
@@ -169,7 +167,7 @@ ObjectGun::~ObjectGun() {
 }
 
 void ObjectGun::setEnemies(Array<Player *> *enemies) {
-    ObjectGun_setEnemies_impl(this->gun);
+    this->gun->setEnemies(enemies);
 }
 
 void ObjectGun::setEnemy(Player * /*enemy*/) {

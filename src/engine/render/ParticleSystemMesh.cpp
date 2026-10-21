@@ -144,7 +144,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
             int set = (int) sets.data()[0];
             if (set != -1) {
                 const ParticleSettings::SetDefinition &def =
-                        reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+                        ParticleSettingsRef::cur.sets[set];
                 if (def.colorFlag > 0.0f)
                     this->pointCount = (quads << 2) + (stride << 2);
             }
@@ -270,7 +270,7 @@ void ParticleSystemMesh::updateSingleColor(int id) {
     if ((int) (this->flags << 16) < 0) {
         if (this->particleAges[(id == 0 ? (int) this->maxParticles : id) - 1] == -1) {
             int set = this->particleSetIds[id];
-            uint32_t color = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set].color1;
+            uint32_t color = ParticleSettingsRef::cur.sets[set].color1;
             uint32_t mask = this->alphaFade == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
             a = (float) (color >> 24) * 0.0039215689f;
@@ -320,7 +320,7 @@ void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t tex
 
 void ParticleSystemMesh::emitTrail(int delta) {
     int set = (int) this->particleSets.data()[this->particleSetIndex];
-    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    const ParticleSettings::SetDefinition &def = ParticleSettingsRef::cur.sets[set];
 
     Vector rightScaled = AbyssEngine::AEMath::MatrixGetRight(*this->matrix) * (this->mirror == 0 ? 1.0f : -1.0f);
     Vector up = AbyssEngine::AEMath::MatrixGetUp(*this->matrix);
@@ -477,7 +477,7 @@ void ParticleSystemMesh::emitTrail(int delta) {
 
 void ParticleSystemMesh::updateSingle(int id, float delta) {
     int set = this->particleSetIds[id];
-    const ParticleSettings::SetDefinition &def = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+    const ParticleSettings::SetDefinition &def = ParticleSettingsRef::cur.sets[set];
     if ((int) (this->flags << 16) < 0) {
         updateTrailEdges(id, (int) delta);
         if (this->particleAges[id] == -2) {

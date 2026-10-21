@@ -1876,7 +1876,7 @@ unsigned char SpaceLounge::hangarNeedsUpdate() {
     return this->hangarUpdate;
 }
 
-int SpaceLounge::OnTouchBegin(int x, int y) {
+bool SpaceLounge::OnTouchBegin(int x, int y) {
     this->touchDown = 1;
     this->touchX = x;
     this->touchY = y;
@@ -1884,25 +1884,25 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 
     if (this->choiceVisible != 0 || this->chatActive != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     if (this->mapVisible != 0) {
         this->starMap->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     if (this->listVisible != 0) {
         this->listWindow->OnTouchBegin(x, y);
         Globals::layout->OnTouchBegin(x, y);
         this->scrollWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
         case 0:
             if (this->introDone == 0) {
-                return 0;
+                return false;
             }
             if (this->agents != 0) {
                 float fx = (float) x;
@@ -1930,21 +1930,21 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 
     Globals::layout->OnTouchBegin(x, y);
     this->scrollWindow->OnTouchBegin(x, y);
-    return 0;
+    return false;
 }
 
-int SpaceLounge::OnTouchMove(int x, int y) {
+bool SpaceLounge::OnTouchMove(int x, int y) {
     this->touchX = x;
     this->touchY = y;
 
     if (this->choiceVisible != 0 || this->chatActive != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     if (this->mapVisible != 0) {
         this->starMap->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
@@ -1981,7 +1981,7 @@ int SpaceLounge::OnTouchMove(int x, int y) {
     } else {
         this->scrollWindow->OnTouchMove(x, y);
     }
-    return 0;
+    return false;
 }
 
 int SpaceLounge::OnTouchEnd(int x, int y) {

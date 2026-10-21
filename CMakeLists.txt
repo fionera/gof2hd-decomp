@@ -64,13 +64,22 @@ if(GOF2_MATCH_LAYOUT)
         COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
                 $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out} ${GOF2_NDK_LIBCXXABI_A}
-                ${GOF2_NDK_LIBGCC_A}
+                ${GOF2_NDK_ANDROID_SUPPORT_A} ${GOF2_NDK_LIBGCC_A}
         DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out}
         COMMENT "Generating section-ordering file from the original .so + object source order"
         COMMAND_EXPAND_LISTS VERBATIM)
     set(_order_flag "--section-ordering-file=${_order}")
 endif()
+
+# Object link order recovered from the original's .dynsym (gold emits symbols in input order).
+set(_linkorder "${CMAKE_BINARY_DIR}/link_order.rsp")
+add_custom_command(OUTPUT "${_linkorder}"
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_link_order.py
+            "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_linkorder}" $<TARGET_OBJECTS:gof2>
+    DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_link_order.py gof2 $<TARGET_OBJECTS:gof2>
+    COMMENT "Ordering link objects like the original"
+    COMMAND_EXPAND_LISTS VERBATIM)
 
 add_custom_command(OUTPUT "${_so}"
     # --unresolved-symbols=ignore-all: undecompiled engine internals import as shims, as in the
@@ -84,14 +93,16 @@ add_custom_command(OUTPUT "${_so}"
             ${_order_flag}
             -o "${_so}"
             ${_libdir}/crtbegin_so.o -L ${_libdir}
-            -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
-            ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
-            -l m -l dl -l c
-            $<TARGET_OBJECTS:gof2>
+            @${_linkorder}
             ${_openssl_out}
             --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
+            -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
+            ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
             ${GOF2_NDK_LIBCXXABI_A}
+            -l m
+            ${GOF2_NDK_ANDROID_SUPPORT_A}
             ${GOF2_NDK_LIBGCC_A}
+            -l dl -l c
             ${_libdir}/crtend_so.o
     # The original release .so is stripped (only .dynsym; no .symtab/.strtab/.debug_*). Strip ours the
     # same way so the section set matches -- a prerequisite for byte/hash identicality. Keeps .dynsym
@@ -100,7 +111,7 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_openssl_out} ${_libzip_out} ${_zlib_out}
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_linkorder} ${_openssl_out} ${_libzip_out} ${_zlib_out}
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")

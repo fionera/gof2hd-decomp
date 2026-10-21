@@ -89,7 +89,6 @@ void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b); // lint: void_
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_render3D_inner(void *obj); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -2279,14 +2278,14 @@ void MenuTouchWindow::update(int dt) {
     }
 }
 
-int MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->messageShowing) {
         this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
     if (Globals::layout->choiceWindowOpen) {
         Globals::layout->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
     switch (this->menuState) {
     case 1:
@@ -2471,17 +2470,17 @@ int MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_p
     }
     if (Globals::layout->OnTouchBegin(x, y) && this->menuState == 13)
         this->pendingActivate = 1;
-    return 0;
+    return false;
 }
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
 
-int MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     if (this->messageShowing) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (!Globals::layout->choiceWindowOpen) {
         switch (this->menuState) {
@@ -2659,7 +2658,7 @@ int MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_pt
         }
     }
     Globals::layout->OnTouchMove(x, y);
-    return 0;
+    return false;
 }
 
 int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -3714,7 +3713,7 @@ void MenuTouchWindow::render3D() {
     MissionsWindow *obj = (MissionsWindow *) this->missionsWindow;
     if (obj == 0)
         return;
-    return _mtw_render3D_inner(obj);
+    return obj->render3D();
 }
 
 uint8_t MenuTouchWindow::isShowingMessage() {

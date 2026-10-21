@@ -20,7 +20,7 @@ public:
     int targetCount;
     int *targetIndices;
     uint8_t triggeredFlag;
-    uint8_t over;
+    bool over;
     int lastRouteIndex;
 
     RadioMessage(int textID, int imageID, int conditionType, int conditionValue, int targetCount);
@@ -41,7 +41,7 @@ public:
 
     void finish();
 
-    uint8_t isOver();
+    bool isOver();
 
     void reset();
 

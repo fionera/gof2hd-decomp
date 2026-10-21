@@ -165,9 +165,9 @@ public:
 
     void update(int dt);
 
-    uint32_t OnTouchBegin(int x, int y);
+    bool OnTouchBegin(int x, int y);
 
-    int OnTouchMove(int x, int y);
+    bool OnTouchMove(int x, int y);
 
     int OnTouchEnd(int x, int y);
 

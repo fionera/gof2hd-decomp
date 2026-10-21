@@ -98,13 +98,7 @@ static_assert(offsetof(SettingsBlock, dlc1WonShown) == 0x39, "");
 
 static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
-static Ship *(*g_ModStation_es_getShip)(Status *) = 0;
 
-static int *g_okp_stack = 0;
-
-static inline void Status_checkForLevelUp_okp() { Globals::status->checkForLevelUp(); }
-
-void leaveStation();
 
 // Portrait part descriptors of the story characters (5 ints per face).
 static int gStoryFaces[62][5] = {
@@ -185,304 +179,50 @@ static int *const gStoryFaceTable[63] = {
     gStoryFaces[51], gStoryFaces[52], gStoryFaces[53], gStoryFaces[54], gStoryFaces[55], gStoryFaces[56],
     gStoryFaces[57], gStoryFaces[58], gStoryFaces[59]};
 
-static int *g_msc_stack = 0;
-
-static inline int Status_getStation_msc() { return (int)(Globals::status->getStation()); }
-
-
-static inline int Status_getSystem_msc() { return (int)(Globals::status->getSystem()); }
 
 
 
 // Credit reward per medal grade (none, gold, silver, bronze).
 static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
 
-static int *g_ou_stack = 0;
 
 
 
 
 
 
-static int **g_ou_appData = 0;
 
 
-static int **g_ou_module = 0;
-
-static inline int ApplicationManager_GetElapsedTimeMillis_ou() { return (int) Globals::appManager->GetElapsedTimeMillis(); }
-
-static inline int ApplicationManager_GetApplicationData_ou() { return (int)(intptr_t) Globals::appManager->GetApplicationData(); }
-
-static inline void ApplicationManager_SetCurrentApplicationModule_ou(int module) { Globals::appManager->SetCurrentApplicationModule((unsigned int)module); }
-
-static inline void FModSound_stop_ou(int sound) { Globals::sound->stop(sound); }
-
-static inline void Layout_update_ou(int layout) { Globals::layout->update(layout); }
-
-void Layout_formatCredits_ou(ModStation * outStr);
-
-static inline void Status_incPlayingTime_ou(long long delta) { Globals::status->incPlayingTime(delta); }
-
-static inline int Status_getCredits_ou() { return (int)(Globals::status->getCredits()); }
-
-static inline void Status_changeCredits_ou(int status) { Globals::status->changeCredits(status); }
-
-static inline int Status_getCurrentCampaignMission_ou() { return (int)(Globals::status->getCurrentCampaignMission()); }
-
-static inline void Status_nextCampaignMission_ou(int status) { Globals::status->nextCampaignMission(status); }
-
-static inline void Status_setCurrentCampaignMission_ou(int status) { Globals::status->setCurrentCampaignMission(status); }
-
-static inline int Status_getStation_ou() { return (int)(Globals::status->getStation()); }
 
 
-static inline int Status_getSystem_ou() { return (int)(Globals::status->getSystem()); }
 
-int SolarSystem_getIndex_ou();
-
-static inline int Status_getCampaignMission_ou() { return (int)(Globals::status->getCampaignMission()); }
-
-static inline int Status_missionCompleted_ou(int status, int a, long long b) { return (int)(Globals::status->missionCompleted(status, a, b)); }
-
-int Status_missionFailed_ou(int status, int a, int b);
-
-void Status_removeMission_ou(int status);
-
-int Mission_getType_ou();
-
-int Mission_getStatusValue_ou();
-
-void Mission_setStatusValue_ou(int v);
-
-
-void Mission_setCampaignMission_ou(Mission * mission);
-
-static inline void Achievements_updateCredits_ou(Achievements *ach, int credits) { ach->updateCredits(credits); }
-
-int Globals_getInAppPurchaseArrayIndex_ou(int globals, Array<String *> *arr);
-
-void TouchButton_setText_ou(int btn);
-
-void ChoiceWindow_set_ou(int cw, int text, int flag);
-
-void ChoiceWindow_setNotice_ou(int cw, int text);
-
-static inline int GameText_getText_ou(int id) { return (int)(Globals::gameText->getText(id)); }
-
-static inline void CutScene_ctor_ou(CutScene *cs, int kind) { new ((void*)cs) CutScene(kind); }
-
-int CutScene_initialize_ou(CutScene * cs);
-
-static inline void MenuTouchWindow_update_ou(MenuTouchWindow *w, int dt) { w->update(dt); }
-
-
-static inline void SpaceLounge_ctor_ou(SpaceLounge * l) { new ((void*)l) SpaceLounge(); }
-
-static inline void SpaceLounge_init_ou(SpaceLounge * l) { l->init(); }
-
-static inline float EaseInOut_advance_ou(AbyssEngine::EaseInOut *e, int elapsed) { e->Increase((float)elapsed); return e->GetValue(); }
-
-unsigned ModStation_ou_cameraHandle();
-
-void ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
-
-static inline void AEGeometry_rotate_ou(AEGeometry *geom, float x, float y, float z) { geom->rotate(x, y, z); }
-
-void Engine_setHangarLightIntensity_ou(float v);
-
-static int **g_ModStation_ric_chk = 0;
 
 static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
 static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
 
-static int *g_ch_stack = 0;
 
 
 
 
-static inline int Status_getCurrentCampaignMission_ch() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-static inline int Wanted_isTerminated_ch(Wanted * w) { return (int)(w->isTerminated()); }
-static inline int Achievements_gotAllMedals_ch(Achievements * a) { return (int)(a->gotAllMedals()); }
 
-static inline int Achievements_gotAllGoldMedals_ch() { return (int)(Globals::achievements->gotAllGoldMedals()); }
 
-static inline int Achievements_gotAllSupernovaMedals_ch(Achievements * a) { return (int)(a->gotAllSupernovaMedals()); }
 
-static inline int Status_isBlueprintUnlocked_ch(Status *status, int bp) { return (int)(status->isBlueprintUnlocked(bp)); }
 
-static inline void Status_unlockBluePrint_ch(Status *status, int bp) { status->unlockBluePrint(bp); }
 
-static inline int Status_hardCoreMode_ch() { return (int)(Globals::status->hardCoreMode()); }
 
-static inline int GameText_getText_ch(int id) { return (int)(Globals::gameText->getText(id)); }
 
-int GameText_text_ch(int slot);
 
-void ChoiceWindow_set6_ch(ChoiceWindow *cw, int a, int b, int c, int d, int e);
 
-void ChoiceWindow_set1_ch(ChoiceWindow *cw, int textStr);
 
-void DialogueWindow_initWingman_ch(DialogueWindow *dw, int kind);
 
-static inline void FModSound_playWingmanRecruit_ch() {
-    Agent *agent = new Agent(0, AbyssEngine::String(""), 0, 0, Globals::status->field_0x2c, true, 0, 0, 0, 0);
-    int soundId = Globals::globals->getDialogueSoundId(0x139, agent);
-    Globals::sound->play(soundId, nullptr, nullptr, 0.0f);
-    delete agent;
-}
 
-static int *g_ote_stack = 0;
 
 
 
-
-static int **g_ote_module = 0;
-
-
-
-
-
-
-
-static inline void ApplicationManager_SetCurrentApplicationModule_ote(int module) { Globals::appManager->SetCurrentApplicationModule((unsigned int)module); }
-
-static inline int ApplicationManager_GetApplicationData_ote() { return (int)(intptr_t) Globals::appManager->GetApplicationData(); }
-
-static inline int Status_getStation_ote() { return (int)(Globals::status->getStation()); }
-
-
-int Station_stationHasPirateBase_ote();
-
-int Station_hasShip_ote(Station * station);
-
-void Station_addShip_ote(Ship * s);
-void Station_departStation_ote(Station * s);
-
-
-
-static inline int Status_getShip_ote() { return (int)(Globals::status->getShip()); }
-
-static inline int Status_getCredits_ote() { return (int)(Globals::status->getCredits()); }
-
-static inline void Status_changeCredits_ote(int status) { Globals::status->changeCredits(status); }
-
-static inline int Status_getCurrentCampaignMission_ote() { return (int)(Globals::status->getCurrentCampaignMission()); }
-
-static inline void Status_nextCampaignMission_ote(int status) { Globals::status->nextCampaignMission(status); }
-
-static inline void Status_departStation_ote(Station * s) { Globals::status->departStation(s); }
-static inline void Status_setStation_ote(Station * s) { Globals::status->setStation(s); }
-
-void Status_setMission_ote(int status);
-
-void Status_removeMission_ote(int status);
-
-void Status_incMissionCount_ote(int status);
-
-void Status_setPassengers_ote(int status, int n);
-
-static inline void Status_checkForLevelUp_ote() { Globals::status->checkForLevelUp(); }
-
-static inline void Status_activateNewWanted_ote() { Globals::status->activateNewWanted(); }
-
-int Ship_getCargo_ote();
-
-int Ship_getIndex_ote();
-
-void Ship_removeCargo1_ote(Item * it);
-void Ship_addCargo_ote(Item * it);
-
-void Ship_makeShip_ote(int desc);
-
-
-int Item_getAmount_ote();
-
-
-int Mission_getType_ote();
-
-
-int Mission_getProductionGoodAmount_ote();
-
-int Mission_getReward_ote();
-
-int Mission_getBonus_ote();
-
-static inline int Agent_getOffer_ote(Agent * a) { return (int)(a->getOffer()); }
-static inline int Agent_getSellItemIndex_ote(Agent * a) { return (int)(a->getSellItemIndex()); }
-
-static inline void Agent_setEvent_ote(Agent *a, int e) { a->setEvent(e); }
-
-static inline void Agent_setOfferAccepted_ote(Agent *a, int flag) { a->setOfferAccepted(flag); }
-
-static inline void Achievements_resetNewMedals_ote(Achievements * ach) { ach->resetNewMedals(); }
-
-static inline int GameText_getText_ote(int id) { return (int)(Globals::gameText->getText(id)); }
-
-void Galaxy_getStation_ote(int index);
-
-void Layout_OnTouchEnd_ote(Layout *l, int p1, int p2);
-
-int Layout_OnTouchEndR_ote(Layout *l, int p1, int p2);
-
-static inline int Layout_helpPressed_ote(Layout * l) { return (int)(l->helpPressed()); }
-
-void Layout_initHelpWindow_ote(int l, int textStr);
-
-static inline void Layout_showMissionRewardMessage_ote(int l, int flag) { Globals::layout->showMissionRewardMessage(l, flag); }
-
-int ChoiceWindow_OnTouchEnd_ote(int cw, int p1);
-
-void ChoiceWindow_set_ote(int cw, int textStr, int flag);
-
-void ChoiceWindow_setNotice_ote(int cw, int textStr);
-
-int HangarWindow_OnTouchEnd_ote(HangarWindow *w, int p1, int p2);
-
-static inline void HangarWindow_ctor_ote(HangarWindow *w) { new ((void*)w) HangarWindow(); }
-
-static inline void HangarWindow_dtor_ote(HangarWindow *w) { w->~HangarWindow(); }
-
-void HangarWindow_initialize_ote();
-
-void HangarWindow_showCreditsBuyWindow_ote(HangarWindow *w);
-
-void HangarWindow_setSellMode_ote(int w);
-
-int StarMap_OnTouchEnd_ote(int sm, int p1);
-
-int SpaceLounge_OnTouchEnd_ote(int l, int p1, int p2);
-
-
-void SpaceLounge_refresh_ote();
-
-int StatusWindow_OnTouchEnd_ote(int w, int p1, int p2);
-
-int MissionsWindow_OnTouchEnd_ote(int w, int p1);
-
-int MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3); // lint: void_ptr
-
-
-int TouchButton_OnTouchEnd_ote(int btn, int p1);
-
-static inline void FModSound_stop_ote(int sound) { Globals::sound->stop(sound); }
-
-static inline void RecordHandler_saveOptions_ote(RecordHandler * rh) { rh->saveOptions(); }
-
-void CutScene_replacePlayerShip_ote(int cs, int shipIndex);
 
 
 void ChoiceWindow_setFee_frag(ChoiceWindow *cw, int credits, int templateId);
-
-int *ModStation_ote_buttonRow(ModStation * self);
-int TouchButton_getX_ote(TouchButton * btn);
-int TouchButton_getY_ote(TouchButton * btn);
-
-static inline void Radio_ctor_ote(Radio * radio) { new ((void*)radio) Radio(); }
-
-void Radio_addMessage_ote(Radio *radio, int textId);
-
-void ScrollTouchBox_initRadio_ote(ScrollTouchBox * box, Radio * radio);
 
 // Mission reward replacing an out-of-range reward, campaign missions 55..61.
 static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666, 6666, 50000};
@@ -490,7 +230,6 @@ static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666,
 
 
 
-static int *g_oi_stack = 0;
 
 
 
@@ -500,152 +239,10 @@ static int *g_oi_stack = 0;
 
 
 
-static int *g_oi_musicId = 0;
 
-static inline int Status_getCurrentCampaignMission_oi() { return (int)(Globals::status->getCurrentCampaignMission()); }
 
-static inline int Status_getStation_oi() { return (int)(Globals::status->getStation()); }
 
 
-static inline int Status_getSystem_oi() { return (int)(Globals::status->getSystem()); }
-
-int SolarSystem_getRace_oi();
-
-int SolarSystem_getRoutes_oi();
-
-static inline int Status_inAlienOrbit_oi() { return (int)(Globals::status->inAlienOrbit()); }
-
-static inline int Status_inSupernovaSystem_oi() { return (int)(Globals::status->inSupernovaSystem()); }
-
-static inline int Status_inBlackMarketSystem_oi() { return (int)(Globals::status->inBlackMarketSystem()); }
-
-static inline int Status_getShip_oi() { return (int)(Globals::status->getShip()); }
-
-static inline int Status_getCredits_oi() { return (int)(Globals::status->getCredits()); }
-
-static inline int Status_getLevel_oi() { return (int)(Globals::status->getLevel()); }
-
-static inline int Status_hardCoreMode_oi() { return (int)(Globals::status->hardCoreMode()); }
-
-static inline int Status_getStanding_oi() { return (int)(Globals::status->getStanding()); }
-
-static inline int Status_gameWon_oi() { return (int)(Globals::status->gameWon()); }
-
-static inline int Status_dlc1Won_oi() { return (int)(Globals::status->dlc1Won()); }
-
-int Status_getPlayingTime_lo_oi();
-
-static inline int Status_activateNewWanted_oi() { return (int)(Globals::status->activateNewWanted()); }
-
-static inline int Status_getFreelanceMission_oi() { return (int)(Globals::status->getFreelanceMission()); }
-
-static inline int Status_getCampaignMission_oi() { return (int)(Globals::status->getCampaignMission()); }
-
-static inline void Status_setShip_oi(Ship * s) { Globals::status->setShip(s); }
-
-int Ship_getIndex_oi();
-
-int Ship_hasJumpDrive_oi();
-
-int Ship_hasCargo_oi(int ship, int item);
-
-int Ship_hasEquipment_oi(int ship, int item);
-
-void Ship_makeShip_oi(int desc);
-
-void Ship_setRace_oi(int race);
-
-void Ship_setEquipment_oi(Item *eq, int slot);
-
-void Ship_setPrice_oi(int shipPtr);
-
-void Ship_removeCargo_oi(int ship);
-
-
-int Item_makeItem_oi();
-
-int Item_makeItemDesc_oi(int desc);
-
-int Item_makeItemDescAmt_oi(int desc, int amt);
-
-void Item_setUnsaleable_oi(int flag);
-
-
-int Item_getAmount_oi();
-
-void Item_setPrice_oi(int itemPtr);
-
-int Station_getShips_oi();
-
-int Station_getItems_oi();
-
-int Station_getName_oi();
-
-int Station_hasItem_oi(int station);
-
-int Station_hasShip_oi(Station * station);
-
-int Station_hasAttackedFriends_oi();
-
-int Station_stationHasPirateBase_oi();
-
-void Station_addItem_oi(Item * it);
-void Station_addShip_oi(Ship * s);
-void Station_removeShip_oi(Ship * s);
-
-void Station_setShips_oi(Station *station, int list);
-
-int Standing_isEnemy_oi(int standing);
-
-int Standing_getStanding_oi(int standing);
-
-int Mission_getTargetStation_oi();
-
-int Mission_getType_oi();
-
-static inline int Achievements_gotAllGoldMedals_oi() { return (int)(Globals::achievements->gotAllGoldMedals()); }
-
-static inline int GameText_getText_oi(int id) { return (int)(Globals::gameText->getText(id)); }
-
-void ChoiceWindow_set_oi(ChoiceWindow *cw, int text, int flag);
-
-void ChoiceWindow_setNotice_oi(ChoiceWindow *cw, int text);
-
-int CutScene_initialize_oi(CutScene * cs);
-
-static inline void CutScene_ctor_oi(CutScene *cs, int kind) { new ((void*)cs) CutScene(kind); }
-
-void CutScene_replacePlayerShip_oi(int cs, int shipIndex);
-
-void TouchButton_setHalfTransparent_oi(int flag);
-
-void Globals_playMusicAndFadeOutCurrent_oi(int id);
-
-static inline void FModSound_enableReverb_oi(int sound) { Globals::sound->enableReverb(sound); }
-
-static inline void FModSound_setDownPitch_oi(int sound) { Globals::sound->setDownPitch(sound); }
-
-static inline void Generator_ctor_oi(Generator * g) { new ((void*)g) Generator(); }
-static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
-static inline void Generator_computerTradeGoods_oi(Generator * g, Station * s) { g->computerTradeGoods(s); }
-static inline int Generator_getShipBuyList_oi(Station * s) { return (int)(Globals::generator->getShipBuyList(s)); }
-
-
-
-unsigned ModStation_oi_cameraHandle();
-
-void ModStation_oi_setCameraLocal(unsigned h, const Matrix &m);
-
-int GameText_getText_oiImpl(int id);
-
-void ChoiceWindow_setFee_oiImpl(ChoiceWindow *cw, int credits, int templateId);
-
-void ChoiceWindow_set6_oiImpl(ChoiceWindow *cw, int a, int b, int c, int d, int e, int f);
-
-void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
-
-void NewsTicker_build_oiImpl(ModStation * self);
-void DlcMenu_build_oiImpl(ModStation * self);
 
 // Hangar camera key positions per station race (iPad layout).
 static const int gHangarCamPosIPad[30] = {725, 899, -2271, 1630, 1199, -1933, -2934, 1027, -1890, 1759,
@@ -659,8 +256,6 @@ static const float gHangarCamYawIPad[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f,
 // Station background image resource per race.
 static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xffffffff, 0xffffffff,
                                                  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
-
-static int *g_dlc_stack = 0;
 
 
 
@@ -1107,21 +702,21 @@ int ModStation::OnInitialize() {
                 secondary->setUnsaleable(true);
                 this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(), 3);
             }
-            Array<TouchButton *> &row = *reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
             int mission = Globals::status->getCurrentCampaignMission();
             bool mission15 = false;
             if (mission <= 4) {
-                row[0]->setHalfTransparent(true);
-                row[2]->setHalfTransparent(true);
-                row[3]->setHalfTransparent(true);
-            } else if (mission < 9 || mission == 15) {
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[0]->setHalfTransparent(true);
+                goto dimMissionButtons;
+            }
+            if (mission < 9 || mission == 15) {
                 mission15 = mission == 15;
-                row[2]->setHalfTransparent(true);
-                row[3]->setHalfTransparent(true);
+            dimMissionButtons:
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[2]->setHalfTransparent(true);
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[3]->setHalfTransparent(true);
             }
             if (mission < 12 || mission15 || Globals::status->getStation()->getIndex() == 100 ||
                 Globals::status->getStation()->getIndex() == 101) {
-                row[1]->setHalfTransparent(true);
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1]->setHalfTransparent(true);
             }
 
             Vector lightDir = AbyssEngine::AEMath::MatrixGetDir(*reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
@@ -1188,7 +783,7 @@ int ModStation::OnInitialize() {
                 this->cutScene->rootGeom->setMatrix(camera);
 
                 // Random offset of the idle camera.
-                uint8_t *flipAxis = &this->_pad_0x12d[0];
+                bool *flipAxis = &this->cameraFlip[0];
                 flipAxis[0] = Globals::rnd->nextInt(20) < 10;
                 flipAxis[1] = Globals::rnd->nextInt(20) > 10;
                 flipAxis[2] = Globals::rnd->nextInt(20) < 10;
@@ -1263,8 +858,8 @@ void ModStation::autosave() {
     rh->recordStoreWritePreview(0);
     delete rh;
     this->flag_0xb1 = 1;
-    if ((int) (intptr_t) this->dlcMenu != 0) {
-        this->dlcMenu->callDlcMenu();
+    if (this->dlcMenu != nullptr) {
+        this->dlcMenu->loadPreviewRecords();
     }
 }
 
@@ -1491,8 +1086,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch) {
         return;
     }
-    this->flag_0x118 = 0;
     this->activeTouch = nullptr;
+    this->flag_0x118 = 0;
     if (this->flag_0x60) {
         return;
     }
@@ -1789,22 +1384,22 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             Globals::layout->formatCredits(this->field_0xd4 - Globals::status->getCredits()),
                             String("#C"));
                         this->choiceWindow->set(text, false);
-                        this->flag_0x6b = 1;
                         this->flag_0xb2 = 1;
+                        this->flag_0x6b = 1;
                         this->flag_0x63 = 1;
                         return;
                     }
                     Globals::status->changeCredits(-this->field_0xd4);
-                    this->flag_0x6b = 0;
                     this->flag_0xd8 = 1;
+                    this->flag_0x6b = 0;
                     Globals::status->getStation()->setAttackedFriends(false);
                     this->flag_0x101 = 1;
                     enterStation();
                     autosave();
                 }
                 if (this->flag_0xdc) {
-                    this->flag_0x63 = 0;
                     this->flag_0xdc = 0;
+                    this->flag_0x63 = 0;
                     reinterpret_cast<uint8_t *>(Globals::appManager->GetApplicationData())[13] = 1;
                     NFC::rateGame();
                     return;
@@ -1848,8 +1443,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             case 1:
                 this->flag_0xb2 = 0;
                 if (!this->flag_0x6b) {
-                    this->flag_0x63 = 0;
                     this->flag_0xdc = 0;
+                    this->flag_0x63 = 0;
                     return;
                 }
                 this->flag_0xb2 = 0;
@@ -1994,8 +1589,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             this->hangarWindow = new HangarWindow();
         }
         this->hangarWindow->initialize();
-        this->pendingHangarClose = 1;
         this->flag_0x66 = 1;
+        this->pendingHangarClose = 1;
         this->hangarWindow->showCreditsBuyWindow();
     }
     this->selectedButton = -1;
@@ -2250,7 +1845,7 @@ void ModStation::OnRelease() {
         (*&Globals::sound)->freeAllEvents();
 }
 
-void ModStation::OnKeyPress(long long, long long key) {
+void ModStation::OnKeyPress(long long key, long long) {
     if (!this->stationActive)
         return;
     Globals::status->checkForLevelUp();
@@ -2270,21 +1865,19 @@ void ModStation::OnKeyPress(long long, long long key) {
     unsigned char menuOpen = this->flag_0x61;
     unsigned char dlcOpen = this->flag_0x62;
     if (menuOpen && !dlcOpen) {
-        switch (key) {
-            case 0x4000:
-                this->buttonState[this->selectedButton] = 0;
-                this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
-                this->buttonState[this->selectedButton] = 1;
-                return;
-            case 0x8000:
-                this->buttonState[this->selectedButton] = 0;
-                this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
-                this->buttonState[this->selectedButton] = 1;
-                return;
-            case 0x20000:
-                return;
-        }
-        if (key == 0x10000) {
+        if (key == 0x4000) {
+            this->buttonState[this->selectedButton] = 0;
+            this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
+            this->buttonState[this->selectedButton] = 1;
+            return;
+        } else if (key == 0x8000) {
+            this->buttonState[this->selectedButton] = 0;
+            this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
+            this->buttonState[this->selectedButton] = 1;
+            return;
+        } else if (key == 0x20000) {
+            return;
+        } else if (key == 0x10000) {
             switch (this->selectedButton) {
                 case 0:
                     if (Globals::status->getCurrentCampaignMission() < 5 ||
@@ -2529,7 +2122,7 @@ void ModStation::OnUpdate() {
             this->cutScene->process(0);
         }
         // Idle camera drift around the hangar.
-        uint8_t *flipAxis = &this->_pad_0x12d[0];
+        bool *flipAxis = &this->cameraFlip[0];
         int step = this->dt;
         int backStep = -this->dt;
         this->easeX->Increase((float) (flipAxis[1] ? backStep : step));
@@ -2537,27 +2130,30 @@ void ModStation::OnUpdate() {
         if ((camX - this->easeX->GetMaxValue() > 0.0f ? camX - this->easeX->GetMaxValue()
                                                       : -(camX - this->easeX->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[1];
-            flipAxis[1] = !back;
-            int offset = Globals::rnd->nextInt(131);
-            this->easeX->SetRange(camX, this->camKeyX + (float) (back ? offset + 18 : -18 - offset));
+            flipAxis[1] = back ^ 1;
+            int offset;
+            this->easeX->SetRange(camX, this->camKeyX + (float) ((offset = Globals::rnd->nextInt(131)),
+                                                                 back ? offset + 18 : -18 - offset));
         }
         this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
         float camY = this->easeY->GetValue();
         if ((camY - this->easeY->GetMaxValue() > 0.0f ? camY - this->easeY->GetMaxValue()
                                                       : -(camY - this->easeY->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[0];
-            flipAxis[0] = !back;
-            int offset = Globals::rnd->nextInt(120);
-            this->easeY->SetRange(camY, this->camKeyY + (float) (back ? offset + 30 : -30 - offset));
+            flipAxis[0] = back ^ 1;
+            int offset;
+            this->easeY->SetRange(camY, this->camKeyY + (float) ((offset = Globals::rnd->nextInt(120)),
+                                                                 back ? offset + 30 : -30 - offset));
         }
         this->easeZ->Increase((float) (flipAxis[2] ? backStep : step));
         float camZ = this->easeZ->GetValue();
         if ((camZ - this->easeZ->GetMaxValue() > 0.0f ? camZ - this->easeZ->GetMaxValue()
                                                       : -(camZ - this->easeZ->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[2];
-            flipAxis[2] = !back;
-            int offset = Globals::rnd->nextInt(100);
-            this->easeZ->SetRange(camZ, this->camKeyZ + (float) (back ? offset + 50 : -50 - offset));
+            flipAxis[2] = back ^ 1;
+            int offset;
+            this->easeZ->SetRange(camZ, this->camKeyZ + (float) ((offset = Globals::rnd->nextInt(100)),
+                                                                 back ? offset + 50 : -50 - offset));
         }
         AbyssEngine::AEMath::MatrixSetTranslation(
             *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
@@ -2587,8 +2183,8 @@ void ModStation::OnUpdate() {
             if (textY > (float) (Globals::h / 2)) {
                 float scrolled = textY + (float) this->dt * -0.03f;
                 if (scrolled <= (float) (Globals::h / 2)) {
-                    textPos.y = scrolled;
                     this->field_0xb8 = 4000;
+                    textPos.y = scrolled;
                     textY = scrolled;
                 }
             }
@@ -2667,11 +2263,25 @@ void ModStation::OnUpdate() {
         if (Globals::status->getCurrentCampaignMission() >= 148 &&
             Globals::status->getCurrentCampaignMission() <= 151) {
             int stationIndex = Globals::status->getStation()->getIndex();
-            int visitBit = stationIndex == 66 ? 2 : stationIndex == 55 ? 1 : stationIndex == 9 ? 4 : 0;
+            int visitBit;
+            switch (stationIndex) {
+            case 66:
+                visitBit = 2;
+                break;
+            case 9:
+                visitBit = 4;
+                break;
+            case 55:
+                visitBit = 1;
+                break;
+            default:
+                visitBit = 0;
+                break;
+            }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
-                    Globals::status->getCurrentCampaignMission() >= 148 && stationIndex == 96 &&
-                    Globals::status->getCurrentCampaignMission() <= 150) {
+                    Globals::status->getCurrentCampaignMission() >= 148 &&
+                    Globals::status->getCurrentCampaignMission() <= 150 && stationIndex == 96) {
                     Globals::status->setCurrentCampaignMission(151);
                     this->dialogueWindow = new DialogueWindow();
                     this->dialogueMission = completed;
@@ -2688,8 +2298,9 @@ void ModStation::OnUpdate() {
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())
                     ->setStatusValue(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
                                      visitBit);
-                int textId = Globals::status->getStation()->getIndex() == 66 ? 149 : 148;
-                if (Globals::status->getStation()->getIndex() == 9) {
+                int here = Globals::status->getStation()->getIndex();
+                int textId = here == 66 ? 149 : 148;
+                if (here == 9) {
                     textId = 150;
                 }
                 this->dialogueWindow = new DialogueWindow();
@@ -2703,8 +2314,8 @@ void ModStation::OnUpdate() {
         }
 
         if (reachedBeacon) {
-            int beacon = Globals::status->getStation()->getIndex() == 94 ? 3
-                                                                         : Globals::status->getStation()->getIndex() - 90;
+            int beaconStation = Globals::status->getStation()->getIndex();
+            int beacon = beaconStation == 94 ? 3 : beaconStation - 90;
             Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
             bool firstVoice = beacon == 0 || beacon == 2;
             int textId = 2716 + beacon;
@@ -3104,7 +2715,7 @@ void ModStation::OnRender3D() {
         return;
     Globals::Canvas->ClearBuffer(0);
 
-    uint8_t *p65 = &this->flag_0x65;
+    bool *p65 = &this->flag_0x65;
     if (this->cutScene == 0 || this->flag_0x66 != 0 || this->flag_0x64 != 0 ||
         this->flag_0x68 != 0 || this->flag_0x67 != 0 || *p65 != 0 ||
         this->flag_0x62 != 0) {

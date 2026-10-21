@@ -16,7 +16,7 @@ namespace AbyssEngine {
 
             float &operator[](int i);
 
-            float operator[](int i) const;
+            const float &operator[](int i) const;
 
             Vector &operator=(const Vector &o);
 

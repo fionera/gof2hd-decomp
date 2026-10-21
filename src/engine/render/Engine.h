@@ -360,7 +360,6 @@ namespace AbyssEngine {
 
         void Vibrate(unsigned short duration);
 
-        void VibrateSupported();
 
         void SetUVMatrix(const AbyssEngine::AEMath::Matrix &matrix);
 
@@ -419,7 +418,7 @@ namespace AbyssEngine {
         static unsigned char TVEnable;
         static float farPlane;
         static AbyssEngine::String renderer;
-        static AbyssEngine::AEMath::Vector tv_modes;
+        static ::Array<int> tv_modes;
         static unsigned char WireFrame;
         static float nearPlane;
     };
