@@ -17,17 +17,6 @@
 #include "game/ship/Ship.h"
 
 static int **g_campaignSentinel = nullptr;
-static Status *g_incKillsHook = nullptr;
-static Status *g_incPirateKillsHook = nullptr;
-
-static void incKills_notify(Status * arg);
-
-static void incPirateKills_notify(Status * arg);
-
-static void incKills_notify(Status *arg) { (void) arg; }
-
-static void incPirateKills_notify(Status *arg) { (void) arg; }
-
 struct FileRead {
     FileRead();
 
@@ -271,7 +260,7 @@ int Status::getCapturedCrates() { return capturedCrates; }
 
 void Status::incKills() {
     kills = kills + 1;
-    return incKills_notify(g_incKillsHook);
+    Globals::achievements->incKills();
 }
 
 int Status::getStationsVisited() { return stationsVisited; }
@@ -340,7 +329,7 @@ int Status::wantedBoardAccessible() {
 
 void Status::incPirateKills() {
     pirateKills = pirateKills + 1;
-    return incPirateKills_notify(g_incPirateKillsHook);
+    Globals::achievements->incPirateKills();
 }
 
 void Status::setGoodsProduced(int v) { goodsProduced = v; }

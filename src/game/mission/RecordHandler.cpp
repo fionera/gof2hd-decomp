@@ -393,14 +393,12 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     AEFile::Read(reinterpret_cast<int32_t &>(reqMission), fd);
     AEFile::Read(reinterpret_cast<int32_t &>(numWingmen), fd);
 
-    Wanted *w = new Wanted(idx, name, board, race, male, ship, weapon, hp, loot,
+    Wanted *w = new Wanted(idx, String(name, false), board, race, male, ship, weapon, hp, loot,
                            lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = new int[5];
-    int *p = parts;
-    for (unsigned i = 0; i < 5; i++) {
-        AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-        p++;
+    for (int i = 0; i < 5; i++) {
+        AEFile::Read(reinterpret_cast<int32_t &>(parts[i]), fd);
     }
     w->setImageParts(parts);
     w->setActive(active);
@@ -1770,9 +1768,9 @@ static int g_RSR_modVersion = 0;
 
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     String tmp(this->optionsPath, false);
-    unsigned int fd;
     int sz;
     if (AEFile::FileExist(tmp) != 0) {
+        unsigned int fd;
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *buf = new signed char[sz | (sz >> 31)];
