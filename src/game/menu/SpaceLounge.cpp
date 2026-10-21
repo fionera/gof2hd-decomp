@@ -719,147 +719,150 @@ static inline TouchButton *button_at(SpaceLounge *self, unsigned i) {
 }
 
 void SpaceLounge::drawLounge() {
-    String s0, s1, s2, s3, s4, s5, s6;
-
-    PaintCanvas **canvasSlot = SpaceLounge_lounge_canvas_slot;
-    PaintCanvas *canvas = *canvasSlot;
-    Layout **layoutSlot = SpaceLounge_lounge_layout_slot;
-    Layout *layout = *layoutSlot;
-    ImageFactory **factorySlot = SpaceLounge_lounge_image_factory_slot;
-    ImageFactory *factory = *factorySlot;
-
-    if (this->mode == 0) {
-        int hover = this->hoverAgent;
-        if (hover >= 0) {
-            Agent *agent = (*this->agents)[hover];
-            Array<Vector *> *rects = this->agentRects;
-            float *left = (float *) (*rects)[hover * 2];
-            float *right = (float *) (*rects)[hover * 2 + 1];
-            int pad = layoutMetric(layout, 0x94);
-            int cx = (int) (left[0] + (right[0] - left[0]) * 0.5f);
-            int y = (int) (right[1] - (float) (pad * 2));
-
-            canvas->SetColor((unsigned int) (long) canvas);
-            if (agent->isKnown() != 0 || agent->isStoryAgent() != 0) {
-                s0 = agent->getName();
-            } else {
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                String *text = (*texts)->getText(agent->getRace() + 0x196);
-                s0.Set(text->data);
-            }
-
-            Mission *mission = agent->getMission();
-            if (mission != 0) {
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                String *text = (*texts)->getText(mission->getType() + 0x162);
-                s1.Set(text->data);
-            } else {
-                int offer = agent->getOffer();
-                GameText **texts = SpaceLounge_lounge_text_slot;
-                int id = 0;
-                if (offer == 6) {
-                    id = 0x132;
-                } else if (offer == 2) {
-                    id = 0x131;
-                } else if (offer == 7) {
-                    id = 0x130;
-                }
-                if (id != 0) {
-                    s1.Set((*texts)->getText(id)->data);
-                } else {
-                    s1 = "";
-                }
-            }
-
-            String *font = *SpaceLounge_lounge_font_slot;
-            int textWidth = canvas->GetTextWidth((unsigned int) (long) canvas, *font);
-            int boxX = cx - pad;
-            int boxY = y - pad;
-            int width = pad * 2 + textWidth;
-            s2 = "";
-            layout->drawBox(2, boxX, boxY, width, layout->field_0x30_rowHeight, s2, 1u);
-            canvas->DrawRectangle(boxX, boxY, width, layout->field_0x30_rowHeight);
-
-            s3 = agent->isKnown() == 0 ? "?" : "";
-            s4 = s3 + s0;
-            canvas->DrawString((unsigned int) (long) font, s4, cx, y + layoutMetric(layout, 0x2c0),
-                               false);
-
-            if (agent->isKnown() != 0) {
-                s5 = " ";
-                s6 = s5 + s0;
-                int nameWidth = canvas->GetTextWidth((unsigned int) (long) canvas, *font);
-                canvas->DrawString((unsigned int) (long) font, s1, cx + nameWidth,
-                                   y + layoutMetric(layout, 0x2c0), false);
-            }
+    if (this->mode != 0) {
+        // Conversation: portrait panel + answer buttons.
+        Globals::Canvas->SetColor(0xffffffffu);
+        Layout *layout = Globals::layout;
+        layout->drawBox(2, this->panelX, this->panelY, layout->field_0x68, layout->field_0x6c, String(""));
+        Globals::Canvas->SetColor(0x193043ffu);
+        Globals::Canvas->DrawRectangle(this->panelX, this->panelY, Globals::layout->field_0x68,
+                                       Globals::layout->field_0x6c);
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::imageFactory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
+                                        Globals::layout->field_0x4c + this->panelX,
+                                        Globals::layout->field_0x4c + this->panelY, false);
+        this->scrollWindow->draw();
+        if ((this->mode & ~1) != 2) {
+            return;
         }
-        return;
-    }
 
-    canvas->SetColor((unsigned int) (long) canvas);
-    s0 = "";
-    layout->drawBox(2, this->panelX, this->panelY, layoutMetric(layout, 0x68), layoutMetric(layout, 0x6c), s0, 1u);
-    canvas->DrawRectangle(this->panelX, this->panelY, layoutMetric(layout, 0x68),
-                          layoutMetric(layout, 0x6c));
-    factory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
-                      layout->field_0x4c + this->panelX, layout->field_0x4c + this->panelY, false);
-    this->scrollWindow->draw();
-
-    if ((this->mode & 0xfffffffe) != 2) {
-        return;
-    }
-
-    button_at(this, 0)->setTextColor(-1);
-    int offer = ((*this->agents)[this->selectedAgent])->getOffer();
-    if (this->mode == 2) {
-        button_at(this, 0)->setPosition(this->buttonX, this->buttonY0);
-        button_at(this, 1)->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
-        this->visibleButtonCount = 0;
-        if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            this->visibleButtonCount = 3;
-        } else if (offer == 1) {
-            this->visibleButtonCount = 1;
-            button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
+        (*this->buttons)[0]->setTextColor(0xed00ff);
+        int offer = (*this->agents)[this->selectedAgent]->getOffer();
+        if (this->mode == 2) {
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY0);
+            (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 18);
+            this->visibleButtonCount = 0;
+            if (offer <= 10 && ((1 << offer) & 0x60c) != 0) {
+                this->visibleButtonCount = 3;
+            } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission() != 0 &&
+                       (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                       (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+                this->visibleButtonCount = this->singleOffer == 0 ? 4 : 1;
+                if (this->singleOffer != 0) {
+                    (*this->buttons)[0]->setTextColor(-1);
+                    (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+                }
+            } else if (offer == 1) {
+                this->visibleButtonCount = 1;
+                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+            } else {
+                this->visibleButtonCount = 2;
+                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+                (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 18);
+            }
         } else {
-            this->visibleButtonCount = 2;
-            button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
-            button_at(this, 1)->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
+            this->visibleButtonCount = 1;
+            (*this->buttons)[0]->setTextColor(-1);
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
         }
+
+        for (unsigned int i = 0; i < this->buttons->size(); i++) {
+            (*this->buttons)[i]->setVisible(false);
+        }
+        layout = Globals::layout;
+        int inset = layout->field_0x4c * 2;
+        int boxHeight = layout->field_0x2d8;
+        if (this->visibleButtonCount > 2) {
+            int stacked = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) +
+                          layout->field_0x34 * (this->visibleButtonCount - 2);
+            boxHeight = boxHeight > stacked ? boxHeight : stacked;
+        }
+        layout->drawBox(2, this->panelX, this->buttonPanelY, layout->field_0x68, inset + boxHeight, String(""));
+        Globals::Canvas->SetColor(0x193043ffu);
+        Globals::Canvas->DrawRectangle(this->panelX, this->buttonPanelY, Globals::layout->field_0x68, inset + boxHeight);
+        Globals::Canvas->SetColor(0xffffffffu);
+        Globals::imageFactory->drawChar(this->agentImageParts, Globals::layout->field_0x4c + this->panelX,
+                                        this->buttonPanelY + Globals::layout->field_0x4c, true);
+
+        if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
+            (*this->buttons)[0]->setVisible(true);
+            (*this->buttons)[0]->draw();
+            return;
+        }
+        (*this->buttons)[0]->setVisible(true);
+        (*this->buttons)[1]->setVisible(true);
+        (*this->buttons)[0]->draw();
+        (*this->buttons)[1]->draw();
+        if (offer > 10) {
+            return;
+        }
+        if (((1 << offer) & 0x60c) != 0) {
+            (*this->buttons)[2]->setVisible(true);
+            (*this->buttons)[2]->draw();
+        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+            (*this->buttons)[3]->setVisible(true);
+            (*this->buttons)[4]->setVisible(true);
+            (*this->buttons)[3]->draw();
+            (*this->buttons)[4]->draw();
+        }
+        return;
+    }
+
+    // Lounge overview: name plate above the hovered agent.
+    if (this->hoverAgent < 0) {
+        return;
+    }
+    Agent *agent = (*this->agents)[this->hoverAgent];
+    Vector *left = (*this->agentRects)[this->hoverAgent * 2];
+    Vector *right = (*this->agentRects)[this->hoverAgent * 2 + 1];
+    int pad = Globals::layout->field_0x94;
+    Globals::Canvas->SetColor(0xffffffffu);
+    int centerX = (int) (left->x + (right->x - left->x) * 0.5f);
+    int top = (int) (right->y - (float) (pad * 2));
+
+    String name = agent->isKnown() || agent->isStoryAgent()
+                          ? agent->getName()
+                          : String(*Globals::gameText->getText(agent->getRace() + 406), false);
+    String role;
+    if (agent->getMission() != 0) {
+        role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
+    } else if (agent->getOffer() == 6) {
+        role = String(*Globals::gameText->getText(306), false);
+    } else if (agent->getOffer() == 2) {
+        role = String(*Globals::gameText->getText(305), false);
+    } else if (agent->getOffer() == 7) {
+        role = String(*Globals::gameText->getText(884), false);
     } else {
-        this->visibleButtonCount = 1;
-        button_at(this, 0)->setTextColor(-1);
-        button_at(this, 0)->setPosition(this->buttonX, this->buttonY1);
+        role = String("");
     }
 
-    for (unsigned i = 0; i < this->buttons->size(); ++i) {
-        button_at(this, i)->setVisible(false);
+    int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
+    if (agent->isKnown()) {
+        width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
     }
-
-    int buttonHeight = layout->field_0x2d8;
-    if (this->visibleButtonCount > 2) {
-        int needed = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) + layout->field_0x34 * (
-                         this->visibleButtonCount - 2);
-        if (needed > buttonHeight) {
-            buttonHeight = needed;
-        }
+    Layout *layout = Globals::layout;
+    int x = centerX;
+    if (x - pad < layout->buttonInsetX) {
+        x = layout->buttonInsetX + pad;
+    } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
+        x = Globals::w - layout->buttonInsetX - (width + pad * 2);
     }
-    int panelHeight = layout->field_0x4c * 2 + buttonHeight;
-    s0 = "";
-    layout->drawBox(2, this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight, s0, 1u);
-    canvas->DrawRectangle(this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight);
-    factory->drawChar(this->agentImageParts, layout->field_0x4c + this->panelX,
-                      this->buttonPanelY + layout->field_0x4c, true);
-
-    button_at(this, 0)->setVisible(true);
-    if (!(offer == 1 || this->singleOffer != 0 || this->mode == 3)) {
-        button_at(this, 1)->setVisible(true);
-        button_at(this, 0)->draw();
-        button_at(this, 1)->draw();
-        if (offer <= 10 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            button_at(this, 2)->setVisible(true);
-        }
+    int lineHeight = layout->field_0x30_rowHeight;
+    layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
+    Globals::Canvas->SetColor(0x193043ffu);
+    Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                name + (agent->isKnown() ? String("  ") : String("")), x,
+                                top + Globals::layout->field_0x2c0, false);
+    if (agent->isKnown()) {
+        Globals::Canvas->SetColor(0xff8000ffu);
+        Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, role,
+                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name + String("  ")) + x,
+                top + Globals::layout->field_0x2c0, false);
     }
-    button_at(this, 0)->draw();
 }
 
 // Lounge camera fly-in per lounge race: start/end translations and Y rotations.
