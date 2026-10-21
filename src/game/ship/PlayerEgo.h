@@ -231,7 +231,7 @@ public:
     int maneuverType;
     AbyssEngine::AEMath::Vector strafeTargetVec;
     AbyssEngine::AEMath::Vector facingVec;
-    SpacePoint *navPoint;
+    int maneuverTimer;
     // ASM: setAutoTurret writes autoTurretEnabled at [this,#853]=0x355, dockedFlag readers load @0x356.
     // The @0x354 slot is a distinct field; autoTurretEnabled is @0x355 and dockedFlag @0x356.
     uint8_t field_0x354;
