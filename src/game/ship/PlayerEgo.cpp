@@ -1,5 +1,6 @@
 #include "game/ship/PlayerEgo.h"
 #include "engine/render/Camera.h"
+#include "engine/render/MovingStars.h"
 #include "engine/core/AERandom.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "engine/render/PaintCanvas.h"
@@ -217,7 +218,6 @@ void *TractorBeam_new(void *geo, int kind); // lint: void_ptr (fn-ptr slot; para
 
 static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
-void *MovingStars_ctor(void *self); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayerEgo::setVisible(bool v) {
     this->visible = v;
@@ -1555,36 +1555,283 @@ void PlayerEgo::throttleChanged() {
 }
 
 PlayerEgo::PlayerEgo(Player *player) {
-    this->rollMatrix = AbyssEngine::AEMath::Matrix();
-    this->turretHudMatrix = AbyssEngine::AEMath::Matrix();
+    this->field_0x4 = nullptr;
+    this->geometry = nullptr;
+    this->field_0x14 = nullptr;
+    this->radioRef = nullptr;
+    this->freeze = 0;
+    this->inWormhole = 0;
+    this->turretGeometry = nullptr;
+    this->turretRoot = nullptr;
+    this->turretExtraGeo = nullptr;
+    this->shieldGeometry = nullptr;
+    this->shieldVisible = 0;
+    this->rocketPitch = 0;
+    this->rocketYaw = 0;
+    this->targetFollowCamera = 0;
+    this->explosion = nullptr;
+    this->explosion2 = nullptr;
+    for (int i = 0; i < 6; i++)
+        this->field_0x94[i] = 0;
+    this->field_0xac = 0;
+    this->field_0xb0 = 0;
+    this->switchToStandardCam = 0;
+    this->field_0xb2 = 0;
+    this->engineSoundId = -1;
+    this->boostSpeed = 5;
+    this->boostTime = 5000;
+    this->boostDelay = 20000;
+    this->field_0xd8 = -1;
+    this->turretBaseGeo = nullptr;
+    this->rotX = 0;
+    this->rotY = 0;
+    this->rotZ = 0;
+    this->waypointX = 0;
+    this->waypointY = 0;
+    this->waypointZ = 0;
+    this->movingStars = 0;
+    this->route = 0;
+    this->pitchAccumDir = 0;
+    this->yawAccumDir = 0;
+    this->field_0x108 = 0;
+    this->currentSecondaryWeaponIndex = -1;
+    this->yawAccumulator = 0;
+    this->shieldRegenTick = 0;
+    this->repairHPTick = 0;
+    this->repairArmorTick = 0;
+    this->lastHP = 0;
+    this->shakeIntensity = 0;
+    this->boostTimer = 0;
+    this->boostingFlag = 0;
+    this->field_0x140 = 0;
+    this->collide = 0;
+    this->field_0x145 = 0;
+    this->field_0x146 = 0;
+    this->dockOffsetVec = Vector{0.0f, 0.0f, 0.0f};
+    this->handling = 0;
+    this->autoPilot = 0;
+    this->autoPilotTarget = 0;
+    this->goingToWaypointFlag = 0;
+    this->headingVec = Vector{0.0f, 0.0f, 0.0f};
+    this->turretMode = 0;
+    this->turretCamera = 0xffffffff;
+    this->dockCameraNode = nullptr;
+    this->dockCameraLeaf = nullptr;
+    this->autoTurretEquipped = 0;
+    this->autoTurretTimer = 0;
+    this->autoTurretFireTimer = 0;
+    this->autoTurretTarget = nullptr;
+    this->autoTurretPrevTarget = nullptr;
+    this->rocketControlGun = 0;
+    this->rocketBanking = 0;
+    this->dockCameraMid = nullptr;
+    this->turretActive = false;
+    this->field_0x1a1 = 0;
+    this->lookPitch = 0;
+    this->lookYaw = 0;
+    this->cloaked = 0;
+    this->chargingCloak = 0;
+    this->cloak = nullptr;
+    this->tractorBeam = nullptr;
+    this->repairBeams = nullptr;
+    this->asteroidTarget = 0;
+    this->dockingState = 0;
+    this->dockingPointIndex = 0;
+    this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
+    this->field_0x1d4 = 0;
+    this->dockScaling = 0;
+    this->miningSettleTimer = 0;
+    this->dockStation = nullptr;
+    this->miningGame = 0;
+    this->hackingGame = 0;
+    this->dockingToStream = 0;
+    this->dockedToStream = 0;
+    this->dockingToPlanet = 0;
+    this->planetDockTimer = 0;
+    this->computerControlled = 0;
+    this->turretPitch = 0;
+    this->driveCharge = 0;
+    this->driveChargeMax = 0;
+    this->chargingDrive = 0;
+    this->cloakCharge = 0;
+    this->cloakRechargeTimer = 0;
+    this->cloakChargeMax = 0;
+    this->cloakDischargeMax = 0;
+    this->shieldRegenRate = 0;
+    this->field_0x21c = 0;
+    this->hud = 0;
+    this->turretOffsetVec = Vector{0.0f, 0.0f, 0.0f};
+    this->field_0x230 = 0;
+    this->collidesWithStationFlag = 0;
+    this->shakeAccum = 0;
+    this->agility = 0;
+    this->pitchRamp = 0;
+    this->yawRamp = 0;
+    this->field_0x260 = 0;
+    this->field_0x264 = 0;
+    this->rollAccum = 0;
+    this->field_0x26c = 0;
+    this->yawAccumD = 0;
+    this->field_0x274 = 0;
+    this->pitchAccumD = 0;
+    this->yawAccumF = 0;
+    this->rollDirection = 0;
+    this->rotateX = 0;
+    this->rotateY = 0;
+    this->rotateZ = 0;
+    this->field_0x2f5 = 0;
+    this->explosionTimer = 0;
+    this->smokeSystem = -1;
+    this->explosionSmoke = -1;
+    this->field_0x308 = 0;
+    this->field_0x309 = 1;
+    this->field_0x30a = 0;
+    this->emergencySystemTimer = 0;
+    this->emergencyVal1 = 0;
+    this->emergencyVec = Vector{0.0f, 0.0f, 0.0f};
+    this->autoLevel = 0;
+    this->field_0x32d = 0;
+    this->visible = 1;
+    this->exhaustVisible = 1;
+    this->aboutToReachAutoTargetFlag = 0;
+    this->maneuverType = 0;
+    this->strafeTargetVec = Vector{0.0f, 0.0f, 0.0f};
+    this->facingVec = Vector{0.0f, 0.0f, 0.0f};
+    this->navPoint = nullptr;
+    this->autoTurretEnabled = 1;
+    this->dockedFlag = 0;
+    this->field_0x399 = 0;
+    this->throttleStarted = 0;
+    this->throttle = 2000;
+    this->strafeAccel = 0;
+    ((float &) this->strafeNavPoint) = 0.1f;
+    this->field_0x384 = 0;
 
     this->player = player;
     player->setPlayShootSound(true, 2);
+    this->field_0x108 = 1;
+    this->movingStars = (int) (intptr_t) new MovingStars();
+    this->lastHP = player->getCombinedHP();
+    ((float &) this->speed) = 2.0f;
+    this->thrust = 1.0f;
+    this->boostDelay = Globals::status->getShip()->getBoostDelay();
+    this->boostSpeed = (int) ((float) Globals::status->getShip()->getBoostSpeed() / 100.0f * 2.0f) + 2;
+    this->boostTime = Globals::status->getShip()->getBoostTime();
+    this->field_0x146 = this->boostDelay > 0;
 
-    Ship *ship = (Ship *) PE_status()->getShip();
-    this->boostTimer = 0;
-    this->boostingFlag = 0;
-    if (ship != 0) {
-        this->boostDelay = ship->getBoostDelay();
-        this->handling = ship->getBoostTime();
-        this->boostSpeed = ship->getBoostSpeed();
-        this->field_0xb0 = ship->getHandling();
+    Item *booster = Globals::status->getShip()->getFirstEquipmentOfSort(14);
+    if (booster != nullptr) {
+        switch (booster->getIndex()) {
+            case 71: this->boostSoundId = 38; break;
+            case 72: this->boostSoundId = 39; break;
+            case 73: this->boostSoundId = 40; break;
+            case 74: this->boostSoundId = 41; break;
+            case 195: this->boostSoundId = 1102; break;
+        }
+        Globals::globals->addSoundResourceToList(this->boostSoundId);
     }
 
-    ((int &) this->explosion) = 0;
-    ((int &) this->explosion2) = 0;
-    this->autoTurretEnabled = 0;
-    this->dockedFlag = 0;
-    this->miningGame = 0;
-    this->hackingGame = 0;
-    this->visible = 1;
-    this->field_0x309 = 1;
-    this->exhaustVisible = 1;
-    this->dockingPointIndex = -1;
+    this->handling = Globals::status->getShip()->getHandling();
+    if (Globals::status->getShip()->getIndex() == 42)
+        this->field_0x1c = 1104;
+    else if (Globals::status->getShip()->getIndex() == 43)
+        this->field_0x1c = 1106;
+    else if (Globals::status->getShip()->getIndex() == 40)
+        this->field_0x1c = 1107;
+    else if (this->handling >= 1.4f)
+        this->field_0x1c = 45;
+    else if (this->handling >= 1.15f)
+        this->field_0x1c = 44;
+    else if (this->handling < 0.95f)
+        this->field_0x1c = 42;
+    else
+        this->field_0x1c = 43;
+    Globals::globals->addSoundResourceToList(this->field_0x1c);
 
-    unsigned char *stars = (unsigned char *) ::operator new(0x1c);
-    MovingStars_ctor(stars);
-    this->dockCameraNode = (AEGeometry *) stars;
+    this->agility = (float) Globals::status->getShip()->getAgility();
+    this->handling = (this->handling + this->handling * (this->agility / 100.0f)) * 20.0f;
+    this->hardCoreMode = Globals::status->hardCoreMode();
+    this->cloakMaterial1 = 0xffffffff;
+    this->shieldRegenRate = (float) Globals::status->getShip()->getMaxShieldHP()
+                            / ((float) Globals::status->getShip()->getShieldRegen() / 100.0f);
+
+    if (Globals::status->getShip()->hasCloakIntegrated())
+        this->cloak = (*Globals::items)[95];
+    else
+        this->cloak = Globals::status->getShip()->getFirstEquipmentOfSort(21);
+    this->cloakCharge = -1;
+    this->cloakChargeMax = this->cloak != nullptr ? this->cloak->getAttribute(35) : 0;
+    this->cloakDischargeMax = this->cloak != nullptr ? this->cloak->getAttribute(36) : 0;
+    if (this->cloak != nullptr)
+        Globals::globals->addSoundResourceToList(30);
+
+    Item *jumpDrive = Globals::status->getShip()->getFirstEquipmentOfSort(18);
+    if (jumpDrive != nullptr) {
+        this->driveChargeMax = jumpDrive->getAttribute(37);
+        Globals::globals->addSoundResourceToList(32);
+        Globals::globals->addSoundResourceToList(33);
+    } else {
+        this->driveChargeMax = 0;
+        if (Globals::status->getShip()->hasJumpDriveIntegrated())
+            this->driveChargeMax = (*Globals::items)[85]->getAttribute(37);
+    }
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(19) != nullptr) {
+        Globals::globals->addSoundResourceToList(1);
+        Globals::globals->addSoundResourceToList(3);
+        Globals::globals->addSoundResourceToList(2);
+    }
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(9) != nullptr)
+        Globals::globals->addSoundResourceToList(25);
+    if (Globals::status->getShip()->getFirstEquipmentOfSort(10) != nullptr)
+        Globals::globals->addSoundResourceToList(23);
+    this->volatileGoods = Globals::status->getShip()->hasVolatileGoods();
+    this->freeCargoSpace = Globals::status->getShip()->getFreeSpace();
+    this->field_0x39a = Globals::status->getShip()->getFirstEquipmentOfSort(43) != nullptr;
+
+    Globals::Canvas->Image2DCreate(1216, (unsigned int &) this->dockArrowImage);
+    Globals::Canvas->Image2DCreate(1230, (unsigned int &) this->radarBlipImage1);
+    Globals::Canvas->Image2DCreate(8030, (unsigned int &) this->radarBlipImage2);
+    Globals::Canvas->Image2DCreate(8029, (unsigned int &) this->radarBlipImage3);
+    Globals::Canvas->Image2DCreate(1352, (unsigned int &) this->hpGaugeImage);
+    this->freeLookMode = 0;
+    this->field_0x354 = Globals::status->inBlackMarketSystem();
+    this->field_0x284 = this->handling * 750.0f / 63.0f * 1.2f;
+    this->field_0x288 = 15.139356f;
+    this->field_0x20 = 0;
+    for (int i = 0; i < 5; i++)
+        this->field_0x290[i] = 0;
+    this->field_0x2a4 = 0;
+    this->field_0x2a8 = 0;
+    this->hitShakeTimer = 0;
+    this->hitShake = 0;
+    this->field_0x84 = 1;
+    this->spacePoint = 0;
+    this->engineSoundId = -1;
+    this->lostMiningGameFlag = 0;
+    this->field_0x378 = Globals::mouseCursorActivated == 0;
+
+    float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
+    if (difficulty <= 0.0f)
+        this->cloakRechargeMax = 5000;
+    else if (difficulty <= 0.6f)
+        this->cloakRechargeMax = 7000;
+    else if (difficulty <= 1.1f)
+        this->cloakRechargeMax = 9000;
+    else
+        this->cloakRechargeMax = 12000;
+
+    if ((Globals::status->inSupernovaSystem() || Globals::status->inSupernovaOrbit())
+        && Globals::status->getShip()->getFirstEquipmentOfSort(38) != nullptr) {
+        this->engineSoundId = Globals::status->getShip()->getFirstEquipmentOfSort(38)->getIndex() == 205 ? 2261 : 2260;
+        this->shieldVisible = 1;
+        this->shieldGeometry = new AEGeometry(Globals::Canvas);
+        AEGeometry *outer = new AEGeometry((uint16_t) 18803, Globals::Canvas, false);
+        AEGeometry *inner = new AEGeometry((uint16_t) 18802, Globals::Canvas, false);
+        this->shieldGeometry->addChild(outer->transform);
+        delete outer;
+        this->shieldGeometry->addChild(inner->transform);
+        delete inner;
+    }
 }
 
 void PlayerEgo::PlayEngineSound() {

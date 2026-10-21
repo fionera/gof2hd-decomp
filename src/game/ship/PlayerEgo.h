@@ -67,12 +67,12 @@ public:
     AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
     float rocketPitch;                       // 0x7c (up/down in rocket control)
     float rocketYaw;                         // 0x80 (left/right in rocket control)
-    uint8_t _pad_0x84[4]; // original field_0x84 region (1-byte field + 3 pad)
+    uint8_t field_0x84;
     int targetFollowCamera;
 
     Explosion *explosion;
     Explosion *explosion2;
-    uint8_t _pad_0x94[24]; // missing fields between explosion2 and field_0xac (0x94..0xac)
+    int field_0x94[6];
     int field_0xac;
     uint8_t field_0xb0;
     uint8_t switchToStandardCam;
@@ -213,8 +213,9 @@ public:
     int currentSystem;
     int smokeSystem;
     int explosionSmoke;
-    uint8_t _pad_0x308[1]; // original field_0x308
+    uint8_t field_0x308;
     uint8_t field_0x309;
+    uint8_t field_0x30a;
     int emergencySystemTimer;
     int emergencyVal1;
     AbyssEngine::AEMath::Vector emergencyVec;
