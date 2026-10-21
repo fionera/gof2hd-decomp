@@ -149,9 +149,9 @@ public:
     Vector lightDirection;
     void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     uint32_t field_0x12c;
-    int camKeyX;
-    int camKeyY;
-    int camKeyZ;
+    float camKeyX;
+    float camKeyY;
+    float camKeyZ;
     AbyssEngine::EaseInOut *easeX;
     AbyssEngine::EaseInOut *easeY;
     AbyssEngine::EaseInOut *easeZ;

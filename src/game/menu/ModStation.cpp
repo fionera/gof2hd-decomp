@@ -108,9 +108,7 @@ static_assert(offsetof(SettingsBlock, dlc1WonShown) == 0x39, "");
 
 static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::sound->tryToStopMusicForBGMusic()); }
 
-void AEMath_MatrixSetTranslation(Matrix *m, int x, int y, int z);
 
-void AEMath_MatrixSetRotation(Matrix *m, Matrix *loc, int rx, int ry, int a4, int a5);
 
 
 void ModStation::autosave() {
@@ -1032,60 +1030,38 @@ epilogue:;
 
 static int **g_ModStation_ric_chk = 0;
 
-static int *g_ModStation_ric_rotX = 0;
-
-static int *g_ModStation_ric_rotY = 0;
+static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
+static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
 
 void ModStation::resetIdleCamForHangar() {
-    char matrix[60];
-
-    if (this->cutScene != 0)
-        ((CutScene *) (this->cutScene))->resetCamera();
-
-    if (this->easeX != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeX))->SetRange(
-            reinterpret_cast<float&>(this->camKeyX), reinterpret_cast<float&>(this->camKeyX));
+    if (this->cutScene != nullptr)
+        this->cutScene->resetCamera();
+    if (this->easeX != nullptr)
+        this->easeX->SetRange(this->camKeyX, this->camKeyX);
     else
-        this->easeX = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyX),
-                                                 reinterpret_cast<float&>(this->camKeyX));
-
-    if (this->easeY != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeY))->SetRange(
-            reinterpret_cast<float&>(this->camKeyY), reinterpret_cast<float&>(this->camKeyY));
+        this->easeX = new AbyssEngine::EaseInOut(this->camKeyX, this->camKeyX);
+    if (this->easeY != nullptr)
+        this->easeY->SetRange(this->camKeyY, this->camKeyY);
     else
-        this->easeY = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyY),
-                                                 reinterpret_cast<float&>(this->camKeyY));
-
-    if (this->easeZ != 0)
-        ((AbyssEngine::EaseInOut *) (this->easeZ))->SetRange(
-            reinterpret_cast<float&>(this->camKeyZ), reinterpret_cast<float&>(this->camKeyZ));
+        this->easeY = new AbyssEngine::EaseInOut(this->camKeyY, this->camKeyY);
+    if (this->easeZ != nullptr)
+        this->easeZ->SetRange(this->camKeyZ, this->camKeyZ);
     else
-        this->easeZ = new AbyssEngine::EaseInOut(reinterpret_cast<float&>(this->camKeyZ),
-                                                 reinterpret_cast<float&>(this->camKeyZ));
+        this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ, this->camKeyZ);
 
-    Globals::Canvas->CameraGetCurrent();
-    Matrix *loc = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
-
-    AEMath_MatrixSetTranslation((Matrix *) matrix, this->camKeyX, this->camKeyY,
-                                this->camKeyZ);
-
+    AbyssEngine::AEMath::MatrixSetTranslation(
+        *reinterpret_cast<Matrix *>(Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())),
+        this->camKeyX, this->camKeyY, this->camKeyZ);
     int race;
-    Station *st = Globals::status->getStation();
-    if (st->getIndex() == 0x65) {
+    if (Globals::status->getStation()->getIndex() == 101)
         race = 8;
-    } else {
-        st = Globals::status->getStation();
-        if (st->getIndex() == 100) {
-            race = 7;
-        } else {
-            race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
-        }
-    }
-
-    Globals::Canvas->CameraGetCurrent();
-    Matrix *loc2 = (Matrix *) Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
-    AEMath_MatrixSetRotation((Matrix *) matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
-    (void) loc;
+    else if (Globals::status->getStation()->getIndex() == 100)
+        race = 7;
+    else
+        race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+    AbyssEngine::AEMath::MatrixSetRotation(
+        *reinterpret_cast<Matrix *>(Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent())),
+        gHangarCamPitch[race], gHangarCamYaw[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
 }
 
 static int *g_ch_stack = 0;
@@ -1507,7 +1483,6 @@ int StarMap_OnTouchEnd_ote(int sm, int p1);
 
 int SpaceLounge_OnTouchEnd_ote(int l, int p1, int p2);
 
-int SpaceLounge_hangarNeedsUpdate_ote();
 
 void SpaceLounge_refresh_ote();
 
@@ -1527,7 +1502,6 @@ static inline void RecordHandler_saveOptions_ote(RecordHandler * rh) { rh->saveO
 
 void CutScene_replacePlayerShip_ote(int cs, int shipIndex);
 
-void CutScene_checkForTurret_ote(int cs);
 
 void ChoiceWindow_setFee_frag(ChoiceWindow *cw, int credits, int templateId);
 
@@ -2148,7 +2122,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 CutScene_replacePlayerShip_ote(cs, shipIndex);
             }
             if ((int) (intptr_t) this->cutScene != 0)
-                CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
+                this->cutScene->checkForTurret();
             int snd = *(int *) &Globals::sound;
             FModSound_stop_ote(snd);
             Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
@@ -2179,8 +2153,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             Globals::sound->setParamValue(0, snd, 0.0f);
             FModSound_stop_ote(snd);
             Globals::sound->play(0x7a, nullptr, nullptr, 0.0f);
-            CutScene_checkForTurret_ote((int) (intptr_t) this->cutScene);
-            if ((int) (intptr_t) this->spaceLounge != 0 && SpaceLounge_hangarNeedsUpdate_ote() != 0) {
+            this->cutScene->checkForTurret();
+            if ((int) (intptr_t) this->spaceLounge != 0 && this->spaceLounge->hangarNeedsUpdate() != 0) {
                 if (this->hangarWindow != 0) {
                     HangarWindow_dtor_ote((HangarWindow *) this->hangarWindow);
                     ::operator delete(this->hangarWindow);
@@ -3141,29 +3115,23 @@ static int *g_dlc_stack = 0;
 static inline void MenuTouchWindow_ctor_dlc(MenuTouchWindow *w, int kind) { new ((void*)w) MenuTouchWindow(kind); }
 
 void ModStation::showDlcMenu() {
-    MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
-    if (win == 0) {
-        win = (MenuTouchWindow *) ::operator new(0x240);
-        MenuTouchWindow_ctor_dlc(win, 2);
-        this->dlcMenu = win;
+    MenuTouchWindow *menu = this->dlcMenu;
+    if (menu == nullptr) {
+        menu = (MenuTouchWindow *) ::operator new(0x240);
+        MenuTouchWindow_ctor_dlc(menu, 2);
+        this->dlcMenu = menu;
     }
     this->flag_0x62 = 1;
-
-    int *bx = Globals::sub_menu_buttons_x;
-    int *by = Globals::sub_menu_buttons_y;
-    for (unsigned i = 0; i < win->buttons->size(); i = i + 1) {
+    for (unsigned i = 0; i < menu->buttons->size(); i++) {
         if (i < 10) {
-            AbyssEngine::AEMath::Vector pos;
-            pos = (*win->buttons)[i]->getPosition();
-            bx[i] = (int) pos.x;
-            pos = (*win->buttons)[i]->getPosition();
-            by[i] = (int) pos.y;
-            win = (MenuTouchWindow *) this->dlcMenu;
+            Globals::sub_menu_buttons_x[i] = (int) (*menu->buttons)[i]->getPosition().x;
+            Globals::sub_menu_buttons_y[i] = (int) (*this->dlcMenu->buttons)[i]->getPosition().y;
+            menu = this->dlcMenu;
         }
     }
-    Globals::sub_menu_button_count = win->buttons->size();
+    Globals::sub_menu_button_count = menu->buttons->size();
     this->flag_0x66 = 0;
-    win->callDlcMenu();
+    menu->callDlcMenu();
 }
 
 void ModStation::showCBSMessage() {
