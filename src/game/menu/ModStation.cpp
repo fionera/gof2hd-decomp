@@ -1263,8 +1263,8 @@ void ModStation::autosave() {
     rh->recordStoreWritePreview(0);
     delete rh;
     this->flag_0xb1 = 1;
-    if ((int) (intptr_t) this->dlcMenu != 0) {
-        this->dlcMenu->callDlcMenu();
+    if (this->dlcMenu != nullptr) {
+        this->dlcMenu->loadPreviewRecords();
     }
 }
 

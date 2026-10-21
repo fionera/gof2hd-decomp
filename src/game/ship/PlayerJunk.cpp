@@ -28,7 +28,7 @@ PlayerJunk::~PlayerJunk() {
 void PlayerJunk::reset() {
     KIPlayer::reset();
     this->state = 0;
-    this->setVisible(true);
+    this->setActive(true);
 }
 
 int PlayerJunk::collide(float x, float y, float z) {

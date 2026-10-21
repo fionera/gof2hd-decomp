@@ -1057,7 +1057,7 @@ void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
 }
 
 int PlayerEgo::getHullDamageRate() {
-    return ((Player *) this->player)->getArmorDamageRate();
+    return ((Player *) this->player)->getDamageRate();
 }
 
 int PlayerEgo::getShieldDamageRate() {

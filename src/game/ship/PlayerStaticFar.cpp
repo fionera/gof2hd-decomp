@@ -25,7 +25,7 @@ void PlayerStaticFar::setYRotation(int /*yRotation*/) {
 }
 
 void PlayerStaticFar::render() {
-    this->KIPlayer::render();
+    this->PlayerStatic::render();
 }
 
 void PlayerStaticFar::update(int /*delta*/) {

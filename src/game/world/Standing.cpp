@@ -79,7 +79,7 @@ int Standing::getStanding(int race) {
 }
 
 void Standing::applyMissionCompleted(int race) {
-    this->applyPoints(race, -5);
+    this->applyDelict(race, -5);
 }
 
 void Standing::setStanding(int race, int value) {
@@ -91,7 +91,7 @@ void Standing::setPlayerSignatureRace(int race) {
 }
 
 void Standing::applyStealCargo(int race) {
-    this->applyPoints(race, 2);
+    this->applyDelict(race, 2);
 }
 
 bool Standing::isEnemy(int race) {
@@ -152,7 +152,7 @@ void Standing::applyKill(int kind) {
     } else {
         delta = 5;
     }
-    this->applyPoints(kind, delta);
+    this->applyDelict(kind, delta);
 }
 
 bool Standing::isFriend(int race) {
@@ -194,7 +194,7 @@ float Standing::getMissionBonus(int race) {
 }
 
 void Standing::applyDisable(int race) {
-    this->applyPoints(race, 2);
+    this->applyDelict(race, 2);
 }
 
 void Standing::rehabilitate(int race) {
