@@ -5483,6 +5483,8 @@ Level::Level(int mission)
     flashColor[2] = 0;
     flashDurationA = 0;
     flashDurationB = 0;
+    field_18a = 0;
+    field_188 = 0;
     flashActive = 0;
     asteroidWaypoint = nullptr;
     field_dc = 0;
@@ -5518,8 +5520,6 @@ Level::Level(int mission)
     friendCount = 0;
     field_164 = 0;
     field_168 = 0;
-    field_18a = 0;
-    field_188 = 0;
     alarmRequested = 0;
     movingStarsIndex = -1;
     field_284 = -1;
