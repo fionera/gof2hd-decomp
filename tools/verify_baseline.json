@@ -1,7 +1,7 @@
 {
  "verify": {
   "byte_exact": 1314,
-  "linked_exact": 4078,
+  "linked_exact": 4081,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
@@ -10,7 +10,7 @@
   "compared": 4523
  },
  "data": {
-  "data_exact": 772,
+  "data_exact": 843,
   "data_common": 843
  },
  "imports": [
