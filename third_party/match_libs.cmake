@@ -25,13 +25,15 @@ set(_openssl_out "${_tp}/openssl/libcrypto_gof2.a")
 
 add_custom_command(OUTPUT "${_zlib_out}"
     COMMAND ${CMAKE_COMMAND} -DGOF2_LIB=zlib ${_match_lib_defs} -P ${_builder}
+    DEPENDS "${_builder}"
     COMMENT "Building vendored zlib 1.2.3 subset (armeabi-v7a)" VERBATIM)
 add_custom_command(OUTPUT "${_libzip_out}"
     COMMAND ${CMAKE_COMMAND} -DGOF2_LIB=libzip ${_match_lib_defs} -P ${_builder}
-    DEPENDS "${_zlib_out}"
+    DEPENDS "${_zlib_out}" "${_builder}"
     COMMENT "Building vendored libzip 0.9.3 subset (armeabi-v7a)" VERBATIM)
 add_custom_command(OUTPUT "${_openssl_out}"
     COMMAND ${CMAKE_COMMAND} -DGOF2_LIB=openssl ${_match_lib_defs} -P ${_builder}
+    DEPENDS "${_builder}"
     COMMENT "Building vendored libcrypto 1.1.0l subset (GCC 4.9) (armeabi-v7a)" VERBATIM)
 
 add_custom_target(gof2_libs DEPENDS "${_zlib_out}" "${_libzip_out}" "${_openssl_out}")
