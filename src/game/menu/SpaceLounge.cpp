@@ -1591,149 +1591,146 @@ void SpaceLounge::draw() {
 }
 
 void SpaceLounge::drawLounge() {
-    if (this->mode != 0) {
-        // Conversation: portrait panel + answer buttons.
-        Globals::Canvas->SetColor(0xffffffffu);
-        Layout *layout = Globals::layout;
-        layout->drawBox(2, this->panelX, this->panelY, layout->field_0x68, layout->field_0x6c, String(""));
-        Globals::Canvas->SetColor(0x193043ffu);
-        Globals::Canvas->DrawRectangle(this->panelX, this->panelY, Globals::layout->field_0x68,
-                                       Globals::layout->field_0x6c);
-        Globals::Canvas->SetColor(0xffffffffu);
-        Globals::imageFactory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
-                                        Globals::layout->field_0x4c + this->panelX,
-                                        Globals::layout->field_0x4c + this->panelY, false);
-        this->scrollWindow->draw();
-        if ((this->mode & ~1) != 2) {
+    if (this->mode == 0) {
+        // Lounge overview: name plate above the hovered agent.
+        if (this->hoverAgent < 0) {
             return;
         }
+        Agent *agent = (*this->agents)[this->hoverAgent];
+        Vector topLeft = *(*this->agentRects)[this->hoverAgent * 2];
+        Vector bottomRight = *(*this->agentRects)[this->hoverAgent * 2 + 1];
+        int pad = Globals::layout->field_0x94;
+        Globals::Canvas->SetColor(0xffffffffu);
+        int centerX = (int) (topLeft.x + (bottomRight.x - topLeft.x) * 0.5f);
+        int top = (int) (bottomRight.y - (float) (pad * 2));
 
-        (*this->buttons)[0]->setTextColor(0xed00ff);
-        int offer = (*this->agents)[this->selectedAgent]->getOffer();
-        if (this->mode == 2) {
-            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY0);
-            (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 18);
-            this->visibleButtonCount = 0;
-            if (offer <= 10 && ((1 << offer) & 0x60c) != 0) {
-                this->visibleButtonCount = 3;
-            } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission() != 0 &&
-                       (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
-                       (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
-                this->visibleButtonCount = this->singleOffer == 0 ? 4 : 1;
-                if (this->singleOffer != 0) {
-                    (*this->buttons)[0]->setTextColor(-1);
-                    (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
-                }
-            } else if (offer == 1) {
-                this->visibleButtonCount = 1;
-                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
-            } else {
-                this->visibleButtonCount = 2;
-                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
-                (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 18);
-            }
+        String name = agent->isKnown() || agent->isStoryAgent()
+                              ? agent->getName()
+                              : String(*Globals::gameText->getText(agent->getRace() + 406), false);
+        String role;
+        if (agent->getMission() != 0) {
+            role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
+        } else if (agent->getOffer() == 6) {
+            role = String(*Globals::gameText->getText(306), false);
+        } else if (agent->getOffer() == 2) {
+            role = String(*Globals::gameText->getText(305), false);
+        } else if (agent->getOffer() == 7) {
+            role = String(*Globals::gameText->getText(884), false);
         } else {
-            this->visibleButtonCount = 1;
-            (*this->buttons)[0]->setTextColor(-1);
-            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+            role = String("");
         }
 
-        for (unsigned int i = 0; i < this->buttons->size(); i++) {
-            (*this->buttons)[i]->setVisible(false);
+        int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
+        if (agent->isKnown()) {
+            width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
         }
-        layout = Globals::layout;
-        int inset = layout->field_0x4c * 2;
-        int boxHeight = layout->field_0x2d8;
-        if (this->visibleButtonCount > 2) {
-            int stacked = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) +
-                          layout->field_0x34 * (this->visibleButtonCount - 2);
-            boxHeight = boxHeight > stacked ? boxHeight : stacked;
+        Layout *layout = Globals::layout;
+        int x = centerX;
+        if (x - pad < layout->buttonInsetX) {
+            x = layout->buttonInsetX + pad;
+        } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
+            x = Globals::w - layout->buttonInsetX - (width + pad * 2);
         }
-        layout->drawBox(2, this->panelX, this->buttonPanelY, layout->field_0x68, inset + boxHeight, String(""));
+        int lineHeight = layout->field_0x30_rowHeight;
+        layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
         Globals::Canvas->SetColor(0x193043ffu);
-        Globals::Canvas->DrawRectangle(this->panelX, this->buttonPanelY, Globals::layout->field_0x68, inset + boxHeight);
+        Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
         Globals::Canvas->SetColor(0xffffffffu);
-        Globals::imageFactory->drawChar(this->agentImageParts, Globals::layout->field_0x4c + this->panelX,
-                                        this->buttonPanelY + Globals::layout->field_0x4c, true);
-
-        if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
-            (*this->buttons)[0]->setVisible(true);
-            (*this->buttons)[0]->draw();
-            return;
-        }
-        (*this->buttons)[0]->setVisible(true);
-        (*this->buttons)[1]->setVisible(true);
-        (*this->buttons)[0]->draw();
-        (*this->buttons)[1]->draw();
-        if (offer > 10) {
-            return;
-        }
-        if (((1 << offer) & 0x60c) != 0) {
-            (*this->buttons)[2]->setVisible(true);
-            (*this->buttons)[2]->draw();
-        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
-                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
-            (*this->buttons)[3]->setVisible(true);
-            (*this->buttons)[4]->setVisible(true);
-            (*this->buttons)[3]->draw();
-            (*this->buttons)[4]->draw();
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                    name + (agent->isKnown() ? String("  ") : String("")), x,
+                                    top + Globals::layout->field_0x2c0, false);
+        if (agent->isKnown()) {
+            Globals::Canvas->SetColor(0xff8000ffu);
+            Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font, role,
+                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name + String("  ")) + x,
+                    top + Globals::layout->field_0x2c0, false);
         }
         return;
     }
 
-    // Lounge overview: name plate above the hovered agent.
-    if (this->hoverAgent < 0) {
-        return;
-    }
-    Agent *agent = (*this->agents)[this->hoverAgent];
-    Vector *left = (*this->agentRects)[this->hoverAgent * 2];
-    Vector *right = (*this->agentRects)[this->hoverAgent * 2 + 1];
-    int pad = Globals::layout->field_0x94;
+    // Conversation: portrait panel + answer buttons.
     Globals::Canvas->SetColor(0xffffffffu);
-    int centerX = (int) (left->x + (right->x - left->x) * 0.5f);
-    int top = (int) (right->y - (float) (pad * 2));
-
-    String name = agent->isKnown() || agent->isStoryAgent()
-                          ? agent->getName()
-                          : String(*Globals::gameText->getText(agent->getRace() + 406), false);
-    String role;
-    if (agent->getMission() != 0) {
-        role = String(*Globals::gameText->getText(agent->getMission()->getType() + 354), false);
-    } else if (agent->getOffer() == 6) {
-        role = String(*Globals::gameText->getText(306), false);
-    } else if (agent->getOffer() == 2) {
-        role = String(*Globals::gameText->getText(305), false);
-    } else if (agent->getOffer() == 7) {
-        role = String(*Globals::gameText->getText(884), false);
-    } else {
-        role = String("");
-    }
-
-    int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
-    if (agent->isKnown()) {
-        width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
-    }
     Layout *layout = Globals::layout;
-    int x = centerX;
-    if (x - pad < layout->buttonInsetX) {
-        x = layout->buttonInsetX + pad;
-    } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
-        x = Globals::w - layout->buttonInsetX - (width + pad * 2);
-    }
-    int lineHeight = layout->field_0x30_rowHeight;
-    layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
+    layout->drawBox(2, this->panelX, this->panelY, layout->field_0x68, layout->field_0x6c, String(""));
     Globals::Canvas->SetColor(0x193043ffu);
-    Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
+    Globals::Canvas->DrawRectangle(this->panelX, this->panelY, Globals::layout->field_0x68,
+                                   Globals::layout->field_0x6c);
     Globals::Canvas->SetColor(0xffffffffu);
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
-                                name + (agent->isKnown() ? String("  ") : String("")), x,
-                                top + Globals::layout->field_0x2c0, false);
-    if (agent->isKnown()) {
-        Globals::Canvas->SetColor(0xff8000ffu);
-        Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) Globals::font, role,
-                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name + String("  ")) + x,
-                top + Globals::layout->field_0x2c0, false);
+    Globals::imageFactory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
+                                    Globals::layout->field_0x4c + this->panelX,
+                                    Globals::layout->field_0x4c + this->panelY, false);
+    this->scrollWindow->draw();
+    if ((this->mode & ~1) != 2) {
+        return;
+    }
+
+    (*this->buttons)[0]->setTextColor(0xed00ff);
+    int offer = (*this->agents)[this->selectedAgent]->getOffer();
+    if (this->mode == 2) {
+        (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY0);
+        (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 18);
+        this->visibleButtonCount = 0;
+        if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
+            this->visibleButtonCount = 3;
+        } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission() != 0 &&
+                   (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+                   (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+            this->visibleButtonCount = this->singleOffer == 0 ? 4 : 1;
+            if (this->singleOffer != 0) {
+                (*this->buttons)[0]->setTextColor(-1);
+                (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+            }
+        } else if (offer == 1) {
+            this->visibleButtonCount = 1;
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+        } else {
+            this->visibleButtonCount = 2;
+            (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+            (*this->buttons)[1]->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 18);
+        }
+    } else {
+        this->visibleButtonCount = 1;
+        (*this->buttons)[0]->setTextColor(-1);
+        (*this->buttons)[0]->setPosition(this->buttonX, this->buttonY1);
+    }
+
+    for (unsigned int i = 0; i < this->buttons->size(); i++) {
+        (*this->buttons)[i]->setVisible(false);
+    }
+    layout = Globals::layout;
+    int inset = layout->field_0x4c * 2;
+    int boxHeight = layout->field_0x2d8;
+    if (this->visibleButtonCount > 2) {
+        int stacked = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) +
+                      layout->field_0x34 * (this->visibleButtonCount - 2);
+        boxHeight = boxHeight > stacked ? boxHeight : stacked;
+    }
+    layout->drawBox(2, this->panelX, this->buttonPanelY, layout->field_0x68, inset + boxHeight, String(""));
+    Globals::Canvas->SetColor(0x193043ffu);
+    Globals::Canvas->DrawRectangle(this->panelX, this->buttonPanelY, Globals::layout->field_0x68, inset + boxHeight);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::imageFactory->drawChar(this->agentImageParts, Globals::layout->field_0x4c + this->panelX,
+                                    this->buttonPanelY + Globals::layout->field_0x4c, true);
+
+    if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
+        (*this->buttons)[0]->setVisible(true);
+        (*this->buttons)[0]->draw();
+        return;
+    }
+    (*this->buttons)[0]->setVisible(true);
+    (*this->buttons)[1]->setVisible(true);
+    (*this->buttons)[0]->draw();
+    (*this->buttons)[1]->draw();
+    if (offer == 2 || offer == 3 || offer == 9 || offer == 10) {
+        (*this->buttons)[2]->setVisible(true);
+        (*this->buttons)[2]->draw();
+    } else if (offer == 0 && (*this->agents)[this->selectedAgent]->getMission()->isOutsideMission() &&
+               (*this->agents)[this->selectedAgent]->getMission()->getType() != 12) {
+        (*this->buttons)[3]->setVisible(true);
+        (*this->buttons)[4]->setVisible(true);
+        (*this->buttons)[3]->draw();
+        (*this->buttons)[4]->draw();
     }
 }
 
