@@ -286,7 +286,7 @@ public:
 
     void alignToHorizon();
 
-    void approachAsteroid(Hud *hud, int hud2, Radar *radar);
+    int approachAsteroid(Hud *hud, int unused, Radar *radar);
 
     int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
 

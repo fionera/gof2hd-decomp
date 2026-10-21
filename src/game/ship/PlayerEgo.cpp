@@ -3493,56 +3493,105 @@ void PlayerEgo::handleTurretView(int dt) {
     Mat_assign(((Player *) this->player)->transform, tmp);
 }
 
-void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
-    (void) hud;
-    if (((KIPlayer *) (this))->isDying() != 0)
-        return;
-
+int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
+    if (((KIPlayer *) (intptr_t) this->asteroidTarget)->isDying())
+        return 0;
     if (this->dockingPointIndex == 1) {
-        float settle = ((float &) this->miningSettleTimer);
-        if (settle < g_PE_aa_settleEps) {
-            ((float &) this->miningSettleTimer) = settle + (float) (-(this->shakeIntensity) >> 1);
-            return;
+        if ((float &) this->miningSettleTimer > -1024.0f) {
+            (float &) this->miningSettleTimer += (float) (-this->shakeIntensity >> 1);
+            return 0;
         }
-
-        if (((intptr_t) this->miningGame) == 0) {
+        if (this->miningGame == 0) {
             this->field_0x2f5 = 0;
             this->lostMiningGameFlag = 0;
-            ((MiningHostObject *) *g_PE_aa_levelHolder)->miningActiveFlag = 0;
-            MiningGame *mg = new MiningGame(((PlayerAsteroid *) (((intptr_t) this->asteroidTarget)))->getQuality(),
-                                            ((PlayerAsteroid *) ((intptr_t) this->asteroidTarget))->asteroidIndex,
-                                            (Hud *) (unsigned long) hud2);
-            this->miningGame = (int) (intptr_t) mg;
-            ((PE_AsteroidMineTarget *) (intptr_t) this->asteroidTarget)->miningFlag = 0;
-
-            int snd = *g_PE_aa_mineSound;
-            ((FModSound *) (snd))->play(1, (Vector *) 0, (Vector *) 0, 0);
-            ((FModSound *) ((unsigned long) snd))->pause(0);
-            return;
+            Globals::hints[55] = 0;
+            PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
+            this->miningGame = (int) (intptr_t) new MiningGame(asteroid->getQuality(),
+                                                               ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->asteroidIndex,
+                                                               hud);
+            ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->player->radius = 0;
+            Globals::sound->play(1, nullptr, nullptr, 0.0f);
+            Globals::sound->pause(this->field_0x1c);
+            return 0;
         }
-
-        int running = ((MiningGame *) (((intptr_t) this->miningGame)))->update(this->shakeIntensity);
-        if (running == 0) {
-            if (((MiningGame *) (((intptr_t) this->miningGame)))->gameLost() == 0
-                && ((MiningGame *) (((intptr_t) this->miningGame)))->getOreAmount() > 0) {
-                ((PlayerEgo *) (this))->stopMining();
-            } else if (((MiningGame *) (((intptr_t) this->miningGame)))->gameLost() != 0) {
-                this->lostMiningGameFlag = 1;
-                ((MiningHostObject *) *g_PE_aa_winHolder1)->miningResultSlot = 0;
-                ((PlayerEgo *) (this))->stopMining();
-                ((Hud *) ((unsigned long) hud2))->hudEvent(8, this, 0);
+        if (((MiningGame *) (intptr_t) this->miningGame)->update(this->shakeIntensity)) {
+            if (((KIPlayer *) (intptr_t) this->asteroidTarget)->isDying()
+                || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
+                Globals::status->field_124 = 0;
+                this->stopMining();
+                hud->hudEvent(8, this, 0);
+                return 1;
             }
-        } else if (((KIPlayer *) (this))->isDying() != 0 || ((KIPlayer *) (this))->isDead() != 0) {
-            ((MiningHostObject *) *g_PE_aa_winHolder2)->miningResultSlot = 0;
-            ((PlayerEgo *) (this))->stopMining();
-            ((Hud *) ((unsigned long) hud2))->hudEvent(8, this, 0);
+            return 0;
         }
-        return;
+        if (!((MiningGame *) (intptr_t) this->miningGame)->gameLost()
+            && ((MiningGame *) (intptr_t) this->miningGame)->getOreAmount() >= 1) {
+            this->stopMining();
+            return 1;
+        }
+        if (((MiningGame *) (intptr_t) this->miningGame)->gameLost()) {
+            this->lostMiningGameFlag = 1;
+            Globals::status->field_124 = 0;
+            this->stopMining();
+            hud->hudEvent(8, this, 0);
+        }
+        return 1;
     }
+    if (this->dockingPointIndex != 0)
+        return 0;
 
-    if (this->dockingPointIndex == 0) {
-        this->dockingPointIndex = PE_aa_approachStep(this, hud2, radar);
+    if (this->turretActive)
+        this->setTurretMode(false);
+    *(Vector *) &this->waypointX = ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition();
+    *(Vector *) &this->waypointX -= this->geometry->getPosition();
+    int distance = (int) AbyssEngine::AEMath::VectorLength(*(Vector *) &this->waypointX);
+    if (this->dockScaling > distance) {
+        if (this->field_0x1d4) {
+            PlayerAsteroid *asteroid = (PlayerAsteroid *) (intptr_t) this->asteroidTarget;
+            if (asteroid->stealFlagByte)
+                asteroid->setRotationEnabled(false);
+            this->dockingPointIndex = 1;
+        }
+    } else {
+        Vector target = ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getPosition();
+        float speed = 4.0f;
+        if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
+            speed = Globals::status->getShip()->getHandling() + 2.7f;
+        this->moveToPosition(target, true, speed);
+        if ((int) AbyssEngine::AEMath::VectorLength(((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
+                                                    - this->getPosition()) <= 19999)
+            this->aboutToReachAutoTargetFlag = 1;
     }
+    if (this->dockScaling + 2000 > distance) {
+        this->thrust = 1.0f;
+        if (!this->field_0x2f5) {
+            this->setExhaustVisible(false);
+            Globals::sound->play(2, nullptr, nullptr, 0.0f);
+            this->boostTimer = this->boostTime - this->boostTime / 6;
+            ((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->setActive(false);
+            this->miningUpVec = this->field_0x4->getUpVector();
+            this->miningUpVec = AbyssEngine::AEMath::VectorNormalize(this->miningUpVec);
+            this->field_0x2f5 = 1;
+        }
+        Vector &heading = *(Vector *) &this->rotX;
+        heading = this->field_0x4->getDirection();
+        heading = AbyssEngine::AEMath::VectorNormalize(heading);
+        if (AbyssEngine::AEMath::ACosf(AbyssEngine::AEMath::VectorDot(heading, this->miningUpVec)) > 0.2f
+            && (float &) this->miningSettleTimer > -1024.0f) {
+            (float &) this->miningSettleTimer += (float) this->shakeIntensity * -0.35f;
+            Matrix pitch;
+            AbyssEngine::AEMath::MatrixSetRotation(pitch, (float &) this->miningSettleTimer * (1.0f / 65536.0f) * 6.2831855f,
+                                                   0.0f, 0.0f);
+            Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+            local *= pitch;
+            this->field_0x4->setMatrix(local);
+        } else {
+            this->field_0x1d4 = 1;
+            this->rolling = 0;
+            this->field_0x2f5 = 0;
+        }
+    }
+    return 0;
 }
 
 void PlayerEgo::handleShip(int dt) {
