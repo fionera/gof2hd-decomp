@@ -599,14 +599,7 @@ void StarSystem::render() {
                 Matrix m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
                 {
                     Vector target = (*this->positionsArray)[0] + cameraPos;
-                    Vector up;
-                    if (this->supernovaSystem) {
-                        up.x = 1.0f;
-                        up.y = 0.0f;
-                        up.z = 0.0f;
-                    } else {
-                        up = MatrixGetUp(m);
-                    }
+                    Vector up = this->supernovaSystem ? Vector(1.0f, 0.0f, 0.0f) : MatrixGetUp(m);
                     m = MatrixGetLookAt(target, cameraPos, up);
                 }
                 (*this->planetsArray)[0]->setRotation(0.0f, 0.0f, 0.0f);
@@ -667,11 +660,9 @@ void StarSystem::render2D() {
     if (this->lensFlare == nullptr)
         return;
 
-    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-    Vector pos;
-    pos.x = local->m[3] + this->lightDirection.x * 65536.0f;
-    pos.y = local->m[7] + this->lightDirection.y * 65536.0f;
-    pos.z = local->m[11] + this->lightDirection.z * 65536.0f;
+    Matrix local = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+    Vector pos(local.m[3] + this->lightDirection.x * 65536.0f, local.m[7] + this->lightDirection.y * 65536.0f,
+               local.m[11] + this->lightDirection.z * 65536.0f);
     this->lensFlare->update(0);
     if (Globals::Canvas->GetScreenPosition(pos, pos)) {
         this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
