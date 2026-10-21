@@ -758,6 +758,60 @@ String Globals::getAgentMissionText(Agent *agent) {
 
     if (agent->isGenericAgent()) {
         switch (agent->getOffer()) {
+            case 7: {
+                int race = agent->getRace();
+                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
+                    ->getStanding(race == 2 || race == 3 ? 1 : 0);
+                if (!((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
+                    text = *Globals::gameText->getText(883);
+                    return text;
+                }
+                int costs = (int) ((float) abs(standing) / 100.0f * 32000.0f);
+                text = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
+                text = Globals::status->replaceHash(String(text, false),
+                                                    String(Globals::layout->formatCredits(costs), false),
+                                                    String("#C", false));
+                break;
+            }
+            case 5:
+                if (agent->getMission() == nullptr) {
+                    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+                    agent->setMission(Globals::generator->createMission(agent, systems));
+                }
+                agent->field_0x28 = agent->field_0x28 == -1 ? 777 + Globals::rnd->nextInt(2) : agent->field_0x28;
+                text += *Globals::gameText->getText(agent->field_0x28);
+                text = Globals::status->replaceHash(
+                    String(text, false),
+                    String(String(agent->getMission()->getProductionGoodAmount()), false),
+                    String("#Q", false));
+                text = Globals::status->replaceHash(
+                    String(text, false),
+                    String(*Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), false),
+                    String("#P", false));
+                text = Globals::status->replaceHash(
+                    String(text, false),
+                    String(Globals::layout->formatCredits(agent->getMission()->getReward()), false),
+                    String("#C", false));
+                break;
+            case 1: {
+                agent->field_0x28 = agent->field_0x28 == -1 ? 824 : agent->field_0x28;
+                text = *Globals::gameText->getText(agent->field_0x28);
+                Globals::rnd->setSeed(agent->getName().size() * agent->getRace() +
+                                      Globals::status->getStation()->getIndex());
+                if ((int) text.IndexOf(String("#S")) >= 0) {
+                    text = Globals::status->replaceHash(String(text, false),
+                                                        String(Globals::getRandomPlanetName(), false),
+                                                        String("#S", false));
+                }
+                text = Globals::status->replaceHash(String(text, false), String(agent->getName(), false),
+                                                    String("#N", false));
+                text = Globals::status->replaceHash(
+                    String(text, false),
+                    String(*Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)), false),
+                    String("#ORE", false));
+                Globals::rnd->reset();
+                break;
+            }
             case 0: {
                 Mission *mission = agent->getMission();
                 if (mission == nullptr) {
@@ -819,25 +873,6 @@ String Globals::getAgentMissionText(Agent *agent) {
                 }
                 break;
             }
-            case 1: {
-                agent->field_0x28 = agent->field_0x28 == -1 ? 824 : agent->field_0x28;
-                text = *Globals::gameText->getText(agent->field_0x28);
-                Globals::rnd->setSeed(agent->getName().size() * agent->getRace() +
-                                      Globals::status->getStation()->getIndex());
-                if ((int) text.IndexOf(String("#S")) >= 0) {
-                    text = Globals::status->replaceHash(String(text, false),
-                                                        String(Globals::getRandomPlanetName(), false),
-                                                        String("#S", false));
-                }
-                text = Globals::status->replaceHash(String(text, false), String(agent->getName(), false),
-                                                    String("#N", false));
-                text = Globals::status->replaceHash(
-                    String(text, false),
-                    String(*Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)), false),
-                    String("#ORE", false));
-                Globals::rnd->reset();
-                break;
-            }
             case 2:
                 agent->field_0x28 = agent->field_0x28 == -1 ? 768 + Globals::rnd->nextInt(5) : agent->field_0x28;
                 text += *Globals::gameText->getText(agent->field_0x28);
@@ -863,26 +898,6 @@ String Globals::getAgentMissionText(Agent *agent) {
                         String("#C", false));
                 }
                 break;
-            case 5:
-                if (agent->getMission() == nullptr) {
-                    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
-                    agent->setMission(Globals::generator->createMission(agent, systems));
-                }
-                agent->field_0x28 = agent->field_0x28 == -1 ? 777 + Globals::rnd->nextInt(2) : agent->field_0x28;
-                text += *Globals::gameText->getText(agent->field_0x28);
-                text = Globals::status->replaceHash(
-                    String(text, false),
-                    String(String(agent->getMission()->getProductionGoodAmount()), false),
-                    String("#Q", false));
-                text = Globals::status->replaceHash(
-                    String(text, false),
-                    String(*Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), false),
-                    String("#P", false));
-                text = Globals::status->replaceHash(
-                    String(text, false),
-                    String(Globals::layout->formatCredits(agent->getMission()->getReward()), false),
-                    String("#C", false));
-                break;
             case 6:
                 text += *Globals::gameText->getText((Globals::achievements->gotAllMedals() ? 782 : 779) +
                                                     agent->getWingmanFriendsCount());
@@ -894,21 +909,6 @@ String Globals::getAgentMissionText(Agent *agent) {
                                                         String("#W", false));
                 }
                 break;
-            case 7: {
-                int race = agent->getRace();
-                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
-                    ->getStanding(race == 2 || race == 3 ? 1 : 0);
-                if (!((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
-                    text = *Globals::gameText->getText(883);
-                    return text;
-                }
-                int costs = (int) ((float) abs(standing) / 100.0f * 32000.0f);
-                text = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
-                text = Globals::status->replaceHash(String(text, false),
-                                                    String(Globals::layout->formatCredits(costs), false),
-                                                    String("#C", false));
-                break;
-            }
             default:
                 break;
         }
