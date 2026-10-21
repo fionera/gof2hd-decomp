@@ -1763,85 +1763,50 @@ void PlayerFighter::setPosition(float x, float y, float z) {
     return;
 }
 
-static const float gRoll_threshold = 0;
-static const float gRoll_f18 = 0;
-static const float gRoll_f1c = 0;
-static const float gRoll_f20 = 0;
-static const float gRoll_f24 = 0;
-static const float gRoll_f28 = 0;
-static const float gRoll_f2c = 0;
-static const float gRoll_f30 = 0;
-static const float gRoll_f34 = 0;
-static const float gRoll_f38 = 0;
-static const float gRoll_f3c = 0;
-static const float gRoll_f40 = 0;
-static const float gRoll_f44 = 0;
-static const float gRoll_f48 = 0;
 
 void PlayerFighter::roll(int angle) {
-    PlayerFighter * self = this;
-
-    if (self->rollActive() == 0) {
-        goto done;
+    if (this->rollActive() == 0) {
+        return;
+    }
+    AbyssEngine::AEMath::Matrix &m = ((AEGeometry *) (intptr_t) this->geometry())->getMatrix();
+    float rightX = m.m[4];
+    float rightY = m.m[5];
+    float bank = rightX > 0.0f ? rightX : -rightX;
+    if (angle >= 60) {
+        angle = 60;
+    }
+    if (m.m[5] > 0.0f && bank < 0.015f) {
+        this->rollMatrix = AbyssEngine::AEMath::MatrixIdentity(this->rollMatrix);
+        this->rollActive() = 0;
+        this->field_0x254 = 0;
+        this->field_0x255 = 0;
+        return;
     }
 
-    {
-        AbyssEngine::AEMath::Matrix &m =
-                ((AEGeometry *) (intptr_t) self->geometry())->getMatrix();
-        float fwdX = m.m[4];
-        float fwdY = m.m[5];
-        float absX = (0.0f < fwdX) ? fwdX : -fwdX;
-        if (0x3b < angle) angle = 0x3c;
-
-        if (fwdY >= 0.0f && absX < gRoll_threshold) {
-            AbyssEngine::AEMath::MatrixIdentity(self->rollMatrix);
-            self->rollActive() = 0;
-            self->field_0x254 = 0;
-            goto done;
-        }
-
-        float bank;
-        float roll;
-        if (self->field_0x254 != 0) {
-            roll = (fwdY == fwdY) ? gRoll_f20 : gRoll_f1c;
-            bank = (fwdX < 0.0f) ? roll : gRoll_f18;
-        } else {
-            bank = 0.0f;
-            roll = 0.0f;
-            if (fwdX > 0.0f && self->field_0x255 == 1) {
-                self->field_0x254 = 1;
-                bank = gRoll_f48;
-            } else if (fwdX < 0.0f && self->field_0x255 == 2) {
-                self->field_0x254 = 1;
-                bank = gRoll_f44;
-            } else if (fwdX >= 0.0f) {
-                if (fwdY >= 0.0f) {
-                    bank = absX;
-                    const float *p = (gRoll_f38 < fwdX) ? &gRoll_f40 : &gRoll_f3c;
-                    bank = *p;
-                } else {
-                    bank = gRoll_f24;
-                }
-            } else {
-                bank = gRoll_f28;
-                if (fwdY >= 0.0f) {
-                    const float *p = &gRoll_f30;
-                    if (fwdX != gRoll_f2c && fwdX < gRoll_f2c) p = &gRoll_f34;
-                    bank = *p;
-                }
-            }
-        }
-
-        if (fwdX != 0.0f) {
-            self->field_0x255 = (fwdX < 0.0f) ? 1 : 2;
-        }
-        float fa = VectorSignedToFloat(angle, 0);
-        self->rollActive() = 1;
-        AbyssEngine::AEMath::MatrixSetRotation(self->rollMatrix, bank * fa, 0.0f, roll);
+    if (this->field_0x254 != 0) {
+        float levelOut = rightY == rightY ? 0.0002f : -0.0002f;
+        bank = rightX < 0.0f ? levelOut : -0.0002f;
+    } else if (rightX > 0.0f && this->field_0x255 == 1) {
+        this->field_0x254 = 1;
+        bank = -0.00035f;
+    } else if (rightX < 0.0f && this->field_0x255 == 2) {
+        this->field_0x254 = 1;
+        bank = 0.00035f;
+    } else if (rightX < 0.0f && rightY < 0.0f) {
+        bank = 0.00075f;
+    } else if (rightX >= 0.0f && rightY < 0.0f) {
+        bank = -0.00075f;
+    } else if (rightX > 0.0f && rightY > 0.0f) {
+        bank = rightX > 0.3f ? -0.00035f : -0.00025f;
+    } else if (rightX < 0.0f) {
+        bank = rightX > -0.3f ? 0.00025f : 0.00035f;
     }
 
-done:
-    return;
+    if (rightX != 0.0f) {
+        this->field_0x255 = rightX < 0.0f ? 1 : 2;
+    }
+    this->rollActive() = 1;
+    this->rollMatrix = AbyssEngine::AEMath::MatrixSetRotation(this->rollMatrix, 0.0f, 0.0f, bank * (float) angle);
 }
 
 void PlayerFighter::cloak(int dur, bool b) {
