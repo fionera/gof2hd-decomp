@@ -23,7 +23,7 @@ set(CC_BASE
     --sysroot=${SYSROOT}
     -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include
     -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include/arm-linux-androideabi
-    -fPIC -Wno-everything)
+    -fPIC -ffunction-sections -Wno-everything)
 
 # ---- helpers -----------------------------------------------------------------------------
 function(ensure_source dir url)
@@ -74,7 +74,7 @@ if(GOF2_LIB STREQUAL "zlib")
     set(objs "")
     # -mthumb: the original .so has all zlib functions in Thumb mode (clang defaults to ARM).
     foreach(u ${units})
-        compile("${OBJDIR}/${u}.o" "${SRC}" "-O2;-I.;-mthumb" "${SRC}/${u}.c")
+        compile("${OBJDIR}/${u}.o" "${SRC}" "-Oz;-g;-fstack-protector-strong;-I.;-mthumb" "${SRC}/${u}.c")
         list(APPEND objs "${OBJDIR}/${u}.o")
     endforeach()
     archive("${TP_DIR}/zlib/libz_gof2.a" ${objs})
@@ -118,7 +118,7 @@ elseif(GOF2_LIB STREQUAL "libzip")
     # -mthumb: the original .so has all libzip functions in Thumb mode (clang defaults to ARM).
     foreach(c ${_csrc})
         get_filename_component(_n "${c}" NAME_WE)
-        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-O2;-I.;-I${ZSRC};-mthumb" "${c}")
+        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-Oz;-g;-fstack-protector-strong;-I.;-I${ZSRC};-mthumb" "${c}")
         list(APPEND objs "${OBJDIR}/${_n}.o")
     endforeach()
     archive("${TP_DIR}/libzip/libzip_gof2.a" ${objs})

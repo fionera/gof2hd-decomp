@@ -59,8 +59,11 @@ if(GOF2_MATCH_LAYOUT)
     add_custom_command(OUTPUT "${_order}"
         COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
+                $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out} ${GOF2_NDK_LIBCXXABI_A}
         DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
-        COMMENT "Generating section-ordering file from the original .so")
+                gof2 gof2_libs $<TARGET_OBJECTS:gof2>
+        COMMENT "Generating section-ordering file from the original .so + object source order"
+        COMMAND_EXPAND_LISTS VERBATIM)
     set(_order_flag "--section-ordering-file=${_order}")
 endif()
 
