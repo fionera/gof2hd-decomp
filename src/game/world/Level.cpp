@@ -4111,96 +4111,80 @@ void Level::createCampaignMission() {
 }
 
 void Level::updateOrbit(int dt) {
-    Level *thisptr = this;
-
-    int t178 = this->field_178 + dt;
-    this->orbitWaveTimer = this->orbitWaveTimer + dt;
-    this->field_178 = t178;
-
-    if (this->field_18a != 0) {
-        if (Globals::status->getSystem() != 0 && this->player->field_0x1c != 0) {
-            Globals::status->getSystem();
-            int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
-            thisptr->alarmAllFriends(race, 0 != 0);
-            Globals::status->getSystem();
-            ((SolarSystem *) Globals::status->getSystem())->getRace();
-            thisptr->createRadioMessage(2, 0);
-            this->field_18a = 0;
+    orbitWaveTimer += dt;
+    field_178 += dt;
+    if (field_18a) {
+        if (Globals::status->getSystem() != 0 && player->radioRef != nullptr) {
+            alarmAllFriends(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace(), false);
+            createRadioMessage(2, ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
+            field_18a = 0;
         }
-        t178 = this->field_178;
     }
 
-    if (10000 < t178) {
-        this->field_178 = 0;
-        if (this->enemies != nullptr) {
-            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-                KIPlayer *ki = (*this->enemies)[i];
-                if (ki->isJumper() != 0 && ki->isDead() != 0 &&
-                    ki->player->isActive() == 0 && (uint8_t) ki->field_0x42 == 0) {
-                    ((PlayerFighter *) ki)->revive();
-                    ki->setPosition(0, 0, 0);
+    // respawn one jumper every ten seconds
+    if (field_178 > 10000) {
+        field_178 = 0;
+        if (enemies != nullptr) {
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                KIPlayer *ship = (*enemies)[i];
+                if (ship->isJumper() && ship->isDead() && !ship->player->isActive() && !ship->field_0x42) {
+                    ship->revive();
+                    if ((int) i < friendCount + field_164) {
+                        ship->setPosition(0.0f, 0.0f, 0.0f);
+                    } else {
+                        ship->setPosition(10000.0f, 0.0f, -70000.0f);
+                    }
                     break;
                 }
             }
         }
     }
 
-    if (45000 < this->orbitWaveTimer) {
-        int hostileAlive = 0;
-        this->orbitWaveTimer = 0;
-        if (0 < this->hostileCount) {
-            if (this->enemies == nullptr)
+    if (orbitWaveTimer > 45000) {
+        orbitWaveTimer = 0;
+        int deadHostiles = 0;
+        if (hostileCount > 0) {
+            if (enemies == nullptr) {
                 return;
-            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-                if ((this->enemies->size() - (unsigned) this->hostileCount) <= i &&
-                    ((*this->enemies)[i])->isWingMan() == 0 && ((*this->enemies)[i])->isDead() != 0) {
-                    hostileAlive = hostileAlive + ((*this->enemies)[i]->player->isActive() ^ 1);
+            }
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                if (i >= enemies->size() - hostileCount && !(*enemies)[i]->isWingMan() && (*enemies)[i]->isDead()) {
+                    deadHostiles += (*enemies)[i]->player->isActive() ^ 1;
                 }
             }
         }
-        if (this->enemies != nullptr) {
-            int spawned = 0;
-            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-                int *ki = (int *) (*this->enemies)[i];
-
-                if (0 < this->friendCount && (int) i < this->friendCount &&
-                    ((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0 &&
-                    (uint8_t)((KIPlayer *) ki)->field_0x42 == 0) {
-                    ((PlayerFighter *) ki)->revive();
-                    ((KIPlayer *) ki)->setPosition(0, 0, 0);
-                }
-
-                if (1 < hostileAlive && this->field_184 < 2 &&
-                    0 < this->hostileCount &&
-                    (unsigned) ((int) this->enemies->size() - this->hostileCount) <= i) {
-                    int race = ((KIPlayer *) ki)->shipGroup;
-                    bool secZero = false, secOne = false;
-                    if (Globals::status->inAlienOrbit() == 0) {
-                        SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
-                        secZero = ((SolarSystem *) ss)->getSecurityLevel() == 0;
-                    }
-                    if (Globals::status->inAlienOrbit() == 0) {
-                        SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
-                        secOne = ((SolarSystem *) ss)->getSecurityLevel() == 1;
-                    }
-                    if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0 &&
-                        (uint8_t)((KIPlayer *) ki)->field_0x42 == 0) {
-                        bool doSpawn;
-                        if (race != 9 && !secZero) {
-                            doSpawn = secOne && this->field_17c <= 2;
-                        } else {
-                            doSpawn = true;
-                        }
-                        if (doSpawn) {
-                            this->field_17c = this->field_17c + 1;
-                            levelSpawnFar(thisptr, ki);
-                            spawned = 1;
-                        }
-                    }
+        if (enemies == nullptr) {
+            return;
+        }
+        bool spawned = false;
+        for (unsigned int i = 0; i < enemies->size(); i++) {
+            KIPlayer *ship = (*enemies)[i];
+            if (friendCount > 0 && (int) i < friendCount && ship->isDead() && !ship->player->isActive()
+                && !ship->field_0x42) {
+                ship->revive();
+                ship->setPosition(0.0f, 0.0f, 0.0f);
+            }
+            if (deadHostiles >= 2 && field_184 < 2 && hostileCount > 0 && i >= enemies->size() - hostileCount) {
+                int group = ship->shipGroup;
+                bool lawless = Globals::status->inAlienOrbit() ? false
+                        : ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel() == 0;
+                bool lowSecurity = Globals::status->inAlienOrbit() ? false
+                        : ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel() == 1;
+                if (ship->isDead() && !ship->player->isActive() && !ship->field_0x42
+                    && (group == 9 || lawless || (lowSecurity && field_17c <= 2))) {
+                    field_17c++;
+                    ship->revive();
+                    Vector position = player->getPosition();
+                    position.x += (float) ((Globals::rnd->nextInt(60000) + 60000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    position.y += (float) ((Globals::rnd->nextInt(5000) + 5000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    position.z += (float) ((Globals::rnd->nextInt(60000) + 60000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1));
+                    ship->setPosition(position.x, position.y, position.z);
+                    spawned = true;
                 }
             }
-            if (spawned & 1)
-                this->field_184 = this->field_184 + 1;
+        }
+        if (spawned) {
+            field_184++;
         }
     }
 }
