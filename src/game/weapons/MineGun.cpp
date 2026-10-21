@@ -18,7 +18,7 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     this->field_0xc8 = 0;
 
     this->explosions = new Array<Explosion *>();
-    ArraySetLength(gun->count, *(this->explosions));
+    ArraySetLength(gun->positions.count, *(this->explosions));
 
     this->readyFlags = new uint8_t[this->explosions->size()];
     for (uint32_t i = 0; i < this->explosions->size(); ++i) {
@@ -53,7 +53,7 @@ void MineGun::setPlayer(PlayerEgo *player) {
 
 void MineGun::render() {
     ObjectGun::render();
-    for (uint32_t i = 0; i < this->gun->count; ++i) {
+    for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         if (this->gun->hitFlags[i] != 0) {
             (*this->explosions)[i]->render();
         }
@@ -66,7 +66,7 @@ void MineGun::update(int delta) {
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform))
                 ->Update((long long) delta, false);
 
-    for (uint32_t i = 0; i < this->gun->count; ++i) {
+    for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         if (!this->gun->hitFlags[i])
             continue;
         if (this->readyFlags[i]) {

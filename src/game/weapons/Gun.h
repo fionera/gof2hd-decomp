@@ -20,21 +20,11 @@ class Gun {
 public:
     int lastHitKIPlayer;
     Player *owner;
-    // Four inline Array<Vector> triples (count/data/capacity) at 0x8/0x14/0x20/0x2c — kept as
-    // scalars so Gun's ctor/dtor control construction explicitly (matching the orig's inlined
-    // array code). `count` is the projectile count (positions array count).
-    unsigned count;
-    char *positions;
-    int positionsCap;
-    unsigned velocitiesCount;
-    char *velocities;
-    int velocitiesCap;
-    int upVectorsCount;
-    char *upVectors;
-    int upVectorsCap;
-    int hitPositionsCount;
-    char *hitPositions;
-    int hitPositionsCap;
+    // Per-projectile state, one entry per projectile (positions.count is the projectile count).
+    Array<Vector> positions;    // 0x08
+    Array<Vector> velocities;   // 0x14
+    Array<Vector> upVectors;    // 0x20
+    Array<Vector> hitPositions; // 0x2c
     // ASM (Gun ctor @0x151f20 / dtor @0x152134): the two new[] results land at 0x3c/0x40 and the
     // dtor delete[]s [0x3c] (null-checked) then [0x40]; initialLifetime/fireDelay are the
     // strd pair at 0x44/0x48. setLevel stores here (0x38).
@@ -156,10 +146,9 @@ public:
 // Drift fixed: 0x14 bytes of padding inserted upstream (8 @0x18, 4 @0x28, 4 @0x50, 4 @0xa0) so
 // every field_0xNN now lands at its named offset 0xNN. The former-union run (a4_b0/a5/a6/a7)
 // stays contiguous at 0xa4. Sentinel: targetDir is the first field after the drift run.
-static_assert(offsetof(Gun, velocitiesCount) == 0x14, "second Array<Vector> base");
-static_assert(offsetof(Gun, velocities) == 0x18, "");
-static_assert(offsetof(Gun, upVectorsCount) == 0x20, "");
-static_assert(offsetof(Gun, hitPositionsCount) == 0x2c, "");
+static_assert(offsetof(Gun, velocities) == 0x14, "second Array<Vector> base");
+static_assert(offsetof(Gun, upVectors) == 0x20, "");
+static_assert(offsetof(Gun, hitPositions) == 0x2c, "");
 static_assert(offsetof(Gun, level) == 0x38, "setLevel store");
 static_assert(offsetof(Gun, lifetimes) == 0x3c, "Gun dtor delete[] order");
 static_assert(offsetof(Gun, hitFlags) == 0x40, "MineGun/ObjectGun hitFlags loads");

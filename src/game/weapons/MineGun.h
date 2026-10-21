@@ -37,9 +37,9 @@ public:
     void update(int delta);
 
 private:
-    // Position of mine i (the gun's hit positions are packed Vectors).
+    // Position of mine i.
     const Vector &minePosition(uint32_t i) {
-        return *reinterpret_cast<Vector *>(this->gun->hitPositions + i * sizeof(Vector));
+        return this->gun->hitPositions.data()[i];
     }
 };
 #endif

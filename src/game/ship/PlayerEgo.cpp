@@ -3461,7 +3461,7 @@ bool PlayerEgo::killLiberator() {
         Gun *gun = (*(*guns)[1])[i];
         if (gun->itemIndex == 179) {
             gun->lifetimes[0] = -1;
-            *(Vector *) gun->positions = Vector{50000.0f, 50000.0f, 50000.0f};
+            *gun->positions.data() = Vector{50000.0f, 50000.0f, 50000.0f};
             (*(*guns)[1])[i]->active = false;
         }
     }

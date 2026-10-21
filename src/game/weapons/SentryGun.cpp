@@ -36,7 +36,7 @@ void SentryGun::update(int dt) {
 
             Gun *g = this->gun;
             AbyssEngine::AEMath::Vector *spawnPos =
-                    (AbyssEngine::AEMath::Vector *) (g->positions + g->fireIndex * 12);
+                    &g->positions.data()[g->fireIndex];
 
             obj->setPosition(spawnPos->x, spawnPos->y, spawnPos->z);
             return;
