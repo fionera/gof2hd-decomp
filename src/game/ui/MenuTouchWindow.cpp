@@ -478,14 +478,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     back->id = 22;
     ArrayAdd(back, *this->scrollEntries);
 
-    Vector anchor;
-    if (this->buttons != 0) {
-        anchor = (*this->buttons)[this->buttons->size() - 1 >= 4 ? 4 : this->buttons->size() - 1]->getPosition();
-    } else {
-        anchor.x = 0.0f;
-        anchor.y = 0.0f;
-        anchor.z = 0.0f;
-    }
+    Vector anchor = this->buttons != 0
+                        ? (*this->buttons)[this->buttons->size() - 1 >= 4 ? 4 : this->buttons->size() - 1]->getPosition()
+                        : Vector();
     TouchButton *leaderboards =
         new TouchButton(String("Leaderboards"), 17,
                         (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3)), (int) anchor.y, 68);
