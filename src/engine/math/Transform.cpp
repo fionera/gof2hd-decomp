@@ -327,46 +327,28 @@ namespace AbyssEngine {
         }
 
         if (updateBounds) {
-            AEMath::BSphere sphere;
-            sphere.center.x = 0.0f;
-            sphere.center.y = 0.0f;
-            sphere.center.z = 0.0f;
-            sphere.radius = 0.0f;
-            sphere.radius2 = 1.0f;
-            this->bounds() = sphere;
+            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
+            // Mesh::boundsCenterX..boundsRadiusSq is a BSphere in the original layout.
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
-                AEMath::BSphere childSphere;
-
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->Update(time, false);
-
-                    childSphere.center.x = mesh->boundsCenterX;
-                    childSphere.center.y = mesh->boundsCenterY;
-                    childSphere.center.z = mesh->boundsCenterZ;
-                    childSphere.radius = mesh->boundsRadius;
-                    childSphere.radius2 = mesh->boundsRadiusSq;
-                    childSphere.center = AEMath::MatrixTransformVector(
-                        mesh->animation->rotationMatrix, childSphere.center);
+                    AEMath::BSphere sphere = *(AEMath::BSphere *) &this->meshes[i]->boundsCenterX;
+                    sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
+                                                                  sphere.center);
+                    this->bounds().Merge(sphere);
                 } else {
-                    childSphere.center.x = mesh->boundsCenterX;
-                    childSphere.center.y = mesh->boundsCenterY;
-                    childSphere.center.z = mesh->boundsCenterZ;
-                    childSphere.radius = mesh->boundsRadius;
-                    childSphere.radius2 = mesh->boundsRadiusSq;
+                    AEMath::BSphere sphere = *(AEMath::BSphere *) &mesh->boundsCenterX;
+                    this->bounds().Merge(sphere);
                 }
-                this->bounds().Merge(childSphere);
             }
 
             for (uint i = 0; i < this->children.size(); ++i) {
-                Transform *child = this->children[i];
-                child->Update(time, false);
-
-                AEMath::BSphere childSphere = child->bounds();
-                childSphere.center = AEMath::MatrixTransformVector(
-                    child->rotationMatrix, childSphere.center);
-                this->bounds().Merge(childSphere);
+                this->children[i]->Update(time, false);
+                AEMath::BSphere sphere = this->children[i]->bounds();
+                sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
+                this->bounds().Merge(sphere);
             }
         }
     }
@@ -615,8 +597,7 @@ namespace AbyssEngine {
         }
 
         if (!updateBounds) {
-            AEMath::BSphere empty = {{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
-            this->bounds() = empty;
+            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
