@@ -51,7 +51,6 @@ static const int kWeaponSounds[233] = {
     2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1,
     2275, 2276, 2278, 2277, 2280,
 };
-static float **g_update_speed = nullptr;
 
 struct SlaveLink {
     int field_0x0;
@@ -71,7 +70,6 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
 #endif
 
 
-void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
@@ -465,7 +463,7 @@ void Player::setShieldHP(int value) {
 }
 
 void Player::refillGunDelay(int slot) {
-    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+    if (this->guns != nullptr && (unsigned int) slot < this->guns->size() && slot >= 0
         && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
             Gun *gun = (*(*this->guns)[slot])[i];
@@ -479,11 +477,13 @@ void Player::addEnemies(Array<Player *> *enemies) {
         this->setEnemies(enemies);
         return;
     }
-    Array<Player *> *tmp = new Array<Player *>();
-    ArrayAdd(*this->enemies, *tmp);
-    ArrayAdd(*enemies, *tmp);
-    ((Player *) (this))->setEnemies(tmp);
-    delete tmp;
+    Array<Player *> *merged = new Array<Player *>();
+    for (unsigned int i = 0; i < this->enemies->size(); i++)
+        ArrayAdd((*this->enemies)[i], *merged);
+    for (unsigned int i = 0; i < enemies->size(); i++)
+        ArrayAdd((*enemies)[i], *merged);
+    this->setEnemies(merged);
+    delete merged;
 }
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
@@ -497,8 +497,8 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->hitVector[0] = 0.0f;
     self->hitVector[1] = 0.0f;
     self->hitVector[2] = 0.0f;
-    self->position[1] = 0.0f;
-    self->position[2] = 0.0f;
+    self->lastPosition.y = 0.0f;
+    self->lastPosition.z = 0.0f;
     self->radius = radius;
     self->numPrimaryGuns = numPrimary;
     self->numSecondaryGuns = numSecondary;
@@ -511,7 +511,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
     self->shootingEnabled = 1;
-    self->position[0] = 0.0f;
+    self->lastPosition.x = 0.0f;
     self->flShake = 0.0f;
     self->bombForce = 0.0f;
     self->empForce = 0.0f;
@@ -571,8 +571,8 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
     Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
         *reinterpret_cast<const Matrix *>(self->transform));
-    *(Vector *) self->position = tmp;
-    self->enginePositionVec = (Vector *) (__INTPTR_TYPE__) -1;
+    self->lastPosition = tmp;
+    self->engineSoundId = -1;
 }
 
 Vector Player::getPosition() {
@@ -590,118 +590,54 @@ void Player::damageGamma(float amount) {
     }
 }
 
-void Player::damageEmp(int amount, bool flag) {
-    Player * self = this;
-    if (self->vulnerable == 0 || self->active == 0) {
+void Player::damageEmp(int amount, bool ownFire) {
+    if (!this->vulnerable || !this->active || this->empPoints < 1 || this->hitpoints < 1)
         return;
-    }
-    int hp = self->empPoints;
-    if (hp > 0) {
-        hp = self->hitpoints;
-    }
-    if (hp < 1) {
-        return;
-    }
 
-    if (!flag && self->kiPlayer != 0 && self->alwaysEnemy == 0) {
-        KIPlayer *ki = self->kiPlayer;
-        bool runLab = true;
-        if ((unsigned int) (ki->shipGroup - 9) >= 2) {
-            int sys = Globals::status->getSystem();
-            ki = self->kiPlayer;
-            if (sys != 0 && ki->field_0x42 != 0) {
-                if (amount > 0) {
-                    ((Level *) (ki->level))->attackWanted(ki->field_0x48);
-                }
-                runLab = false;
-            } else if (self->kiPlayer == 0) {
-                runLab = false;
-            }
-        }
-
-        if (runLab && self->alwaysEnemy == 0 && self->kiPlayer->isWingMan() == 0 &&
-            (unsigned int) (self->kiPlayer->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            if (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
-                int prev = self->field_dc;
-                self->field_dc = prev + amount;
-                if (self->maxEmpPoints / 3 < prev + amount) {
-                    self->turnedEnemyFlag = 1;
-                    ((Level *) (self->kiPlayer->level))->friendTurnedEnemy(0);
-                }
+    if (!ownFire) {
+        if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+            && Globals::status->getSystem() && this->kiPlayer->field_0x42) {
+            if (amount > 0)
+                this->kiPlayer->level->attackWanted(this->kiPlayer->field_0x48);
+        } else if (this->kiPlayer && !this->alwaysEnemy && !this->kiPlayer->isWingMan()
+                   && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2 && Globals::status->getSystem()
+                   && this->kiPlayer->shipGroup
+                          == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
+            this->field_dc += amount;
+            if (this->field_dc > this->maxEmpPoints / 3) {
+                this->turnedEnemyFlag = 1;
+                this->kiPlayer->level->friendTurnedEnemy(this->kiPlayer->shipGroup);
             }
         }
     }
 
-    {
-        int ep = self->empPoints - amount;
-        self->empPoints = ep;
-        if (ep > 0) {
-            self->updateDamageRate();
-            return;
-        }
-    }
-    if (!flag && self->kiPlayer != 0) {
-        if (self->alwaysEnemy == 0 &&
-            (unsigned int) (self->kiPlayer->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            if (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
-                ((Level *) (self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, false);
-            }
-        }
-        KIPlayer *ki = self->kiPlayer;
-        if (reinterpret_cast<int &>(ki->stealFlagByte) != 0) {
-            goto lab_30e2;
-        }
-        if (ki->countsAsEnemyExcludeFlag != 0) {
-            goto lab_30f4;
-        }
-        if (ki->field_0x42 != 0) {
-            goto lab_30f4;
-        }
-        {
-            Standing *st = (Standing *) (long) Globals::status->getStanding();
-            st->applyDisable(self->kiPlayer->shipGroup);
-            ki = self->kiPlayer;
-        }
-    lab_30e2:
-        if (ki == 0) {
-            goto lab_3164;
-        }
-    lab_30f4:
-        if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
-            goto lab_3164;
-        }
-        {
-            if ((unsigned int) Globals::status->field_134 > 0x7fffffff) {
-                Globals::status->field_134 = 0;
-            }
-            if (Globals::achievements->hasMedal(0x2a, 1) == 0) {
-                int cnt = Globals::status->field_134 + 1;
-                Globals::status->field_134 = cnt;
-                if (Globals::achievements->getValue(0x2a, 1) <= cnt) {
-                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    Hud *hud = (Hud *) (__INTPTR_TYPE__) ego->getHUD();
-                    hud->hudEventMedal(0x2a, 100);
-                    Globals::status->field_138 = 1;
+    this->empPoints -= amount;
+    if (this->empPoints <= 0) {
+        if (!ownFire && this->kiPlayer) {
+            if (!this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2 && Globals::status->getSystem()
+                && this->kiPlayer->shipGroup
+                       == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace())
+                this->kiPlayer->level->alarmAllFriends(this->kiPlayer->shipGroup, false);
+            if (!this->kiPlayer->stealFlagByte && !this->kiPlayer->countsAsEnemyExcludeFlag
+                && !this->kiPlayer->field_0x42)
+                ((Standing *) (intptr_t) Globals::status->getStanding())->applyDisable(this->kiPlayer->shipGroup);
+            if (this->kiPlayer && !this->empDisabledByte) {
+                if (Globals::status->field_134 < 0)
+                    Globals::status->field_134 = 0;
+                if (!Globals::achievements->hasMedal(42, 1)) {
+                    if (++Globals::status->field_134 >= Globals::achievements->getValue(42, 1)) {
+                        this->kiPlayer->level->getPlayer()->getHUD()->hudEventMedal(42, 100);
+                        Globals::status->field_138 = 1;
+                    }
                 }
             }
         }
+        this->empPoints = 0;
+        this->empDisabledByte = 1;
+        this->empTimer = 0;
+        this->empForce = (float) this->empData;
     }
-
-lab_3164:
-
-    float f = (float) self->empData;
-    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 1;
-    self->empPoints = 0;
-    (self->pad_e8[0]) = 0;
-    self->empForce = f;
-    self->updateDamageRate();
-    return;
+    this->updateDamageRate();
 }
 
 void Player::addGun(Array<Gun *> *gunsIn, int slot) {
@@ -780,31 +716,28 @@ void Player::stopShootSound(int index, int channel) {
 }
 
 void Player::reset() {
-    Player * self = this;
-    float shield = (float) self->maxShieldHP;
-    int maxHp = self->maxHitpoints;
-    int maxEmp = self->maxEmpPoints;
-    self->gammaHP = 100.0f;
-    self->hitpoints = maxHp;
-    self->empPoints = maxEmp;
-    self->shieldHP = shield;
-    ((Player *) (self))->updateDamageRate();
-    self->vulnerable = 1;
-    self->active = 1;
-    self->field_54 = 0;
-    reinterpret_cast<uint16_t &>(self->destroyedByte) = 0;
-    self->damageDoneByPlayer = 0;
-    self->field_5e = 0;
-    self->damageTimer = 0;
-    reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
-    self->shieldHit = 0;
-    self->armorHit = 0;
-    self->hullHit = 0;
-    self->gammaHit = 0;
-    self->bombForce = 0;
-    self->empForce = 0;
-    (((uint8_t *) &self->field_dc)[1]) = 0; // byte @0xdd (field_dc is int@0xdc)
-    (((uint8_t *) &self->empForce)[1]) = 0;
+    this->gammaHP = 100.0f;
+    this->hitpoints = this->maxHitpoints;
+    this->empPoints = this->maxEmpPoints;
+    this->shieldHP = (float) this->maxShieldHP;
+    this->updateDamageRate();
+    this->vulnerable = 1;
+    this->active = 1;
+    this->damaged = 0;
+    this->field_54 = 0;
+    this->destroyedByte = 0;
+    this->damageDoneByPlayer = 0;
+    this->field_5e = 0;
+    this->damageTimer = 0;
+    this->empDisabledByte = 0;
+    this->shieldHit = 0;
+    this->armorHit = 0;
+    this->hullHit = 0;
+    this->gammaHit = 0;
+    this->bombForce = 0.0f;
+    this->empForce = 0.0f;
+    this->field_dc = 0;
+    this->turnedEnemyFlag = 0;
 }
 
 void Player::addGun(Gun *gun, int slot) {
@@ -928,223 +861,127 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
         soundId = kWeaponSounds[type];
     else if ((unsigned int) this->kiPlayer->shipGroup <= 10)
         soundId = kRaceShootSounds[this->kiPlayer->shipGroup];
-    FModSound *sound = Globals::sound;
-    AudioStateView *options = reinterpret_cast<AudioStateView *>(Globals::options);
-    if ((channel == 2 || channel == 3 || channel == 8) && sound->isPlaying(soundId)) {
-        if (options->soundEnabledFlag)
+    if ((channel == 2 || channel == 3 || channel == 8) && Globals::sound->isPlaying(soundId)) {
+        if (Globals::options[15])
             Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
         return;
     }
-    Globals::sound->play(soundId, options->soundEnabledFlag ? pos : nullptr, nullptr, volume);
+    Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
 }
 
+void Player::damage(int amount, bool ownFire, int weaponId) {
+    if (!this->vulnerable || !this->active || this->hitpoints < 1)
+        return;
 
-static const float k_damage_full = 0.0f;
-static const float k_damage_hc = 0.0f;
-static const float k_damage_full2 = 0.0f;
-static const float k_damage_hc2 = 0.0f;
-static const float k_damage_regen = 0.0f;
-
-void Player::damage(int amount, bool flag, int missionId) {
-    Player * self = this;
-    if (self->vulnerable == 0) return;
-    if (self->active == 0) return;
-    if (self->hitpoints < 1) return;
-
-    if (flag == 0 && self->kiPlayer != 0) {
-        KIPlayer *ki = self->kiPlayer;
-        if (self->alwaysEnemy == 0 &&
-            (unsigned int) (ki->shipGroup - 9) > 1 &&
-            Globals::status->getSystem() != 0 &&
-            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
-            ki = self->kiPlayer;
-            if (ki->field_0x42 != 0) {
-                if (amount > 0) {
-                    self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-                    ((Level *) (ki->level))->attackWanted(ki->field_0x48);
-                }
-                goto LAB_3488;
+    if (!ownFire) {
+        if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+            && Globals::status->getSystem() && (!this->enemyFlagsLo || this->turnedEnemyFlag)
+            && this->kiPlayer->field_0x42) {
+            if (amount > 0) {
+                this->damageDoneByPlayer += amount;
+                this->kiPlayer->level->attackWanted(this->kiPlayer->field_0x48);
             }
-        } else {
-            ki = self->kiPlayer;
-        }
-
-        if (ki != 0 && self->alwaysEnemy == 0 &&
-            (unsigned int) (ki->shipGroup - 9) > 1 &&
-            self->kiPlayer->isWingMan() == 0 && Globals::status->getSystem() != 0 &&
-            ((reinterpret_cast<uint16_t &>(self->enemyFlagsLo) == 0) || (self->turnedEnemyFlag != 0))) {
-            int race = self->kiPlayer->shipGroup;
-            Globals::status->getSystem();
-            bool sameRace = (race == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
-            if (!sameRace) {
-                int race2 = self->kiPlayer->shipGroup;
-                SolarSystem *sys = (SolarSystem *) (long) Globals::status->getSystem();
-                if (race2 != sys->getAttackRace()) {
-                    goto LAB_342a;
-                }
-            }
-            self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-            int hc = Globals::status->hardCoreMode();
-            float thr1 = (hc != 0) ? k_damage_hc : k_damage_full;
-            float f1 = thr1 * (float) self->maxHitpoints;
-            float dmgF = (float) self->damageDoneByPlayer;
-            float frac2 = (hc != 0) ? 0.25f : 0.5f;
-            float thr3 = (hc != 0) ? k_damage_hc2 : k_damage_full2;
-
-            if (f1 < dmgF) {
-                ((Level *) (self->kiPlayer->level))->friendTurnedEnemy(0);
-                Ship *ship = (Ship *) Globals::status->getShip();
-                Standing *standing = (Standing *) (long) Globals::status->getStanding();
-                if (ship->getSignatureRace() >= 0) {
-                    bool match = ((unsigned int) ship->getSignatureRace() ==
-                                  (unsigned int) self->kiPlayer->shipGroup);
-                    unsigned int dis = 0;
-                    if (match) dis = (unsigned char) self->kiPlayer->field_0x42;
-                    if (match && dis == 0) {
-                        Item *item = ship->getFirstEquipmentOfSort(0x1d);
-                        ship->removeEquipment(item);
-                        Standing *st2 = (Standing *) (long) Globals::status->getStanding();
-                        st2->applyDelict(ship->getSignatureRace(), 100);
-                        standing->setPlayerSignatureRace(-1);
-                        PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                        int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
-                        PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                        ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
-                    }
-                }
-            }
-
-            float f3 = (float) self->maxHitpoints;
-            float dmgF3 = (float) self->damageDoneByPlayer;
-            if (frac2 * f3 < dmgF3) {
-                Ship *ship = (Ship *) Globals::status->getShip();
-                Standing *standing = (Standing *) (long) Globals::status->getStanding();
-                if (ship->getSignatureRace() >= 0 &&
-                    self->kiPlayer->shipGroup < 4 &&
-                    self->kiPlayer->field_0x42 == 0) {
-                    Item *item = ship->getFirstEquipmentOfSort(0x1d);
-                    ship->removeEquipment(item);
-                    Standing *st2 = (Standing *) (long) Globals::status->getStanding();
-                    st2->applyDelict(ship->getSignatureRace(), 100);
+        } else if (this->kiPlayer && !this->alwaysEnemy && (unsigned) (this->kiPlayer->shipGroup - 9) >= 2
+                   && !this->kiPlayer->isWingMan() && Globals::status->getSystem()
+                   && (!this->enemyFlagsLo || this->turnedEnemyFlag)
+                   && (this->kiPlayer->shipGroup == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()
+                       || this->kiPlayer->shipGroup == ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getAttackRace())) {
+            this->damageDoneByPlayer += amount;
+            bool hardCore = Globals::status->hardCoreMode();
+            float turnLimit = hardCore ? 0.1f : 0.33f;
+            float hostileLimit = hardCore ? 0.25f : 0.5f;
+            float alarmLimit = hardCore ? 0.4f : 0.66f;
+            if (turnLimit * (float) this->maxHitpoints < (float) this->damageDoneByPlayer) {
+                this->kiPlayer->level->friendTurnedEnemy(this->kiPlayer->shipGroup);
+                Ship *ship = Globals::status->getShip();
+                Standing *standing = ((Standing *) (intptr_t) Globals::status->getStanding());
+                if (ship->getSignatureRace() >= 0 && ship->getSignatureRace() == this->kiPlayer->shipGroup
+                    && !this->kiPlayer->field_0x42) {
+                    ship->removeEquipment(ship->getFirstEquipmentOfSort(29));
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->applyDelict(ship->getSignatureRace(), 100);
                     standing->setPlayerSignatureRace(-1);
-                    PlayerEgo *ego = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    int hud = (int) (__INTPTR_TYPE__) ego->getHUD();
-                    PlayerEgo *p = ((Level *) (self->kiPlayer->level))->getPlayer();
-                    ((Hud *) (intptr_t) hud)->hudEvent(0x1f, p, 0);
+                    this->kiPlayer->level->getPlayer()->getHUD()->hudEvent(31, this->kiPlayer->level->getPlayer(), 0);
                 }
-                self->turnedEnemyFlag = 1;
             }
-
-            float f4a = (float) self->maxHitpoints;
-            float dmgF4 = (float) self->damageDoneByPlayer;
-            if (thr3 * f4a < dmgF4) {
-                ((Level *) (self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, true);
+            if ((float) this->damageDoneByPlayer > hostileLimit * (float) this->maxHitpoints) {
+                Ship *ship = Globals::status->getShip();
+                Standing *standing = ((Standing *) (intptr_t) Globals::status->getStanding());
+                if (ship->getSignatureRace() >= 0 && this->kiPlayer->shipGroup <= 3 && !this->kiPlayer->field_0x42) {
+                    ship->removeEquipment(ship->getFirstEquipmentOfSort(29));
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->applyDelict(ship->getSignatureRace(), 100);
+                    standing->setPlayerSignatureRace(-1);
+                    this->kiPlayer->level->getPlayer()->getHUD()->hudEvent(31, this->kiPlayer->level->getPlayer(), 0);
+                }
+                this->turnedEnemyFlag = 1;
             }
-            goto LAB_3488;
+            if ((float) this->damageDoneByPlayer > alarmLimit * (float) this->maxHitpoints)
+                this->kiPlayer->level->alarmAllFriends(this->kiPlayer->shipGroup, true);
+        } else if (Globals::status->inBlackMarketSystem() && this->kiPlayer && this->kiPlayer->shipGroup == 8) {
+            this->turnedEnemyFlag = 1;
+            this->kiPlayer->level->alarmAllFriends(8, true);
+            Array<KIPlayer *> *enemies = this->kiPlayer->level->getEnemies();
+            if (enemies) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    KIPlayer *enemy = (*enemies)[i];
+                    if (enemy->shipGroup == 8)
+                        enemy->field_0x25 = 1;
+                }
+            }
+            Globals::status->field_110 = false;
+            Globals::status->field_0x111 = true;
         }
     }
 
-LAB_342a: {
-        if (Globals::status->inBlackMarketSystem() != 0) {
-            KIPlayer *ki = self->kiPlayer;
-            if (ki != 0 && ki->shipGroup == 8) {
-                self->turnedEnemyFlag = 1;
-                ((Level *) (ki->level))->alarmAllFriends(8, true);
-                Array<KIPlayer *> *enemies = ((Level *) (ki->level))->getEnemies();
-                if (enemies != nullptr) {
-                    unsigned count = enemies->size();
-                    unsigned i = 0;
-                    while (count != i) {
-                        KIPlayer *e = (*enemies)[i];
-                        i++;
-                        if (e->shipGroup == 8) {
-                            e->field_0x25 = 1;
-                        }
-                    }
-                }
-                reinterpret_cast<uint16_t &>(Globals::status->field_110) = 0x100;
-            }
-        }
-    }
-
-LAB_3488: {
-        int shieldI = (int) self->shieldHP - amount;
-        if (shieldI < 0) {
-            self->shieldHP = 0.0f;
-            shieldI = shieldI + self->armorHP;
-            if (shieldI < 0) {
-                self->armorHP = 0;
-                self->hullHit = 1;
-                self->hitpoints = shieldI + self->hitpoints;
-            } else {
-                self->armorHit = 1;
-                self->armorHP = shieldI;
-            }
+    int remaining = (int) this->shieldHP - amount;
+    if (remaining < 0) {
+        this->shieldHP = 0.0f;
+        remaining += this->armorHP;
+        if (remaining < 0) {
+            this->hullHit = 1;
+            this->armorHP = 0;
+            this->hitpoints += remaining;
         } else {
-            self->shieldHit = 1;
-            self->shieldHP = (float) shieldI;
+            this->armorHP = remaining;
+            this->armorHit = 1;
+        }
+    } else {
+        this->shieldHit = 1;
+        this->shieldHP = (float) remaining;
+    }
+
+    KIPlayer *ki = this->kiPlayer;
+    if (ki && !ki->stealFlagByte && !ki->countsAsEnemyExcludeFlag && ki->field_0x42
+        && this->hitpoints < this->maxHitpoints / 3)
+        ki->level->almostKillWanted(ki->field_0x48);
+
+    if (this->hitpoints <= 0) {
+        this->hitpoints = 0;
+        if (ownFire) {
+            this->destroyedByte = 1;
+        } else if (this->kiPlayer && !this->kiPlayer->stealFlagByte && !this->kiPlayer->countsAsEnemyExcludeFlag
+                   && !Globals::status->inBlackMarketSystem()) {
+            if (!this->kiPlayer->field_0x42)
+                ((Standing *) (intptr_t) Globals::status->getStanding())->applyKill(this->kiPlayer->shipGroup);
+            Mission *mission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+            int other = this->kiPlayer->name.Compare(*Globals::gameText->getText(1664));
+            if (weaponId == 179 && other == 0)
+                mission->setStatusValue(mission->getStatusValue() + 1);
+            if (this->kiPlayer->field_0x42)
+                this->kiPlayer->level->killWanted(this->kiPlayer->field_0x48);
         }
     }
 
-    {
-        int hp;
-        KIPlayer *ki = self->kiPlayer;
-        if (ki != 0 && reinterpret_cast<int &>(ki->stealFlagByte) == 0 && ki->countsAsEnemyExcludeFlag == 0 &&
-
-            ki->field_0x42 != 0) {
-            hp = self->hitpoints;
-            if (self->maxHitpoints / 3 > hp) {
-                ((Level *) (ki->level))->almostKillWanted(ki->field_0x48);
-            } else {
-                goto LAB_34f8_hp;
-            }
-        }
-        hp = self->hitpoints;
-    LAB_34f8_hp:
-        if (hp < 1) {
-            self->hitpoints = 0;
-            if (flag != 0) {
-                reinterpret_cast<uint16_t &>(self->destroyedByte) = 1;
-            } else {
-                KIPlayer *ki2 = self->kiPlayer;
-                if (ki2 != 0 && reinterpret_cast<int &>(ki2->stealFlagByte) == 0 && ki2->countsAsEnemyExcludeFlag == 0 &&
-
-                    Globals::status->inBlackMarketSystem() == 0) {
-                    if (self->kiPlayer->field_0x42 == 0) {
-                        Standing *st = (Standing *) (long) Globals::status->getStanding();
-                        st->applyKill(self->kiPlayer->shipGroup);
-                    }
-                    int mission = Globals::status->getCampaignMission();
-                    KIPlayer *ki3 = self->kiPlayer;
-
-                    String *txt = (Globals::gameText)->getText(missionId);
-                    int cmp = (&ki3->name)->Compare(*txt);
-                    if (missionId == 0xb3 && cmp == 0) {
-                        ((Mission *) (intptr_t) mission)->setStatusValue(
-                            ((Mission *) (intptr_t) mission)->getStatusValue() + 1);
-                    }
-                    if (self->kiPlayer->field_0x42 != 0) {
-                        ((Level *) (self->kiPlayer->level))->killWanted(0);
-                    }
-                }
-            }
-        }
-    }
-
-    self->damaged = 1;
-    self->flShake = self->flShake + k_damage_regen;
-    ((Player *) (self))->updateDamageRate();
-    if (self->kiPlayer != 0) {
-        SlaveLink *slave = reinterpret_cast<SlaveLink *>(self->kiPlayer->field_0x10);
-        if (slave != 0) {
-            Player * other = slave->player;
-
-            other->vulnerable = 1;
-            other->damage(amount);
-            other->vulnerable = 0;
-        }
+    this->damaged = 1;
+    this->flShake += 0.065f;
+    this->updateDamageRate();
+    if (this->kiPlayer && this->kiPlayer->field_0x10) {
+        KIPlayer *linked = (KIPlayer *) (intptr_t) this->kiPlayer->field_0x10;
+        linked->player->vulnerable = 1;
+        linked->player->damage(amount);
+        ((KIPlayer *) (intptr_t) this->kiPlayer->field_0x10)->player->vulnerable = 0;
     }
 }
+
 
 void Player::setEnemy(Player *enemy) {
     Array<Player *> *tmp = new Array<Player *>();
@@ -1158,15 +995,12 @@ void Player::addEnemy(Player *enemy) {
         this->setEnemy(enemy);
         return;
     }
-    Array<Player *> *tmp = new Array<Player *>();
-    if (this->enemies->size() != 0) {
-        for (unsigned int i = 0; i < this->enemies->size(); i++) {
-            ArrayAdd(this->enemies->data()[i], *tmp);
-        }
-    }
-    ArrayAdd(enemy, *tmp);
-    ((Player *) (this))->setEnemies(tmp);
-    delete tmp;
+    Array<Player *> *merged = new Array<Player *>();
+    if (this->enemies->size() != 0)
+        ArrayAdd(*this->enemies, *merged);
+    ArrayAdd(enemy, *merged);
+    this->setEnemies(merged);
+    delete merged;
 }
 
 void Player::damage(int amount) {
@@ -1174,27 +1008,11 @@ void Player::damage(int amount) {
 }
 
 void Player::stopShooting(int slot, int channel) {
-    if ((unsigned int) (channel - 0x16) >= 9) {
-        return;
-    }
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns == 0) {
-        return;
-    }
-    if (slot < 0) {
-        return;
-    }
-    if ((unsigned int) slot >= guns->size()) {
-        return;
-    }
-    Array<Gun *> *arr = guns->data()[slot];
-    if (arr == 0) {
-        return;
-    }
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Gun *gun = arr->data()[i];
-        ((Player *) (this))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = this->guns->data()[slot];
+    if ((unsigned int) (channel - 22) < 9 && this->guns && (unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot]) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            this->stopShootSound(gun->itemIndex, gun->weaponType);
+        }
     }
 }
 
@@ -1212,75 +1030,43 @@ void Player::setMaxArmorHP(int value) {
 }
 
 
-static void (**g_update_transform)(float *, float *, int) = nullptr;
 
-static const float k_update_a = 0.0f;
-static const float k_update_b = 0.0f;
-static const float k_update_c = 0.0f;
 
-Vector *Player::update(int dt, bool doSound) {
-    Player * self = this;
-
-    int b4 = self->damageTimer + dt;
-    self->damageTimer = b4;
-    if (b4 > 3000) {
-        self->damaged = 0;
-        self->damageTimer = 0;
+void Player::update(int dt, bool doSound) {
+    this->damageTimer += dt;
+    if (this->damageTimer > 3000) {
+        this->damageTimer = 0;
+        this->damaged = 0;
     }
 
-    Vector *result = 0;
-
-    if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
-        int e = self->empData + dt;
-        float ef = (float) self->empData;
-        float ef2 = (float) e;
-        int maxEmp = self->maxEmpPoints;
-        float mf = (float) maxEmp;
-        float v = (ef2 / ef) * mf;
-        self->empData = e;
-        self->empPoints = (int) v;
-        if (maxEmp < (int) v) {
-            reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
-            self->empPoints = maxEmp;
-            Globals::status->field_134 = Globals::status->field_134 - 1;
-            self->empData = 0;
+    if (this->empDisabledByte) {
+        this->empTimer += dt;
+        this->empPoints = (int) ((float) this->empTimer / (float) this->empData * (float) this->maxEmpPoints);
+        if (this->empPoints > this->maxEmpPoints) {
+            this->empPoints = this->maxEmpPoints;
+            this->empDisabledByte = 0;
+            Globals::status->field_134--;
+            this->empTimer = 0;
         }
-        ((Player *) (self))->updateDamageRate();
+        this->updateDamageRate();
     }
 
-    AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(gEngine);
-    if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (Vector *) (__INTPTR_TYPE__) -1) {
-        if (self->engineSoundPlaying != 0) {
-            self->StopEngineSound();
-        }
-    } else {
-        float *transform = self->transform;
-        void (*fn)(float *, float *, int) = *g_update_transform;
-        float local[3];
-        float spd = (float) (**g_update_speed);
-        fn(*g_update_speed, local, (int) (long) transform);
-        float tmpA[3], tmpB[3], tmpC[3];
-        float d = (*(Vector *) tmpA = *(const Vector *) self->position - *(const Vector *) local,
-                   AbyssEngine::AEMath::VectorLength(*(const Vector *) tmpA));
-        *(Vector *) tmpB = d * *(const Vector *) tmpA;
-        *(Vector *) tmpC = *(const Vector *) tmpB;
-        *(Vector *) tmpC /= (float) dt;
-        (void) spd;
-        fn(tmpB, local, (int) (long) transform);
-        FMOD::Event *ev = (Globals::sound)->updateEvent3DAttributes(
-            self->engineEvent, 0, (Vector *) tmpB, (Vector *) tmpC, false);
-        self->engineEvent = ev;
-        self->engineSoundPlaying = 1;
-        fn(tmpA, local, (int) (long) transform);
-        *(Vector *) self->position = *(Vector *) tmpA;
+    if (Globals::options[15] && doSound && this->engineSoundId != -1) {
+        const Matrix &transform = reinterpret_cast<const Matrix &>(this->transform[0]);
+        Vector velocity = (float) Player::velocity
+                          * (AbyssEngine::AEMath::MatrixGetPosition(transform) - this->lastPosition)
+                          / (float) dt;
+        Vector position = AbyssEngine::AEMath::MatrixGetPosition(transform);
+        this->engineEvent = Globals::sound->updateEvent3DAttributes(this->engineEvent, this->engineSoundId,
+                                                                   &position, &velocity, false);
+        this->engineSoundPlaying = 1;
+        this->lastPosition = AbyssEngine::AEMath::MatrixGetPosition(transform);
+    } else if (this->engineSoundPlaying) {
+        this->StopEngineSound();
     }
 
-    float speed = (float) dt;
-    float nf = self->flShake + speed * k_update_a * k_update_b;
-    self->flShake = nf;
-    FloatVectorMax(&result, nf, k_update_c, 2, 0x20);
-
-    return result;
+    float shake = this->flShake + (float) dt * -0.001f * 0.025f;
+    this->flShake = shake < 0.0f ? 0.0f : shake;
 }
 
 bool Player::shoot(int slot, int itemIndex, long long target, bool flag) {
@@ -1291,16 +1077,15 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
     Matrix transform = mat;
     if (this->guns == nullptr || this->shootingEnabled == 0)
         return true;
-    if (slot < 0 || (unsigned int) slot >= this->guns->size() || (*this->guns)[slot] == nullptr)
+    if (!((unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot] != nullptr))
         return true;
-    bool ready = true;
+    int ready = 1;
     for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
         Gun *gun = (*(*this->guns)[slot])[i];
-        unsigned int kind = gun->weaponType - 6;
-        if (kind <= 28 && ((1u << kind) & 0x10000003) != 0 && gun->lifetimes[0] >= 0) {
+        if ((gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34) && gun->lifetimes[0] >= 0) {
             gun->ignite();
         } else if (gun->itemIndex == itemIndex && gun->timer > gun->fireDelay) {
-            if (kind <= 28 && ((1u << kind) & 0x10000003) != 0)
+            if (gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34)
                 gun->level->field_69 = 1;
             if (gun->shoot(mat, (int) target, flag)) {
                 this->flShake += 0.008f;
@@ -1313,7 +1098,7 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
                 return true;
             }
             if (gun->ammoCount < 1)
-                ready = false;
+                ready = 0;
         }
     }
     return ready;
@@ -1347,24 +1132,11 @@ bool Player::shoot(int slot, long long target, bool flag, Matrix mat) {
 }
 
 void Player::stopShooting(int slot) {
-    Array<Array<Gun *> *> *guns = this->guns;
-    if (guns == 0) {
-        return;
-    }
-    if (slot < 0) {
-        return;
-    }
-    if ((unsigned int) slot >= guns->size()) {
-        return;
-    }
-    Array<Gun *> *arr = guns->data()[slot];
-    if (arr == 0) {
-        return;
-    }
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Gun *gun = arr->data()[i];
-        ((Player *) (this))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = this->guns->data()[slot];
+    if (this->guns && (unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot]) {
+        for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
+            Gun *gun = (*(*this->guns)[slot])[i];
+            this->stopShootSound(gun->itemIndex, gun->weaponType);
+        }
     }
 }
 
@@ -1375,7 +1147,7 @@ void Player::setHitVector(float x, float y, float z) {
 }
 
 void Player::resetGunDelay(int slot) {
-    if (slot >= 0 && this->guns != nullptr && (unsigned int) slot < this->guns->size()
+    if (this->guns != nullptr && (unsigned int) slot < this->guns->size() && slot >= 0
         && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++)
             (*(*this->guns)[slot])[i]->timer = 0;
@@ -1386,15 +1158,12 @@ Array<Player *> *Player::getEnemies() {
     return this->enemies;
 }
 
-void Player::PlayEngineSound(int unused, Vector *vec) {
-    (void) unused;
-    this->enginePositionVec = vec;
-    if (reinterpret_cast<AudioStateView *>(Globals::appManager)->soundEnabledFlag != 0) {
-        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(
-            *reinterpret_cast<const Matrix *>(this->transform));
-        FMOD::Event *ev = ((FModSound *) Globals::sound)->updateEvent3DAttributes(
-            this->engineEvent, 0, (Vector *) this->enginePositionVec, &pos, false);
-        this->engineEvent = ev;
+void Player::PlayEngineSound(int soundId, Vector *position) {
+    this->engineSoundId = soundId;
+    if (Globals::options[15]) {
+        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<const Matrix &>(this->transform[0]));
+        this->engineEvent = Globals::sound->updateEvent3DAttributes(this->engineEvent, this->engineSoundId, &pos,
+                                                                   nullptr, true);
         this->engineSoundPlaying = 1;
     }
 }
@@ -1422,4 +1191,4 @@ void Player::StopEngineSound() {
     }
 }
 
-Vector *Player::velocity;
+int Player::velocity;

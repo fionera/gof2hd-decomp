@@ -10,55 +10,53 @@
 #include "game/ship/KIPlayer.h"
 #include "engine/audio/FModSound.h"
 
-namespace AbyssEngine {
-    namespace AEMath {
-        float VectorLength(const Vector &v);
-
-        Vector VectorNormalize(const Vector &v);
-    }
-}
-
-static PaintCanvas **g_RepairBeam_canvas;
-static PaintCanvas **g_RB_canvas;
-static int *g_RB_dmgThresh;
-static float g_RB_scaleDiv;
-static float g_RB_healMul;
-static float g_RB_shieldMul;
-static FModSound **g_RB_sndPlay;
-static int *g_RB_sndPlayEv;
-static FModSound **g_RB_sndStop;
-static FModSound **g_RB_sndDead;
-static FModSound **g_RB_sndUpd;
-static int *g_RB_sndUpdEv;
-static char **g_RB_sndFlag;
-
+// Weapon sound event per item index (header-static table, one copy per TU in the original).
+static const int kWeaponSounds[233] = {
+    52, 53, 54, 56, 55, 57, 58, 59, 60, 50, 49, 50,
+    78, 75, 79, 77, 72, 73, 74, 76, 80, 81, 66, 67,
+    63, 64, 68, 65, 69, 70, 71, 82, 83, 84, 85, 86,
+    87, 88, 89, 90, 91, 6, 7, 8, 9, 10, 11, 92,
+    93, 94, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    1098, 1100, 1099, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 1111, 1113, 1112, 1117,
+    1095, 1096, 1097, 1101, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 1118, -1, -1, -1, 2254, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, 2271, 2272, -1, -1, 2263, 2263, 2263, 2265, 2265,
+    2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1,
+    2275, 2276, 2278, 2277, 2280,
+};
 
 void RepairBeam::render() {
-    Array<int> &ids = *this->targetIds;
-    for (unsigned i = 0; i < ids.size(); ++i) {
-        if (ids[i] != -1)
+    for (unsigned i = 0; i < this->targetIds->size(); ++i) {
+        if ((*this->targetIds)[i] != -1)
             (*this->geometries)[i]->render();
     }
 }
 
-RepairBeam::RepairBeam(int shipIndex, int sort) {
-    this->sort = sort;
-    this->shipIndex = shipIndex;
+RepairBeam::RepairBeam(int itemIndex, int sort) {
     this->beamPosition.x = 0;
     this->beamPosition.y = 0;
     this->beamPosition.z = 0;
+    this->sort = sort;
+    this->itemIndex = itemIndex;
 
-    Ship *ship = Globals::status->getShip();
-    Item *equip = ship->getFirstEquipmentOfSort(sort);
-    int count = equip->getAttribute(/*RepairBeamCount*/ 0x37);
+    int count = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(
+            /*RepairBeamCount*/ 0x37);
 
     this->geometries = new Array<AEGeometry *>();
     ArraySetLength<AEGeometry *>(count, *this->geometries);
 
     uint16_t geoId = (sort == 0x25) ? 0x4a94 : 0x4a95;
-    PaintCanvas *canvas = *g_RepairBeam_canvas;
     for (int i = 0; i < count; ++i)
-        (*this->geometries)[i] = new AEGeometry(geoId, canvas, false);
+        (*this->geometries)[i] = new AEGeometry(geoId, Globals::Canvas, false);
 
     this->targetIds = new Array<int>();
     ArraySetLength(count, *(this->targetIds));
@@ -84,189 +82,149 @@ RepairBeam::~RepairBeam() {
     this->charges = nullptr;
 }
 
-void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
-    (void) radar;
-    (void) hud;
-
+void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) {
     Array<KIPlayer *> *enemies = level->getEnemies();
     this->timer -= dt;
+    if (enemies != nullptr && !level->getPlayer()->isDead()) {
+        int range = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x35);
 
-    if (enemies != nullptr) {
-        PlayerEgo *ego = level->getPlayer();
-        if (ego->isDead() == 0) {
-            Ship *ship = Globals::status->getShip();
-            Item *equip = ship->getFirstEquipmentOfSort(this->sort);
-            float attrF = (float) equip->getAttribute(0x35);
-
-            Array<int> &ids = *this->targetIds;
-            Vector &beamPos = this->beamPosition;
-
-            if (this->timer < 0) {
-                for (unsigned i = 0; i < ids.size(); ++i) {
-                    ids[i] = -1;
-                    (*this->charges)[i] = 0.0f;
-                }
-                this->timer += 0x9c4;
-
-                for (unsigned e = 0; e < enemies->size(); ++e) {
-                    KIPlayer *kp = (*enemies)[e];
-                    if (kp->isDead() != 0 || kp->isDying() != 0)
-                        continue;
-
-                    bool consider = false;
-                    if (this->sort == 0x25) {
-                        Player *pl = kp->player;
-                        if (pl->carriesFriendCargoFlag != 0 && kp->player->getHitpoints() < kp->player->getMaxHitpoints())
-                            consider = true;
-                    } else if (this->sort == 0x29) {
-                        if (reinterpret_cast<uint8_t &>(kp->route) == 0 &&
-                            kp->player->enemyFlagsLo != 0) {
-                            Player **plp = (Player **) level->getPlayer();
-                            if ((*plp)->getShieldDamageRate() < 100 &&
-                                Globals::status->getShip()->getFirstEquipmentOfSort(9) != 0)
-                                consider = true;
-                        }
-                    }
-                    if (!consider)
-                        continue;
-
-                    Vector tmp;
-                    tmp = kp->player->getPosition();
-                    beamPos = tmp;
-                    tmp = level->getPlayer()->getPosition();
-                    beamPos -= tmp;
-                    if (AbyssEngine::AEMath::VectorLength(beamPos) > attrF)
-                        continue;
-
-                    bool placed = false;
-                    for (unsigned s = 0; !placed && s < ids.size(); ++s) {
-                        if (ids[s] == -1) {
-                            ids[s] = (int) e;
-                            placed = true;
-                        }
-                    }
-                    if (!placed) {
-                        int srcHp = kp->player->getHitpoints();
-                        unsigned best = 0xffffffffu;
-                        int bestHp = *g_RB_dmgThresh;
-                        for (unsigned s = 0; s < ids.size(); ++s) {
-                            if (ids[s] != -1) {
-                                int hp = (*enemies)[ids[s]]->player->getHitpoints();
-                                if (hp < bestHp && srcHp < hp) {
-                                    bestHp = hp;
-                                    best = s;
-                                }
-                            }
-                        }
-                        if (best != 0xffffffffu)
-                            ids[best] = (int) e;
-                    }
-                }
+        if (this->timer < 0) {
+            // Re-pick targets every 2.5s.
+            for (unsigned i = 0; i < this->targetIds->size(); ++i) {
+                (*this->targetIds)[i] = -1;
+                (*this->charges)[i] = 0.0f;
             }
+            this->timer += 2500;
 
-            float scaleDiv = g_RB_scaleDiv;
-            float dtF = (float) dt;
-            PaintCanvas *canvas = *g_RB_canvas;
-            float healAmt = dtF * g_RB_healMul;
-            float shieldAmt = dtF * g_RB_shieldMul;
-            bool allInactive = true;
-
-            for (unsigned i = 0; i < ids.size(); ++i) {
-                if (ids[i] == -1)
+            for (unsigned e = 0; e < enemies->size(); ++e) {
+                KIPlayer *candidate = (*enemies)[e];
+                if (candidate->isDead() || candidate->isDying())
+                    continue;
+                if (!((this->sort == 0x25 && candidate->player->carriesFriendCargoFlag != 0 &&
+                       candidate->player->getHitpoints() < candidate->player->getMaxHitpoints()) ||
+                      (this->sort == 0x29 && candidate->field_0x74 == 0 &&
+                       candidate->player->enemyFlagsLo != 0 &&
+                       level->getPlayer()->player->getShieldDamageRate() < 100 &&
+                       Globals::status->getShip()->getFirstEquipmentOfSort(9) != nullptr)))
                     continue;
 
-                AEGeometry *geo = (*this->geometries)[i];
-                AbyssEngine::Transform *tr = (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
-                tr->Update(dt, false);
+                this->beamPosition = candidate->player->getPosition();
+                this->beamPosition -= level->getPlayer()->getPosition();
+                if (!(AbyssEngine::AEMath::VectorLength(this->beamPosition) <= (float) range))
+                    continue;
 
-                Vector tmp;
-                KIPlayer *enemy = (*enemies)[ids[i]];
-                tmp = enemy->player->getPosition();
-                beamPos = tmp;
-
-                int kind = enemy->shipGroupFlag;
-
-                Vector contrib;
-                if (kind == 0x2c) {
-                    Vector dir = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getDirection());
-                    dir *= -300.0f;
-                    contrib = dir;
-                } else if (kind == 0x31) {
-                    Vector dir = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getDirection());
-                    dir *= -300.0f;
-                    Vector up = AbyssEngine::AEMath::VectorNormalize(enemy->parentGeometry->getUpVector());
-                    up *= 200.0f;
-                    dir += up;
-                    contrib = dir;
-                } else {
-                    contrib.x = 0;
-                    contrib.y = 0;
-                    contrib.z = 0;
-                }
-                beamPos += contrib;
-                tmp = level->getPlayer()->getPosition();
-                beamPos -= tmp;
-
-                float len = AbyssEngine::AEMath::VectorLength(beamPos);
-                geo->setScaling(len, 0.5f, 0.5f);
-
-                Vector ndir = AbyssEngine::AEMath::VectorNormalize(beamPos);
-                Vector beamUp;
-                beamUp.x = 0.0f;
-                beamUp.y = 1.0f;
-                beamUp.z = 0.0f;
-                geo->setDirection(ndir, beamUp);
-
-                tmp = level->getPlayer()->getPosition();
-                geo->setPosition(tmp);
-
-                AbyssEngine::Transform *tr2 = (AbyssEngine::Transform *) canvas->TransformGetTransform(geo->transform);
-                tr2->Update(dt, false);
-
-                if (this->sort == 0x29) {
-                    Player **plp = (Player **) level->getPlayer();
-                    if ((*plp)->getShieldDamageRate() < 100) {
-                        Item *eq = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
-                        float a = (float) eq->getAttribute(0x36);
-                        float &charge = (*this->charges)[i];
-                        charge += (shieldAmt * a) / scaleDiv;
-                        if (charge < 1.0f) {
-                            enemy->player->damage(1, false, -1);
-                            charge -= 1.0f;
-                        }
-                        Player **plp2 = (Player **) level->getPlayer();
-                        Item *eq2 = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
-                        float a2 = (float) eq2->getAttribute(0x36);
-                        (*plp2)->regenerateShield((shieldAmt * a2) / scaleDiv);
+                bool placed = false;
+                for (unsigned slot = 0; !placed && slot < this->targetIds->size(); ++slot) {
+                    if ((*this->targetIds)[slot] == -1) {
+                        (*this->targetIds)[slot] = e;
+                        placed = true;
+                    } else {
+                        placed = false;
                     }
-                } else if (this->sort == 0x25) {
-                    Item *eq = Globals::status->getShip()->getFirstEquipmentOfSort(this->sort);
-                    float a = (float) eq->getAttribute(0x36);
-                    enemy->player->heal((healAmt * a) / scaleDiv);
                 }
+                if (placed)
+                    continue;
 
-                if ((*g_RB_sndPlay)->isPlaying(g_RB_sndPlayEv[this->shipIndex]) == 0)
-                    (*g_RB_sndPlay)->play(g_RB_sndPlayEv[this->shipIndex], nullptr, nullptr, 0.0f);
-                allInactive = false;
+                // All beams busy: take over the healthiest target that is still worse off than us.
+                int hitpoints = candidate->player->getHitpoints();
+                int lowest = 9999999;
+                int replace = -1;
+                for (unsigned slot = 0; slot < this->targetIds->size(); ++slot) {
+                    if ((*this->targetIds)[slot] == -1)
+                        continue;
+                    int other = (*enemies)[(*this->targetIds)[slot]]->player->getHitpoints();
+                    if (other < lowest && hitpoints < other) {
+                        lowest = other;
+                        replace = slot;
+                    }
+                }
+                if (replace != -1)
+                    (*this->targetIds)[replace] = e;
             }
-            if (allInactive)
-                (*g_RB_sndStop)->stop(g_RB_sndPlayEv[this->shipIndex]);
         }
+
+        float shieldStep = (float) dt * 0.01f;
+        float healStep = (float) dt * 0.03f;
+        bool idle = true;
+        for (unsigned i = 0; i < this->targetIds->size(); ++i) {
+            if ((*this->targetIds)[i] == -1)
+                continue;
+
+            static_cast<AbyssEngine::Transform *>(
+                    Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))
+                    ->Update(dt, false);
+
+            this->beamPosition = (*enemies)[(*this->targetIds)[i]]->player->getPosition();
+            KIPlayer *target = (*enemies)[(*this->targetIds)[i]];
+            Vector targetOffset;
+            if (target->shipGroupFlag == 0x2c) {
+                targetOffset = AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f;
+            } else if (target->shipGroupFlag == 0x31) {
+                targetOffset =
+                        AbyssEngine::AEMath::VectorNormalize(target->geometry->getDirection()) * -300.0f +
+                        AbyssEngine::AEMath::VectorNormalize(
+                                (*enemies)[(*this->targetIds)[i]]->geometry->getUpVector()) * 200.0f;
+            } else {
+                targetOffset = Vector{0.0f, 0.0f, 0.0f};
+            }
+            this->beamPosition += targetOffset;
+            this->beamPosition -= level->getPlayer()->getPosition();
+
+            // Emitter offset on our own ship (rear-mounted on these two hulls).
+            Vector egoOffset;
+            if (Globals::status->getShip()->getIndex() == 0x2c) {
+                egoOffset = level->getPlayer()->GetDirVector() * -300.0f;
+            } else if (Globals::status->getShip()->getIndex() == 0x31) {
+                egoOffset = level->getPlayer()->GetDirVector() * -300.0f +
+                            level->getPlayer()->GetUpVector() * 200.0f;
+            } else {
+                egoOffset = Vector{0.0f, 0.0f, 0.0f};
+            }
+
+            (*this->geometries)[i]->setScaling(0.5f, 0.5f, AbyssEngine::AEMath::VectorLength(this->beamPosition));
+            (*this->geometries)[i]->setDirection(
+                    AbyssEngine::AEMath::VectorNormalize(this->beamPosition - egoOffset), Vector{0.0f, 1.0f, 0.0f});
+            (*this->geometries)[i]->setPosition(level->getPlayer()->getPosition() + egoOffset);
+            static_cast<AbyssEngine::Transform *>(
+                    Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))
+                    ->Update(dt, false);
+
+            if (this->sort == 0x29) {
+                if (level->getPlayer()->player->getShieldDamageRate() < 100) {
+                    (*this->charges)[i] +=
+                            shieldStep *
+                            (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
+                            100.0f;
+                    if ((*this->charges)[i] >= 1.0f) {
+                        (*enemies)[(*this->targetIds)[i]]->player->damage(1, false, -1);
+                        (*this->charges)[i] += -1.0f;
+                    }
+                    level->getPlayer()->player->regenerateShield(
+                            shieldStep *
+                            (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
+                            100.0f);
+                }
+            } else if (this->sort == 0x25) {
+                (*enemies)[(*this->targetIds)[i]]->player->heal(
+                        healStep *
+                        (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
+                        100.0f);
+            }
+
+            if (!Globals::sound->isPlaying(kWeaponSounds[this->itemIndex]))
+                Globals::sound->play(kWeaponSounds[this->itemIndex], nullptr, nullptr, 0.0f);
+            idle = false;
+        }
+        if (idle)
+            Globals::sound->stop(kWeaponSounds[this->itemIndex]);
     }
 
-    PlayerEgo *ego2 = level->getPlayer();
-    if (ego2->isDead() != 0) {
-        if ((*g_RB_sndDead)->isPlaying(g_RB_sndPlayEv[this->shipIndex]) != 0)
-            (*g_RB_sndDead)->stop(g_RB_sndPlayEv[this->shipIndex]);
-    }
+    if (level->getPlayer()->isDead() && Globals::sound->isPlaying(kWeaponSounds[this->itemIndex]))
+        Globals::sound->stop(kWeaponSounds[this->itemIndex]);
 
-    if ((*g_RB_sndFlag)[0xf] != 0) {
-        FModSound *snd = *g_RB_sndUpd;
-        if (snd->isPlaying(g_RB_sndUpdEv[this->shipIndex]) != 0) {
-            Vector tmp;
-            tmp = level->getPlayer()->getPosition();
-            this->beamPosition = tmp;
-            snd->updateEvent3DAttributes(g_RB_sndUpdEv[this->shipIndex], &this->beamPosition, nullptr, false);
-        }
+    if (Globals::options[0xf] != 0 && Globals::sound->isPlaying(kWeaponSounds[this->itemIndex])) {
+        int sound = kWeaponSounds[this->itemIndex];
+        this->beamPosition = level->getPlayer()->getPosition();
+        Globals::sound->updateEvent3DAttributes(sound, &this->beamPosition, nullptr, false);
     }
 }

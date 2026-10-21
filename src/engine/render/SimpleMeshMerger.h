@@ -4,6 +4,7 @@
 #include "../core/AEString.h"
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
+#include "engine/render/AMeshMerger.h"
 
 namespace AbyssEngine {
     class Mesh;
@@ -15,16 +16,8 @@ namespace AbyssEngine {
 
 using ::AbyssEngine::PaintCanvas;
 
-class SimpleMeshMerger {
+class SimpleMeshMerger : public AMeshMerger {
 public:
-    int matrixCount;
-    short mergeFactor;
-    unsigned char valid;
-    Array<AbyssEngine::Mesh *> meshes;
-    PaintCanvas *canvas;
-    unsigned mergedMeshId;
-    unsigned transformId;
-
     SimpleMeshMerger(const Array<unsigned short> &meshIds, Array<Matrix> transforms,
                      PaintCanvas *canvas, unsigned short flags);
 };

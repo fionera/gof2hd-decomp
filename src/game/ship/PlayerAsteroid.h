@@ -22,18 +22,18 @@ public:
     int lastDelta;
     float scaling;
     uint8_t minable;
-    Vector spin;
+    Vector spin = {0.0f, 0.0f, 0.0f};
     uint8_t rotationEnabled;
     int quality;
+    int field_0x154;
     int lastHitpoints;
-    int hitFlashActive;
     float hitFlashTimer;
     // Ghidra ground truth: float at 0x160, paired with hitFlashTimer in the ctor
     // (strd r2, r1, [r4, #348] stores 0.0001f here) and rewritten to 0.001f in update().
     float field_0x160;
-    int field_0x164;
-    int field_0x168;
-    int field_0x16c;
+    int field_0x164 = 0;
+    int field_0x168 = 0;
+    int field_0x16c = 0;
 
     PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
                    const Vector &position, float scaling, int quality);
@@ -79,7 +79,7 @@ public:
     void initPush(const Vector &target, int duration) override;
 
 private:
-    int &dropsLoot() { return this->hasCargo; }
+    uint8_t &dropsLoot() { return this->hasCargo; }
 
     Array<int> *&loot() { return this->cargo; }
 
@@ -89,10 +89,11 @@ private:
     int &pushDuration() { return *reinterpret_cast<int *>(reinterpret_cast<char *>(&this->field_0x104) + 4); }
     Vector &pushDirection() { return *reinterpret_cast<Vector *>(&this->field_0x10c); }
     Vector &pushSpin() { return *reinterpret_cast<Vector *>(&this->field_0x118); }
+    Vector &hitVector() { return *reinterpret_cast<Vector *>(&this->field_0x90); }
 
     static AbyssEngine::AEMath::Vector tmp_vector2;
     static AbyssEngine::AEMath::Vector asteroidCenter;
-    static float asteroidDistance;
+    static int asteroidDistance;
     static AbyssEngine::AEMath::Vector pos;
     static float emitTime;
 };

@@ -19,12 +19,12 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aTexCoord;
-        int uColor;
-        int uMvpMatrix;
-        int uOffset;
-        int sTexture;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int uTimeLoc;
+        int uWorldMatrixLoc;
+        int uGlColorLoc;
+        int sTextureLoc;
         long long animTime;
 
         TextureConference();

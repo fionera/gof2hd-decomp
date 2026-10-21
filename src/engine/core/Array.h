@@ -86,7 +86,7 @@ Array<T>::Array() {
 
 template<class T>
 Array<T>::~Array() {
-    if (data_) ::operator delete[](data_);
+    delete[] data_;
     data_ = nullptr;
 }
 
@@ -173,7 +173,7 @@ void ArrayRemove(T item, Array<T> &a) {
 
 template<class T>
 void ArrayRelease(Array<T> &a) {
-    if (a.data_) ::operator delete[](a.data_);
+    delete[] a.data_;
     a.data_ = nullptr;
 }
 

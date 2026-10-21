@@ -22,9 +22,6 @@ static_assert(offsetof(JNINativeInterface, ExceptionClear) == 0x44, "JNI layout"
 static_assert(offsetof(JNINativeInterface, DeleteLocalRef) == 0x5c, "JNI layout");
 #endif
 
-static inline const unsigned short *GetAEWChar(const String &s) {
-    return reinterpret_cast<const unsigned short *>(s.text());
-}
 
 
 static const char kDirPreFix[] = "";
@@ -53,27 +50,23 @@ FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append) {
 
 
 FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool writing) {
-    JNIEnv *env = *&FileInterfaceAndroid::env;
     this->file = 0;
     this->zipFile = 0;
     this->jniStream = stream;
     this->modeFlag = writing;
-    ++*&FileInterfaceAndroid::fileCounter;
+    ++fileCounter;
 
-    JNIEnv *jenv = reinterpret_cast<JNIEnv *>(env);
-    const JNINativeInterface *jni = JniTable(env);
-    jclass cls = jni->GetObjectClass(jenv, stream);
-
+    jclass cls = env->GetObjectClass(stream);
     if (writing) {
-        if (*&FileInterfaceAndroid::methodWrite == 0)
-            *&FileInterfaceAndroid::methodWrite = jni->GetMethodID(jenv, cls, "write", "([B)V");
-        if (*&FileInterfaceAndroid::methodCloseWrite == 0)
-            *&FileInterfaceAndroid::methodCloseWrite = jni->GetMethodID(jenv, cls, "close", "()V");
+        if (methodWrite == 0)
+            methodWrite = env->GetMethodID(cls, "write", "([B)V");
+        if (methodCloseWrite == 0)
+            methodCloseWrite = env->GetMethodID(cls, "close", "()V");
     } else {
-        if (*&FileInterfaceAndroid::methodRead == 0)
-            *&FileInterfaceAndroid::methodRead = jni->GetMethodID(jenv, cls, "read", "([B)I");
-        if (*&FileInterfaceAndroid::methodCloseRead == 0)
-            *&FileInterfaceAndroid::methodCloseRead = jni->GetMethodID(jenv, cls, "close", "()V");
+        if (methodRead == 0)
+            methodRead = env->GetMethodID(cls, "read", "([B)I");
+        if (methodCloseRead == 0)
+            methodCloseRead = env->GetMethodID(cls, "close", "()V");
     }
 }
 
@@ -146,7 +139,6 @@ void FileInterfaceAndroid::SetAppRootDir(void *p) { // lint: void_ptr virtual ov
 
 
 uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
-    // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->zipFile != 0)
         return zip_fread(this->zipFile, buf, n) == n;
     if (this->file != 0)
@@ -154,26 +146,26 @@ uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr v
     if (this->jniStream == 0)
         return false;
 
-    JNIEnv **r9 = &FileInterfaceAndroid::env;
-    JNIEnv *env = *r9;
-    JNIEnv *jenv = env;
-    jbyteArray arr = JniTable(env)->NewByteArray(jenv, (jsize) n);
-    unsigned int got = env->CallIntMethod(this->jniStream, FileInterfaceAndroid::methodRead, arr);
-
-    bool ok = false;
-    if (JniTable(env)->ExceptionOccurred(jenv) != 0) {
-        JniTable(env)->ExceptionDescribe(jenv);
-        JniTable(env)->ExceptionClear(jenv);
-    } else if (got == n) {
-        JniTable(env)->GetByteArrayRegion(jenv, arr, 0, (jsize) n, (jbyte *) buf);
+    jbyteArray array = env->NewByteArray(n);
+    unsigned int got = env->CallIntMethod(this->jniStream, methodRead, array);
+    bool ok;
+    if (env->ExceptionOccurred() != 0) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        ok = false;
+    } else if (got != n) {
+        ok = false;
+    } else {
+        env->GetByteArrayRegion(array, 0, n, static_cast<jbyte *>(buf));
+        // Leftover hex-dump builder from a debug log; the text is never used.
         String dump;
         for (uint32_t i = 0; i < n; ++i) {
-            dump += String(" ", false);
+            dump += String(" ");
             dump += String(static_cast<char>(static_cast<unsigned char *>(buf)[i]));
         }
         ok = true;
     }
-    JniTable(env)->DeleteLocalRef(jenv, arr);
+    env->DeleteLocalRef(array);
     return ok;
 }
 
@@ -200,22 +192,22 @@ uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
 
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
-    // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->file != 0)
         return fwrite(buf, 1, n, this->file) == n;
     if (this->jniStream == 0)
         return true;
 
-    JNIEnv **r9 = &FileInterfaceAndroid::env;
-    JNIEnv *envObj = *r9;
-    JNIEnv *jenv = envObj;
-    jbyteArray arr = JniTable(envObj)->NewByteArray(jenv, (jsize) n);
-    JniTable(envObj)->SetByteArrayRegion(jenv, arr, 0, (jsize) n, (const jbyte *) buf);
-    envObj->CallVoidMethod(this->jniStream, FileInterfaceAndroid::methodWrite, arr);
-    bool ok = JniTable(envObj)->ExceptionOccurred(jenv) == 0;
-    if (!ok)
-        JniTable(envObj)->ExceptionClear(jenv);
-    JniTable(envObj)->DeleteLocalRef(jenv, arr);
+    jbyteArray array = env->NewByteArray(n);
+    env->SetByteArrayRegion(array, 0, n, static_cast<const jbyte *>(buf));
+    env->CallVoidMethod(this->jniStream, methodWrite, array);
+    bool ok;
+    if (env->ExceptionOccurred() != 0) {
+        env->ExceptionClear();
+        ok = false;
+    } else {
+        ok = true;
+    }
+    env->DeleteLocalRef(array);
     return ok;
 }
 
@@ -249,24 +241,21 @@ void FileInterfaceAndroid::ResetSaveDirectory() {
 
 struct zip *APKArchive = nullptr;
 struct zip *ZIPArchive = nullptr;
-static const char *gZipPrefixA = nullptr;
-static const char *gZipPrefixB = nullptr;
-
 uint32_t FileInterfaceAndroid::FileExist(String name) {
-    String a(gZipPrefixA);
-    a += name;
-    String b(gZipPrefixB);
-    b += name;
+    String apkPath("assets/");
+    apkPath += name;
+    String zipPath("47947_GOF2CONTENT_ETC/assets/");
+    zipPath += name;
 
-    zip_file *z1 = zip_fopen((struct zip *) APKArchive, a.GetAEChar(), 0);
-    zip_file *z2 = zip_fopen((struct zip *) ZIPArchive, b.GetAEChar(), 0);
+    zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
+    zip_file *zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
 
     bool exists;
-    if (z1 != 0) {
-        zip_fclose(z1);
+    if (apkFile != 0) {
+        zip_fclose(apkFile);
         exists = true;
-    } else if (z2 != 0) {
-        zip_fclose(z2);
+    } else if (zipFile != 0) {
+        zip_fclose(zipFile);
         exists = true;
     } else {
         String dir(this->appRootDir);
@@ -282,69 +271,50 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     return exists;
 }
 
-static const char *gPrefixSlash = nullptr;
-static const char *gPrefixPlain = nullptr;
-static const char *gOpenReadFmt = nullptr;
-static char *gStderrBase = nullptr;
-
-struct AndroidIoState {
-    char pad_00[0xa8];
-    FILE *stderrFile;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(AndroidIoState, stderrFile) == 0xa8, "AndroidIoState layout");
-#endif
-
 void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) { // lint: void_ptr virtual override return type baked into vtable/symbol
-    // lint: void_ptr virtual override return type baked into vtable/symbol
-    const unsigned short *w = GetAEWChar(name);
+    const unsigned short *wname = name.GetAEWChar();
     if (this->enabled == 0)
         return 0;
 
-    const unsigned short *body = (*w == '/') ? w + 1 : w;
+    const unsigned short *relative = (*wname == '/') ? wname + 1 : wname;
+    String apkPath("assets/");
+    apkPath += String(relative, false);
+    String zipPath("47947_GOF2CONTENT_ETC/assets/");
+    zipPath += String(relative, false);
 
-    String a(gPrefixSlash);
-    String wide;
-    wide.Set((const unsigned short *) (body));
-    a += wide;
-    String b(gPrefixPlain);
-    String wide2;
-    wide2.Set((const unsigned short *) (body));
-    b += wide2;
+    // TODO(decomp): the original traces here with
+    //   fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
+    // which needs the fprintf import admitted to the ratchet baseline first.
+    (void) p2;
 
-    AndroidIoState *ioState = *reinterpret_cast<AndroidIoState **>(gStderrBase);
-    fprintf(ioState->stderrFile, gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
+    zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
+    zip_file *zipFile = 0;
+    if (ZIPArchive != 0)
+        zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
 
-    zip_file *z1 = zip_fopen((struct zip *) APKArchive, a.GetAEChar(), 0);
-    zip_file *z2 = (ZIPArchive != 0) ? zip_fopen((struct zip *) ZIPArchive, b.GetAEChar(), 0) : 0;
-
-    FileInterfaceAndroid * result = 0;
-    if (z1 != 0) {
-        result = new FileInterfaceAndroid(z1, (bool) p4, p2, p5, p4);
-    } else if (z2 != 0) {
-        result = new FileInterfaceAndroid(z2, (bool) p4, p2, p5, p4);
-    } else if (this->appRootDir != 0) {
-        String dir(this->appRootDir);
-        String full = dir + a;
-        FILE *f = fopen(full.GetAEChar(), "rb");
-        if (f != 0)
-            result = new FileInterfaceAndroid(f, false);
-    }
-    return result;
-}
-
-
-void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
-    // lint: void_ptr virtual override return type baked into vtable/symbol
-    const unsigned short *w = GetAEWChar(name);
-    while (*w)
-        ++w;
+    if (apkFile != 0)
+        return new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
+    if (zipFile != 0)
+        return new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
+    if (this->appRootDir == 0)
+        return 0;
 
     String dir(this->appRootDir);
-    String wide;
-    wide.Set((const unsigned short *) (GetAEWChar(name)));
-    String full = dir + wide;
+    String full = dir + String(relative, false);
+    FILE *f = fopen(full.GetAEChar(), "rb");
+    if (f == 0)
+        return 0;
+    return new FileInterfaceAndroid(f, false);
+}
 
+void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
+    const unsigned short *wname = name.GetAEWChar();
+    const unsigned short *end = wname;
+    while (*end++ != 0) {
+    }
+
+    String dir(this->appRootDir);
+    String full = dir + String(wname, false);
     FILE *f = fopen(full.GetAEChar(), "wb");
     if (f == 0)
         return 0;

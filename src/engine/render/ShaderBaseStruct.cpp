@@ -9,11 +9,12 @@ namespace AbyssEngine {
 
     ShaderBaseStruct::ShaderBaseStruct() {
         this->program = -1;
-        reinterpret_cast<uint16_t &>(this->flagsLow) = 0x100;
+        this->flagsLow = 0;
+        this->dirty = 1;
         ++shaderIndexIntern;
         this->vertexPath = 0;
         this->fragmentPath = 0;
-        this->name = "";
+        this->name = String("ShaderBaseStruct", false);
     }
 
     ShaderBaseStruct::~ShaderBaseStruct() {
@@ -93,12 +94,11 @@ namespace AbyssEngine {
     }
 
     uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source) {
-        const char *localSource = source;
         uint32_t shader = glCreateShader(type);
 
         if (shader != 0) {
             int status;
-            glShaderSource(shader, 1, &localSource, 0);
+            glShaderSource(shader, 1, &source, 0);
             glCompileShader(shader);
             glGetShaderiv(shader, 0x8b81, &status);
             if (status == 0) {
@@ -126,14 +126,14 @@ namespace AbyssEngine {
 
             uint32_t handle;
             if (AEFile::OpenRead(vertexPath, &handle) != 0) {
-                uint32_t vertexSize = AEFile::GetFileSize(handle);
+                int vertexSize = AEFile::GetFileSize(handle);
                 char *vertexSource = new char[vertexSize + 1];
                 AEFile::Read(vertexSize, vertexSource, handle);
                 AEFile::Close(handle);
                 vertexSource[vertexSize] = 0;
 
                 if (AEFile::OpenRead(fragmentPath, &handle) != 0) {
-                    uint32_t fragmentSize = AEFile::GetFileSize(handle);
+                    int fragmentSize = AEFile::GetFileSize(handle);
                     char *fragmentSource = new char[fragmentSize + 1];
                     AEFile::Read(fragmentSize, fragmentSource, handle);
                     AEFile::Close(handle);

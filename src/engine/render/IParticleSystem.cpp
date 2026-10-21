@@ -466,12 +466,12 @@ void IParticleSystem::interpolateColor(int index, float &alpha, float &red, floa
 
 float *IParticleSystem::rotateUVs(float *src, int seed, float *dst) {
     AbyssEngine::AERandom random((long long) seed);
-    unsigned value = (unsigned) random.nextInt(40000);
-    unsigned inv = ~value;
-    ((uint32_t *) dst)[0] = ((uint32_t *) src)[value & 1];
-    ((uint32_t *) dst)[1] = ((uint32_t *) src)[inv & 1];
-    ((uint32_t *) dst)[2] = *(uint32_t *) ((char *) src + (((value & 2) << 1) | 8));
-    ((uint32_t *) dst)[3] = *(uint32_t *) ((char *) src + (((inv & 2) << 1) | 8));
+    int flip = random.nextInt(40000) & 3;
+    int other = ~flip;
+    dst[0] = src[flip & 1];
+    dst[1] = src[other & 1];
+    dst[2] = src[2 + ((flip >> 1) & 1)];
+    dst[3] = src[2 + ((other >> 1) & 1)];
     return dst;
 }
 

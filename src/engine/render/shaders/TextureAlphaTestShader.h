@@ -17,18 +17,18 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class TextureAlphaTestShader : public ShaderBaseStruct {
     public:
-        int alphaProgram;
+        int fogProgram;
 
         int aPositionLoc[2];
         int aTexCoordLoc[2];
-        int uMVPMatrixLoc[2];
-        int uColorLoc[2];
-        int uTextureLoc[2];
-        int uLightPosLoc[2];
-        int uAmbientLoc[2];
-        int uDiffuseLoc[2];
-        int uSamplerLoc[2];
+        int uWorldMatrixLoc[2];
+        int uGlColorLoc[2];
+        int sTextureLoc[2];
         int uFogColorLoc[2];
+        int uFogMaxDistLoc[2];
+        int uFogMinDistLoc[2];
+        int uEnableFogLoc[2];
+        int uEyePosModelLoc[2];
 
         static int ShaderIndex;
 

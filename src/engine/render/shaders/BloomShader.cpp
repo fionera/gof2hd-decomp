@@ -4,11 +4,10 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/core/AbyssEngine.h"
 #include <GLES2/gl2.h>
-#include <arm_neon.h>
+#include <cstring>
 
-static unsigned char g_BloomShader_internalInitNeeded;
-static unsigned int g_BloomShader_shaderMode;
 
 
 namespace AbyssEngine {
@@ -113,8 +112,8 @@ namespace AbyssEngine {
     void BloomShader::RenderEffect(FBOContainer *source, Engine *engine) {
         engine->currentProgram = this->program;
 
-        if (g_BloomShader_internalInitNeeded != 0) {
-            g_BloomShader_internalInitNeeded = 0;
+        if (AbyssEngine::firstRender != 0) {
+            AbyssEngine::firstRender = 0;
             InternalInit(engine);
             this->fboBlack->BeginCapture();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -122,23 +121,15 @@ namespace AbyssEngine {
             this->fboBlack->EndCapture();
         }
 
-        const uint32x4_t zero = vdupq_n_u32(0);
-        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
-        float matrix[16] = {};
-        matrix[0] = 1.0f;
-        matrix[5] = 1.0f;
-        matrix[10] = 1.0f;
-        matrix[15] = 1.0f;
-        engine->projMatrix[0] = 2.0f / (float) engine->GetDisplayWidth();
-        engine->projMatrix[5] = -(2.0f / (float) engine->GetDisplayHeight());
-        engine->projMatrix[10] = -1.0f;
-        engine->projMatrix[12] = -1.0f;
+        memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
+        engine->projMatrix[0] = 2.0f / (float) (int) engine->GetDisplayWidth();
+        engine->projMatrix[5] = -(2.0f / (float) (int) engine->GetDisplayHeight());
+        engine->projMatrix[10] = -0.05f;
         engine->projMatrix[13] = 1.0f;
         engine->projMatrix[15] = 1.0f;
-        engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));
+        engine->projMatrix[12] = -1.0f;
+        AEMath::Matrix identity;
+        engine->SetWorldViewMatrix(identity);
 
         glDisable(0xb71);
         glDepthMask(0);
@@ -162,7 +153,7 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
         FBOContainer *blurSource = this->fboLuma;
-        for (int i = 6; i != 0; i -= 1) {
+        for (int i = 0; i < 6; i++) {
             glUseProgram(this->blurHProgram);
             glActiveTexture(0x84c0);
             blurSource->Activate();
@@ -199,22 +190,25 @@ namespace AbyssEngine {
             blurSource = this->fboBlurV;
         }
 
-        FBOContainer *base = source;
-        FBOContainer *bloom = this->fboBlack;
-        if (g_BloomShader_shaderMode < 4) {
-            switch (g_BloomShader_shaderMode) {
-                case 1:
-                    base = this->fboLuma;
-                    break;
-                case 2:
-                    base = this->fboBlurV;
-                    break;
-                case 3:
-                    bloom = this->fboBlack;
-                    break;
-                default:
-                    break;
-            }
+        FBOContainer *base;
+        FBOContainer *bloom;
+        switch (Engine::switchBloom) {
+            case 0:
+                base = source;
+                bloom = this->fboBlack;
+                break;
+            case 1:
+                base = this->fboLuma;
+                bloom = this->fboBlack;
+                break;
+            case 2:
+                base = this->fboBlurV;
+                bloom = this->fboBlack;
+                break;
+            case 3:
+                base = source;
+                bloom = this->fboBlurV;
+                break;
         }
 
         glUseProgram(this->finalProgram);
@@ -223,16 +217,11 @@ namespace AbyssEngine {
         glActiveTexture(0x84c1);
         bloom->Activate();
         glBindFramebuffer(0x8d40, engine->viewFramebuffer);
-        unsigned int width;
-        unsigned int height;
         if (engine->appManager->paintCanvas->gameOrientation == 2) {
-            width = engine->GetDisplayWidth();
-            height = engine->GetDisplayHeight();
+            glViewport(0, 0, engine->GetDisplayWidth(), engine->GetDisplayHeight());
         } else {
-            width = engine->GetDisplayHeight();
-            height = engine->GetDisplayWidth();
+            glViewport(0, 0, engine->GetDisplayHeight(), engine->GetDisplayWidth());
         }
-        glViewport(0, 0, width, height);
 
         glEnableVertexAttribArray(this->finalAttribPosition);
         glEnableVertexAttribArray(this->finalAttribTexCoord);
@@ -258,8 +247,8 @@ namespace AbyssEngine {
     }
 
     void BloomShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
-        if (g_BloomShader_internalInitNeeded != 0) {
-            g_BloomShader_internalInitNeeded = 0;
+        if (AbyssEngine::firstRender != 0) {
+            AbyssEngine::firstRender = 0;
             InternalInit(engine);
             this->fboBlack->BeginCapture();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -267,23 +256,15 @@ namespace AbyssEngine {
             this->fboBlack->EndCapture();
         }
 
-        const uint32x4_t zero = vdupq_n_u32(0);
-        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
-        float matrix[16] = {};
-        matrix[0] = 1.0f;
-        matrix[5] = 1.0f;
-        matrix[10] = 1.0f;
-        matrix[15] = 1.0f;
-        engine->projMatrix[0] = 2.0f / (float) engine->GetDisplayWidth();
-        engine->projMatrix[5] = -(2.0f / (float) engine->GetDisplayHeight());
-        engine->projMatrix[10] = -1.0f;
-        engine->projMatrix[12] = -1.0f;
+        memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
+        engine->projMatrix[0] = 2.0f / (float) (int) engine->GetDisplayWidth();
+        engine->projMatrix[5] = -(2.0f / (float) (int) engine->GetDisplayHeight());
+        engine->projMatrix[10] = -0.05f;
         engine->projMatrix[13] = 1.0f;
         engine->projMatrix[15] = 1.0f;
-        engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));
+        engine->projMatrix[12] = -1.0f;
+        AEMath::Matrix identity;
+        engine->SetWorldViewMatrix(identity);
 
         glDisable(0xb71);
         glDepthMask(0);
@@ -307,7 +288,7 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
         FBOContainer *blurSource = this->fboLuma;
-        for (int i = 6; i != 0; i -= 1) {
+        for (int i = 0; i < 6; i++) {
             glUseProgram(this->blurHProgram);
             glActiveTexture(0x84c0);
             blurSource->Activate();
@@ -344,22 +325,25 @@ namespace AbyssEngine {
             blurSource = this->fboBlurV;
         }
 
-        FBOContainer *base = source;
-        FBOContainer *bloom = this->fboBlack;
-        if (g_BloomShader_shaderMode < 4) {
-            switch (g_BloomShader_shaderMode) {
-                case 1:
-                    base = this->fboLuma;
-                    break;
-                case 2:
-                    base = this->fboBlurV;
-                    break;
-                case 3:
-                    bloom = this->fboBlack;
-                    break;
-                default:
-                    break;
-            }
+        FBOContainer *base;
+        FBOContainer *bloom;
+        switch (Engine::switchBloom) {
+            case 0:
+                base = source;
+                bloom = this->fboBlack;
+                break;
+            case 1:
+                base = this->fboLuma;
+                bloom = this->fboBlack;
+                break;
+            case 2:
+                base = this->fboBlurV;
+                bloom = this->fboBlack;
+                break;
+            case 3:
+                base = source;
+                bloom = this->fboBlurV;
+                break;
         }
 
         glUseProgram(this->finalProgram);

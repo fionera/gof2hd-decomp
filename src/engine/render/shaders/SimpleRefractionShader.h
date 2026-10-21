@@ -20,19 +20,19 @@ namespace AbyssEngine {
         static int ShaderIndex;
 
         int aPositionLoc;
+        int aTexCoordLoc;
         int aNormalLoc;
         int aTangentLoc;
-        int aTexCoordLoc;
-        int uM0Loc;
-        int uM1Loc;
-        int uTex0Loc;
-        int uTex1Loc;
-        int uM4Loc;
-        int uM3Loc;
-        int uM2Loc;
-        int uRefractLoc;
-        int uM5Loc;
-        int uM6Loc;
+        int aBitangentLoc;
+        int uModelViewProjectionMatrixLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uTexBiasLoc;
+        int uGlColorLoc;
+        int uEyeposmodelLoc;
+        int uCloakRateLoc;
+        int uTexelSizeLoc;
+        int sTextureBaseLoc;
 
         SimpleRefractionShader();
 

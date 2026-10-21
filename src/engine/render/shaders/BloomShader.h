@@ -56,6 +56,9 @@ namespace AbyssEngine {
         unsigned int lumaAttribTexCoord;
         int lumaUniformTexture;
 
+        // Trailing state not yet identified; the original allocates sizeof == 0xa0 (operator new in Engine::ShaderInit).
+        unsigned char unknownTail[4];
+
         BloomShader();
 
         ~BloomShader();
@@ -72,6 +75,10 @@ namespace AbyssEngine {
 
         void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) override;
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(sizeof(BloomShader) == 0xa0, "BloomShader size (Engine::ShaderInit operator new)");
+#endif
 }
 
 #endif

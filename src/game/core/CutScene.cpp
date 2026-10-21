@@ -240,7 +240,7 @@ void CutScene::process(int /*delta*/) {
 
             this->animTimer7c += this->frameDelta;
             this->animTimer80 += this->frameDelta;
-            if (this->animTimer7c > 1000 && this->geom28 != nullptr) {
+            if (this->geom28 != nullptr && this->animTimer7c > 1000) {
                 this->animTimer7c = 0;
                 if (Globals::rnd->nextInt(100) < 40) {
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geom28->transform))->SetAnimationState(AbyssEngine::AnimationMode(3), nullptr);

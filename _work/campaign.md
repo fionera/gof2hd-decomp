@@ -39,6 +39,19 @@ Orchestrator session log. One entry per session; newest first. Resume from git l
   w13 (render/particles + .rodata ParticleSettings_str bloat), w14 (platform/audio/weapons),
   w15 (shader TUs: recover embedded GLSL + attribute names from .rodata).
 
+- Later: merged w5 final, w15 (shaders, +120 linked), -std=c++11 (c932c88a). Master at
+  byte 1291 / linked 3665 / avg 90.49, RATCHET PASS.
+- Open leads (not done): (1) libgcc — original defines __aeabi_ldivmod locally and imports
+  __gnu_ldivmod_helper/__aeabi_unwind_cpp_pr0/pr1 + idiv etc. from libc; adding armv7-a/thumb
+  libgcc.a after libc++abi pulls the whole unwinder statically because NDK r18b platform libc.so
+  stubs (api16/19/21) don't export those helpers — needs a libc stub matching the original's
+  (or a libgcc member subset by link order). Reverted. (2) OpenSSL local
+  sha256_block_data_order_armv8 (592 B gap after _neon) missing from our 1.1.0l build.
+  (3) PostBW/DrawFBO/Bloom/GlowPP/BumpShaderCloak classes undersized vs Engine::ShaderInit allocs.
+- Workers still on branches at session end (merge with `git merge <branch>` + check):
+  wave1-w2,w3,w6,w8,w9,w10,w12,w13,w14, wave2-w1b,w4b,w5b. Task files were in the session
+  scratchpad (worker.md template); recreate from this log if lost.
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:

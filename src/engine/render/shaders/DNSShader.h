@@ -20,22 +20,22 @@ namespace AbyssEngine {
         static int ShaderIndex;
 
         int aPositionLoc;
+        int aTexCoordLoc;
         int aNormalLoc;
         int aTangentLoc;
-        int aBinormalLoc;
-        int uM0Loc;
-        int uM1Loc;
-        int uM2Loc;
-        int uM3Loc;
-        int uM4Loc;
-        int uM5Loc;
-        int uM6Loc;
-        int uM7Loc;
-        int uM8Loc;
-        int uM9Loc;
-        int uM10Loc;
-        int uM11Loc;
-        int uM12Loc;
+        int aBitangentLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uModelMatrixFullLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
+        int uSpecularPowerLoc;
+        int uTexBiasDiffuseLoc;
+        int uTexBiasNormalLoc;
 
         DNSShader();
 

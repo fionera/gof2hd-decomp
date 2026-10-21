@@ -27,6 +27,11 @@
 #include <cstddef>
 
 namespace {
+    // Byte-addressed flag view of a GameRecord's packed toggle bytes.
+    inline bool &recordFlag(GameRecord *rec, int offset) {
+        return reinterpret_cast<bool *>(rec)[offset];
+    }
+
     // View of Globals::hints as raw boolean flags.
     struct HintFlags {
         bool flag[59];
@@ -296,7 +301,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
         unsigned int fd;
         AEFile::OpenRead(path, &fd);
         int size = AEFile::GetFileSize(fd);
-        *out = new signed char[size | (size >> 31)];
+        *out = new signed char[size];
         AEFile::Read(size, *out, fd);
         AEFile::Close(fd);
         return size;
@@ -433,40 +438,23 @@ int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     return n;
 }
 
-static int *g_RH_wp_float = nullptr;
-
-struct RankHolder {
-    uint8_t _pad[0x2c];
-    int32_t rankBits;
-};
-
-void RecordHandler::recordStoreWritePreview(int slot) {
-    String path;
-    String num;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    if (AEFile::FileExist(path) != 0)
+int RecordHandler::recordStoreWritePreview(int slot) {
+    String path = this->backupDir + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-
     AEFile::Write(Globals::status->getPlayingTime(), fd);
-    AEFile::Write((int32_t)Globals::status->getCredits(), fd);
-
-    num = ((Station *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    num = ((SolarSystem *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    AEFile::Write((int32_t)Globals::status->getCurrentCampaignMission(), fd);
-    AEFile::Write((int32_t)Globals::status->getLevel(), fd);
-    AEFile::Write(reinterpret_cast<float &>((*reinterpret_cast<RankHolder **>(g_RH_wp_float))->rankBits), fd);
-
-    AEFile::Write((int32_t)((Ship *) (Globals::status->getShip()))->getIndex(), fd);
+    AEFile::Write((int32_t) Globals::status->getCredits(), fd);
+    AEFile::Write(Globals::status->getStation()->getName(), fd, true);
+    AEFile::Write(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), fd, true);
+    AEFile::Write((int32_t) Globals::status->getCurrentCampaignMission(), fd);
+    AEFile::Write((int32_t) Globals::status->getLevel(), fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->difficulty, fd);
+    AEFile::Write((int32_t) Globals::status->getShip()->getIndex(), fd);
     AEFile::Close(fd);
+    return 1;
 }
 
 static const char g_WA_empty1[] = "";
@@ -740,94 +728,79 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
 }
 
 void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Mission *mission = 0;
-
     int type = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(type), fd);
-    if (type != -1) {
-        String clientName, targetName, targetStation, targetSystem;
-        {
-            if (clientName.data) delete[] clientName.data;
-            clientName.data = nullptr;
-            clientName.length = 0;
-        }
-        AEFile::Read(clientName, fd, (bool)true);
-        {
-            if (targetName.data) delete[] targetName.data;
-            targetName.data = nullptr;
-            targetName.length = 0;
-        }
-        AEFile::Read(targetName, fd, (bool)true);
-        {
-            if (targetStation.data) delete[] targetStation.data;
-            targetStation.data = nullptr;
-            targetStation.length = 0;
-        }
-        AEFile::Read(targetStation, fd, (bool)true);
-        {
-            if (targetSystem.data) delete[] targetSystem.data;
-            targetSystem.data = nullptr;
-            targetSystem.length = 0;
-        }
-        AEFile::Read(targetSystem, fd, (bool)true);
-
-        bool isEmpty = false;
-        AEFile::Read(isEmpty, fd);
-
-        unsigned imgCount = 0;
-        AEFile::Read(imgCount, fd);
-        int *img = 0;
-        if ((int) imgCount >= 1) {
-            img = new int[imgCount];
-            int *p = img;
-            for (int i = 0; i < (int) imgCount; i++) {
-                AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-                p++;
-            }
-        }
-
-        int clientRace = 0, costs = 0, bonus = 0, reward = 0, targetStationIdx = 0;
-        int difficulty = 0, prodIdx = 0, prodAmt = 0, statusValue = 0;
-        bool visible = false;
-        AEFile::Read(reinterpret_cast<int32_t &>(clientRace), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(costs), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(bonus), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(reward), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(targetStationIdx), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(difficulty), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(prodIdx), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(prodAmt), fd);
-        AEFile::Read(reinterpret_cast<int32_t &>(statusValue), fd);
-        AEFile::Read(visible, fd);
-
-        int hasAgent = 0;
-        AEFile::Read(reinterpret_cast<int32_t &>(hasAgent), fd);
-        Agent *agent = (hasAgent < 1) ? 0 : (Agent *) this->readAgent(fd);
-
-        if (!isEmpty) {
-            String nameCopy;
-            nameCopy.Set((clientName).data);
-            mission = new Mission(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
-        } else {
-            mission = new Mission(type, reward, targetStationIdx);
-        }
-        ((Mission *) (mission))->setCosts(costs);
-        ((Mission *) (mission))->setBonus(bonus);
-        ((Mission *) (mission))->setProductionGoods(prodIdx, prodAmt);
-        ((Mission *) (mission))->setStatusValue(statusValue);
-        ((Mission *) (mission))->setVisible(visible);
-        ((Mission *) (mission))->setAgent((Agent *) agent);
-
-        String tgtNameCopy;
-        tgtNameCopy.Set((targetName).data);
-        ((Mission *) (mission))->setTargetName(tgtNameCopy);
-
-        if (agent != 0) {
-            ((Agent *) (agent))->setMission((Mission *) mission);
+    AEFile::Read(type, fd);
+    if (type == -1) {
+        return Mission::empty;
+    }
+    String clientName;
+    AEFile::Read(clientName, fd, true);
+    String targetName;
+    AEFile::Read(targetName, fd, true);
+    String targetStationName;
+    AEFile::Read(targetStationName, fd, true);
+    String targetSystemName;
+    AEFile::Read(targetSystemName, fd, true);
+    bool isEmpty = false;
+    AEFile::Read(isEmpty, fd);
+    int imageCount = 0;
+    AEFile::Read(imageCount, fd);
+    int *imageParts = 0;
+    if (imageCount >= 1) {
+        imageParts = new int[imageCount];
+        int *part = imageParts;
+        for (int i = 0; i < imageCount; i++) {
+            AEFile::Read(*part, fd);
+            part++;
         }
     }
 
+    int clientRace = 0;
+    int costs = 0;
+    int bonus = 0;
+    int reward = 0;
+    int targetStation = 0;
+    int difficulty = 0;
+    int productionItem = 0;
+    int productionAmount = 0;
+    int statusValue = 0;
+    bool visible = false;
+    AEFile::Read(clientRace, fd);
+    AEFile::Read(costs, fd);
+    AEFile::Read(bonus, fd);
+    AEFile::Read(reward, fd);
+    AEFile::Read(targetStation, fd);
+    AEFile::Read(difficulty, fd);
+    AEFile::Read(productionItem, fd);
+    AEFile::Read(productionAmount, fd);
+    AEFile::Read(statusValue, fd);
+    AEFile::Read(visible, fd);
+
+    Agent *agent;
+    int hasAgent = 0;
+    AEFile::Read(hasAgent, fd);
+    if (hasAgent >= 1) {
+        agent = (Agent *) this->readAgent(fd);
+    } else {
+        agent = 0;
+    }
+
+    Mission *mission;
+    if (isEmpty) {
+        mission = new Mission(type, reward, targetStation);
+    } else {
+        mission = new Mission(type, clientName, imageParts, clientRace, reward, targetStation, difficulty);
+    }
+    mission->setCosts(costs);
+    mission->setBonus(bonus);
+    mission->setProductionGoods(productionItem, productionAmount);
+    mission->setStatusValue(statusValue);
+    mission->setVisible(visible);
+    mission->setAgent(agent);
+    mission->setTargetName(targetName);
+    if (agent != 0) {
+        agent->setMission(mission);
+    }
     return mission;
 }
 
@@ -895,138 +868,107 @@ void RecordHandler::saveOptions() {
 }
 
 void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    int costs = 0, sellSys = 0, sellBp = 0, event = 0, idx = 0, offer = 0, race = 0;
-    int sellItemIdx = 0, sellItemPrice = 0, sellItemQty = 0, station = 0, system = 0;
-    unsigned wingmen = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(costs), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellSys), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellBp), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(event), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(offer), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(race), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemIdx), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemPrice), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(sellItemQty), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(station), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(system), fd);
+    int costs = 0;
+    AEFile::Read(costs, fd);
+    int sellSystem = 0;
+    AEFile::Read(sellSystem, fd);
+    int sellBluePrint = 0;
+    AEFile::Read(sellBluePrint, fd);
+    int event = 0;
+    AEFile::Read(event, fd);
+    int kind = 0;
+    AEFile::Read(kind, fd);
+    int offer = 0;
+    AEFile::Read(offer, fd);
+    int race = 0;
+    AEFile::Read(race, fd);
+    int sellItemIndex = 0;
+    AEFile::Read(sellItemIndex, fd);
+    int sellItemPrice = 0;
+    AEFile::Read(sellItemPrice, fd);
+    int sellItemQuantity = 0;
+    AEFile::Read(sellItemQuantity, fd);
+    int station = 0;
+    AEFile::Read(station, fd);
+    int system = 0;
+    AEFile::Read(system, fd);
+    int wingmen = 0;
     AEFile::Read(wingmen, fd);
-
-    unsigned char male = 0;
-    bool hasReward = false, accepted = false;
-    unsigned char raw24 = 0, raw25 = 0;
+    bool male = false;
     AEFile::Read(male, fd);
+    bool hasReward = false;
     AEFile::Read(hasReward, fd);
+    bool accepted = false;
     AEFile::Read(accepted, fd);
-    AEFile::Read(raw24, fd);
-    AEFile::Read(raw25, fd);
+    bool askedForDifficulty = false;
+    AEFile::Read(askedForDifficulty, fd);
+    bool askedForLocation = false;
+    AEFile::Read(askedForLocation, fd);
 
-    unsigned imgCount = 0;
-    AEFile::Read(imgCount, fd);
-    int *img = 0;
-    if (0 < (int) imgCount) {
-        img = new int[imgCount];
-        int *p = img;
-        for (int i = 0; i < (int) imgCount; i++) {
-            AEFile::Read(reinterpret_cast<int32_t &>(*p), fd);
-            p++;
+    int imageCount = 0;
+    AEFile::Read(imageCount, fd);
+    int *imageParts = 0;
+    if (imageCount >= 1) {
+        imageParts = new int[imageCount];
+        for (int i = 0; i < imageCount; i++) {
+            AEFile::Read(imageParts[i], fd);
         }
     }
-
     int sellMod = -1;
-    if (0x12 < idx) {
-        AEFile::Read(reinterpret_cast<int32_t &>(sellMod), fd);
+    if (kind >= 19) {
+        AEFile::Read(sellMod, fd);
     }
 
-    String missionStr, name, stationName, systemName, strE, strF;
-    {
-        if (missionStr.data) delete[] missionStr.data;
-        missionStr.data = nullptr;
-        missionStr.length = 0;
-    }
-    {
-        if (name.data) delete[] name.data;
-        name.data = nullptr;
-        name.length = 0;
-    }
-    {
-        if (stationName.data) delete[] stationName.data;
-        stationName.data = nullptr;
-        stationName.length = 0;
-    }
-    {
-        if (systemName.data) delete[] systemName.data;
-        systemName.data = nullptr;
-        systemName.length = 0;
-    }
-    {
-        if (strE.data) delete[] strE.data;
-        strE.data = nullptr;
-        strE.length = 0;
-    }
-    {
-        if (strF.data) delete[] strF.data;
-        strF.data = nullptr;
-        strF.length = 0;
-    }
-    AEFile::Read(missionStr, fd, (bool)true);
-    AEFile::Read(name, fd, (bool)true);
-    AEFile::Read(stationName, fd, (bool)true);
-    AEFile::Read(systemName, fd, (bool)true);
-    AEFile::Read(strE, fd, (bool)true);
-    AEFile::Read(strF, fd, (bool)true);
+    String missionString;
+    String name;
+    String stationName;
+    String systemName;
+    String wingmanName1;
+    String wingmanName2;
+    AEFile::Read(missionString, fd, true);
+    AEFile::Read(name, fd, true);
+    AEFile::Read(stationName, fd, true);
+    AEFile::Read(systemName, fd, true);
+    AEFile::Read(wingmanName1, fd, true);
+    AEFile::Read(wingmanName2, fd, true);
 
+    Mission *mission;
     int hasMission = 0;
-    AEFile::Read(reinterpret_cast<int32_t &>(hasMission), fd);
-    Mission *mission = (hasMission < 1) ? 0 : (Mission *) this->readMission(fd);
-
-    String nameCopy;
-    nameCopy.Set((name).data);
-    Agent *agent = new Agent(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
-
-    ((Agent *) (agent))->setCosts(costs);
-    ((Agent *) (agent))->setEvent(event);
-    ((Agent *) (agent))->setOffer(offer);
-    ((Agent *) (agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
-
-    if (strE.size() != 0) {
-        String *s = new String();
-        s->Set((strE).data);
-        agent->wingman1 = s;
+    AEFile::Read(hasMission, fd);
+    if (hasMission >= 1) {
+        mission = (Mission *) this->readMission(fd);
+    } else {
+        mission = 0;
     }
-    if (strF.size() != 0) {
-        String *s = new String();
-        s->Set((strF).data);
-        agent->wingman2 = s;
+
+    Agent *agent = new Agent(kind, name, station, system, race, male, sellSystem, sellBluePrint, sellMod,
+                             sellItemPrice);
+    agent->setCosts(costs);
+    agent->setEvent(event);
+    agent->setOffer(offer);
+    agent->setSellItemData(sellItemIndex, sellItemQuantity, sellItemPrice);
+    if (wingmanName1.length != 0) {
+        agent->wingman1 = new String(wingmanName1);
+    }
+    if (wingmanName2.length != 0) {
+        agent->wingman2 = new String(wingmanName2);
     }
     agent->wingmanCount = wingmen;
-
-    Array<String *> *arr = new Array<String *>();
-    ArraySetLength(wingmen, *arr);
-    for (int i = 0; i < (int) wingmen; i++) {
-        String *s = new String();
-        String *src = (i == 0) ? &strE : &strF;
-        s->Set((src)->data);
-        (*arr)[i] = s;
+    Array<String *> *friendNames = new Array<String *>();
+    ArraySetLength(wingmen, *friendNames);
+    for (int i = 0; i < wingmen; i++) {
+        (*friendNames)[i] = new String(i == 0 ? wingmanName1 : wingmanName2);
     }
-    ((Agent *) (agent))->setWingmanFriendNames(arr);
-    ((Agent *) (agent))->giveRewardAtNextChat(hasReward);
-    ((Agent *) (agent))->setOfferAccepted(accepted);
-    ((Agent *) (agent))->setImageParts(img);
-
-    String tmp;
-    tmp.Set((missionStr).data);
-    ((Agent *) (agent))->setMissionString(tmp);
-    tmp.Set((stationName).data);
-    ((Agent *) (agent))->setStationName(tmp);
-    tmp.Set((systemName).data);
-    ((Agent *) (agent))->setSystemName(tmp);
-    ((Agent *) (agent))->setMission((Mission *) mission);
-
-    agent->wasAskedForDifficulty = raw24;
-    agent->wasAskedForLocation = raw25;
-
+    agent->setWingmanFriendNames(friendNames);
+    agent->giveRewardAtNextChat(hasReward);
+    agent->setOfferAccepted(accepted);
+    agent->setImageParts(imageParts);
+    agent->setMissionString(missionString);
+    agent->setStationName(stationName);
+    agent->setSystemName(systemName);
+    agent->setMission(mission);
+    agent->wasAskedForDifficulty = askedForDifficulty;
+    agent->wasAskedForLocation = askedForLocation;
     return agent;
 }
 
@@ -1543,11 +1485,8 @@ void Standing_setStandingsArr(void *st, int *standings); // lint: void_ptr (exte
 
 void *RH_str_make(void *src); // lint: void_ptr (external symbol; mangled signature is fixed)
 
-static Item ***g_RSR_itemDefs = nullptr;
 
-static Ship ***g_RSR_shipDefs = nullptr;
 
-static int g_RSR_modVersion = 0;
 
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     String tmp(this->optionsPath, false);
@@ -1556,7 +1495,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
         unsigned int fd;
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
-        signed char *buf = new signed char[sz | (sz >> 31)];
+        signed char *buf = new signed char[sz];
         *out = buf;
         AEFile::Read(sz, buf, fd);
         AEFile::Close(fd);
@@ -1568,623 +1507,573 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
-    String num, path;
-    num.Set((long long) (slot));
-    path = this->recordDir + num;
-
-    if (AEFile::FileExist(path) != 0) {
-        unsigned int fd;
-        AEFile::OpenRead(path, &fd);
-        int valid = this->checkHash(fd);
-        AEFile::Close(fd);
-        if (valid != 0) {
-            AEFile::OpenRead(path, &fd);
-
-            rec = new GameRecord();
-
-            rec->field_0x04 = 0;
-            AEFile::Read(rec->field_0x04, fd);
-            bool *visitedFlags = reinterpret_cast<bool *>(rec->data);
-            for (unsigned i = 0; i < rec->field_0x04; i++) {
-                AEFile::Read(visitedFlags[i], fd);
-            }
-
-            AEFile::Read(rec->field_0x08, fd);
-            AEFile::Read(rec->field_0x0c, fd);
-            AEFile::Read(rec->playTime, fd);
-            AEFile::Read(rec->field_0x18, fd);
-            AEFile::Read(rec->field_0x1c, fd);
-            AEFile::Read(rec->killsText, fd);
-            AEFile::Read(rec->field_0x24, fd);
-            AEFile::Read(rec->field_0x28, fd);
-            AEFile::Read(rec->field_0x3c, fd);
-            AEFile::Read(rec->field_0x40, fd);
-            *reinterpret_cast<Mission **>(&rec->field_0x54) = (Mission *) this->readMission(fd);
-            *reinterpret_cast<Mission **>(&rec->field_0x58) = (Mission *) this->readMission(fd);
-            AEFile::Read(rec->field_0x30, fd);
-            AEFile::Read(rec->field_0x34, fd);
-            AEFile::Read(rec->field_0x38, fd);
-            AEFile::Read(rec->field_0x2c, fd);
-            AEFile::Read(rec->field_0x44, fd);
-            AEFile::Read(rec->field_0x48, fd);
-            AEFile::Read(rec->field_0x4c, fd);
-            AEFile::Read(rec->field_0x50, fd);
-
-            Array<bool> *flags0 = new Array<bool>();
-            *reinterpret_cast<Array<bool> **>(&rec->field_0x68) = flags0;
-            unsigned n0 = 0;
-            AEFile::Read(n0, fd);
-            ArraySetLength(n0, *flags0);
-            for (int i = 0; i < (int) n0; i++) {
-                bool v = false;
-                AEFile::Read(v, fd);
-                (*flags0)[i] = v;
-            }
-            Array<bool> *flags1 = new Array<bool>();
-            *reinterpret_cast<Array<bool> **>(&rec->field_0x6c) = flags1;
-            unsigned n1 = 0;
-            AEFile::Read(n1, fd);
-            ArraySetLength(n1, *flags1);
-            for (int i = 0; i < (int) n1; i++) {
-                bool v = false;
-                AEFile::Read(v, fd);
-                (*flags1)[i] = v;
-            }
-
-            {
-                Ship **shipDefs = *g_RSR_shipDefs;
-
-                AEFile::Read(rec->field_0x74, fd);
-                AEFile::Read(rec->field_0x78, fd);
-                AEFile::Read(rec->field_0x7c, fd);
-                AEFile::Read(rec->field_0x80, fd);
-
-                Array<bool> *flags84 = new Array<bool>();
-                *reinterpret_cast<Array<bool> **>(&rec->field_0x84) = flags84;
-                int n84 = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(n84), fd);
-                ArraySetLength(n84, *flags84);
-                for (int i = 0; i < n84; i++) {
-                    bool v = false;
-                    AEFile::Read(v, fd);
-                    (*flags84)[i] = v;
-                }
-
-                AEFile::Read(rec->field_0x88, fd);
-
-                Array<bool> *flags8c = new Array<bool>();
-                *reinterpret_cast<Array<bool> **>(&rec->field_0x8c) = flags8c;
-                int n8c = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(n8c), fd);
-                ArraySetLength(n8c, *flags8c);
-                for (int i = 0; i < n8c; i++) {
-                    bool v = false;
-                    AEFile::Read(v, fd);
-                    (*flags8c)[i] = v;
-                }
-
-                AEFile::Read(rec->field_0x90, fd);
-                AEFile::Read(reinterpret_cast<int64_t &>(rec->field_0x98), fd);
-
-                AEFile::Read(rec->field_0xa0, fd);
-                AEFile::Read(rec->field_0xa4, fd);
-                AEFile::Read(rec->field_0xa8, fd);
-                AEFile::Read(rec->field_0xac, fd);
-                AEFile::Read(rec->field_0xb0, fd);
-                AEFile::Read(rec->field_0xb4, fd);
-                AEFile::Read(rec->field_0xb8, fd);
-                AEFile::Read(rec->field_0xbc, fd);
-                AEFile::Read(rec->field_0xc0, fd);
-                AEFile::Read(rec->field_0xc4, fd);
-
-                AEFile::Read(rec->field_0x64, fd);
-                unsigned len60 = rec->field_0x64;
-                int *buf60 = new int[len60];
-                *reinterpret_cast<int **>(&rec->field_0x60) = buf60;
-                for (unsigned i = 0; i < len60; i++) { AEFile::Read(reinterpret_cast<int32_t &>(buf60[i]), fd); }
-
-                int shipIdx = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(shipIdx), fd);
-                Ship *pship = ((Ship *) ((int) (intptr_t) shipDefs[shipIdx]))->makeShip(-1);
-                *reinterpret_cast<Ship **>(&rec->field_0x130) = pship;
-                int race = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(race), fd);
-                ((Ship *) (pship))->setRace(race);
-
-                int eqN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(eqN), fd);
-                if (eqN > 0) {
-                    Array<Item *> *items = new Array<Item *>();
-                    ArraySetLength(eqN, *items);
-                    for (int i = 0; i < eqN; i++) {
-                        int idx = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                        if (idx == -1) {
-                            (*items)[i] = (Item *) 0;
-                        } else {
-                            int amount = 0;
-                            bool uns = false;
-                            AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                            AEFile::Read(uns, fd);
-                            Item *def = (*g_RSR_itemDefs)[idx];
-                            ((Item *) (def))->getMaxPrice();
-                            Item *it = def->makeItem(amount);
-                            ((Item *) (it))->setUnsaleable(uns);
-                            (*items)[i] = (Item *) it;
-                        }
-                    }
-                    ((Ship *) (pship))->replaceEquipment(items);
-                }
-                int cgN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(cgN), fd);
-                if (cgN > 0) {
-                    Array<Item *> *items = new Array<Item *>();
-                    ArraySetLength(cgN, *items);
-                    for (int i = 0; i < cgN; i++) {
-                        int idx = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                        if (idx == -1) {
-                            (*items)[i] = (Item *) 0;
-                        } else {
-                            int amount = 0, price = 0;
-                            bool uns = false;
-                            AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                            AEFile::Read(reinterpret_cast<int32_t &>(price), fd);
-                            AEFile::Read(uns, fd);
-                            Item *def = (*g_RSR_itemDefs)[idx];
-                            ((Item *) (def))->getMaxPrice();
-                            Item *it = def->makeItem(amount);
-                            ((Item *) (it))->setPrice(price);
-                            ((Item *) (it))->setUnsaleable(uns);
-                            (*items)[i] = (Item *) it;
-                        }
-                    }
-                    ((Ship *) (pship))->replaceCargo(items);
-                }
-
-                Array<Station *> *stationArr = new Array<Station *>();
-                int stN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(stN), fd);
-                ArraySetLength(stN, *stationArr);
-                unsigned stCount = stationArr->size();
-                for (unsigned k = 0; k < stCount + 1; k++) {
-                    int sIdx = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(sIdx), fd);
-                    Station *st = 0;
-                    if (sIdx != -1) {
-                        st = (Station *) Galaxy_getStationByIndex(sIdx);
-                        int iN = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(iN), fd);
-                        if (iN > 0) {
-                            Array<Item *> *items = new Array<Item *>();
-                            ArraySetLength(iN, *items);
-                            for (int i = 0; i < iN; i++) {
-                                int idx = 0;
-                                AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                                if (idx == -1) {
-                                    (*items)[i] = (Item *) 0;
-                                } else {
-                                    int amount = 0, price = 0;
-                                    bool uns = false;
-                                    AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                                    AEFile::Read(reinterpret_cast<int32_t &>(price), fd);
-                                    AEFile::Read(uns, fd);
-                                    Item *def = (*g_RSR_itemDefs)[idx];
-                                    ((Item *) (def))->getMaxPrice();
-                                    Item *it = def->makeItem(amount);
-                                    ((Item *) (it))->setPrice(price);
-                                    ((Item *) (it))->setUnsaleable(uns);
-                                    (*items)[i] = (Item *) it;
-                                }
-                            }
-                            ((Station *) (st))->setItems(items, false);
-                        }
-                        int shN = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(shN), fd);
-                        if (shN > 0) {
-                            Array<Ship *> *ships = new Array<Ship *>();
-                            ArraySetLength(shN, *ships);
-                            for (int i = 0; i < shN; i++) {
-                                int si = 0;
-                                AEFile::Read(reinterpret_cast<int32_t &>(si), fd);
-                                Ship *sh = ((Ship *) ((int) (intptr_t) shipDefs[si]))->makeShip(-1);
-                                (*ships)[i] = (Ship *) sh;
-                                int r = 0;
-                                AEFile::Read(reinterpret_cast<int32_t &>(r), fd);
-                                ((Ship *) (sh))->setRace(r);
-                            }
-                            ((Station *) (st))->setShips(ships, false);
-                        }
-                        int agN = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(agN), fd);
-                        if (agN > 0) {
-                            Array<Agent *> *agents = new Array<Agent *>();
-                            ArraySetLength(agN, *agents);
-                            for (int i = 0; i < agN; i++)
-                                (*agents)[i] = (Agent *) this->readAgent(fd);
-                            ((Station *) (st))->setAgents(agents);
-                        }
-                        bool atk = false;
-                        AEFile::Read(atk, fd);
-                        ((Station *) (st))->setAttackedFriends(atk);
-                    }
-                    if (k == stationArr->size()) *reinterpret_cast<Station **>(&rec->field_0x138) = st;
-                    else (*stationArr)[k] = (Station *) st;
-                }
-                *reinterpret_cast<Array<Station *> **>(&rec->field_0x5c) = stationArr;
-
-                int sdN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(sdN), fd);
-                int *standings = new int[sdN];
-                for (int i = 0; i < sdN; i++) AEFile::Read(reinterpret_cast<int32_t &>(standings[i]), fd);
-                Standing *standing = (Standing *) Standing_new();
-                *reinterpret_cast<Standing **>(&rec->field_0x13c) = standing;
-                Standing_setStandingsArr(standing, standings);
-
-                Array<BluePrint *> *bpArr = new Array<BluePrint *>();
-                int bpN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(bpN), fd);
-                ArraySetLength(bpN, *bpArr);
-                for (unsigned i = 0; i < bpArr->size(); i++) {
-                    Array<BluePrint *> *liveBps = Globals::status->bluePrints;
-                    int liveIdx = (*liveBps)[i]->getIndex();
-                    BluePrint *bp = new BluePrint(liveIdx);
-                    (*bpArr)[i] = bp;
-                    Array<int> *ingredients = bp->ingredientCounters;
-                    for (unsigned j = 0; j < ingredients->size(); j++) {
-                        AEFile::Read(reinterpret_cast<int32_t &>((*ingredients)[j]), fd);
-                    }
-                    AEFile::Read(bp->spentValue, fd);
-                    AEFile::Read(bp->locked, fd);
-                    AEFile::Read(bp->productionCount, fd);
-                    AEFile::Read(bp->stationIndex, fd);
-                    String tmp;
-                    {
-                        if (tmp.data) delete[] tmp.data;
-                        tmp.data = nullptr;
-                        tmp.length = 0;
-                    }
-                    AEFile::Read(tmp, fd, (bool)true);
-                    bp->stationName = tmp;
-                }
-                *reinterpret_cast<Array<BluePrint *> **>(&rec->field_0x140) = bpArr;
-
-                int ppN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(ppN), fd);
-                if (ppN < 1) { *reinterpret_cast<Array<PendingProduct *> **>(&rec->field_0x144) = 0; } else {
-                    Array<PendingProduct *> *ppArr = new Array<PendingProduct *>();
-                    ArraySetLength(ppN, *ppArr);
-                    for (unsigned i = 0; i < ppArr->size(); i++) {
-                        int a = 0, c = 0, d = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(a), fd);
-                        AEFile::Read(reinterpret_cast<int32_t &>(c), fd);
-                        AEFile::Read(reinterpret_cast<int32_t &>(d), fd);
-                        String nm;
-                        {
-                            if (nm.data) delete[] nm.data;
-                            nm.data = nullptr;
-                            nm.length = 0;
-                        }
-                        AEFile::Read(nm, fd, (bool)true);
-                        String *nameCopy = (String *) RH_str_make(&nm);
-                        PendingProduct *pp = new PendingProduct(a, *nameCopy, d, c);
-                        (*ppArr)[i] = pp;
-                    }
-                    *reinterpret_cast<Array<PendingProduct *> **>(&rec->field_0x144) = ppArr;
-                }
-
-                int wmN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(wmN), fd);
-                if (wmN < 1) { *reinterpret_cast<Array<String *> **>(&rec->field_0x14c) = 0; } else {
-                    Array<String *> *strArr = new Array<String *>();
-                    ArraySetLength(wmN, *strArr);
-                    for (int i = 0; i < wmN; i++) {
-                        String nm;
-                        {
-                            if (nm.data) delete[] nm.data;
-                            nm.data = nullptr;
-                            nm.length = 0;
-                        }
-                        AEFile::Read(nm, fd, (bool)true);
-                        (*strArr)[i] = (String *) RH_str_make(&nm);
-                    }
-                    *reinterpret_cast<Array<String *> **>(&rec->field_0x14c) = strArr;
-                    AEFile::Read(rec->field_0x150, fd);
-                    AEFile::Read(rec->field_0x154, fd);
-                    int cnt = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(cnt), fd);
-                    int *buf158 = new int[cnt];
-                    *reinterpret_cast<int **>(&rec->field_0x158) = buf158;
-                    for (int i = 0; i < cnt; i++) AEFile::Read(reinterpret_cast<int32_t &>(buf158[i]), fd);
-                }
-
-                AEFile::Read(rec->field_0x15c, fd);
-
-                int b160 = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(b160), fd);
-                Array<bool> *arr160 = new Array<bool>();
-                *reinterpret_cast<Array<bool> **>(&rec->field_0x160) = arr160;
-                ArraySetLength(b160, *arr160);
-                for (unsigned i = 0; i < arr160->size(); i++) {
-                    bool v = false;
-                    AEFile::Read(v, fd);
-                    (*arr160)[i] = v;
-                }
-
-                const int intArrOffs[4] = {0x168, 0x164, 0x170, 0x16c};
-                for (int a = 0; a < 4; a++) {
-                    int cnt = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(cnt), fd);
-                    Array<int> *arr = new Array<int>();
-                    *reinterpret_cast<Array<int> **>(reinterpret_cast<char *>(rec) + intArrOffs[a]) = arr;
-                    ArraySetLength(cnt, *arr);
-                    for (unsigned i = 0; i < arr->size(); i++) {
-                        AEFile::Read(reinterpret_cast<int32_t &>((*arr)[i]), fd);
-                    }
-                }
-
-                int b174 = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(b174), fd);
-                Array<bool> *arr174 = new Array<bool>();
-                *reinterpret_cast<Array<bool> **>(&rec->field_0x174) = arr174;
-                ArraySetLength(b174, *arr174);
-                for (unsigned i = 0; i < arr174->size(); i++) {
-                    bool v = false;
-                    AEFile::Read(v, fd);
-                    (*arr174)[i] = v;
-                }
-
-                int agN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(agN), fd);
-                Array<Agent *> *agents = new Array<Agent *>();
-                *reinterpret_cast<Array<Agent *> **>(&rec->field_0x148) = agents;
-                ArraySetLength(agN, *agents);
-                for (unsigned i = 0; i < agents->size(); i++)
-                    (*agents)[i] = (Agent *) this->readAgent(fd);
-
-                uint8_t *recBytes = reinterpret_cast<uint8_t *>(rec);
-                for (int off = 0xe4; off <= 0x100; off++) AEFile::Read(recBytes[off], fd);
-                AEFile::Read(rec->rank, fd);
-                AEFile::Read(reinterpret_cast<int64_t &>(rec->field_0xc8), fd);
-                AEFile::Read(rec->field_0x101, fd);
-                AEFile::Read(rec->field_0x102, fd);
-
-                int hasWing = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(hasWing), fd);
-                if (hasWing > 0) {
-                    int wi = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(wi), fd);
-                    Ship *wship = ((Ship *) ((int) (intptr_t) shipDefs[wi]))->makeShip(-1);
-                    *reinterpret_cast<Ship **>(&rec->field_0x134) = wship;
-                    int r = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(r), fd);
-                    ((Ship *) (wship))->setRace(r);
-                    int eN = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(eN), fd);
-                    if (eN > 0) {
-                        Array<Item *> *items = new Array<Item *>();
-                        ArraySetLength(eN, *items);
-                        for (int i = 0; i < eN; i++) {
-                            int idx = 0;
-                            AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                            if (idx == -1) {
-                                (*items)[i] = (Item *) 0;
-                            } else {
-                                int amount = 0;
-                                bool uns = false;
-                                AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                                AEFile::Read(uns, fd);
-                                Item *def = (*g_RSR_itemDefs)[idx];
-                                ((Item *) (def))->getMaxPrice();
-                                Item *it = def->makeItem(amount);
-                                ((Item *) (it))->setUnsaleable(uns);
-                                (*items)[i] = (Item *) it;
-                            }
-                        }
-                        ((Ship *) (wship))->replaceEquipment(items);
-                    }
-                    int cN = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(cN), fd);
-                    if (cN > 0) {
-                        Array<Item *> *items = new Array<Item *>();
-                        ArraySetLength(cN, *items);
-                        for (int i = 0; i < cN; i++) {
-                            int idx = 0;
-                            AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                            if (idx == -1) {
-                                (*items)[i] = (Item *) 0;
-                            } else {
-                                int amount = 0, price = 0;
-                                bool uns = false;
-                                AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                                AEFile::Read(reinterpret_cast<int32_t &>(price), fd);
-                                AEFile::Read(uns, fd);
-                                Item *def = (*g_RSR_itemDefs)[idx];
-                                ((Item *) (def))->getMaxPrice();
-                                Item *it = def->makeItem(amount);
-                                ((Item *) (it))->setPrice(price);
-                                ((Item *) (it))->setUnsaleable(uns);
-                                (*items)[i] = (Item *) it;
-                            }
-                        }
-                        ((Ship *) (wship))->replaceCargo(items);
-                    }
-                }
-
-                Array<int> *arr70 = new Array<int>();
-                *reinterpret_cast<Array<int> **>(&rec->field_0x70) = arr70;
-                int n70 = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(n70), fd);
-                ArraySetLength(n70, *arr70);
-                for (int i = 0; i < n70; i++) { AEFile::Read(reinterpret_cast<int32_t &>((*arr70)[i]), fd); }
-
-                AEFile::Read(rec->field_0xd0, fd);
-                AEFile::Read(rec->field_0xd4, fd);
-                AEFile::Read(rec->field_0xd8, fd);
-                AEFile::Read(rec->field_0xdc, fd);
-
-                int siN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(siN), fd);
-                if (siN > 0) {
-                    Array<Item *> *items = new Array<Item *>();
-                    ArraySetLength(siN, *items);
-                    for (int i = 0; i < siN; i++) {
-                        int idx = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-                        if (idx == -1) {
-                            (*items)[i] = (Item *) 0;
-                        } else {
-                            int amount = 0, price = 0;
-                            bool uns = false;
-                            AEFile::Read(reinterpret_cast<int32_t &>(amount), fd);
-                            AEFile::Read(reinterpret_cast<int32_t &>(price), fd);
-                            AEFile::Read(uns, fd);
-                            Item *def = (*g_RSR_itemDefs)[idx];
-                            ((Item *) (def))->getMaxPrice();
-                            Item *it = def->makeItem(amount);
-                            ((Item *) (it))->setPrice(price);
-                            ((Item *) (it))->setUnsaleable(uns);
-                            (*items)[i] = (Item *) it;
-                        }
-                    }
-                    *reinterpret_cast<Array<Item *> **>(&rec->field_0x180) = items;
-                }
-                int ssN = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(ssN), fd);
-                Array<Ship *> *recShips = 0;
-                if (ssN > 0) {
-                    Array<Ship *> *ships = new Array<Ship *>();
-                    ArraySetLength(ssN, *ships);
-                    for (int i = 0; i < ssN; i++) {
-                        int si = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(si), fd);
-                        Ship *sh = ((Ship *) ((int) (intptr_t) shipDefs[si]))->makeShip(-1);
-                        (*ships)[i] = (Ship *) sh;
-                        int r = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(r), fd);
-                        ((Ship *) (sh))->setRace(r);
-                    }
-                    *reinterpret_cast<Array<Ship *> **>(&rec->field_0x184) = ships;
-                    recShips = ships;
-                }
-
-                AEFile::Read(rec->field_0x103, fd);
-                AEFile::Read(rec->dlcRequiredFlag, fd);
-                AEFile::Read(rec->field_0x116, fd);
-
-                int b178 = 0;
-                AEFile::Read(reinterpret_cast<int32_t &>(b178), fd);
-                Array<bool> *arr178 = new Array<bool>();
-                *reinterpret_cast<Array<bool> **>(&rec->field_0x178) = arr178;
-                ArraySetLength(b178, *arr178);
-                for (unsigned i = 0; i < arr178->size(); i++) {
-                    bool v = false;
-                    AEFile::Read(v, fd);
-                    (*arr178)[i] = v;
-                }
-
-                AEFile::Read(rec->field_0x1bc, fd);
-                if (rec->field_0x1bc == g_RSR_modVersion) {
-                    int m0 = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(m0), fd);
-                    if (m0 > 0) {
-                        Array<int> *a = new Array<int>();
-                        ArraySetLength(m0, *a);
-                        for (int i = 0; i < m0; i++) { AEFile::Read(reinterpret_cast<int32_t &>((*a)[i]), fd); }
-                        (*reinterpret_cast<Ship **>(&rec->field_0x130))->setMods(a);
-                    }
-                    int m1 = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(m1), fd);
-                    if (m1 > 0) {
-                        Array<int> *a = new Array<int>();
-                        ArraySetLength(m1, *a);
-                        for (int i = 0; i < m1; i++) { AEFile::Read(reinterpret_cast<int32_t &>((*a)[i]), fd); }
-                        (*reinterpret_cast<Ship **>(&rec->field_0x134))->setMods(a);
-                    }
-
-                    int stShipGroups = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(stShipGroups), fd);
-                    for (int g = 0; g < stShipGroups; g++) {
-                        int mc = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(mc), fd);
-                        if (mc > 0) {
-                            Array<int> *a = new Array<int>();
-                            ArraySetLength(mc, *a);
-                            for (int i = 0; i < mc; i++) { AEFile::Read(reinterpret_cast<int32_t &>((*a)[i]), fd); }
-                            ((Ship *) ((*recShips)[g]))->setMods(a);
-                        }
-                    }
-
-                    Array<Station *> *stArr = *reinterpret_cast<Array<Station *> **>(&rec->field_0x5c);
-                    for (unsigned k = 0; k < stArr->size() + 1; k++) {
-                        Station *cur = (k == stArr->size())
-                                           ? *reinterpret_cast<Station **>(&rec->field_0x138)
-                                           : (*stArr)[k];
-                        if (cur == 0) continue;
-                        int groups = 0;
-                        AEFile::Read(reinterpret_cast<int32_t &>(groups), fd);
-                        for (int i = 0; i < groups; i++) {
-                            int mc = 0;
-                            AEFile::Read(reinterpret_cast<int32_t &>(mc), fd);
-                            for (int j = 0; j < mc; j++) {
-                                int mod = 0;
-                                AEFile::Read(reinterpret_cast<int32_t &>(mod), fd);
-                                Array<Ship *> *cShips = (Array<Ship *> *) ((Station *) cur)->getShips();
-                                ((Ship *) ((*cShips)[i]))->addMod(mod);
-                            }
-                        }
-                    }
-
-                    int wN = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(wN), fd);
-                    if (wN > 0) {
-                        Array<Wanted *> *wArr = new Array<Wanted *>();
-                        *reinterpret_cast<Array<Wanted *> **>(&rec->field_0x1b4) = wArr;
-                        ArraySetLength(wN, *wArr);
-                        for (int i = 0; i < wN; i++)
-                            (*wArr)[i] = (Wanted *) this->readWanted(fd);
-                    }
-
-                    AEFile::Read(rec->field_0x1a4, fd);
-                    AEFile::Read(rec->field_0x1a8, fd);
-                    AEFile::Read(rec->field_0x1ac, fd);
-                    AEFile::Read(rec->field_0x1b0, fd);
-                    AEFile::Read(rec->versionMismatchFlag, fd);
-                    AEFile::Read(rec->field_0x1b8, fd);
-                    AEFile::Read(rec->field_0x104, fd);
-                    AEFile::Read(rec->field_0x105, fd);
-                    AEFile::Read(rec->field_0x108, fd);
-                    AEFile::Read(rec->field_0x106, fd);
-                    AEFile::Read(rec->field_0x107, fd);
-                    AEFile::Read(rec->field_0x10a, fd);
-                    AEFile::Read(rec->field_0x10b, fd);
-                    AEFile::Read(rec->field_0x10c, fd);
-
-                    int bX = 0;
-                    AEFile::Read(reinterpret_cast<int32_t &>(bX), fd);
-                    Array<bool> *arr17c = new Array<bool>();
-                    *reinterpret_cast<Array<bool> **>(&rec->field_0x17c) = arr17c;
-                    ArraySetLength(bX, *arr17c);
-                    for (unsigned i = 0; i < arr17c->size(); i++) {
-                        bool v = false;
-                        AEFile::Read(v, fd);
-                        (*arr17c)[i] = v;
-                    }
-
-                    AEFile::Read(rec->field_0x119, fd);
-                    AEFile::Read(rec->field_0x109, fd);
-                    AEFile::Read(rec->field_0x11a, fd);
-                    AEFile::Read(rec->field_0xe0, fd);
-
-                    uint8_t *recBytes2 = reinterpret_cast<uint8_t *>(rec);
-                    for (int off = 0x10d; off <= 0x114; off++) AEFile::Read(recBytes2[off], fd);
-                }
-            }
-
-            AEFile::Close(fd);
-        }
+    String path = this->recordDir + String(slot);
+    if (AEFile::FileExist(path) == 0) {
+        return rec;
     }
+    unsigned int fd;
+    AEFile::OpenRead(path, &fd);
+    bool valid = this->checkHash(fd);
+    AEFile::Close(fd);
+    if (valid) {
+        AEFile::OpenRead(path, &fd);
+        rec = new GameRecord();
+        int32_t &visitedCount = reinterpret_cast<int32_t &>(rec->field_0x04);
+        visitedCount = 0;
+        AEFile::Read(visitedCount, fd);
+        for (unsigned i = 0; i < (unsigned)visitedCount; i++) {
+            AEFile::Read(reinterpret_cast<bool *>(rec->data)[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x08), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x0c), fd);
+        AEFile::Read(rec->playTime, fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x18), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x1c), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->killsText), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x24), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x28), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x3c), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x40), fd);
+        reinterpret_cast<Mission *&>(rec->field_0x54) = (Mission *)this->readMission(fd);
+        reinterpret_cast<Mission *&>(rec->field_0x58) = (Mission *)this->readMission(fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x30), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x34), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x38), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x2c), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x44), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x48), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x4c), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x50), fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x68) = new Array<bool>();
+        int count68 = 0;
+        AEFile::Read(count68, fd);
+        ArraySetLength(count68, *reinterpret_cast<Array<bool> *&>(rec->field_0x68));
+        for (int i = 0; i < count68; i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x68))[i], fd);
+        }
+        reinterpret_cast<Array<bool> *&>(rec->field_0x6c) = new Array<bool>();
+        int count6c = 0;
+        AEFile::Read(count6c, fd);
+        ArraySetLength(count6c, *reinterpret_cast<Array<bool> *&>(rec->field_0x6c));
+        for (int i = 0; i < count6c; i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x6c))[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x74), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x78), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x7c), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x80), fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x84) = new Array<bool>();
+        int count84 = 0;
+        AEFile::Read(count84, fd);
+        ArraySetLength(count84, *reinterpret_cast<Array<bool> *&>(rec->field_0x84));
+        for (int i = 0; i < count84; i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x84))[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x88), fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x8c) = new Array<bool>();
+        int count8c = 0;
+        AEFile::Read(count8c, fd);
+        ArraySetLength(count8c, *reinterpret_cast<Array<bool> *&>(rec->field_0x8c));
+        for (int i = 0; i < count8c; i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x8c))[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x90), fd);
+        AEFile::Read(reinterpret_cast<int64_t &>(rec->field_0x98), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xa0), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xa4), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xa8), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xac), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xb0), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xb4), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xb8), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xbc), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xc0), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xc4), fd);
+        int32_t &medalCount = reinterpret_cast<int32_t &>(rec->field_0x64);
+        AEFile::Read(medalCount, fd);
+        reinterpret_cast<int *&>(rec->field_0x60) = new int[medalCount];
+        for (int i = 0; i < medalCount; i++) {
+            AEFile::Read(reinterpret_cast<int *&>(rec->field_0x60)[i], fd);
+        }
 
+        int shipIndex = 0;
+        AEFile::Read(shipIndex, fd);
+        reinterpret_cast<Ship *&>(rec->field_0x130) = (*Globals::ships)[shipIndex]->makeShip(-1);
+        int shipRace = 0;
+        AEFile::Read(shipRace, fd);
+        reinterpret_cast<Ship *&>(rec->field_0x130)->setRace(shipRace);
+        int equipmentCount = 0;
+        AEFile::Read(equipmentCount, fd);
+        if (equipmentCount >= 1) {
+            Array<Item *> *equipment = new Array<Item *>();
+            ArraySetLength(equipmentCount, *equipment);
+            for (int i = 0; i < equipmentCount; i++) {
+                int index = 0;
+                AEFile::Read(index, fd);
+                if (index != -1) {
+                    int amount = 0;
+                    AEFile::Read(amount, fd);
+                    Item *item = (*Globals::items)[index];
+                    (*equipment)[i] = item->makeItem(amount, item->getMaxPrice());
+                    bool unsaleable = false;
+                    AEFile::Read(unsaleable, fd);
+                    (*equipment)[i]->setUnsaleable(unsaleable);
+                } else {
+                    (*equipment)[i] = 0;
+                }
+            }
+            reinterpret_cast<Ship *&>(rec->field_0x130)->replaceEquipment(equipment);
+        }
+        int cargoCount = 0;
+        AEFile::Read(cargoCount, fd);
+        if (cargoCount >= 1) {
+            Array<Item *> *cargo = new Array<Item *>();
+            ArraySetLength(cargoCount, *cargo);
+            for (int i = 0; i < cargoCount; i++) {
+                int index;
+                int amount;
+                int price = 0;
+                AEFile::Read(index, fd);
+                AEFile::Read(amount, fd);
+                AEFile::Read(price, fd);
+                bool unsaleable = false;
+                AEFile::Read(unsaleable, fd);
+                Item *item = (*Globals::items)[index];
+                (*cargo)[i] = item->makeItem(amount, item->getMaxPrice());
+                (*cargo)[i]->setPrice(price);
+                (*cargo)[i]->setUnsaleable(unsaleable);
+            }
+            reinterpret_cast<Ship *&>(rec->field_0x130)->replaceCargo(cargo);
+        }
+
+        Array<Station *> *stack = new Array<Station *>();
+        int stackCount = 0;
+        AEFile::Read(stackCount, fd);
+        ArraySetLength(stackCount, *stack);
+        for (unsigned s = 0; s < stack->size() + 1; s++) {
+            int stationIndex = 0;
+            AEFile::Read(stationIndex, fd);
+            Station *station = 0;
+            if (stationIndex != -1) {
+                station = (Station *)(intptr_t)Globals::galaxy->getStation(stationIndex);
+                int itemCount = 0;
+                AEFile::Read(itemCount, fd);
+                if (itemCount >= 1) {
+                    Array<Item *> *items = new Array<Item *>();
+                    ArraySetLength(itemCount, *items);
+                    for (int i = 0; i < itemCount; i++) {
+                        int index;
+                        int amount;
+                        int price = 0;
+                        AEFile::Read(index, fd);
+                        AEFile::Read(amount, fd);
+                        AEFile::Read(price, fd);
+                        bool unsaleable = false;
+                        AEFile::Read(unsaleable, fd);
+                        Item *item = (*Globals::items)[index];
+                        (*items)[i] = item->makeItem(amount, item->getMaxPrice());
+                        (*items)[i]->setPrice(price);
+                        (*items)[i]->setUnsaleable(unsaleable);
+                    }
+                    station->setItems(items, false);
+                }
+                int shipCount = 0;
+                AEFile::Read(shipCount, fd);
+                if (shipCount >= 1) {
+                    Array<Ship *> *shipList = new Array<Ship *>();
+                    ArraySetLength(shipCount, *shipList);
+                    for (int i = 0; i < shipCount; i++) {
+                        int index = 0;
+                        AEFile::Read(index, fd);
+                        (*shipList)[i] = (*Globals::ships)[index]->makeShip(-1);
+                        int race = 0;
+                        AEFile::Read(race, fd);
+                        (*shipList)[i]->setRace(race);
+                    }
+                    station->setShips(shipList, false);
+                }
+                int agentCount = 0;
+                AEFile::Read(agentCount, fd);
+                if (agentCount >= 1) {
+                    Array<Agent *> *agents = new Array<Agent *>();
+                    ArraySetLength(agentCount, *agents);
+                    for (int i = 0; i < agentCount; i++) {
+                        (*agents)[i] = (Agent *)this->readAgent(fd);
+                    }
+                    station->setAgents(agents);
+                }
+                bool attackedFriends = false;
+                AEFile::Read(attackedFriends, fd);
+                station->setAttackedFriends(attackedFriends);
+            }
+            if (s == stack->size()) {
+                reinterpret_cast<Station *&>(rec->field_0x138) = station;
+            } else {
+                (*stack)[s] = station;
+            }
+        }
+        reinterpret_cast<Array<Station *> *&>(rec->field_0x5c) = stack;
+
+        int standingCount = 0;
+        AEFile::Read(standingCount, fd);
+        int *standingValues = new int[standingCount];
+        for (int i = 0; i < standingCount; i++) {
+            AEFile::Read(standingValues[i], fd);
+        }
+        Standing *standing = new Standing();
+        reinterpret_cast<Standing *&>(rec->field_0x13c) = standing;
+        standing->setStandings(standingValues);
+
+        Array<BluePrint *> *bluePrints = new Array<BluePrint *>();
+        int bluePrintCount = 0;
+        AEFile::Read(bluePrintCount, fd);
+        ArraySetLength(bluePrintCount, *bluePrints);
+        for (unsigned i = 0; i < bluePrints->size(); i++) {
+            (*bluePrints)[i] = new BluePrint(
+                (*reinterpret_cast<Array<BluePrint *> *>(Globals::status->getBluePrints()))[i]->getIndex());
+            BluePrint *bluePrint = (*bluePrints)[i];
+            for (unsigned j = 0; j < bluePrint->ingredientCounters->size(); j++) {
+                AEFile::Read((*bluePrint->ingredientCounters)[j], fd);
+            }
+            AEFile::Read(bluePrint->spentValue, fd);
+            AEFile::Read(bluePrint->locked, fd);
+            AEFile::Read(bluePrint->productionCount, fd);
+            AEFile::Read(bluePrint->stationIndex, fd);
+            String stationName;
+            AEFile::Read(stationName, fd, true);
+            bluePrint->stationName = stationName;
+        }
+        reinterpret_cast<Array<BluePrint *> *&>(rec->field_0x140) = bluePrints;
+
+        int pendingCount = 0;
+        AEFile::Read(pendingCount, fd);
+        if (pendingCount >= 1) {
+            Array<PendingProduct *> *pending = new Array<PendingProduct *>();
+            ArraySetLength(pendingCount, *pending);
+            for (unsigned i = 0; i < pending->size(); i++) {
+                int blueprintIndex;
+                int quantity;
+                int stationIndex = 0;
+                AEFile::Read(blueprintIndex, fd);
+                AEFile::Read(quantity, fd);
+                AEFile::Read(stationIndex, fd);
+                String stationName;
+                AEFile::Read(stationName, fd, true);
+                (*pending)[i] = new PendingProduct(blueprintIndex, stationName, stationIndex, quantity);
+            }
+            reinterpret_cast<Array<PendingProduct *> *&>(rec->field_0x144) = pending;
+        } else {
+            rec->field_0x144 = 0;
+        }
+
+        int wingmanCount = 0;
+        AEFile::Read(wingmanCount, fd);
+        if (wingmanCount >= 1) {
+            Array<String *> *wingmen = new Array<String *>();
+            ArraySetLength(wingmanCount, *wingmen);
+            for (int i = 0; i < wingmanCount; i++) {
+                String name;
+                AEFile::Read(name, fd, true);
+                (*wingmen)[i] = new String(name);
+            }
+            reinterpret_cast<Array<String *> *&>(rec->field_0x14c) = wingmen;
+            AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x150), fd);
+            AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x154), fd);
+            int portraitCount = 0;
+            AEFile::Read(portraitCount, fd);
+            reinterpret_cast<int *&>(rec->field_0x158) = new int[portraitCount];
+            for (int i = 0; i < portraitCount; i++) {
+                AEFile::Read(reinterpret_cast<int *&>(rec->field_0x158)[i], fd);
+            }
+        } else {
+            rec->field_0x14c = 0;
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x15c), fd);
+        int count = 0;
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x160) = new Array<bool>();
+        ArraySetLength(count, *reinterpret_cast<Array<bool> *&>(rec->field_0x160));
+        for (unsigned i = 0; i < reinterpret_cast<Array<bool> *&>(rec->field_0x160)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x160))[i], fd);
+        }
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<int> *&>(rec->field_0x168) = new Array<int>();
+        ArraySetLength(count, *reinterpret_cast<Array<int> *&>(rec->field_0x168));
+        for (unsigned i = 0; i < reinterpret_cast<Array<int> *&>(rec->field_0x168)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<int> *&>(rec->field_0x168))[i], fd);
+        }
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<int> *&>(rec->field_0x164) = new Array<int>();
+        ArraySetLength(count, *reinterpret_cast<Array<int> *&>(rec->field_0x164));
+        for (unsigned i = 0; i < reinterpret_cast<Array<int> *&>(rec->field_0x164)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<int> *&>(rec->field_0x164))[i], fd);
+        }
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<int> *&>(rec->field_0x170) = new Array<int>();
+        ArraySetLength(count, *reinterpret_cast<Array<int> *&>(rec->field_0x170));
+        for (unsigned i = 0; i < reinterpret_cast<Array<int> *&>(rec->field_0x170)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<int> *&>(rec->field_0x170))[i], fd);
+        }
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<int> *&>(rec->field_0x16c) = new Array<int>();
+        ArraySetLength(count, *reinterpret_cast<Array<int> *&>(rec->field_0x16c));
+        for (unsigned i = 0; i < reinterpret_cast<Array<int> *&>(rec->field_0x16c)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<int> *&>(rec->field_0x16c))[i], fd);
+        }
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x174) = new Array<bool>();
+        ArraySetLength(count, *reinterpret_cast<Array<bool> *&>(rec->field_0x174));
+        for (unsigned i = 0; i < reinterpret_cast<Array<bool> *&>(rec->field_0x174)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x174))[i], fd);
+        }
+        int agentCount = 0;
+        AEFile::Read(agentCount, fd);
+        reinterpret_cast<Array<Agent *> *&>(rec->field_0x148) = new Array<Agent *>();
+        ArraySetLength(agentCount, *reinterpret_cast<Array<Agent *> *&>(rec->field_0x148));
+        for (unsigned i = 0; i < reinterpret_cast<Array<Agent *> *&>(rec->field_0x148)->size(); i++) {
+            (*reinterpret_cast<Array<Agent *> *&>(rec->field_0x148))[i] = (Agent *)this->readAgent(fd);
+        }
+        AEFile::Read(recordFlag(rec, 0xe4), fd);
+        AEFile::Read(recordFlag(rec, 0xe5), fd);
+        AEFile::Read(recordFlag(rec, 0xe6), fd);
+        AEFile::Read(recordFlag(rec, 0xe7), fd);
+        AEFile::Read(recordFlag(rec, 0xe8), fd);
+        AEFile::Read(recordFlag(rec, 0xe9), fd);
+        AEFile::Read(recordFlag(rec, 0xea), fd);
+        AEFile::Read(recordFlag(rec, 0xeb), fd);
+        AEFile::Read(recordFlag(rec, 0xec), fd);
+        AEFile::Read(recordFlag(rec, 0xed), fd);
+        AEFile::Read(recordFlag(rec, 0xee), fd);
+        AEFile::Read(recordFlag(rec, 0xef), fd);
+        AEFile::Read(recordFlag(rec, 0xf0), fd);
+        AEFile::Read(recordFlag(rec, 0xf1), fd);
+        AEFile::Read(recordFlag(rec, 0xf2), fd);
+        AEFile::Read(recordFlag(rec, 0xf3), fd);
+        AEFile::Read(recordFlag(rec, 0xf4), fd);
+        AEFile::Read(recordFlag(rec, 0xf5), fd);
+        AEFile::Read(recordFlag(rec, 0xf6), fd);
+        AEFile::Read(recordFlag(rec, 0xf7), fd);
+        AEFile::Read(recordFlag(rec, 0xf8), fd);
+        AEFile::Read(recordFlag(rec, 0xf9), fd);
+        AEFile::Read(recordFlag(rec, 0xfa), fd);
+        AEFile::Read(recordFlag(rec, 0xfb), fd);
+        AEFile::Read(recordFlag(rec, 0xfc), fd);
+        AEFile::Read(recordFlag(rec, 0xfe), fd);
+        AEFile::Read(recordFlag(rec, 0xfd), fd);
+        AEFile::Read(recordFlag(rec, 0xff), fd);
+        AEFile::Read(recordFlag(rec, 0x100), fd);
+        AEFile::Read(rec->rank, fd);
+        AEFile::Read(reinterpret_cast<int64_t &>(rec->field_0xc8), fd);
+        AEFile::Read(recordFlag(rec, 0x101), fd);
+        AEFile::Read(recordFlag(rec, 0x102), fd);
+        int hasWingmanShip = 0;
+        AEFile::Read(hasWingmanShip, fd);
+        if (hasWingmanShip >= 1) {
+            int wingmanShipIndex = 0;
+            AEFile::Read(wingmanShipIndex, fd);
+            reinterpret_cast<Ship *&>(rec->field_0x134) = (*Globals::ships)[wingmanShipIndex]->makeShip(-1);
+            int wingmanRace = 0;
+            AEFile::Read(wingmanRace, fd);
+            reinterpret_cast<Ship *&>(rec->field_0x134)->setRace(wingmanRace);
+            int equipmentCount = 0;
+            AEFile::Read(equipmentCount, fd);
+            if (equipmentCount >= 1) {
+                Array<Item *> *equipment = new Array<Item *>();
+                ArraySetLength(equipmentCount, *equipment);
+                for (int i = 0; i < equipmentCount; i++) {
+                    int index = 0;
+                    AEFile::Read(index, fd);
+                    if (index != -1) {
+                        int amount = 0;
+                        AEFile::Read(amount, fd);
+                        Item *item = (*Globals::items)[index];
+                        (*equipment)[i] = item->makeItem(amount, item->getMaxPrice());
+                        bool unsaleable = false;
+                        AEFile::Read(unsaleable, fd);
+                        (*equipment)[i]->setUnsaleable(unsaleable);
+                    } else {
+                        (*equipment)[i] = 0;
+                    }
+                }
+                reinterpret_cast<Ship *&>(rec->field_0x134)->replaceEquipment(equipment);
+            }
+            int itemCount = 0;
+            AEFile::Read(itemCount, fd);
+            if (itemCount >= 1) {
+                Array<Item *> *cargo = new Array<Item *>();
+                ArraySetLength(itemCount, *cargo);
+                for (int i = 0; i < itemCount; i++) {
+                    int index;
+                    int amount;
+                    int price = 0;
+                    AEFile::Read(index, fd);
+                    AEFile::Read(amount, fd);
+                    AEFile::Read(price, fd);
+                    bool unsaleable = false;
+                    AEFile::Read(unsaleable, fd);
+                    Item *item = (*Globals::items)[index];
+                    (*cargo)[i] = item->makeItem(amount, item->getMaxPrice());
+                    (*cargo)[i]->setPrice(price);
+                    (*cargo)[i]->setUnsaleable(unsaleable);
+                }
+                reinterpret_cast<Ship *&>(rec->field_0x134)->replaceCargo(cargo);
+            }
+        }
+
+        reinterpret_cast<Array<int> *&>(rec->field_0x70) = new Array<int>();
+        int visitedSystems = 0;
+        AEFile::Read(visitedSystems, fd);
+        ArraySetLength(visitedSystems, *reinterpret_cast<Array<int> *&>(rec->field_0x70));
+        for (int i = 0; i < visitedSystems; i++) {
+            AEFile::Read((*reinterpret_cast<Array<int> *&>(rec->field_0x70))[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xd0), fd);
+        AEFile::Read(recordFlag(rec, 0xd4), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xd8), fd);
+        AEFile::Read(recordFlag(rec, 0xdc), fd);
+        int itemCount = 0;
+        AEFile::Read(itemCount, fd);
+        if (itemCount >= 1) {
+            Array<Item *> *items = new Array<Item *>();
+            ArraySetLength(itemCount, *items);
+            for (int i = 0; i < itemCount; i++) {
+                int index;
+                int amount;
+                int price = 0;
+                AEFile::Read(index, fd);
+                AEFile::Read(amount, fd);
+                AEFile::Read(price, fd);
+                bool unsaleable = false;
+                AEFile::Read(unsaleable, fd);
+                Item *item = (*Globals::items)[index];
+                (*items)[i] = item->makeItem(amount, item->getMaxPrice());
+                (*items)[i]->setPrice(price);
+                (*items)[i]->setUnsaleable(unsaleable);
+            }
+            reinterpret_cast<Array<Item *> *&>(rec->field_0x180) = items;
+        }
+        int shipCount = 0;
+        AEFile::Read(shipCount, fd);
+        if (shipCount >= 1) {
+            Array<Ship *> *shipList = new Array<Ship *>();
+            ArraySetLength(shipCount, *shipList);
+            for (int i = 0; i < shipCount; i++) {
+                int index = 0;
+                AEFile::Read(index, fd);
+                (*shipList)[i] = (*Globals::ships)[index]->makeShip(-1);
+                int race = 0;
+                AEFile::Read(race, fd);
+                (*shipList)[i]->setRace(race);
+            }
+            reinterpret_cast<Array<Ship *> *&>(rec->field_0x184) = shipList;
+        }
+        AEFile::Read(recordFlag(rec, 0x103), fd);
+        AEFile::Read(recordFlag(rec, 0x115), fd);
+        AEFile::Read(recordFlag(rec, 0x116), fd);
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x178) = new Array<bool>();
+        ArraySetLength(count, *reinterpret_cast<Array<bool> *&>(rec->field_0x178));
+        for (unsigned i = 0; i < reinterpret_cast<Array<bool> *&>(rec->field_0x178)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x178))[i], fd);
+        }
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x1bc), fd);
+        if (rec->field_0x1bc != 0x6e6a78) {
+            AEFile::Close(fd);
+            return rec;
+        }
+        int modCount = 0;
+        AEFile::Read(modCount, fd);
+        if (modCount >= 1) {
+            Array<int> *mods = new Array<int>();
+            ArraySetLength(modCount, *mods);
+            for (int i = 0; i < modCount; i++) {
+                AEFile::Read((*mods)[i], fd);
+            }
+            reinterpret_cast<Ship *&>(rec->field_0x130)->setMods(mods);
+        }
+        AEFile::Read(modCount, fd);
+        if (modCount >= 1) {
+            Array<int> *mods = new Array<int>();
+            ArraySetLength(modCount, *mods);
+            for (int i = 0; i < modCount; i++) {
+                AEFile::Read((*mods)[i], fd);
+            }
+            reinterpret_cast<Ship *&>(rec->field_0x134)->setMods(mods);
+        }
+        int voidShipCount = 0;
+        AEFile::Read(voidShipCount, fd);
+        for (int k = 0; k < voidShipCount; k++) {
+            modCount = 0;
+            AEFile::Read(modCount, fd);
+            if (modCount >= 1) {
+                Array<int> *mods = new Array<int>();
+                ArraySetLength(modCount, *mods);
+                for (int i = 0; i < modCount; i++) {
+                    AEFile::Read((*mods)[i], fd);
+                }
+                (*reinterpret_cast<Array<Ship *> *&>(rec->field_0x184))[k]->setMods(mods);
+            }
+        }
+        for (unsigned s = 0; s < stack->size() + 1; s++) {
+            Station *station = s == stack->size() ? reinterpret_cast<Station *&>(rec->field_0x138) : (*stack)[s];
+            if (station == 0) {
+                continue;
+            }
+            int shipCount = 0;
+            AEFile::Read(shipCount, fd);
+            for (int j = 0; j < shipCount; j++) {
+                int count2 = 0;
+                AEFile::Read(count2, fd);
+                for (int m = 0; m < count2; m++) {
+                    int mod;
+                    AEFile::Read(mod, fd);
+                    (*station->getShips())[j]->addMod(mod);
+                }
+            }
+        }
+
+        int wantedCount = 0;
+        AEFile::Read(wantedCount, fd);
+        if (wantedCount >= 1) {
+            reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4) = new Array<Wanted *>();
+            ArraySetLength(wantedCount, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
+            for (int i = 0; i < wantedCount; i++) {
+                (*reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4))[i] = (Wanted *)this->readWanted(fd);
+            }
+        }
+        for (unsigned i = 0; i < 4; i++) {
+            AEFile::Read((&reinterpret_cast<int32_t &>(rec->field_0x1a4))[i], fd);
+        }
+        AEFile::Read(recordFlag(rec, 0x117), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x1b8), fd);
+        AEFile::Read(recordFlag(rec, 0x104), fd);
+        AEFile::Read(recordFlag(rec, 0x105), fd);
+        AEFile::Read(recordFlag(rec, 0x108), fd);
+        AEFile::Read(recordFlag(rec, 0x106), fd);
+        AEFile::Read(recordFlag(rec, 0x107), fd);
+        AEFile::Read(recordFlag(rec, 0x10a), fd);
+        AEFile::Read(recordFlag(rec, 0x10b), fd);
+        AEFile::Read(recordFlag(rec, 0x10c), fd);
+        AEFile::Read(count, fd);
+        reinterpret_cast<Array<bool> *&>(rec->field_0x17c) = new Array<bool>();
+        ArraySetLength(count, *reinterpret_cast<Array<bool> *&>(rec->field_0x17c));
+        for (unsigned i = 0; i < reinterpret_cast<Array<bool> *&>(rec->field_0x17c)->size(); i++) {
+            AEFile::Read((*reinterpret_cast<Array<bool> *&>(rec->field_0x17c))[i], fd);
+        }
+        AEFile::Read(recordFlag(rec, 0x119), fd);
+        AEFile::Read(recordFlag(rec, 0x109), fd);
+        AEFile::Read(recordFlag(rec, 0x11a), fd);
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xe0), fd);
+        AEFile::Read(recordFlag(rec, 0x10d), fd);
+        AEFile::Read(recordFlag(rec, 0x10e), fd);
+        AEFile::Read(recordFlag(rec, 0x10f), fd);
+        AEFile::Read(recordFlag(rec, 0x110), fd);
+        AEFile::Read(recordFlag(rec, 0x111), fd);
+        AEFile::Read(recordFlag(rec, 0x113), fd);
+        AEFile::Read(recordFlag(rec, 0x112), fd);
+        AEFile::Read(recordFlag(rec, 0x114), fd);
+        AEFile::Close(fd);
+    }
     return rec;
 }
 

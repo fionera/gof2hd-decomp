@@ -15,27 +15,10 @@
 
 using AbyssEngine::Matrix;
 
-struct ItemDb;
 
-static PaintCanvas **gCanvasPtr = nullptr;
-static AbyssEngine::AERandom **const gAERandom = nullptr;
-static ItemDb **const gItemDb = nullptr;
-static unsigned KIPlayer_initA = 0;
-static unsigned KIPlayer_initB = 0;
-
-struct ItemDb {
-    unsigned char *field_0;
-    Item **prototypes;
-};
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
-                   float x, float y, float z, bool active) {
-    {
-        if (this->name.data) delete[] this->name.data;
-        this->name.data = nullptr;
-        this->name.length = 0;
-    }
-
+                   float x, float y, float z, bool grouped) {
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
@@ -54,7 +37,6 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->field_0xa4 = 0;
     this->field_0x11c = 0;
     this->field_0x120 = 0;
-
     this->player = player;
     this->geometry = 0;
     this->parentGeometry = 0;
@@ -62,24 +44,23 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->field_0xc8 = 0;
     this->spacePoints = 0;
 
-    bool haveChild = (geom != 0) && (geom->baseTransform != 0);
-    if (geom != 0 && haveChild) {
+    if (geom != 0 && grouped) {
         this->parentGeometry = geom;
-        AEGeometry *child = new AEGeometry((PaintCanvas *) Globals::Canvas);
-        this->geometry = child;
-        child->addChild(this->parentGeometry->transform);
+        this->geometry = new AEGeometry(Globals::Canvas);
+        this->geometry->addChild(this->parentGeometry->transform);
         this->parentGeometry->altTransform = this->geometry->transform;
     } else {
         this->geometry = geom;
         this->parentGeometry = 0;
     }
 
-    this->cargo = 0;
     this->shipGroup = group;
+    this->cargo = 0;
     this->field_0x72 = 0;
     this->field_0x25 = 0;
     this->field_0x75 = 0;
     this->field_0x42 = 0;
+    this->reviveLockFlag = 0;
     this->field_0x44 = 0;
     this->field_0x48 = -1;
     this->field_0x8c = 1;
@@ -87,44 +68,35 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->hasCargo = 0;
     this->carriesMissionCrate = 0;
     this->diedWithMissionCrate = 0;
+    this->lostMissionCrateToEgo = 0;
     this->field_0x6a = 0;
     this->wingmanFlag = 0;
     this->jumperFlag = 0;
     this->jumpDone = 0;
-
-    {
-        String tmp;
-        tmp.ctor_char("", false);
-        this->name = tmp;
-        {
-            if (tmp.data) delete[] tmp.data;
-            tmp.data = nullptr;
-            tmp.length = 0;
-        }
-    }
-
-    this->field_0x24 = 0;
+    this->name = String("");
     this->visibleFlag = 1;
+    this->field_0x24 = 0;
     this->wingmanTarget = 0;
     this->field_0x70 = 0;
     this->field_0x71 = 0;
-    reinterpret_cast<int &>(this->field_0x40) = 0;
+    this->field_0x40 = 0;
+    this->deadFlag = 0;
     this->field_0xd8 = 0;
     this->field_0x80 = -1;
     this->field_0x84 = -1;
     this->field_0x104 = 0;
-
     this->player->setKIPlayer(this);
 
-    this->state = 0;
     this->field_0x10 = 0;
-    this->sleepFlag = 0x100;
+    this->state = 0;
+    this->sleepFlag = 0;
+    this->initActiveFlag = 1;
     this->field_0xbc = 0;
-    this->field_0xc0 = 0xff;
+    this->field_0xc0 = 255;
     this->crateGeometry = 0;
-    this->rotationSpeed = KIPlayer_initB;
+    this->rotationSpeed = 5.0f;
     this->type = faction;
-    this->field_0x64 = KIPlayer_initA;
+    this->speed = 2.1f;
 
     if (geom != 0) {
         geom->setPosition(x, y, z);
@@ -138,11 +110,12 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->posZ = z;
     this->field_0x14 = 0;
     this->field_0x73 = 0;
+    this->field_0x74 = 0;
     this->field_0x76 = 0;
     this->engineSoundEvent = -1;
     this->field_0xfc = 0;
-    this->field_0x100 = 0x100;
-    (void) active;
+    this->field_0x100 = 0;
+    this->field_0x101 = 1;
 }
 
 KIPlayer::~KIPlayer() {
@@ -190,7 +163,7 @@ void KIPlayer::setJumpSphere(uint32_t sphere) {
     this->jumpSphere = sphere;
 }
 
-uint8_t KIPlayer::isWingMan() {
+bool KIPlayer::isWingMan() {
     return this->wingmanFlag;
 }
 
@@ -232,9 +205,7 @@ void KIPlayer::translate(const Vector &v) {
 }
 
 Vector KIPlayer::getPosition() {
-    Vector v;
-    v = AbyssEngine::AEMath::MatrixGetPosition(*(const Matrix *) this->player->transform);
-    return v;
+    return AbyssEngine::AEMath::MatrixGetPosition(*(const Matrix *) this->player->transform);
 }
 
 void KIPlayer::setVisible(bool visible) {
@@ -320,7 +291,7 @@ void KIPlayer::update(int) {
 }
 
 void KIPlayer::setSpeed(float v) {
-    *(float *) &this->field_0x64 = v;
+    this->speed = v;
 }
 
 void KIPlayer::revive() {
@@ -361,34 +332,27 @@ void KIPlayer::setDead() {
     this->setActive(false);
 }
 
-SpacePoint *KIPlayer::getNearestDockingPoint(const Vector &dir) {
-    Array<SpacePoint *> *arr = this->spacePoints;
-    if (arr == 0)
+SpacePoint *KIPlayer::getNearestDockingPoint(const Vector &position) {
+    if (this->spacePoints == 0)
         return 0;
 
-    Vector selfPos = this->getPosition();
-
-    SpacePoint *best = 0;
-    float bestLen = 1e30f;
-    unsigned count = arr->size();
-    for (unsigned i = 0; i < count; ++i) {
-        SpacePoint *pt = (*arr)[i];
-        if (pt->type != 2)
+    Vector shipPosition = this->getPosition();
+    SpacePoint *nearest = 0;
+    float nearestDistance = 100000000.0f;
+    for (unsigned int i = 0; i < this->spacePoints->size(); ++i) {
+        if ((*this->spacePoints)[i]->type != 2)
             continue;
-
-        Vector rotated = MatrixRotateVector(this->geometry->getMatrix(),
-                                            *(const Vector *) (*arr)[i]);
-        Vector world = selfPos + rotated;
-        Vector delta = world - dir;
-        float len = VectorLength(delta);
-        float alen = len < 0.0f ? -len : len;
-        if (alen < bestLen) {
-            best = (*this->spacePoints)[i];
-            bestLen = alen;
+        float distance = AbyssEngine::AEMath::VectorLength(
+                shipPosition + AbyssEngine::AEMath::MatrixRotateVector(this->geometry->getMatrix(),
+                                                                       *(const Vector *) (*this->spacePoints)[i]) -
+                position);
+        distance = distance > 0.0f ? distance : -distance;
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = (*this->spacePoints)[i];
         }
-        count = this->spacePoints->size();
     }
-    return best;
+    return nearest;
 }
 
 void KIPlayer::setPosition(float x, float y, float z) {
@@ -404,158 +368,112 @@ void KIPlayer::reset() {
         this->player->reset();
     if (this->sleepFlag != 0 || this->initActiveFlag == 0)
         this->setToSleep();
-    Route *r = this->initialRoute;
-    if (r != 0) {
-        this->route = r;
-        r->reset();
-    } else if (this->route != 0) {
+    if (this->initialRoute != 0)
+        this->route = this->initialRoute;
+    if (this->route != 0)
         this->route->reset();
-    }
     this->field_0xfc = 0;
     this->field_0x100 = 0;
 }
 
 void KIPlayer::captureCrate(Hud *hud) {
-    if ((unsigned) (this->state - 3) < 2) {
+    if (this->state == 3 || this->state == 4) {
         this->hasCargo = 0;
-        if (this->field_0x101 != 0)
-            this->setToSleep();
+        if (this->field_0x101)
+            this->setActive(false);
     }
-
-    Array<int> *cargo = this->cargo;
     this->crateGeometry = 0;
-    if (cargo == 0)
+    if (this->cargo == 0)
         return;
 
-    unsigned count = cargo->size();
-    for (unsigned i = 0; i < count; i += 2) {
-        int amount = (*cargo)[i + 1];
+    // cargo holds (item index, amount) pairs; the first non-empty one is picked up.
+    for (unsigned int i = 0; i < this->cargo->size(); i += 2) {
+        int amount = (*this->cargo)[i + 1];
         if (amount < 1)
             continue;
 
-        if ((unsigned) (this->state - 3) >= 2)
-            amount = (*gAERandom)->nextInt();
+        if (this->state != 3 && this->state != 4)
+            amount = Globals::rnd->nextInt(amount);
+        amount = (Globals::status->getShip()->getFreeSpace() > amount ? amount
+                                                                       : Globals::status->getShip()->getFreeSpace()) < 1
+                         ? 1
+                         : (Globals::status->getShip()->getFreeSpace() > amount
+                                    ? amount
+                                    : Globals::status->getShip()->getFreeSpace());
 
-        Status *status = Globals::status;
-
-        int free1 = status->getShip()->getFreeSpace();
-        int amt = amount;
-        if (free1 <= amount)
-            amt = status->getShip()->getFreeSpace();
-        if (amt < 1) {
-            amount = 1;
-        } else {
-            int free2 = status->getShip()->getFreeSpace();
-            if (free2 <= amount)
-                amount = status->getShip()->getFreeSpace();
-        }
-
-        int itemId = (*this->cargo)[i];
-
-        ItemDb *db = *gItemDb;
-        Item *item = db->prototypes[itemId]->makeItem();
-        (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
+        Item *item = (*Globals::items)[(*this->cargo)[i]]->makeItem(amount);
+        (*this->cargo)[i + 1] -= amount;
         if (item == 0)
             return;
 
-        if (this->player->carriesFriendCargoFlag != 0)
+        if (this->player->carriesFriendCargoFlag)
             this->level->stealFriendCargo();
+        if (!this->stealFlagByte)
+            ((Standing *) (intptr_t) Globals::status->getStanding())->applyStealCargo(this->shipGroup);
 
-        if (reinterpret_cast<int &>(this->stealFlagByte) == 0)
-            ((Standing *) (intptr_t) status->getStanding())->applyStealCargo(this->shipGroup);
+        bool missionCrate = this->carriesMissionCrate && (item->getIndex() == 116 || item->getIndex() == 117);
 
-        bool special = false;
-        if (this->carriesMissionCrate != 0) {
-            int idx = item->getIndex();
-            special = (idx == 0x74) || (idx == 0x75);
-        }
-
-        Ship *ship = status->getShip();
-        int avail = ship->spaceAvailable(item->getAmount());
-        int flagA = special ? 1 : 0;
-
-        if (avail == 0) {
-            if (special)
+        if (!Globals::status->getShip()->spaceAvailable(item->getAmount())) {
+            if (missionCrate)
                 this->diedWithMissionCrate = 1;
-            hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 1, 0);
+            hud->catchCargo(item->getIndex(), item->getAmount(), true, false, false, false, false);
             return;
         }
 
-        status->crateCaptured(item->getAmount());
-        if (special)
-            item->setUnsaleable(1);
+        Globals::status->crateCaptured(item->getAmount());
+        if (missionCrate)
+            item->setUnsaleable(true);
 
-        bool merged = false;
+        bool stacked = false;
         if (item->getType() == 1) {
-            Array<Item *> *equip = status->getShip()->getEquipment();
-            if (equip != 0) {
-                unsigned ecount = equip->size();
-                for (unsigned j = 0; j < ecount; ++j) {
-                    Item *e = (*equip)[j];
-                    if (e != 0 && e->getIndex() == item->getIndex()) {
-                        e->changeAmount(item->getAmount());
-                        merged = true;
+            Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
+            if (equipment != 0) {
+                for (unsigned int j = 0; j < equipment->size(); ++j) {
+                    if ((*equipment)[j] != 0 && (*equipment)[j]->getIndex() == item->getIndex()) {
+                        (*equipment)[j]->changeAmount(item->getAmount());
+                        stacked = true;
                     }
                 }
             }
         }
-        if (!merged)
-            status->getShip()->addCargo(item);
+        if (!stacked)
+            Globals::status->getShip()->addCargo(item);
 
-        this->level->field_1c = item->getAmount() + this->level->field_1c;
-
-        if (special) {
+        this->level->field_1c += item->getAmount();
+        if (missionCrate) {
             this->lostMissionCrateToEgo = 1;
         } else if (this->shipGroup == 9) {
-            Status *st = Globals::status;
-            st->field_cc = item->getAmount() + st->field_cc;
-        } else {
-            int idx = item->getIndex();
-            if (idx >= 0x84 && idx < 0x9a) {
-                Status *st = Globals::status;
-                (*st->field_ac)[idx - 0x84] = true;
-            }
+            Globals::status->field_cc += item->getAmount();
+        } else if (item->getIndex() >= 132 && item->getIndex() <= 153) {
+            (*Globals::status->field_ac)[item->getIndex() - 132] = true;
         }
-
-        hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 0, 0);
+        hud->catchCargo(item->getIndex(), item->getAmount(), false, missionCrate, false, false, false);
         return;
     }
 }
 
-SpacePoint *KIPlayer::getNearestNavigationPoint(const Vector &dir, SpacePoint *target) {
-    Array<SpacePoint *> *arr = this->spacePoints;
-    if (arr == 0)
+SpacePoint *KIPlayer::getNearestNavigationPoint(const Vector &position, SpacePoint *current) {
+    if (this->spacePoints == 0)
         return 0;
 
-    Vector selfPos = this->getPosition();
-
-    SpacePoint *best = 0;
-    float bestLen = 1e30f;
-    unsigned count = arr->size();
-    for (unsigned i = 0; i < count; ++i) {
-        SpacePoint *pt = (*arr)[i];
-        if (pt->type != 1)
+    Vector shipPosition = this->getPosition();
+    SpacePoint *nearest = 0;
+    float nearestDistance = 100000000.0f;
+    for (unsigned int i = 0; i < this->spacePoints->size(); ++i) {
+        if ((*this->spacePoints)[i]->type != 1)
             continue;
-
-        Vector rotated = MatrixRotateVector(this->geometry->getMatrix(),
-                                            *(const Vector *) (*arr)[i]);
-        Vector world = selfPos + rotated;
-        Vector delta = world - dir;
-        float len = VectorLength(delta);
-        float alen = len < 0.0f ? -len : len;
-        if (alen < bestLen) {
-            SpacePoint *cand = (*this->spacePoints)[i];
-            if (cand->free != 0 || cand == target) {
-                best = cand;
-                bestLen = alen;
-            } else {
-                best = target;
-                bestLen = alen;
-            }
+        float distance = AbyssEngine::AEMath::VectorLength(
+                shipPosition + AbyssEngine::AEMath::MatrixRotateVector(this->geometry->getMatrix(),
+                                                                       *(const Vector *) (*this->spacePoints)[i]) -
+                position);
+        distance = distance > 0.0f ? distance : -distance;
+        if (distance < nearestDistance &&
+            ((*this->spacePoints)[i]->isFree() || (*this->spacePoints)[i] == current)) {
+            nearestDistance = distance;
+            nearest = (*this->spacePoints)[i];
         }
-        count = this->spacePoints->size();
     }
-    return best;
+    return nearest;
 }
 
 void KIPlayer::setEnemies(Array<Player *> *enemies) {
@@ -594,31 +512,28 @@ void KIPlayer::setPosition(const Vector &v) {
     }
 }
 
+// Mesh of the cargo crate a destroyed ship drops: special crate types first, otherwise
+// one per faction.
+static unsigned short crateMesh(int type, int faction) {
+    if (type == 1)
+        return 16926;
+    if (type == 3)
+        return 16920;
+    if (type == 2)
+        return 16927;
+    if (faction == 1)
+        return 16991;
+    if (faction == 9)
+        return 16916;
+    if (faction == 3)
+        return 16990;
+    return faction == 0 ? 16992 : 16993;
+}
+
 void KIPlayer::createCrate(int type) {
-    unsigned short id;
-    if (type == 1) {
-        id = 0x421e;
-    } else if (type == 2) {
-        id = 0x421f;
-    } else if (type == 3) {
-        id = 0x4218;
-    } else {
-        int st = this->shipGroup;
-        if (st == 1) {
-            id = 0x425f;
-        } else if (st == 3) {
-            id = 0x425e;
-        } else if (st == 9) {
-            id = 0x4214;
-        } else {
-            id = (st == 0) ? 0x4260 : 0x4261;
-        }
-    }
-    AEGeometry *crate = new AEGeometry((uint16_t) id, (PaintCanvas *) gCanvasPtr[0], false);
-    this->crateGeometry = crate;
-    Vector pos = crate->getPosition();
-    crate->setPosition(pos);
-    *(Matrix *) this->player->transform = crate->getMatrix();
+    this->crateGeometry = new AEGeometry(crateMesh(type, this->shipGroup), Globals::Canvas, false);
+    this->crateGeometry->setPosition(this->geometry->getPosition());
+    *(Matrix *) this->player->transform = this->crateGeometry->getMatrix();
     this->player->setKIPlayer(this);
 }
 

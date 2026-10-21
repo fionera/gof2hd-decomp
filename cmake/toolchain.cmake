@@ -29,11 +29,13 @@ set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build
 # metadata at clang 7 -Oz: it keeps PostRA machine sinking from moving entry-block argument copies
 # past early exits (DBG_VALUE users pin them), which is the schedule the original shows. Measured:
 # linked 2779->2856, byte 1185->1194. The link output is stripped, so no debug bytes ship.
+# -std=c++11: the original guards signed `new T[n]` counts against negative n (`orr rX, n, n,
+# asr #31`), which clang 7 emits only for C++98/C++11, not for its gnu++14 default.
 set(_match_api 21)
 set(CMAKE_CXX_FLAGS
     "-target armv7-none-linux-androideabi${_match_api} \
 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp \
--fPIC -frtti -fstack-protector-strong ${GOF2_MATCH_OPT} -g \
+-std=c++11 -fPIC -frtti -fstack-protector-strong ${GOF2_MATCH_OPT} -g \
 -stdlib=libc++ \
 -isystem ${GOF2_NDK_LIBCXX_INC} \
 -isystem ${GOF2_NDK_LIBCXXABI_INC} \

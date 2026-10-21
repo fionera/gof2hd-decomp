@@ -8,17 +8,14 @@ namespace AbyssEngine {
     class PaintCanvas;
 }
 
-void AMeshMerger_drawMeshes(void *canvas, uint32_t transformId, uint32_t flags); // lint: void_ptr (externally-linked symbol, Pv mangling baked in)
-
-// lint: void_ptr (externally-linked symbol, Pv mangling baked in)
-
 class AMeshMerger {
 public:
-    unsigned char _pad_0[8];
+    int rows;
+    uint16_t flags;
+    uint8_t initialized;
     Array<AbyssEngine::Mesh *> meshes;
-    unsigned char _pad_10[4];
     AbyssEngine::PaintCanvas *canvas;
-    unsigned char _pad_18[4];
+    uint32_t mergedMeshId;
     uint32_t transformId;
 
     ~AMeshMerger();

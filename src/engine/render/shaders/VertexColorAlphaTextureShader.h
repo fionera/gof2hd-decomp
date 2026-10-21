@@ -19,21 +19,21 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int attrib1;
-        int attrib2;
-        int attrib3;
-        int attrib4;
-        int attrib5;
-        int attrib0;
-        int uniform0;
-        int uniform1;
-        int uniform2;
-        int uniform3;
-        int uniform4;
-        int uniform5;
-        int uniform6;
-        int uniform7;
-        int uniform8;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
+        int aVertexColorLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTextureLoc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
 
         VertexColorAlphaTextureShader();
 
