@@ -306,7 +306,7 @@ namespace AbyssEngine {
         }
 
         if (glyphs != 0) {
-            delete[] glyphs;
+            operator delete[](glyphs); // lint: operator_call (a builtin delete[] lets -Oz hoist it above the null test)
             f = *slot;
         }
         f->glyphMeshes = 0;
