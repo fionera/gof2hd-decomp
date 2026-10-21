@@ -1537,34 +1537,212 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
 }
 
 void Engine::GlEnable(unsigned int cap, bool enable) {
-    if (Engine::enableShader == 0) {
-        unsigned int glCap = cap == 0x1000000 ? 0xbc0 : cap;
-        if (enable) {
-            return glEnable(glCap);
+    // Engine-level capability codes (0x1000000 alpha test, 0x11000xx shader features) are tracked
+    // as bits in glEnableFlags when shaders are on; the GLES1 path forwards real GL caps only.
+    if (Engine::enableShader != 0) {
+        switch (cap) {
+            case 0x1100000:
+                if (enable) {
+                    this->glEnableFlags |= 0x4u;
+                } else {
+                    this->glEnableFlags &= ~0x4u;
+                }
+                break;
+            case 0x1000000:
+                if (enable) {
+                    this->glEnableFlags |= 0x2u;
+                } else {
+                    this->glEnableFlags &= ~0x2u;
+                }
+                break;
+            case 0x1100001:
+                if (enable) {
+                    this->glEnableFlags |= 0x8u;
+                } else {
+                    this->glEnableFlags &= ~0x8u;
+                }
+                break;
+            case 0x1100002:
+                if (enable) {
+                    this->glEnableFlags |= 0x10u;
+                } else {
+                    this->glEnableFlags &= ~0x10u;
+                }
+                break;
+            case 0x1100003:
+                if (enable) {
+                    this->glEnableFlags |= 0x20u;
+                } else {
+                    this->glEnableFlags &= ~0x20u;
+                }
+                break;
+            case 0x1100004:
+                if (enable) {
+                    this->glEnableFlags |= 0x80u;
+                } else {
+                    this->glEnableFlags &= ~0x80u;
+                }
+                break;
+            case 0x1100005:
+                if (enable) {
+                    this->glEnableFlags |= 0x40u;
+                } else {
+                    this->glEnableFlags &= ~0x40u;
+                }
+                break;
+            case 0x1100006:
+                if (enable) {
+                    this->glEnableFlags |= 0x100u;
+                } else {
+                    this->glEnableFlags &= ~0x100u;
+                }
+                break;
+            case 0x1100007:
+                if (enable) {
+                    this->glEnableFlags |= 0x200u;
+                } else {
+                    this->glEnableFlags &= ~0x200u;
+                }
+                break;
+            case 0x1100008:
+                if (enable) {
+                    this->glEnableFlags |= 0x400u;
+                } else {
+                    this->glEnableFlags &= ~0x400u;
+                }
+                break;
+            case 0x1100009:
+                if (enable) {
+                    this->glEnableFlags |= 0x1000u;
+                } else {
+                    this->glEnableFlags &= ~0x1000u;
+                }
+                break;
+            case 0x1100010:
+                if (enable) {
+                    this->glEnableFlags |= 0x2000u;
+                } else {
+                    this->glEnableFlags &= ~0x2000u;
+                }
+                break;
+            case 0x1100011:
+                if (enable) {
+                    this->glEnableFlags |= 0x4000u;
+                } else {
+                    this->glEnableFlags &= ~0x4000u;
+                }
+                break;
+            case 0x1100012:
+                if (enable) {
+                    this->glEnableFlags |= 0x8000u;
+                } else {
+                    this->glEnableFlags &= ~0x8000u;
+                }
+                break;
+            case 0x1100013:
+                if (enable) {
+                    this->glEnableFlags |= 0x10000u;
+                } else {
+                    this->glEnableFlags &= ~0x10000u;
+                }
+                break;
+            case 0x1100014:
+                if (enable) {
+                    this->glEnableFlags |= 0x20000u;
+                } else {
+                    this->glEnableFlags &= ~0x20000u;
+                }
+                break;
+            case 0x1100015:
+                if (enable) {
+                    this->glEnableFlags |= 0x40000u;
+                } else {
+                    this->glEnableFlags &= ~0x40000u;
+                }
+                break;
+            case 0x1100016:
+                if (enable) {
+                    this->glEnableFlags |= 0x80000u;
+                } else {
+                    this->glEnableFlags &= ~0x80000u;
+                }
+                break;
+            case 0x1100017:
+                if (enable) {
+                    this->glEnableFlags |= 0x100000u;
+                } else {
+                    this->glEnableFlags &= ~0x100000u;
+                }
+                break;
+            case 0x1100018:
+                if (enable) {
+                    this->glEnableFlags |= 0x200000u;
+                } else {
+                    this->glEnableFlags &= ~0x200000u;
+                }
+                break;
+            case 0x1100019:
+                if (enable) {
+                    this->glEnableFlags |= 0x400000u;
+                } else {
+                    this->glEnableFlags &= ~0x400000u;
+                }
+                break;
+            case 0x1100020:
+                if (enable) {
+                    this->glEnableFlags |= 0x800000u;
+                } else {
+                    this->glEnableFlags &= ~0x800000u;
+                }
+                break;
+            case 0x1100021:
+                if (enable) {
+                    this->glEnableFlags |= 0x1000000u;
+                } else {
+                    this->glEnableFlags &= ~0x1000000u;
+                }
+                break;
+            case 0x1100022:
+                if (enable) {
+                    this->glEnableFlags |= 0x2000000u;
+                } else {
+                    this->glEnableFlags &= ~0x2000000u;
+                }
+                break;
+            case 0x1100023:
+                if (enable) {
+                    this->glEnableFlags |= 0x4000000u;
+                } else {
+                    this->glEnableFlags &= ~0x4000000u;
+                }
+                break;
+            case 0x1100024:
+                if (enable) {
+                    this->glEnableFlags |= 0x8000000u;
+                } else {
+                    this->glEnableFlags &= ~0x8000000u;
+                }
+                break;
+            case 0xde1:
+                if (enable) {
+                    this->glEnableFlags |= 0x1u;
+                } else {
+                    this->glEnableFlags &= ~0x1u;
+                }
+                break;
         }
-        return glDisable(glCap);
-    }
-
-    uint32_t bit = 0;
-    if (cap == 0xde1) {
-        bit = 1;
-    } else if (cap == 0x1000000) {
-        bit = 2;
-    } else if (cap >= 0x1100000 && cap <= 0x1100024) {
-        static const uint32_t bits[] = {
-            4, 8, 0x10, 0x20, 0x80, 0x40, 0x100, 0x200, 0x400, 0x1000,
-            0, 0, 0, 0, 0, 0, 0x2000, 0x4000, 0x8000, 0x10000, 0x20000,
-            0x40000, 0x80000, 0x100000, 0x200000, 0x400000, 0, 0, 0, 0, 0,
-            0, 0x800000, 0x1000000, 0x2000000, 0x4000000, 0x8000000,
-        };
-        bit = bits[cap - 0x1100000];
-    }
-    if (bit == 0) {
         return;
     }
-    uint32_t flags = this->glEnableFlags;
-    flags = enable ? (flags | bit) : (flags & ~bit);
-    this->glEnableFlags = flags;
+    if ((cap >> 20) > 16) {
+        return;
+    }
+    if (cap == 0x1000000) {
+        cap = 0xbc0;
+    }
+    if (enable) {
+        return glEnable(cap);
+    }
+    return glDisable(cap);
 }
 
 void Engine::LightEnable(bool enabled) {
