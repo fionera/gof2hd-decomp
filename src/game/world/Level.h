@@ -241,7 +241,7 @@ public:
 
     void createRadioMessages(int set);
 
-    void *getBoundingVolume(int param, AEGeometry *kind); // lint: void_ptr (method return type is symbol-baked)
+    Array<BoundingVolume *> *getBoundingVolume(int id, AEGeometry *geometry);
 
     PlayerEgo *getPlayer();
 

@@ -5479,53 +5479,58 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
     return 0;
 }
 
-void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) { // lint: void_ptr (method return type is symbol-baked)
-    // lint: void_ptr (method return type is symbol-baked)
-    int index = (int) (intptr_t) kind;
-    FileRead *fr = (FileRead *) ::operator new(1);
-    new(fr) FileRead();
-
-    int *coll;
-    if (index < 2000)
-        coll = (int *) fr->loadStationCollision(index);
-    else
-        coll = (int *) fr->loadStaticCollision(index);
-    (fr->~FileRead(), ::operator delete(fr));
-
-    Array<BoundingVolume *> *result = nullptr;
-    if (coll != 0) {
-        unsigned n = *(unsigned *) coll[1];
-        Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
-        ArraySetLength(n, *arr);
-        result = arr;
-
-        int cursor = 1;
-        for (unsigned i = 0; i < n; i = i + 1) {
-            const int *data = (const int *) (intptr_t) coll[1];
-            const int *r = data + cursor;
-            int shape = data[cursor];
-            BoundingVolume *bv = 0;
-            if (shape == 1) {
-                bv = new BoundingAAB(0.0f, 0.0f, 0.0f,
-                                     (float) r[1], (float) r[3], -(float) r[2],
-                                     2.4f * (float) r[4], 2.4f * (float) r[6], 2.4f * (float) r[5]);
-                cursor = cursor + 7;
-            } else if (shape == 0) {
-                float radius = 0.6f * (float) r[4];
-                if (radius < 0.0f) radius = -radius;
-                bv = new BoundingSphere(0.0f, 0.0f, 0.0f,
-                                        (float) r[1], (float) r[3], -(float) r[2], radius);
-                cursor = cursor + 5;
-            } else {
-                cursor = cursor + 1;
-            }
-            (*arr)[i] = bv;
-        }
-
-        ::operator delete((int *) (intptr_t) coll[1]);
-        ::operator delete(coll);
+Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometry*/) {
+    FileRead *fileRead = new FileRead();
+    Array<int> *collision;
+    if (id >= 2000) {
+        collision = fileRead->loadStaticCollision(id);
+    } else {
+        collision = fileRead->loadStationCollision(id);
     }
-    return result;
+    delete fileRead;
+
+    Array<BoundingVolume *> *volumes = nullptr;
+    if (collision != nullptr) {
+        int count = (*collision)[0];
+        Vector size = {0.0f, 0.0f, 0.0f};
+        volumes = new Array<BoundingVolume *>();
+        ArraySetLength(count, *volumes);
+        for (int i = 0, cursor = 1; i < count; i++) {
+            switch ((*collision)[cursor++]) {
+                case 0: {
+                    Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
+                                  (float) (*collision)[cursor + 2]};
+                    size.x = (float) (*collision)[cursor + 3];
+                    cursor += 4;
+                    size *= 0.6f;
+                    if (size.x < 0.0f) {
+                        size *= -1.0f;
+                    }
+                    Vector center = {-pos.x, pos.z, -pos.y};
+                    (*volumes)[i] = new BoundingSphere(0.0f, 0.0f, 0.0f, center.x, center.y, center.z, size.x);
+                    break;
+                }
+                case 1: {
+                    Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
+                                  (float) (*collision)[cursor + 2]};
+                    size.x = (float) (*collision)[cursor + 3];
+                    size.z = (float) (*collision)[cursor + 4];
+                    size.y = (float) (*collision)[cursor + 5];
+                    cursor += 6;
+                    size *= 1.2f;
+                    Vector center = {-pos.x, pos.z, -pos.y};
+                    (*volumes)[i] = new BoundingAAB(0.0f, 0.0f, 0.0f, center.x, center.y, center.z,
+                                                    size.x * 2.0f, size.y * 2.0f, size.z * 2.0f);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        ArrayRelease(*collision);
+        delete collision;
+    }
+    return volumes;
 }
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group) {
