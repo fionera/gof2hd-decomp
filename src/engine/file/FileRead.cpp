@@ -284,17 +284,17 @@ Array<Wanted *> *FileRead::loadWanted() {
         int32_t id;
         int32_t a;
         int32_t b;
-        int32_t c;
         int32_t d;
         int32_t e;
         int32_t f;
+        int32_t c;
+        int32_t imageCount;
         int32_t g;
         int32_t h;
         int32_t i;
         int32_t j;
         int32_t k;
         int32_t l;
-        int32_t imageCount;
         while (index < wanted->size()) {
 
             AEFile::ReadSwitched(name, handle);
