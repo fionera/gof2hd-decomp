@@ -1,5 +1,4 @@
 #include "engine/math/Quaternion.h"
-#include <arm_neon.h>
 #include <cmath>
 
 namespace AbyssEngine {
@@ -108,10 +107,7 @@ namespace AbyssEngine {
     }
 
     Quaternion Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
-        float32x4_t result;
-        Quaternion difference = b - a;
-        result = vmlaq_f32(vld1q_f32(&a.x), vdupq_n_f32(t), *reinterpret_cast<float32x4_t *>(&difference));
-        return reinterpret_cast<Quaternion &>(result).Normalized();
+        return (a + (b - a) * t).Normalized();
     }
 
     Quaternion Quaternion::Normalized() {
@@ -124,23 +120,12 @@ namespace AbyssEngine {
     }
 
     Quaternion Quaternion::Lerp(const float *a, const float *b, float t) {
-        float32x4_t av = vld1q_f32(a);
-        float32x4_t bv = vld1q_f32(b);
-
-        float dot = vgetq_lane_f32(av, 0) * vgetq_lane_f32(bv, 0);
-        dot += vgetq_lane_f32(av, 1) * vgetq_lane_f32(bv, 1);
-        dot += vgetq_lane_f32(av, 2) * vgetq_lane_f32(bv, 2);
-        dot += vgetq_lane_f32(av, 3) * vgetq_lane_f32(bv, 3);
-
+        Quaternion qa(a[0], a[1], a[2], a[3]);
+        Quaternion qb(b[0], b[1], b[2], b[3]);
         // Take the shorter way round.
-        float32x4_t delta;
-        if (dot < 0.0f)
-            delta = vsubq_f32(vnegq_f32(bv), av);
-        else
-            delta = vsubq_f32(bv, av);
-
-        float32x4_t result = vmlaq_f32(av, vdupq_n_f32(t), delta);
-        return reinterpret_cast<Quaternion &>(result).Normalized();
+        if (Dot(qa, qb) < 0.0f)
+            return (qa + (Quaternion(-qb.x, -qb.y, -qb.z, -qb.w) - qa) * t).Normalized();
+        return (qa + (qb - qa) * t).Normalized();
     }
 
     Quaternion::operator float *() { return &x; }
