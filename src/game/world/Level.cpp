@@ -6673,8 +6673,7 @@ void Level::initParticleSystems() {
             unsigned char *entryPtr = curBase + 0x12b4;
             unsigned n = this->field_a4->size();
             for (unsigned i = 0; i < n; i++, entryPtr += 0xa0) {
-                const Matrix *playerMat = reinterpret_cast<const Matrix *>(
-                    this->player->player->transform);
+                const Matrix *playerMat = &this->player->player->transform;
                 int slot = this->field_80->addSystem(
                     playerMat,
                     (ParticleSettings::ParticleSet)(i + 0x1d),
