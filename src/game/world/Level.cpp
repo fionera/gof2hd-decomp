@@ -95,9 +95,6 @@ static unsigned char *g_initStreamOut = nullptr;
 static const int g_cg_meshTable[233] = {6754, 6755, 6756, 6760, 6761, 6762, 6763, 6764, 6765, -1, -1, -1, 6788, 6789, 6790, 6791, 6792, 6793, 6794, 6795, 6796, 6797, 6798, 6799, 6800, 6801, 6802, 6803, 14236, 14237, 14238, 14247, 14247, 14247, 14247, 14247, 14249, 14249, 14249, 14249, 14249, 14684, 14684, 14684, 14680, 14680, 14682, 6792, 6797, 6789, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14050, 14052, 14054, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6900, 6901, 6902, 14293, 6905, 6906, 6799, 14297, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14239, 14235, -1, -1, 14247, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6788, 6788, 6788, 14247, 14247, 14247, -1, -1, -1, -1, 14247, -1, -1, 6796, -1, -1, -1, -1, 19091, 6803, 19094, 27338};
 static const int g_cg_soundTable[233] = {52, 53, 54, 56, 55, 57, 58, 59, 60, 50, 49, 50, 78, 75, 79, 77, 72, 73, 74, 76, 80, 81, 66, 67, 63, 64, 68, 65, 69, 70, 71, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 6, 7, 8, 9, 10, 11, 92, 93, 94, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1098, 1100, 1099, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1111, 1113, 1112, 1117, 1095, 1096, 1097, 1101, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1118, -1, -1, -1, 2254, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2271, 2272, -1, -1, 2263, 2263, 2263, 2265, 2265, 2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1, 2275, 2276, 2278, 2277, 2280};
 
-static int g_cg_rocketFx = 0;
-
-static int g_cg_objFx = 0x3E8;
 
 
 
@@ -105,7 +102,7 @@ static int g_cg_objFx = 0x3E8;
 
 
 
-static int g_cg_mineFx = 0;
+
 
 
 
@@ -732,164 +729,158 @@ void Level::setPlayerEngineColor(short color) {
 }
 
 Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
-    ObjectGun *obj = 0;
-    Gun *gun = 0;
-
+    AbstractGun *weapon = nullptr;
+    Gun *gun = nullptr;
     switch (kind) {
         case ITEM_SORT_LASER:
         case ITEM_SORT_BLASTER:
         case ITEM_SORT_THERMO: {
-            int res = g_cg_meshTable[idx];
-            if (res < 0) {
-                gun = (Gun *) ::operator new(0x114);
-                new(gun) Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
-                             Vector{0.0f, 0.0f, 0.0f});
-                gun->setIndex(idx);
-                gun->weaponType = static_cast<ItemSort>(kind);
-                gun->setPlayerGun(1);
-                obj = (ObjectGun *) ::operator new(0x24);
-                new(obj) BeamGun(owner, gun, idx, this);
-            } else {
-                int barrels = ((unsigned) (idx - 9) < 3 || idx == 0xe4) ? 1 : 0x14;
-                gun = (Gun *) ::operator new(0x114);
+            int mesh = g_cg_meshTable[idx];
+            if (mesh >= 0) {
+                int barrels = ((unsigned) (idx - 9) < 3 || idx == 228) ? 1 : 20;
                 if (kind == ITEM_SORT_THERMO) {
-                    new(gun) Gun(owner, dmg, barrels, hp, cool, rate, (float) color,
-                                 Vector{0.0f, 0.0f, bitsToFloat(g_cg_rocketFx)}, Vector{0.0f, 0.0f, 0.0f});
+                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 300.0f},
+                                  Vector{0.0f, 0.0f, 0.0f});
                     gun->setIndex(idx);
-                    gun->weaponType = ITEM_SORT_THERMO;
-                    gun->setPlayerGun(1);
-                    gun->setErrorMagnitudePercentage(0x14);
-                    obj = (ObjectGun *) ::operator new(0xe8);
-                    new(obj) RocketGun(owner, gun, res, 0, 0, 0, 1, this);
+                    gun->weaponType = 3;
+                    gun->setPlayerGun(true);
+                    gun->setErrorMagnitudePercentage(20);
+                    weapon = new RocketGun(owner, gun, mesh, 0, 0, 0, true, this);
                 } else {
-                    new(gun) Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
-                                 Vector{0.0f, 0.0f, 0.0f});
+                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
+                                  Vector{0.0f, 0.0f, 0.0f});
                     gun->setIndex(idx);
-                    gun->weaponType = static_cast<ItemSort>(kind);
-                    gun->setPlayerGun(1);
-                    obj = (ObjectGun *) ::operator new(0xb0);
-                    new(obj) ObjectGun(owner, gun, res, 1000, this);
+                    gun->weaponType = kind;
+                    gun->setPlayerGun(true);
+                    weapon = new ObjectGun(owner, gun, mesh, 1000, this);
                 }
+            } else {
+                gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
+                              Vector{0.0f, 0.0f, 0.0f});
+                gun->setIndex(idx);
+                gun->weaponType = kind;
+                gun->setPlayerGun(true);
+                weapon = new BeamGun(owner, gun, idx, this);
             }
             break;
         }
         case ITEM_SORT_AUTO_CANNON:
         case ITEM_SORT_SCATTER_GUN:
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, dmg, 0x19, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, bitsToFloat(g_cg_objFx)},
-                         Vector{0.0f, 0.0f, 0.0f});
+            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+                          Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = static_cast<ItemSort>(kind);
-            gun->setPlayerGun(1);
-            obj = (ObjectGun *) ::operator new(0xb0);
-            new(obj) ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             gun->setErrorMagnitudePercentage(2);
             break;
         case ITEM_SORT_ROCKET:
         case ITEM_SORT_MISSILE:
-        case ITEM_SORT_CLUSTER_MISSILE: {
-            gun = (Gun *) ::operator new(0x114);
-            int barrels = (kind == ITEM_SORT_CLUSTER_MISSILE) ? (idx - 0xd3) : 5;
-            new(gun) Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
-                         Vector{0.0f, 0.0f, 0.0f});
+        case ITEM_SORT_CLUSTER_MISSILE:
+            gun = new Gun(owner, dmg, kind == ITEM_SORT_CLUSTER_MISSILE ? idx - 211 : 5, hp, cool, rate, (float) color,
+                          Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = static_cast<ItemSort>(kind);
-            gun->setPlayerGun(1);
-            obj = (ObjectGun *) ::operator new(0xe8);
-            new(obj) RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
-                               (kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE) ? 1 : 0, this);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
+                                   kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
-        }
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, bitsToFloat(g_cg_objFx)},
-                         Vector{0.0f, 0.0f, 0.0f});
+            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+                          Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = static_cast<ItemSort>(kind);
-            gun->setPlayerGun(1);
-            int attr = ((Item *) (intptr_t)(*(int *) (*(int *) ((int) (intptr_t) Globals::items + 4) + idx * 4)))->getAttribute(0xf);
-            obj = (ObjectGun *) ::operator new(300);
-            new(obj) BombGun(gun, g_cg_meshTable[idx], 1, kind, attr == 1 ? 1 : 0,
-                             this);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            int attribute = (*Globals::items)[idx]->getAttribute(15);
+            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, kind, attribute == 1, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
         }
-        case ITEM_SORT_TURRET:
-        case ITEM_SORT_PLASMA_COLLECTOR: {
-            int fx = (idx == 0xb5) ? g_cg_mineFx : g_cg_rocketFx;
-            int extra = (idx == 0x30 && idx != 0xb5) ? (g_cg_rocketFx - 0xf60000) : 0;
-            if (kind == ITEM_SORT_PLASMA_COLLECTOR) { fx = (idx == 0xb5) ? g_cg_mineFx : g_cg_rocketFx; }
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, dmg, 0xf, hp, cool, rate, (float) color,
-                         Vector{bitsToFloat(extra), 0.0f, bitsToFloat(fx)}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = static_cast<ItemSort>(kind);
-            gun->setPlayerGun(1);
-            if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
-                reinterpret_cast<int &>(gun->field_0xa4_b0) = 1;
-                if (idx == 0xe0) gun->field_0xa5 = 1;
+        case ITEM_SORT_TURRET: {
+            float z;
+            float x;
+            if (idx == 181) {
+                z = -300.0f;
+                x = 0.0f;
+            } else {
+                z = 300.0f;
+                x = idx == 48 ? 80.0f : 0.0f;
             }
-            obj = (ObjectGun *) ::operator new(0xb0);
-            const int *tbl = (kind == ITEM_SORT_PLASMA_COLLECTOR) ? g_cg_meshTable : g_cg_meshTable;
-            new(obj) ObjectGun(owner, gun, tbl[idx], 1000, this);
+            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 8;
+            gun->setPlayerGun(true);
+            if (idx == 48 || idx == 224 || idx == 181) {
+                gun->field_0xa4_b0 = true;
+                if (idx == 224)
+                    gun->field_0xa5 = true;
+            }
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             break;
         }
-        case ITEM_SORT_MINE: {
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+        case ITEM_SORT_PLASMA_COLLECTOR: {
+            float z;
+            float x;
+            if (idx == 181) {
+                z = -300.0f;
+                x = 0.0f;
+            } else {
+                z = 300.0f;
+                x = idx == 48 ? 80.0f : 0.0f;
+            }
+            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = ITEM_SORT_MINE;
-            gun->setPlayerGun(1);
-            obj = (ObjectGun *) ::operator new(0xd4);
-            new(obj) MineGun(gun, g_cg_meshTable[idx], 1, ITEM_SORT_MINE, this);
+            gun->weaponType = 35;
+            gun->setPlayerGun(true);
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            break;
+        }
+        case ITEM_SORT_MINE:
+            gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 11;
+            gun->setPlayerGun(true);
+            weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
-        }
-        case ITEM_SORT_SENTRY_GUN: {
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+        case ITEM_SORT_SENTRY_GUN:
+            gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = ITEM_SORT_SENTRY_GUN;
-            gun->setPlayerGun(1);
-            obj = (ObjectGun *) ::operator new(0xb4);
-            new(obj) SentryGun(gun, g_cg_meshTable[idx], 1, ITEM_SORT_SENTRY_GUN, this);
+            gun->weaponType = 39;
+            gun->setPlayerGun(true);
+            weapon = new SentryGun(gun, g_cg_meshTable[idx], 1, 39, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
-        }
-        case ITEM_SORT_SHOCK_BLAST: {
-            gun = (Gun *) ::operator new(0x114);
-            new(gun) Gun(owner, dmg, 1, hp, 1, rate, (float) color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+        case ITEM_SORT_SHOCK_BLAST:
+            gun = new Gun(owner, dmg, 1, hp, 1, rate, (float) color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = ITEM_SORT_SHOCK_BLAST;
-            gun->setPlayerGun(1);
-            obj = (ObjectGun *) ::operator new(300);
-            new(obj) BombGun(gun, g_cg_meshTable[idx], 1, ITEM_SORT_SHOCK_BLAST, 0, this);
+            gun->weaponType = 42;
+            gun->setPlayerGun(true);
+            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, 42, false, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-        }
-        default:
-            gun = 0;
             break;
     }
-
     switch (idx) {
-        case 0x29: Globals::globals->addSoundResourceToList(0xf);
-        case 0x2a: Globals::globals->addSoundResourceToList(0x10);
-        case 0x2b: Globals::globals->addSoundResourceToList(0x11);
-        case 0x2c: Globals::globals->addSoundResourceToList(0xe);
-        case 0x2d: Globals::globals->addSoundResourceToList(0xd);
-        case 0x2e: Globals::globals->addSoundResourceToList(0xc);
-        default: break;
+        case 41:
+            Globals::globals->addSoundResourceToList(15);
+        case 42:
+            Globals::globals->addSoundResourceToList(16);
+        case 43:
+            Globals::globals->addSoundResourceToList(17);
+        case 44:
+            Globals::globals->addSoundResourceToList(14);
+        case 45:
+            Globals::globals->addSoundResourceToList(13);
+        case 46:
+            Globals::globals->addSoundResourceToList(12);
     }
-
     gun->setLevel(this);
-    if (this->playerGuns == nullptr) {
+    if (this->playerGuns == nullptr)
         this->playerGuns = new Array<AbstractGun *>();
-    }
-    ArrayAdd((AbstractGun *) obj, *(this->playerGuns));
+    ArrayAdd(weapon, *this->playerGuns);
     return gun;
 }
 
