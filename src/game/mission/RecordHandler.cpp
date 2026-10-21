@@ -2360,7 +2360,6 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 }
 
 bool RecordHandler::checkHash(unsigned int fd) {
-    bool valid = false;
     int size = AEFile::GetFileSize(fd);
     if (size >= 0) {
         unsigned char *buffer = new unsigned char[size];
@@ -2369,7 +2368,7 @@ bool RecordHandler::checkHash(unsigned int fd) {
         ArrayAdd(buffer, size, *bytes);
         delete[] buffer;
 
-        if (bytes->size() >= 34) {
+        if (bytes->size() > 33) {
             unsigned char *digest = new unsigned char[32];
             Sha256Context *context = new Sha256Context;
             SHA256_Init(context);
@@ -2379,8 +2378,8 @@ bool RecordHandler::checkHash(unsigned int fd) {
             SHA256_Update(context, g_android_origami_super_club, 16);
             SHA256_Final(digest, context);
 
-            valid = true;
-            for (unsigned int i = 0; i < 32; i++) {
+            bool valid = true;
+            for (int i = 0; i < 32; i++) {
                 if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
                     valid = false;
                     break;
@@ -2388,9 +2387,10 @@ bool RecordHandler::checkHash(unsigned int fd) {
             }
             delete[] digest;
             delete context;
+            return valid;
         }
     }
-    return valid;
+    return false;
 }
 
 void RecordHandler::addHashToOptions() {

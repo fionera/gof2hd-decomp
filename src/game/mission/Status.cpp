@@ -1254,26 +1254,20 @@ void Status::setStation(Station *s) {
     delete list;
 }
 
-String Status::replaceHash(String haystack, String needle, String replacement) {
-    int idx = (int) haystack.IndexOf(needle);
-    if (idx < 0) {
-        return haystack;
+String Status::replaceHash(String text, String replacement, String hash) {
+    int index = (int) text.IndexOf(hash);
+    if (index >= 0) {
+        String prefix = text.SubString(0, index);
+        if (prefix.length != 0) {
+            return prefix + String(replacement) + text.SubString(hash.length + index, text.length);
+        }
+        return String(replacement) + text.SubString(hash.length + index, text.length);
     }
-
-    String prefix;
-    prefix = haystack.SubString(0, idx);
-
-    String suffix;
-    suffix = haystack.SubString(needle.size() + idx, haystack.size());
-
-    if (prefix.size() == 0) {
-        return replacement + suffix;
-    }
-    return prefix + replacement + suffix;
+    return text;
 }
 
-String Status::replaceHash(String haystack, String needle) {
-    return replaceHash(haystack, needle, String(""));
+String Status::replaceHash(String text, String replacement) {
+    return replaceHash(text, replacement, String("#"));
 }
 
 void Status::changeRating(int delta) {
