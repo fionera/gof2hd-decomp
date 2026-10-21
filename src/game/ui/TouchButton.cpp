@@ -645,11 +645,11 @@ void TouchButton::setText(String const &text) {
     int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
     if (this->subId != -1)
         textW = Globals::Canvas->GetImage2DWidth(this->subId);
-    if (this->requestedWidth < 1)
-        this->midStretch = textW;
-    else
+    if (this->requestedWidth > 0)
         this->midStretch = this->requestedWidth - this->leftWidth - this->rightWidth;
-    this->width = this->midStretch + this->leftWidth + this->rightWidth;
+    else
+        this->midStretch = textW;
+    this->width = this->leftWidth + this->midStretch + this->rightWidth;
     if ((this->flags1 & 2) != 0) {
         this->textOffsetX = this->width - (textW + this->leftWidth);
     } else if ((this->flags1 & 1) != 0) {

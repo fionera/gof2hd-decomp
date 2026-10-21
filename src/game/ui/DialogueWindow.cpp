@@ -65,14 +65,13 @@ int DialogueWindow::getMode() {
 int DialogueWindow::length() {
     Mission *mission = this->mission;
     if (mission != 0 && mission->isCampaignMission() != 0) {
-        const int *counts;
-        if (this->kind == 1) {
-            counts = g_dw_successCounts;
-        } else {
-            if (this->kind != 0) return 1;
-            counts = g_dw_briefingCounts;
+        if (this->kind == 0) {
+            return g_dw_briefingCounts[this->campaignMission] / 2;
         }
-        return counts[this->campaignMission] / 2;
+        if (this->kind == 1) {
+            return g_dw_successCounts[this->campaignMission] / 2;
+        }
+        return 1;
     }
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
