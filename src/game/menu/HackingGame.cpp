@@ -130,148 +130,135 @@ static inline int layoutOffset(unsigned char *layout, uint32_t off) {
 }
 
 void HackingGame::render2D() {
-    int delta[13];
-
-    Globals::Canvas->SetColor((unsigned) (-1));
-
+    Globals::Canvas->SetColor(0xffffffffu);
     bool solved = true;
-    for (unsigned i = 0; i <= 5; ++i) {
+    for (unsigned int i = 0; i <= 5; i++) {
         if (this->current[i] != this->target[i]) {
             solved = false;
             break;
         }
     }
+    int tileWidth = Globals::Canvas->GetImage2DWidth(this->tileImages[this->type * 12]);
+    int tileHeight = Globals::Canvas->GetImage2DHeight(this->tileImages[this->type * 12]);
 
-    int typeOffset = this->type * 12;
-    int baseImage = this->tileImages[typeOffset];
-    int tileW = Globals::Canvas->GetImage2DWidth((unsigned) (baseImage));
-    int tileH = Globals::Canvas->GetImage2DHeight((unsigned) (baseImage));
-
-    for (int i = 0; i != 6; ++i) {
-        delta[i * 2] = 0;
-        delta[i * 2 + 1] = 0;
+    // Pixel offsets of the tiles that are currently sliding.
+    int offset[6][2];
+    for (int i = 0; i != 6; i++) {
+        offset[i][0] = 0;
+        offset[i][1] = 0;
     }
-
     if (this->rotatingLeft) {
-        float amount = (float) this->rotateTimer / 300.0f;
-        if (amount > 1.0f)
-            amount = 1.0f;
-        delta[3] = (int) (amount * (float) tileH);
-        delta[0] = (int) (amount * (float) tileW);
-        delta[7] = (int) (-(amount * (float) tileH));
-        delta[8] = (int) (-(amount * (float) tileW));
+        float progress = (float) this->rotateTimer / 300.0f;
+        progress = progress < 1.0f ? progress : 1.0f;
+        offset[1][1] = (int) (progress * (float) tileHeight);
+        offset[0][0] = (int) (progress * (float) tileWidth);
+        offset[3][1] = (int) -(progress * (float) tileHeight);
+        offset[4][0] = (int) -(progress * (float) tileWidth);
     } else if (this->rotatingRight) {
-        float amount = (float) this->rotateTimer / 300.0f;
-        if (amount > 1.0f)
-            amount = 1.0f;
-        delta[5] = (int) (amount * (float) tileH);
-        delta[2] = (int) (amount * (float) tileW);
-        delta[9] = (int) (-(amount * (float) tileH));
-        delta[10] = (int) (-(amount * (float) tileW));
+        float progress = (float) this->rotateTimer / 300.0f;
+        progress = progress < 1.0f ? progress : 1.0f;
+        offset[2][1] = (int) (progress * (float) tileHeight);
+        offset[1][0] = (int) (progress * (float) tileWidth);
+        offset[4][1] = (int) -(progress * (float) tileHeight);
+        offset[5][0] = (int) -(progress * (float) tileWidth);
     }
 
     if (solved) {
-        if (this->wonTimer > 0x5dc)
-            goto done;
+        if (this->wonTimer > 1500)
+            return;
     } else {
         int image = this->mainImage;
-        int screenW = Globals::w;
-        int width = Globals::Canvas->GetImage2DWidth((unsigned) (image));
-        int height = Globals::Canvas->GetImage2DHeight((unsigned) (image));
-        Globals::Canvas->DrawImage2D((unsigned) image, half_i(screenW) - half_i(width),
-                                     half_i(Globals::h) - half_i(height));
+        int screenWidth = Globals::w;
+        Globals::Canvas->DrawImage2D(image, screenWidth / 2 - Globals::Canvas->GetImage2DWidth(image) / 2,
+                                     Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2);
     }
 
-    {
-        int topImage = this->topImage;
-        int screenW = Globals::w;
-        int topWidth = Globals::Canvas->GetImage2DWidth((unsigned) (topImage));
-        int screenH = Globals::h;
-        int titleH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-        int topH = Globals::Canvas->GetImage2DHeight((unsigned) (this->topImage));
-        unsigned char **layout = (unsigned char **) &Globals::layout;
-
-        Globals::Canvas->DrawImage2D((unsigned) topImage, half_i(screenW) - topWidth,
-                                     half_i(screenH) - half_i(titleH) - topH + layoutOffset(*layout, 0x30c));
-        Globals::Canvas->DrawImage2D((unsigned) (topImage), half_i(screenW),
-                                     half_i(screenH) - half_i(titleH) - topH + layoutOffset(*layout, 0x30c),
-                                     (unsigned char) (true));
-
-        if (!solved) {
-            int bottomImage = this->bottomImage;
-            int bottomW = Globals::Canvas->GetImage2DWidth((unsigned) (bottomImage));
-            int bottomH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-            Globals::Canvas->DrawImage2D((unsigned) bottomImage, half_i(screenW) - bottomW,
-                                         half_i(bottomH) + half_i(screenH) + layoutOffset(*layout, 0x314));
-            Globals::Canvas->DrawImage2D((unsigned) bottomImage, half_i(screenW),
-                                         half_i(bottomH) + half_i(screenH) + layoutOffset(*layout, 0x314),
-                                         (unsigned char) true);
-        }
-
-        float oneAndHalf = (float) tileW * 1.5f;
-        for (unsigned i = 0; i != 6; ++i) {
-            int stateIndex = this->current[i];
-            bool flashSolved = solved && (((this->wonTimer / 200) & 1) == 0);
-            int imageOffset = (flashSolved ? 6 : 0) + typeOffset + stateIndex;
-            int image = this->tileImages[imageOffset];
-            unsigned row = i / 3;
-            unsigned col = i - row * 3;
-            int y = (int) (((float) half_i(screenW) - oneAndHalf) + (float) (tileW * col) +
-                           (float) delta[i * 2]);
-            int imageH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-            Globals::Canvas->DrawImage2D((unsigned) image, y,
-                                         row * tileH + half_i(Globals::h) - half_i(imageH) +
-                                         delta[i * 2 + 1] + layoutOffset(*layout, 0x310));
-        }
-
-        int leftArrow = this->rotatingLeft ? this->arrowActive : this->arrowIdle;
-        int arrowW = Globals::Canvas->GetImage2DWidth((unsigned) (leftArrow));
-        int arrowTitleH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-        int arrowH = Globals::Canvas->GetImage2DHeight((unsigned) (leftArrow));
-        Globals::Canvas->DrawImage2D((unsigned) leftArrow,
-                                     half_i(screenW) - half_i(tileW) - half_i(arrowW),
-                                     half_i(Globals::h) - half_i(tileH) -
-                                     half_i(arrowTitleH) - half_i(arrowH) + layoutOffset(*layout, 0x310));
-
-        int rightArrow = this->rotatingRight ? this->arrowActive : this->arrowIdle;
-        arrowW = Globals::Canvas->GetImage2DWidth((unsigned) (rightArrow));
-        arrowTitleH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-        arrowH = Globals::Canvas->GetImage2DHeight((unsigned) (rightArrow));
-        Globals::Canvas->DrawImage2D((unsigned) rightArrow,
-                                     half_i(screenW) + half_i(tileW) - half_i(arrowW),
-                                     half_i(Globals::h) - half_i(tileH) -
-                                     half_i(arrowTitleH) - half_i(arrowH) + layoutOffset(*layout, 0x310));
-
-        if (!solved) {
-            for (unsigned i = 0; i != 6; ++i) {
-                unsigned row = i / 3;
-                unsigned col = i - row * 3;
-                int stateIndex = this->target[i];
-                int image = this->tileImages[typeOffset + stateIndex];
-                int imageH = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-                int y = (int) (((float) half_i(screenW) - oneAndHalf) + (float) (tileW * col));
-                Globals::Canvas->DrawImage2D((unsigned) image, y,
-                                             row * tileH + half_i(Globals::h) + half_i(imageH) +
-                                             layoutOffset(*layout, 0x318));
-            }
-
-            int mark = this->markImage;
-            int markW = Globals::Canvas->GetImage2DWidth((unsigned) (mark));
-            int titleH2 = Globals::Canvas->GetImage2DHeight((unsigned) (this->mainImage));
-            int markH = Globals::Canvas->GetImage2DHeight((unsigned) (mark));
-            Globals::Canvas->DrawImage2D((unsigned) mark,
-                                         half_i(screenW) - half_i(tileW) - half_i(markW),
-                                         half_i(Globals::h) + half_i(tileH) +
-                                         half_i(titleH2) - half_i(markH) + layoutOffset(*layout, 0x318));
-            Globals::Canvas->DrawImage2D((unsigned) mark,
-                                         half_i(screenW) + half_i(tileW) - half_i(markW),
-                                         half_i(Globals::h) + half_i(tileH) +
-                                         half_i(titleH2) - half_i(markH) + layoutOffset(*layout, 0x318));
-        }
+    int topImage = this->topImage;
+    int screenWidth = Globals::w;
+    Globals::Canvas->DrawImage2D(topImage, screenWidth / 2 - Globals::Canvas->GetImage2DWidth(topImage),
+                                 Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                 Globals::Canvas->GetImage2DHeight(this->topImage) + Globals::layout->field_0x30c);
+    Globals::Canvas->DrawImage2D(this->topImage, Globals::w / 2,
+                                 Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                 Globals::Canvas->GetImage2DHeight(this->topImage) + Globals::layout->field_0x30c,
+                                 1);
+    if (!solved) {
+        Globals::Canvas->DrawImage2D(this->bottomImage,
+                                     Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->bottomImage),
+                                     Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::h / 2 +
+                                     Globals::layout->field_0x314);
+        Globals::Canvas->DrawImage2D(this->bottomImage, Globals::w / 2,
+                                     Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::h / 2 +
+                                     Globals::layout->field_0x314,
+                                     1);
     }
 
-done:
-    return;
+    // The tiles as currently arranged; a solved puzzle flashes.
+    float gridLeft = (float) tileWidth * 1.5f;
+    for (unsigned char i = 0; i != 6; i++) {
+        if (solved && (this->wonTimer / 200) % 2 == 0)
+            Globals::Canvas->DrawImage2D(
+                    this->tileImages[this->type * 12 + 6 + this->current[i]],
+                    (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) (i % 3) * tileWidth) +
+                           (float) offset[i][0]),
+                    (i / 3 - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 +
+                    Globals::layout->field_0x310 + offset[i][1]);
+        else
+            Globals::Canvas->DrawImage2D(
+                    this->tileImages[this->type * 12 + this->current[i]],
+                    (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) (i % 3) * tileWidth) +
+                           (float) offset[i][0]),
+                    (i / 3 - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 +
+                    Globals::layout->field_0x310 + offset[i][1]);
+    }
+
+    if (this->rotatingLeft)
+        Globals::Canvas->DrawImage2D(this->arrowActive,
+                                     Globals::w / 2 - tileWidth / 2 -
+                                     Globals::Canvas->GetImage2DWidth(this->arrowActive) / 2,
+                                     Globals::h / 2 - tileHeight - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                     Globals::Canvas->GetImage2DHeight(this->arrowActive) / 2 +
+                                     Globals::layout->field_0x310);
+    else
+        Globals::Canvas->DrawImage2D(this->arrowIdle,
+                                     Globals::w / 2 - tileWidth / 2 -
+                                     Globals::Canvas->GetImage2DWidth(this->arrowIdle) / 2,
+                                     Globals::h / 2 - tileHeight - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                     Globals::Canvas->GetImage2DHeight(this->arrowIdle) / 2 +
+                                     Globals::layout->field_0x310);
+    if (this->rotatingRight)
+        Globals::Canvas->DrawImage2D(this->arrowActive,
+                                     Globals::w / 2 + tileWidth / 2 -
+                                     Globals::Canvas->GetImage2DWidth(this->arrowActive) / 2,
+                                     Globals::h / 2 - tileHeight - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                     Globals::Canvas->GetImage2DHeight(this->arrowActive) / 2 +
+                                     Globals::layout->field_0x310);
+    else
+        Globals::Canvas->DrawImage2D(this->arrowIdle,
+                                     Globals::w / 2 + tileWidth / 2 -
+                                     Globals::Canvas->GetImage2DWidth(this->arrowIdle) / 2,
+                                     Globals::h / 2 - tileHeight - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                     Globals::Canvas->GetImage2DHeight(this->arrowIdle) / 2 +
+                                     Globals::layout->field_0x310);
+    if (solved)
+        return;
+
+    // The target arrangement below.
+    for (unsigned char i = 0; i != 6; i++) {
+        Globals::Canvas->DrawImage2D(
+                this->tileImages[this->type * 12 + this->target[i]],
+                (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) (i % 3) * tileWidth)),
+                tileHeight * (i / 3) + Globals::h / 2 + Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 +
+                Globals::layout->field_0x318);
+    }
+    Globals::Canvas->DrawImage2D(this->markImage,
+                                 Globals::w / 2 - tileWidth / 2 - Globals::Canvas->GetImage2DWidth(this->markImage) / 2,
+                                 tileHeight + Globals::h / 2 + Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                 Globals::Canvas->GetImage2DHeight(this->markImage) / 2 + Globals::layout->field_0x318);
+    Globals::Canvas->DrawImage2D(this->markImage,
+                                 Globals::w / 2 + tileWidth / 2 - Globals::Canvas->GetImage2DWidth(this->markImage) / 2,
+                                 tileHeight + Globals::h / 2 + Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 -
+                                 Globals::Canvas->GetImage2DHeight(this->markImage) / 2 + Globals::layout->field_0x318);
 }
 
 void HackingGame::reInit() {
