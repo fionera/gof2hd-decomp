@@ -72,22 +72,6 @@
    "usize": 216
   },
   {
-   "name": "_ZN6LayoutC1Ev",
-   "pct": 35.6,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 6472
-  },
-  {
-   "name": "_ZN6LayoutC2Ev",
-   "pct": 35.6,
-   "byte": false,
-   "linked": false,
-   "osize": 7072,
-   "usize": 6472
-  },
-  {
    "name": "_ZN11LevelScript7processEi",
    "pct": 36.7,
    "byte": false,
@@ -110,6 +94,22 @@
    "linked": false,
    "osize": 480,
    "usize": 476
+  },
+  {
+   "name": "_ZN6LayoutC1Ev",
+   "pct": 43.1,
+   "byte": false,
+   "linked": false,
+   "osize": 7072,
+   "usize": 6668
+  },
+  {
+   "name": "_ZN6LayoutC2Ev",
+   "pct": 43.1,
+   "byte": false,
+   "linked": false,
+   "osize": 7072,
+   "usize": 6668
   },
   {
    "name": "_ZN10MeshMergerC1ERK5ArrayItES0_IN11AbyssEngine6AEMath6MatrixEEPNS4_11PaintCanvasEt",
