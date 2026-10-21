@@ -166,28 +166,22 @@ void Layout::initTip() {
                                   Globals::layout->field_0x78 - 2 * Globals::layout->field_0x4c, this->tipLines);
 }
 
-static unsigned *g_efColor = nullptr;
 
 
 
 
 void Layout::drawEmptyFooter(bool showBack) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned color = *g_efColor;
-    pc->SetColor(color);
-    int w = pc->GetImage2DWidth(color);
-    int screenH = Globals::h;
-    pc->DrawImage2D(this->footerImageLeft, 0, screenH, (unsigned char) (0x11));
-
-    int screenW = Globals::w;
-    int footerH = ((int *) Globals::layout)[0x10 / 4];
-    this->drawBGPattern(this->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
-    pc->DrawImage2D(this->footerImageLeft,
-                    screenW - w, screenH - ((int *) Globals::layout)[0x10 / 4], (unsigned char) (0x01));
-    if (showBack == 0) return;
-    this->backButton->setVisible(1);
-    alignas(4) unsigned char sp[8];
-    TouchButton_footerAnim(this->backButton, 1, footerH, sp);
+    Globals::Canvas->SetColor(this->drawColor);
+    int capW = Globals::Canvas->GetImage2DWidth(this->field_0x340);
+    Globals::Canvas->DrawImage2D(this->footerImageLeft, 0, Globals::h, 0x11, 0x21);
+    this->drawBGPattern(this->footerPatternImage, capW, Globals::h - Globals::layout->field_0x10_rightMargin,
+                        Globals::w - 2 * capW, Globals::layout->field_0x10_rightMargin);
+    Globals::Canvas->DrawImage2D(this->footerImageLeft, Globals::w - capW,
+                                 Globals::h - Globals::layout->field_0x10_rightMargin, 1);
+    if (showBack) {
+        this->backButton->setVisible(true);
+        this->backButton->draw();
+    }
 }
 
 
@@ -342,7 +336,6 @@ Layout::Layout() {
 
 
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
-    PaintCanvas *pc = Globals::Canvas;
     Globals::Canvas->SetColor(this->drawColor);
     int iw = Globals::Canvas->GetImage2DWidth(img);
     int cols = w / iw;
@@ -352,10 +345,9 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     int fullH = rows * ih;
 
     for (int r = 0; r < rows; r++) {
-        int py = y + r * ih;
         int px = x;
         for (int c = 0; c < cols; c++) {
-            pc->DrawImage2D(img, px, py);
+            Globals::Canvas->DrawImage2D(img, px, r * ih + y);
             px += iw;
         }
     }
@@ -363,22 +355,21 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     int remH = h - fullH;
     int remW = w - fullW;
     if (remW > 0) {
-        int py = y + fullH;
+        int py = y;
         for (int r = 0; r < rows; r++) {
-            pc->DrawRegion2D(img, 0, 0, remW, ih, 0, 0, 0, x + fullW, py);
+            Globals::Canvas->DrawRegion2D(img, 0, 0, remW, ih, 0, 0, 0, x + fullW, py);
             py += ih;
         }
     }
     if (remH > 0) {
-        int px2 = x;
+        int px = x;
         for (int c = 0; c < cols; c++) {
-            pc->DrawRegion2D(img, 0, 0, iw, remH, 0, 0, 0, px2, y + fullH);
-            px2 += iw;
+            Globals::Canvas->DrawRegion2D(img, 0, 0, iw, remH, 0, 0, 0, px, y + fullH);
+            px += iw;
         }
     }
-    if (remW > 0 || remH > 0) {
-        pc->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0, x + fullW, y + fullH);
-    }
+    if (remW > 0 || remH > 0)
+        Globals::Canvas->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0, x + fullW, y + fullH);
 }
 
 static const char g_fnEmpty[] = "";
@@ -508,43 +499,33 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
 }
 
 
-static unsigned g_sbColor0 = 0x111417FF;
 
-static unsigned g_sbColor1 = 0x193043FF;
 
 
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
-    PaintCanvas *pc = Globals::Canvas;
     int iw = Globals::Canvas->GetImage2DWidth(this->scrollBarImage);
     int ih = Globals::Canvas->GetImage2DHeight(this->scrollBarImage);
-
-    Globals::Canvas->SetColor(g_sbColor0);
-    Globals::Canvas->SetColor(g_sbColor1);
-
-    int inset = this->scrollBarInset;
-    pc->DrawRectangle(x, inset + y, ((int *) Globals::layout)[0x48 / 4], trackH - inset * 2);
+    Globals::Canvas->SetColor(0x111417ff);
+    Globals::Canvas->SetColor(0x193043ff);
+    Globals::Canvas->DrawRectangle(x, this->scrollBarInset + y, Globals::layout->field_0x48,
+                                   trackH - 2 * this->scrollBarInset);
     Globals::Canvas->SetColor(this->drawColor);
 
     int thumb = range - 1;
     if (thumb <= ih * 2) thumb = ih * 2;
     int off = pos + 1;
-    if (trackH <= thumb + off)
-        off = (trackH - thumb) - inset;
-
-    int handle = this->scrollBarHandle;
-    thumb = thumb + handle * -4;
-    off = off + handle * 2;
-    if (ih * 2 < thumb) {
-        this->drawBGPattern(this->scrollBarFillImage, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
-        handle = this->scrollBarHandle;
-    } else {
-        int lim = trackH + ih * -2;
-        if (lim <= off) off = lim;
+    if (thumb + off >= trackH)
+        off = trackH - thumb - this->scrollBarInset;
+    thumb -= 4 * this->scrollBarHandle;
+    off += 2 * this->scrollBarHandle;
+    if (thumb > ih * 2) {
+        this->drawBGPattern(this->scrollBarFillImage, x + 1 + this->scrollBarHandle, ih + y + off, iw,
+                            thumb - 2 * ih);
+    } else if (off >= trackH - 2 * ih) {
+        off = trackH - 2 * ih;
     }
-
-    pc->DrawImage2D(this->scrollBarImage, handle + x + 1, 0);
-    pc->DrawImage2D(this->scrollBarImage,
-                    this->scrollBarHandle + x + 1, (thumb - ih) + y + off, (unsigned char) (0x02));
+    Globals::Canvas->DrawImage2D(this->scrollBarImage, this->scrollBarHandle + (x + 1), y + off);
+    Globals::Canvas->DrawImage2D(this->scrollBarImage, this->scrollBarHandle + (x + 1), thumb - ih + (y + off), 2);
 }
 
 
