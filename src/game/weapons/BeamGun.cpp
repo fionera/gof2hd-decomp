@@ -110,9 +110,9 @@ void BeamGun::update(int elapsed) {
 
     Vector position = this->level->getPlayer()->getPosition();
     if (this->gun->offset != Vector{0.0f, 0.0f, 0.0f}) {
-        Matrix rotation = this->level->getPlayer()->geometry->getMatrix() *
-                          this->level->getPlayer()->field_0x4->getMatrix();
-        position += AbyssEngine::AEMath::MatrixRotateVector(rotation, this->gun->offset + Vector{0.0f, 0.0f, -100.0f});
+        position += AbyssEngine::AEMath::MatrixRotateVector(
+                this->level->getPlayer()->geometry->getMatrix() * this->level->getPlayer()->field_0x4->getMatrix(),
+                this->gun->offset + Vector{0.0f, 0.0f, -100.0f});
     }
     this->primaryGeometry->setPosition(position);
     this->primaryGeometry->setVisible(true);
