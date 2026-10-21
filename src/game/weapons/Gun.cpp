@@ -1,3 +1,5 @@
+#include "game/ship/TargetFollowCamera.h"
+#include "game/ship/Ship.h"
 #include "game/ship/KIPlayer.h"
 #include "engine/math/AEMath.h"
 #include "game/ui/Hud.h"
@@ -325,7 +327,7 @@ void Gun::render() {
     }
     if (this->geometries != 0) {
         for (unsigned i = 0; i < this->count; ++i) {
-            if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))->visible) {
+            if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometries[i]))->animating) {
                 Matrix view = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
                 this->targetDir = AbyssEngine::AEMath::MatrixGetPosition(
                         *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometries[i]));
@@ -420,8 +422,8 @@ Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector d
     reinterpret_cast<int &>(this->field_0xa4_b0) = 0;
 }
 
-void Gun::shoot(Matrix m, int n, bool b) {
-    this->shootAt(m, n, 0, b);
+bool Gun::shoot(Matrix m, int n, bool b) {
+    return this->shootAt(m, n, nullptr, b);
 }
 
 void Gun::setEnemy(Player *enemy) {
@@ -516,11 +518,182 @@ void Gun::translate(const Vector &v) {
     }
 }
 
-void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
-    (void) m;
-    this->damage = n;
-    this->target = p;
-    this->ignited = b;
+bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
+    this->owner = p;
+    Item *ammo = nullptr;
+    if (!this->friendGun) {
+        ammo = (*Globals::status->getShip()->getEquipment())[this->slotIndex];
+        if (ammo == nullptr || ammo->getAmount() == 0) {
+            return false;
+        }
+    }
+
+    Vector *positions = nullptr;
+    if (this->homing) {
+        if (this->lifetimes[0] >= 1) {
+            return this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
+        }
+        this->timer = 0;
+        this->delayTimer = 0;
+        this->active = 1;
+        this->hitSmall = 1;
+        if (this->playerGun) {
+            this->delayActive = 1;
+        }
+        int nearest = 99999999;
+        this->fireIndex = -1;
+        for (unsigned e = 0; e < this->enemies->size(); ++e) {
+            Player *candidate = (*this->enemies)[e];
+            if (candidate->getKIPlayer() != nullptr && candidate->getKIPlayer()->field_0x73 &&
+                candidate->isActive() && !candidate->isDead()) {
+                int distance = (int) AbyssEngine::AEMath::VectorLength(
+                        candidate->getPosition() - ((Level *) this->level)->getPlayer()->getPosition());
+                if (distance < nearest) {
+                    this->fireIndex = e;
+                    nearest = distance;
+                }
+            }
+        }
+        this->lifetimes[0] = this->initialLifetime;
+        if (this->fireIndex > -1) {
+            reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
+                    (*this->enemies)[this->fireIndex]->getPosition() -
+                    ((Level *) this->level)->getPlayer()->getPosition());
+            *reinterpret_cast<Vector *>(this->positions) = (*this->enemies)[this->fireIndex]->getPosition();
+            *reinterpret_cast<Vector *>(this->velocities) =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            this->field_0x8c = nearest;
+        } else {
+            reinterpret_cast<Vector &>(this->field_0x90) =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            Vector egoPosition = ((Level *) this->level)->getPlayer()->getPosition();
+            *reinterpret_cast<Vector *>(this->positions) =
+                    egoPosition + 30000.0f * ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            *reinterpret_cast<Vector *>(this->velocities) =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            this->field_0x8c = 30000;
+        }
+        return true;
+    }
+    (void) positions;
+
+    bool fired = false;
+    for (unsigned i = 0; i < this->count; ++i) {
+        int lifetime = this->lifetimes[i];
+        if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
+            continue;
+        }
+        if (this->weaponType == ITEM_SORT_SENTRY_GUN && ((Level *) this->level)->field_6c > 2) {
+            continue;
+        }
+        this->timer = 0;
+        this->delayTimer = 0;
+        this->active = 1;
+        this->hitSmall = 1;
+        this->currentProjectile = i;
+        reinterpret_cast<Vector *>(this->positions)[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
+
+        Vector direction = {0, 0, 0};
+        if (this->offset != direction) {
+            if (this->weaponType == ITEM_SORT_SHOCK_BLAST) {
+                direction = Vector{0, 0, 0};
+                goto aim;
+            }
+            if (!this->field_0xa5 && !this->field_0xa4_b0) {
+                reinterpret_cast<Vector *>(this->positions)[i] +=
+                        AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
+            } else {
+                if (!this->field_0xa5 || this->field_0xa4_b0) {
+                    this->targetDir = this->offset;
+                    if (this->field_0xa6) {
+                        this->targetDir.x = -this->targetDir.x;
+                    }
+                    this->field_0xa6 = !this->field_0xa6;
+                    reinterpret_cast<Vector *>(this->positions)[i] +=
+                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                }
+                if (this->field_0xa5 && this->field_0xa6) {
+                    this->targetDir = this->offset;
+                    if (this->field_0xa7) {
+                        this->targetDir.y = -this->targetDir.y;
+                    }
+                    this->field_0xa7 = !this->field_0xa7;
+                    reinterpret_cast<Vector *>(this->positions)[i] +=
+                            AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+                }
+            }
+        }
+        direction = Vector{0, 0, 0};
+        if (this->weaponType == ITEM_SORT_MINE) {
+            direction = AbyssEngine::AEMath::MatrixGetDir(m) + AbyssEngine::AEMath::MatrixGetUp(m);
+            Array<Vector *> *wobble = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
+            if ((*wobble)[i] == nullptr) {
+                (*wobble)[i] = new Vector{0, 0, 0};
+            }
+            (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i]->x =
+                    (float) (Globals::rnd->nextInt(200) - 100) / 50.0f;
+            (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i]->y =
+                    (float) (Globals::rnd->nextInt(200) - 100) / 50.0f;
+            (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i]->z =
+                    (float) (Globals::rnd->nextInt(200) - 100) / 50.0f;
+        } else {
+        aim:
+            direction = AbyssEngine::AEMath::MatrixGetDir(m);
+        }
+        direction += AbyssEngine::AEMath::MatrixRotateVector(m, this->velocity);
+        reinterpret_cast<Vector *>(this->velocities)[i] = direction;
+        reinterpret_cast<Vector *>(this->upVectors)[i] = AbyssEngine::AEMath::MatrixGetUp(m);
+        if (this->errorMagnitudePercentage > 0.0f) {
+            float spread = this->errorMagnitudePercentage * 0.005f;
+            reinterpret_cast<Vector *>(this->velocities)[i].x +=
+                    (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
+            reinterpret_cast<Vector *>(this->velocities)[i].y +=
+                    (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
+            reinterpret_cast<Vector *>(this->velocities)[i].z +=
+                    (float) Globals::rnd->nextInt((int) this->errorMagnitudePercentage) * 0.01f - spread;
+        }
+        reinterpret_cast<Vector *>(this->velocities)[i] =
+                AbyssEngine::AEMath::VectorNormalize(reinterpret_cast<Vector *>(this->velocities)[i]);
+        reinterpret_cast<Vector *>(this->velocities)[i] *= this->pitchRate;
+        this->lifetimes[i] = this->weaponType == ITEM_SORT_SENTRY_GUN ? 0 : this->initialLifetime;
+
+        bool keepAmmo = true;
+        if (!this->friendGun && ammo != nullptr && this->ammoCount >= 1 && ammo->getType() == 1) {
+            keepAmmo = false;
+            if (this->itemIndex == 179) {
+                Globals::status->field_144 = 0;
+            }
+        }
+        this->delayActive = 1;
+        if (this->playerGun && this->hitSmall) {
+            ((TargetFollowCamera *) ((Level *) this->level)->getPlayer()->getTargetFollowCamera())->hitSmall();
+        }
+        fired = true;
+        if (!keepAmmo && this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+            this->ammoCount--;
+            ammo->changeAmount(-1);
+            if (this->ammoCount == 0) {
+                Globals::status->getShip()->freeSlot(ammo);
+            }
+            return true;
+        }
+        if (this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+            return true;
+        }
+    }
+    if (this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+        return false;
+    }
+    if (fired) {
+        this->ammoCount--;
+        if (ammo != nullptr) {
+            ammo->changeAmount(-1);
+            if (this->ammoCount == 0) {
+                Globals::status->getShip()->freeSlot(ammo);
+            }
+        }
+    }
+    return true;
 }
 
 static int *const gCC_status = nullptr;
