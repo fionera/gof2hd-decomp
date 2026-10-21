@@ -1454,12 +1454,9 @@ namespace AbyssEngine {
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y,
                              PaintCanvas *canvas, Engine *engine, bool flag) {
         if (font != 0 && str != 0) {
-            unsigned short i = 0;
-            unsigned int len;
-            do {
-                len = (unsigned int) i;
-                i = i + 1;
-            } while (str[len] != 0);
+            unsigned short len = 0;
+            while (str[len] != 0)
+                len++;
             ImageFontDrawString(font, str, len, x, y, canvas, engine, flag);
         }
     }
