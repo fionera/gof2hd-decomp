@@ -137,11 +137,31 @@ class Resolver:
             return f"local@{target:#x}:{self.elf.section_of(target)}"
         return n if n else "local"
 
-    def resolve(self, addr):
+    def _veneer_target(self, addr):
+        """Destination of a gold Thumb->ARM interworking veneer at addr (else None):
+        `bx pc; nop; ldr ip, [pc]; add pc, ip, pc; .word off` -> off + addr + 16."""
+        e = getattr(self, "elf", None)
+        if e is None:
+            return None
+        b = e.bytes_at(addr, 16)
+        if len(b) == 16 and b[:4] == b"\x78\x47\xc0\x46" and \
+                struct.unpack_from("<II", b, 4) == (0xe59fc000, 0xe08cf00f):
+            return (struct.unpack_from("<I", b, 12)[0] + addr + 16) & 0xFFFFFFFF
+        return None
+
+    def resolve(self, addr, _depth=0):
         addr &= ~1
         plt_name = self.plt.get(addr)
         if plt_name is not None:
             return plt_name if plt_name in self.common else None
+        if _depth == 0:
+            i = bisect.bisect_right(self.starts, addr) - 1
+            inside = i >= 0 and any(addr == self.starts[i] or addr < self.starts[i] + sz
+                                    for _, sz in self.by_addr[self.starts[i]])
+            if not inside:
+                t = self._veneer_target(addr)
+                if t is not None:
+                    return self.resolve(t, 1)
         i = bisect.bisect_right(self.starts, addr) - 1
         if i < 0:
             return None
