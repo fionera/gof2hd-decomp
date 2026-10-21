@@ -1850,7 +1850,7 @@ void ModStation::OnRelease() {
         (*&Globals::sound)->freeAllEvents();
 }
 
-void ModStation::OnKeyPress(long long, long long key) {
+void ModStation::OnKeyPress(long long key, long long) {
     if (!this->stationActive)
         return;
     Globals::status->checkForLevelUp();
@@ -1870,21 +1870,19 @@ void ModStation::OnKeyPress(long long, long long key) {
     unsigned char menuOpen = this->flag_0x61;
     unsigned char dlcOpen = this->flag_0x62;
     if (menuOpen && !dlcOpen) {
-        switch (key) {
-            case 0x4000:
-                this->buttonState[this->selectedButton] = 0;
-                this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
-                this->buttonState[this->selectedButton] = 1;
-                return;
-            case 0x8000:
-                this->buttonState[this->selectedButton] = 0;
-                this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
-                this->buttonState[this->selectedButton] = 1;
-                return;
-            case 0x20000:
-                return;
-        }
-        if (key == 0x10000) {
+        if (key == 0x4000) {
+            this->buttonState[this->selectedButton] = 0;
+            this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
+            this->buttonState[this->selectedButton] = 1;
+            return;
+        } else if (key == 0x8000) {
+            this->buttonState[this->selectedButton] = 0;
+            this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
+            this->buttonState[this->selectedButton] = 1;
+            return;
+        } else if (key == 0x20000) {
+            return;
+        } else if (key == 0x10000) {
             switch (this->selectedButton) {
                 case 0:
                     if (Globals::status->getCurrentCampaignMission() < 5 ||
