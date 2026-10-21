@@ -284,7 +284,9 @@ void PlayerFixedObject::update(int dt) {
             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform))->Update(dt, true);
     }
 
-    if (this->player->getHitpoints() <= 0 && (unsigned) (this->state - 3) >= 2) {
+    if (this->player->getHitpoints() <= 0 && this->state != 3 && this->state != 4) {
+
+
         if (this->player->enemyFlagsLo)
             this->level->enemyDied(this->kind(), this->player->destroyedByte);
         else

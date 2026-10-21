@@ -380,7 +380,7 @@ public:
 
     void unlockBluePrint(int index);
 
-    unsigned char isBlueprintUnlocked(int index);
+    bool isBlueprintUnlocked(int index);
 
     int getAgents();
 
