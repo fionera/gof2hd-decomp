@@ -62,7 +62,7 @@ bool ListItem::isBluePrint() {
     return this->bluePrint != 0;
 }
 
-uint8_t ListItem::isSelectable() {
+bool ListItem::isSelectable() {
     return this->selectable;
 }
 
@@ -145,11 +145,11 @@ ListItem::ListItem(Mission *m) {
     this->mission = m;
 }
 
-uint8_t ListItem::isTextButton() {
+bool ListItem::isTextButton() {
     return this->textButton;
 }
 
-uint8_t ListItem::isText() {
+bool ListItem::isText() {
     return this->text;
 }
 
