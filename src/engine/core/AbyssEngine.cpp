@@ -8,6 +8,7 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/core/ApplicationManager.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/math/Quaternion.h"
 #include <GLES2/gl2.h>
@@ -18,10 +19,9 @@
 
 namespace {
     struct CurveKeyframe {
-        uint8_t tag;
+        int8_t tag;  // 1 = step, 2 = linear, 3 = cubic Hermite
         uint8_t pad0x1[7];
-        uint32_t timeLo;
-        uint32_t timeHi;
+        unsigned long long time;
         int32_t value;
         int32_t c0;
         int32_t c1;
@@ -30,8 +30,7 @@ namespace {
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
     static_assert(offsetof(CurveKeyframe, tag) == 0x0, "CurveKeyframe.tag");
-    static_assert(offsetof(CurveKeyframe, timeLo) == 0x8, "CurveKeyframe.timeLo");
-    static_assert(offsetof(CurveKeyframe, timeHi) == 0xc, "CurveKeyframe.timeHi");
+    static_assert(offsetof(CurveKeyframe, time) == 0x8, "CurveKeyframe.time");
     static_assert(offsetof(CurveKeyframe, value) == 0x10, "CurveKeyframe.value");
     static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
     static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
@@ -94,8 +93,6 @@ namespace AbyssEngine {
 
     int AE_getInitGLHeight();
 
-    void AE_AEMath_matMul(AEMath::Matrix *out, const AEMath::Matrix *rhs);
-
     void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
                                     unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
                                     unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
@@ -141,49 +138,29 @@ namespace AbyssEngine {
         if (Engine::vfc == 0)
             return 1;
 
-        Matrix local;
-        Matrix transformed;
-        Vector pos, dir, axis;
-        Vector camPoint = {0.0f, 0.0f, 0.0f};
-
-        Matrix *srcMatrix = &cam->projection;
-        Matrix *dstMatrix;
-        if (extra == 0) {
-            dstMatrix = &local;
+        const Matrix &view = cam->projection;
+        // Point in camera space (computed but unused; a plain float[3] in the original).
+        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        if (extra != 0) {
+            Matrix combined = view;
+            combined *= *extra;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, point);
         } else {
-            memcpy(&local, srcMatrix, 0x3c);
-            local *= *extra;
-            dstMatrix = &transformed;
-            srcMatrix = &local;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, point);
         }
 
-        *(Vector *) dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *) dstMatrix);
-        camPoint = *(Vector *) dstMatrix;
-
-        pos = AEMath::MatrixGetPosition(*dstMatrix);
-        pos -= point;
-        dir = AEMath::MatrixGetDir(*dstMatrix);
-        axis -= dir;
-        Vector normAxis = AEMath::VectorNormalize(axis);
-        float fwd = AEMath::VectorDot(pos, normAxis);
-
-        if (fwd > cam->position[2] || fwd < cam->position[1])
+        Vector toPoint = point - AEMath::MatrixGetPosition(view);
+        float depth = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
+        if (depth > cam->position[2] || depth < cam->position[1])
             return 0;
 
-        axis = AEMath::MatrixGetUp(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float up = AEMath::VectorDot(pos, normAxis);
-
-        float hLimit = fwd * cam->frustumTanHalfFov;
-        if (up > hLimit || up < -hLimit)
+        float vertical = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
+        float vLimit = depth * cam->frustumTanHalfFov;
+        if (vertical > vLimit || vertical < -(depth * cam->frustumTanHalfFov))
             return 0;
 
-        axis = AEMath::MatrixGetRight(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float right = AEMath::VectorDot(pos, normAxis);
-
-        float vLimit = hLimit * cam->frustumAspect;
-        return (right <= vLimit && right >= -vLimit) ? 1 : 0;
+        float horizontal = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
+        return !(horizontal > vLimit * cam->frustumAspect) && !(horizontal < -(vLimit * cam->frustumAspect));
     }
 }
 
@@ -282,28 +259,33 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys) {
+    void SpriteSystemSetUv(unsigned short idx, float u0, float v0, float u1, float v1, SpriteSystem *sys) {
         unsigned int count = 0;
         if (sys != 0)
             count = sys->count;
         if (sys == 0 || idx >= count)
             return;
 
-        char flag = Engine::enableShader;
+        unsigned char shader = Engine::enableShader;
         float *p = (float *) sys->mesh->texCoords + (unsigned int) idx * 8;
-
-        if (flag == 0) {
-            c = 1.0f - c;
-            d = 1.0f - d;
+        p[0] = u0;
+        if (shader) {
+            p[1] = v0;
+            p[2] = u1;
+            p[3] = v0;
+            p[4] = u1;
+            p[5] = v1;
+            p[6] = u0;
+            p[7] = v1;
+        } else {
+            p[1] = 1.0f - v0;
+            p[2] = u1;
+            p[3] = 1.0f - v0;
+            p[4] = u1;
+            p[5] = 1.0f - v1;
+            p[6] = u0;
+            p[7] = 1.0f - v1;
         }
-        p[0] = a;
-        p[1] = c;
-        p[2] = b;
-        p[3] = c;
-        p[4] = b;
-        p[5] = d;
-        p[6] = a;
-        p[7] = d;
     }
 }
 
@@ -554,14 +536,13 @@ namespace AbyssEngine {
         if (mesh == 0 || (short) mesh->vertexCount == 0 || (mesh->vertexFormat & 1) == 0)
             return -4;
 
-        unsigned char flags = mesh->vertexFormat;
         if (Engine::enableShader == 0 && mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
             engine->AEClientState(0x8074, true);
             glVertexPointer(3, 0x1406, 0, 0);
             glBindBuffer(0x8893, mesh->indexVBO);
 
-            if (flags & 2) {
+            if (mesh->vertexFormat & 2) {
                 glBindBuffer(0x8892, mesh->texCoordVBO);
                 engine->AEClientState(0x8078, true);
                 glTexCoordPointer(2, 0x1406, 0, 0);
@@ -569,7 +550,7 @@ namespace AbyssEngine {
                 engine->AEClientState(0x8078, false);
             }
 
-            if (flags & 4) {
+            if (mesh->vertexFormat & 4) {
                 glBindBuffer(0x8892, mesh->normalVBO);
                 engine->AEClientState(0x8075, true);
                 glNormalPointer(0x1406, 0, 0);
@@ -577,7 +558,7 @@ namespace AbyssEngine {
                 engine->AEClientState(0x8075, false);
             }
 
-            if (flags & 8) {
+            if (mesh->vertexFormat & 8) {
                 glBindBuffer(0x8892, mesh->colorVBO);
                 engine->AEClientState(0x8076, true);
                 glColorPointer(4, 0x1406, 0, 0);
@@ -587,14 +568,15 @@ namespace AbyssEngine {
 
             glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
 
-            if (engine->statsEnabled != 0) {
+            // Engine byte 0xfe enables the draw statistics, byte 0xfd selects the bucket.
+            if (engine->field_0xfe != 0) {
                 int tris = (int) ((unsigned) mesh->indexCount / (unsigned) 3);
-                if (engine->statsBucketFlag == 0) {
-                    engine->drawCallCountA += 1;
-                    engine->triangleCountA += tris;
-                } else {
+                if (engine->statsEnabled != 0) {
                     engine->triangleCountB += tris;
                     engine->drawCallCountB += 1;
+                } else {
+                    engine->triangleCountA += tris;
+                    engine->drawCallCountA += 1;
                 }
             }
 
@@ -616,12 +598,22 @@ namespace AbyssEngine {
             return;
 
         float *p = (float *) sys->mesh->colors + (unsigned int) idx * 16;
-        for (int v = 0; v < 4; ++v) {
-            p[v * 4 + 0] = r;
-            p[v * 4 + 1] = g;
-            p[v * 4 + 2] = b;
-            p[v * 4 + 3] = a;
-        }
+        p[0] = r;
+        p[1] = g;
+        p[2] = b;
+        p[3] = a;
+        p[4] = r;
+        p[5] = g;
+        p[6] = b;
+        p[7] = a;
+        p[8] = r;
+        p[9] = g;
+        p[10] = b;
+        p[11] = a;
+        p[12] = r;
+        p[13] = g;
+        p[14] = b;
+        p[15] = a;
     }
 }
 
@@ -733,35 +725,32 @@ namespace AbyssEngine {
         }
         engine->SetAddData(mat->addData, (int) mat->addDataSize);
 
-        float ambient = mat->ambientColor.x;
-        if (ambient != -10.0f) {
-            engine->LightSetGlobalSceneColorAmbient(ambient, 0.0f, 0.0f);
+        // Remember the light's ambient colour so it can be restored after drawing.
+        LightColor saved = {0.0f, 0.0f, 0.0f, 0.0f};
+        if (mat->ambientColor.x != -10.0f) {
+            saved = engine->lightAmbient;
+            engine->LightSetLightColorAmbient(mat->ambientColor.x, mat->ambientColor.y, mat->ambientColor.z, 0x4000);
         }
 
-        const float inv255 = 1.0f / 255.0f;
         for (unsigned int i = 0; i < mat->meshes.count; ++i) {
-            Matrix world;
-            AE_AEMath_matMul(&world, &mat->arr_5c.data_[i]);
-            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const Matrix *) canvas->worldViewMatrix);
-            engine->SetModelMatrix(world);
+            Matrix world = mat->arr_5c.data_[i] * mat->arr_2c.data_[i];
+            canvas->SetWorldViewMatrix(world);
+            engine->SetModelMatrix(mat->arr_2c.data_[i]);
             engine->SetUVMatrix(mat->arr_38.data_[i]);
 
             unsigned int packed = mat->arr_50.data_[i];
-            float ca = (float) ((packed >> 24) & 0xff);
-            float cr = (float) ((packed >> 16) & 0xff);
-            float cg = (float) ((packed >> 8) & 0xff);
-            float cb = (float) (packed & 0xff);
-            engine->SetColor(ca * inv255, cr * inv255, cg * inv255, cb * inv255);
+            engine->SetColor((float) ((packed >> 24) / 255.0), (float) (((packed >> 16) & 0xff) / 255.0),
+                             (float) (((packed >> 8) & 0xff) / 255.0), (float) ((packed & 0xff) / 255.0));
 
             MeshDraw(engine, mat->meshes.data_[i]);
         }
 
         if (mat->ambientColor.x != -10.0f) {
-            engine->LightSetGlobalSceneColorAmbient(mat->ambientColor.x, 0.0f, 0.0f);
+            engine->LightSetLightColorAmbient(saved.r, saved.g, saved.b, 0x4000);
         }
 
-        mat->arr_2c.count = 0;
         mat->arr_5c.count = 0;
+        mat->arr_2c.count = 0;
         mat->arr_38.count = 0;
         mat->meshes.count = 0;
         mat->arr_50.count = 0;
@@ -805,344 +794,272 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    static char *g_uvFlipFlag;
-    static char *g_tangentEnabled;
 
     int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                      Material *mat);
 
-    int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
+    int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        unsigned int handle = handleRef;
-        unsigned int subBit = flags & 0x1a;
-        unsigned char mode = 0;
-
-        if (subBit != 0) {
-            if (AEFile::Read((uint32_t)(0xc), &(*slot)->pivotX, handle) == 0)
-                return -1;
-        }
-
-        Mesh *m = *slot;
-
-        if (m->vertexFormat & 0x10) {
-            if (AEFile::Read((uint32_t)(2), &m->indexCount, handle) == 0)
-                return -1;
-            unsigned char *idx = (unsigned char *) ::operator new[]((unsigned int) m->indexCount << 1);
-            (*slot)->indices = idx;
-            if (AEFile::Read((uint32_t)((unsigned int) (*slot)->indexCount << 1), (*slot)->indices, handle) == 0)
-                return -1;
-            m = *slot;
-        }
-
-        if (AEFile::Read((uint32_t)(2), &m->vertexCount, handle) == 0)
+        unsigned int enhanced = flags & 0x1a;
+        if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivotX, handle) == 0)
             return -1;
 
-        float minv[3] = {1e30f, 1e30f, 1e30f};
-        float maxv[3] = {-1e30f, -1e30f, -1e30f};
-        bool compressedPos = (int) (flags << 0x1d) < 0;
-        unsigned int vcount = (*slot)->vertexCount;
-
-        if (compressedPos) {
-            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
-            if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
-                ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 0x10) {
+            if (AEFile::Read(2, &(*slot)->indexCount, handle) == 0)
                 return -1;
-            }
-            m = *slot;
-            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-            m->positions = pos;
-            m = *slot;
-            short *rawShorts = (short *) raw;
-            float *posFloats = (float *) m->positions;
-            unsigned int n3 = vcount * 3;
-            for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) ((unsigned) i / (unsigned) 3);
-                axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat((int) rawShorts[i], mode);
-                posFloats[i] = v;
-                if (v < minv[axis]) minv[axis] = v;
-                if (maxv[axis] < v) maxv[axis] = v;
-            }
-            ::operator delete[](raw);
-        } else if ((flags & 3) == 0) {
-            if ((flags & 0x18) != 0) {
-                m = *slot;
-                unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->positions = pos;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->positions, handle) == 0)
-                    return -1;
-            }
-        } else {
-            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 0xc);
-            if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) {
-                ::operator delete[](raw);
+            Mesh *mesh = *slot;
+            mesh->indices = new unsigned char[mesh->indexCount << 1];
+            if (AEFile::Read((*slot)->indexCount << 1, (*slot)->indices, handle) == 0)
                 return -1;
-            }
-            m = *slot;
-            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-            m->positions = pos;
-            m = *slot;
-            int *rawInts = (int *) raw;
-            float *posFloats = (float *) m->positions;
-            unsigned int n3 = vcount * 3;
-            for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) ((unsigned) i / (unsigned) 3);
-                axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat(rawInts[i], mode);
-                posFloats[i] = v;
-                if (v < minv[axis]) minv[axis] = v;
-                if (maxv[axis] < v) maxv[axis] = v;
-            }
-            ::operator delete[](raw);
         }
 
-        float center[3];
-        center[0] = (maxv[0] + minv[0]) * 0.5f;
-        center[1] = (maxv[1] + minv[1]) * 0.5f;
-        center[2] = (maxv[2] + minv[2]) * 0.5f;
-        *(Vector *) &(*slot)->boundsCenterX = *(const Vector *) center;
-        float halfDiag[3] = {minv[0], minv[1], minv[2]};
-        *(Vector *) center -= *(const Vector *) halfDiag;
-        (*slot)->boundsRadius = AEMath::VectorLength(*(const Vector *) center);
+        if (AEFile::Read(2, &(*slot)->vertexCount, handle) == 0)
+            return -1;
 
-        m = *slot;
+        float minimum[3];
+        float maximum[3];
+        minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
+        maximum[0] = maximum[1] = maximum[2] = -10000000.0f;
+        unsigned int packed = flags & 4;
 
-        if (m->vertexFormat & 2) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
-                if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
+        // axis-aligned bounds are collected; float streams are read verbatim.
+        if (packed != 0) {
+            Mesh *mesh = *slot;
+            short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
+            if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+                delete[] (unsigned char *) raw;
+                return -1;
+            }
+            mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh = *slot;
+            unsigned int count = mesh->vertexCount * 3;
+            for (unsigned int i = 0; i != count; i++) {
+                unsigned int axis = i % 3;
+                float value = raw[i];
+                ((float *) mesh->positions)[i] = value;
+                if (minimum[axis] > value)
+                    minimum[axis] = value;
+                if (maximum[axis] < value)
+                    maximum[axis] = value;
+            }
+            delete[] (unsigned char *) raw;
+        } else if ((flags & 3) != 0) {
+            Mesh *mesh = *slot;
+            int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
+            if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
+                delete[] (unsigned char *) raw;
+                return -1;
+            }
+            mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh = *slot;
+            unsigned int count = mesh->vertexCount * 3;
+            for (unsigned int i = 0; i != count; i++) {
+                unsigned int axis = i % 3;
+                float value = raw[i];
+                ((float *) mesh->positions)[i] = value;
+                if (minimum[axis] > value)
+                    minimum[axis] = value;
+                if (maximum[axis] < value)
+                    maximum[axis] = value;
+            }
+            delete[] (unsigned char *) raw;
+        } else if ((flags & 0x18) != 0) {
+            Mesh *mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
+                return -1;
+        }
+
+        Vector center = {(maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
+                         (maximum[2] + minimum[2]) * 0.5f};
+        *(Vector *) &(*slot)->boundsCenterX = center;
+        Vector high = {maximum[0], maximum[1], maximum[2]};
+        Vector low = {minimum[0], minimum[1], minimum[2]};
+        (*slot)->boundsRadius = AEMath::VectorLength(high - low);
+
+        if ((*slot)->vertexFormat & 2) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                short *raw = (short *) new unsigned char[mesh->vertexCount * 4];
+                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                    delete[] (unsigned char *) raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
-                m->texCoords = uv;
-                m = *slot;
-                char flip = *g_uvFlipFlag;
-                short *rawShorts = (short *) raw;
-                float *uvFloats = (float *) m->texCoords;
-                const double scale = 1.0 / 32767.0;
-                for (unsigned int i = 0; i < (vcount << 1); i += 2) {
-                    double u = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) rawShorts[i], mode) * scale;
-                    float *p = uvFloats + i;
-                    p[0] = (float) u;
-                    double v = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) rawShorts[i + 1], mode) * scale;
-                    double vv = (flip == 0) ? v : (1.0 - v);
-                    p[1] = (float) vv;
+                mesh = *slot;
+                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                mesh = *slot;
+                bool flipV = Engine::enableShader != 0;
+                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
+                    float *uv = (float *) mesh->texCoords + i;
+                    uv[0] = (float) ((double) raw[i] * (1.0 / 4096.0));
+                    double v = (double) raw[i + 1] * (1.0 / 4096.0);
+                    uv[1] = (float) (flipV ? 1.0 - v : v);
                 }
-                ::operator delete[](raw);
+                delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
-                m->texCoords = uv;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount << 3), (*slot)->texCoords, handle) == 0)
+                Mesh *mesh = *slot;
+                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                if (AEFile::Read((*slot)->vertexCount * 8, (*slot)->texCoords, handle) == 0)
                     return -1;
-                if (*g_uvFlipFlag != 0) {
-                    m = *slot;
-                    float *uvFloats = (float *) m->texCoords;
-                    for (unsigned int i = 0; i < (unsigned int) (m->vertexCount << 1); i += 2) {
-                        float *p = uvFloats + (i + 1);
-                        *p = 1.0f - *p;
+                if (Engine::enableShader != 0) {
+                    mesh = *slot;
+                    for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
+                        float *v = (float *) mesh->texCoords + i + 1;
+                        *v = 1.0f - *v;
                     }
                 }
             }
         }
 
-        m = *slot;
-
-        if (m->vertexFormat & 4) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
-                if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 4) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
+                if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+                    delete[] (unsigned char *) raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->normals = nrm;
-                m = *slot;
-                const double scale = 1.0 / 32767.0;
-                short *s = (short *) raw;
-                for (unsigned int i = 0; i < vcount * 3; i += 3) {
-                    float nx = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[0], mode) * scale);
-                    float ny = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[1], mode) * scale);
-                    float nz = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[2], mode) * scale);
-                    float len2 = nx * nx + ny * ny + nz * nz;
-                    float len = sqrtf(len2);
-                    float *normalFloats = (float *) m->normals;
-                    if (len != 0.0f) {
-                        nx /= len;
-                        ny /= len;
-                        nz /= len;
-                        if (nx < -1.0f) nx = -1.0f;
-                        if (nx > 1.0f) nx = 1.0f;
-                        if (ny < -1.0f) ny = -1.0f;
-                        if (ny > 1.0f) ny = 1.0f;
-                        if (nz < -1.0f) nz = -1.0f;
-                        if (nz > 1.0f) nz = 1.0f;
-                        normalFloats[i + 0] = ny;
-                        normalFloats[i + 1] = nx;
-                        normalFloats[i + 2] = nz;
+                mesh = *slot;
+                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount * 3); i += 3) {
+                    float x = (float) ((double) raw[i] * (1.0 / 32768.0));
+                    float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
+                    float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
+                    float length = sqrtf(x * x + y * y + z * z);
+                    float *normal = (float *) (*slot)->normals + i;
+                    if (length == 0.0f) {
+                        normal[1] = 1.0f;
+                        normal[0] = 0.0f;
+                        normal[2] = 0.0f;
                     } else {
-                        ((unsigned int *) normalFloats)[i + 1] = 0x3f800000;
-                        ((unsigned int *) normalFloats)[i + 0] = 0;
-                        normalFloats[i + 2] = 1.0f;
+                        x /= length;
+                        y /= length;
+                        z /= length;
+                        float cx = (double) x < -1.0 ? -1.0f : x;
+                        float cy = (double) y < -1.0 ? -1.0f : y;
+                        float cz = (double) z < -1.0 ? -1.0f : z;
+                        if (x > 1.0f)
+                            cx = 1.0f;
+                        if (y > 1.0f)
+                            cy = 1.0f;
+                        if (z > 1.0f)
+                            cz = 1.0f;
+                        normal[0] = cx;
+                        normal[1] = cy;
+                        normal[2] = cz;
                     }
-                    s += 3;
-                    m = *slot;
                 }
-                ::operator delete[](raw);
+                delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->normals = nrm;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->normals, handle) == 0)
+                Mesh *mesh = *slot;
+                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
                     return -1;
             }
 
-            if (*g_tangentEnabled != 0) {
-                m = *slot;
-                unsigned char *tan = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->tangents = tan;
-                m = *slot;
-                unsigned char *bin = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->binormals = bin;
-                m = *slot;
-
-                unsigned int triCount = (unsigned int) ((unsigned) (unsigned short) m->indexCount / (unsigned) 3);
-                float *accum = (float *) ::operator new[](vcount * 0xc);
-
-                for (unsigned int b = 0; b < vcount * 3; ++b) accum[b] = 0.0f;
-
-                for (unsigned int t = 0; t < triCount; ++t) {
-                    m = *slot;
-                    float *posBase = (float *) m->positions;
-                    float *uvBase = (float *) m->texCoords;
-                    unsigned short *idxBase = (unsigned short *) m->indices + t * 3;
-                    unsigned int i0 = (unsigned int) idxBase[0];
-                    unsigned int i2 = (unsigned int) idxBase[2];
-                    unsigned int i1 = (unsigned int) idxBase[1];
-
-                    float uv0v = uvBase[i0 * 2 + 1];
-                    float uv0u = uvBase[i0 * 2];
-                    float dv1 = uvBase[i2 * 2 + 1] - uv0v;
-                    float dv2 = uvBase[i1 * 2 + 1] - uv0v;
-                    float *p0 = posBase + i0 * 3;
-                    float *p2 = posBase + i2 * 3;
-                    float *p1 = posBase + i1 * 3;
-                    float denom = (uvBase[i1 * 2] - uv0u) * dv1 -
-                                  (uvBase[i2 * 2] - uv0u) * dv2;
-                    float r = (denom != 0.0f) ? (1.0f / denom) : 0.0f;
-                    float tng[3];
-                    tng[1] = ((p1[1] - p0[1]) * dv1 - (p2[1] - p0[1]) * dv2) * r;
-                    tng[0] = ((p1[0] - p0[0]) * dv1 - (p2[0] - p0[0]) * dv2) * r;
-                    tng[2] = ((p1[2] - p0[2]) * dv1 - (p2[2] - p0[2]) * dv2) * r;
-                    float *a = accum + i0 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
-                    a = accum + i1 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
-                    a = accum + i2 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
+            if (Engine::enableShader != 0) {
+                // Per-vertex tangent frames from the UV gradients of the triangle list.
+                Mesh *mesh = *slot;
+                mesh->tangents = new unsigned char[mesh->vertexCount * 12];
+                mesh = *slot;
+                mesh->binormals = new unsigned char[mesh->vertexCount * 12];
+                mesh = *slot;
+                unsigned int triangles = mesh->indexCount / 3;
+                unsigned int vertices = mesh->vertexCount;
+                Vector *accum = (Vector *) new unsigned char[vertices * 12];
+                for (unsigned int v = 0; v < vertices; v++) {
+                    accum[v].x = 0.0f;
+                    accum[v].y = 0.0f;
+                    accum[v].z = 0.0f;
                 }
-
-                for (unsigned int v = 0; v < vcount; ++v) {
-                    m = *slot;
-                    float *nrmBase = (float *) m->normals;
-                    float nrm[3];
-                    nrm[0] = nrmBase[v * 3 + 0];
-                    nrm[1] = nrmBase[v * 3 + 1];
-                    nrm[2] = nrmBase[v * 3 + 2];
-                    float tg[3];
-                    tg[0] = accum[v * 3 + 0];
-                    tg[1] = accum[v * 3 + 1];
-                    tg[2] = accum[v * 3 + 2];
-                    float d = AEMath::VectorDot(*(const Vector *) nrm, *(const Vector *) tg);
-                    float scaled[3] = {nrm[0], nrm[1], nrm[2]};
-                    *(Vector *) scaled *= d;
-                    *(Vector *) tg -= *(const Vector *) scaled;
-                    float tanOut[3];
-                    *(Vector *) tanOut = AEMath::VectorNormalize(*(const Vector *) tg);
-                    float *tb = (float *) (*slot)->tangents + v * 3;
-                    tb[0] = tanOut[0];
-                    tb[1] = tanOut[1];
-                    tb[2] = tanOut[2];
-                    float binOut[3] = {tg[0], tg[1], tg[2]};
-                    *(Vector *) binOut = AEMath::VectorCross(*(const Vector *) binOut, *(const Vector *) nrm);
-                    float *bb = (float *) (*slot)->binormals + v * 3;
-                    bb[0] = binOut[0];
-                    bb[1] = binOut[1];
-                    bb[2] = binOut[2];
+                for (unsigned int t = 0; t < triangles; t++) {
+                    mesh = *slot;
+                    const Vector *pos = (const Vector *) mesh->positions;
+                    const float *uv = (const float *) mesh->texCoords;
+                    const unsigned short *index = (const unsigned short *) mesh->indices + t * 3;
+                    unsigned int i0 = index[0];
+                    unsigned int i1 = index[1];
+                    unsigned int i2 = index[2];
+                    float du1 = uv[i1 * 2] - uv[i0 * 2];
+                    float dv1 = uv[i1 * 2 + 1] - uv[i0 * 2 + 1];
+                    float du2 = uv[i2 * 2] - uv[i0 * 2];
+                    float dv2 = uv[i2 * 2 + 1] - uv[i0 * 2 + 1];
+                    float r = 1.0f / (du1 * dv2 - du2 * dv1);
+                    Vector tangent;
+                    tangent.x = ((pos[i1].x - pos[i0].x) * dv2 - (pos[i2].x - pos[i0].x) * dv1) * r;
+                    tangent.y = ((pos[i1].y - pos[i0].y) * dv2 - (pos[i2].y - pos[i0].y) * dv1) * r;
+                    tangent.z = ((pos[i1].z - pos[i0].z) * dv2 - (pos[i2].z - pos[i0].z) * dv1) * r;
+                    accum[i0] += tangent;
+                    accum[i1] += tangent;
+                    accum[i2] += tangent;
                 }
-                ::operator delete[](accum);
+                for (unsigned int v = 0; v < vertices; v++) {
+                    Vector normal = ((const Vector *) (*slot)->normals)[v];
+                    Vector tangent = accum[v];
+                    Vector projected = tangent - normal * AEMath::VectorDot(normal, tangent);
+                    Vector unit = AEMath::VectorNormalize(projected);
+                    Vector *outTangent = (Vector *) (*slot)->tangents + v;
+                    outTangent->x = unit.x;
+                    outTangent->y = unit.y;
+                    outTangent->z = unit.z;
+                    Vector binormal = AEMath::VectorCross(normal, unit);
+                    Vector *outBinormal = (Vector *) (*slot)->binormals + v;
+                    outBinormal->x = binormal.x;
+                    outBinormal->y = binormal.y;
+                    outBinormal->z = binormal.z;
+                }
             }
         }
 
-        m = *slot;
-
-        if (m->vertexFormat & 8) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
-                if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 8) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                unsigned char *raw = new unsigned char[mesh->vertexCount * 4];
+                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                    delete[] raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
-                m->colors = col;
-                m = *slot;
-                const float inv = 255.0f;
-                unsigned char *rawBytes = (unsigned char *) raw;
-                float *colorFloats = (float *) m->colors;
-                for (unsigned int i = 0; i < (vcount << 2); ++i) {
-                    float c = AbyssEngine::AEMath::VectorUnsignedToFloat(
-                        (unsigned int) rawBytes[i], mode);
-                    colorFloats[i] = c / inv;
-                }
-                ::operator delete[](raw);
+                mesh = *slot;
+                mesh->colors = new unsigned char[mesh->vertexCount * 16];
+                mesh = *slot;
+                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 2); i++)
+                    ((float *) mesh->colors)[i] = (float) raw[i] / 255.0f;
+                delete[] raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
-                m->colors = col;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount << 4), (*slot)->colors, handle) == 0)
-                    return -1;
+                Mesh *mesh = *slot;
+                mesh->colors = new unsigned char[mesh->vertexCount * 16];
+                unsigned int ok = AEFile::Read((*slot)->vertexCount * 16, (*slot)->colors, handle);
+                int result = ok != 0 ? 1 : -1;
+                if (enhanced == 0)
+                    return result;
+                if (ok == 0)
+                    return result;
             }
         }
 
-        if (subBit != 0) {
-            if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
-                return -1;
-            unsigned short childCount = 0;
-            if (AEFile::Read((uint32_t)(2), &childCount, handle) == 0)
-                return -1;
-            Transform *xf = (*slot)->animation;
-            if (xf != 0)
-                ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(xf->bounds());
-            for (unsigned int c = 0; c < childCount; ++c) {
-                Mesh *childPtr = (Mesh *) ::operator new(0x88);
-                memset(childPtr, 0, 0x88);
-                childPtr->boundsRadiusSq = 1.0f;
-                childPtr->vboEligible = 1;
-                childPtr->vertexFormat = (*slot)->vertexFormat;
-                childPtr->material = (*slot)->material;
-                if (MeshReadData(engine, handleRef, flags, &childPtr, mat) == -1)
-                    return -1;
-                ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(
-                    *(const AEMath::BSphere *) &childPtr->boundsCenterX);
-                {
-                    EngineArrayHeader *a = (EngineArrayHeader *) &(*slot)->animation->meshes;
-                    a->capacity = a->count + 1;
-                    a->data = (unsigned char *) realloc(a->data, (a->count + 1) * sizeof(Mesh *));
-                    ((Mesh **) a->data)[a->count] = childPtr;
-                    a->count = a->capacity;
-                }
-            }
-        }
+        if (enhanced == 0)
+            return 1;
 
+        if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
+            return -1;
+        unsigned short children;
+        if (AEFile::Read(2, &children, handle) == 0)
+            return -1;
+        if ((*slot)->animation != 0)
+            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge((*slot)->animation->bounds());
+        for (unsigned int c = 0; c < children; c++) {
+            Mesh *child = new Mesh();
+            child->vboEligible = 1;
+            child->vertexFormat = (*slot)->vertexFormat;
+            child->material = (*slot)->material;
+            if (MeshReadData(engine, handle, flags, &child, mat) == -1)
+                return -1;
+            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(*(const AEMath::BSphere *) &child->boundsCenterX);
+            ArrayAdd(child, (*slot)->animation->meshes);
+        }
         return 1;
     }
 }
@@ -1950,71 +1867,52 @@ namespace AbyssEngine {
         if (sys == 0)
             return;
 
-        Mesh *mesh = sys->mesh;
-        float *vbuf = (float *) mesh->positions;
+        float *vertices = (float *) sys->mesh->positions;
+        Matrix combined = view * world;  // computed by the original as well; the quads use `world`
 
-        Matrix mv;
-        AE_AEMath_matMul(&mv, &view);
+        unsigned int floats = sys->count * 12;
+        unsigned char sizeStep = sys->sharedSize ^ 1;
+        const float *positions = sys->posCpu;
+        const short *sizes = sys->sizeCpu;
+        unsigned short positionIndex = 0;
+        unsigned short sizeIndex = 0;
+        for (unsigned short q = 0; q < floats; q += 12) {
+            const float *p = positions + positionIndex;
+            positionIndex += 3;
+            float half = (float) (sizes[sizeIndex] >> 1);
+            sizeIndex += sizeStep;
 
-        unsigned short count = sys->count;
-        unsigned char sharedSize = sys->sharedSize;
-        float *posCpu = sys->posCpu;
-        short *sizeCpu = sys->sizeCpu;
-        const float *W = world;
+            float x = world.m[0] * p[0] + world.m[1] * p[1] + world.m[2] * p[2] + world.m[3];
+            float y = p[0] * world.m[4] + p[1] * world.m[5] + p[2] * world.m[6] + world.m[7];
+            float z = p[0] * world.m[8] + p[1] * world.m[9] + p[2] * world.m[10] + world.m[11];
 
-        unsigned short sizeIdx = 0;
-        unsigned short posIdx = 0;
-        for (unsigned short q = 0; q < count * 0xc; q += 0xc) {
-            float *p = posCpu + (unsigned int) posIdx;
-            posIdx = posIdx + 3;
-            float px = p[0], py = p[1], pz = p[2];
-
-            unsigned int si = sizeIdx;
-            sizeIdx = (unsigned short) (((sharedSize ^ 1) & 0xff) + sizeIdx);
-            float half = (float) ((int) sizeCpu[si] >> 1);
-
-            float cx = W[0xc / 4 + 0] + W[4 / 4] * py + W[0] * px + W[8 / 4] * pz;
-            float cy = W[0x1c / 4] + py * W[0x14 / 4] + px * W[0x10 / 4] + pz * W[0x18 / 4];
-            float cz = W[0x2c / 4] + py * W[0x24 / 4] + px * W[0x20 / 4] + pz * W[0x28 / 4];
-
-            float left = cx - half, right = cx + half;
-            float bottom = cy - half, top = cy + half;
-
-            float *out = vbuf + q;
-            out[0] = left;
-            out[1] = bottom;
-            out[2] = cz;
-            out[3] = right;
-            out[4] = bottom;
-            out[5] = cz;
-            out[6] = right;
-            out[7] = top;
-            out[8] = cz;
-            out[9] = left;
-            out[10] = top;
-            out[11] = cz;
+            float *quad = vertices + q;
+            quad[0] = x - half;
+            quad[1] = y - half;
+            quad[2] = z;
+            quad[3] = x + half;
+            quad[4] = y - half;
+            quad[5] = z;
+            quad[6] = x + half;
+            quad[7] = y + half;
+            quad[8] = z;
+            quad[9] = x - half;
+            quad[10] = y + half;
+            quad[11] = z;
         }
 
+        Mesh *mesh = sys->mesh;
         if (mesh->material == 0) {
             MeshDraw(engine, mesh);
-        } else {
-            Material *batch = (Material *) mesh->material;
-            ArrayAddCachedRaw<Mesh *>(mesh, (EngineArrayHeader *) &batch->meshes);
-
-            const float *v = view;
-            AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
-                                       f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
-                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) & batch->arr_2c);
-            unsigned int one = 0x3f800000;
-            unsigned int negOne = 0xbf800000;
-            AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
-                                       one, one, one, (int) (intptr_t) & batch->arr_38);
-            const float *w = world;
-            AE_SpriteSystem_pushMatrix(f2u(w[0]), f2u(w[1]), f2u(w[2]), f2u(w[3]), f2u(w[4]), f2u(w[5]),
-                                       f2u(w[6]), f2u(w[7]), f2u(w[8]), f2u(w[9]), f2u(w[10]), f2u(w[11]),
-                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) & batch->arr_5c);
-            ArrayAddCachedRaw<unsigned int>(0xffffffff, (EngineArrayHeader *) &batch->arr_50);
+            return;
         }
+        ArrayAddCached(mesh, mesh->material->meshes);
+        ArrayAddCached(view, sys->mesh->material->arr_2c);
+        Matrix flipY;
+        flipY.m[5] = -1.0f;
+        ArrayAddCached(flipY, sys->mesh->material->arr_38);
+        ArrayAddCached(world, sys->mesh->material->arr_5c);
+        ArrayAddCached(0xffffffffu, sys->mesh->material->arr_50);
     }
 }
 
@@ -2169,11 +2067,6 @@ namespace AbyssEngine {
     void glTexEnvi(unsigned int t, unsigned int p, int v);
     }
 
-    static char *g_cubemapEnabledFlag;
-    static char *g_texEnvFlag;
-    static char *g_clampFlag;
-    static float *g_anisoMaxPtr;
-    static char *g_labelObjectsFlag;
 
     int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
 
@@ -2188,242 +2081,258 @@ namespace AbyssEngine {
 
     int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    void *user, unsigned int *outIds, float aniso, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    void *user, unsigned int *outIds, float scale, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    AELoadedTexture *outTex, bool /*flag*/) {
-        Image *imgPtr = 0;
+                                    AELoadedTexture *outTex, bool registerTexture) {
+        Image *image = 0;
         *outIds = 0;
         engine->lastGlError = glGetError();
 
-        if (ImageCreateFromFile(engine, path, &imgPtr) != 1)
-            return -4;
+        int result = ImageCreateFromFile(engine, path, &image);
+        if (result != 1)
+            return result;
         if (cb != 0)
-            cb(imgPtr, user);
+            cb(image, user);
 
         glGenTextures(1, outIds);
-        Image *img = imgPtr;
-        int format = (int) img->format;
-
-        if (format == 6) {
-            if (*g_cubemapEnabledFlag != 0) {
+        if (image->format == 6) {
+            if (Engine::enableShader != 0) {
                 glBindTexture(0x8513, *outIds);
                 glTexParameteri(0x8513, 0x2800, 0x2601);
                 glTexParameteri(0x8513, 0x2801, 0x2601);
-                int faceH = (int) ((unsigned) img->height / (unsigned) 6);
-                unsigned int w = img->width;
-                const unsigned int faces[6] = {0x8517, 0x8516, 0x8519, 0x8515, 0x851a, 0x8518};
-                int faceBytes = faceH * (int) w;
-                for (int fi = 0; fi < 6; ++fi) {
-                    glTexImage2D(faces[fi], 0, 0x1908, (int) w, faceH, 0, 0x1908, 0x1401,
-                                 (unsigned char *) img->data + faceBytes * 4 * fi);
-                }
+                int faceHeight = image->height / 6;
+                int faceWidth = image->width;
+                glTexImage2D(0x8517, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data);
+                int facePixels = faceHeight * faceWidth;
+                glTexImage2D(0x8516, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 4);
+                glTexImage2D(0x8519, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 8);
+                glTexImage2D(0x8515, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 12);
+                glTexImage2D(0x851a, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 16);
+                glTexImage2D(0x8518, 0, 0x1908, faceWidth, faceHeight, 0, 0x1908, 0x1401, image->data + facePixels * 20);
             }
         } else {
             glBindTexture(0xde1, *outIds);
             glPixelStorei(0xcf5, 1);
-            if (*g_texEnvFlag == 0)
+            if (Engine::enableShader == 0)
                 glTexEnvi(0x2300, 0x2200, 0x2100);
-
-            int wrap;
-            if (*g_clampFlag != 0) {
+            if (Engine::clampTextures) {
                 glTexParameteri(0xde1, 0x2802, 0x812f);
-                wrap = 0x812f;
+                glTexParameteri(0xde1, 0x2803, 0x812f);
             } else {
                 glTexParameteri(0xde1, 0x2802, 0x2901);
-                wrap = 0x2901;
+                glTexParameteri(0xde1, 0x2803, 0x2901);
             }
-            glTexParameteri(0xde1, 0x2803, wrap);
-
-            if (img->hasMipmaps == 0) {
-                if (engine->linearFilterFlag != 0) {
-                    glTexParameteri(0xde1, 0x2800, 0x2601);
-                    glTexParameteri(0xde1, 0x2801, 0x2601);
+            if (image->hasMipmaps) {
+                if (Engine::AnisotropyValue > 0.0f) {
+                    glTexParameterf(0xde1, 0x84fe, Engine::AnisotropyValue);
+                    glTexParameteri(0xde1, 0x2801, 0x2703);
                 } else {
-                    glTexParameteri(0xde1, 0x2800, 0x2600);
-                    glTexParameteri(0xde1, 0x2801, 0x2600);
+                    glTexParameteri(0xde1, 0x2801, 0x2703);
+                    glTexParameteri(0xde1, 0x2800, 0x2601);
                 }
-            } else if (*g_anisoMaxPtr <= 0.0f) {
-                glTexParameteri(0xde1, 0x2801, 0x2703);
+            } else if (engine->linearFilterFlag) {
                 glTexParameteri(0xde1, 0x2800, 0x2601);
+                glTexParameteri(0xde1, 0x2801, 0x2601);
             } else {
-                glTexParameterf(0xde1, 0x84fe, *g_anisoMaxPtr);
-                glTexParameteri(0xde1, 0x2801, 0x2703);
+                glTexParameteri(0xde1, 0x2800, 0x2600);
+                glTexParameteri(0xde1, 0x2801, 0x2600);
             }
-
-            if (*g_clampFlag != 0) {
+            if (Engine::clampTextures) {
                 glTexParameteri(0xde1, 0x2800, 0x2601);
                 glTexParameteri(0xde1, 0x2801, 0x2601);
             }
 
-            int w = (int) img->width;
-            int h = (int) img->height;
-            switch (format) {
-                case 1:
-                    glTexImage2D(0xde1, 0, 0x1909, w, h, 0, 0x1909, 0x1401, img->data);
-                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
-                    break;
-                case 2:
-                    glTexImage2D(0xde1, 0, 0x1907, w, h, 0, 0x1907, 0x1401, img->data);
-                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
-                    break;
-                case 3:
-                    glTexImage2D(0xde1, 0, 0x1908, w, h, 0, 0x1908, 0x1401, img->data);
-                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
-                    break;
-                case 4:
-                    if (img->hasMipmaps == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c03, w, h, 0, (int) img->dataLen, img->data);
-                    else {
-                        unsigned int cw = (unsigned int) img->width;
-                        unsigned int ch = (unsigned int) img->height;
-                        int level = 0;
-                        for (unsigned int off = 0; off < img->dataLen;) {
-                            unsigned int blockSz = (cw * ch) >> 1;
-                            if ((int) blockSz < 0x10)
-                                blockSz = (unsigned int) 0x10;
-                            glCompressedTexImage2D(0xde1, level, 0x8c03, (int) cw, (int) ch, 0, (int) blockSz,
-                                                   (unsigned char *) img->data + off);
-                            off += blockSz;
-                            unsigned int nw = 1, nh = 1;
-                            if (ch >> 1 > 1) nh = ch >> 1;
-                            if (cw >> 1 > 1) nw = cw >> 1;
-                            ++level;
-                            cw = nw;
-                            ch = nh;
-                        }
-                    }
-                    break;
-                case 5:
-                    if (img->hasMipmaps == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c02, w, h, 0, (int) img->dataLen, img->data);
-                    else {
-                        unsigned int cw = (unsigned int) img->width;
-                        unsigned int ch = (unsigned int) img->height;
-                        int level = 0;
-                        for (unsigned int off = 0; off < img->dataLen;) {
-                            unsigned int blockSz = (cw * ch) >> 1;
-                            if ((int) blockSz < 0x10)
-                                blockSz = (unsigned int) 0x10;
-                            glCompressedTexImage2D(0xde1, level, 0x8c02, (int) cw, (int) ch, 0, (int) blockSz,
-                                                   (unsigned char *) img->data + off);
-                            off += blockSz;
-                            unsigned int nw = 1, nh = 1;
-                            if (ch >> 1 > 1) nh = ch >> 1;
-                            if (cw >> 1 > 1) nw = cw >> 1;
-                            ++level;
-                            cw = nw;
-                            ch = nh;
-                        }
-                    }
-                    break;
-                case 7:
-                    if (img->hasMipmaps == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c93, w, h, 0, (int) img->dataLen, img->data);
-                    else {
-                        unsigned int cw = (unsigned int) img->width;
-                        unsigned int ch = (unsigned int) img->height;
-                        int level = 0;
-                        for (unsigned int off = 0; off < img->dataLen;) {
-                            unsigned int blockSz = (cw * ch) >> 0;
-                            if ((int) blockSz < 0x10)
-                                blockSz = (unsigned int) 0x10;
-                            glCompressedTexImage2D(0xde1, level, 0x8c93, (int) cw, (int) ch, 0, (int) blockSz,
-                                                   (unsigned char *) img->data + off);
-                            off += blockSz;
-                            unsigned int nw = 1, nh = 1;
-                            if (ch >> 1 > 1) nh = ch >> 1;
-                            if (cw >> 1 > 1) nw = cw >> 1;
-                            ++level;
-                            cw = nw;
-                            ch = nh;
-                        }
-                    }
-                    break;
-                case 8:
-                case 9:
-                case 10: {
-                    unsigned int glFmt = 0x83f0;
-                    if (format == 9) glFmt = 0x83f2;
-                    if (format == 10) glFmt = 0x83f3;
-                    if (img->hasMipmaps == 0)
-                        glCompressedTexImage2D(0xde1, 0, glFmt, w, h, 0, (int) img->dataLen, img->data);
-                    else {
-                        unsigned int cw = (unsigned int) img->width;
-                        unsigned int ch = (unsigned int) img->height;
-                        int level = 0;
-                        for (unsigned int off = 0; off < img->dataLen;) {
-                            unsigned int blockSz = (cw * ch) >> 1;
-                            if ((int) blockSz < 0x10)
-                                blockSz = (unsigned int) 0x10;
-                            glCompressedTexImage2D(0xde1, level, glFmt, (int) cw, (int) ch, 0, (int) blockSz,
-                                                   (unsigned char *) img->data + off);
-                            off += blockSz;
-                            unsigned int nw = 1, nh = 1;
-                            if (ch >> 1 > 1) nh = ch >> 1;
-                            if (cw >> 1 > 1) nw = cw >> 1;
-                            ++level;
-                            cw = nw;
-                            ch = nh;
-                        }
-                    }
+            switch (image->format) {
+            case 1:
+                glTexImage2D(0xde1, 0, 0x1909, image->width, image->height, 0, 0x1909, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 2:
+                glTexImage2D(0xde1, 0, 0x1907, image->width, image->height, 0, 0x1907, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 3:
+                glTexImage2D(0xde1, 0, 0x1908, image->width, image->height, 0, 0x1908, 0x1401, image->data);
+                if (image->hasMipmaps)
+                    glGenerateMipmap(0xde1);
+                break;
+            case 4: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c03, width, height, 0, image->dataLen, image->data);
                     break;
                 }
-                case 0xb:
-                    if (img->hasMipmaps == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8d64, w, h, 0, (int) img->dataLen, img->data);
-                    else {
-                        unsigned int cw = (unsigned int) img->width;
-                        unsigned int ch = (unsigned int) img->height;
-                        int level = 0;
-                        for (unsigned int off = 0; off < img->dataLen;) {
-                            unsigned int blockSz = (cw * ch) >> 1;
-                            if ((int) blockSz < 8)
-                                blockSz = (unsigned int) 8;
-                            glCompressedTexImage2D(0xde1, level, 0x8d64, (int) cw, (int) ch, 0, (int) blockSz,
-                                                   (unsigned char *) img->data + off);
-                            off += blockSz;
-                            unsigned int nw = 1, nh = 1;
-                            if (ch >> 1 > 1) nh = ch >> 1;
-                            if (cw >> 1 > 1) nw = cw >> 1;
-                            ++level;
-                            cw = nw;
-                            ch = nh;
-                        }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blocks = width < 16 ? 2 : width >> 3;
+                    unsigned int rows = height < 8 ? 16 : (height << 1) & ~7u;
+                    unsigned int blockBytes = rows * blocks;
+                    glCompressedTexImage2D(0xde1, level, 0x8c03, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 5: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c02, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blocks = height < 8 ? 2 : height >> 2;
+                    unsigned int rows = width < 8 ? 16 : (width << 1) & ~7u;
+                    unsigned int blockBytes = rows * blocks;
+                    glCompressedTexImage2D(0xde1, level, 0x8c02, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 7: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8c93, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = width * height;
+                    if (blockBytes <= 16)
+                        blockBytes = 16;
+                    glCompressedTexImage2D(0xde1, level, 0x8c93, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 8:
+            case 9:
+            case 10: {
+                unsigned int format = 0x83f0;
+                if (image->format == 9)
+                    format = 0x83f2;
+                if (image->format == 10)
+                    format = 0x83f3;
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, format, width, height, 0, image->dataLen, image->data);
+                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = height * width;
+                    if (image->format - 9 <= 1) {
+                        if ((int) blockBytes <= 16)
+                            blockBytes = 16;
+                    } else if (blockBytes > 15) {
+                        blockBytes >>= 1;
+                    } else {
+                        blockBytes = image->format == 8 ? 8 : 16;
                     }
+                    glCompressedTexImage2D(0xde1, level, format, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            case 11: {
+                unsigned int width = image->width;
+                unsigned int height = image->height;
+                if (!image->hasMipmaps) {
+                    glCompressedTexImage2D(0xde1, 0, 0x8d64, width, height, 0, image->dataLen, image->data);
                     break;
-                default:
-                    break;
+                }
+                
+                unsigned int level = 0;
+                for (unsigned int offset = 0; offset < image->dataLen; level++) {
+                    unsigned int blockBytes = (width * height) >> 1;
+                    if (width < 8)
+                        blockBytes = 8;
+                    glCompressedTexImage2D(0xde1, level, 0x8d64, width, height, 0, blockBytes, image->data + offset);
+                    unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
+                    unsigned int nextWidth = width >> 1 > 1 ? width >> 1 : 1;
+                    offset += blockBytes;
+                    height = nextHeight;
+                    width = nextWidth;
+                }
+                break;
+            }
+            default:
+                break;
             }
         }
 
-        if (outTex == 0) {
-            int err = (int) glGetError();
-            engine->lastGlError = (unsigned int) err;
-            if (err != 0) {
-                String tmp(path);
-                engine->lastErrorPath = tmp;
+        if (registerTexture) {
+            if (outTex != 0) {
+                outTex->valid = 1;
+                outTex->isCube = image->format == 6;
+                if (glGetError() != 0) {
+                    outTex->glId = 0xffffffff;
+                    outTex->byteSize = 0;
+                    glDeleteTextures(1, outIds);
+                } else {
+                    AELabelObject(0x1702, *outIds, path);
+                    outTex->glId = *outIds;
+                    outTex->byteSize = image->dataLen;
+                    ++Engine::ImageCount;
+                }
+                engine->textureByteCounter += outTex->byteSize;
+            } else {
+                AELoadedTexture *texture = new AELoadedTexture;
+                texture->scale = scale;
+                texture->valid = 1;
+                texture->isCube = image->format == 6;
+                texture->name.Set(path);
+                if (glGetError() != 0) {
+                    glDeleteTextures(1, outIds);
+                    texture->byteSize = 0;
+                    texture->glId = 0xffffffff;
+                } else {
+                    AELabelObject(0x1702, *outIds, path);
+                    texture->glId = *outIds;
+                    texture->byteSize = image->dataLen;
+                    ++Engine::ImageCount;
+                }
+                engine->textureByteCounter += texture->byteSize;
+                ArrayAdd(texture, engine->appManager->paintCanvas->cubeTextures);
+                *outIds = engine->appManager->paintCanvas->cubeTextures.count - 1;
+            }
+        } else {
+            engine->lastGlError = glGetError();
+            if (engine->lastGlError != 0) {
+                engine->lastErrorPath = String(path);
                 glDeleteTextures(1, outIds);
-                ImageRelease(&imgPtr);
+                ImageRelease(&image);
                 return -4;
             }
             AELabelObject(0x1702, *outIds, path);
-        } else {
-            AELoadedTexture *tex = outTex;
-            tex->valid = 1;
-            tex->isCube = (format == 6) ? 1 : 0;
-            if (glGetError() == 0) {
-                AELabelObject(0x1702, *outIds, path);
-                tex->glId = *outIds;
-                tex->byteSize = img->dataLen;
-            } else {
-                tex->glId = 0xffffffff;
-                tex->byteSize = 0;
-                glDeleteTextures(1, outIds);
-            }
-            engine->textureByteCounter += (int) tex->byteSize;
         }
 
-        ImageRelease(&imgPtr);
+        ImageRelease(&image);
         return 1;
     }
 }
@@ -2715,59 +2624,37 @@ namespace AbyssEngine {
         if (!(radius != 0.0f && Engine::vfc != 0))
             return 1;
 
-        Matrix local;
-        Matrix transformed;
-        Vector pos, dir, axis;
-        Vector camPoint = {0.0f, 0.0f, 0.0f};
-
-        Matrix *srcMatrix = &cam->projection;
-        Matrix *dstMatrix;
-        if (extra == 0) {
-            dstMatrix = &local;
+        const Matrix &view = cam->projection;
+        // Point in camera space (computed but unused; a plain float[3] in the original).
+        float camPoint[3] = {0.0f, 0.0f, 0.0f};
+        if (extra != 0) {
+            Matrix combined = view;
+            combined *= *extra;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(combined, center);
         } else {
-            memcpy(&local, srcMatrix, 0x3c);
-            local *= *extra;
-            dstMatrix = &transformed;
-            srcMatrix = &local;
+            *(Vector *) camPoint = AEMath::MatrixInverseTransformVector(view, center);
         }
 
-        *(Vector *) dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *) dstMatrix);
-        camPoint = *(Vector *) dstMatrix;
-
-        pos = AEMath::MatrixGetPosition(*dstMatrix);
-        pos -= center;
-        dir = AEMath::MatrixGetDir(*dstMatrix);
-        axis -= dir;
-        Vector normAxis = AEMath::VectorNormalize(axis);
-        float fwd = AEMath::VectorDot(pos, normAxis);
-
-        if (fwd > cam->position[2] + radius)
+        Vector toCenter = center - AEMath::MatrixGetPosition(view);
+        float depth = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
+        if (depth > cam->position[2] + radius)
             return 0;
-        if (fwd < cam->position[1] - radius)
+        if (depth < cam->position[1] - radius)
             return 0;
 
-        axis = AEMath::MatrixGetRight(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float right = AEMath::VectorDot(pos, normAxis);
-
-        float rightPad = cam->frustumInvCosX * radius;
-        float rightLimit = fwd * cam->frustumTanHalfFov * cam->frustumAspect;
-        if (right > rightLimit + rightPad)
+        float horizontal = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
+        float hLimit = depth * cam->frustumTanHalfFov * cam->frustumAspect;
+        float hPad = cam->frustumInvCosX * radius;
+        if (horizontal > hLimit + hPad)
             return 0;
-        if (right < -rightLimit - rightPad)
+        if (horizontal < -hLimit - hPad)
             return 0;
 
-        axis = AEMath::MatrixGetUp(*dstMatrix);
-        normAxis = AEMath::VectorNormalize(axis);
-        float up = AEMath::VectorDot(pos, normAxis);
-
-        float upPad = cam->frustumInvCosY * radius;
-        float upLimit = fwd * cam->frustumTanHalfFov;
-        if (up > upLimit + upPad)
+        float vertical = AEMath::VectorDot(toCenter, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
+        float vLimit = depth * cam->frustumTanHalfFov;
+        float vPad = cam->frustumInvCosY * radius;
+        if (vertical > vLimit + vPad || vertical < -vLimit - vPad)
             return 0;
-        if (up < -upLimit - upPad)
-            return 0;
-
         return 1;
     }
 }
@@ -2777,82 +2664,40 @@ namespace AbyssEngine {
         Curve *curve;
     };
 
-    long long CurveGetValue(unsigned long long time, Curve *curve) {
-        CurveKeyframe **entries = (CurveKeyframe **) curve->entries;
-        unsigned short count = curve->count;
+    int CurveGetValue(unsigned long long time, Curve *curve) {
+        CurveKeyframe **keys = (CurveKeyframe **) curve->entries;
+        if (keys[0]->time >= time)
+            return keys[0]->value;
+        int last = curve->count - 1;
+        if (time >= keys[last]->time)
+            return keys[last]->value;
 
-        unsigned int qlo = (unsigned int) time;
-        unsigned int qhi = (unsigned int) (time >> 32);
+        unsigned short index;
+        CurveKeyframe *key;
+        do {
+            index = (unsigned short) last;
+            key = keys[index];
+            last--;
+        } while (time < key->time);
 
-        auto keyTimeHi = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeHi; };
-        auto keyTimeLo = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeLo; };
-        auto keyVal = [&](CurveKeyframe *kf) -> int { return kf->value; };
-
-        if (count == 0)
-            return 0;
-
-        CurveKeyframe *first = entries[0];
-        if ((unsigned long long) time <
-            (((unsigned long long) keyTimeHi(first) << 32) | keyTimeLo(first))) {
-            return keyVal(first);
+        if (key->tag == 3) {
+            CurveKeyframe *next = keys[index + 1];
+            int endValue = next->value;
+            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+            long long t2 = (t * t) >> 12;
+            long long t3 = (t2 * t) >> 12;
+            int startValue = key->value;
+            return (int) (((t - 2 * t2 + t3) * key->c0) >> 12) + (int) (((t3 - t2) * key->c1) >> 12) +
+                   (int) (((3 * t2 - 2 * t3) * (endValue - startValue)) >> 12) + startValue;
         }
-
-        unsigned int idx = (unsigned int) (unsigned short) (count - 1);
-        CurveKeyframe *last = entries[idx];
-        if ((unsigned long long) time >
-            (((unsigned long long) keyTimeHi(last) << 32) | keyTimeLo(last))) {
-            return keyVal(last);
+        if (key->tag == 2) {
+            CurveKeyframe *next = keys[index + 1];
+            long long t = (long long) (((time - key->time) << 12) / (next->time - key->time));
+            return (int) ((t * (next->value - key->value)) >> 12) + key->value;
         }
-
-        CurveKeyframe *seg = last;
-        unsigned int segIdx = idx;
-        while (segIdx > 0) {
-            seg = entries[segIdx];
-            unsigned long long st = ((unsigned long long) keyTimeHi(seg) << 32) | keyTimeLo(seg);
-            if (st <= (unsigned long long) time)
-                break;
-            --segIdx;
-        }
-
-        char tag = (char) seg->tag;
-        unsigned long long segStart =
-                ((unsigned long long) keyTimeHi(seg) << 32) | keyTimeLo(seg);
-        int v0 = keyVal(seg);
-
-        if (tag == 1) {
-            return v0;
-        }
-
-        CurveKeyframe *nextKf = entries[segIdx + 1];
-        unsigned long long segEnd =
-                ((unsigned long long) keyTimeHi(nextKf) << 32) | keyTimeLo(nextKf);
-        int v1 = keyVal(nextKf);
-
-        unsigned int num = (unsigned int) ((time - segStart)) << 12;
-        unsigned int numHi = (unsigned int) (((time - segStart)) >> 20);
-        unsigned int den = (unsigned int) (segEnd - segStart);
-        long long tq = (((unsigned long long) (numHi) << 32 | (unsigned) (num)) /
-                        ((unsigned long long) ((unsigned int) ((segEnd - segStart) >> 32)) << 32 |
-                         (unsigned) (den)));
-        unsigned int t = (unsigned int) tq;
-
-        if (tag == 2) {
-            long long d = (long long) (v1 - v0) * (unsigned int) t;
-            return (int) ((unsigned int) (d >> 12)) + v0;
-        }
-
-        int c0 = seg->c0;
-        int c1 = seg->c1;
-        unsigned long long t2_64 = (unsigned long long) t * t;
-        unsigned int t2 = (unsigned int) (t2_64 >> 12);
-        unsigned long long t3_64 = (unsigned long long) t2 * t;
-        unsigned int t3 = (unsigned int) (t3_64 >> 12);
-
-        long long term0 = (long long) c0 * (int) (t - 2 * t2 + t3);
-        long long term1 = (long long) c1 * (int) (t3 - t2);
-        long long term2 = (long long) (v1 - v0) * (int) (3 * t2 - 2 * t3);
-        int value = v0 + (int) (term0 >> 12) + (int) (term1 >> 12) + (int) (term2 >> 12);
-        return value;
+        if (key->tag == 1)
+            return key->value;
+        return 0;
     }
 }
 

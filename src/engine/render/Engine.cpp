@@ -1909,7 +1909,7 @@ unsigned char AbyssEngine::Engine::enableShader;
 unsigned char AbyssEngine::Engine::EnableRefract;
 float AbyssEngine::Engine::LodDistShader;
 unsigned char AbyssEngine::Engine::DisableRefract;
-int AbyssEngine::Engine::AnisotropyValue;
+float AbyssEngine::Engine::AnisotropyValue;
 unsigned char AbyssEngine::Engine::KeepRawMeshData;
 unsigned char AbyssEngine::Engine::backupSaveGames;
 int AbyssEngine::Engine::MultiSampleValue;

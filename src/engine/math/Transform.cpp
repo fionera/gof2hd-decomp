@@ -327,46 +327,28 @@ namespace AbyssEngine {
         }
 
         if (updateBounds) {
-            AEMath::BSphere sphere;
-            sphere.center.x = 0.0f;
-            sphere.center.y = 0.0f;
-            sphere.center.z = 0.0f;
-            sphere.radius = 0.0f;
-            sphere.radius2 = 1.0f;
-            this->bounds() = sphere;
+            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
+            // Mesh::boundsCenterX..boundsRadiusSq is a BSphere in the original layout.
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
-                AEMath::BSphere childSphere;
-
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->Update(time, false);
-
-                    childSphere.center.x = mesh->boundsCenterX;
-                    childSphere.center.y = mesh->boundsCenterY;
-                    childSphere.center.z = mesh->boundsCenterZ;
-                    childSphere.radius = mesh->boundsRadius;
-                    childSphere.radius2 = mesh->boundsRadiusSq;
-                    childSphere.center = AEMath::MatrixTransformVector(
-                        mesh->animation->rotationMatrix, childSphere.center);
+                    AEMath::BSphere sphere = *(AEMath::BSphere *) &this->meshes[i]->boundsCenterX;
+                    sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
+                                                                  sphere.center);
+                    this->bounds().Merge(sphere);
                 } else {
-                    childSphere.center.x = mesh->boundsCenterX;
-                    childSphere.center.y = mesh->boundsCenterY;
-                    childSphere.center.z = mesh->boundsCenterZ;
-                    childSphere.radius = mesh->boundsRadius;
-                    childSphere.radius2 = mesh->boundsRadiusSq;
+                    AEMath::BSphere sphere = *(AEMath::BSphere *) &mesh->boundsCenterX;
+                    this->bounds().Merge(sphere);
                 }
-                this->bounds().Merge(childSphere);
             }
 
             for (uint i = 0; i < this->children.size(); ++i) {
-                Transform *child = this->children[i];
-                child->Update(time, false);
-
-                AEMath::BSphere childSphere = child->bounds();
-                childSphere.center = AEMath::MatrixTransformVector(
-                    child->rotationMatrix, childSphere.center);
-                this->bounds().Merge(childSphere);
+                this->children[i]->Update(time, false);
+                AEMath::BSphere sphere = this->children[i]->bounds();
+                sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
+                this->bounds().Merge(sphere);
             }
         }
     }
@@ -615,8 +597,7 @@ namespace AbyssEngine {
         }
 
         if (!updateBounds) {
-            AEMath::BSphere empty = {{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
-            this->bounds() = empty;
+            this->bounds() = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
@@ -1354,42 +1335,22 @@ namespace AbyssEngine {
             return 1;
         }
 
-        AEMath::Vector center;
-        center.x = 0.0f;
-        center.y = 0.0f;
-        center.z = 0.0f;
-
-        AEMath::Vector radiusVector;
-        radiusVector.x = this->boundingRadius;
-        radiusVector.y = radiusVector.x;
-        radiusVector.z = radiusVector.x;
-
-        AEMath::Vector rotated;
-        if (matrix == 0) {
-            AEMath::Vector transformed = AEMath::MatrixTransformVector(
-                this->worldMatrix, this->boundingCenter);
-            center = transformed;
-            rotated = AEMath::MatrixRotateVector(this->worldMatrix, radiusVector);
+        AEMath::Vector center = {0.0f, 0.0f, 0.0f};
+        AEMath::Vector extent = {this->boundingRadius, this->boundingRadius, this->boundingRadius};
+        if (matrix != 0) {
+            center = AEMath::MatrixTransformVector(*matrix * this->worldMatrix, this->boundingCenter);
+            extent = AEMath::MatrixRotateVector(*matrix * this->worldMatrix, extent);
         } else {
-            AEMath::Matrix combined = AEMath::operator*(*matrix, this->worldMatrix);
-            AEMath::Vector transformed = AEMath::MatrixTransformVector(
-                combined, this->boundingCenter);
-            center = transformed;
-            combined = AEMath::operator*(*matrix, this->worldMatrix);
-            rotated = AEMath::MatrixRotateVector(combined, radiusVector);
+            center = AEMath::MatrixTransformVector(this->worldMatrix, this->boundingCenter);
+            extent = AEMath::MatrixRotateVector(this->worldMatrix, extent);
         }
 
-        radiusVector = rotated;
-        float x = radiusVector.x < 0.0f ? -radiusVector.x : radiusVector.x;
-        float y = radiusVector.y < 0.0f ? -radiusVector.y : radiusVector.y;
-        if (x < y) {
-            x = y;
-        }
-        float z = radiusVector.z < 0.0f ? -radiusVector.z : radiusVector.z;
-        if (x < z) {
-            x = z;
-        }
+        float ax = extent.x > 0.0f ? extent.x : -extent.x;
+        float ay = extent.y > 0.0f ? extent.y : -extent.y;
+        float az = extent.z > 0.0f ? extent.z : -extent.z;
+        float m = ax > ay ? ax : ay;
+        m = m > az ? m : az;
 
-        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, 0, camera);
+        return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * m, 0, camera);
     }
 }
