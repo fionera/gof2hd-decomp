@@ -1612,8 +1612,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     }
     if (this->field_0x399) {
         if (this->player->getShieldHP() < this->player->getMaxShieldHP()) {
-            float regen = (float) dt * 0.15f;
-            this->player->setShieldHP((int) ((regen < 1.0f ? 1.0f : regen) + (float) this->player->getShieldHP()));
+            this->player->setShieldHP((int) ((float) this->player->getShieldHP()
+                                             + ((float) dt * 0.15f < 1.0f ? 1.0f : (float) dt * 0.15f)));
             Globals::sound->setParamValue(0, 2257,
                                           (float) this->player->getShieldHP() / (float) this->player->getMaxShieldHP());
             Vector velocity = {0.0f, 0.0f, 0.0f};
@@ -1686,8 +1686,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
         if (this->boostTimer > this->boostTime) {
             ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->SetPostEffect(0x01400002, false);
-            this->boostingFlag = 0;
             this->speed = 2.0f;
+            this->boostingFlag = 0;
             this->boostTimer = -this->boostDelay;
             if (!this->field_0x146) {
                 this->boostSpeed = 2;
@@ -1704,9 +1704,9 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             int alpha = 255 - (int) ((float) this->cloakCharge / 2000.0f * 255.0f);
             if (alpha <= 50)
                 alpha = 50;
+            unsigned int color = alpha | 0xffffff00;
             if (this->cloakCharge == 0)
                 this->cloakCharge = 1;
-            unsigned int color = alpha | 0xffffff00;
             Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->field_0x4->meshId),
                                                        (float) this->cloakCharge / 2000.0f, 1);
             if (this->turretMode) {
@@ -1738,12 +1738,13 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             Globals::Canvas->MeshChangeShaderAnimValue(Globals::Canvas->MeshGetPointer(this->turretGeometry->meshId),
                                                        (float) this->cloakCharge * 0.001f, 2);
         }
-        if (this->cloakCharge > this->cloakChargeMax - 2000) {
-            int fadeStart = this->cloakChargeMax - 2000;
+        int charge = this->cloakCharge;
+        int fadeStart = this->cloakChargeMax - 2000;
+        if (charge > fadeStart) {
             Globals::Canvas->MeshChangeShaderAnimValue(
                 Globals::Canvas->MeshGetPointer(this->field_0x4->meshId),
                 1.0f - ((float) this->cloakCharge - (float) (this->cloakChargeMax - 2000)) / 2000.0f, 1);
-            int alpha = (int) (((float) this->cloakCharge - (float) fadeStart) / 2000.0f * 255.0f);
+            int alpha = (int) (((float) charge - (float) fadeStart) / 2000.0f * 255.0f);
             if (alpha <= 50)
                 alpha = 50;
             unsigned int color = alpha | 0xffffff00;
@@ -1808,12 +1809,15 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                 }
             }
         }
+        Level *level = this->level;
         float engineColor = 221.0f + this->getCloakingPercentage() * -201.0f * 0.01f;
-        if (engineColor >= 221.0f)
+        if (engineColor < 221.0f) {
+            if (engineColor < 0.0f)
+                engineColor = 0.0f;
+        } else {
             engineColor = 221.0f;
-        else if (engineColor < 0.0f)
-            engineColor = 0.0f;
-        this->level->setPlayerEngineColor((short) (int) engineColor);
+        }
+        level->setPlayerEngineColor((short) engineColor);
     } else if (this->chargingCloak) {
         this->cloakCharge += this->shakeIntensity;
         if (this->cloakCharge > this->cloakDischargeMax) {
@@ -1866,15 +1870,17 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->field_0x4->transform))
         ->Update((long long) dt, true);
 
+    bool controlled = this->computerControlled;
+    bool toPlanet = this->dockingToPlanet;
     this->aboutToReachAutoTargetFlag = 0;
     this->field_0x145 = 0;
     bool moving = false;
-    if (this->computerControlled) {
+    if (controlled) {
         this->field_0x145 = 1;
-        if (this->dockingToPlanet)
+        if (toPlanet)
             this->planetDockTimer += this->shakeIntensity;
         moving = true;
-    } else if (this->dockingToPlanet) {
+    } else if (toPlanet) {
         this->field_0x145 = 1;
         this->planetDockTimer += this->shakeIntensity;
         moving = true;
