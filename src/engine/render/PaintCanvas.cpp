@@ -3195,21 +3195,21 @@ void PaintCanvas::TextureCreate(unsigned short resId, void (*callback)(AbyssEngi
         unsigned int idx = (unsigned int) res->handle;
         if (idx == 0xffffffff) {
             PCTexInfoView *info = (PCTexInfoView *) res->payload;
-            float f = (float) (int) info->param;
-            char *path = info->path;
+            unsigned int texture = 0;
             int ok;
-            if (!useCallbackLoader) {
-                ok = AbyssEngine::TextureCreateFromFileIntern((AbyssEngine::Engine*)this->engine, path,
-                                                              callback, userData, &idx, f, nullptr, false);
+            if (useCallbackLoader) {
+                ok = AbyssEngine::TextureCreateFromFile(this->engine, info->path, callback, userData,
+                                                        &texture, true, (float) (int) info->param);
             } else {
-                ok = AbyssEngine::TextureCreateFromFile((AbyssEngine::Engine*)this->engine, path,
-                                                        callback, userData, &idx, true, f);
+                ok = AbyssEngine::TextureCreateFromFileIntern(this->engine, info->path, callback, userData,
+                                                              &texture, (float) (int) info->param, nullptr,
+                                                              false);
             }
             if (ok != 1) {
                 return;
             }
-            idx = 0;
-            res->handle = 0;
+            idx = texture;
+            res->handle = (int) idx;
         }
         out = idx;
     }
