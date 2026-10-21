@@ -304,7 +304,7 @@ public:
 
     void dockToAsteroid(KIPlayer *kip, Radar *radar);
 
-    void dockToDockingPoint(KIPlayer *kip, Radar *radar);
+    void dockToDockingPoint(KIPlayer *station, Radar *radar);
 
     void dockToPlanet();
 

@@ -70,14 +70,6 @@ namespace {
 }
 
 
-struct PE_MatrixBuf {
-    float m00;
-    float pad0[4];
-    float m11;
-    float pad1[4];
-    float m22;
-    float pad2[1];
-};
 
 struct PE_AsteroidMineTarget {
     char pad0[0x44];
@@ -97,7 +89,6 @@ static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;
 void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 
 
-void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
@@ -2332,81 +2323,68 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
     this->strafeFactor = PE_minf(this->strafeFactor * 1.5f, 1.0f);
 }
 
-void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
-    (void) kip;
-    if (((PlayerEgo *) (this))->isDead() != 0)
+void PlayerEgo::dockToDockingPoint(KIPlayer *station, Radar *radar) {
+    if (this->isDead())
         return;
 
-    if (this->dockedFlag == 0) {
-        if (radar != 0) {
+    if (!this->dockedFlag) {
+        if (station) {
+            this->asteroidTarget = (int) (intptr_t) station;
             this->dockedFlag = 1;
-            this->asteroidTarget = (int) (intptr_t) radar;
-            this->dockScaling = 0x578;
             this->miningSettleTimer = 0;
+            this->dockScaling = 1400;
             this->field_0x145 = 1;
             this->dockingPointIndex = 0;
         }
         return;
     }
 
-    bool undock = (radar == 0);
-    if (!undock) {
-        Vector pos = ((PlayerEgo *) (this))->getPosition();
-        SpacePoint *sp = (SpacePoint *) (unsigned long) this->spacePoint;
-        SpacePoint *nav = ((KIPlayer *) (radar))->getNearestNavigationPoint(pos, sp);
-        if (nav == 0) {
-            if (radar->hasReservation != 0)
-                radar->reservationDirty = 1;
-            undock = true;
-        } else {
-            if (radar->hasReservation != 0)
-                radar->reservationDirty = 1;
-
-            ((PlayerEgo *) (this))->setTurretMode(0);
+    if (station
+        && station->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint)) {
+        if (station->field_0x70)
+            station->field_0x8c = 1;
+        {
+            this->setTurretMode(false);
             this->field_0x1a1 = 0;
-            Globals::Canvas->CameraSetCurrent(
-                (unsigned int) (this->targetFollowCamera->id));
-            ((LevelScript *) (this->levelScript))->resetCamera(this->levelScript->m_pLevel);
+            Globals::Canvas->CameraSetCurrent(this->targetFollowCamera->id);
+            this->levelScript->resetCamera(this->level);
             this->PlayEngineSound();
             this->dockingPointIndex = 3;
-            this->targetFollowCamera->setLookAtCam(false);
+            this->targetFollowCamera->setLookAtCam(true);
             this->targetFollowCamera->useTargetsUpVector(false);
-
-            if (this->easeMatrix != 0) {
-                ((AbyssEngine::EaseInOutMatrix *) this->easeMatrix)->~EaseInOutMatrix();
-                ::operator delete(this->easeMatrix);
-            }
-            this->easeMatrix = 0;
-
-            pos = ((PlayerEgo *) (this))->getPosition();
-            SpacePoint *nav2 = ((KIPlayer *) (radar))->getNearestNavigationPoint(pos, sp);
-            float *from = ((AEGeometry *) (this->geometry))->getMatrix();
-            this->easeMatrix = (AbyssEngine::EaseInOutMatrix *) PE_dtdp_makeEase(from, nav2);
-            ((PlayerEgo *) (this))->setExhaustVisible(true);
+            delete this->easeMatrix;
+            this->easeMatrix = nullptr;
+            SpacePoint *dockPoint =
+                station->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
+            Matrix current = this->geometry->getMatrix();
+            AbyssEngine::AEMath::MatrixSetTranslation(current, dockPoint->position.x, dockPoint->position.y,
+                                                      dockPoint->position.z);
+            this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->geometry->getMatrix(), current, 3000);
+            this->setExhaustVisible(true);
         }
-    }
-
-    if (undock) {
+    } else {
+        if (station && station->field_0x70)
+            station->field_0x8c = 1;
         this->PlayEngineSound();
-        this->dockedFlag = 0;
         this->field_0x1a1 = 0;
+        this->dockedFlag = 0;
         this->field_0x145 = 0;
         this->asteroidTarget = 0;
         this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
         this->targetFollowCamera->setActive(true);
         this->targetFollowCamera->setLookAtCam(false);
         this->targetFollowCamera->useTargetsUpVector(false);
-        ((Player *) (this->player))->resetGunDelay(0);
+        this->player->resetGunDelay(0);
         this->dockingPointIndex = 0;
-        ((PlayerEgo *) (this))->setExhaustVisible(true);
-        if (this->spacePoint != 0) {
-            ((SpacePoint *) ((unsigned long) this->spacePoint))->giveFree();
+        this->setExhaustVisible(true);
+        if (this->spacePoint) {
+            ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
             this->spacePoint = 0;
         }
     }
 
-    if (((intptr_t) this->hackingGame) != 0) {
-        delete (HackingGame *) ((intptr_t) this->hackingGame);
+    if (this->hackingGame) {
+        delete (HackingGame *) (intptr_t) this->hackingGame;
         this->hackingGame = 0;
         this->hud->setHackingGameActive(false);
     }
