@@ -329,17 +329,16 @@ namespace AbyssEngine {
         if (updateBounds) {
             this->boundingSphere = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
 
-            // Mesh::boundsCenterX..boundsRadiusSq is a BSphere in the original layout.
             for (uint i = 0; i < this->meshes.size(); ++i) {
                 Mesh *mesh = this->meshes[i];
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->Update(time, false);
-                    AEMath::BSphere sphere = *(AEMath::BSphere *) &this->meshes[i]->boundsCenterX;
+                    AEMath::BSphere sphere = this->meshes[i]->bounds;
                     sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
                                                                   sphere.center);
                     this->boundingSphere.Merge(sphere);
                 } else {
-                    AEMath::BSphere sphere = *(AEMath::BSphere *) &mesh->boundsCenterX;
+                    AEMath::BSphere sphere = mesh->bounds;
                     this->boundingSphere.Merge(sphere);
                 }
             }
@@ -582,12 +581,12 @@ namespace AbyssEngine {
                 Mesh *mesh = this->meshes[i];
                 if (mesh != 0 && mesh->animation != 0) {
                     mesh->animation->InternUpdate(time, false);
-                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&this->meshes[i]->boundsCenterX);
+                    AEMath::BSphere sphere = this->meshes[i]->bounds;
                     sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
                                                                   sphere.center);
                     this->boundingSphere.Merge(sphere);
                 } else {
-                    AEMath::BSphere sphere = *reinterpret_cast<AEMath::BSphere *>(&mesh->boundsCenterX);
+                    AEMath::BSphere sphere = mesh->bounds;
                     this->boundingSphere.Merge(sphere);
                 }
             }

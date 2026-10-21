@@ -2,6 +2,8 @@
 #define GOF2_MESH_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
+#include "engine/math/BSphere.h"
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
     class Transform;
@@ -43,21 +45,9 @@ namespace AbyssEngine {
 
         uint8_t shared;
 
-        float boundsCenterX;
+        AEMath::BSphere bounds;
 
-        float boundsCenterY;
-
-        float boundsCenterZ;
-
-        float boundsRadius;
-
-        float boundsRadiusSq;
-
-        float pivotX;
-        float pivotY;
-        // ASM (shader UpdateMeshData, r5=mesh): fields @0x58+ read +4 vs ours; pivot is 3D, pivotZ@0x58 was
-        // missing so uploaded/VBOs were all 4 low. Affects every Mesh-field reader.
-        float pivotZ;
+        AEMath::Vector pivot;
 
         uint8_t uploaded;
 
@@ -88,8 +78,7 @@ namespace AbyssEngine {
             : vertexFormat(0), vertexCount(0), positions(nullptr), texCoords(nullptr), colors(nullptr),
               normals(nullptr), tangents(nullptr), binormals(nullptr), materialId(0), shaderAnimValue0(0.0f),
               indexCount(0), field_0x2a(0), indices(nullptr), material(nullptr),
-              animation(nullptr), shared(0), boundsCenterX(0.0f), boundsCenterY(0.0f), boundsCenterZ(0.0f),
-              boundsRadius(0.0f), boundsRadiusSq(1.0f), pivotX(0.0f), pivotY(0.0f), pivotZ(0.0f), uploaded(0),
+              animation(nullptr), shared(0), bounds(), pivot(), uploaded(0),
               positionVBO(0), indexVBO(0), texCoordVBO(0), normalVBO(0), tangentVBO(0), binormalVBO(0),
               colorVBO(0), vboByteSize(0), enhancedData(0), vboEligible(0), hasAnimation(0) {
         }

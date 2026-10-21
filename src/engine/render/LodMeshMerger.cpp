@@ -36,8 +36,8 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 void LodMeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        bool isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
-                                                                   mesh->boundsRadius);
+        bool isVisible = this->canvas->CameraIsSphereinViewFrustum(mesh->bounds.center,
+                                                                   mesh->bounds.radius);
         if (isVisible != this->visible[i]) {
             this->visible[i] = isVisible;
             if (this->enabled[i] != 0)
@@ -191,19 +191,19 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     }
 
     // The original transforms the radius vector but then measures the untransformed one.
-    Vector extent = {mesh->boundsRadius, mesh->boundsRadius, mesh->boundsRadius};
+    Vector extent = {mesh->bounds.radius, mesh->bounds.radius, mesh->bounds.radius};
     AbyssEngine::AEMath::MatrixTransformVector(m, extent);
     float ax = extent.x > 0.0f ? extent.x : -extent.x;
     float ay = extent.y > 0.0f ? extent.y : -extent.y;
     float az = extent.z > 0.0f ? extent.z : -extent.z;
-    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(const Vector *) &mesh->boundsCenterX);
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center);
     float radius = az;
     if (ay > radius)
         radius = ay;
     if (ax > radius)
         radius = ax;
     AbyssEngine::AEMath::BSphere bounds = {center, radius, 1.0f};
-    *reinterpret_cast<AbyssEngine::AEMath::BSphere *>(&out->boundsCenterX) = bounds;
+    out->bounds = bounds;
     return out;
 }
 

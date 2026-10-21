@@ -56,17 +56,14 @@ namespace AbyssEngine {
 
     
     Mesh::Mesh(Mesh *src)
-        : boundsCenterX(0.0f), boundsCenterY(0.0f), boundsCenterZ(0.0f), boundsRadius(0.0f),
-          boundsRadiusSq(1.0f), pivotX(0.0f), pivotY(0.0f), pivotZ(0.0f) {
+        : bounds(), pivot() {
         if (src == nullptr)
             return;
 
         if (src->vboEligible != 0)
             MeshConvertToVBO(src);
 
-        // boundsCenter..boundsRadiusSq is the original's AEMath::BSphere member, pivot a Vector.
-        *reinterpret_cast<AEMath::BSphere *>(&this->boundsCenterX) =
-                *reinterpret_cast<const AEMath::BSphere *>(&src->boundsCenterX);
+        this->bounds = src->bounds;
 
         this->vertexFormat = src->vertexFormat;
         this->vboByteSize = 0;
@@ -92,7 +89,7 @@ namespace AbyssEngine {
             this->animation = nullptr;
         }
 
-        *reinterpret_cast<AEMath::Vector *>(&this->pivotX) = *reinterpret_cast<const AEMath::Vector *>(&src->pivotX);
+        this->pivot = src->pivot;
 
         this->hasAnimation = src->hasAnimation;
         this->shared = 1;
@@ -121,14 +118,14 @@ namespace AbyssEngine {
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
         Transform *anim = new Transform();
 
-        if (AEFile::Read(4, &this->boundsCenterX, file) == 0) goto fail;
-        if (AEFile::Read(4, &this->boundsCenterY, file) == 0) goto fail;
-        if (AEFile::Read(4, &this->boundsCenterZ, file) == 0) goto fail;
-        if (AEFile::Read(4, &this->boundsRadius, file) == 0) goto fail;
+        if (AEFile::Read(4, &this->bounds.center.x, file) == 0) goto fail;
+        if (AEFile::Read(4, &this->bounds.center.y, file) == 0) goto fail;
+        if (AEFile::Read(4, &this->bounds.center.z, file) == 0) goto fail;
+        if (AEFile::Read(4, &this->bounds.radius, file) == 0) goto fail;
         {
-            float y = this->boundsCenterY;
-            this->boundsCenterY = this->boundsCenterZ;
-            this->boundsCenterZ = -y;
+            float y = this->bounds.center.y;
+            this->bounds.center.y = this->bounds.center.z;
+            this->bounds.center.z = -y;
         }
 
         {
@@ -489,7 +486,7 @@ namespace AbyssEngine {
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
         unsigned int enhanced = flags & 0x1a;
-        if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivotX, handle) == 0)
+        if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
             return -1;
 
         if ((*slot)->vertexFormat & 0x10) {
@@ -563,10 +560,10 @@ namespace AbyssEngine {
 
         Vector center = {(maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
                          (maximum[2] + minimum[2]) * 0.5f};
-        *(Vector *) &(*slot)->boundsCenterX = center;
+        (*slot)->bounds.center = center;
         Vector high = {maximum[0], maximum[1], maximum[2]};
         Vector low = {minimum[0], minimum[1], minimum[2]};
-        (*slot)->boundsRadius = AEMath::VectorLength(high - low);
+        (*slot)->bounds.radius = AEMath::VectorLength(high - low);
 
         if ((*slot)->vertexFormat & 2) {
             if (packed != 0) {
@@ -737,7 +734,7 @@ namespace AbyssEngine {
         if (AEFile::Read(2, &children, handle) == 0)
             return -1;
         if ((*slot)->animation != 0)
-            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge((*slot)->animation->boundingSphere);
+            (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
         for (unsigned int c = 0; c < children; c++) {
             Mesh *child = new Mesh();
             child->vboEligible = 1;
@@ -745,7 +742,7 @@ namespace AbyssEngine {
             child->material = (*slot)->material;
             if (MeshReadData(engine, handle, flags, &child, mat) == -1)
                 return -1;
-            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(*(const AEMath::BSphere *) &child->boundsCenterX);
+            (*slot)->bounds.Merge(child->bounds);
             ArrayAdd(child, (*slot)->animation->meshes);
         }
         return 1;
@@ -820,8 +817,8 @@ namespace AbyssEngine {
                         child->material = mat;
                         if (MeshReadData(engine, handle, fmt, &child, mat) == -1)
                             goto fail;
-                        ((AEMath::BSphere *) &(*out)->boundsCenterX)->Merge(
-                                *(const AEMath::BSphere *) &child->boundsCenterX);
+                        (*out)->bounds.Merge(
+                                child->bounds);
                         ArrayAdd(child, (*out)->animation->meshes);
                     }
                 }
