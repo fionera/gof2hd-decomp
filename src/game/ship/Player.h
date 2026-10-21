@@ -114,7 +114,7 @@ public:
 
     ~Player();
 
-    int GetEngineEvent();
+    FMOD::Event *GetEngineEvent();
 
     void calcWeaponSounds(int count);
 

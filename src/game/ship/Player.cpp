@@ -334,8 +334,8 @@ int Player::getEmpPoints() {
     return this->empPoints;
 }
 
-int Player::GetEngineEvent() {
-    return (int) (__INTPTR_TYPE__) this->engineEvent;
+FMOD::Event *Player::GetEngineEvent() {
+    return this->engineEvent;
 }
 
 void Player::setEmpForce(float value) {

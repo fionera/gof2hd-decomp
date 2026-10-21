@@ -2793,32 +2793,67 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
 }
 
 void PlayerEgo::handleShip(int dt) {
-    FModSound *snd = Globals::sound;
+    FModSound *sound = Globals::sound;
+    float pitchLevel = this->yawAccumD > 0.0f ? this->yawAccumD : -this->yawAccumD;
+    float rollLevel = this->rollAccum > 0.0f ? this->rollAccum : -this->rollAccum;
+    sound->setParamValue(this->player->GetEngineEvent(), 0, pitchLevel > rollLevel ? pitchLevel : rollLevel);
+    Globals::sound->setParamValue(this->player->GetEngineEvent(), 1, this->rollAccum * 0.2f + 0.5f);
 
-    snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 0,
-                       ((float &) this->yawAccumD));
-    snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 1,
-                       ((float &) this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
+    Matrix local = *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform);
+    Matrix rotation;
+    float frameTime = (float) dt;
+    AbyssEngine::AEMath::MatrixSetRotation(rotation,
+                                           this->pitchAccumD * (1.0f / 65536.0f) * 6.2831855f * frameTime * 0.033f,
+                                           this->yawAccumF * (1.0f / 65536.0f) * 6.2831855f * frameTime * 0.033f,
+                                           0.0f);
+    this->field_0x280 = (int &) this->yawAccumF;
+    local *= rotation;
+    if (this->rolling)
+        local *= this->turretHudMatrix;
 
-    unsigned int tf = reinterpret_cast<unsigned int &>(Globals::Canvas->initialized);
+    float distance = this->thrust * frameTime * ((float &) this->speed);
+    local.m[3] += local.m[2] * distance;
+    local.m[7] += distance * local.m[6];
+    local.m[11] += distance * local.m[10];
 
-    PE_handleShip_orient(this, dt, tf);
+    Vector direction = {local.m[2], local.m[6], local.m[10]};
+    Vector up = {local.m[1], local.m[5], local.m[9]};
+    direction = AbyssEngine::AEMath::VectorNormalize(direction);
+    up = AbyssEngine::AEMath::VectorNormalize(up);
+    Vector right = AbyssEngine::AEMath::VectorCross(up, direction);
+    right = AbyssEngine::AEMath::VectorNormalize(right);
+    local.m[0] = right.x;
+    local.m[4] = right.y;
+    local.m[8] = right.z;
+    local.m[1] = up.x;
+    local.m[5] = up.y;
+    local.m[9] = up.z;
+    local.m[2] = direction.x;
+    local.m[6] = direction.y;
+    local.m[10] = direction.z;
 
-    ((int &) this->pitchRamp) = 0;
-    ((int &) this->yawRamp) = 0;
+    float slide = this->strafeAccel > 0.0f ? this->strafeAccel : -this->strafeAccel;
+    if (slide > 0.01f) {
+        Vector offset = {this->strafeAccel * (float) this->shakeIntensity, 0.0f, 0.0f};
+        offset = AbyssEngine::AEMath::MatrixRotateVector(local, offset);
+        local.m[3] = offset.x + local.m[3];
+        local.m[7] = offset.y + local.m[7];
+        local.m[11] = offset.z + local.m[11];
+        this->strafeAccel = this->strafeAccel * 0.7f;
+        ((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->translateNoUpdate(offset.x, offset.y, offset.z);
+    } else {
+        ((float &) this->strafeNavPoint) = 0.1f;
+    }
+    Globals::Canvas->TransformSetLocal(this->geometry->transform, local);
+    this->pitchRamp = 0;
+    this->yawRamp = 0;
     this->pitchAccumDir = 0;
     this->yawAccumDir = 0;
-    ((int &) this->yawAccumD) = 0;
-    ((int &) this->rollAccum) = 0;
-
-    unsigned int hull = (unsigned int) (long) Globals::Canvas->TransformGetLocal(
-        (unsigned int) (this->geometry->transform));
-    unsigned int ret = (unsigned int) (long) Globals::Canvas->TransformGetLocal(
-        (unsigned int) (this->field_0x4->transform));
-    unsigned char tmp[0x30];
-    Mat_mul(tmp, (AbyssEngine::AEMath::Matrix *) (unsigned long) hull,
-            (AbyssEngine::AEMath::Matrix *) (unsigned long) ret);
-    Mat_assign(((Player *) this->player)->transform, tmp);
+    this->yawAccumD = 0;
+    this->rollAccum = 0;
+    reinterpret_cast<Matrix &>(this->player->transform[0]) =
+        *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+        * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
 }
 
 void PlayerEgo::stopBoost() {
