@@ -4,6 +4,35 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
+static const char *const kTextureConferenceVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "uniform highp mat4 u_WorldMatrix;  \n"
+    "uniform highp int u_time;   \n"
+    "void main()                  \n"
+    "{                            \n"
+    "\tfloat angle= (mod(u_time,360.0)*2.0); \n"
+    "\tvec4 pos = a_position; \n"
+    "\tpos.z  = sin( radians(pos.y+angle)); \n"
+    "\tpos.z += sin( radians(pos.x/2.0+angle));\n"
+    "\tpos.z *= pos.y * 0.09;\n"
+    "\tgl_Position = u_WorldMatrix * pos;\t\t\n"
+    "   v_texCoord = a_texCoord;  \n"
+    "}                            \n";
+
+static const char *const kTextureConferenceFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec2 v_texCoord;                            \n"
+    "varying highp float v_dummy;     \n"
+    "uniform sampler2D s_texture;                        \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\tvec4 textureColor = texture2D( s_texture, v_texCoord );\t\n"
+    "\tgl_FragColor = glColor * textureColor;\t\t\n"
+    "}   \t\t  \n";
+
 namespace AbyssEngine {
     int TextureConference::ShaderIndex;
 
@@ -14,14 +43,14 @@ namespace AbyssEngine {
     }
 
     void TextureConference::Init(Engine *) {
-        this->program = this->ES2LoadProgram("TextureConference.vsh", "TextureConference.fsh");
+        this->program = this->ES2LoadProgram(kTextureConferenceVertexSource, kTextureConferenceFragmentSource);
 
-        this->sTexture = glGetUniformLocation(this->program, "u_texture");
+        this->sTexture = glGetUniformLocation(this->program, "s_texture");
         this->aPosition = glGetAttribLocation(this->program, "a_position");
         this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_mvp");
-        this->uColor = glGetUniformLocation(this->program, "u_color");
-        this->uOffset = glGetUniformLocation(this->program, "u_offset");
+        this->uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uColor = glGetUniformLocation(this->program, "u_time");
+        this->uOffset = glGetUniformLocation(this->program, "glColor");
 
         glUseProgram(this->program);
         glUniform1i(this->sTexture, 0);

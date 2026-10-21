@@ -3,6 +3,12 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kSimpleShaderVertexSource =
+    "attribute highp vec4 a_position; uniform highp mat4 u_WorldMatrix;void main()                 {                          \tgl_Position = u_WorldMatrix * a_position;\t\t} ";
+
+static const char *const kSimpleShaderFragmentSource =
+    "precision lowp float;uniform lowp vec4 glColor;void main()  {   gl_FragColor = glColor;} ";
+
 namespace AbyssEngine {
     int SimpleShader::ShaderIndex;
 
@@ -12,10 +18,10 @@ namespace AbyssEngine {
     }
 
     void SimpleShader::Init(Engine *) {
-        this->program = (int) this->ES2LoadProgram("SimpleShader.vsh", "SimpleShader.fsh");
+        this->program = (int) this->ES2LoadProgram(kSimpleShaderVertexSource, kSimpleShaderFragmentSource);
         this->aPosition = glGetAttribLocation(this->program, "a_position");
         this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->uColor = glGetUniformLocation(this->program, "u_color");
+        this->uColor = glGetUniformLocation(this->program, "glColor");
         glUseProgram(this->program);
     }
 

@@ -3,6 +3,12 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kGenericShader1VertexSource =
+    "attribute highp vec4 \ta_position;  attribute mediump vec2  a_texCoord;   \tattribute highp vec3  \ta_normal; \t\tattribute lowp vec3 \ta_tangent;\t\tattribute lowp vec3 \ta_bitangent;\tuniform highp mat4 u_ModelViewProjectionMatrix;uniform highp mat3 u_ModelMatrix;uniform highp vec3 u_lightdirmodel;uniform highp vec3 u_eyeposmodel;varying mediump    vec2 v_texCoord;void main(){\tv_texCoord = a_texCoord;\tgl_Position = u_ModelViewProjectionMatrix * a_position;\t}";
+
+static const char *const kGenericShader1FragmentSource =
+    "precision lowp float;uniform sampler2D  s_texture;uniform lowp vec4  glColor;uniform lowp vec4  u_AmbientColor;uniform lowp vec4  u_DiffuseColor;uniform lowp vec4  u_SpecularColor;varying mediump    vec2 v_texCoord;void main(){\tgl_FragColor =  texture2D( s_texture, v_texCoord );}\t";
+
 namespace AbyssEngine {
     int GenericShader1::ShaderIndex;
 
@@ -12,23 +18,23 @@ namespace AbyssEngine {
     }
 
     void GenericShader1::Init(Engine *) {
-        this->program = this->ES2LoadProgram("GenericShader1.vsh", "GenericShader1.fsh");
+        this->program = this->ES2LoadProgram(kGenericShader1VertexSource, kGenericShader1FragmentSource);
 
         this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aNormal = glGetAttribLocation(this->program, "a_normal");
-        this->aTangent = glGetAttribLocation(this->program, "a_tangent");
-        this->aBinormal = glGetAttribLocation(this->program, "a_binormal");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormal = glGetAttribLocation(this->program, "a_texCoord");
+        this->aTangent = glGetAttribLocation(this->program, "a_normal");
+        this->aBinormal = glGetAttribLocation(this->program, "a_tangent");
+        this->aTexCoord = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uM0 = glGetUniformLocation(this->program, "u_m0");
-        this->uM1 = glGetUniformLocation(this->program, "u_m1");
-        this->uM2 = glGetUniformLocation(this->program, "u_m2");
-        this->uM3 = glGetUniformLocation(this->program, "u_m3");
-        this->uM4 = glGetUniformLocation(this->program, "u_m4");
-        this->uM5 = glGetUniformLocation(this->program, "u_m5");
-        this->uM6 = glGetUniformLocation(this->program, "u_m6");
-        this->uM7 = glGetUniformLocation(this->program, "u_m7");
-        this->uM8 = glGetUniformLocation(this->program, "u_m8");
+        this->uM0 = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uM1 = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uM2 = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uM3 = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->uM4 = glGetUniformLocation(this->program, "s_texture");
+        this->uM5 = glGetUniformLocation(this->program, "glColor");
+        this->uM6 = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->uM7 = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->uM8 = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
         glUniform1i(this->uM4, 0);

@@ -8,6 +8,26 @@
 #include <arm_neon.h>
 
 
+static const char *const kDrawFBOShaderVertexSource =
+    "attribute highp vec4 a_position;\n"
+    "attribute mediump vec2 a_texCoord;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "\tgl_Position = u_WorldMatrix * a_position;\n"
+    "\tv_texCoord = a_texCoord;\n"
+    "}\n";
+
+static const char *const kDrawFBOShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "void main(void)\n"
+    "{\n"
+    "   gl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb;\n"
+    "}\n";
+
 namespace AbyssEngine {
     int DrawFBOShader::ShaderIndex;
 
@@ -19,12 +39,12 @@ namespace AbyssEngine {
     }
 
     void DrawFBOShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("DrawFBOShader.vsh", "DrawFBOShader.fsh");
+        this->program = this->ES2LoadProgram(kDrawFBOShaderVertexSource, kDrawFBOShaderFragmentSource);
 
-        this->positionLoc = glGetAttribLocation(this->program, "position");
-        this->texCoordLoc = glGetAttribLocation(this->program, "texCoord");
-        this->worldViewMatrixLoc = glGetUniformLocation(this->program, "worldViewMatrix");
-        this->textureLoc = glGetUniformLocation(this->program, "texture");
+        this->positionLoc = glGetAttribLocation(this->program, "a_position");
+        this->texCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->worldViewMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->textureLoc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
         glUniform1i(this->textureLoc, 0);

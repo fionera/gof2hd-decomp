@@ -3,6 +3,57 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
+static const char *const kBumpShaderV2VertexSource =
+    "attribute highp vec4 \ta_position;   \t  \n"
+    "attribute mediump vec2  a_texCoord;  \n"
+    "attribute highp vec3  \ta_normal; \t  \n"
+    "attribute lowp \tvec3 \ta_tangent;\t  \n"
+    "attribute lowp \tvec3 \ta_bitangent;  \n"
+    "varying mediump vec2 v_texCoord;  \n"
+    "varying mediump vec3 v_light_dir;  \n"
+    "varying mediump vec3 v_eye_dir;  \n"
+    "varying mediump vec3 v_lightvec;  \n"
+    "varying mediump vec3 v_normal;  \n"
+    "varying mediump vec3 v_specular_dir;  \n"
+    "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
+    "uniform highp vec3 u_lightdirmodel;  \n"
+    "uniform highp vec3 u_eyeposmodel;  \n"
+    "void main()  \n"
+    "{  \n"
+    "\tgl_Position = u_ModelViewProjectionMatrix * a_position;  \n"
+    "\tv_texCoord  = a_texCoord;    \n"
+    "\tv_normal \t= a_normal;  \n"
+    "\thighp mat3 tangentSpaceXform = mat3(a_tangent.x, a_bitangent.x, a_normal.x,  \n"
+    "\t\t\t\t\t\t\t\t\t\ta_tangent.y, a_bitangent.y, a_normal.y,  \n"
+    "\t\t\t\t\t\t\t\t\t\ta_tangent.z, a_bitangent.z, a_normal.z  \n"
+    "\t\t\t\t\t\t\t\t\t\t);  \n"
+    "\tvec3 shininesDirection = normalize(normalize(u_eyeposmodel - a_position.xyz) + u_lightdirmodel) ;  \n"
+    "\tv_specular_dir = tangentSpaceXform * shininesDirection;  \n"
+    "\tv_lightvec = tangentSpaceXform * u_lightdirmodel;  \n"
+    "}  \n";
+
+static const char *const kBumpShaderV2FragmentSource =
+    "precision lowp float;  \n"
+    "varying mediump vec2 v_texCoord;  \n"
+    "varying mediump vec3 v_light_dir;  \n"
+    "varying mediump vec3 v_eye_dir;  \n"
+    "varying mediump vec3 v_lightvec;  \n"
+    "varying mediump vec3 v_normal;  \n"
+    "varying mediump vec3 v_specular_dir;  \n"
+    "uniform sampler2D  s_texture[2];  \n"
+    "uniform lowp vec4  u_AmbientColor;  \n"
+    "void main()  \n"
+    "{  \n"
+    "\tlowp vec4 colorTex   = texture2D( s_texture[0], v_texCoord, -1.0 );  \n"
+    "\tlowp vec4 normalTex  = texture2D( s_texture[1], v_texCoord, -1.0 );  \n"
+    "\tlowp vec3 normalTexX = normalTex.rgb*2.0 - 1.0;  \n"
+    "\tlowp vec4 specTex = vec4(vec3(normalTex.a), 0.0);\t//vec4(normalTex.a)  \n"
+    "   mediump float powExp = 10.0; \n"
+    "\tfloat specularIntensity = pow( dot( v_specular_dir,normalTexX ), powExp );  \n"
+    "\tfloat diffuseIntensity  = max( dot( normalTexX    ,v_lightvec ), 0.5 );// + 0.28;  \n"
+    "\tgl_FragColor = diffuseIntensity * colorTex * u_AmbientColor + specularIntensity * specTex;  \n"
+    "}  \n";
+
 namespace AbyssEngine {
     int BumpShaderV2::ShaderIndex;
 
@@ -12,24 +63,24 @@ namespace AbyssEngine {
     }
 
     void BumpShaderV2::Init(Engine *) {
-        this->program = this->ES2LoadProgram("BumpShaderV2.vsh", "BumpShaderV2.fsh");
+        this->program = this->ES2LoadProgram(kBumpShaderV2VertexSource, kBumpShaderV2FragmentSource);
 
         this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aNormal = glGetAttribLocation(this->program, "a_normal");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormal = glGetAttribLocation(this->program, "a_texCoord");
+        this->aTexCoord = glGetAttribLocation(this->program, "a_normal");
         this->aTangent = glGetAttribLocation(this->program, "a_tangent");
-        this->aBinormal = glGetAttribLocation(this->program, "a_binormal");
+        this->aBinormal = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_mvpMatrix");
-        this->uNormalMatrix = glGetUniformLocation(this->program, "u_normalMatrix");
-        this->uLightDir = glGetUniformLocation(this->program, "u_lightDir");
-        this->uEyePos = glGetUniformLocation(this->program, "u_eyePos");
-        this->uTexture0 = glGetUniformLocation(this->program, "u_texture0");
-        this->uTexture1 = glGetUniformLocation(this->program, "u_texture1");
-        this->uAmbient = glGetUniformLocation(this->program, "u_ambient");
-        this->uDiffuse = glGetUniformLocation(this->program, "u_diffuse");
-        this->uSpecular = glGetUniformLocation(this->program, "u_specular");
-        this->uEmissive = glGetUniformLocation(this->program, "u_emissive");
+        this->uMvpMatrix = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uNormalMatrix = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uLightDir = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uEyePos = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->uTexture0 = glGetUniformLocation(this->program, "s_texture[0]");
+        this->uTexture1 = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uAmbient = glGetUniformLocation(this->program, "glColor");
+        this->uDiffuse = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->uSpecular = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->uEmissive = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
         for (int i = 0; i != 2; i++) {

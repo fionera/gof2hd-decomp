@@ -3,6 +3,20 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kVertexColorAlphaTextureShaderVertexSource =
+    "attribute highp   vec4 \ta_position;   attribute mediump vec2  a_texCoord;   \tattribute highp   vec3  a_normal; \t\t\tattribute lowp    vec3 \ta_tangent;\t\tattribute lowp    vec3 \ta_bitangent;\tattribute highp    vec4  a_vertexColor;varying mediump vec2 v_texCoord;varying mediump vec3 v_light_dir;varying mediump vec3 v_eye_dir;varying mediump vec3 v_lightvec;varying mediump vec3 v_normal;varying mediump vec3 v_specular_dir;varying highp   vec4 v_color;uniform highp mat4 u_ModelViewProjectionMatrix;uniform highp vec3 u_lightdirmodel;uniform highp vec3 u_eyeposmodel;\n"
+    "//uniform highp mat3 u_ModelMatrix;\n"
+    "void main(){\tgl_Position = u_ModelViewProjectionMatrix * a_position;\tv_color     = a_vertexColor;\tv_texCoord  = a_texCoord;}";
+
+static const char *const kVertexColorAlphaTextureShaderFragmentSource =
+    "precision lowp float;varying mediump vec2 v_texCoord;varying mediump vec3 v_light_dir;varying mediump vec3 v_eye_dir;varying mediump vec3 v_lightvec;varying mediump vec3 v_normal;varying mediump vec3 v_specular_dir;varying highp    vec4 v_color;uniform sampler2D  s_texture;\n"
+    "//uniform lowp vec4  u_AmbientColor;\n"
+    "//uniform lowp vec4  u_DiffuseColor;\n"
+    "//uniform lowp vec4  u_SpecularColor;\n"
+    "uniform highp vec4  glColor;\t\n"
+    "void main(){\tlowp vec4 colorTex   = texture2D( s_texture, v_texCoord );\tif ( colorTex.a < 0.5)\t\tdiscard;\tgl_FragColor = colorTex * v_color; // * glColor;  (Color scheint nicht benÃ¶tigt zu werden)\n"
+    "}";
+
 namespace AbyssEngine {
     int VertexColorAlphaTextureShader::ShaderIndex;
 
@@ -16,25 +30,25 @@ namespace AbyssEngine {
     }
 
     void VertexColorAlphaTextureShader::Init(Engine *) {
-        int program = this->ES2LoadProgram("VCATShader.vsh", "VCATShader.fsh");
+        int program = this->ES2LoadProgram(kVertexColorAlphaTextureShaderVertexSource, kVertexColorAlphaTextureShaderFragmentSource);
         this->program = program;
 
-        this->attrib0 = glGetAttribLocation(program, "a0");
-        this->attrib1 = glGetAttribLocation(this->program, "a1");
-        this->attrib2 = glGetAttribLocation(this->program, "a2");
-        this->attrib3 = glGetAttribLocation(this->program, "a3");
-        this->attrib4 = glGetAttribLocation(this->program, "a4");
-        this->attrib5 = glGetAttribLocation(this->program, "a5");
+        this->attrib0 = glGetAttribLocation(program, "a_vertexColor");
+        this->attrib1 = glGetAttribLocation(this->program, "a_position");
+        this->attrib2 = glGetAttribLocation(this->program, "a_texCoord");
+        this->attrib3 = glGetAttribLocation(this->program, "a_normal");
+        this->attrib4 = glGetAttribLocation(this->program, "a_tangent");
+        this->attrib5 = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uniform0 = glGetUniformLocation(this->program, "u0");
-        this->uniform1 = glGetUniformLocation(this->program, "u1");
-        this->uniform2 = glGetUniformLocation(this->program, "u2");
-        this->uniform3 = glGetUniformLocation(this->program, "u3");
-        this->uniform4 = glGetUniformLocation(this->program, "u4");
-        this->uniform5 = glGetUniformLocation(this->program, "u5");
-        this->uniform6 = glGetUniformLocation(this->program, "u6");
-        this->uniform7 = glGetUniformLocation(this->program, "u7");
-        this->uniform8 = glGetUniformLocation(this->program, "u8");
+        this->uniform0 = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uniform1 = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uniform2 = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uniform3 = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->uniform4 = glGetUniformLocation(this->program, "s_texture");
+        this->uniform5 = glGetUniformLocation(this->program, "glColor");
+        this->uniform6 = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->uniform7 = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->uniform8 = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
         glUniform1i(this->uniform4, 0);

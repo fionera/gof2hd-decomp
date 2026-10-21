@@ -12,6 +12,28 @@ float sinf(float x);
 
 static float PulseShader_timeScale = 0.0f;
 
+static const char *const kPulseShaderVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
+    "   v_texCoord = a_texCoord;  \n"
+    "}                            \n";
+
+static const char *const kPulseShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D  s_texture;\n"
+    "uniform highp float u_timevalue;\n"
+    "void main()\n"
+    "{\n"
+    "\tvec4 textureColor = texture2D(  s_texture, v_texCoord );\n"
+    "\tgl_FragColor = textureColor * vec4(vec3( u_timevalue ), 1.0); // * vec4(4.0,4.0,4.0,1.0);\n"
+    "}\n";
+
 namespace AbyssEngine {
     int PulseShader::ShaderIndex;
 
@@ -29,25 +51,25 @@ namespace AbyssEngine {
     }
 
     void PulseShader::Init(Engine *) {
-        int program = this->ES2LoadProgram("PulseShader.vsh", "PulseShader.fsh");
+        int program = this->ES2LoadProgram(kPulseShaderVertexSource, kPulseShaderFragmentSource);
         this->program = program;
 
-        this->a0Loc = glGetAttribLocation(program, "a0");
-        this->a1Loc = glGetAttribLocation(this->program, "a1");
-        this->a2Loc = glGetAttribLocation(this->program, "a2");
-        this->a3Loc = glGetAttribLocation(this->program, "a3");
-        this->a4Loc = glGetAttribLocation(this->program, "a4");
+        this->a0Loc = glGetAttribLocation(program, "a_position");
+        this->a1Loc = glGetAttribLocation(this->program, "a_texCoord");
+        this->a2Loc = glGetAttribLocation(this->program, "a_normal");
+        this->a3Loc = glGetAttribLocation(this->program, "a_tangent");
+        this->a4Loc = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->u0Loc = glGetUniformLocation(this->program, "u0");
-        this->u1Loc = glGetUniformLocation(this->program, "u1");
-        this->u2Loc = glGetUniformLocation(this->program, "u2");
-        this->u3Loc = glGetUniformLocation(this->program, "u3");
-        this->u4Loc = glGetUniformLocation(this->program, "u4");
-        this->u5Loc = glGetUniformLocation(this->program, "u5");
-        this->u6Loc = glGetUniformLocation(this->program, "u6");
-        this->u7Loc = glGetUniformLocation(this->program, "u7");
-        this->u8Loc = glGetUniformLocation(this->program, "u8");
-        this->u9Loc = glGetUniformLocation(this->program, "u9");
+        this->u0Loc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->u1Loc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->u2Loc = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->u3Loc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->u4Loc = glGetUniformLocation(this->program, "u_timevalue");
+        this->u5Loc = glGetUniformLocation(this->program, "s_texture");
+        this->u6Loc = glGetUniformLocation(this->program, "glColor");
+        this->u7Loc = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->u8Loc = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->u9Loc = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
         glUniform1i(this->u5Loc, 0);

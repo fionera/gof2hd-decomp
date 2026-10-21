@@ -3,6 +3,27 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kTexOnlyShaderVertexSource =
+    "attribute highp vec4 a_position;\n"
+    "attribute mediump vec2 a_texCoord;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "\tgl_Position = u_WorldMatrix * a_position;\n"
+    "\tv_texCoord = a_texCoord;\n"
+    "}\n";
+
+static const char *const kTexOnlyShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "void main()\n"
+    "{\n"
+    "\tvec4 textureColor = texture2D( s_texture_base, v_texCoord );\n"
+    "\tgl_FragColor = textureColor; // * vec4(4.0,4.0,4.0,1.0);\n"
+    "}\n";
+
 namespace AbyssEngine {
     int TexOnlyShader::ShaderIndex;
 
@@ -12,11 +33,11 @@ namespace AbyssEngine {
     }
 
     void TexOnlyShader::Init(Engine *) {
-        this->program = (int) this->ES2LoadProgram("TexOnlyShader.vsh", "TexOnlyShader.fsh");
+        this->program = (int) this->ES2LoadProgram(kTexOnlyShaderVertexSource, kTexOnlyShaderFragmentSource);
         this->aPosition = glGetAttribLocation(this->program, "a_position");
         this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
         this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->sTexture = glGetUniformLocation(this->program, "s_texture");
+        this->sTexture = glGetUniformLocation(this->program, "s_texture_base");
         glUseProgram(this->program);
         glUniform1i(this->sTexture, 0);
     }

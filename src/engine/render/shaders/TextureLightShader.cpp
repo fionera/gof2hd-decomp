@@ -3,6 +3,90 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kTextureLightShaderVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "attribute highp vec3  a_normal; \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "varying lowp vec3  v_DiffuseLight[2];\t\n"
+    "varying lowp vec3  v_SpecularLight[2];\t\n"
+    "uniform highp mat4 u_WorldMatrix;  \n"
+    "uniform highp mat4 u_UvMatrix;  \n"
+    "uniform mediump mat4 u_FullModelMatrix;  \n"
+    "uniform mediump mat3 u_ModelMatrix;  \n"
+    "uniform highp vec4 u_LightDirection[2]; \n"
+    "uniform highp vec3 u_EyePosModel;  \n"
+    "uniform lowp vec3 u_AmbientColor[2];\n"
+    "uniform lowp vec3 u_DiffuseColor[2];\n"
+    "uniform lowp vec3 u_SpecularColor[2];\n"
+    "uniform lowp float u_SpecularPower;\n"
+    "uniform bool u_UVAnimation; \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_WorldMatrix * a_position;\t\t\n"
+    "   if ( u_UVAnimation ) \n"
+    "       v_texCoord = (u_UvMatrix*vec4(a_texCoord.x, a_texCoord.y, 0.0, 1.0)).xy;  \n"
+    "   else \n"
+    "       v_texCoord = a_texCoord; \n"
+    "\thighp vec3 lightDirLocal; \n"
+    "\thighp float nDotL; \n"
+    "\tif ( u_LightDirection[0].w == 0.0 ) {\n"
+    "\t\tlightDirLocal = u_LightDirection[0].xyz; \n"
+    "\t\tnDotL = dot(a_normal, lightDirLocal);\n"
+    "\t} else {\n"
+    "\t\t// lightDirLocal = normalize(u_LightDirection[0].xyz - a_position.xyz);\n"
+    "\t\t// nDotL = dot(a_normal, lightDirLocal);\n"
+    "\t\thighp vec4 positionWorld = u_FullModelMatrix * a_position; \n"
+    "\t\tlightDirLocal = normalize(u_LightDirection[0].xyz - positionWorld.xyz);\n"
+    "\t\thighp vec3 normalWorld = normalize(u_ModelMatrix * a_normal.xyz); \n"
+    "\t\tnDotL = dot(normalWorld, lightDirLocal);\n"
+    "\t} \n"
+    "\tv_DiffuseLight[0] = vec3(max(nDotL, 0.0)); \n"
+    "\t// Compute\treflection vector \n"
+    "\thighp vec3 reflection = (2.0 * a_normal * nDotL) - lightDirLocal;\t\n"
+    "   reflection = normalize(-reflect(lightDirLocal, a_normal)); \n"
+    "\t// Compute R.V \n"
+    "\thighp float rDotV = max(0.0, dot(reflection, normalize(u_EyePosModel)));\n"
+    "\t// Compute Specular term \n"
+    "\tv_SpecularLight[0] = u_SpecularColor[0] * pow(rDotV, u_SpecularPower);\t\n"
+    "\tv_DiffuseLight[0] *= u_DiffuseColor[0];\n"
+    "\tv_DiffuseLight[0] += u_AmbientColor[0];\n"
+    "\tif ( u_LightDirection[1].w == 0.0 ) {\n"
+    "\t\tlightDirLocal = u_LightDirection[1].xyz; \n"
+    "\t\tnDotL = dot(a_normal, lightDirLocal);\n"
+    "\t} else {\n"
+    "\t\thighp vec4 positionWorld = u_FullModelMatrix * a_position; \n"
+    "\t\tlightDirLocal = normalize(u_LightDirection[1].xyz - positionWorld.xyz);\n"
+    "\t\thighp vec3 normalWorld = normalize(u_ModelMatrix * a_normal.xyz); \n"
+    "\t\tnDotL = dot(normalWorld, lightDirLocal);\n"
+    "\t} \n"
+    "\tv_DiffuseLight[1] = vec3(max(nDotL, 0.0)); \n"
+    "\t// Compute reflection vector \n"
+    "\treflection = (2.0 * a_normal * nDotL) - lightDirLocal;\t\n"
+    "   reflection = normalize(-reflect(lightDirLocal, a_normal)); \n"
+    "\t// Compute R.V \n"
+    "\trDotV = max(0.0, dot(reflection, normalize(u_EyePosModel)));\n"
+    "\t// Compute Specular term \n"
+    "\tv_SpecularLight[1] = u_SpecularColor[1] * pow(rDotV, u_SpecularPower);\t\n"
+    "\tv_DiffuseLight[1] *= u_DiffuseColor[1];\n"
+    "\tv_DiffuseLight[1] += u_AmbientColor[1];\n"
+    "}                            \n";
+
+static const char *const kTextureLightShaderFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec2 v_texCoord;                            \n"
+    "varying lowp vec3  v_DiffuseLight[2];\t\n"
+    "varying lowp vec3  v_SpecularLight[2];\t\n"
+    "uniform sampler2D s_texture;                        \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\tvec4 textureColor = texture2D( s_texture, v_texCoord );\t\n"
+    "   lowp vec3 color = (v_DiffuseLight[0] + v_DiffuseLight[1]) * (textureColor.rgb) + v_SpecularLight[0] + v_SpecularLight[1]; \n"
+    "\tgl_FragColor.rgb = glColor.rgb * color;\n"
+    "\tgl_FragColor.a = glColor.a * textureColor.a; \n"
+    "}   \t\t  \n";
+
 namespace AbyssEngine {
     int TextureLightShader::ShaderIndex;
 
@@ -12,30 +96,30 @@ namespace AbyssEngine {
     }
 
     void TextureLightShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("TextureLightShader.vsh", "TextureLightShader.fsh");
+        this->program = this->ES2LoadProgram(kTextureLightShaderVertexSource, kTextureLightShaderFragmentSource);
 
-        this->uModelMatrix = glGetUniformLocation(this->program, "u0");
-        this->uHasScaleAnimation = glGetUniformLocation(this->program, "u1");
+        this->uModelMatrix = glGetUniformLocation(this->program, "u_UvMatrix");
+        this->uHasScaleAnimation = glGetUniformLocation(this->program, "u_UVAnimation");
 
-        this->aPosition = glGetAttribLocation(this->program, "a0");
-        this->aTexCoord = glGetAttribLocation(this->program, "a1");
+        this->aPosition = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
 
-        this->aNormal = glGetAttribLocation(this->program, "a2");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u3");
-        this->uModelViewMatrix = glGetUniformLocation(this->program, "u4");
-        this->uNormalMatrix = glGetUniformLocation(this->program, "u5");
-        this->uColor0 = glGetUniformLocation(this->program, "u6");
-        this->uColor1 = glGetUniformLocation(this->program, "u7");
-        this->uSpecularColor = glGetUniformLocation(this->program, "u8");
-        this->uTexture = glGetUniformLocation(this->program, "u9");
-        this->uAmbientColor = glGetUniformLocation(this->program, "u10");
-        this->uLight0Direction = glGetUniformLocation(this->program, "u11");
-        this->uLight1Direction = glGetUniformLocation(this->program, "u12");
-        this->uLight2Direction = glGetUniformLocation(this->program, "u13");
-        this->uShininess = glGetUniformLocation(this->program, "u14");
-        this->uLight0Color = glGetUniformLocation(this->program, "u15");
-        this->uLight1Color = glGetUniformLocation(this->program, "u16");
-        this->uLight2Color = glGetUniformLocation(this->program, "u17");
+        this->aNormal = glGetAttribLocation(this->program, "a_normal");
+        this->uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uModelViewMatrix = glGetUniformLocation(this->program, "u_FullModelMatrix");
+        this->uNormalMatrix = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uColor0 = glGetUniformLocation(this->program, "u_LightDirection[0]");
+        this->uColor1 = glGetUniformLocation(this->program, "u_LightDirection[1]");
+        this->uSpecularColor = glGetUniformLocation(this->program, "u_EyePosModel");
+        this->uTexture = glGetUniformLocation(this->program, "s_texture");
+        this->uAmbientColor = glGetUniformLocation(this->program, "glColor");
+        this->uLight0Direction = glGetUniformLocation(this->program, "u_AmbientColor[0]");
+        this->uLight1Direction = glGetUniformLocation(this->program, "u_DiffuseColor[0]");
+        this->uLight2Direction = glGetUniformLocation(this->program, "u_SpecularColor[0]");
+        this->uShininess = glGetUniformLocation(this->program, "u_SpecularPower");
+        this->uLight0Color = glGetUniformLocation(this->program, "u_AmbientColor[1]");
+        this->uLight1Color = glGetUniformLocation(this->program, "u_DiffuseColor[1]");
+        this->uLight2Color = glGetUniformLocation(this->program, "u_SpecularColor[1]");
 
         glUseProgram(this->program);
         glUniform1i(this->uTexture, 0);

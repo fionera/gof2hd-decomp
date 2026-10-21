@@ -4,6 +4,52 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kSimpleRefractionShaderVertexSource =
+    "attribute highp    vec3 a_position;\n"
+    "attribute mediump  vec2 a_texCoord;\n"
+    "attribute lowp\t\tvec3  \ta_normal; \t  \n"
+    "attribute lowp \tvec3 \ta_tangent;\t\t  \n"
+    "attribute lowp \tvec3 \ta_bitangent;\t  \n"
+    "uniform highp mat4 u_ModelViewProjectionMatrix;\n"
+    "varying lowp vec3 v_eye_dir;  \n"
+    "uniform highp vec3 u_eyeposmodel;  \n"
+    "varying mediump vec2 v_texCoord;\n"
+    "varying mediump vec3 v_normal;  \n"
+    "void main()  \n"
+    "{  \n"
+    "\tgl_Position = u_ModelViewProjectionMatrix * vec4(a_position, 1.0);\n"
+    "\tv_texCoord  = a_texCoord;\n"
+    "\tv_normal\t= a_normal;\n"
+    "\thighp mat3 tangentSpaceXform = mat3(a_tangent.x, a_bitangent.x, a_normal.x,  \n"
+    "\t\t\t\t\t\t\t\t\t\ta_tangent.y, a_bitangent.y, a_normal.y,  \n"
+    "\t\t\t\t\t\t\t\t\t\ta_tangent.z, a_bitangent.z, a_normal.z  \n"
+    "\t\t\t\t\t\t\t\t\t\t);  \n"
+    "   v_eye_dir = normalize(tangentSpaceXform*(u_eyeposmodel - a_position)); \n"
+    "}\n";
+
+static const char *const kSimpleRefractionShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "varying lowp vec3 v_eye_dir;\n"
+    "uniform sampler2D  s_texture[2];\n"
+    "uniform sampler2D s_texture_base;\n"
+    "uniform lowp vec4  glColor; \n"
+    "uniform highp float u_TexBias; \n"
+    "uniform highp vec2 u_texelSize;\n"
+    "uniform mediump float u_CloakRate;\n"
+    "void main()\n"
+    "{\n"
+    "\tlowp vec4 colorTex   = texture2D( s_texture[0], v_texCoord, u_TexBias);\n"
+    "\tlowp vec4 normalTex  = texture2D( s_texture[1], v_texCoord, u_TexBias);\n"
+    "\tlowp vec3 normalTexX = colorTex.rgb * 2.0 - 1.0;\n"
+    "\tfloat rim_intensity = (smoothstep(0.0, 1.0, 1.0 - dot( v_eye_dir,normalTexX )));\n"
+    "\tfloat time = (u_CloakRate);\n"
+    "   vec2 coord;\n"
+    "   coord = (gl_FragCoord.xy + ((glColor.a*(colorTex.xy-0.5)*rim_intensity)*180.0)) * u_texelSize;\n"
+    "\tgl_FragColor.rgb = texture2D(s_texture_base, coord).rgb;\n"
+    "\tgl_FragColor.a = colorTex.a;\n"
+    "}\n";
+
 namespace AbyssEngine {
     int SimpleRefractionShader::ShaderIndex;
 
@@ -14,28 +60,28 @@ namespace AbyssEngine {
 
     void SimpleRefractionShader::Init(::Engine *engine) {
         int program = this->ES2LoadProgram(
-            "SimpleRefractionShader.vsh", "SimpleRefractionShader.fsh");
+            kSimpleRefractionShaderVertexSource, kSimpleRefractionShaderFragmentSource);
         this->program = program;
 
         this->aPositionLoc = glGetAttribLocation(program, "a_position");
-        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
-        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
-        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_tangent");
 
-        this->uM0Loc = glGetUniformLocation(this->program, "u_m0");
-        this->uM1Loc = glGetUniformLocation(this->program, "u_m1");
-        this->uM2Loc = glGetUniformLocation(this->program, "u_m2");
-        this->uTex0Loc = glGetUniformLocation(this->program, "u_tex0");
-        this->uTex1Loc = glGetUniformLocation(this->program, "u_tex1");
-        this->uM3Loc = glGetUniformLocation(this->program, "u_m3");
-        this->uM4Loc = glGetUniformLocation(this->program, "u_m4");
-        this->uM5Loc = glGetUniformLocation(this->program, "u_m5");
+        this->uM0Loc = glGetUniformLocation(this->program, "a_bitangent");
+        this->uM1Loc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uM2Loc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->uTex0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        this->uTex1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uM3Loc = glGetUniformLocation(this->program, "glColor");
+        this->uM4Loc = glGetUniformLocation(this->program, "u_TexBias");
+        this->uM5Loc = glGetUniformLocation(this->program, "u_texelSize");
 
         glActiveTexture(0x84c7);
         engine->ActivateRefractFBO();
 
-        this->uRefractLoc = glGetUniformLocation(this->program, "u_refract");
-        this->uM6Loc = glGetUniformLocation(this->program, "u_m6");
+        this->uRefractLoc = glGetUniformLocation(this->program, "u_CloakRate");
+        this->uM6Loc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
 

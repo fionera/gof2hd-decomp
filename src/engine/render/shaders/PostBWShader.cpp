@@ -8,6 +8,31 @@
 #include <arm_neon.h>
 
 
+static const char *const kPostBWShaderVertexSource =
+    "attribute highp vec4 a_position;\n"
+    "attribute mediump vec2 a_texCoord;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "\tgl_Position = u_WorldMatrix * a_position;\n"
+    "\tv_texCoord = a_texCoord;\n"
+    "}\n";
+
+static const char *const kPostBWShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "void main()\n"
+    "{\n"
+    "\tvec4 textureColor = texture2D( s_texture_base, v_texCoord );\n"
+    "   float value = (textureColor.r + textureColor.g + textureColor.b) / 3.0; \n"
+    "   gl_FragColor.r = 0.0; \n"
+    "   gl_FragColor.g = 0.0; \n"
+    "   gl_FragColor.b = textureColor.b; \n"
+    "\tgl_FragColor.a = textureColor.a;\n"
+    "}\n";
+
 namespace AbyssEngine {
     int PostBWShader::ShaderIndex;
 
@@ -21,12 +46,12 @@ namespace AbyssEngine {
 
     void PostBWShader::Init(Engine *) {
         this->program = ES2LoadProgram(
-            "attribute vec4 a_Position;attribute vec2 a_TexCoord;varying vec2 v_TexCoord;uniform mat4 u_MVPMatrix;void main(){gl_Position=u_MVPMatrix*a_Position;v_TexCoord=a_TexCoord;}",
-            "precision mediump float;varying vec2 v_TexCoord;uniform sampler2D s_Texture;void main(){vec4 c=texture2D(s_Texture,v_TexCoord);float g=(c.r+c.g+c.b)/3.0;gl_FragColor=vec4(g,g,g,c.a);}");
-        this->aPosition = glGetAttribLocation(this->program, "a_Position");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_TexCoord");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_MVPMatrix");
-        this->sTexture = glGetUniformLocation(this->program, "s_Texture");
+            kPostBWShaderVertexSource,
+            kPostBWShaderFragmentSource);
+        this->aPosition = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        this->uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->sTexture = glGetUniformLocation(this->program, "s_texture_base");
         glUseProgram(this->program);
         glUniform1i(this->sTexture, 0);
     }

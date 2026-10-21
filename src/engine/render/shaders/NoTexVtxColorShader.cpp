@@ -3,6 +3,26 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kNoTexVtxColorShaderVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec4 a_VertexColor;   \n"
+    "varying mediump vec4 v_VertexColor;     \n"
+    "uniform highp mat4 u_WorldMatrix;  \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_WorldMatrix * a_position;\t\t\n"
+    "   v_VertexColor = a_VertexColor;  \n"
+    "}                            \n";
+
+static const char *const kNoTexVtxColorShaderFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec4 v_VertexColor;                            \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\tgl_FragColor = glColor * v_VertexColor;\t\t\n"
+    "}   \t\t  \n";
+
 namespace AbyssEngine {
     int NoTexVtxColorShader::ShaderIndex;
 
@@ -12,13 +32,13 @@ namespace AbyssEngine {
     }
 
     void NoTexVtxColorShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("NoTexVtxColorShader.vsh", "NoTexVtxColorShader.fsh");
+        this->program = this->ES2LoadProgram(kNoTexVtxColorShaderVertexSource, kNoTexVtxColorShaderFragmentSource);
 
         aPosition = glGetAttribLocation(this->program, "a_position");
-        aColor = glGetAttribLocation(this->program, "a_color");
+        aColor = glGetAttribLocation(this->program, "a_VertexColor");
 
-        uMvpMatrix = glGetUniformLocation(this->program, "u_mvp");
-        uColor = glGetUniformLocation(this->program, "u_color");
+        uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+        uColor = glGetUniformLocation(this->program, "glColor");
 
         glUseProgram(this->program);
     }

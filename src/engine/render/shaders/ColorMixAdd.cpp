@@ -3,6 +3,36 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
+static const char *const kColorMixAddVertexSource =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "uniform highp mat4 u_WorldMatrix;  \n"
+    "uniform highp mat4 u_UvMatrix;  \n"
+    "uniform bool u_UVAnimation; \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_WorldMatrix * a_position;\t\t\n"
+    "   if ( u_UVAnimation ) \n"
+    "       v_texCoord = (u_UvMatrix*vec4(a_texCoord.x, a_texCoord.y, 0.0, 1.0)).xy;  \n"
+    "   else \n"
+    "       v_texCoord = a_texCoord; \n"
+    "}                            \n";
+
+static const char *const kColorMixAddFragmentSource =
+    "precision lowp float;                            \n"
+    "varying mediump vec2 v_texCoord;                            \n"
+    "uniform sampler2D s_texture;                        \n"
+    "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
+    "uniform float u_DarkenValue; \n"
+    "void main()                                         \n"
+    "{                                                   \n"
+    "\tvec4 textureColor = texture2D( s_texture, v_texCoord );\t\n"
+    "\tvec3 outColor = glColor.rgb + textureColor.rgb;\t\t\n"
+    "   gl_FragColor.rgb = outColor; \n"
+    "   gl_FragColor.a = textureColor.a;\n"
+    "}   \t\t  \n";
+
 namespace AbyssEngine {
     int ColorMixAdd::ShaderIndex;
 
@@ -12,17 +42,17 @@ namespace AbyssEngine {
     }
 
     void ColorMixAdd::Init(Engine *) {
-        int program = this->ES2LoadProgram("ColorMixAdd.vsh", "ColorMixAdd.fsh");
+        int program = this->ES2LoadProgram(kColorMixAddVertexSource, kColorMixAddFragmentSource);
         this->program = program;
 
-        this->u0Loc = glGetUniformLocation(program, "u0");
-        this->a0Loc = glGetAttribLocation(this->program, "a0");
-        this->a1Loc = glGetAttribLocation(this->program, "a1");
-        this->u1Loc = glGetUniformLocation(this->program, "u1");
-        this->u2Loc = glGetUniformLocation(this->program, "u2");
-        this->u3Loc = glGetUniformLocation(this->program, "u3");
-        this->u4Loc = glGetUniformLocation(this->program, "u4");
-        this->u5Loc = glGetUniformLocation(this->program, "u5");
+        this->u0Loc = glGetUniformLocation(program, "s_texture");
+        this->a0Loc = glGetAttribLocation(this->program, "a_position");
+        this->a1Loc = glGetAttribLocation(this->program, "a_texCoord");
+        this->u1Loc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->u2Loc = glGetUniformLocation(this->program, "glColor");
+        this->u3Loc = glGetUniformLocation(this->program, "u_DarkenValue");
+        this->u4Loc = glGetUniformLocation(this->program, "u_UvMatrix");
+        this->u5Loc = glGetUniformLocation(this->program, "u_UVAnimation");
 
         glUseProgram(this->program);
         glUniform1i(this->u0Loc, 0);
