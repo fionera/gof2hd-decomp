@@ -134,10 +134,10 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
         uint16_t current = 0;
         uint16_t count = 0;
-        Vector position = {0.0f, 0.0f, 0.0f};
-        Vector rotation = {0.0f, 0.0f, 0.0f};
-        Vector unused = {0.0f, 0.0f, 0.0f};
-        Vector direction = {0.0f, 0.0f, 0.0f};
+        Vector position;
+        Vector rotation;
+        Vector unused;
+        Vector direction;
         for (;;) {
             AEFile::Read(current, handle);
             AEFile::Read(count, handle);

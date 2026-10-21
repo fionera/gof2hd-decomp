@@ -251,13 +251,13 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->oreAmount = 0.0f;
     this->oreRate = 0.0f;
     this->driftTimer = 0;
-    this->failThreshold = 2500;
     this->layerTimer = 0;
     this->currentLayer = 0;
     this->targetLayer = layer;
     this->gameWonFlag = 0;
     this->gameLostFlag = 0;
     this->gotCoreFlag = 0;
+    this->failThreshold = 2500;
     this->posX = (float) this->centerX;
     this->inputX = 0.0f;
     this->inputY = 0.0f;
@@ -306,12 +306,13 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->oreIconOffsetX = Globals::Canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
     this->oreIconOffsetY = Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) >> 1;
     this->oreImageHeight = Globals::Canvas->GetImage2DHeight(this->oreTextImageId);
+    float oreMarqueeSpeed = Globals::layout->field_0xdc;
     this->oreMarquee = new MarqueeImage(0x4e4, Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0,
-                                        F(Globals::layout, 0xdc));
+                                        oreMarqueeSpeed);
     this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
 
-    this->promptPulseTimer = 0;
     this->textAlpha = 1.0f;
+    this->promptPulseTimer = 0;
     this->campaignFlag = Globals::status->getCurrentCampaignMission() > 4;
 }
 

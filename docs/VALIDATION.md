@@ -173,6 +173,10 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   entry address was "named" and produced phantom linked_exact flips on untouched functions
   whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
   shader Init family).
+- **Calls through gold interworking veneers resolve to their destination** (2026-10-21): a
+  `bl`/`b.w` into a Thumb->ARM veneer (`bx pc; nop; ldr ip,[pc]; add pc,ip,pc; .word`) is named by
+  the veneer's target (PLT entry or function). Before, such calls masked as local, so a call to a
+  decompiler shim import could score `linked_exact`; 26 rows were demoted (linked 4184 -> 4158).
 - **Data references compare by what they name** (2026-10-21): every PIC `ldr rX,[pc,#N]` /
   `add rX,pc` address is resolved — a GOT slot to the symbol its dynamic relocation binds
   (GLOB_DAT/ABS32; RELATIVE slots to the object they point at), a direct address to the exported
@@ -202,7 +206,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1327, linked_exact 4160, avg 97.77%**
+Current numbers (of **4523** compared): **byte_exact 1327, linked_exact 4158, avg 97.77%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

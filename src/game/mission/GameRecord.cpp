@@ -121,12 +121,12 @@ GameRecord::GameRecord() {
     this->hintFlags[10] = 0;
     this->hintFlags[11] = 0;
 
-    this->shipId = 0xffffffff;
     this->field_0xc8 = 0;
+    this->shipId = 0xffffffff;
     this->field_0xcc = 0;
     this->field_0xd0 = 0;
-    this->field_0xd8 = 0;
     this->field_0xd4 = 0;
+    this->field_0xd8 = 0;
     this->field_0xdc = 0;
     this->field_0x1b8 = 0;
     this->field_0x1c0 = 0;

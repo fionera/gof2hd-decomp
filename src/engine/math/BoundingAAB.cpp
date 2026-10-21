@@ -35,16 +35,13 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
 
 // Moves the point onto the nearest of the six faces.
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
-    float centerX = this->position.x + this->offset.x;
-    float centerY = this->position.y + this->offset.y;
-    float centerZ = this->position.z + this->offset.z;
     Vector faceOffsets[6] = {
-            {point.x - (centerX + this->halfExtents.x), 0.0f, 0.0f},
-            {point.x - (centerX - this->halfExtents.x), 0.0f, 0.0f},
-            {0.0f, point.y - (centerY + this->halfExtents.y), 0.0f},
-            {0.0f, point.y - (centerY - this->halfExtents.y), 0.0f},
-            {0.0f, 0.0f, point.z - (centerZ + this->halfExtents.z)},
-            {0.0f, 0.0f, point.z - (centerZ - this->halfExtents.z)},
+            {point.x - (this->position.x + this->offset.x + this->halfExtents.x), 0.0f, 0.0f},
+            {point.x - (this->position.x + this->offset.x - this->halfExtents.x), 0.0f, 0.0f},
+            {0.0f, point.y - (this->position.y + this->offset.y + this->halfExtents.y), 0.0f},
+            {0.0f, point.y - (this->position.y + this->offset.y - this->halfExtents.y), 0.0f},
+            {0.0f, 0.0f, point.z - (this->position.z + this->offset.z + this->halfExtents.z)},
+            {0.0f, 0.0f, point.z - (this->position.z + this->offset.z - this->halfExtents.z)},
     };
     float distances[6];
     distances[0] = AbyssEngine::AEMath::Absf(faceOffsets[0].x);

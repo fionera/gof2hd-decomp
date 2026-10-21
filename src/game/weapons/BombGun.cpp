@@ -83,7 +83,7 @@ void BombGun::update(int elapsed) {
     if (this->gun->ignited == 0) {
         this->detonationPosition = (this->bombType == ITEM_SORT_SHOCK_BLAST)
                                            ? player->getPosition()
-                                           : *reinterpret_cast<const Vector *>(this->gun->positions);
+                                           : *this->gun->positions.data();
     }
 
     Gun *gun = this->gun;
@@ -103,8 +103,8 @@ void BombGun::update(int elapsed) {
 
             AEGeometry *geometry = this->trailGeometry;
             geometry->setMatrix(*(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform));
-            this->trailGeometry->setPosition(*reinterpret_cast<const Vector *>(this->gun->positions) +
-                                             350.0f * *reinterpret_cast<const Vector *>(this->gun->velocities));
+            this->trailGeometry->setPosition(*this->gun->positions.data() +
+                                             350.0f * *this->gun->velocities.data());
             this->trailGeometry->updateReferenceMatrix();
 
             this->player->getTargetFollowCamera()->setTarget(this->trailGeometry);

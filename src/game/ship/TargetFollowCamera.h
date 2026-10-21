@@ -16,21 +16,11 @@ class TargetFollowCamera {
 public:
     unsigned id;
     AEGeometry *target;
-    float posX = 0.0f;
-    float posY = 0.0f;
-    float posZ = 0.0f;
-    float targetX = 0.0f;
-    float targetY = 0.0f;
-    float targetZ = 0.0f;
-    float upX = 0.0f;
-    float upY = 0.0f;
-    float upZ = 0.0f;
-    float targetOffsetX = 0.0f;
-    float targetOffsetY = 0.0f;
-    float targetOffsetZ = 0.0f;
-    float camOffsetX = 0.0f;
-    float camOffsetY = 0.0f;
-    float camOffsetZ = 0.0f;
+    Vector position;
+    Vector targetPos;
+    Vector up;
+    Vector targetOffset;
+    Vector camOffset;
     uint8_t locked;
     bool lookAtCam;
     uint8_t active;
@@ -38,17 +28,13 @@ public:
     int rumbleTimer;
     uint8_t rotateAroundTargetEnabled;
     uint8_t fastForward;
-    float rotX = 0.0f;
-    float rotY = 0.0f;
-    float rotZ = 0.0f;
+    Vector rotation;
     double dampCoeffA[5];
     double dampCoeffB[5];
     float zoom;
     AbyssEngine::Matrix firstPersonMatrix;
     char firstPerson;
-    float fpOffsetX = 0.0f;
-    float fpOffsetY = 0.0f;
-    float fpOffsetZ = 0.0f;
+    Vector fpOffset;
     bool hideShip;
     float shakeAccum;
     float shakeReference;
@@ -76,14 +62,14 @@ public:
 
     Vector *getPosition();
 
-    Vector *getTargetPos() { return reinterpret_cast<Vector *>(&this->targetX); }
-    Vector *getUp() { return reinterpret_cast<Vector *>(&this->upX); }
+    Vector *getTargetPos() { return &this->targetPos; }
+    Vector *getUp() { return &this->up; }
 
     Vector *getTargetOffset();
 
     Vector *getCamOffset();
 
-    Vector *getRotation() { return reinterpret_cast<Vector *>(&this->rotX); }
+    Vector *getRotation() { return &this->rotation; }
 
     Matrix getLocal();
 
