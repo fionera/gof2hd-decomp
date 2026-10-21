@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "game/ship/Ship.h"
 #include "game/ship/KIPlayer.h"
@@ -181,7 +182,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
         reinterpret_cast<Vector *>(this->positions)[i].x = 50000.0f;
         this->lifetimes[i] = -1000000;
         this->hitFlags[i] = 0;
-        reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets)->data()[i] = nullptr;
+        (*reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets))[i] = nullptr;
     }
     this->impact = nullptr;
     this->field_0x54 = 0;
@@ -200,7 +201,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->empDamage = 0;
     reinterpret_cast<int &>(this->field_0xa4_b0) = 0;
 }
-Gun::~Gun() noexcept(false) {
+Gun::~Gun() {
     delete[] this->lifetimes;
     this->lifetimes = 0;
 

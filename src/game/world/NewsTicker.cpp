@@ -1,3 +1,4 @@
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/world/NewsTicker.h"
 #include "game/core/Globals.h"
 #include "game/mission/Item.h"
