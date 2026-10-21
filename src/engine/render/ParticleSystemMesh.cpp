@@ -277,7 +277,7 @@ void ParticleSystemMesh::updateSingleColor(int id) {
         this->interpolateColor(id, a, r, g, b);
     }
 
-    int point = start + stride * id * 4;
+    int point = start + id * 4 * stride;
     for (int i = 0; i < (int) this->stride; i++) {
         this->canvas->MeshSetColor(this->resource, (uint16_t)(point + i * 4 + 2), a, r, g, b);
         this->canvas->MeshSetColor(this->resource, (uint16_t)(point + i * 4 + 3), a, r, g, b);
@@ -288,17 +288,15 @@ void ParticleSystemMesh::updateSingleColor(int id) {
         if (this->particleAges[next] == -1)
             return;
         point = (int) this->idOffset + (int) this->stride * next * 4;
-        for (int i = 0; i < (int) this->stride; i++) {
+        for (int i = 0; i < (int) this->stride; i++, point += 4) {
             this->canvas->MeshSetColor(this->resource, (uint16_t) point, a, r, g, b);
             this->canvas->MeshSetColor(this->resource, (uint16_t)(point + 1), a, r, g, b);
-            point += 4;
         }
     } else {
-        point = start + stride * id * 4;
-        for (int i = 0; i < (int) this->stride; i++) {
+        point = start + id * 4 * stride;
+        for (int i = 0; i < (int) this->stride; i++, point += 4) {
             this->canvas->MeshSetColor(this->resource, (uint16_t) point, a, r, g, b);
             this->canvas->MeshSetColor(this->resource, (uint16_t)(point + 1), a, r, g, b);
-            point += 4;
         }
     }
 }

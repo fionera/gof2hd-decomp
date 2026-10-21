@@ -2849,19 +2849,17 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float angle, int pivotX, int 
 
 void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
                                   unsigned short v0, unsigned short v1, unsigned short v2) {
-    if (meshIndex < this->meshes.count) {
-        PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
-        if (tri * 3 < mesh->indexCount) {
-            unsigned short *buf = (unsigned short *) mesh->indexBuffer;
-            buf[tri * 3] = v0;
-            buf[tri * 3 + 1] = v1;
-            buf[tri * 3 + 2] = v2;
-        }
-    }
+    if (meshIndex >= this->meshes.count)
+        return;
+    Mesh *mesh = this->meshes.data_[meshIndex];
+    int first = tri * 3;
+    if (first >= mesh->indexCount)
+        return;
+    unsigned short *indices = (unsigned short *) mesh->indices;
+    indices[first] = v0;
+    indices[first + 1] = v1;
+    indices[first + 2] = v2;
 }
-
-
-
 
 void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
     if (this->gameOrientation == orientation) {
