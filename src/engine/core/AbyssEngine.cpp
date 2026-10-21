@@ -1880,13 +1880,17 @@ namespace AbyssEngine {
         float *vertices = (float *) sys->mesh->positions;
         Matrix combined = view * world;  // computed by the original as well; the quads use `world`
 
-        unsigned short sizeIndex = 0;
+        unsigned int floats = sys->count * 12;
+        unsigned char sizeStep = sys->sharedSize ^ 1;
+        const float *positions = sys->posCpu;
+        const short *sizes = sys->sizeCpu;
         unsigned short positionIndex = 0;
-        for (unsigned short q = 0; q < sys->count * 12; q += 12) {
-            const float *p = sys->posCpu + positionIndex;
+        unsigned short sizeIndex = 0;
+        for (unsigned short q = 0; q < floats; q += 12) {
+            const float *p = positions + positionIndex;
             positionIndex += 3;
-            float half = (float) (sys->sizeCpu[sizeIndex] >> 1);
-            sizeIndex += sys->sharedSize ^ 1;
+            float half = (float) (sizes[sizeIndex] >> 1);
+            sizeIndex += sizeStep;
 
             float x = world.m[0] * p[0] + world.m[1] * p[1] + world.m[2] * p[2] + world.m[3];
             float y = p[0] * world.m[4] + p[1] * world.m[5] + p[2] * world.m[6] + world.m[7];
