@@ -182,6 +182,10 @@ public:
     uint8_t _pad_0x1e7[1];
     GameRecord *gameRecord;
     Array<AbyssEngine::String *> *missionInfoLines;
+    // OnCreateApplication allocates MGame with operator new(504): two trailing words no
+    // recovered method touches.
+    int field_0x1f0;
+    int field_0x1f4;
 
     MGame();
 
@@ -356,7 +360,7 @@ static_assert(offsetof(MGame, field_0x1e4) == 484, "MGame::field_0x1e4 @ 484");
 static_assert(offsetof(MGame, field_0x1e6) == 486, "MGame::field_0x1e6 @ 486");
 static_assert(offsetof(MGame, gameRecord) == 488, "MGame::gameRecord @ 488");
 static_assert(offsetof(MGame, missionInfoLines) == 492, "MGame::missionInfoLines @ 492");
-static_assert(sizeof(MGame) == 496, "sizeof(MGame) == 496");
+static_assert(sizeof(MGame) == 504, "sizeof(MGame) == 504");
 #endif
 
 #endif

@@ -135,7 +135,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->pitchRate = speed;
     this->ammoCount = 0;
     this->field_0x78 = 0;
-    this->playerGun = 0;
+    this->playerGun = false;
     this->field_0xa8 = 0;
 
     this->offset = dir;
@@ -150,7 +150,7 @@ Gun::Gun(int kind, int damage, int count, int ammo, int lifetime, int fireDelay,
     this->ammoCount = ammo;
     this->field_0x78 = ammo << 1;
     this->lifetimes = new int[count];
-    this->hitFlags = new uint8_t[count];
+    this->hitFlags = new bool[count];
     this->wobbleOffsets = reinterpret_cast<Array<int> *>(new Array<Vector *>());
     ArraySetLength(count, this->positions);
     ArraySetLength(count, this->velocities);
@@ -285,7 +285,7 @@ void Gun::setLevel(Level *lvl) {
 void Gun::setPlayerGun(bool v) {
     this->playerGun = v;
 }
-uint8_t Gun::isPlayerGun() {
+bool Gun::isPlayerGun() {
     return this->playerGun;
 }
 bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {

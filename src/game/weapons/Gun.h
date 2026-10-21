@@ -30,7 +30,7 @@ public:
     // strd pair at 0x44/0x48. setLevel stores here (0x38).
     Level *level;
     int *lifetimes;
-    uint8_t *hitFlags;
+    bool *hitFlags;
     int initialLifetime;
     int fireDelay;
     uint8_t active;
@@ -76,7 +76,7 @@ public:
     Vector field_0xcc;
     Vector targetDir;
     Vector velocity;
-    uint8_t playerGun;
+    bool playerGun;
     int slotIndex;
     uint8_t levelCollision;
     bool friendGun;
@@ -101,7 +101,7 @@ public:
 
     void ignite();
 
-    uint8_t isPlayerGun();
+    bool isPlayerGun();
 
     void removeAllEnemies();
 

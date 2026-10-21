@@ -34,11 +34,11 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
     this->steerX = 0;
     this->steerY = 0;
     this->steerZ = 0;
-    this->homing = homing;
     this->activeShotId = -1;
-    this->turnRate = kRocketTurnRate;
     this->particleSystem = -1;
     this->rocketKind = rocketKind;
+    this->homing = homing;
+    this->turnRate = kRocketTurnRate;
     this->fadeTimer = 0;
     this->trailMatrices = nullptr;
     this->trailSystems = nullptr;
@@ -75,12 +75,14 @@ void RocketGun::setRadar(Radar *radar) {
     this->particleManager = radar->level->field_80;
 
     int item = this->gun->itemIndex;
-    int trailMode = item - 0x1c; // 0..2: the three missile tiers
-    if ((unsigned int) trailMode < 3 || item == 0xc1 || this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
+    if ((unsigned int) (item - 0x1c) < 3 || item == 0xc1 || this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
+        int trailMode; // 0..2: the three missile tiers
         if (this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE)
             trailMode = 0;
         else if (item == 0xc1)
             trailMode = 3;
+        else
+            trailMode = item - 0x1c;
 
         this->trailMatrices = new Array<Matrix>();
         this->trailSystems = new Array<int>();
@@ -99,6 +101,7 @@ void RocketGun::setRadar(Radar *radar) {
             } else {
                 manager = this->particleManager;
             }
+            Matrix *trail = &(*this->trailMatrices)[i];
             ParticleSettings::ParticleSet set;
             if (trailMode == 0)
                 set = ParticleSettings::ParticleSet_0x19;
@@ -106,7 +109,7 @@ void RocketGun::setRadar(Radar *radar) {
                 set = ParticleSettings::ParticleSet_0x1a;
             else
                 set = defaultSet;
-            (*this->trailSystems)[i] = manager->addSystem(&(*this->trailMatrices)[i], set, false);
+            (*this->trailSystems)[i] = manager->addSystem(trail, set, false);
             this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
             (*this->trailTimers)[i] = 0;
         }
