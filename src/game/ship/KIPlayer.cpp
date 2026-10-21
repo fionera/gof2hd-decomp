@@ -100,9 +100,9 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
 
     if (geom != 0) {
         geom->setPosition(x, y, z);
-        *(Matrix *) this->player->transform = geom->getMatrix();
+        this->player->transform = geom->getMatrix();
         if (this->parentGeometry != 0)
-            *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
+            this->player->transform *= this->parentGeometry->getMatrix();
     }
 
     this->posX = x;
@@ -205,7 +205,7 @@ void KIPlayer::translate(const Vector &v) {
 }
 
 Vector KIPlayer::getPosition() {
-    return AbyssEngine::AEMath::MatrixGetPosition(*(const Matrix *) this->player->transform);
+    return AbyssEngine::AEMath::MatrixGetPosition(this->player->transform);
 }
 
 void KIPlayer::setVisible(bool visible) {
@@ -497,18 +497,18 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
         this->parentGeometry->altTransform = this->geometry->transform;
     }
     this->geometry->setPosition(this->posX, this->posY, this->posZ);
-    *(Matrix *) this->player->transform = this->geometry->getMatrix();
+    this->player->transform = this->geometry->getMatrix();
     if (this->parentGeometry != 0) {
-        *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
+        this->player->transform *= this->parentGeometry->getMatrix();
     }
 }
 
 void KIPlayer::setPosition(const Vector &v) {
     if (this->geometry != 0) {
         this->geometry->setPosition(v);
-        *(Matrix *) this->player->transform = this->geometry->getMatrix();
+        this->player->transform = this->geometry->getMatrix();
         if (this->parentGeometry != 0)
-            *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
+            this->player->transform *= this->parentGeometry->getMatrix();
     }
 }
 
@@ -533,7 +533,7 @@ static unsigned short crateMesh(int type, int faction) {
 void KIPlayer::createCrate(int type) {
     this->crateGeometry = new AEGeometry(crateMesh(type, this->shipGroup), Globals::Canvas, false);
     this->crateGeometry->setPosition(this->geometry->getPosition());
-    *(Matrix *) this->player->transform = this->crateGeometry->getMatrix();
+    this->player->transform = this->crateGeometry->getMatrix();
     this->player->setKIPlayer(this);
 }
 

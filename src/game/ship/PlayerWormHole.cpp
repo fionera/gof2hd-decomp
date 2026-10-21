@@ -28,15 +28,11 @@ static inline int wormholeSign(int value) {
 
 PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible)
     : PlayerStaticFar(playerId, geometry, x, y, z) {
-    GameText *text = Globals::gameText;
-    this->name = *text->getText(0x221);
+    this->name = *Globals::gameText->getText(0x221);
     this->setVisible(visible);
     this->player->setRadius(40000);
-
-    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-    AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *) canvas->TransformGetTransform(this->geometry->transform);
-    transform->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
+    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->geometry->transform))
+            ->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
 
     this->missionLock = 1;
     this->timer = 0;
