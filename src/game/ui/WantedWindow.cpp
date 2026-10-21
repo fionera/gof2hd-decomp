@@ -616,24 +616,13 @@ void WantedWindow::setHangarUpdate(bool needsUpdate) {
 unsigned char WantedWindow::hangarNeedsUpdate() { return this->hangarUpdate; }
 
 float WantedWindow::getRelativeScrollHeight() {
-    int content = this->contentHeight;
-    int visible = this->visibleHeight;
-    if (content < visible) {
-        uint32_t u = 0x4605e009u;
-        float f;
-        __builtin_memcpy(&f, &u, sizeof(f));
-        return f;
-    }
-    int scroll = this->scrollOffset;
-    int num;
-    if (scroll >= 1) {
-        num = visible - scroll;
-    } else if (scroll >= visible - content) {
-        num = visible;
-    } else {
-        num = scroll + content;
-    }
-    return (float) num / (float) content;
+    if (this->contentHeight < this->visibleHeight)
+        return 0.0f;
+    if (this->scrollOffset > 0)
+        return (float) (this->visibleHeight - this->scrollOffset) / (float) this->contentHeight;
+    if (this->scrollOffset < this->visibleHeight - this->contentHeight)
+        return (float) (this->scrollOffset + this->contentHeight) / (float) this->contentHeight;
+    return (float) this->visibleHeight / (float) this->contentHeight;
 }
 
 
