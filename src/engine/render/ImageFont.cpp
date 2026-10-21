@@ -304,28 +304,16 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        uint16_t *table = (*slot)->codes;
-        if (table != 0)
-            delete[] table;
+        if ((*slot)->codes != 0)
+            delete[] (*slot)->codes;
         (*slot)->codes = 0;
 
-        unsigned int i = 0;
-        Mesh **glyphs;
-        ImageFont *f;
-        for (;;) {
-            f = *slot;
-            glyphs = f->glyphMeshes;
-            if (f->glyphCount <= i)
-                break;
-            MeshRelease(engine, &glyphs[i]);
-            ++i;
-        }
+        for (unsigned short i = 0; i < (*slot)->glyphCount; i++)
+            MeshRelease(engine, &(*slot)->glyphMeshes[i]);
 
-        if (glyphs != 0) {
-            operator delete[](glyphs); // lint: operator_call (a builtin delete[] lets -Oz hoist it above the null test)
-            f = *slot;
-        }
-        f->glyphMeshes = 0;
+        if ((*slot)->glyphMeshes != 0)
+            delete[] (*slot)->glyphMeshes;
+        (*slot)->glyphMeshes = 0;
 
         if (*slot != 0)
             delete *slot;
