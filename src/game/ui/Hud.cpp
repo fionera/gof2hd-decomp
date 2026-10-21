@@ -1394,12 +1394,8 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             Globals::sound->play(28, 0, 0, 0.0f);
             break;
         case 10:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + String(Globals::status->getStation()->getName()) +
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + String(Globals::status->getStation()->getName(), false) +
                                 (Globals::status->getStation()->getIndex() == 101 ? String("") : String(" ") + *Globals::gameText->getText(136));
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 11:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(550);
             Globals::sound->play(28, 0, 0, 0.0f);
             break;
         case 12:
@@ -1410,13 +1406,58 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(548);
             Globals::sound->play(28, 0, 0, 0.0f);
             break;
-        case 14:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(549);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
         case 15:
             this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(545);
             Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 17:
+            this->field_0x1e0 = *Globals::gameText->getText(308);
+            break;
+        case 28:
+            this->field_0x464 = 0;
+            this->field_0x276 = 1;
+            return;
+        case 34:
+            this->field_0x1e0 = *Globals::gameText->getText(3199);
+            break;
+        case 35:
+            this->field_0x468 = 0;
+            this->field_0x27a = 1;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 0;
+            return;
+        case 39:
+            this->field_0x468 = 0;
+            this->field_0x27a = 0;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 0;
+            return;
+        case 45:
+            this->field_0x1e0 = *Globals::gameText->getText(3202);
+            break;
+        case 1:
+            if (this->hasAutofireUI == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(38);
+            break;
+        case 2:
+            if (this->hasAutofireUI == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(39);
+            break;
+        case 3:
+            if (this->hasBoostButton == 0 || !ego->readyToBoost())
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(314);
+            break;
+        case 4:
+            if (this->hasBoostButton == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(315);
+            break;
+        case 6:
+            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(39);
+            Globals::sound->play(29, 0, 0, 0.0f);
             break;
         case 7:
             this->field_0x1e0 = *Globals::gameText->getText(553);
@@ -1427,14 +1468,22 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 9:
             this->field_0x1e0 = *Globals::gameText->getText(540);
             break;
+        case 11:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(550);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 14:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(549);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
         case 16:
             this->field_0x1e0 = *Globals::gameText->getText(307);
             break;
-        case 17:
-            this->field_0x1e0 = *Globals::gameText->getText(308);
-            break;
         case 18:
             this->field_0x1e0 = *Globals::gameText->getText(309);
+            break;
+        case 19:
+            this->field_0x1e0 = this->eventLines[19];
             break;
         case 20:
             this->field_0x1e0 = *Globals::gameText->getText(541);
@@ -1451,59 +1500,6 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 24:
             this->field_0x1e0 = *Globals::gameText->getText(544);
             break;
-        case 27:
-            this->field_0x1e0 = *Globals::gameText->getText(322);
-            break;
-        case 31:
-            this->field_0x1e0 = *Globals::gameText->getText(324);
-            break;
-        case 34:
-            this->field_0x1e0 = *Globals::gameText->getText(3199);
-            break;
-        case 43:
-            this->field_0x1e0 = *Globals::gameText->getText(3203);
-            break;
-        case 44:
-            this->field_0x1e0 = *Globals::gameText->getText(3201);
-            break;
-        case 45:
-            this->field_0x1e0 = *Globals::gameText->getText(3202);
-            break;
-        case 46:
-            this->field_0x1e0 = *Globals::gameText->getText(316);
-            break;
-        case 19:
-            this->field_0x1e0 = this->eventLines[19];
-            break;
-        case 1:
-        case 2:
-            if (this->hasAutofireUI == 0)
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(eventId == 1 ? 38 : 39);
-            break;
-        case 3:
-            if (this->hasBoostButton == 0 || !ego->readyToBoost())
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(314);
-            break;
-        case 4:
-            if (this->hasBoostButton == 0)
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(315);
-            break;
-        case 6:
-            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(39);
-            Globals::sound->play(29, 0, 0, 0.0f);
-            break;
-        case 32:
-        case 33:
-            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(eventId == 32 ? 38 : 39);
-            break;
-        case 30:
-        case 47:
-            this->field_0x1e0 = String(String("-") + String(arg) + String("t ")) + *Globals::gameText->getText(eventId == 30 ? 1396 : 1476);
-            this->clearQueue();
-            break;
         case 25:
             this->field_0x464 = 0;
             this->field_0x277 = 1;
@@ -1511,25 +1507,25 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 26:
             this->field_0x277 = 0;
             return;
-        case 28:
-            this->field_0x464 = 0;
-            this->field_0x276 = 1;
-            return;
+        case 27:
+            this->field_0x1e0 = *Globals::gameText->getText(322);
+            break;
         case 29:
             this->field_0x276 = 0;
             return;
-        case 35:
-            this->field_0x468 = 0;
-            this->field_0x27a = 1;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 0;
-            return;
-        case 39:
-            this->field_0x468 = 0;
-            this->field_0x27a = 0;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 0;
-            return;
+        case 30:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
+            this->clearQueue();
+            break;
+        case 31:
+            this->field_0x1e0 = *Globals::gameText->getText(324);
+            break;
+        case 32:
+            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(38);
+            break;
+        case 33:
+            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(39);
+            break;
         case 37:
             this->field_0x468 = 0;
             this->field_0x27a = 1;
@@ -1541,6 +1537,19 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x27a = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 1;
+            break;
+        case 43:
+            this->field_0x1e0 = *Globals::gameText->getText(3203);
+            break;
+        case 44:
+            this->field_0x1e0 = *Globals::gameText->getText(3201);
+            break;
+        case 46:
+            this->field_0x1e0 = *Globals::gameText->getText(316);
+            break;
+        case 47:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1476);
+            this->clearQueue();
             break;
     }
     if (this->sameHudEventAsBefore(this->field_0x1e0) != 0)
@@ -1878,7 +1887,7 @@ void Hud::initHudMenu(int menuType, Level *level) {
                     continue;
                 TouchButton *button = new TouchButton(
                         *Globals::gameText->getText((*this->equipmentArray)[i]->getIndex() + 1274) +
-                        String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")")),
+                        String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")"), false),
                         0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
                 switch (i) {
                     case 0:
@@ -1923,7 +1932,7 @@ void Hud::initHudMenu(int menuType, Level *level) {
                 y += rowGap + Globals::layout->field_0x30_rowHeight;
                 if (!Globals::status->inEmptyOrbit()) {
                     TouchButton *dock = new TouchButton(
-                            String(Globals::status->getStation()->getName()) +
+                            String(Globals::status->getStation()->getName(), false) +
                             (Globals::status->getStation()->getIndex() == 101
                                      ? String("")
                                      : String(" ") + *Globals::gameText->getText(136)),
@@ -1950,7 +1959,7 @@ void Hud::initHudMenu(int menuType, Level *level) {
                 if (Level::programmedStation != 0) {
                     TouchButton *autopilot = new TouchButton(
                             *Globals::gameText->getText(546) + String(": ") +
-                            String(Level::programmedStation->getName()),
+                            String(Level::programmedStation->getName(), false),
                             0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
                     autopilot->id = 0x200000;
                     ArrayAdd(autopilot, *this->menuButtons);
