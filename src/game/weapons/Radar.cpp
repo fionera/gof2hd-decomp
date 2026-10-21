@@ -1,3 +1,5 @@
+#include "game/ship/Player.h"
+#include "game/ship/PlayerAsteroid.h"
 #include "game/world/Level.h"
 #include "game/weapons/AbstractGun.h"
 #include "game/world/Station.h"
@@ -386,32 +388,125 @@ Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
     return value;
 }
 
+static inline int layoutField(int offset) {
+    return reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(Globals::layout) + offset)[0];
+}
+
 void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
     }
-
     Radar::drawTarget = 1;
 
-    String label;
+    if (this->field_0x14 != 0) {
+        Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
+        String planet(*(*(Array<String *> *) (intptr_t) Globals::status->getPlanetNames())[this->planetDockIndex], false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, planet,
+                                    (Globals::w >> 1) -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, planet) / 2,
+                                    this->field_0x214 + layoutField(0xbc), false);
+        return;
+    }
 
-    if (this->field_0x14 == 0) {
-        KIPlayer *locked = this->lockedAsteroid;
-        if (locked == nullptr) {
-            locked = this->lockedGasCloud;
-            if (locked == nullptr) {
-                locked = this->lockedEnemy;
-                if (locked == nullptr) {
-                    locked = static_cast<KIPlayer *>(this->lockedStation);
-                    if (locked == nullptr) {
-                        Radar::drawTarget = 0;
-                        return;
-                    }
+    KIPlayer *target = this->lockedAsteroid;
+    if (target == nullptr) {
+        target = this->lockedGasCloud;
+        if (target == nullptr) {
+            target = this->lockedEnemy;
+            if (target == nullptr) {
+                target = this->lockedStation;
+                if (target == nullptr) {
+                    Radar::drawTarget = 0;
+                    return;
                 }
             }
         }
+    }
+
+    Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
+    KIPlayer *asteroid = this->lockedAsteroid;
+    KIPlayer *station = this->lockedStation;
+    Array<KIPlayer *> *landmarks = (Array<KIPlayer *> *) (intptr_t) this->field_0x138;
+    String *titleText;
+    if (station == (*landmarks)[0]) {
+        titleText = (*this->labelStrings)[0];
     } else {
-        label = this->lockLabel;
+        titleText = station == (*landmarks)[3] ? (*this->labelStrings)[3] : (*this->labelStrings)[1];
+    }
+    String title(*titleText, false);
+
+    if (target == this->lockedGasCloud) {
+        String text(*Globals::gameText->getText(3236), false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
+                                    (Globals::w >> 1) -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    this->field_0x214 + layoutField(0xc4), false);
+        return;
+    }
+    if (target == asteroid) {
+        String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
+        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+        this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
+        int x = (Globals::w >> 1) - textWidth / 2;
+        this->qualitySprite->setPosition(x - Globals::layout->buttonInsetX - this->qualitySprite->getFrameWidth(),
+                                         this->field_0x214 + layoutField(0xc0));
+        this->qualitySprite->draw(1.0f, 1.0f);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                    this->field_0x214 + layoutField(0xc4), false);
+        return;
+    }
+
+    String text;
+    if (target->name.length != 0 &&
+        (target->name.Compare(*Globals::gameText->getText(1611)) == 0 ||
+         target->name.Compare(*Globals::gameText->getText(1663)) == 0 || target->field_0x42)) {
+        Globals::Canvas->SetColor(0xff2a00ff);
+        text = target->name;
+        if (target->field_0x42) {
+            text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
+        }
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
+                                    (Globals::w >> 1) -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    this->field_0x214 + layoutField(0xc4), false);
+        Globals::Canvas->SetColor(0xffffffff);
+        return;
+    }
+
+    int x;
+    if (target == station) {
+        text = title;
+    } else if (target->name.length == 0) {
+        text = *Globals::gameText->getText(target->shipGroup + 406);
+    } else {
+        text = target->name;
+    }
+    if (target != station) {
+        text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
+        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+    } else {
+        if (Globals::status->inAlienOrbit()) {
+            if (Globals::status->dlc1Won()) {
+                this->lockSprite->setFrame(8);
+            } else {
+                this->lockSprite->setFrame(9);
+            }
+        } else {
+            this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
+        }
+        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+        x = (Globals::w >> 1) - textWidth / 2;
+        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+                                      this->field_0x214 + layoutField(0xc8));
+        this->lockSprite->draw(1.0f, 1.0f);
+    }
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                this->field_0x214 + layoutField(0xc4), false);
+    if (target != station && target->shipGroup != 10) {
+        this->lockSprite->setFrame(target->shipGroup);
+        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+                                      this->field_0x214 + layoutField(0xc8));
+        this->lockSprite->draw(1.0f, 1.0f);
     }
 }
 
