@@ -635,10 +635,10 @@ namespace AbyssEngine {
                     if (image->format - 9 <= 1) {
                         if ((int) blockBytes <= 16)
                             blockBytes = 16;
-                    } else if (blockBytes > 15) {
-                        blockBytes >>= 1;
-                    } else {
+                    } else if (blockBytes < 16) {
                         blockBytes = image->format == 8 ? 8 : 16;
+                    } else {
+                        blockBytes >>= 1;
                     }
                     glCompressedTexImage2D(0xde1, level, format, width, height, 0, blockBytes, image->data + offset);
                     unsigned int nextHeight = height >> 1 > 1 ? height >> 1 : 1;
