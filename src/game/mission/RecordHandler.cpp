@@ -444,7 +444,7 @@ GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
 
-        AEFile::Read(reinterpret_cast<int64_t &>(gr->playTimeObj), fd);
+        AEFile::Read(gr->playTime, fd);
         AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x08), fd);
         AEFile::Read(reinterpret_cast<String &>(gr->pilotName), fd, (bool)1);
         AEFile::Read(reinterpret_cast<String &>(gr->field_0x188), fd, (bool)1);
@@ -1174,32 +1174,23 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
 }
 
 int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
-    if (rec == 0)
+    if (rec == 0) {
         return 0;
-
-    String path;
-    String num;
-    unsigned int fd;
-
-    num.Set((long long) (slot));
-    path = this->backupDir + num;
-
-    if (AEFile::FileExist(path) != 0)
+    }
+    String path = this->backupDir + String(slot);
+    if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
+    }
+    unsigned int fd;
     AEFile::OpenWrite(path, &fd);
-
-    AEFile::Write(reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
-    AEFile::Write((int32_t)rec->field_0x08, fd);
-
-    num = ((Station *) (&num))->getName();
-    AEFile::Write(num, fd, (bool)true);
-
-    AEFile::Write(reinterpret_cast<String &>(rec->field_0x188), fd, (bool)true);
-    AEFile::Write((int32_t)rec->field_0x40, fd);
-    AEFile::Write((int32_t)rec->killsText, fd);
+    AEFile::Write(rec->playTime, fd);
+    AEFile::Write((int32_t) rec->field_0x08, fd);
+    AEFile::Write(reinterpret_cast<Station *>((intptr_t) rec->field_0x138)->getName(), fd, true);
+    AEFile::Write(reinterpret_cast<String &>(rec->field_0x188), fd, true);
+    AEFile::Write((int32_t) rec->field_0x40, fd);
+    AEFile::Write((int32_t) rec->killsText, fd);
     AEFile::Write(rec->rank, fd);
-    AEFile::Write((int32_t)reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
-
+    AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
     AEFile::Close(fd);
     return 1;
 }
@@ -1771,7 +1762,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 
             AEFile::Read(rec->field_0x08, fd);
             AEFile::Read(rec->field_0x0c, fd);
-            AEFile::Read(reinterpret_cast<int64_t &>(rec->playTimeObj), fd);
+            AEFile::Read(rec->playTime, fd);
             AEFile::Read(rec->field_0x18, fd);
             AEFile::Read(rec->field_0x1c, fd);
             AEFile::Read(rec->killsText, fd);

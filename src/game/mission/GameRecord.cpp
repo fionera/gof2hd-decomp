@@ -20,8 +20,7 @@ GameRecord::GameRecord() {
 
     this->field_0x08 = 0;
     this->field_0x0c = 0;
-    this->playTimeObj = nullptr;
-    this->field_0x14 = 0;
+    this->playTime = 0;
     this->field_0x18 = 0;
     this->field_0x1c = 0;
     this->killsText = 0;
@@ -224,7 +223,7 @@ void GameRecord::load() {
     Globals::status->setLastXP(this->field_0x24);
     Globals::status->setCredits(this->field_0x08);
     Globals::status->setRating(this->field_0x0c);
-    Globals::status->setPlayingTime(*(int64_t *) &this->playTimeObj);
+    Globals::status->setPlayingTime(this->playTime);
     Globals::status->setKills(this->field_0x18);
     Globals::status->setMissionCount(this->field_0x1c);
     Globals::status->setLevel(this->killsText);
