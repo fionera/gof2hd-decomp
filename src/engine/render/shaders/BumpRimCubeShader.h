@@ -25,28 +25,23 @@ namespace AbyssEngine {
         int uModelViewProjectionMatrix;
         int uModelMatrix;
         int uModelMatrixFull;
-        int uLightDirModel0;
-        int uLightDirModel1;
+        int uLightDirModel[2];
         int uEyePosModel;
-        int uTexDiffuse;
-        int uTexNormal;
-        int uTexCube;
+        int sTexture[2];
+        int uTextureCubemap;
         int uGlColor;
-        int uAmbientColor0;
-        int uDiffuseColor1;
-        int uDiffuseColor0;
-        int uSpecularColor1;
-        int uSpecularColor0;
-        int uRimColor;
+        int uAmbientColor[2];
+        int uDiffuseColor[2];
+        int uSpecularColor[2];
         int uSpecularPower;
-        int uIsGlowMat;
+        int uRimColor;
         int uTexBiasDiffuse;
         int uTexBiasNormal;
+        int uIsGlowMat;
         int uFogColor;
         int uFogMaxDist;
         int uFogMinDist;
         int uEnableFog;
-        int uLodDist;
 
         static int ShaderIndex;
 
