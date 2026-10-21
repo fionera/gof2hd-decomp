@@ -724,7 +724,10 @@ void StarMap::drawKey() {
 }
 
 void StarMap::drawOnScreenInfo(int index, bool stationMode) {
-    this->scratchVector = Vector(*(stationMode ? *this->stationPositions : *this->systemPositions)[index]);
+    if (stationMode)
+        this->scratchVector = Vector(*(*this->stationPositions)[index]);
+    else
+        this->scratchVector = Vector(*(*this->systemPositions)[index]);
     if (this->scratchVector.x < -50.0f || this->scratchVector.x > (float) (Globals::w + 50) ||
         this->scratchVector.y < -50.0f || this->scratchVector.y > (float) (Globals::h + 50))
         return;
