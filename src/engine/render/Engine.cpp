@@ -487,18 +487,20 @@ void Engine::RenderMesh(Mesh *mesh) {
             this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
         } else if ((flags & 0x2) != 0) {
             this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
-        } else if ((flags & 0x1) == 0) {
-            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
-        } else if ((mesh->vertexFormat & 0xa) == 8) {
-            this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
-        } else if (this->lightingEnabled) {
-            this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
-        } else if ((mesh->vertexFormat & 8) != 0) {
-            this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
-        } else if ((flags & 0x800000) != 0) {
-            this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
+        } else if ((flags & 0x1) != 0) {
+            if ((mesh->vertexFormat & 0xa) == 8) {
+                this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
+            } else if (this->lightingEnabled) {
+                this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
+            } else if ((mesh->vertexFormat & 8) != 0) {
+                this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
+            } else if ((flags & 0x800000) != 0) {
+                this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
+            }
         } else {
-            this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
+            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
         }
 
         if (ShaderSet != 0) {
@@ -560,21 +562,16 @@ void Engine::RenderMesh(Mesh *mesh) {
     if ((mesh->vertexFormat & 0x10) == 0) {
         glDrawArrays(4, 0, mesh->vertexCount);
     } else {
-        unsigned int count;
         if (this->field_0xfe != 0) {
-            count = mesh->indexCount;
-            unsigned int triangles = count / 3;
             if (this->statsEnabled != 0) {
-                indexedTriangles[1] += triangles;
+                indexedTriangles[1] += mesh->indexCount / 3;
                 this->drawCallCountB += 1;
             } else {
-                indexedTriangles[0] += triangles;
+                indexedTriangles[0] += mesh->indexCount / 3;
                 this->drawCallCountA += 1;
             }
-        } else {
-            count = mesh->indexCount;
         }
-        glDrawElements(4, count, 0x1403, mesh->indices);
+        glDrawElements(4, mesh->indexCount, 0x1403, mesh->indices);
     }
     if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
         ((Material *) mesh->material)->textures[1] != -1) {
@@ -715,9 +712,11 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
             glTexEnvf(0x8500, 0x8501, env);
         }
     }
-    glBindTexture(((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube
-                          ? 0x8513 : 0xde1,
-                  texture);
+    if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+        glBindTexture(0x8513, texture);
+    } else {
+        glBindTexture(0xde1, texture);
+    }
     *bound = texture;
 }
 
@@ -1370,8 +1369,11 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
                     glTexEnvf(0x8500, 0x8501, env);
                 }
             }
-            bool isCube = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0;
-            glBindTexture(isCube ? 0x8513 : 0xde1, texture);
+            if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+                glBindTexture(0x8513, texture);
+            } else {
+                glBindTexture(0xde1, texture);
+            }
             this->boundTextures[slot] = texture;
         }
         va_end(args);
