@@ -46,7 +46,7 @@ namespace AbyssEngine {
         uint32_t field_0x4;
         uint32_t currentKey;
         uint32_t currentKeyHigh;
-        char *keyMappingTable;
+        AbyssEngine::KeyCode *keyMappingTable; // new KeyCode[0x40]
         bool orientationTrackingEnabled;
         IApplicationModule *currentModule;
         QuitCallback_t *quitCallback;
@@ -195,7 +195,7 @@ namespace AbyssEngine {
 
         void SoundFxEnable(bool enable);
 
-        int SoundIsPlaying(int soundId);
+        bool SoundIsPlaying(int soundId);
 
         void SoundMusicEnable(bool enable);
 
