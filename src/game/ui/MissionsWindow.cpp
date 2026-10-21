@@ -161,53 +161,40 @@ MissionsWindow::~MissionsWindow() {
 }
 
 int MissionsWindow::init() {
-    Layout *L = Globals::layout;
-    int titleId = *g_mwi_titleTable;
-
-    if (Globals::iPad == 0) {
+    if (!Globals::iPad) {
         this->m_x = 0;
         this->m_y = 0;
         this->m_width = Globals::w;
         this->m_height = Globals::h;
     } else {
-        int w, h;
-        if (Globals::iPadHD == 0) {
-            h = 0x514;
-            if (Globals::iPadLarge == 0) h = 0x28a;
-            w = (Globals::iPadLarge == 0) ? 500 : 1000;
+        int width;
+        float height;
+        if (Globals::iPadHD) {
+            height = 703.125f;
+            width = 914;
         } else {
-            h = 0x392;
-            w = 1000;
+            height = !Globals::iPadLarge ? 500.0f : 1000.0f;
+            width = !Globals::iPadLarge ? 650 : 1300;
         }
-        this->m_width = h;
-        this->m_height = w;
-        this->m_x = (Globals::w >> 1) - (h >> 1);
-        this->m_y = (Globals::h >> 1) - (w >> 1);
+        this->m_width = width;
+        this->m_height = (int) height;
+        this->m_x = (Globals::w >> 1) - ((unsigned int) width >> 1);
+        this->m_y = (Globals::h >> 1) - ((int) height >> 1);
     }
 
-    Array<TouchButton *> *tabs = new Array<TouchButton *>();
-    this->m_pTabButtons = tabs;
-    ArraySetLength(2, *tabs);
+    this->m_pTabButtons = new Array<TouchButton *>();
+    ArraySetLength(2, *this->m_pTabButtons);
+    (*this->m_pTabButtons)[1] = new TouchButton(*Globals::gameText->getText(3219), 3,
+                                                this->m_x + this->m_width - Globals::layout->getHelpButtonOffset(),
+                                                this->m_y, 18);
+    (*this->m_pTabButtons)[0] = new TouchButton(*Globals::gameText->getText(129), 3,
+                                                this->m_x + this->m_width - Globals::layout->getHelpButtonOffset() -
+                                                (*this->m_pTabButtons)[1]->getWidth() + Globals::layout->field_0x38,
+                                                this->m_y, 18);
+    (*this->m_pTabButtons)[0]->setAlwaysPressed(true);
+    Globals::layout->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
 
-    TouchButton *tab1 = (TouchButton *) ::operator new(sizeof(TouchButton));
-    String *t0 = Globals::gameText->getText(titleId);
-    int helpOff = L->getHelpButtonOffset();
-    TouchButton_ctorTab(tab1, t0, 3, (this->m_width + this->m_x) - helpOff, this->m_y, 0x12);
-    (*tabs)[1] = tab1;
-
-    TouchButton *tab0 = (TouchButton *) ::operator new(sizeof(TouchButton));
-    String *t1 = Globals::gameText->getText(titleId);
-    int helpOff2 = L->getHelpButtonOffset();
-    int w1 = tab0->getWidth();
-    TouchButton_ctorTab(tab0, t1, 3,
-                        (((this->m_width + this->m_x) - helpOff2) - w1) + L->field_0x38,
-                        this->m_y, 0x12);
-    (*tabs)[0] = tab0;
-    tab0->setAlwaysPressed(true);
-
-    L->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
-
-    if (this->m_pAgentImageParts) {
+    if (this->m_pAgentImageParts != nullptr) {
         ArrayReleaseClasses(*this->m_pAgentImageParts);
         delete this->m_pAgentImageParts;
     }
@@ -223,124 +210,100 @@ int MissionsWindow::init() {
     delete this->m_pRejectButton;
     this->m_pRejectButton = nullptr;
     delete this->m_pMapButton;
-    this->m_pStarMap = nullptr;
     this->m_pMapButton = nullptr;
+    this->m_pStarMap = nullptr;
     this->m_choiceActive = 0;
+    this->m_field_0x21 = 0;
+    this->m_starMapActive = 0;
+    this->m_hangarNeedsUpdate = 0;
 
-    int topY = L->field_0xc_leftMargin + this->m_y + L->field_0x20_top + L->field_0x5c + L->field_0x2c_rowHeight;
-    int reserve = (Globals::status->gameWon() == 0) ? L->field_0x30_rowHeight : 0;
+    // Campaign mission on the left half.
+    int top = Globals::layout->field_0xc_leftMargin + this->m_y + Globals::layout->field_0x20_top +
+              Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
     this->m_pCampaignWindow = new ScrollTouchWindow(
-        L->buttonInsetX + this->m_x, topY,
-        (this->m_width >> 1) - (L->field_0x2c_rowHeight + L->buttonInsetX),
-        (((((this->m_y - topY) + this->m_height) - L->field_0x10_rightMargin) - L->field_0x24) - reserve)
-        + L->field_0x2c_rowHeight * -2, false);
-
-    CampaignMissionFlags *campFlags = (CampaignMissionFlags *) Globals::options;
-    bool campShow = (Globals::status->gameWon() == 0) ||
-                    (campFlags->campaignVisibleFlagB != 0 ||
-                     campFlags->campaignVisibleFlagA != 0);
-    if (campShow) {
+            Globals::layout->buttonInsetX + this->m_x, top,
+            (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
+            this->m_y - top + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+            (Globals::status->gameWon() ? 0 : Globals::layout->field_0x30_rowHeight) -
+            Globals::layout->field_0x2c_rowHeight * 2,
+            false);
+    CampaignMissionFlags *flags = (CampaignMissionFlags *) Globals::options;
+    if (!Globals::status->gameWon() || flags->campaignVisibleFlagA || flags->campaignVisibleFlagB) {
         String text("", false);
-        if (Globals::status->getCurrentCampaignMission() < 0xa4) {
-            String *t = Globals::gameText->getText(titleId);
-            text = *t;
-        }
-        Status *key = Globals::status;
-        Mission *cm = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-        int type = cm->getType();
-        bool production = (type == 0xa7) || (cm->getType() == 0xae);
-        String suffix("", false);
-        String merged;
-        if (production) {
-            String hdr(text);
-            int need = cm->getProductionGoodAmount();
-            int have = cm->getStatusValue();
-            String val;
-            val.Set((long long) (need - have));
-            Status_replaceHash(&merged, key, &hdr, &val, &suffix);
+        if (Globals::status->getCurrentCampaignMission() < 164)
+            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
+        if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
+            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) {
+            text = Globals::status->replaceHash(
+                    text,
+                    String(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getProductionGoodAmount() -
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()),
+                    String("#Q", false));
         } else {
-            String hdr(text);
-            cm->getTargetStationName();
-            String val;
-            Status_replaceHash(&merged, key, &hdr, &val, &suffix);
+            text = Globals::status->replaceHash(
+                    text, ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStationName(),
+                    String("#", false));
         }
-        text = merged;
-
-        String a("", false);
-        String b(text);
-        this->m_pCampaignWindow->setText(a, b);
+        this->m_pCampaignWindow->setText("", text);
+    } else if (Globals::achievements->gotAllGoldMedals() && Globals::status->getShip()->getIndex() != 8) {
+        this->m_pCampaignWindow->setText("", *Globals::gameText->getText(650));
     } else {
-        bool useGold = Globals::achievements->gotAllGoldMedals() != 0 &&
-                       ((Ship *) (Globals::status->getShip()))->getIndex() != 8;
-        String a("", false);
-        String *t = Globals::gameText->getText(titleId);
-        String b(*t);
-        this->m_pCampaignWindow->setText(a, b);
-        (void) useGold;
+        this->m_pCampaignWindow->setText("", *Globals::gameText->getText(670));
     }
 
-    int fmEmpty = Globals::status->getFreelanceMission()->isEmpty();
-    int half = this->m_width >> 1;
-    int pad = L->field_0x2c_rowHeight;
-    int rx = this->m_x + half + pad;
-    if (fmEmpty == 0) {
-        int ry = L->field_0x2d8 + topY + pad;
+    // Freelance mission on the right half.
+    int noFreelance = Globals::status->getFreelanceMission()->isEmpty();
+    if (!noFreelance) {
         this->m_pFreelanceWindow = new ScrollTouchWindow(
-            rx, ry, (half - pad) - L->buttonInsetX,
-            (((((this->m_y - ry) + this->m_height) - L->field_0x10_rightMargin) - L->field_0x24) - L->field_0x4c)
-            - L->field_0x30_rowHeight, false);
-
-        Mission *fm = Globals::status->getFreelanceMission();
-        String text = Globals::globals->getAgentMissionText(fm->getAgent());
-        Status *key = Globals::status;
-        String body(text);
-        int rew = fm->getReward();
-        int bonus = fm->getBonus();
-        String reward = Globals::layout->formatCredits(rew + bonus);
-        String suffix("", false);
-        String merged;
-        Status_replaceHash(&merged, key, &body, &reward, &suffix);
-        text = merged;
-
-        String a("", false);
-        String b(text);
-        this->m_pFreelanceWindow->setText(a, b);
-
-        int *parts = ((Agent *) (fm->getAgent()))->getImageParts();
-        this->m_pAgentImageParts = (Globals::imageFactory)->loadChar(parts);
+                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight),
+                (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
+                this->m_y - (Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight)) +
+                this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+                Globals::layout->field_0x4c - Globals::layout->field_0x30_rowHeight,
+                false);
+        String text = Globals::globals->getAgentMissionText(Globals::status->getFreelanceMission()->getAgent());
+        text = Globals::status->replaceHash(
+                text,
+                Globals::layout->formatCredits(Globals::status->getFreelanceMission()->getReward() +
+                                               Globals::status->getFreelanceMission()->getBonus()),
+                String("#C", false));
+        this->m_pFreelanceWindow->setText("", text);
+        this->m_pAgentImageParts =
+                Globals::imageFactory->loadChar(Globals::status->getFreelanceMission()->getAgent()->getImageParts());
     } else {
         this->m_pFreelanceWindow = new ScrollTouchWindow(
-            rx, topY, (half - pad) - L->buttonInsetX,
-            ((this->m_height + (this->m_y - (topY + pad * 2))) - L->field_0x10_rightMargin) - L->field_0x24, false);
-        String a("", false);
-        String *t = Globals::gameText->getText(titleId);
-        String b(*t);
-        this->m_pFreelanceWindow->setText(a, b);
+                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight, top,
+                (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
+                this->m_height + (this->m_y - (top + Globals::layout->field_0x2c_rowHeight * 2)) -
+                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                false);
+        this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
     }
 
-    if (Globals::status->inAlienOrbit() == 0) {
-        int btnY = ((this->m_width >> 1) >> 1) - L->buttonInsetX;
-        if (Globals::status->gameWon() == 0) {
-            String *t = Globals::gameText->getText(titleId);
+    int buttonWidth = (this->m_width >> 1) / 2 - Globals::layout->buttonInsetX;
+    if (!Globals::status->inAlienOrbit()) {
+        if (!Globals::status->gameWon())
             this->m_pAcceptButton = new TouchButton(
-                *t, 0, L->buttonInsetX + this->m_x,
-                (((this->m_y + this->m_height) - L->field_0x10_rightMargin) - L->field_0x24) - L->field_0x2c_rowHeight,
-                btnY, '!', 4);
-        }
-        if (Globals::status->getFreelanceMission()->isEmpty() == 0) {
-            String *t = Globals::gameText->getText(titleId);
+                    *Globals::gameText->getText(424), 0, Globals::layout->buttonInsetX + this->m_x,
+                    this->m_y + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+                    Globals::layout->field_0x2c_rowHeight,
+                    buttonWidth, 33, 4);
+        if (!Globals::status->getFreelanceMission()->isEmpty()) {
             this->m_pRejectButton = new TouchButton(
-                *t, 0, this->m_x + (this->m_width >> 1) + L->field_0x2c_rowHeight,
-                (((this->m_y - L->field_0x2c_rowHeight) + this->m_height) - L->field_0x10_rightMargin) - L->field_0x24,
-                btnY, '!', 4);
-
-            if (ApplicationManager_GetCurrentApplicationModule(Globals::appManager) == 5) {
-                String *t2 = Globals::gameText->getText(titleId);
+                    *Globals::gameText->getText(424), 0,
+                    this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                    this->m_y - Globals::layout->field_0x2c_rowHeight + this->m_height -
+                    Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                    buttonWidth, 33, 4);
+            if (Globals::appManager->GetCurrentApplicationModule() == 5) {
                 this->m_pMapButton = new TouchButton(
-                    *t2, 0, this->m_x + btnY + (this->m_width >> 1) + L->field_0x2c_rowHeight * 2,
-                    (((this->m_y - L->field_0x2c_rowHeight) + this->m_height) - L->field_0x10_rightMargin) - L->field_0x24,
-                    btnY, '!', 4);
-                this->m_pMapButton->setTextColor(g_mwi_actionColor);
+                        *Globals::gameText->getText(423), 0,
+                        this->m_x + buttonWidth + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight * 2,
+                        this->m_y - Globals::layout->field_0x2c_rowHeight + this->m_height -
+                        Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                        buttonWidth, 33, 4);
+                this->m_pMapButton->setTextColor(0xff2a00ff);
             }
             this->m_pChoiceWindow = new ChoiceWindow();
         }
@@ -348,14 +311,12 @@ int MissionsWindow::init() {
 
     this->m_mode = 0;
     this->m_hangarNeedsUpdate = 0;
-
-    if (Globals::status->wantedBoardAccessible() != 0) {
-        if (this->m_pWantedWindow == nullptr)
-            this->m_pWantedWindow = new WantedWindow();
-        else
+    if (Globals::status->wantedBoardAccessible()) {
+        if (this->m_pWantedWindow != nullptr)
             this->m_pWantedWindow->init();
+        else
+            this->m_pWantedWindow = new WantedWindow();
     }
-
     return 0;
 }
 
