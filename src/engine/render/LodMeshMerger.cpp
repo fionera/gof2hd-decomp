@@ -104,9 +104,8 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     this->cols = cols;
     ArraySetLength(cols * rows, this->meshes);
 
-    int count = cols * this->rows;
-    this->transformedMeshes = new Mesh *[count];
-    memset(this->transformedMeshes, 0, count * sizeof(Mesh *));
+    this->transformedMeshes = new Mesh *[cols * this->rows];
+    memset(this->transformedMeshes, 0, cols * this->rows * sizeof(Mesh *));
     this->lodLevels = new int8_t[this->rows];
     memset(this->lodLevels, 0, this->rows);
     this->transforms = new Matrix[this->rows];
