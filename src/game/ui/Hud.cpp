@@ -413,82 +413,109 @@ found:
 
 
 
-static inline bool span(unsigned short o, int w, unsigned int v) {
-    return o <= v && v <= (unsigned int) o + w;
-}
-
-static inline bool cspan(unsigned short o, int w, unsigned int v) {
-    return (unsigned int) o - w <= v && v <= (unsigned int) o + w;
-}
-
 unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
-    Array<TouchButton *> *menu = this->menuButtons;
-    if (this->quickMenuOpen != 0 && menu != 0) {
-        for (unsigned int i = 0; i < menu->size(); i++) {
-            if ((*menu)[i]->OnTouchBegin((int) x, (int) y) != 0)
-                return *(unsigned int *) (*this->menuButtons)[i];
-            menu = this->menuButtons;
+    if (this->quickMenuOpen != 0 && this->menuButtons != 0) {
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+            if ((*this->menuButtons)[i]->OnTouchBegin(x, y) != 0)
+                return (unsigned int) (*this->menuButtons)[i]->id;
         }
         return 0;
     }
-
-    int w = this->touchHalfExtent;
-    int w2 = this->touchHalfExtentSmall;
-
-    bool cinematic = *(char *) &Globals::iPad != 0;
-
-    if (cinematic) {
-        if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
-        if (this->hasBoostButton != 0 && span(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
-        if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
-        if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
-        if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
-        if (span(this->field_0x3f2, w, x) && span(this->field_0x3f4, w, y)) {
+    if (Globals::iPad) {
+        if (this->field_0x40c <= y && y <= this->field_0x40c + this->field_0x4d8 && this->field_0x40a <= x &&
+            x <= this->field_0x40a + this->field_0x4d8)
+            return 1;
+        if (this->hasBoostButton != 0 && this->field_0x412 <= y && y <= this->field_0x412 + this->field_0x4d8 &&
+            this->field_0x410 <= x && x <= this->field_0x410 + this->field_0x4d8)
+            return 2;
+        if (this->field_0x3fa <= y && y <= this->field_0x3fa + this->field_0x4d8 && this->field_0x3f8 <= x &&
+            x <= this->field_0x3f8 + this->field_0x4d8)
+            return 0x40;
+        if (this->field_0x406 <= y && y <= this->field_0x406 + this->field_0x4d8 && this->field_0x404 <= x &&
+            x <= this->field_0x404 + this->field_0x4d8)
+            return 0x100;
+        if (this->reticleX - this->field_0x4d8 <= x && x <= this->reticleX + this->field_0x4d8 &&
+            this->reticleY - this->field_0x4dc <= y && y <= this->reticleY + this->field_0x4dc)
+            return 0x20;
+        if (this->field_0x3f2 <= x && x <= this->field_0x3f2 + this->field_0x4d8 && this->field_0x3f4 <= y &&
+            y <= this->field_0x3f4 + this->field_0x4d8) {
             this->field_0x470 = 1000;
             return 0x80;
         }
-        if (cspan(this->field_0x3ec, w, x) && span(this->field_0x3ee, w, y)) return 8;
-        if (cspan(this->field_0x3e4, w2 >> 1, x) && cspan(this->field_0x3e6, w2 >> 1, y)) return 0x10;
-        if (this->quickMenuEmpty == 0 && span(this->field_0x416, this->field_0x41a, x) &&
-            span(this->field_0x418, this->field_0x41c, y))
+        if (this->field_0x3ec - (this->field_0x4d8 >> 1) <= x && x <= this->field_0x3ec + this->field_0x4d8 &&
+            this->field_0x3ee <= y && y <= this->field_0x3ee + this->field_0x4d8)
+            return 8;
+        if (this->field_0x3e4 - (this->field_0x4dc >> 1) <= x && x <= this->field_0x3e4 + (this->field_0x4dc >> 1) &&
+            this->field_0x3e6 - (this->field_0x4dc >> 1) <= y && y <= this->field_0x3e6 + (this->field_0x4dc >> 1))
+            return 0x10;
+        if (this->quickMenuEmpty == 0 && this->field_0x416 <= x && x <= this->field_0x416 + this->field_0x41a &&
+            this->field_0x418 <= y && y <= this->field_0x418 + this->field_0x41c)
             return 4;
-        if (span(this->field_0x3fe, w, x) && span(this->field_0x400, w, y)) return 0x20000000;
+        if (this->field_0x400 <= y && y <= this->field_0x400 + this->field_0x4d8 && this->field_0x3fe <= x &&
+            x <= this->field_0x3fe + this->field_0x4d8)
+            return 0x20000000;
         if (this->hackingGameActive != 0) {
-            if (span(this->field_0x454, w, x) && span(this->field_0x456, w, y)) return 0x200;
-            if (span(this->field_0x458, w, x) && span(this->field_0x45a, w, y)) return 0x400;
-            if (span(this->field_0x45e, w, x) && span(this->field_0x460, w, y)) return 0x800;
+            if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
+                x <= this->field_0x454 + this->field_0x4d8)
+                return 0x200;
+            if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
+                x <= this->field_0x458 + this->field_0x4d8)
+                return 0x400;
+            if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
+                x <= this->field_0x45e + this->field_0x4d8)
+                return 0x800;
         }
         return 0;
     }
-
     if (this->hackingGameActive != 0) {
-        if (span(this->field_0x454, w, x) && span(this->field_0x456, w, y)) return 0x200;
-        if (span(this->field_0x458, w, x) && span(this->field_0x45a, w, y)) return 0x400;
-        if (span(this->field_0x45e, w, x) && span(this->field_0x460, w, y)) return 0x800;
+        if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
+            x <= this->field_0x454 + this->field_0x4d8)
+            return 0x200;
+        if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
+            x <= this->field_0x458 + this->field_0x4d8)
+            return 0x400;
+        if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
+            x <= this->field_0x45e + this->field_0x4d8)
+            return 0x800;
     }
-
-    int screenW = *(int *) &Globals::w;
-    int screenH = *(int *) &Globals::h;
-
-    if (y < (unsigned int) (screenH >> 2)) {
-        if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
-    } else if (x < (unsigned int) (screenW >> 1)) {
-        if (this->hasBoostButton != 0 && cspan(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
-        if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
-        if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
-        if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
-    } else {
-        if (span(this->field_0x3f2, w, x) && span(this->field_0x3f4, w, y)) {
-            this->field_0x470 = 1000;
-            return 0x80;
-        }
-        if (cspan(this->field_0x3ec, w, x) && span(this->field_0x3ee, w, y)) return 8;
-        if (span(this->field_0x3e4, w2, x) && span(this->field_0x3e6, w2, y)) return 0x10;
-        if (this->quickMenuEmpty == 0 && span(this->field_0x416, this->field_0x41a, x) &&
-            span(this->field_0x418, this->field_0x41c, y))
-            return 4;
-        if (span(this->field_0x3fe, w, x) && span(this->field_0x400, w, y)) return 0x20000000;
+    if (y < (unsigned int) (Globals::h >> 2)) {
+        if (this->field_0x40c <= y && y <= this->field_0x40c + this->field_0x4d8 && this->field_0x40a <= x &&
+            x <= this->field_0x40a + this->field_0x4d8)
+            return 1;
+        return 0;
     }
+    if (x < (unsigned int) (Globals::w >> 1)) {
+        if (this->hasBoostButton != 0 && this->field_0x412 <= y && y <= this->field_0x412 + this->field_0x4d8 &&
+            this->field_0x410 - this->field_0x4d8 <= x && x <= this->field_0x410 + this->field_0x4d8)
+            return 2;
+        if (this->field_0x3fa <= y && y <= this->field_0x3fa + this->field_0x4d8 && this->field_0x3f8 <= x &&
+            x <= this->field_0x3f8 + this->field_0x4d8)
+            return 0x40;
+        if (this->field_0x406 <= y && y <= this->field_0x406 + this->field_0x4d8 && this->field_0x404 <= x &&
+            x <= this->field_0x404 + this->field_0x4d8)
+            return 0x100;
+        if (this->reticleX - this->field_0x4d8 <= x && x <= this->reticleX + this->field_0x4d8 &&
+            this->reticleY - this->field_0x4dc <= y && y <= this->reticleY + this->field_0x4dc)
+            return 0x20;
+        return 0;
+    }
+    if (this->field_0x3f2 <= x && x <= this->field_0x3f2 + this->field_0x4d8 && this->field_0x3f4 <= y &&
+        y <= this->field_0x3f4 + this->field_0x4d8) {
+        this->field_0x470 = 1000;
+        return 0x80;
+    }
+    if (x <= this->field_0x3ec + this->field_0x4d8 && this->field_0x3ec - (this->field_0x4d8 >> 1) <= x &&
+        this->field_0x3ee <= y && y <= this->field_0x3ee + this->field_0x4d8)
+        return 8;
+    if (this->field_0x3e4 <= x && x <= this->field_0x3e4 + this->field_0x4dc && this->field_0x3e6 <= y &&
+        y <= this->field_0x3e6 + this->field_0x4dc)
+        return 0x10;
+    if (this->quickMenuEmpty == 0 && this->field_0x416 <= x && x <= this->field_0x416 + this->field_0x41a &&
+        this->field_0x418 <= y && y <= this->field_0x418 + this->field_0x41c)
+        return 4;
+    if (this->field_0x400 <= y && y <= this->field_0x400 + this->field_0x4d8 && this->field_0x3fe <= x &&
+        x <= this->field_0x3fe + this->field_0x4d8)
+        return 0x20000000;
     return 0;
 }
 
