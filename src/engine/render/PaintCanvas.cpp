@@ -1670,25 +1670,24 @@ void PaintCanvas::Initialize(bool landscape) {
     float fw = (float) (int) this->engine->GetDisplayWidth();
     float fh = (float) (int) this->engine->GetDisplayHeight();
 
-    float ymul = fw;
-    if (orient == 2) {
-        proj[0] = 2.0f / fw;
-        ymul = fh;
-    } else {
+    if (orient != 2) {
+        proj[0] = 2.0f / fh;
+        proj[5] = -2.0f / fw;
         float *view = this->worldViewMatrix;
         memset(view, 0, sizeof(this->worldViewMatrix));
-        view[15] = 1.0f;
-        proj[0] = 2.0f / fh;
         view[1] = -1.0f;
-        view[10] = 1.0f;
         view[4] = 1.0f;
+        view[10] = 1.0f;
+        view[15] = 1.0f;
         view[13] = fw;
+    } else {
+        proj[0] = 2.0f / fw;
+        proj[5] = -2.0f / fh;
     }
     proj[10] = -0.05f;
     proj[15] = 1.0f;
     proj[12] = -1.0f;
     proj[13] = 1.0f;
-    proj[5] = -2.0f / ymul;
 
     return this->SetProjectionMatrix3d(16384.0f, 512.0f, 65536.0f);
 }
@@ -2070,20 +2069,17 @@ void PaintCanvas::End3d() {
     this->SetBlendMode((AbyssEngine::BlendMode) 8);
     for (unsigned int i = 0; i < this->materials.count; i++) {
         AbyssEngine::Material *mat = this->materials.data_[i];
-        unsigned int cap;
-        if (mat->blendMode == 8) {
-            AbyssEngine::MaterialDraw(this, this->engine, mat, true);
-            continue;
+        if (mat->blendMode == 36) {
+            this->engine->GlEnable(0x1100021, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100021, false);
         } else if (mat->blendMode == 16) {
-            cap = 0x1100016;
-        } else if (mat->blendMode == 36) {
-            cap = 0x1100021;
-        } else {
-            continue;
+            this->engine->GlEnable(0x1100016, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100016, false);
+        } else if (mat->blendMode == 8) {
+            AbyssEngine::MaterialDraw(this, this->engine, mat, true);
         }
-        this->engine->GlEnable(cap, true);
-        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
-        this->engine->GlEnable(cap, false);
     }
     this->SetBlendMode((AbyssEngine::BlendMode) 9);
     for (unsigned int i = 0; i < this->materials.count; i++) {
@@ -2203,21 +2199,19 @@ void PaintCanvas::End3d() {
     bool refract = false;
     for (unsigned int i = 0; i < this->materials.count; i++) {
         AbyssEngine::Material *mat = this->materials.data_[i];
-        unsigned int cap;
-        unsigned int meshCount;
-        if (mat->blendMode == 34) {
-            meshCount = mat->meshes.count;
-            cap = 0x1100018;
-        } else if (mat->blendMode == 14) {
-            meshCount = mat->meshes.count;
-            cap = 0x1100015;
-        } else {
-            continue;
+        if (mat->blendMode == 14) {
+            unsigned int meshCount = mat->meshes.count;
+            this->engine->GlEnable(0x1100015, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100015, false);
+            refract |= meshCount != 0;
+        } else if (mat->blendMode == 34) {
+            unsigned int meshCount = mat->meshes.count;
+            this->engine->GlEnable(0x1100018, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100018, false);
+            refract |= meshCount != 0;
         }
-        this->engine->GlEnable(cap, true);
-        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
-        this->engine->GlEnable(cap, false);
-        refract |= meshCount != 0;
     }
     bool disableRefract = Engine::DisableRefract;
     this->SetBlendMode((AbyssEngine::BlendMode) 3);
@@ -3161,8 +3155,8 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
         e[4] = (unsigned short) ((i << 2) | 3);
         e[5] = (unsigned short) ((i << 2) | 2);
     }
-    this->field_0x1f8 = 1;
     this->field_0x1cc = 0;
+    this->field_0x1f8 = 1;
 }
 
 void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, unsigned short meshResId) {
