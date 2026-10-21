@@ -5,6 +5,7 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
+#include <cstring>
 
 
 namespace AbyssEngine {
@@ -76,19 +77,15 @@ namespace AbyssEngine {
 
     void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
                                   float amount, Vector vector) {
-        float matrix[16] = {};
-        matrix[0] = 1.0f;
-        matrix[5] = 1.0f;
-        matrix[10] = 1.0f;
-        matrix[15] = 1.0f;
-
-        engine->projMatrix[0] = 2.0f / (float) engine->GetDisplayWidth();
-        engine->projMatrix[5] = -(2.0f / (float) engine->GetDisplayHeight());
-        engine->projMatrix[10] = -1.0f;
-        engine->projMatrix[12] = -1.0f;
+        memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
+        engine->projMatrix[0] = 2.0f / (float) (int) engine->GetDisplayWidth();
+        engine->projMatrix[5] = -(2.0f / (float) (int) engine->GetDisplayHeight());
+        engine->projMatrix[10] = -0.05f;
         engine->projMatrix[13] = 1.0f;
         engine->projMatrix[15] = 1.0f;
-        engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));
+        engine->projMatrix[12] = -1.0f;
+        AEMath::Matrix identity;
+        engine->SetWorldViewMatrix(identity);
 
         glDisable(0xb71);
         glDepthMask(0);
@@ -97,7 +94,9 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
         fbo->Activate();
 
-        if (target == 0) {
+        if (target != nullptr) {
+            target->BeginCapture();
+        } else {
             glBindFramebuffer(0x8d40, engine->viewFramebuffer);
             int width;
             int height;
@@ -109,71 +108,46 @@ namespace AbyssEngine {
                 height = engine->GetDisplayWidth();
             }
             glViewport(0, 0, width, height);
-        } else {
-            target->BeginCapture();
         }
 
-        int position = this->aPosition;
-        if (position >= 0) {
-            glEnableVertexAttribArray(position);
-        }
-        int texCoord = this->aTexCoord;
-        if (texCoord >= 0) {
-            glEnableVertexAttribArray(texCoord);
-        }
-        int matrixLocation = this->uMvpMatrix;
-        if (matrixLocation >= 0) {
-            glUniformMatrix4fv(matrixLocation, 1, 0, engine->worldViewProjMatrix);
-        }
+        if (this->aPosition >= 0)
+            glEnableVertexAttribArray(this->aPosition);
+        if (this->aTexCoord >= 0)
+            glEnableVertexAttribArray(this->aTexCoord);
+        if (this->uMvpMatrix >= 0)
+            glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
+
         int texelLocation = this->uTexelSize;
         if (texelLocation >= 0) {
-            float width;
-            int other;
             if (engine->appManager->paintCanvas->gameOrientation == 2) {
-                width = (float) engine->GetDisplayWidth();
-                other = engine->GetDisplayHeight();
+                glUniform2f(texelLocation, 1.0f / (float) (int) engine->GetDisplayWidth(),
+                            1.0f / (float) (int) engine->GetDisplayHeight());
             } else {
-                width = (float) engine->GetDisplayHeight();
-                other = engine->GetDisplayWidth();
+                glUniform2f(texelLocation, 1.0f / (float) (int) engine->GetDisplayHeight(),
+                            1.0f / (float) (int) engine->GetDisplayWidth());
             }
-            glUniform2f(texelLocation, 1.0f / width, 1.0f / (float) other);
         }
         int centerLocation = this->uCenter;
-        if (centerLocation >= 0) {
+        if (centerLocation >= 0)
             glUniform2f(centerLocation, vector[0], vector[1]);
-        }
-        int strengthLocation = this->uStrength;
-        if (strengthLocation >= 0) {
-            glUniform1f(strengthLocation, this->strength);
-        }
-        int amountLocation = this->uBlurAmount;
-        if (amountLocation >= 0) {
-            float scaled = amount;
-            if (scaled < 0.2f) {
-                scaled = 0.2f;
-            }
-            glUniform1f(amountLocation, scaled * this->blurScale);
-        }
-        if (position >= 0) {
-            glVertexAttribPointer(position, 3, 0x1406, 0, 0,
-                                  engine->quadMesh->positions);
-        }
-        if (texCoord >= 0) {
-            glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0,
-                                  engine->quadMesh->texCoords);
-        }
+        if (this->uStrength >= 0)
+            glUniform1f(this->uStrength, this->strength);
+        if (this->uBlurAmount >= 0)
+            glUniform1f(this->uBlurAmount, (amount < 0.0f ? 0.0f : amount) * this->blurScale);
+
+        if (this->aPosition >= 0)
+            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, engine->quadMesh->positions);
+        if (this->aTexCoord >= 0)
+            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, engine->quadMesh->texCoords);
 
         glClear(0x4000);
         engine->DrawQuad(0, 0, engine->GetDisplayWidth(), engine->GetDisplayHeight());
-        if (position >= 0) {
-            glDisableVertexAttribArray(position);
-        }
-        if (texCoord >= 0) {
-            glDisableVertexAttribArray(texCoord);
-        }
-        if (target != 0) {
+        if (this->aPosition >= 0)
+            glDisableVertexAttribArray(this->aPosition);
+        if (this->aTexCoord >= 0)
+            glDisableVertexAttribArray(this->aTexCoord);
+        if (target != nullptr)
             target->EndCapture();
-        }
         glEnable(0xbe2);
         glBlendFunc(0x302, 0x303);
         glActiveTexture(0x84c0);
