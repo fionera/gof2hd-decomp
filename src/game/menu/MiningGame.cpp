@@ -240,42 +240,30 @@ int MiningGame::update(int delta) {
 
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
-    int imageId[2];
-    imageId[0] = -1;
-
-    int *screenW = &Globals::w;
-    int *screenH = &Globals::h;
-    Layout **layoutHolder = &Globals::layout;
-    Status **statusHolder = &Globals::status;
-
     this->layer = layer;
     this->station = station;
     this->hud = hud;
-
-    Layout *layout = *layoutHolder;
-    int centerX = *screenW >> 1;
-    this->centerX = centerX;
-    int centerY = layout->centerYBase + (*screenH >> 1);
-    this->centerY = centerY;
-    this->marqueeWidth = layout->marqueeWidth;
+    this->centerX = Globals::w >> 1;
+    this->centerY = Globals::layout->centerYBase + (Globals::h >> 1);
+    this->marqueeWidth = Globals::layout->marqueeWidth;
     this->isCoreLayer = layer == 7;
     this->lossTimer = 0;
     this->oreAmount = 0.0f;
     this->oreRate = 0.0f;
     this->driftTimer = 0;
-    this->failThreshold = 0x9c4;
+    this->failThreshold = 2500;
     this->layerTimer = 0;
     this->currentLayer = 0;
     this->targetLayer = layer;
     this->gameWonFlag = 0;
     this->gameLostFlag = 0;
     this->gotCoreFlag = 0;
-    this->posX = (float) centerX;
+    this->posX = (float) this->centerX;
     this->inputX = 0.0f;
     this->inputY = 0.0f;
     this->driftX = 0.0f;
     this->driftY = 0.0f;
-    this->posY = (float) centerY;
+    this->posY = (float) this->centerY;
 
     Item *drill = Globals::status->getShip()->getFirstEquipmentOfSort(19);
     if (drill != 0) {
@@ -283,56 +271,44 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
         this->oreRate = (float) drill->getAttribute(33) / 100.0f;
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate(0x4e6, (unsigned int &) imageId[0]);
-    int imageHeight = canvas->GetImage2DHeight(imageId[0]);
-    Sprite *sprite = new Sprite((uint32_t) imageId[0], imageHeight, imageHeight);
-    this->drillSprite = sprite;
-    sprite->defineReferencePixel(imageHeight / 2, imageHeight / 2);
+    unsigned int drillImage = (unsigned int) -1;
+    Globals::Canvas->Image2DCreate(0x4e6, drillImage);
+    int drillHeight = Globals::Canvas->GetImage2DHeight(drillImage);
+    this->drillSprite = new Sprite(drillImage, drillHeight, drillHeight);
+    this->drillSprite->defineReferencePixel(drillHeight >> 1, drillHeight >> 1);
 
     this->animAccumulator = 0.0f;
-    canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
-    canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
-    canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
-    canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
-    canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
-    canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
-    canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
-    canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
-    canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
-    canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
-    canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
-    canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
+    Globals::Canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
+    Globals::Canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
+    Globals::Canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
+    Globals::Canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
+    Globals::Canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
+    Globals::Canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
+    Globals::Canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
+    Globals::Canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
+    Globals::Canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
+    Globals::Canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
+    Globals::Canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
+    Globals::Canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
+    if (this->isCoreLayer)
+        Globals::Canvas->Image2DCreate(station == 164 ? 0x522 : 0x523, (unsigned int &) this->coreImageId);
 
-    if (this->isCoreLayer != 0) {
-        int coreImage = 0x523;
-        if (station == 0xa4) {
-            coreImage = 0x522;
-        }
-        canvas->Image2DCreate(coreImage, (unsigned int &) this->coreImageId);
-    }
-
-    this->progressBarWidth = canvas->GetImage2DWidth(this->progressBarImageId);
-    this->progressBarHeight = canvas->GetImage2DHeight(this->progressBarImageId);
-    int x = *screenW / 2 - this->progressBarWidth / 2;
-    this->progressBarX = x;
-    int y = layout->progressBarYBase;
-    this->progressBarY = y;
-
-    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, x, this->progressBarHeight + y + 5, 20.0f);
-
+    this->progressBarWidth = Globals::Canvas->GetImage2DWidth(this->progressBarImageId);
+    this->progressBarHeight = Globals::Canvas->GetImage2DHeight(this->progressBarImageId);
+    this->progressBarX = Globals::w / 2 - this->progressBarWidth / 2;
+    this->progressBarY = Globals::layout->progressBarYBase;
+    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, this->progressBarX,
+                                         this->progressBarHeight + this->progressBarY + 5, 20.0f);
     this->rightMarquee = new MarqueeImage(0x4ec, this->marqueeWidth,
                                           (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
                                           this->progressBarHeight + this->progressBarY + 5, 32.0f);
 
-    this->oreIconOffsetX = canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
-    this->oreIconOffsetY = canvas->GetImage2DWidth(this->oreLabelImageId) / 2;
-    this->oreImageHeight = canvas->GetImage2DHeight(this->oreTextImageId);
-
-    MarqueeImage *oreMarquee =
-            new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
-    this->oreMarquee = oreMarquee;
-    oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
+    this->oreIconOffsetX = Globals::Canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
+    this->oreIconOffsetY = Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) >> 1;
+    this->oreImageHeight = Globals::Canvas->GetImage2DHeight(this->oreTextImageId);
+    this->oreMarquee = new MarqueeImage(0x4e4, Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0,
+                                        F(Globals::layout, 0xdc));
+    this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
 
     this->promptPulseTimer = 0;
     this->textAlpha = 1.0f;
