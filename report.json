@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4540,
   "compared": 4523,
-  "avg_match": 96.93,
+  "avg_match": 97.04,
   "byte_exact": 1314,
-  "linked_exact": 4081,
-  "fuzzy_perfect": 4081,
+  "linked_exact": 4088,
+  "fuzzy_perfect": 4088,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -62,14 +62,6 @@
    "linked": false,
    "osize": 58,
    "usize": 36
-  },
-  {
-   "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
-   "pct": 6.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1168,
-   "usize": 860
   },
   {
    "name": "_ZN11SpaceLounge23getSpecificSoundForRaceEiib",
@@ -264,36 +256,12 @@
    "usize": 14
   },
   {
-   "name": "_ZN7Mission13setTargetNameEN11AbyssEngine6StringE",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 12
-  },
-  {
-   "name": "_ZN7Mission19setTargetSystemNameERKN11AbyssEngine6StringE",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 6,
-   "usize": 12
-  },
-  {
    "name": "_ZN8ListItem4initEv",
    "pct": 28.6,
    "byte": false,
    "linked": false,
    "osize": 50,
    "usize": 50
-  },
-  {
-   "name": "_ZN11ModMainMenu12OnInitializeEv",
-   "pct": 28.7,
-   "byte": false,
-   "linked": false,
-   "osize": 568,
-   "usize": 236
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -326,14 +294,6 @@
    "linked": false,
    "osize": 314,
    "usize": 314
-  },
-  {
-   "name": "_ZN11ModMainMenu10OnRender2DEv",
-   "pct": 31.6,
-   "byte": false,
-   "linked": false,
-   "osize": 452,
-   "usize": 224
   },
   {
    "name": "_ZN18ParticleSystemMeshC1EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
@@ -824,14 +784,6 @@
    "usize": 6
   },
   {
-   "name": "_ZN11ModMainMenu8OnUpdateEv",
-   "pct": 50.5,
-   "byte": false,
-   "linked": false,
-   "osize": 136,
-   "usize": 110
-  },
-  {
    "name": "_ZN8FileRead18loadStationsBinaryEv",
    "pct": 51.0,
    "byte": false,
@@ -1038,14 +990,6 @@
    "linked": false,
    "osize": 1920,
    "usize": 1940
-  },
-  {
-   "name": "_ZN9Objective8achievedEi",
-   "pct": 57.6,
-   "byte": false,
-   "linked": false,
-   "osize": 884,
-   "usize": 854
   },
   {
    "name": "_ZN5Radar12calcDistanceEffffff",
@@ -1480,14 +1424,6 @@
    "usize": 656
   },
   {
-   "name": "_ZN11ModMainMenu9OnReleaseEv",
-   "pct": 67.5,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 80
-  },
-  {
    "name": "_ZN10MeshMergerD1Ev",
    "pct": 67.6,
    "byte": false,
@@ -1736,6 +1672,14 @@
    "usize": 1368
   },
   {
+   "name": "_ZN9Objective8achievedEi",
+   "pct": 72.0,
+   "byte": false,
+   "linked": false,
+   "osize": 884,
+   "usize": 858
+  },
+  {
    "name": "_ZN15IParticleSystemC2EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
    "pct": 72.2,
    "byte": false,
@@ -1766,14 +1710,6 @@
    "linked": false,
    "osize": 1292,
    "usize": 1296
-  },
-  {
-   "name": "_ZN5Trail6updateEffffff",
-   "pct": 72.7,
-   "byte": false,
-   "linked": false,
-   "osize": 472,
-   "usize": 484
   },
   {
    "name": "_ZN9BluePrint19getIngredientsValueEv",
@@ -1838,22 +1774,6 @@
    "linked": false,
    "osize": 128,
    "usize": 126
-  },
-  {
-   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
-   "pct": 74.4,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 216
-  },
-  {
-   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
-   "pct": 74.4,
-   "byte": false,
-   "linked": false,
-   "osize": 224,
-   "usize": 216
   },
   {
    "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
@@ -2038,6 +1958,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 996
+  },
+  {
+   "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
+   "pct": 78.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1168,
+   "usize": 1168
   },
   {
    "name": "_ZN9Generator12createAgentsEP7Station",
@@ -2934,6 +2862,22 @@
    "linked": false,
    "osize": 244,
    "usize": 244
+  },
+  {
+   "name": "_ZN7BeamGunC1EiP3GuniP5Level",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 224
+  },
+  {
+   "name": "_ZN7BeamGunC2EiP3GuniP5Level",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 224,
+   "usize": 224
   },
   {
    "name": "_ZN11AbyssEngine6Engine14SetTexturesExtEjz",
@@ -14800,6 +14744,14 @@
    "usize": 2
   },
   {
+   "name": "_ZN11ModMainMenu10OnRender2DEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 452,
+   "usize": 452
+  },
+  {
    "name": "_ZN11ModMainMenu10OnRender3DEv",
    "pct": 100.0,
    "byte": false,
@@ -14832,6 +14784,14 @@
    "usize": 2
   },
   {
+   "name": "_ZN11ModMainMenu12OnInitializeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 568,
+   "usize": 568
+  },
+  {
    "name": "_ZN11ModMainMenu12OnKeyReleaseExx",
    "pct": 100.0,
    "byte": true,
@@ -14862,6 +14822,22 @@
    "linked": true,
    "osize": 52,
    "usize": 52
+  },
+  {
+   "name": "_ZN11ModMainMenu8OnUpdateEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 136,
+   "usize": 136
+  },
+  {
+   "name": "_ZN11ModMainMenu9OnReleaseEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN11ModMainMenu9OnSuspendEv",
@@ -25416,6 +25392,14 @@
    "usize": 44
   },
   {
+   "name": "_ZN5Trail6updateEffffff",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 472,
+   "usize": 472
+  },
+  {
    "name": "_ZN5Trail8setWidthEi",
    "pct": 100.0,
    "byte": false,
@@ -29072,6 +29056,14 @@
    "usize": 4
   },
   {
+   "name": "_ZN7Mission13setTargetNameEN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
+  },
+  {
    "name": "_ZN7Mission14getClientImageEv",
    "pct": 100.0,
    "byte": true,
@@ -29158,6 +29150,14 @@
    "linked": true,
    "osize": 14,
    "usize": 14
+  },
+  {
+   "name": "_ZN7Mission19setTargetSystemNameERKN11AbyssEngine6StringE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 6,
+   "usize": 6
   },
   {
    "name": "_ZN7Mission20getTargetStationNameEv",
