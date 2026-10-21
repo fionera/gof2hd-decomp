@@ -85,8 +85,6 @@ namespace {
 
     int *g_touchWindowFocus;
 
-    const unsigned int *const *g_hashTable;
-
     constexpr float kAxisCenter = 0.5f;
     constexpr float kAxisStep = 0.1f;
 
@@ -143,19 +141,16 @@ namespace {
     unsigned char g_simTouchActive;
 }
 
+extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+
+// Blowfish round function over the S-boxes loaded by InitializeBlowfish.
 extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    const unsigned int *table = *g_hashTable;
-    const unsigned int *col0 = table;
-    const unsigned int *col1 = table + 0x100;
-    const unsigned int *col2 = table + 0x200;
-    const unsigned int *col3 = table + 0x300;
+    const unsigned int a = value >> 24;
+    const unsigned int b = (value >> 16) & 0xff;
+    const unsigned int c = (value >> 8) & 0xff;
+    const unsigned int d = value & 0xff;
 
-    const unsigned int byte0 = value & 0xff;
-    const unsigned int byte1 = (value >> 8) & 0xff;
-    const unsigned int byte2 = (value >> 16) & 0xff;
-    const unsigned int byte3 = value >> 24;
-
-    return (col2[byte1] ^ (col0[byte3] + col1[byte2])) + col3[byte0];
+    return ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
 }
 
 void MouseInput(int dx, int dy) {
