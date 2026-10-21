@@ -498,15 +498,15 @@ RecordHandler::RecordHandler()
 RecordHandler::~RecordHandler() {
 }
 
-void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
+int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     String tmp(this->optionsPath, false);
-    unsigned int fd;
-
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
+    unsigned int fd;
     AEFile::OpenWrite(tmp, &fd);
     AEFile::Write((uint32_t)n, buf, fd);
     AEFile::Close(fd);
+    return n;
 }
 
 static int *g_RH_wp_float = nullptr;

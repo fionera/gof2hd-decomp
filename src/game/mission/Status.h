@@ -23,7 +23,6 @@ class Wanted;
 
 using AbyssEngine::String;
 
-#pragma pack(push, 4)
 class Status {
 public:
     Array<Wanted *> *wanted;
@@ -375,7 +374,7 @@ public:
 
     void unlockBluePrint(int index);
 
-    int isBlueprintUnlocked(int index);
+    unsigned char isBlueprintUnlocked(int index);
 
     int getAgents();
 
@@ -419,10 +418,10 @@ public:
 
     int getFreighterMissionStationBit(int station);
 };
-#pragma pack(pop)
+
 
 #if __SIZEOF_POINTER__ == 4
-static_assert(sizeof(Status) == 492, "Status must be 492 bytes");
+static_assert(sizeof(Status) == 496, "Status must be 496 bytes");
 static_assert(offsetof(Status, wanted) == 0x0, "");
 static_assert(offsetof(Status, standing) == 0x14, "");
 static_assert(offsetof(Status, bluePrints) == 0x18, "");

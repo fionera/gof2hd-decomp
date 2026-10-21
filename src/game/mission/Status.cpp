@@ -16,7 +16,6 @@
 #include "game/world/Standing.h"
 #include "game/ship/Ship.h"
 
-static int **g_campaignSentinel = nullptr;
 struct FileRead {
     FileRead();
 
@@ -193,7 +192,7 @@ Station *Status::getStation() { return station; }
 void Status::setCampaignMission(Mission *m) {
     m->setCampaignMission(true);
     Mission *cur = missions->data()[0];
-    if (cur != 0 && cur != (Mission *) (intptr_t) **g_campaignSentinel) {
+    if (cur != 0 && cur != Mission::empty) {
         delete cur;
         missions->data()[0] = 0;
     }
@@ -413,18 +412,13 @@ int Status::isFreighterMissionStation(int station) {
     return 0;
 }
 
-int Status::isBlueprintUnlocked(int index) {
-    unsigned i = 0;
-    while (true) {
-        if (bluePrints->size() <= i) {
-            return 0;
-        }
+unsigned char Status::isBlueprintUnlocked(int index) {
+    for (unsigned i = 0; i < bluePrints->size(); i++) {
         if ((*bluePrints)[i]->getIndex() == index) {
-            break;
+            return (*bluePrints)[i]->isUnlocked();
         }
-        i = i + 1;
     }
-    return (*bluePrints)[i]->isUnlocked();
+    return 0;
 }
 
 Status::Status() {
@@ -451,11 +445,12 @@ Status::Status() {
     ArraySetLength(0xf, *field_50);
     ArraySetLength(0xe9, *field_54);
     ArraySetLength(5, *field_58);
-    stationsVisited = 0;
     currentCampaignMission = 0;
+    stationsVisited = 0;
     reinterpret_cast<int32_t &>(_byte_0x34) = 0;
     field_10c = 0;
     field_110 = 0;
+    field_0x111 = 0;
     kills = 0;
     missionCount = 0;
     level = 1;
@@ -463,8 +458,8 @@ Status::Status() {
     rating = 0;
     playingTime = 0;
     playerStation = new Station();
-    field_8c = 0;
     ship = 0;
+    field_8c = 0;
     mission = 0;
     station = 0;
     system = 0;
@@ -482,12 +477,11 @@ Status::Status() {
     this->field_0x40 = 0;
     this->field_0x44 = 0;
     this->field_0x48 = 0;
-    collectedBounties[0] = 0;
-    collectedBounties[1] = 0;
-    collectedBounties[2] = 0;
-    collectedBounties[3] = 0;
-    this->field_0x17c = 0;
+    for (int i = 0; i < 4; i++) {
+        collectedBounties[i] = 0;
+    }
     field_178 = 0;
+    this->field_0x17c = 0;
 }
 
 int Status::getFreighterMissionStationBit(int station) {
