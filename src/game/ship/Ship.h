@@ -151,7 +151,7 @@ public:
 
     float getHandlingForShop();
 
-    int getUnmoddedHandling();
+    float getUnmoddedHandling();
 
     float getFireRateFactor();
 

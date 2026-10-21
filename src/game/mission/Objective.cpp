@@ -47,23 +47,6 @@ Objective *Objective::addObjective(Objective *objective) {
     return this;
 }
 
-void Objective::setAchievedText(AbyssEngine::String *text) {
-    // Original calls the 2-arg String(const String&, bool=false) ctor (extra movs r2,#0), not the 1-arg.
-    this->achievedText = new AbyssEngine::String(*text, false);
-}
-
-AbyssEngine::String *Objective::getAchievedText() {
-    return this->achievedText;
-}
-
-bool Objective::isSurvivalObjective() {
-    return this->type == 3;
-}
-
-bool Objective::getCalcValue() {
-    return this->type == 3;
-}
-
 unsigned int Objective::achieved(int value) {
     Array<KIPlayer *> *enemies = this->level->getEnemies();
     unsigned int result = 0;
@@ -199,3 +182,19 @@ unsigned int Objective::achieved(int value) {
     return result;
 }
 
+bool Objective::getCalcValue() {
+    return this->type == 3;
+}
+
+bool Objective::isSurvivalObjective() {
+    return this->type == 3;
+}
+
+void Objective::setAchievedText(AbyssEngine::String *text) {
+    // Original calls the 2-arg String(const String&, bool=false) ctor (extra movs r2,#0), not the 1-arg.
+    this->achievedText = new AbyssEngine::String(*text, false);
+}
+
+AbyssEngine::String *Objective::getAchievedText() {
+    return this->achievedText;
+}

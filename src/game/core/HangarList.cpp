@@ -223,8 +223,8 @@ void HangarList::fillBuyList(ListItem *item) {
 
     uint32_t isSlot = item->isSlot();
     Array<ListItem *> *list = new Array<ListItem *>();
-    int base = 3;
     uint32_t special = isShip | isSlot;
+    int base = 3;
     if (count == 0) {
         base = 4;
     }
@@ -251,23 +251,25 @@ void HangarList::fillBuyList(ListItem *item) {
     (*list)[out] = new ListItem(isShip == 0 ? (*texts)->getText(0x11c) : (*texts)->getText(0x11d));
     uint32_t next = out + 1;
 
-    if (count < 1) {
-        (*list)[next] = new ListItem(static_cast<int>(next));
-    } else if (isShip == 0) {
-        Ship *ship = Globals::status->getShip();
-        Array<Item *> *cargo = ship->getCargo();
-        for (uint32_t i = 0; i < cargo->size(); ++i) {
-            if ((*cargo)[i]->getType() == type) {
-                (*list)[next] = new ListItem((*cargo)[i]);
-                ++next;
+    if (count > 0) {
+        if (isShip == 0) {
+            Ship *ship = Globals::status->getShip();
+            Array<Item *> *cargo = ship->getCargo();
+            for (uint32_t i = 0; i < cargo->size(); ++i) {
+                if ((*cargo)[i]->getType() == type) {
+                    (*list)[next] = new ListItem((*cargo)[i]);
+                    ++next;
+                }
+            }
+        } else {
+            Station *station = Globals::status->getStation();
+            Array<Ship *> *ships = station->getShips();
+            for (uint32_t i = 0; i < ships->size(); ++i) {
+                (*list)[out + 1 + i] = new ListItem((*ships)[i]);
             }
         }
     } else {
-        Station *station = Globals::status->getStation();
-        Array<Ship *> *ships = station->getShips();
-        for (uint32_t i = 0; i < ships->size(); ++i) {
-            (*list)[out + 1 + i] = new ListItem((*ships)[i]);
-        }
+        (*list)[next] = new ListItem(static_cast<int>(next));
     }
 
     (*this->tabs)[3] = list;
@@ -285,14 +287,10 @@ void HangarList::initShipTab(Ship *ship) {
     Array<ListItem *> *items = new Array<ListItem *>();
     Array<Item *> *equipment = ship->getEquipment();
     Array<Item *> *cargo = ship->getCargo();
-    Array<Item *> *available;
-    int baseLength;
-    bool cargoEmpty;
-    if (cargo == nullptr) {
-        baseLength = 2;
-        available = nullptr;
-        cargoEmpty = true;
-    } else {
+    int baseLength = 2;
+    Array<Item *> *available = nullptr;
+    bool cargoEmpty = true;
+    if (cargo != nullptr) {
         available = new Array<Item *>();
         for (uint32_t i = 0; i < cargo->size(); ++i) {
             if ((*cargo)[i]->getType() != 4 && ship->getSlots((*cargo)[i]->getType()) > 0) {
@@ -307,6 +305,7 @@ void HangarList::initShipTab(Ship *ship) {
     int slotTypes = ship->getSlotTypes();
     ArraySetLength(slotTypes + baseLength + equipmentLength, *items);
 
+
     GameText **texts = &Globals::gameText;
     (*items)[0] = new ListItem((*texts)->getText(0xb7));
     (*items)[1] = new ListItem(ship);
@@ -314,9 +313,20 @@ void HangarList::initShipTab(Ship *ship) {
 
     for (uint32_t type = 0; type < 4; ++type) {
         if (ship->getSlots(type) > 0) {
-            int textId = 0x10d;
-            if (type < 3) {
-                textId = type + 0x109;
+            int textId;
+            switch (type) {
+                case 0:
+                    textId = 0x109;
+                    break;
+                case 1:
+                    textId = 0x10a;
+                    break;
+                case 2:
+                    textId = 0x10b;
+                    break;
+                default:
+                    textId = 0x10d;
+                    break;
             }
             (*items)[out] = new ListItem((*texts)->getText(textId), static_cast<int>(type));
             ++out;
@@ -355,8 +365,16 @@ static int shopTypeTextId(int type) {
     if (type == 3) {
         textId = 0x10d;
     }
-    if (type >= 0 && type < 3) {
-        textId = type + 0x109;
+    switch (type) {
+        case 0:
+            textId = 0x109;
+            break;
+        case 1:
+            textId = 0x10a;
+            break;
+        case 2:
+            textId = 0x10b;
+            break;
     }
     return textId;
 }
