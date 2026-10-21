@@ -810,338 +810,266 @@ namespace AbyssEngine {
     int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                      Material *mat);
 
-    int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
+    int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        unsigned int handle = handleRef;
-        unsigned int subBit = flags & 0x1a;
-        unsigned char mode = 0;
-
-        if (subBit != 0) {
-            if (AEFile::Read((uint32_t)(0xc), &(*slot)->pivotX, handle) == 0)
-                return -1;
-        }
-
-        Mesh *m = *slot;
-
-        if (m->vertexFormat & 0x10) {
-            if (AEFile::Read((uint32_t)(2), &m->indexCount, handle) == 0)
-                return -1;
-            unsigned char *idx = (unsigned char *) ::operator new[]((unsigned int) m->indexCount << 1);
-            (*slot)->indices = idx;
-            if (AEFile::Read((uint32_t)((unsigned int) (*slot)->indexCount << 1), (*slot)->indices, handle) == 0)
-                return -1;
-            m = *slot;
-        }
-
-        if (AEFile::Read((uint32_t)(2), &m->vertexCount, handle) == 0)
+        unsigned int enhanced = flags & 0x1a;
+        if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivotX, handle) == 0)
             return -1;
 
-        float minv[3] = {1e30f, 1e30f, 1e30f};
-        float maxv[3] = {-1e30f, -1e30f, -1e30f};
-        bool compressedPos = (int) (flags << 0x1d) < 0;
-        unsigned int vcount = (*slot)->vertexCount;
-
-        if (compressedPos) {
-            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
-            if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
-                ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 0x10) {
+            if (AEFile::Read(2, &(*slot)->indexCount, handle) == 0)
                 return -1;
-            }
-            m = *slot;
-            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-            m->positions = pos;
-            m = *slot;
-            short *rawShorts = (short *) raw;
-            float *posFloats = (float *) m->positions;
-            unsigned int n3 = vcount * 3;
-            for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) ((unsigned) i / (unsigned) 3);
-                axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat((int) rawShorts[i], mode);
-                posFloats[i] = v;
-                if (v < minv[axis]) minv[axis] = v;
-                if (maxv[axis] < v) maxv[axis] = v;
-            }
-            ::operator delete[](raw);
-        } else if ((flags & 3) == 0) {
-            if ((flags & 0x18) != 0) {
-                m = *slot;
-                unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->positions = pos;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->positions, handle) == 0)
-                    return -1;
-            }
-        } else {
-            unsigned char *raw = (unsigned char *) ::operator new[](vcount * 0xc);
-            if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) {
-                ::operator delete[](raw);
+            Mesh *mesh = *slot;
+            mesh->indices = new unsigned char[mesh->indexCount << 1];
+            if (AEFile::Read((*slot)->indexCount << 1, (*slot)->indices, handle) == 0)
                 return -1;
-            }
-            m = *slot;
-            unsigned char *pos = (unsigned char *) ::operator new[](vcount * 0xc);
-            m->positions = pos;
-            m = *slot;
-            int *rawInts = (int *) raw;
-            float *posFloats = (float *) m->positions;
-            unsigned int n3 = vcount * 3;
-            for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) ((unsigned) i / (unsigned) 3);
-                axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat(rawInts[i], mode);
-                posFloats[i] = v;
-                if (v < minv[axis]) minv[axis] = v;
-                if (maxv[axis] < v) maxv[axis] = v;
-            }
-            ::operator delete[](raw);
         }
 
-        float center[3];
-        center[0] = (maxv[0] + minv[0]) * 0.5f;
-        center[1] = (maxv[1] + minv[1]) * 0.5f;
-        center[2] = (maxv[2] + minv[2]) * 0.5f;
-        *(Vector *) &(*slot)->boundsCenterX = *(const Vector *) center;
-        float halfDiag[3] = {minv[0], minv[1], minv[2]};
-        *(Vector *) center -= *(const Vector *) halfDiag;
-        (*slot)->boundsRadius = AEMath::VectorLength(*(const Vector *) center);
+        if (AEFile::Read(2, &(*slot)->vertexCount, handle) == 0)
+            return -1;
 
-        m = *slot;
+        float minimum[3] = {10000000.0f, 10000000.0f, 10000000.0f};
+        float maximum[3] = {-10000000.0f, -10000000.0f, -10000000.0f};
+        unsigned int packed = flags & 4;
 
-        if (m->vertexFormat & 2) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
-                if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
+        // axis-aligned bounds are collected; float streams are read verbatim.
+        if (packed != 0) {
+            Mesh *mesh = *slot;
+            short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
+            if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+                delete[] (unsigned char *) raw;
+                return -1;
+            }
+            mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh = *slot;
+            unsigned int count = mesh->vertexCount * 3;
+            for (unsigned int i = 0; i != count; i++) {
+                unsigned int axis = i % 3;
+                float value = raw[i];
+                ((float *) mesh->positions)[i] = value;
+                if (minimum[axis] > value)
+                    minimum[axis] = value;
+                if (maximum[axis] < value)
+                    maximum[axis] = value;
+            }
+            delete[] (unsigned char *) raw;
+        } else if ((flags & 3) != 0) {
+            Mesh *mesh = *slot;
+            int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
+            if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
+                delete[] (unsigned char *) raw;
+                return -1;
+            }
+            mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh = *slot;
+            unsigned int count = mesh->vertexCount * 3;
+            for (unsigned int i = 0; i != count; i++) {
+                unsigned int axis = i % 3;
+                float value = raw[i];
+                ((float *) mesh->positions)[i] = value;
+                if (minimum[axis] > value)
+                    minimum[axis] = value;
+                if (maximum[axis] < value)
+                    maximum[axis] = value;
+            }
+            delete[] (unsigned char *) raw;
+        } else if ((flags & 0x18) != 0) {
+            Mesh *mesh = *slot;
+            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
+                return -1;
+        }
+
+        Vector center = {(maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
+                         (maximum[2] + minimum[2]) * 0.5f};
+        *(Vector *) &(*slot)->boundsCenterX = center;
+        Vector high = {maximum[0], maximum[1], maximum[2]};
+        Vector low = {minimum[0], minimum[1], minimum[2]};
+        (*slot)->boundsRadius = AEMath::VectorLength(high - low);
+
+        if ((*slot)->vertexFormat & 2) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                short *raw = (short *) new unsigned char[mesh->vertexCount * 4];
+                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                    delete[] (unsigned char *) raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
-                m->texCoords = uv;
-                m = *slot;
-                char flip = Engine::enableShader;
-                short *rawShorts = (short *) raw;
-                float *uvFloats = (float *) m->texCoords;
-                const double scale = 1.0 / 32767.0;
-                for (unsigned int i = 0; i < (vcount << 1); i += 2) {
-                    double u = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) rawShorts[i], mode) * scale;
-                    float *p = uvFloats + i;
-                    p[0] = (float) u;
-                    double v = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) rawShorts[i + 1], mode) * scale;
-                    double vv = (flip == 0) ? v : (1.0 - v);
-                    p[1] = (float) vv;
+                mesh = *slot;
+                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                mesh = *slot;
+                bool flipV = Engine::enableShader != 0;
+                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
+                    float *uv = (float *) mesh->texCoords + i;
+                    uv[0] = (float) ((double) raw[i] * (1.0 / 4096.0));
+                    double v = (double) raw[i + 1] * (1.0 / 4096.0);
+                    uv[1] = (float) (flipV ? 1.0 - v : v);
                 }
-                ::operator delete[](raw);
+                delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *uv = (unsigned char *) ::operator new[](vcount << 3);
-                m->texCoords = uv;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount << 3), (*slot)->texCoords, handle) == 0)
+                Mesh *mesh = *slot;
+                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                if (AEFile::Read((*slot)->vertexCount * 8, (*slot)->texCoords, handle) == 0)
                     return -1;
                 if (Engine::enableShader != 0) {
-                    m = *slot;
-                    float *uvFloats = (float *) m->texCoords;
-                    for (unsigned int i = 0; i < (unsigned int) (m->vertexCount << 1); i += 2) {
-                        float *p = uvFloats + (i + 1);
-                        *p = 1.0f - *p;
+                    mesh = *slot;
+                    for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
+                        float *v = (float *) mesh->texCoords + i + 1;
+                        *v = 1.0f - *v;
                     }
                 }
             }
         }
 
-        m = *slot;
-
-        if (m->vertexFormat & 4) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount * 6);
-                if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 4) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
+                if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+                    delete[] (unsigned char *) raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->normals = nrm;
-                m = *slot;
-                const double scale = 1.0 / 32767.0;
-                short *s = (short *) raw;
-                for (unsigned int i = 0; i < vcount * 3; i += 3) {
-                    float nx = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[0], mode) * scale);
-                    float ny = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[1], mode) * scale);
-                    float nz = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[2], mode) * scale);
-                    float len2 = nx * nx + ny * ny + nz * nz;
-                    float len = sqrtf(len2);
-                    float *normalFloats = (float *) m->normals;
-                    if (len != 0.0f) {
-                        nx /= len;
-                        ny /= len;
-                        nz /= len;
-                        if (nx < -1.0f) nx = -1.0f;
-                        if (nx > 1.0f) nx = 1.0f;
-                        if (ny < -1.0f) ny = -1.0f;
-                        if (ny > 1.0f) ny = 1.0f;
-                        if (nz < -1.0f) nz = -1.0f;
-                        if (nz > 1.0f) nz = 1.0f;
-                        normalFloats[i + 0] = ny;
-                        normalFloats[i + 1] = nx;
-                        normalFloats[i + 2] = nz;
+                mesh = *slot;
+                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount * 3); i += 3) {
+                    float x = (float) ((double) raw[i] * (1.0 / 32768.0));
+                    float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
+                    float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
+                    float length = sqrtf(x * x + y * y + z * z);
+                    float *normal = (float *) (*slot)->normals + i;
+                    if (length == 0.0f) {
+                        normal[1] = 1.0f;
+                        normal[0] = 0.0f;
+                        normal[2] = 0.0f;
                     } else {
-                        ((unsigned int *) normalFloats)[i + 1] = 0x3f800000;
-                        ((unsigned int *) normalFloats)[i + 0] = 0;
-                        normalFloats[i + 2] = 1.0f;
+                        x /= length;
+                        y /= length;
+                        z /= length;
+                        float cx = (double) x < -1.0 ? -1.0f : x;
+                        float cy = (double) y < -1.0 ? -1.0f : y;
+                        float cz = (double) z < -1.0 ? -1.0f : z;
+                        if (x > 1.0f)
+                            cx = 1.0f;
+                        if (y > 1.0f)
+                            cy = 1.0f;
+                        if (z > 1.0f)
+                            cz = 1.0f;
+                        normal[0] = cx;
+                        normal[1] = cy;
+                        normal[2] = cz;
                     }
-                    s += 3;
-                    m = *slot;
                 }
-                ::operator delete[](raw);
+                delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *nrm = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->normals = nrm;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->normals, handle) == 0)
+                Mesh *mesh = *slot;
+                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
                     return -1;
             }
 
             if (Engine::enableShader != 0) {
-                m = *slot;
-                unsigned char *tan = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->tangents = tan;
-                m = *slot;
-                unsigned char *bin = (unsigned char *) ::operator new[](vcount * 0xc);
-                m->binormals = bin;
-                m = *slot;
-
-                unsigned int triCount = (unsigned int) ((unsigned) (unsigned short) m->indexCount / (unsigned) 3);
-                float *accum = (float *) ::operator new[](vcount * 0xc);
-
-                for (unsigned int b = 0; b < vcount * 3; ++b) accum[b] = 0.0f;
-
-                for (unsigned int t = 0; t < triCount; ++t) {
-                    m = *slot;
-                    float *posBase = (float *) m->positions;
-                    float *uvBase = (float *) m->texCoords;
-                    unsigned short *idxBase = (unsigned short *) m->indices + t * 3;
-                    unsigned int i0 = (unsigned int) idxBase[0];
-                    unsigned int i2 = (unsigned int) idxBase[2];
-                    unsigned int i1 = (unsigned int) idxBase[1];
-
-                    float uv0v = uvBase[i0 * 2 + 1];
-                    float uv0u = uvBase[i0 * 2];
-                    float dv1 = uvBase[i2 * 2 + 1] - uv0v;
-                    float dv2 = uvBase[i1 * 2 + 1] - uv0v;
-                    float *p0 = posBase + i0 * 3;
-                    float *p2 = posBase + i2 * 3;
-                    float *p1 = posBase + i1 * 3;
-                    float denom = (uvBase[i1 * 2] - uv0u) * dv1 -
-                                  (uvBase[i2 * 2] - uv0u) * dv2;
-                    float r = (denom != 0.0f) ? (1.0f / denom) : 0.0f;
-                    float tng[3];
-                    tng[1] = ((p1[1] - p0[1]) * dv1 - (p2[1] - p0[1]) * dv2) * r;
-                    tng[0] = ((p1[0] - p0[0]) * dv1 - (p2[0] - p0[0]) * dv2) * r;
-                    tng[2] = ((p1[2] - p0[2]) * dv1 - (p2[2] - p0[2]) * dv2) * r;
-                    float *a = accum + i0 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
-                    a = accum + i1 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
-                    a = accum + i2 * 3;
-                    a[0] += tng[0];
-                    a[1] += tng[1];
-                    a[2] += tng[2];
+                // Per-vertex tangent frames from the UV gradients of the triangle list.
+                Mesh *mesh = *slot;
+                mesh->tangents = new unsigned char[mesh->vertexCount * 12];
+                mesh = *slot;
+                mesh->binormals = new unsigned char[mesh->vertexCount * 12];
+                mesh = *slot;
+                unsigned int triangles = mesh->indexCount / 3;
+                unsigned int vertices = mesh->vertexCount;
+                Vector *accum = (Vector *) new unsigned char[vertices * 12];
+                for (unsigned int v = 0; v < vertices; v++) {
+                    accum[v].x = 0.0f;
+                    accum[v].y = 0.0f;
+                    accum[v].z = 0.0f;
                 }
-
-                for (unsigned int v = 0; v < vcount; ++v) {
-                    m = *slot;
-                    float *nrmBase = (float *) m->normals;
-                    float nrm[3];
-                    nrm[0] = nrmBase[v * 3 + 0];
-                    nrm[1] = nrmBase[v * 3 + 1];
-                    nrm[2] = nrmBase[v * 3 + 2];
-                    float tg[3];
-                    tg[0] = accum[v * 3 + 0];
-                    tg[1] = accum[v * 3 + 1];
-                    tg[2] = accum[v * 3 + 2];
-                    float d = AEMath::VectorDot(*(const Vector *) nrm, *(const Vector *) tg);
-                    float scaled[3] = {nrm[0], nrm[1], nrm[2]};
-                    *(Vector *) scaled *= d;
-                    *(Vector *) tg -= *(const Vector *) scaled;
-                    float tanOut[3];
-                    *(Vector *) tanOut = AEMath::VectorNormalize(*(const Vector *) tg);
-                    float *tb = (float *) (*slot)->tangents + v * 3;
-                    tb[0] = tanOut[0];
-                    tb[1] = tanOut[1];
-                    tb[2] = tanOut[2];
-                    float binOut[3] = {tg[0], tg[1], tg[2]};
-                    *(Vector *) binOut = AEMath::VectorCross(*(const Vector *) binOut, *(const Vector *) nrm);
-                    float *bb = (float *) (*slot)->binormals + v * 3;
-                    bb[0] = binOut[0];
-                    bb[1] = binOut[1];
-                    bb[2] = binOut[2];
+                for (unsigned int t = 0; t < triangles; t++) {
+                    mesh = *slot;
+                    const Vector *pos = (const Vector *) mesh->positions;
+                    const float *uv = (const float *) mesh->texCoords;
+                    const unsigned short *index = (const unsigned short *) mesh->indices + t * 3;
+                    unsigned int i0 = index[0];
+                    unsigned int i1 = index[1];
+                    unsigned int i2 = index[2];
+                    float du1 = uv[i1 * 2] - uv[i0 * 2];
+                    float dv1 = uv[i1 * 2 + 1] - uv[i0 * 2 + 1];
+                    float du2 = uv[i2 * 2] - uv[i0 * 2];
+                    float dv2 = uv[i2 * 2 + 1] - uv[i0 * 2 + 1];
+                    float r = 1.0f / (du1 * dv2 - du2 * dv1);
+                    Vector tangent;
+                    tangent.x = ((pos[i1].x - pos[i0].x) * dv2 - (pos[i2].x - pos[i0].x) * dv1) * r;
+                    tangent.y = ((pos[i1].y - pos[i0].y) * dv2 - (pos[i2].y - pos[i0].y) * dv1) * r;
+                    tangent.z = ((pos[i1].z - pos[i0].z) * dv2 - (pos[i2].z - pos[i0].z) * dv1) * r;
+                    accum[i0] += tangent;
+                    accum[i1] += tangent;
+                    accum[i2] += tangent;
                 }
-                ::operator delete[](accum);
+                for (unsigned int v = 0; v < vertices; v++) {
+                    Vector normal = ((const Vector *) (*slot)->normals)[v];
+                    Vector tangent = accum[v];
+                    Vector projected = tangent - normal * AEMath::VectorDot(normal, tangent);
+                    Vector unit = AEMath::VectorNormalize(projected);
+                    Vector *outTangent = (Vector *) (*slot)->tangents + v;
+                    outTangent->x = unit.x;
+                    outTangent->y = unit.y;
+                    outTangent->z = unit.z;
+                    Vector binormal = AEMath::VectorCross(normal, unit);
+                    Vector *outBinormal = (Vector *) (*slot)->binormals + v;
+                    outBinormal->x = binormal.x;
+                    outBinormal->y = binormal.y;
+                    outBinormal->z = binormal.z;
+                }
             }
         }
 
-        m = *slot;
-
-        if (m->vertexFormat & 8) {
-            if (compressedPos) {
-                unsigned char *raw = (unsigned char *) ::operator new[](vcount << 2);
-                if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
-                    ::operator delete[](raw);
+        if ((*slot)->vertexFormat & 8) {
+            if (packed != 0) {
+                Mesh *mesh = *slot;
+                unsigned char *raw = new unsigned char[mesh->vertexCount * 4];
+                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                    delete[] raw;
                     return -1;
                 }
-                m = *slot;
-                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
-                m->colors = col;
-                m = *slot;
-                const float inv = 255.0f;
-                unsigned char *rawBytes = (unsigned char *) raw;
-                float *colorFloats = (float *) m->colors;
-                for (unsigned int i = 0; i < (vcount << 2); ++i) {
-                    float c = AbyssEngine::AEMath::VectorUnsignedToFloat(
-                        (unsigned int) rawBytes[i], mode);
-                    colorFloats[i] = c / inv;
-                }
-                ::operator delete[](raw);
+                mesh = *slot;
+                mesh->colors = new unsigned char[mesh->vertexCount * 16];
+                mesh = *slot;
+                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 2); i++)
+                    ((float *) mesh->colors)[i] = (float) raw[i] / 255.0f;
+                delete[] raw;
             } else if ((flags & 0x18) != 0) {
-                unsigned char *col = (unsigned char *) ::operator new[](vcount << 4);
-                m->colors = col;
-                if (AEFile::Read((uint32_t)((*slot)->vertexCount << 4), (*slot)->colors, handle) == 0)
-                    return -1;
+                Mesh *mesh = *slot;
+                mesh->colors = new unsigned char[mesh->vertexCount * 16];
+                unsigned int ok = AEFile::Read((*slot)->vertexCount * 16, (*slot)->colors, handle);
+                int result = ok != 0 ? 1 : -1;
+                if (enhanced == 0)
+                    return result;
+                if (ok == 0)
+                    return result;
             }
         }
 
-        if (subBit != 0) {
-            if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
-                return -1;
-            unsigned short childCount = 0;
-            if (AEFile::Read((uint32_t)(2), &childCount, handle) == 0)
-                return -1;
-            Transform *xf = (*slot)->animation;
-            if (xf != 0)
-                ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(xf->bounds());
-            for (unsigned int c = 0; c < childCount; ++c) {
-                Mesh *childPtr = (Mesh *) ::operator new(0x88);
-                memset(childPtr, 0, 0x88);
-                childPtr->boundsRadiusSq = 1.0f;
-                childPtr->vboEligible = 1;
-                childPtr->vertexFormat = (*slot)->vertexFormat;
-                childPtr->material = (*slot)->material;
-                if (MeshReadData(engine, handleRef, flags, &childPtr, mat) == -1)
-                    return -1;
-                ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(
-                    *(const AEMath::BSphere *) &childPtr->boundsCenterX);
-                {
-                    EngineArrayHeader *a = (EngineArrayHeader *) &(*slot)->animation->meshes;
-                    a->capacity = a->count + 1;
-                    a->data = (unsigned char *) realloc(a->data, (a->count + 1) * sizeof(Mesh *));
-                    ((Mesh **) a->data)[a->count] = childPtr;
-                    a->count = a->capacity;
-                }
-            }
-        }
+        if (enhanced == 0)
+            return 1;
 
+        if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
+            return -1;
+        unsigned short children;
+        if (AEFile::Read(2, &children, handle) == 0)
+            return -1;
+        if ((*slot)->animation != 0)
+            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge((*slot)->animation->bounds());
+        for (unsigned int c = 0; c < children; c++) {
+            Mesh *child = new Mesh();
+            child->vboEligible = 1;
+            child->vertexFormat = (*slot)->vertexFormat;
+            child->material = (*slot)->material;
+            if (MeshReadData(engine, handle, flags, &child, mat) == -1)
+                return -1;
+            ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(*(const AEMath::BSphere *) &child->boundsCenterX);
+            ArrayAdd(child, (*slot)->animation->meshes);
+        }
         return 1;
     }
 }
