@@ -279,8 +279,8 @@ void StatusWindow::draw() {
     float scrollStart = this->getRelativeScrollStartPos();
     float viewH = (float) this->viewportHeight;
     float scrollHeight = this->getRelativeScrollHeight();
-    int barH = (int) (scrollHeight * viewH);
     int barY = (int) (scrollStart * viewH);
+    int barH = (int) (scrollHeight * viewH);
     if (barH > 0 || barY >= 1)
         Globals::layout->drawScrollBar(Globals::w - Globals::layout->field_0x48 - Globals::layout->buttonInsetX,
                                        Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin,
