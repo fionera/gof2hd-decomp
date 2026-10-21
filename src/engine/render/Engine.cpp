@@ -299,7 +299,7 @@ void Engine::ActivateTextureFBO() {
 }
 
 void Engine::GlowEndGlow() {
-    if (Engine::enableShader == 0) {
+    if (Engine::EnableGlow == 0) {
         return;
     }
     this->glowActive = 0;
@@ -697,13 +697,11 @@ void Engine::DrawCloakFBO(FBOContainer *fbo) {
 
 void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     if (shader != 0) {
-        String name = shader->GetShaderName();
-        char *text = name.GetAEChar();
-
+        char *name = shader->GetShaderName().GetAEChar();
         shader->Init(this);
         ArrayAdd(shader, this->shaders);
         ArrayAdd(0, this->triangleCounts);
-        ::operator delete(text);
+        delete[] name;
     }
 }
 
@@ -770,7 +768,7 @@ void Engine::GlowBeginGlow(int depthFunc) {
     if (this->glowActive != 0) {
         return;
     }
-    if (Engine::enableShader == 0) {
+    if (Engine::EnableGlow == 0) {
         return;
     }
     glColorMask(0, 0, 0, 1);

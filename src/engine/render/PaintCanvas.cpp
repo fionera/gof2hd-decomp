@@ -15,7 +15,6 @@
 #include <cstdint>
 #include <cstddef>
 
-extern int g_android_gp_is_linked;
 
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); }
 namespace AbyssEngine {
@@ -1219,26 +1218,8 @@ void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
     v[6] = (float) (dx + 0.5);
     v[7] = bottom;
 
-    const uint32_t one = 0x3f800000;
-    uint32_t matrix[15];
-    matrix[0] = one;
-    matrix[1] = 0;
-    matrix[2] = 0;
-    matrix[3] = 0;
-    matrix[4] = 0;
-    matrix[5] = one;
-    matrix[6] = 0;
-    matrix[7] = 0;
-    matrix[8] = 0;
-    matrix[9] = 0;
-    matrix[10] = one;
-    matrix[11] = 0;
-    matrix[12] = one;
-    matrix[13] = one;
-    matrix[14] = one;
-
-    this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
-    if (*reinterpret_cast<const unsigned char *>(&g_android_gp_is_linked) == 0) {
+    this->SetWorldViewMatrix(AbyssEngine::AEMath::Matrix());
+    if (Engine::enableShader == 0) {
         glLineWidth(1.0f);
         this->engine->GlEnable(0xde1, false);
         glVertexPointer(2, 0x1406, 0, this->lineVerts);
@@ -2484,28 +2465,8 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
 }
 
 void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
-    const unsigned char isLinked =
-        *reinterpret_cast<const unsigned char *>(&g_android_gp_is_linked);
-    const uint32_t one = 0x3f800000;
-    uint32_t matrix[15];
-
-    if (isLinked != 0) {
-        matrix[0] = one;
-        matrix[1] = 0;
-        matrix[2] = 0;
-        matrix[3] = 0;
-        matrix[4] = 0;
-        matrix[5] = one;
-        matrix[6] = 0;
-        matrix[7] = 0;
-        matrix[8] = 0;
-        matrix[9] = 0;
-        matrix[10] = one;
-        matrix[11] = 0;
-        matrix[12] = one;
-        matrix[13] = one;
-        matrix[14] = one;
-        this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
+    if (Engine::enableShader != 0) {
+        this->SetWorldViewMatrix(AbyssEngine::AEMath::Matrix());
 
         this->lineVerts[0] = (float) (x0 + 1);
         this->lineVerts[1] = (float) y0;
@@ -2521,22 +2482,7 @@ void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
         this->lineVerts[2] = (float) (x1i + 1);
         this->lineVerts[3] = (float) y1i;
 
-        matrix[0] = one;
-        matrix[1] = 0;
-        matrix[2] = 0;
-        matrix[3] = 0;
-        matrix[4] = 0;
-        matrix[5] = one;
-        matrix[6] = 0;
-        matrix[7] = 0;
-        matrix[8] = 0;
-        matrix[9] = 0;
-        matrix[10] = one;
-        matrix[11] = 0;
-        matrix[12] = one;
-        matrix[13] = one;
-        matrix[14] = one;
-        this->SetWorldViewMatrix(reinterpret_cast<const AbyssEngine::AEMath::Matrix &>(matrix));
+        this->SetWorldViewMatrix(AbyssEngine::AEMath::Matrix());
         glVertexPointer(2, 0x1406, 0, this->lineVerts);
         this->engine->AEClientState(0x8074, true);
         this->engine->AEClientState(0x8078, false);
