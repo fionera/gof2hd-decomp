@@ -263,7 +263,7 @@ unsigned char Globals::inAppPurchaseSupported;
 int Globals::lastStationMusicPlayed;
 int Globals::menu_touch_window_type;
 unsigned char Globals::useLowResTexturesForHD;
-char *Globals::instantActionPlayerName;
+AbyssEngine::String *Globals::instantActionPlayerName;
 unsigned char Globals::isRunningHDonWeakDevice;
 float Globals::quickmenu_button_start_x;
 float Globals::quickmenu_button_start_y;
@@ -1605,115 +1605,51 @@ Globals::Globals() {
     self->soundResources = 0;
 }
 
-struct PolymorphicSingleton {
-    virtual ~PolymorphicSingleton() {
-    }
-};
-
-static RecordHandler **const gG_recordHandler = nullptr;
-static Galaxy **const gG_galaxy = nullptr;
-static Status **const gG_status = nullptr;
-static GameText **const gG_gameText = nullptr;
-static AbyssEngine::AERandom **const gG_random = nullptr;
-static Layout **const gG_layout = nullptr;
-static Generator **const gG_generator = nullptr;
-static PolymorphicSingleton **const gG_polyObj = nullptr;
-static FModSound **const gG_fmod = nullptr;
-static Array<Item *> **const gG_items = nullptr;
-static Array<Ship *> **const gG_ships = nullptr;
-static Achievements **const gG_achievements = nullptr;
-static ImageFactory **const gG_imageFactory = nullptr;
-static int **const gG_tail = nullptr;
-
 Globals::~Globals() {
-    RecordHandler **rhSlot = gG_recordHandler;
-    if (*rhSlot != 0) {
-        (*rhSlot)->saveOptions();
+    if (Globals::recordHandler != nullptr)
+        Globals::recordHandler->saveOptions();
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::gameText;
+    Globals::gameText = nullptr;
+    delete Globals::rnd;
+    Globals::rnd = nullptr;
+    delete Globals::layout;
+    Globals::layout = nullptr;
+    delete Globals::generator;
+    Globals::generator = nullptr;
+    delete Globals::recordHandler;
+    Globals::recordHandler = nullptr;
+    delete Globals::instantActionPlayerName;
+    Globals::instantActionPlayerName = nullptr;
+    delete Globals::sound;
+    Globals::sound = nullptr;
+    if (Globals::items != nullptr) {
+        ArrayReleaseClasses(*Globals::items);
+        delete Globals::items;
     }
-    Galaxy **galSlot = gG_galaxy;
-    if (*galSlot != 0) {
-        ::operator delete(Galaxy_dtor(*galSlot));
+    Globals::items = nullptr;
+    if (Globals::ships != nullptr) {
+        ArrayReleaseClasses(*Globals::ships);
+        delete Globals::ships;
     }
-    *galSlot = 0;
-    Status **statSlot = gG_status;
-    if (*statSlot != 0) {
-        ::operator delete(Status_dtor(*statSlot));
-    }
-    *statSlot = 0;
-    GameText **gtSlot = gG_gameText;
-    if (*gtSlot != 0) {
-        delete *gtSlot;
-    }
-    *gtSlot = 0;
-    AbyssEngine::AERandom **rngSlot = gG_random;
-    if (*rngSlot != 0) {
-        ::operator delete(AERandom_dtor(*rngSlot));
-    }
-    *rngSlot = 0;
-    Layout **laySlot = gG_layout;
-    if (*laySlot != 0) {
-        ::operator delete(Layout_dtor(*laySlot));
-    }
-    *laySlot = 0;
-    Generator **genSlot = gG_generator;
-    if (*genSlot != 0) {
-        ::operator delete(Generator_dtor(*genSlot));
-    }
-    *genSlot = 0;
-    if (*rhSlot != 0) {
-        delete *rhSlot;
-    }
-    *rhSlot = 0;
-    PolymorphicSingleton **polySlot = gG_polyObj;
-    PolymorphicSingleton *poly = *polySlot;
-    if (poly != 0) {
-        delete poly;
-    }
-    *polySlot = 0;
-    FModSound **fmodSlot = gG_fmod;
-    if (*fmodSlot != 0) {
-        ::operator delete(FModSound_dtor(*fmodSlot));
-    }
-    *fmodSlot = 0;
-    Array<Item *> **itemSlot = gG_items;
-    if (*itemSlot != 0) {
-        Array<Item *> *items = *itemSlot;
-        ArrayReleaseClasses(*items);
-        delete items;
-    }
-    *itemSlot = 0;
-    Array<Ship *> **shipSlot = gG_ships;
-    if (*shipSlot != 0) {
-        Array<Ship *> *ships = *shipSlot;
-        ArrayReleaseClasses(*ships);
-        delete ships;
-    }
-    *shipSlot = 0;
-    if (*galSlot != 0) {
-        ::operator delete(Galaxy_dtor(*galSlot));
-    }
-    *galSlot = 0;
-    Achievements **achSlot = gG_achievements;
-    if (*achSlot != 0) {
-        ::operator delete(Achievements_dtor(*achSlot));
-    }
-    *achSlot = 0;
-    if (*statSlot != 0) {
-        ::operator delete(Status_dtor(*statSlot));
-    }
-    *statSlot = 0;
-    ImageFactory **ifSlot = gG_imageFactory;
-    if (*ifSlot != 0) {
-        ::operator delete(ImageFactory_dtor(*ifSlot));
-    }
-    *ifSlot = 0;
-
-    if (this->soundResources != 0) {
-        ArrayRelease(*(this->soundResources));
+    Globals::ships = nullptr;
+    delete Globals::galaxy;
+    Globals::galaxy = nullptr;
+    delete Globals::achievements;
+    Globals::achievements = nullptr;
+    delete Globals::status;
+    Globals::status = nullptr;
+    delete Globals::imageFactory;
+    Globals::imageFactory = nullptr;
+    if (this->soundResources != nullptr) {
+        ArrayRelease(*this->soundResources);
         delete this->soundResources;
     }
-    this->soundResources = 0;
-    **gG_tail = 0;
+    this->soundResources = nullptr;
+    Globals::globals = nullptr;
 }
 
 
@@ -1905,95 +1841,61 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     o15 = clampU(t15 + static_cast<float>(o7));
 }
 
-static PaintCanvas **const gRR_arg = nullptr;
 
 void Globals::releaseResources() {
     Globals::Canvas->ReleaseAllResources();
-
-    PaintCanvas *secondaryCanvas = *gRR_arg;
-    if (secondaryCanvas != nullptr) {
-        secondaryCanvas->ReleaseAllResources();
-    }
+    Globals::layout->reload();
 }
 
 
 
 static inline char flag(char *const g) { return *g; }
 
-void Globals::loadFont(int kind) {
-    unsigned glyph;
-    short spacing;
-    unsigned char isMainFontPersian = 1;
-
-    switch (kind) {
-        case 9: {
-            Globals::Canvas->FontCreate((unsigned short) 0x2d74, *(unsigned int *) &Globals::font, false);
-            if (flag((char *) &Globals::iPadHD) != 0) {
-                spacing = -6;
-            } else {
-                spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
-            }
-            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-            isMainFontPersian = 0;
-            goto epilogue;
-        }
+void Globals::loadFont(int language) {
+    // The font handles are stored in pointer-typed statics shared with other TUs.
+    unsigned int &mainFont = reinterpret_cast<unsigned int &>(Globals::font);
+    unsigned int &alienFont = reinterpret_cast<unsigned int &>(Globals::fontAlien);
+    unsigned int &langSelectFont = reinterpret_cast<unsigned int &>(Globals::fontLangSelect);
+    bool latinFont = true;
+    switch (language) {
+        case 9:
+            Globals::Canvas->FontCreate(0x2d74, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
+            latinFont = false;
+            break;
         case 10:
-            glyph = 0x2d78;
+            Globals::Canvas->FontCreate(0x2d78, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        case 0xb:
-            glyph = 0x2d76;
+        case 11:
+            Globals::Canvas->FontCreate(0x2d76, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        case 0xe:
-            glyph = 0x2d7c;
+        case 14:
+            Globals::Canvas->FontCreate(0x2d7c, mainFont, true);
+            Globals::Canvas->FontSetSpacing(mainFont,
+                                            Globals::iPadHD ? -6 : (Globals::retinaDisplay ? -8 : -4));
             break;
-        default: {
-            if (kind == 0xf) {
-                Globals::Canvas->FontCreate((unsigned short) 0x2d7e, *(unsigned int *) &Globals::font, false);
-                if (flag((char *) &Globals::iPadHD) != 0) {
-                    spacing = -7;
-                } else {
-                    spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -10 : -5;
-                }
+        default:
+            if (language == 15) {
+                Globals::Canvas->FontCreate(0x2d7e, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::iPadHD ? -7 : (Globals::retinaDisplay ? -10 : -5));
             } else {
-                Globals::Canvas->FontCreate((unsigned short) 0x457, *(unsigned int *) &Globals::font, false);
-                if (flag((char *) &Globals::retinaDisplay) != 0) {
-                    spacing = -5;
-                } else if (flag((char *) &Globals::n9) != 0) {
-                    spacing = -4;
-                } else if (flag((char *) &Globals::iPadHD) != 0) {
-                    spacing = -4;
-                } else {
-                    spacing = -2;
-                }
+                Globals::Canvas->FontCreate(0x457, mainFont, true);
+                Globals::Canvas->FontSetSpacing(mainFont, Globals::retinaDisplay ? -5
+                                                          : Globals::n9 ? -4
+                                                          : Globals::iPadHD ? -4 : -2);
             }
-            Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-            goto setMain;
-        }
+            break;
     }
-
-    Globals::Canvas->FontCreate((unsigned short) glyph, *(unsigned int *) &Globals::font, false);
-    if (flag((char *) &Globals::iPadHD) != 0) {
-        spacing = -6;
-    } else {
-        spacing = flag((char *) &Globals::retinaDisplay) != 0 ? -8 : -4;
-    }
-    Globals::Canvas->FontSetSpacing(*(unsigned int *) &Globals::font, spacing);
-
-setMain:
-    isMainFontPersian = 1;
-epilogue: {
-        int *mainCanvas = (int *) &Globals::Canvas;
-        unsigned *mainFont = (unsigned *) &Globals::fontAlien;
-        int cv = *mainCanvas;
-
-        ((PaintCanvas *) (long) cv)->field_0x1c = isMainFontPersian;
-        ((PaintCanvas *) (long) cv)->FontCreate((unsigned short) 0x51e, *mainFont, false);
-        ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*mainFont, 0);
-        unsigned *extra = (unsigned *) &Globals::fontLangSelect;
-        ((PaintCanvas *) (long) *mainCanvas)->FontCreate((unsigned short) 0x2d7a, *extra, false);
-
-        ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*extra, 0);
-    }
+    Globals::Canvas->field_0x1c = latinFont;
+    Globals::Canvas->FontCreate(0x51e, alienFont, true);
+    Globals::Canvas->FontSetSpacing(alienFont, 0);
+    Globals::Canvas->FontCreate(0x2d7a, langSelectFont, true);
+    Globals::Canvas->FontSetSpacing(langSelectFont, 0);
 }
 
 // Globals::init below accesses these engine globals directly (Mission::empty,
