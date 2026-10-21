@@ -148,7 +148,7 @@ public:
     Vector lightDirection;
     void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     bool savedPostEffect; // post effect state saved when the hangar opens
-    uint8_t _pad_0x12d[3];
+    bool cameraFlip[3]; // @0x12d: idle-camera axis flips (bool: original negates with eor #1)
     float camKeyX;
     float camKeyY;
     float camKeyZ;

@@ -788,7 +788,7 @@ int ModStation::OnInitialize() {
                 this->cutScene->rootGeom->setMatrix(camera);
 
                 // Random offset of the idle camera.
-                uint8_t *flipAxis = &this->_pad_0x12d[0];
+                bool *flipAxis = &this->cameraFlip[0];
                 flipAxis[0] = Globals::rnd->nextInt(20) < 10;
                 flipAxis[1] = Globals::rnd->nextInt(20) > 10;
                 flipAxis[2] = Globals::rnd->nextInt(20) < 10;
@@ -2127,7 +2127,7 @@ void ModStation::OnUpdate() {
             this->cutScene->process(0);
         }
         // Idle camera drift around the hangar.
-        uint8_t *flipAxis = &this->_pad_0x12d[0];
+        bool *flipAxis = &this->cameraFlip[0];
         int step = this->dt;
         int backStep = -this->dt;
         this->easeX->Increase((float) (flipAxis[1] ? backStep : step));
@@ -2135,27 +2135,30 @@ void ModStation::OnUpdate() {
         if ((camX - this->easeX->GetMaxValue() > 0.0f ? camX - this->easeX->GetMaxValue()
                                                       : -(camX - this->easeX->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[1];
-            flipAxis[1] = !back;
-            int offset = Globals::rnd->nextInt(131);
-            this->easeX->SetRange(camX, this->camKeyX + (float) (back ? offset + 18 : -18 - offset));
+            flipAxis[1] = back ^ 1;
+            int offset;
+            this->easeX->SetRange(camX, this->camKeyX + (float) ((offset = Globals::rnd->nextInt(131)),
+                                                                 back ? offset + 18 : -18 - offset));
         }
         this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
         float camY = this->easeY->GetValue();
         if ((camY - this->easeY->GetMaxValue() > 0.0f ? camY - this->easeY->GetMaxValue()
                                                       : -(camY - this->easeY->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[0];
-            flipAxis[0] = !back;
-            int offset = Globals::rnd->nextInt(120);
-            this->easeY->SetRange(camY, this->camKeyY + (float) (back ? offset + 30 : -30 - offset));
+            flipAxis[0] = back ^ 1;
+            int offset;
+            this->easeY->SetRange(camY, this->camKeyY + (float) ((offset = Globals::rnd->nextInt(120)),
+                                                                 back ? offset + 30 : -30 - offset));
         }
         this->easeZ->Increase((float) (flipAxis[2] ? backStep : step));
         float camZ = this->easeZ->GetValue();
         if ((camZ - this->easeZ->GetMaxValue() > 0.0f ? camZ - this->easeZ->GetMaxValue()
                                                       : -(camZ - this->easeZ->GetMaxValue())) <= 20.0f) {
             bool back = flipAxis[2];
-            flipAxis[2] = !back;
-            int offset = Globals::rnd->nextInt(100);
-            this->easeZ->SetRange(camZ, this->camKeyZ + (float) (back ? offset + 50 : -50 - offset));
+            flipAxis[2] = back ^ 1;
+            int offset;
+            this->easeZ->SetRange(camZ, this->camKeyZ + (float) ((offset = Globals::rnd->nextInt(100)),
+                                                                 back ? offset + 50 : -50 - offset));
         }
         AbyssEngine::AEMath::MatrixSetTranslation(
             *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(
