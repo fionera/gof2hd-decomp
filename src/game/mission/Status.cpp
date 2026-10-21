@@ -1921,113 +1921,98 @@ void Status::changeRating(int delta) {
     }
 }
 
-static int g_dsTypeMask = 0;
 
 void Status::departStation(Station *dest) {
-    if (!inAlienOrbit()) {
-        bool hub = station->getIndex() == 0x6c;
-        if (hub && field_114 == 3) {
-            Station *scratch = voidStation;
-            scratch->setItems(station->getItems(), true);
-            scratch->setShips(station->getShips(), true);
-        }
+    if (!inAlienOrbit() && station->getIndex() == 108 && field_114 == 3) {
+        voidStation->setItems(station->getItems(), true);
+        voidStation->setShips(station->getShips(), true);
     }
-
-    bool wantedMove = false;
+    bool moveWantedTargets = false;
     if (!inAlienOrbit() && playerStation != dest) {
-        wantedMove = dest->getIndex() != station->getIndex();
+        moveWantedTargets = dest->getIndex() != station->getIndex();
     }
-
     if (playerStation != dest) {
-        bool wasOnStack = isOnStack(dest);
-        Station *prev = isOnStack(dest) ? dest : 0;
+        Station *stacked = isOnStack(dest);
         addStationToStack(dest);
-        bool hub = dest->getIndex() == 0x6c;
-        if (hub && field_114 == 3) {
-            dest->setItems(dest->getItems(), true);
-            dest->setShips(dest->getShips(), true);
-            if (prev != 0 && prev != dest) {
-                prev->setItems(prev->getItems(), true);
-                prev->setShips(prev->getShips(), true);
+        if (dest->getIndex() == 108 && field_114 == 3) {
+            dest->setItems(voidStation->getItems(), true);
+            dest->setShips(voidStation->getShips(), true);
+            if (stacked != 0 && stacked != dest) {
+                stacked->setItems(voidStation->getItems(), true);
+                stacked->setShips(voidStation->getShips(), true);
             }
-            if (!wasOnStack) {
-                Generator g;
-                dest->setAgents(g.createAgents(dest));
+            if (stacked == 0) {
+                Generator *generator = new Generator();
+                dest->setAgents(generator->createAgents(dest));
             }
-        } else if (!wasOnStack) {
-            Generator g;
-            dest->setItems(g.getItemBuyList(dest), false);
-            dest->setShips(g.getShipBuyList(dest), false);
-            dest->setAgents(g.createAgents(dest));
+        } else if (stacked == 0) {
+            Generator *generator = new Generator();
+            dest->setItems(generator->getItemBuyList(dest), false);
+            dest->setShips(generator->getShipBuyList(dest), false);
+            dest->setAgents(generator->createAgents(dest));
         }
-        field_70 = (int) playingTime;
-        field_74 = (int) (playingTime >> 32);
+        field_70 = (int32_t) playingTime;
+        field_74 = (int32_t) (playingTime >> 32);
     }
 
-    Status * st = Globals::status;
-    this->mission = 0;
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
-        Mission *mi = (*missions)[i];
-        if (mi == 0)
+    this->mission = Mission::empty;
+    for (unsigned i = 0; i < missions->size(); i++) {
+        if ((*missions)[i] == 0) {
             continue;
-        int type = mi->getType();
-        bool camp = mi->isCampaignMission();
-
-        if (type == 0xad && camp) {
-            int good = mi->getProductionGoodIndex();
-            if (st->ship->hasCargo(good, 1)) {
-                this->mission = mi;
-                break;
-            }
         }
-        if (st->currentCampaignMission < 0x2d && type == 0xa1 && camp &&
-            dest->getIndex() == field_80 && !inAlienOrbit()) {
-            this->mission = mi;
+        int type = (*missions)[i]->getType();
+        if ((*missions)[i]->isCampaignMission() && type == 0xad &&
+            Globals::status->ship->hasCargo((*missions)[i]->getProductionGoodIndex(), 1)) {
+            this->mission = (*missions)[i];
             break;
         }
-        if (!mi->isEmpty()) {
-            int tgt = mi->getTargetStation();
-            if (tgt == dest->getIndex() &&
-                ((unsigned) (type - 0x96) > 0x17 || ((1 << ((type - 0x96) & 0xff)) & g_dsTypeMask) == 0) &&
-                type != 8 && type != 0xe) {
-                if (camp || (type != 0xb && type != 0xd)) {
-                    this->mission = mi;
+        if (Globals::status->currentCampaignMission < 45 && (*missions)[i]->isCampaignMission() && type == 0xa1 &&
+            dest->getIndex() == field_80 && !Globals::status->inAlienOrbit()) {
+            this->mission = (*missions)[i];
+            break;
+        }
+        if (!(*missions)[i]->isEmpty() && (*missions)[i]->getTargetStation() == dest->getIndex()) {
+            bool deliveryType = type != 0x96 && type != 0x97 && type != 0x99 && type != 0x9b && type != 0xa1 &&
+                                type != 0xa2 && type != 0xa3 && type != 0xa4 && type != 0xa6 && type != 0xa7 &&
+                                type != 0xa9 && type != 0xad && type != 8 && type != 0xe;
+            if (deliveryType) {
+                if ((*missions)[i]->isCampaignMission()) {
+                    this->mission = (*missions)[i];
                     break;
                 }
+                if (type == 0xb || type == 0xd) {
+                    break;
+                }
+                this->mission = (*missions)[i];
+                break;
             }
         }
-        if (!mi->isEmpty() && camp) {
-            if (type == 0xa0 && mi->getTargetStation() != dest->getIndex()) {
-                this->mission = mi;
+        if (!(*missions)[i]->isEmpty() && (*missions)[i]->isCampaignMission()) {
+            if ((*missions)[i]->getTargetStation() != dest->getIndex() && type == 0xa0) {
+                this->mission = (*missions)[i];
                 break;
             }
         }
     }
 
-    if (currentCampaignMission < 0x2d) {
-        if (currentCampaignMission >= 0x20) {
-            bool same = false;
-            if (mission != 0)
-                same = dest->getIndex() == mission->getTargetStation();
-            same = same || dest->getIndex() == field_80;
-            if (!same) {
-                if (field_8c + 1 >= 10) {
-                    field_8c = 0;
-                    AbyssEngine::AERandom *rng = Globals::rnd;
-                    int sys;
+    if (currentCampaignMission < 45) {
+        if (currentCampaignMission >= 32 && dest->getIndex() != (*missions)[0]->getTargetStation() &&
+            dest->getIndex() != field_80) {
+            if (field_88++ >= 10) {
+                field_88 = 0;
+                int system;
+                do {
                     do {
                         do {
-                            sys = rng->nextInt(0x16);
-                            field_7c = sys;
-                        } while ((*systemVisibilities)[sys] == 0);
-                    } while (sys == 10 || sys == 0xf);
-                    SolarSystem *ss = Globals::galaxy->getSystems()->at(field_7c);
-                    Array<int> *sids = (Array<int> *) ss->getStations();
-                    int n = rng->nextInt(sids->size());
-                    field_80 = (*sids)[n];
-                } else {
-                    field_8c = field_8c + 1;
-                }
+                            system = Globals::rnd->nextInt(22);
+                            field_7c = system;
+                        } while (!(*systemVisibilities)[system]);
+                    } while (system == 10 || system == 15);
+                } while (this->mission->isCampaignMission() && this->mission->getTargetStation() == field_80);
+                SolarSystem *solarSystem = asSystem(Globals::galaxy->getSystem(field_7c));
+                Array<int> *stations = reinterpret_cast<Array<int> *>(solarSystem->getStations());
+                field_80 = (*stations)[Globals::rnd->nextInt(
+                    reinterpret_cast<Array<int> *>(solarSystem->getStations())->size())];
             }
         }
     } else {
@@ -2035,18 +2020,19 @@ void Status::departStation(Station *dest) {
         field_80 = -10;
     }
 
-    if (wantedMove)
+    if (moveWantedTargets) {
         moveWanted();
-
+    }
     Array<Item *> *cargo = ship->getCargo();
     if (cargo != 0) {
-        for (unsigned i = 0; i < cargo->size(); i = i + 1) {
-            Item *it = (*cargo)[i];
-            if (it != 0)
-                it->setStationAmount(0);
+        for (unsigned i = 0; i < cargo->size(); i++) {
+            if ((*cargo)[i] != 0) {
+                (*cargo)[i]->setStationAmount(0);
+            }
         }
     }
     field_0x108 = 0;
+    ship->refreshValue();
 }
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
