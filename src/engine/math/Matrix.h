@@ -35,6 +35,27 @@ namespace AbyssEngine {
                 scale.z = 1.0f;
             }
 
+            // Row-element constructor with unit scale (inline; the original inlines it at its call sites,
+            // e.g. operator*(Matrix, Matrix) and MatrixGetLookAt, unlike the out-of-line default ctor).
+            Matrix(float e0, float e1, float e2, float e3, float e4, float e5, float e6, float e7,
+                   float e8, float e9, float e10, float e11) {
+                m.e0 = e0;
+                m.e1 = e1;
+                m.e2 = e2;
+                m.e3 = e3;
+                m.e4 = e4;
+                m.e5 = e5;
+                m.e6 = e6;
+                m.e7 = e7;
+                m.e8 = e8;
+                m.e9 = e9;
+                m.e10 = e10;
+                m.e11 = e11;
+                m.e12 = 1.0f;
+                m.e13 = 1.0f;
+                m.e14 = 1.0f;
+            }
+
             operator float *();
 
             operator const float *() const;

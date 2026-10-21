@@ -10,7 +10,7 @@ namespace AbyssEngine {
         Vector::operator const float *() const { return &x; }
 
         float &Vector::operator[](int i) { return (&x)[i]; }
-        float Vector::operator[](int i) const { return (&x)[i]; }
+        const float &Vector::operator[](int i) const { return (&x)[i]; }
 
         Vector &Vector::operator=(const Vector &other) {
             x = other.x;
