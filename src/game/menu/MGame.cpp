@@ -979,8 +979,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3213));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 91 &&
@@ -992,8 +992,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3214));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 94 &&
@@ -1005,8 +1005,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3214));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 105 &&
@@ -1018,8 +1018,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3217));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 139 &&
@@ -1033,8 +1033,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3215));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 142 &&
@@ -1048,8 +1048,8 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3216));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             if (Globals::status->getCurrentCampaignMission() == 142 &&
@@ -1061,14 +1061,14 @@ void MGame::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr -- expor
                 if (this->choiceWindow == nullptr)
                     this->choiceWindow = new ChoiceWindow();
                 this->choiceWindow->set(*Globals::gameText->getText(3218));
-                this->needsRedraw = 1;
                 this->choiceWindowOpen = 1;
+                this->needsRedraw = 1;
                 return;
             }
             this->camera->setLookAtCam(true);
             this->player->dockToPlanet();
-            this->field_0x110 = 0;
             this->_b5c = 0;
+            this->field_0x110 = 0;
             this->hud->enableFireForTutorial(false);
             this->levelScript->m_bCinematicBreak = 1;
             this->jumpActive = 1;
