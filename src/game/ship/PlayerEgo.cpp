@@ -434,7 +434,8 @@ void PlayerEgo::setPosition(float x, float y, float z) {
 
 void PlayerEgo::dockToStream(bool param) {
     if (param) {
-        this->docked = 0x100;
+        this->dockingToStream = 0;
+        this->dockedToStream = 1;
         return;
     }
     this->speed = 0x40000000;
@@ -442,7 +443,8 @@ void PlayerEgo::dockToStream(bool param) {
     this->setPosition(position);
     this->field_0x145 = 0;
     this->freeze = 0;
-    this->docked = 0;
+    this->dockingToStream = 0;
+    this->dockedToStream = 0;
     this->setAutoPilot(nullptr);
 }
 
@@ -498,12 +500,9 @@ bool PlayerEgo::isMining() {
 
 void PlayerEgo::turnHorizontal(int a, float v) {
     if (v < 0.0f) {
-        this->yawAccumulator -= this->yawRate;
-        return;
-    }
-    if (v > 0.0f) {
-        this->yawAccumulator += this->yawRate;
-        return;
+        left(a, v);
+    } else if (v > 0.0f) {
+        right(a, v);
     }
 }
 
@@ -666,7 +665,7 @@ void PlayerEgo::explode() {
 
 unsigned char PlayerEgo::isDockingToStream() {
     PlayerEgo *self = this;
-    return ((uint8_t &) this->docked);
+    return ((uint8_t &) this->dockingToStream);
 }
 
 int PlayerEgo::goingToStream() {
@@ -759,11 +758,9 @@ bool PlayerEgo::driveReady() {
 
 void PlayerEgo::turnVertical(int a, float v) {
     if (v < -0.0f) {
-        return;
-    }
-    if (v > 0.0f) {
-        this->pitchAccumulator += this->pitchRate;
-        return;
+        down(a, v);
+    } else if (v > 0.0f) {
+        up(a, v);
     }
 }
 
@@ -1144,7 +1141,7 @@ void PlayerEgo::checkForTurret() {
         ((AEGeometry *) (this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
         AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
             (unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
-        ((AbyssEngine::Transform *) (tf))->SetVisible(this->gunExtraVisible != 0);
+        ((AbyssEngine::Transform *) (tf))->SetVisible(this->turretActive != 0);
     }
 
     AbyssEngine::Transform *tf = (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
@@ -1344,7 +1341,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
     }
 
     if (state == 2) {
-        if (this->gunExtraVisible != 0)
+        if (this->turretActive != 0)
             ((PlayerEgo *) (this))->setTurretMode(0);
         int dist = PE_adp_glide(this);
         int radius = g_PE_adp_dockRadius[((Ship *) (PE_status()->getShip()))->getIndex()];

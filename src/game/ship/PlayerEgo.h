@@ -120,8 +120,8 @@ public:
     int shakeIntensity;
     int boostTimer;
     uint8_t boostingFlag;
+    int field_0x140;
     uint8_t collide;
-    uint8_t _pad_0x13e[7]; // shrunk for movingStars + field_0x108 + 4 fields @0x120
     uint8_t field_0x145;
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
@@ -161,16 +161,13 @@ public:
 
     int dockApproachThreshold;
     int field_0x1d0;
+    uint8_t field_0x1d4;
     int dockScaling;
     int miningSettleTimer;
     KIPlayer *dockStation;
-    // miningGame is at 0x1e4 (drift: our 0x1e0->orig 0x1e4); field_0x1e0@0x1e0 precedes it. The +4 from
-    // these two is balanced by removing the spurious _pad_0x2a0[4] (original matrix region is 0x3c),
-    // keeping field_0x2a4@0x2a4; turretHudMatrix shifts 0x264->0x268. (Doubles above are now floats.)
-    int field_0x1e0;
     int miningGame;
     int hackingGame;
-    short docked;
+    uint8_t dockingToStream;
     uint8_t dockedToStream;
     uint8_t dockingToPlanet;
     int planetDockTimer;
@@ -183,8 +180,11 @@ public:
     int cloakRechargeTimer;
     int cloakChargeMax;
     int cloakDischargeMax;
+    float shieldRegenRate;
+    int field_0x21c;
     int hud;
     AbyssEngine::AEMath::Vector turretOffsetVec;
+    int field_0x230;
     uint8_t collidesWithStationFlag;
     uint8_t hardCoreMode;
     int hpGaugeImage;
@@ -193,30 +193,30 @@ public:
     int radarBlipImage2;
     int radarBlipImage3;
     int shakeAccum;
+    int freeCargoSpace;
+    float agility;
     float pitchRamp;
     float yawRamp;
-    // ASM ground truth: these were modeled as 8-byte doubles but the .cpp accesses them via (float&),
-    // and Ghidra shows separate 4-byte fields here (freeCargoSpace@0x250/flAgility@0x254 etc.). Split
-    // into floats + their separated high-half fields (size-neutral 24 bytes, removes 8-byte alignment).
-    float rollAccum;
-    int field_0x250;
-    float yawAccumD;
-    int field_0x258;
-    float pitchAccumD;
     int field_0x260;
+    int field_0x264;
+    float rollAccum;
+    int field_0x26c;
+    float yawAccumD;
+    int field_0x274;
+    float pitchAccumD;
     float yawAccumF;
-    // turretHudMatrix relocated here: it fills the original matrix region at 0x264..0x2a4.
-    AbyssEngine::AEMath::Matrix turretHudMatrix;
+    int field_0x280;
+    float field_0x284;
+    float field_0x288;
+    int field_0x28c;
+    int field_0x290[5];
     int field_0x2a4;
     uint8_t field_0x2a8;
     uint8_t rollDirection;
-    uint8_t _pad_0x2aa[20]; // region vacated by relocated rollMatrix + missing fields (0x2aa..0x2c0)
-    void *field_0x2c0; // lint: void_ptr  opaque flag, only ever compared != 0; never assigned a typed value in the tree
-    uint8_t gunExtraVisible;
+    AbyssEngine::AEMath::Matrix turretHudMatrix;
     float rotateX;
     float rotateY;
     float rotateZ;
-    uint8_t _pad_before_rolling[32]; // ASM (roll): rolling is at 0x2f4, AFTER this gap, not before it
     uint8_t rolling;
     uint8_t field_0x2f5;
     int explosionTimer;
@@ -246,11 +246,9 @@ public:
     uint8_t autoTurretEnabled;
     uint8_t dockedFlag;
     AbyssEngine::EaseInOutMatrix *easeMatrix;
+    int field_0x35c;
     int dockTotalAmount;
     int dockTransferedAmount;
-    // ASM: getCloakRechargeRate reads cloakRechargeMax at [this,#872]=0x368; ours had it @0x364.
-    // A 4-byte field precedes it; compensated by shrinking _pad_0x388 below so field_0x394 stays pinned.
-    int field_0x364;
     int cloakRechargeMax;
     int spacePoint;
     uint8_t throttleStarted;
@@ -266,6 +264,8 @@ public:
     uint32_t cloakMaterial3;    // 0x390
     unsigned char *field_0x394;
     uint8_t volatileGoods;
+    uint8_t field_0x399;
+    uint8_t field_0x39a;
     uint8_t lostMiningGameFlag;
 
     PlayerEgo(Player *player);
@@ -631,14 +631,22 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x1a1) == 0x1a1, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x1d0) == 0x1d0, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a4) == 0x2a4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2a8) == 0x2a8, "");
-static_assert(__builtin_offsetof(PlayerEgo, field_0x2c0) == 0x2c0, "");
+static_assert(__builtin_offsetof(PlayerEgo, collide) == 0x144, "");
+static_assert(__builtin_offsetof(PlayerEgo, dockScaling) == 0x1d8, "");
+static_assert(__builtin_offsetof(PlayerEgo, dockingToPlanet) == 0x1ee, "");
+static_assert(__builtin_offsetof(PlayerEgo, hud) == 0x220, "");
+static_assert(__builtin_offsetof(PlayerEgo, hardCoreMode) == 0x235, "");
+static_assert(__builtin_offsetof(PlayerEgo, shakeAccum) == 0x24c, "");
+static_assert(__builtin_offsetof(PlayerEgo, yawAccumF) == 0x27c, "");
+static_assert(__builtin_offsetof(PlayerEgo, rotateX) == 0x2e8, "");
+static_assert(__builtin_offsetof(PlayerEgo, rolling) == 0x2f4, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x2f5) == 0x2f5, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
 static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
-static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x268, "");
+static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
 // (sizeof==924 assert dropped: it was host-clang-calibrated and rounds differently under the NDK
 // ARM32 EABI; the per-field offset asserts above are the authoritative layout locks.)
