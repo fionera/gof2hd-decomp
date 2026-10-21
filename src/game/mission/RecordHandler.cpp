@@ -2079,36 +2079,37 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 
 bool RecordHandler::checkHash(unsigned int fd) {
     int size = AEFile::GetFileSize(fd);
-    if (size >= 0) {
-        unsigned char *buffer = new unsigned char[size];
-        AEFile::Read(size, buffer, fd);
-        Array<unsigned char> *bytes = new Array<unsigned char>();
-        ArrayAdd(buffer, size, *bytes);
-        delete[] buffer;
+    if (size < 0) {
+        return false;
+    }
+    unsigned char *buffer = new unsigned char[size];
+    AEFile::Read(size, buffer, fd);
+    Array<unsigned char> *bytes = new Array<unsigned char>();
+    ArrayAdd(buffer, size, *bytes);
+    delete[] buffer;
 
-        if (bytes->size() > 33) {
-            unsigned char *digest = new unsigned char[32];
-            Sha256Context *context = new Sha256Context;
-            SHA256_Init(context);
-            SHA256_Update(context, bytes->data(), bytes->size() - 32);
-            char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
-            SHA256_Update(context, salt, 25);
-            SHA256_Update(context, g_android_origami_super_club, 16);
-            SHA256_Final(digest, context);
+    if (!(bytes->size() > 33)) {
+        return false;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, bytes->data(), bytes->size() - 32);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
 
-            bool valid = true;
-            for (int i = 0; i < 32; i++) {
-                if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
-                    valid = false;
-                    break;
-                }
-            }
-            delete[] digest;
-            delete context;
-            return valid;
+    bool valid = true;
+    for (int i = 0; i < 32; i++) {
+        if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
+            valid = false;
+            break;
         }
     }
-    return false;
+    delete[] digest;
+    delete context;
+    return valid;
 }
 
 void RecordHandler::addHashToOptions() {
