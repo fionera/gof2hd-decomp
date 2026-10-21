@@ -188,78 +188,77 @@ void PlayerGasCloud::update(int dt) {
     if (dt == 0)
         return;
 
-    if (!this->exploded || this->settled || this->sparkGeometries == nullptr) {
+    if (this->exploded && !this->settled && this->sparkGeometries != nullptr) {
+        float time = (float) dt;
+        this->elapsedSinceExplosion += dt;
+        this->settled = 1;
+        float decay = time * 0.08f;
+        for (unsigned int i = 0; i < this->sparkGeometries->size(); i++) {
+            (*this->sparkTimers)[i] -= dt;
+            (*this->sparkLife)[i] -= decay;
+            if ((*this->sparkLife)[i] < (*this->sparkLifeMin)[i])
+                (*this->sparkLife)[i] = (*this->sparkLifeMin)[i];
+
+            Vector turret = this->level->getPlayer()->getTurretPosition();
+            Vector spark = (*this->sparkGeometries)[i]->getPosition();
+            float distance = VectorLength(turret - spark);
+            if (distance < 800.0f && this->elapsedSinceExplosion >= 2000 &&
+                this->level->getPlayer()->isInTurretMode() && (*this->sparkTimers)[i] > -1500) {
+                // Collected by the ego's turret.
+                (*this->sparkTimers)[i] = -1500;
+                if (Globals::status->getShip()->getFreeSpace() > 0) {
+                    Item *item = (*Globals::items)[this->itemId]->makeItem(1);
+                    if (this->level->getPlayer() != nullptr) {
+                        ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
+                                ->catchCargo(this->itemId, 1, false, false, false, false, true);
+                        if (!Globals::hints[45] && Globals::status->getCurrentCampaignMission() >= 143 &&
+                            Globals::status->getMission()->isEmpty() && this->itemId == 204) {
+                            Globals::hints[45] = 1;
+                            this->level->createRadioMessage(26, 0);
+                        }
+                    }
+                    Globals::sound->stop(2256);
+                    Globals::sound->play(2256, nullptr, nullptr, 0.0f);
+                    Globals::status->getShip()->addCargo(item);
+                } else if (this->level->getPlayer() != nullptr) {
+                    Globals::sound->stop(2256);
+                    Globals::sound->play(2256, nullptr, nullptr, 0.0f);
+                    ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
+                            ->catchCargo(this->itemId, 0, true, false, true, false, false);
+                }
+                (*this->sparkScale)[i] = 0.0f;
+            } else {
+                if ((*this->sparkTimers)[i] <= 0) {
+                    (*this->sparkScale)[i] = (float) (*this->sparkTimers)[i] / 1500.0f + 1.0f;
+                    if ((*this->sparkScale)[i] < 0.0f)
+                        (*this->sparkScale)[i] = 0.0f;
+                } else if (distance < 3500.0f) {
+                    (*this->sparkScale)[i] = (distance + -800.0f) / 2700.0f;
+                }
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->sparkGeometries)[i]->transform))
+                        ->Update(dt, true);
+            }
+
+            if ((*this->sparkInSight)[i] && this->elapsedSinceExplosion >= 2000 &&
+                Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
+                // A gas collector pulls the sparks towards the turret.
+                Vector direction = VectorNormalize(turret - spark);
+                *(*this->sparkVelocities)[i] = direction;
+                (*this->sparkGeometries)[i]->setPosition(
+                        spark + (float) (Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(49) * dt) *
+                                direction);
+            } else {
+                (*this->sparkGeometries)[i]->setPosition(spark + (*this->sparkLife)[i] * time * *(*this->sparkVelocities)[i]);
+            }
+            if ((*this->sparkTimers)[i] > -1500)
+                this->settled = 0;
+        }
+        if (this->settled)
+            this->visibleFlag = 0;
+    } else {
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->modelGeometry->transform))
                 ->Update(dt, true);
-        return;
     }
-
-    float time = (float) dt;
-    this->elapsedSinceExplosion += dt;
-    this->settled = 1;
-    float decay = time * 0.08f;
-    for (unsigned int i = 0; i < this->sparkGeometries->size(); i++) {
-        (*this->sparkTimers)[i] -= dt;
-        (*this->sparkLife)[i] -= decay;
-        if ((*this->sparkLife)[i] < (*this->sparkLifeMin)[i])
-            (*this->sparkLife)[i] = (*this->sparkLifeMin)[i];
-
-        Vector turret = this->level->getPlayer()->getTurretPosition();
-        Vector spark = (*this->sparkGeometries)[i]->getPosition();
-        float distance = VectorLength(turret - spark);
-        if (distance < 800.0f && this->elapsedSinceExplosion >= 2000 &&
-            this->level->getPlayer()->isInTurretMode() && (*this->sparkTimers)[i] > -1500) {
-            // Collected by the ego's turret.
-            (*this->sparkTimers)[i] = -1500;
-            if (Globals::status->getShip()->getFreeSpace() > 0) {
-                Item *item = (*Globals::items)[this->itemId]->makeItem(1);
-                if (this->level->getPlayer() != nullptr) {
-                    ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
-                            ->catchCargo(this->itemId, 1, false, false, false, false, true);
-                    if (!Globals::hints[45] && Globals::status->getCurrentCampaignMission() >= 143 &&
-                        Globals::status->getMission()->isEmpty() && this->itemId == 204) {
-                        Globals::hints[45] = 1;
-                        this->level->createRadioMessage(26, 0);
-                    }
-                }
-                Globals::sound->stop(2256);
-                Globals::sound->play(2256, nullptr, nullptr, 0.0f);
-                Globals::status->getShip()->addCargo(item);
-            } else if (this->level->getPlayer() != nullptr) {
-                Globals::sound->stop(2256);
-                Globals::sound->play(2256, nullptr, nullptr, 0.0f);
-                ((Hud *) (intptr_t) this->level->getPlayer()->getHUD())
-                        ->catchCargo(this->itemId, 0, true, false, true, false, false);
-            }
-            (*this->sparkScale)[i] = 0.0f;
-        } else {
-            if ((*this->sparkTimers)[i] <= 0) {
-                (*this->sparkScale)[i] = (float) (*this->sparkTimers)[i] / 1500.0f + 1.0f;
-                if ((*this->sparkScale)[i] < 0.0f)
-                    (*this->sparkScale)[i] = 0.0f;
-            } else if (distance < 3500.0f) {
-                (*this->sparkScale)[i] = (distance + -800.0f) / 2700.0f;
-            }
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->sparkGeometries)[i]->transform))
-                    ->Update(dt, true);
-        }
-
-        if ((*this->sparkInSight)[i] && this->elapsedSinceExplosion >= 2000 &&
-            Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
-            // A gas collector pulls the sparks towards the turret.
-            Vector direction = VectorNormalize(turret - spark);
-            *(*this->sparkVelocities)[i] = direction;
-            (*this->sparkGeometries)[i]->setPosition(
-                    spark + (float) (Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(49) * dt) *
-                            direction);
-        } else {
-            (*this->sparkGeometries)[i]->setPosition(spark + (*this->sparkLife)[i] * time * *(*this->sparkVelocities)[i]);
-        }
-        if ((*this->sparkTimers)[i] > -1500)
-            this->settled = 0;
-    }
-    if (this->settled)
-        this->visibleFlag = 0;
 }
 
 void PlayerGasCloud::render() {
