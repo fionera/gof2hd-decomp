@@ -280,7 +280,7 @@ public:
 
     bool inStormOrbit();
 
-    int inSupernovaSystem();
+    bool inSupernovaSystem();
 
     int getSystem();
 
