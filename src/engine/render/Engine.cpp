@@ -1412,16 +1412,35 @@ void Engine::LightSetLight(unsigned int light) {
 }
 
 void Engine::SetTexturesExt(uint32_t first, ...) {
-    PaintCanvas *manager = this->appManager->paintCanvas;
-    if (manager->cubeTextures.count != 0) {
+    if (this->appManager->paintCanvas->cubeTextures.count != 0) {
         va_list args;
         va_start(args, first);
         uint32_t slot = 0;
-        uint32_t textureIndex = first;
-        while (textureIndex != 0xffffffff) {
-            this->SetTextureSlot(textureIndex, slot);
-            slot += 1;
-            textureIndex = va_arg(args, uint32_t);
+        for (uint32_t textureIndex = first; textureIndex != 0xffffffff;
+             textureIndex = va_arg(args, uint32_t), slot += 1) {
+            if (textureIndex >= this->appManager->paintCanvas->cubeTextures.count) {
+                continue;
+            }
+            uint32_t texture =
+                    ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+            if ((uint32_t) this->boundTextures[slot] == texture) {
+                continue;
+            }
+            glActiveTexture(slot + 0x84c0);
+            float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+            if (currentLODBias != env) {
+                currentLODBias = env;
+                if (Engine::enableShader != 0) {
+                    if (BiasErrorOutputFlag != 0) {
+                        BiasErrorOutputFlag = 0;
+                    }
+                } else {
+                    glTexEnvf(0x8500, 0x8501, env);
+                }
+            }
+            bool isCube = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0;
+            glBindTexture(isCube ? 0x8513 : 0xde1, texture);
+            this->boundTextures[slot] = texture;
         }
         va_end(args);
         for (uint32_t i = slot; i < 0x14; i += 1) {
@@ -1429,7 +1448,6 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
         }
         glActiveTexture(0x84c0);
     }
-    return;
 }
 
 void Engine::PreUpdate() {
