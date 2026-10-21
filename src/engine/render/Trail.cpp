@@ -18,39 +18,35 @@ Trail::Trail(int type, int segments) {
         }
     }
 
-    PaintCanvas *canvas = Globals::Canvas;
     this->width = 0x3c;
-    canvas->MeshCreate((uint16_t)(segments * 2 + 2),
+    Globals::Canvas->MeshCreate((uint16_t)(segments * 2 + 2),
                        (uint16_t)(segments * 2),
                        0x13,
                        0x4e77,
                        this->meshId);
 
-    for (int i = 2; i - 2 < segments * 2 - 2; i += 2) {
-        uint16_t tri = (uint16_t)(i - 2);
-        uint16_t odd = (uint16_t)(tri | 1);
-        uint16_t current = (uint16_t) i;
-        canvas->MeshSetTriangle(this->meshId, tri, tri, odd, current);
-        canvas->MeshSetTriangle(this->meshId, odd, (uint16_t)(tri + 3), current, odd);
+    // Two triangles per segment between the vertex pairs (i, i+1) and (i+2, i+3).
+    for (int i = 0; i < this->segments * 2 - 2; i += 2) {
+        Globals::Canvas->MeshSetTriangle(this->meshId, (uint16_t) i, (uint16_t) i, (uint16_t) (i | 1),
+                                         (uint16_t) (i + 2));
+        Globals::Canvas->MeshSetTriangle(this->meshId, (uint16_t) (i | 1), (uint16_t) (i + 3), (uint16_t) (i + 2),
+                                         (uint16_t) (i | 1));
     }
 
     float uvScale = 0.0f;
-    int point = 0;
-    for (int i = 0; i < segments * 2 + 2; i += 2) {
-        float u = (float) -(int) (((float) point / (float) (segments + 1)) * uvScale);
-        canvas->MeshSetUv(this->meshId, (uint16_t) i, uvSide, u);
-        canvas->MeshSetUv(this->meshId, (uint16_t)(i | 1), uvSide, u);
-        point++;
-        segments = this->segments;
+    for (int point = 0, i = 0; i < this->segments * 2 + 2; i += 2, point++) {
+        float u = (float) -(int) (((float) point / (float) (this->segments + 1)) * uvScale);
+        Globals::Canvas->MeshSetUv(this->meshId, (uint16_t) i, uvSide, u);
+        Globals::Canvas->MeshSetUv(this->meshId, (uint16_t)(i | 1), uvSide, u);
     }
 
-    int count = (segments * 2 + 2) * 3;
+    int count = (this->segments * 2 + 2) * 3;
     this->pointCount = count;
 
     this->points = new int[count];
     this->relativePoints = new int[count];
-    canvas->TransformCreate(this->transformId);
-    canvas->TransformAddMeshId(this->transformId, this->meshId);
+    Globals::Canvas->TransformCreate(this->transformId);
+    Globals::Canvas->TransformAddMeshId(this->transformId, this->meshId);
     changeType(type);
 }
 
