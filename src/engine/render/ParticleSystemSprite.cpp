@@ -281,15 +281,6 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle) {
     if (handle == 0xffffffffu)
         return;
 
-    float *a = (float *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-    Matrix am;
-    for (int i = 0; i < 15; ++i)
-        am.m[i] = a[i];
-
-    float *b = (float *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-    Matrix bm;
-    for (int i = 0; i < 15; ++i)
-        bm.m[i] = b[i];
-
-    canvas->DrawSpriteSystem(handle, am, bm);
+    canvas->DrawSpriteSystem(handle, *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()),
+                             *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 }
