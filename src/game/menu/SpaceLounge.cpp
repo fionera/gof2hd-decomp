@@ -1423,8 +1423,7 @@ void SpaceLounge::updateScreenPositions() {
     Vector screen = {0.0f, 0.0f, 0.0f};
     Vector pos = {0.0f, 0.0f, 0.0f};
     Vector offset = {0.0f, 0.0f, 0.0f};
-    PaintCanvas *canvas = Globals::Canvas;
-    offset = 150.0f * MatrixGetRight(*(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+    offset = 150.0f * MatrixGetRight(*(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
 
     for (unsigned int i = 0; i < this->agents->size(); ++i) {
         // Name-plate anchors: left/right of the figure, the right one raised above its head.
