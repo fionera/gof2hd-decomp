@@ -44,17 +44,17 @@ void TouchButton::setNumberText(String const &value) {
 TouchButton::~TouchButton() {
 }
 
-unsigned int TouchButton::OnTouchMove(int px, int py) {
+bool TouchButton::OnTouchMove(int px, int py) {
     if (this->visible != 0 && this->halfTransparent == 0) {
-        unsigned int r;
+        bool r;
         if (this->touched == 0)
-            r = 0;
+            r = false;
         else
             r = touchedInside(px, py);
         this->touched = r;
         return r;
     }
-    return 0;
+    return false;
 }
 
 uint8_t TouchButton::isVisible() {

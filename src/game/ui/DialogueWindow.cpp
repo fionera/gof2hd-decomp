@@ -22,7 +22,7 @@ struct EngineSoundConfig {
     uint8_t autoAdvanceEnabled;
 };
 
-int DialogueWindow::OnTouchBegin(int x, int y) {
+bool DialogueWindow::OnTouchBegin(int x, int y) {
     if (this->choiceActive != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
     } else {
@@ -31,7 +31,7 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
         this->nextButton->OnTouchBegin(x, y);
         this->moreButton->OnTouchBegin(x, y);
     }
-    return 0;
+    return false;
 }
 
 static const int g_dw_briefingCounts[0xa2] = {
@@ -120,7 +120,7 @@ DialogueWindow::~DialogueWindow() {
     this->moreButton = 0;
 }
 
-int DialogueWindow::OnTouchMove(int x, int y) {
+bool DialogueWindow::OnTouchMove(int x, int y) {
     if (this->choiceActive != 0) {
         this->choiceWindow->OnTouchMove(x, y);
     } else {
@@ -129,7 +129,7 @@ int DialogueWindow::OnTouchMove(int x, int y) {
         this->nextButton->OnTouchMove(x, y);
         this->moreButton->OnTouchMove(x, y);
     }
-    return 0;
+    return false;
 }
 
 bool DialogueWindow::isFirstPage() {

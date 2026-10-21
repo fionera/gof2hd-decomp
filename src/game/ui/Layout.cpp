@@ -120,16 +120,16 @@ void Layout::drawFooter() {
     this->drawFooter(false, true);
 }
 
-int Layout::OnTouchMove(int x, int y) {
+bool Layout::OnTouchMove(int x, int y) {
     if (this->helpButtonEnabled != 0)
         this->helpButton->OnTouchMove(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchMove(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchMove(x, y));
+        return this->backButton->OnTouchMove(x, y);
+    return this->secondaryButton->OnTouchMove(x, y);
 }
 
 int Layout::OnTouchEnd(int x, int y) {
