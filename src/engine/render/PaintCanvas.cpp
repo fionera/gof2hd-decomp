@@ -22,6 +22,8 @@ namespace AbyssEngine {
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag); // lint: void_ptr (exported TextureCreateFromFileIntern signature)
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
                    signed char meshType, Mesh **out);
+    int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat);
+    int MeshConvertToVBO(Mesh *mesh);
     void CameraSetPerspective(float a, float b, float c, float width, float height,
                                Camera *camera);
     void CameraSetPerspective(float fov, float aspect, float width, float height,
@@ -120,12 +122,13 @@ namespace {
         char *payload;
     };
 
+    // Material resource payload: texture resource ids followed by the Material fields to copy.
     struct PCMaterialInfoView {
         uint16_t textureIds[8];
-        uint32_t flags0;
-        uint32_t flags1;
-        uint32_t flags2;
-        float vec[3];
+        int blendMode;
+        unsigned char *addData;
+        int addDataSize;
+        AbyssEngine::AEMath::Vector ambientColor;
     };
 
     struct PCMeshInfoView {
@@ -526,15 +529,10 @@ static inline void paintcanvas_ext_di3_setwvm(void *self, void *m) { ((PaintCanv
 
 static inline void paintcanvas_ext_di3_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_mc2_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void paintcanvas_ext_mc2_matcreate(void *self, unsigned short id, unsigned int *out) { unsigned int o; ((PaintCanvas*)self)->MaterialCreate(id, o); *out = o; } // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_mc2_meshfromfile(void *eng, char *path, void **out, void *mat); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_mc2_new_mesh_copy(void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mc2_converttovbo(void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_dr3_settexture(void *self, unsigned int tex) { ((PaintCanvas*)self)->SetTexture(tex, 0xffffffff); } // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -560,13 +558,9 @@ static inline void paintcanvas_ext_dr3_glenable(unsigned int cap) { glEnable(cap
 
 void paintcanvas_ext_tg2d_errmsg(void *out); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_matc_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_matc_new_material(); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_matc_texcreate(void *self, unsigned short id, bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_matc_vec_assign(void *dst, void *src); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_tg2di_meshintersect(void *out, float a, float b, void *mesh); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -3981,49 +3975,36 @@ void *PaintCanvas::TransformGetTransform(unsigned int index) { // lint: void_ptr
     return 0;
 }
 
-static char g_meshcreate_vboflag_79d5c_storage = 0;
-static char *const g_meshcreate_vboflag_79d5c = &g_meshcreate_vboflag_79d5c_storage;
 
 void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
                              bool forceClone) {
-    PCResourceView *res = (PCResourceView *) paintcanvas_ext_mc2_findres(this, resId);
+    PCResourceView *res = (PCResourceView *) this->FindResource(resId);
     if (res == 0) {
         return;
     }
-    unsigned int idx = (unsigned int) res->handle;
-    if (idx == 0xffffffff) {
+    unsigned int idx;
+    if (res->handle == -1) {
         PCMeshInfoView *info = (PCMeshInfoView *) res->payload;
         unsigned int mat = 0xffffffff;
-        paintcanvas_ext_mc2_matcreate(this, info->matResId, &mat);
-        AbyssEngine::Material *matptr = 0;
-        if (0xfffffffe < this->materials.count) {
-            matptr = this->materials.data_[-4];
-        }
+        this->MaterialCreate(info->matResId, mat);
         AbyssEngine::Mesh *mesh = 0;
-        int ok = paintcanvas_ext_mc2_meshfromfile(this->engine,
-                                                  info->path, (void **) &mesh, // lint: void_ptr (out-param shim signature is void**; mangling must match lib)
-                                                  matptr);
-        if (ok != 1) {
+        if (AbyssEngine::MeshCreateFromFile(this->engine, info->path, &mesh,
+                                            mat <= this->materials.count ? this->materials.data_[mat] : 0) != 1) {
             return;
         }
-        if (*g_meshcreate_vboflag_79d5c != 0) {
-            if (mesh) {
-                ((AbyssEngine::Mesh *) mesh)->vboEligible = 1;
-            }
-            paintcanvas_ext_mc2_converttovbo(mesh);
+        if (Engine::vboSupported) {
+            mesh->vboEligible = 1;
+            AbyssEngine::MeshConvertToVBO(mesh);
         }
-        ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *) mesh,
-                                      this->meshes);
+        ArrayAdd<AbyssEngine::Mesh *>(mesh, this->meshes);
         idx = this->meshes.count - 1;
         res->handle = (int) idx;
     } else {
-        char **meshes = (char **) this->meshes.data_;
-        PCMeshView *existing = (PCMeshView *) meshes[idx];
-        if (existing->materialRes != 0 || forceClone) {
-            AbyssEngine::Mesh *clone = (AbyssEngine::Mesh *) paintcanvas_ext_mc2_new_mesh_copy(
-                meshes[(unsigned int) res->handle]);
-            ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *) clone,
-                                          this->meshes);
+        AbyssEngine::Mesh **meshes = this->meshes.data_;
+        idx = (unsigned int) res->handle;
+        if (((PCMeshView *) meshes[idx])->materialRes != 0 || forceClone) {
+            AbyssEngine::Mesh *clone = new AbyssEngine::Mesh(meshes[res->handle]);
+            ArrayAdd<AbyssEngine::Mesh *>(clone, this->meshes);
             idx = this->meshes.count - 1;
         }
     }
@@ -4390,38 +4371,35 @@ void PaintCanvas::ReloadTextures() {
 }
 
 void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
-    PCResourceView *res = (PCResourceView *) paintcanvas_ext_matc_findres(this, resId);
+    PCResourceView *res = (PCResourceView *) this->FindResource(resId);
     if (res == 0) {
         return;
     }
-    unsigned int idx = (unsigned int) res->handle;
-    if (idx == 0xffffffff) {
+    if (res->handle == -1) {
         PCMaterialInfoView *info = (PCMaterialInfoView *) res->payload;
-        PCMaterialView *mat = (PCMaterialView *) paintcanvas_ext_matc_new_material();
+        AbyssEngine::Material *mat = new AbyssEngine::Material();
         for (unsigned int i = 0; i < 8; i++) {
-            unsigned short tid = info->textureIds[i];
-            if (tid != 0xffff) {
-                PCResourceView *tres = (PCResourceView *) paintcanvas_ext_matc_findres(this, tid);
-                if (tres == 0) {
-                    break;
-                }
-                int t = tres->handle;
-                if (t == -1) {
-                    paintcanvas_ext_matc_texcreate(this, info->textureIds[i], true);
-                    t = tres->handle;
-                }
-                mat->textureSlots[i] = (uint32_t) t;
+            if (info->textureIds[i] == 0xffff) {
+                continue;
             }
+            PCResourceView *tres = (PCResourceView *) this->FindResource(info->textureIds[i]);
+            if (tres == 0) {
+                break;
+            }
+            if (tres->handle == -1) {
+                unsigned int texture = 0;
+                this->TextureCreate(info->textureIds[i], texture, true);
+            }
+            mat->textures[i] = tres->handle;
         }
-        mat->flags0 = info->flags0;
-        mat->flags1 = info->flags1;
-        mat->flags2 = info->flags2;
-        paintcanvas_ext_matc_vec_assign(mat->vec, info->vec);
-        PCArrayAdd<AbyssEngine::Material *>((AbyssEngine::Material *) mat, (PCArrayHeader *) &this->materials);
-        idx = this->materials.count - 1;
-        res->handle = (int) idx;
+        mat->blendMode = info->blendMode;
+        mat->addData = info->addData;
+        mat->addDataSize = info->addDataSize;
+        mat->ambientColor = info->ambientColor;
+        ArrayAdd<AbyssEngine::Material *>(mat, this->materials);
+        res->handle = (int) this->materials.count - 1;
     }
-    out = idx;
+    out = (unsigned int) res->handle;
 }
 
 static const unsigned int g_tg2di_neg1_8b588 = 0;
