@@ -161,71 +161,68 @@ void AEFile::Release() {
 }
 
 uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
-    FileInterface *fileInterface = AEFile::fileInterface;
-    if (fileInterface == nullptr) {
+    if (AEFile::fileInterface == nullptr)
         return 0;
-    }
 
-    uint16_t *text = AEStr_wchar(path);
+    unsigned short *text = (unsigned short *) path;
     AELowLevelFile *file = nullptr;
-    FileInterface *nativeHandle = nullptr;
-
-    if (openType == OPEN_WRITE) {
-        String localPath;
-        localPath.Set((const unsigned short *) (text));
-        nativeHandle = reinterpret_cast<FileInterface *>(fileInterface->OpenWrite(localPath, path.size(), false, 0));
-    } else if (openType == OPEN_APPEND) {
-        String localPath;
-        localPath.Set((const unsigned short *) (text));
-        nativeHandle = reinterpret_cast<FileInterface *>(fileInterface->OpenAppend(localPath, path.size(), false, 0));
-    } else if (openType == OPEN_READ) {
-        String localPath;
-        localPath.Set((const unsigned short *) (text));
-        nativeHandle = reinterpret_cast<FileInterface *>(fileInterface->OpenRead(localPath, path.size(), 0, 0, 0, 0));
-        if (nativeHandle == nullptr) {
-            if (*AEStr_index(path, 0) != '/') {
-                String prefix("/");
-                path = prefix + path;
+    FileInterface *nativeHandle;
+    switch (openType) {
+        case OPEN_READ: {
+            nativeHandle = reinterpret_cast<FileInterface *>(
+                    AEFile::fileInterface->OpenRead(String(text, false), path.size(), 0, 0, 0, 0));
+            if (nativeHandle != nullptr) {
+                file = new AENormalFile(nativeHandle);
+            } else {
+                // Not on disk: look it up in the registered pak files (paths there are rooted).
+                if (*path[0] != '/')
+                    path = String("/") + String(path);
+                file = findPakFile(path);
+                if (file == nullptr)
+                    return 0;
             }
-            file = findPakFile(path);
-            if (file == nullptr) {
+            break;
+        }
+        case OPEN_WRITE: {
+            nativeHandle = reinterpret_cast<FileInterface *>(
+                    AEFile::fileInterface->OpenWrite(String(text, false), path.size(), false, 0));
+            if (nativeHandle == nullptr)
                 return 0;
-            }
+            file = new AENormalFile(nativeHandle);
+            break;
         }
+        case OPEN_APPEND: {
+            nativeHandle = reinterpret_cast<FileInterface *>(
+                    AEFile::fileInterface->OpenAppend(String(text, false), path.size(), false, 0));
+            if (nativeHandle == nullptr)
+                return 0;
+            file = new AENormalFile(nativeHandle);
+            break;
+        }
+        default:
+            break;
     }
 
-    if (file == nullptr) {
-        if (nativeHandle == nullptr) {
-            return 0;
-        }
-        file = new AENormalFile(nativeHandle);
-    }
-
-    Array<AELowLevelFile *> *files = AEFile::file;
-    uint32_t count = files->size();
-    if (handle == nullptr) {
-        if (count == 0) {
-            ArrayAdd(file, *files);
-        } else {
-            AELowLevelFile *&slot = files->data()[0];
-            if (slot != nullptr) {
-                delete slot;
-            }
-            slot = file;
-        }
-    } else {
+    if (handle != nullptr) {
+        uint32_t count = AEFile::file->size();
         for (uint32_t i = 1; i < count; i++) {
-            if (files->data()[i] == nullptr) {
-                files->data()[i] = file;
+            if (AEFile::file->data()[i] == nullptr) {
+                AEFile::file->data()[i] = file;
                 *handle = i;
                 return 1;
             }
         }
-        if (count == 0) {
-            ArrayAdd(static_cast<AELowLevelFile *>(nullptr), *files);
-        }
-        ArrayAdd(file, *files);
-        *handle = files->size() - 1;
+        if (count == 0)
+            ArrayAdd(static_cast<AELowLevelFile *>(nullptr), *AEFile::file);
+        ArrayAdd(file, *AEFile::file);
+        *handle = AEFile::file->size() - 1;
+    } else if (AEFile::file->size() == 0) {
+        ArrayAdd(file, *AEFile::file);
+    } else {
+        if (AEFile::file->data()[0] != nullptr)
+            delete AEFile::file->data()[0];
+        AEFile::file->data()[0] = nullptr;
+        AEFile::file->data()[0] = file;
     }
     return 1;
 }
