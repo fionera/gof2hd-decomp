@@ -73,19 +73,7 @@ static inline int layoutField(int offset) {
 
 unsigned char Radar::drawTarget;
 
-Radar::Radar(Level *level) {
-    this->egoPos.z = 0;
-    this->targetPos.x = 0;
-    this->targetPos.y = 0;
-    this->targetPos.z = 0;
-    this->playerPos.y = 0;
-    this->playerPos.z = 0;
-    this->egoPos.x = 0;
-    this->egoPos.y = 0;
-    this->radarPos.x = 0;
-    this->radarPos.y = 0;
-    this->radarPos.z = 0;
-    this->playerPos.x = 0;
+Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
 
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
@@ -126,6 +114,9 @@ Radar::Radar(Level *level) {
     this->plasmaInRange = 0;
     this->field_0x120 = 0;
     this->onScreen = 0;
+    this->field_0x11d = 0;
+    this->field_0x11e = 0;
+    this->field_0x11f = 0;
     this->field_0x1a8 = 0;
     this->level = level;
 
