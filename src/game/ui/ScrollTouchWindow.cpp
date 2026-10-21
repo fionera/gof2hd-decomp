@@ -38,72 +38,46 @@ void ScrollTouchWindow::OnTouchBegin(int x, int y) {
 
 
 void ScrollTouchWindow::draw() {
-    PaintCanvas **canvasHolder = reinterpret_cast<PaintCanvas **>(&Globals::Canvas);
-    PaintCanvas *canvas = *canvasHolder;
-    int color = canvas->GetColor();
-
-    int scrollOffset;
-    int contentHeight;
-    if (this->hasFrame == 0) {
-        Layout *layout = Globals::layout;
-        contentHeight = this->height - layout->field_0x2c_rowHeight * 2;
-        scrollOffset = 0;
-    } else {
-        Layout *layout = Globals::layout;
-        {
-            String windowTitle(this->title);
-            layout->drawWindow(windowTitle, this->x, this->y,
-                               this->width, this->height, true);
-        }
-        layout = Globals::layout;
-        contentHeight = this->height - layout->field_0x2c_rowHeight * 2;
-        scrollOffset = -layout->windowTopInset;
-    }
+    int color = Globals::Canvas->GetColor();
+    if (this->hasFrame)
+        Globals::layout->drawWindow(this->title, this->x, this->y, this->width, this->height, true);
+    int trackHeight = this->height - Globals::layout->field_0x2c_rowHeight * 2 -
+                      (this->hasFrame ? Globals::layout->windowTopInset : 0);
 
     this->scrollBox->draw();
-    int scrollHeight = scrollOffset + contentHeight;
-    float scale = (float) scrollHeight;
+    float scale = (float) trackHeight;
     float start = this->scrollBox->getRelativeScrollStartPos();
-    float height = this->scrollBox->getRelativeScrollHeight();
+    float size = this->scrollBox->getRelativeScrollHeight();
     int startPx = (int) (start * scale);
-    int heightPx = (int) (height * scale);
-
-    if (startPx > 0 || heightPx >= 1) {
+    int sizePx = (int) (size * scale);
+    if (startPx > 0 || sizePx >= 1) {
         Layout *layout = Globals::layout;
-        int yOffset = (this->hasFrame == 0) ? 0 : layout->windowTopInset;
-        layout->drawScrollBar((this->x + this->width) - layout->field_0x48 - layout->field_0x2c_rowHeight,
-                              this->y + layout->field_0x2c_rowHeight + yOffset,
-                              scrollHeight, startPx, heightPx);
+        int topInset = this->hasFrame ? layout->windowTopInset : 0;
+        layout->drawScrollBar(this->x + this->width - layout->field_0x48 - layout->field_0x2c_rowHeight,
+                              this->y + layout->field_0x2c_rowHeight + topInset, trackHeight, startPx, sizePx);
     }
-
-    (*canvasHolder)->SetColor((unsigned int) color);
+    Globals::Canvas->SetColor((unsigned int) color);
 }
-
-static const char g_STW_empty_drawTextBG[] = "";
 
 void ScrollTouchWindow::drawTextBG() {
     Layout *layout = Globals::layout;
     int x = this->x;
-    int y = this->y;
-    int w = this->width;
-    int pad = layout->field_0x2c_rowHeight;
-    float relHeight = this->scrollBox->getRelativeScrollHeight();
+    int width = this->width;
+    int top = this->y + layout->field_0x2c_rowHeight;
     int widthInset;
     int heightInset;
-    if (relHeight > 0.0f) {
-        widthInset = layout->field_0x48 + pad * 2;
-        heightInset = pad * 2;
+    if (this->scrollBox->getRelativeScrollHeight() > 0.0f) {
+        widthInset = Globals::layout->field_0x48 + Globals::layout->field_0x2c_rowHeight * 2;
+        heightInset = Globals::layout->field_0x2c_rowHeight * 2;
     } else {
-        widthInset = pad;
-        heightInset = pad * 2;
+        widthInset = Globals::layout->field_0x2c_rowHeight;
+        heightInset = Globals::layout->field_0x2c_rowHeight * 2;
     }
-    int h = this->height;
-    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, AbyssEngine::String(g_STW_empty_drawTextBG), 0);
+    layout->drawBox(5, x, top, width - widthInset, this->height - heightInset, String(""));
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text) {
-    AbyssEngine::String tmp(text, false);
-    this->scrollBox->setText(tmp);
+    this->scrollBox->setText(text);
     this->title = title;
 }
 
@@ -124,8 +98,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) 
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color) {
-    AbyssEngine::String tmp(text, false);
-    this->scrollBox->setText(tmp, color);
+    this->scrollBox->setText(text, color);
     this->title = title;
 }
 
@@ -136,11 +109,10 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h) {
     this->width = w;
     this->height = h;
 
-    Layout *layout = Globals::layout;
-    int top = layout->windowTopInset;
-    int border = layout->field_0x4c;
-    this->scrollBox = new ScrollTouchBox(border + x, top + border + y, w - border * 2,
-                                         (h - top) - border * 2);
+    this->scrollBox = new ScrollTouchBox(Globals::layout->field_0x4c + x,
+                                         Globals::layout->field_0x4c + y + Globals::layout->windowTopInset,
+                                         w - Globals::layout->field_0x4c * 2,
+                                         h - Globals::layout->windowTopInset - Globals::layout->field_0x4c * 2);
     this->touchActive = 0;
     this->hasFrame = 1;
 }
