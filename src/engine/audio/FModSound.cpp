@@ -221,13 +221,14 @@ void FModSound::resume(int p1) {
 }
 
 int FModSound::getEventPauseLength(int idx) {
-    int out[1] = {0};
-    if (this->initialized != 0 && this->system != 0 && this->categoryEnabled[0] != 0) {
-        FMOD::Event *h = this->events[idx];
-        if (h != 0)
-            FMOD_Event_getProperty(h, (unsigned char *) property_name_pause, (unsigned char *) out, 1);
-    }
-    return out[0];
+    if (this->initialized == 0 || this->system == nullptr || this->categoryEnabled[0] == 0)
+        return 0;
+    FMOD::Event *event = this->events[idx];
+    if (event == nullptr)
+        return 0;
+    int length = 0;
+    event->getProperty(property_name_pause, &length, true);
+    return length;
 }
 
 void FModSound::enableReverb(int p1) {
@@ -362,18 +363,10 @@ void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val) {
 void FModSound::stopAllSoundFXEvents() {
     if (this->system == 0)
         return;
-    FMOD::EventCategory **cats = &this->category[1];
-    unsigned j = 0;
-    while (true) {
-        unsigned i;
-        do {
-            i = j;
-            j = i + 1;
-        } while ((j & 0x7fffffff) == 1);
-        if ((j & 0x7fffffff) == 4)
-            break;
-        FMOD::EventCategory *c = cats[i];
-        FMOD_EventCategory_stopAllEvents(c);
+    for (int i = 1; i < 4; ++i) {
+        if (i == 1) // music keeps playing
+            continue;
+        this->category[i]->stopAllEvents();
     }
 }
 
@@ -422,7 +415,7 @@ void FModSound::disableReverb() {
     this->reverbPreset = -1;
 }
 
-int FModSound::init() {
+void FModSound::init() {
     static const char kSuffixA[16] = "FMOD_GOF2.fev";
     static const char kSuffixB[32] = "data/audio/FMOD_GOF2.fev";
     static const char *kCats[4] = {"master", "music", "sfx", "voice"};
@@ -453,7 +446,6 @@ int FModSound::init() {
     this->currentMusicEvent = -1;
     this->fadeTargetMusicEvent = -1;
     this->downPitch = 0;
-    return 0;
 }
 
 void FModSound::setParamValue(int paramIdx, int idx, float val) {
@@ -488,14 +480,12 @@ void FModSound::playMusicFadeOutCurrent(int p1) {
     this->fadeTargetMusicEvent = p1;
 }
 
-void FModSound::getParam(const char *name, int idx) {
-    if (this->system != 0) {
-        FMOD::Event *h = this->events[idx];
-        if (h != 0) {
-            FMOD::EventParameter *out[1];
-            FMOD_Event_getParameter(h, name, out);
-        }
-    }
+FMOD::EventParameter *FModSound::getParam(const char *name, int idx) {
+    // The shipped code leaves `param` unset when the system or event is missing.
+    FMOD::EventParameter *param;
+    if (this->system != nullptr && this->events[idx] != nullptr)
+        this->events[idx]->getParameter(name, &param);
+    return param;
 }
 
 void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up) {
@@ -727,47 +717,39 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
 }
 
 void FModSound::pauseAllPlayingSoundFXEvents() {
-    for (unsigned i = 0; i < 0x8f5u; ++i) {
-        if (this->system) {
-            FMOD::Event *h = this->events[i];
-            if (h && isPlaying(i)) {
-                FMOD::EventCategory *cat;
-                FMOD_Event_getCategory(h, &cat);
-                int categoryIndex = 0;
-                char *categoryName = 0;
-                FMOD_EventCategory_getInfo(cat, &categoryIndex, &categoryName);
-                if (categoryIndex == 1)
-                    FMOD_Event_setPaused(this->events[i], 1);
-            }
+    for (int i = 0; i < 0x8f5; ++i) {
+        if (this->system != nullptr && this->events[i] != nullptr && isPlaying(i)) {
+            FMOD::EventCategory *cat;
+            this->events[i]->getCategory(&cat);
+            char *categoryName;
+            int categoryIndex;
+            cat->getInfo(&categoryIndex, &categoryName);
+            if (categoryIndex == 1)
+                this->events[i]->setPaused(true);
         }
     }
 }
 
-void FModSound::enableCategory(int p1, bool enable) {
-    if (p1 > 3)
+void FModSound::enableCategory(int index, bool enable) {
+    if (index > 3 || this->system == nullptr)
         return;
-    if (this->system == 0)
-        return;
-    FMOD::EventCategory *cat = this->category[p1];
-    if (cat == 0)
+    FMOD::EventCategory *cat = this->category[index];
+    if (cat == nullptr)
         return;
 
-    this->categoryEnabled[p1] = enable ? 1 : 0;
-    if (!enable) {
-        FMOD_EventCategory_stopAllEvents(cat);
-    } else if (p1 == 1 && this->currentMusicEvent >= 0) {
-        FMOD_play(this, this->currentMusicEvent, 0, 0.0f);
-    }
+    this->categoryEnabled[index] = enable;
+    if (!enable)
+        cat->stopAllEvents();
+    else if (index == 1 && this->currentMusicEvent >= 0)
+        play(this->currentMusicEvent, nullptr, nullptr, 0.0f);
 
-    uint8_t any = 0;
-    int i = 1;
-    do {
-        if ((unsigned) i > 3)
+    // Slot 0 mirrors "any of music/sfx/voice enabled".
+    bool any = false;
+    for (int i = 1; i < 4; ++i) {
+        any |= this->categoryEnabled[i];
+        if (this->categoryEnabled[i])
             break;
-        uint8_t v = this->categoryEnabled[i];
-        i++;
-        any = (any || v) ? 1 : 0;
-    } while (this->categoryEnabled[i - 1] == 0);
+    }
     this->categoryEnabled[0] = any;
 }
 
