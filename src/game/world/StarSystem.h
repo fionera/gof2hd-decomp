@@ -11,7 +11,7 @@ class LensFlare;
 
 class StarSystem {
 public:
-    Vector sunLightColor;
+    float sunLightColor[3]; // r, g, b (plain floats: the ctor leaves them unset)
     uint8_t supernovaSystem;
     uint32_t supernovaSunTexture;
     Array<uint32_t> *texturesArray;
