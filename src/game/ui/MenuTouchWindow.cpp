@@ -1,5 +1,6 @@
 #include "engine/core/ArrayReleaseClasses.h"
 #include "game/ui/MenuTouchWindow.h"
+#include "engine/render/ImageFactory.h"
 #include "game/menu/ModStation.h"
 #include "engine/core/AbyssEngine.h"
 #include "game/ui/TouchSlider.h"
@@ -235,7 +236,6 @@ void _mtw_ScrollTouchWindow_update(void *w); // lint: void_ptr (external symbol;
 
 void _mtw_MissionsWindow_update(void *w); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_startSupernovaChallenge_impl(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -1499,7 +1499,65 @@ void MenuTouchWindow::update(int dt) {
 }
 
 void MenuTouchWindow::startSupernovaChallenge() {
-    _mtw_startSupernovaChallenge_impl(this);
+    Globals::status->resetGame();
+    Globals::status->setCurrentCampaignMission(152);
+    Globals::status->setShip(Globals::ships->data_[46]->makeShip(-1));
+
+    Item *it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[230]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[73]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[54]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[59]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[83]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 3);
+    it = Globals::items->data_[206]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 4);
+    it = Globals::items->data_[75]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 5);
+    it = Globals::items->data_[76]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 6);
+    it = Globals::items->data_[216]->makeItem(5);
+    Globals::status->getShip()->setEquipment(it, 0);
+
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(111));
+    Globals::status->setStation(station);
+    Mission *mission = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0, 0,
+                                   station->getIndex(), 1);
+    Globals::status->setMission(mission);
+    Globals::status->setFreelanceMission(mission);
+
+    unsigned char *hints = Globals::hints;
+    hints[23] = 1;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[10] = 1;
+    hints[28] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[15] = 1;
+    hints[41] = 1;
+    hints[34] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    Globals::status->setKills(500);
+    Globals::status->setKills(220);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+    Globals::switch_to_target_setting = -1;
+    Globals::enterSpaceLounge = 0;
+    Globals::globals->playMusicAndFadeOutCurrent(1);
+    Globals::status->field_5c = -1;
+    Globals::status->field_60 = -1;
+    Globals::status->field_64 = -1;
+    Globals::appManager->SetCurrentApplicationModule(2);
 }
 
 

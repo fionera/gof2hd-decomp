@@ -99,7 +99,6 @@ static unsigned int **g_hw_imageCountSlot;
 static uint8_t *g_hw_specialModeFlag;
 static uint8_t *g_hw_listModeFlag;
 static float g_hw_posScale;
-static int *g_hw_openCounter;
 
 static const char hw_rnd_empty[1] = "", hw_rnd_a[1] = "", hw_rnd_b[1] = "",
         hw_rnd_c[1] = "", hw_rnd_d[1] = "", hw_rnd_e[1] = "", hw_rnd_x[1] = "";
@@ -2323,8 +2322,6 @@ void HangarWindow::initialize() {
 }
 
 HangarWindow::HangarWindow() {
-    Layout *lay = *g_hw_layout;
-
     this->bluePrint = nullptr;
     this->bluePrintItem = nullptr;
     this->dialogActive = 0;
@@ -2334,9 +2331,9 @@ HangarWindow::HangarWindow() {
     this->choiceWindow = nullptr;
     this->dialog = nullptr;
     this->localBluePrint = 0;
-    *g_hw_openCounter = 1;
-    this->routeWarningPending = 0;
+    HangarWindow::lastTab = 1;
     this->dragging = 0;
+    this->routeWarningPending = 0;
     this->tabButtons = nullptr;
     this->buttons = nullptr;
     this->shipSwapPending = 0;
@@ -2347,6 +2344,7 @@ HangarWindow::HangarWindow() {
     this->freeCreditsActive = 0;
     this->autoCompletePending = 0;
 
+    Layout *lay = Globals::layout;
     this->field_0x100 = lay->field_0x238_blk16;
     this->buttonHeight = lay->field_0x248;
     this->field_0x114 = lay->field_0x24c;

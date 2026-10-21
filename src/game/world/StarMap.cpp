@@ -32,7 +32,6 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
-static void (*g_StarMap_render_geometry)(AEGeometry *);
 
 static Status **g_StarMap_draw_status;
 static Layout **g_StarMap_draw_layout;
@@ -635,16 +634,15 @@ void StarMap::renderBG() {
 
 void StarMap::render() {
     Globals::Canvas->SetColor((unsigned int) (0xffffffffu));
-    void(*renderGeometry)(AEGeometry *) = g_StarMap_render_geometry;
-    renderGeometry(this->bgLayer0);
-    renderGeometry(this->bgLayer1);
-    renderGeometry(this->bgLayer2);
-    renderGeometry(this->systemRoot);
+    this->bgLayer0->render();
+    this->bgLayer1->render();
+    this->bgLayer2->render();
+    this->systemRoot->render();
     Globals::Canvas->End3d();
     Globals::Canvas->Begin3d();
     if (this->starSystemRoot != 0) {
         Globals::Canvas->SetTexture((unsigned int) (this->planetTexture), (unsigned int) (0xffffffffu));
-        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_2);
         this->planetGeom->render();
         this->starSystemRoot->render();
     }
