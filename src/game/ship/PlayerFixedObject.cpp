@@ -162,21 +162,32 @@ void PlayerFixedObject::update(int dt) {
         this->setExhaustVisible(false);
         this->wreckGeometry->setMatrix(this->geometry->getMatrix());
 
-        AEGeometry *source = this->geometry;
         if (this->wreckGeometry) {
             this->wreckGeometry->setMatrix(this->geometry->getMatrix());
             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))
                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
             if (this->faction() == 3 && this->moving && this->geometry->parentTransform != (uint32_t) -1)
                 this->wreckGeometry->addChild(this->geometry->parentTransform);
-            source = this->wreckGeometry;
+            this->level->field_74->systemSetMatrix(
+                this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50,
+                &this->wreckGeometry->getMatrix());
+            Globals::sound->play(20, Globals::options[15] ? &this->position() : nullptr, nullptr, 0.0f);
+            this->level->field_74->enableSystemEmit(
+                this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, true);
+            this->explosion = new Explosion(0);
+            this->explosion->addFireStreaks();
+            this->explosion->start(this->wreckGeometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
+        } else {
+            this->level->field_74->systemSetMatrix(
+                this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50,
+                &this->geometry->getMatrix());
+            Globals::sound->play(20, Globals::options[15] ? &this->position() : nullptr, nullptr, 0.0f);
+            this->level->field_74->enableSystemEmit(
+                this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, true);
+            this->explosion = new Explosion(0);
+            this->explosion->addFireStreaks();
+            this->explosion->start(this->geometry->getPosition(), Vector{0.0f, 0.0f, 0.0f});
         }
-        this->level->field_74->systemSetMatrix(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, &source->getMatrix());
-        Globals::sound->play(20, Globals::options[15] ? &this->position() : nullptr, nullptr, 0.0f);
-        this->level->field_74->enableSystemEmit(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, true);
-        this->explosion = new Explosion(0);
-        this->explosion->addFireStreaks();
-        this->explosion->start(source->getPosition(), Vector{0.0f, 0.0f, 0.0f});
 
         if (this->kind() == 14) {
             for (unsigned int i = 0; i < this->level->getEnemies()->size(); i++) {
@@ -195,45 +206,39 @@ void PlayerFixedObject::update(int dt) {
         }
     }
 
-    if (this->state == 3) {
-        if (this->explosion)
-            this->explosion->update(dt, (TargetFollowCamera *) nullptr);
-        if (this->kind() != 0x37a3) {
-            if (this->moving) {
-                this->intPosZ += dt;
-                this->wreckGeometry->moveForward((float) dt);
-                if (this->secondaryGeometry())
-                    this->secondaryGeometry()->moveForward((float) dt);
-            }
-            reinterpret_cast<Matrix &>(this->player->transform[0]) = this->wreckGeometry->getMatrix();
-            this->position() = this->wreckGeometry->getPosition();
-            if (this->boundingVolumes) {
-                for (unsigned int i = 0; i < this->boundingVolumes->size(); i++)
-                    (*this->boundingVolumes)[i]->update(this->position().x, this->position().y,
-                                                        this->position().z);
+    if (this->state == 5) {
+        Array<Player *> *enemies = this->player->getEnemies();
+        if (enemies) {
+            this->targetEnemy = 0;
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                if (!(*enemies)[i]->isActive())
+                    continue;
+                this->targetPos() = (*enemies)[i]->getPosition();
+                float dx = this->position().x - this->targetPos().x;
+                if (!(dx < 50000.0f && dx > -50000.0f))
+                    continue;
+                float dy = this->position().y - this->targetPos().y;
+                if (!(dy < 50000.0f && dy > -50000.0f))
+                    continue;
+                float dz = this->position().z - this->targetPos().z;
+                if (dz < 50000.0f && dz > -50000.0f) {
+                    Player *enemy = this->player->getEnemy(i);
+                    this->targetEnemy = (int32_t) (intptr_t) enemy;
+                    this->targetPos() = enemy->getPosition();
+                    this->homingTarget = this->targetPos();
+                    break;
+                }
             }
         }
-        this->finished() = 0;
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->Update(dt, false);
-        if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->animating) {
-            this->state = 4;
-            this->level->field_74->enableSystemEmit(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, false);
-            this->explosion->reset();
-            float scale = 6.0f;
-            if (this->kind() == 0x37e7)
-                scale = 8.0f;
-            if (this->kind() == 0x37a3)
-                scale = 8.0f;
-            this->explosion->setScaling(scale);
-            this->explosion->start(this->position(), Vector{0.0f, 0.0f, 0.0f});
-            this->rumbleTimer = 1;
-            this->explosionElapsed = 0;
-            if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()) {
-                float distance = AbyssEngine::AEMath::VectorLength(
-                    this->position() - *this->level->getPlayer()->getTargetFollowCamera()->getPosition());
-                this->rumblePercentage = 1.0f - (distance < 30000.0f ? distance : 30000.0f) / 30000.0f;
-                this->level->getPlayer()->getTargetFollowCamera()->setRumblePercentage(this->rumblePercentage, 50);
-            }
+        float vx = this->homingTarget.x - this->position().x;
+        float vy = this->homingTarget.y - this->position().y;
+        float vz = this->homingTarget.z - this->position().z;
+        this->homingDir.x = vx;
+        this->homingDir.y = vy;
+        this->homingDir.z = vz;
+        if (vx < 50000.0f && vz > -50000.0f && vx > -50000.0f && vy < 50000.0f && vy > -50000.0f && vz < 50000.0f) {
+            this->state = 1;
+            this->player->setActive(true);
         }
     } else if (this->state == 4) {
         this->explosionElapsed += dt;
@@ -284,40 +289,45 @@ void PlayerFixedObject::update(int dt) {
                 }
             }
         }
-    } else if (this->state == 5) {
-        Array<Player *> *enemies = this->player->getEnemies();
-        if (enemies) {
-            this->targetEnemy = 0;
-            for (unsigned int i = 0; i < enemies->size(); i++) {
-                if (!(*enemies)[i]->isActive())
-                    continue;
-                this->targetPos() = (*enemies)[i]->getPosition();
-                float dx = this->position().x - this->targetPos().x;
-                if (!(dx < 50000.0f && dx > -50000.0f))
-                    continue;
-                float dy = this->position().y - this->targetPos().y;
-                if (!(dy < 50000.0f && dy > -50000.0f))
-                    continue;
-                float dz = this->position().z - this->targetPos().z;
-                if (dz < 50000.0f && dz > -50000.0f) {
-                    Player *enemy = this->player->getEnemy(i);
-                    this->targetEnemy = (int32_t) (intptr_t) enemy;
-                    this->targetPos() = enemy->getPosition();
-                    this->homingTarget = this->targetPos();
-                    break;
-                }
+    } else if (this->state == 3) {
+        if (this->explosion)
+            this->explosion->update(dt, (TargetFollowCamera *) nullptr);
+        if (this->kind() != 0x37a3) {
+            if (this->moving) {
+                this->intPosZ += dt;
+                this->wreckGeometry->moveForward((float) dt);
+                if (this->secondaryGeometry())
+                    this->secondaryGeometry()->moveForward((float) dt);
+            }
+            reinterpret_cast<Matrix &>(this->player->transform[0]) = this->wreckGeometry->getMatrix();
+            this->position() = this->wreckGeometry->getPosition();
+            if (this->boundingVolumes) {
+                for (unsigned int i = 0; i < this->boundingVolumes->size(); i++)
+                    (*this->boundingVolumes)[i]->update(this->position().x, this->position().y,
+                                                        this->position().z);
             }
         }
-        float vx = this->homingTarget.x - this->position().x;
-        float vy = this->homingTarget.y - this->position().y;
-        float vz = this->homingTarget.z - this->position().z;
-        this->homingDir.x = vx;
-        this->homingDir.y = vy;
-        this->homingDir.z = vz;
-        if (vx < 50000.0f && vx > -50000.0f && vz > -50000.0f && vy < 50000.0f && vy > -50000.0f
-            && vz < 50000.0f) {
-            this->state = 1;
-            this->player->setActive(true);
+        this->finished() = 0;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->Update(dt, false);
+        if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->wreckGeometry->transform))->animating) {
+            this->state = 4;
+            this->level->field_74->enableSystemEmit(this->kind() == 0x37a3 || this->kind() == 14 ? this->level->field_54 : this->level->field_50, false);
+            this->explosion->reset();
+            float scale = 6.0f;
+            if (this->kind() == 0x37e7)
+                scale = 8.0f;
+            if (this->kind() == 0x37a3)
+                scale = 8.0f;
+            this->explosion->setScaling(scale);
+            this->explosion->start(this->position(), Vector{0.0f, 0.0f, 0.0f});
+            this->rumbleTimer = 1;
+            this->explosionElapsed = 0;
+            if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()) {
+                float distance = AbyssEngine::AEMath::VectorLength(
+                    this->position() - *this->level->getPlayer()->getTargetFollowCamera()->getPosition());
+                this->rumblePercentage = 1.0f - (distance < 30000.0f ? distance : 30000.0f) / 30000.0f;
+                this->level->getPlayer()->getTargetFollowCamera()->setRumblePercentage(this->rumblePercentage, 50);
+            }
         }
     }
 

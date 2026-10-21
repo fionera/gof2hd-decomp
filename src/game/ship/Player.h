@@ -25,7 +25,7 @@ public:
 
     // Former uint16 `destroyed` overlay: byte pair promoted to plain members.
     // The 16-bit view is `reinterpret_cast<uint16_t &>(destroyedByte)`.
-    uint8_t destroyedByte;
+    bool destroyedByte;
     uint8_t spawnedFlag;
 
     uint8_t pad_46[2];
