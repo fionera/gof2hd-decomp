@@ -2596,15 +2596,16 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     o8 = o6 + (unsigned) p2 / 2;
     o9 = o7 + (unsigned) p2 / 2;
     float last;
+    float six = (float) o6;
     if (Globals::iPadHD) {
-        o10 = (unsigned short) ((float) o6 + 107.28125f);
+        o10 = (unsigned short) (six + 107.28125f);
         o11 = (unsigned short) ((float) o7 + 5.625f);
         o12 = (unsigned short) ((float) o6 + 18.09375f);
         o13 = (unsigned short) ((float) o7 + 19.28125f);
         o16 = (unsigned short) ((float) o6 + 112.5f);
         last = 94.21875f;
     } else {
-        o10 = (unsigned short) ((Globals::iPadLarge ? 152.0f : 77.0f) + (float) o6);
+        o10 = (unsigned short) ((Globals::iPadLarge ? 152.0f : 77.0f) + six);
         o11 = (unsigned short) ((Globals::iPadLarge ? 8.0f : 4.0f) + (float) o7);
         o12 = (unsigned short) ((Globals::iPadLarge ? 28.0f : 15.0f) + (float) o6);
         o13 = (unsigned short) ((Globals::iPadLarge ? 27.0f : 13.0f) + (float) o7);
@@ -2615,20 +2616,22 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     float trigger;
     if (coords->fireValue > bottom) {
         o5 = p3;
+        float base = (float) o6;
         if (Globals::iPadHD) {
-            o14 = (unsigned short) ((float) o6 + -2.0f);
+            o14 = (unsigned short) (base + -2.0f);
             trigger = 132.1875f;
         } else {
-            o14 = (unsigned short) ((Globals::iPadLarge ? -2.0f : 0.0f) + (float) o6);
+            o14 = (unsigned short) ((Globals::iPadLarge ? -2.0f : 0.0f) + base);
             trigger = Globals::iPadLarge ? 189.0f : 94.0f;
         }
     } else {
         o5 = p4;
+        float base = (float) o6;
         if (Globals::iPadHD) {
-            o14 = (unsigned short) ((float) o6 + 100.0625f);
+            o14 = (unsigned short) (base + 100.0625f);
             trigger = 209.53125f;
         } else {
-            o14 = (unsigned short) ((Globals::iPadLarge ? 144.0f : 74.0f) + (float) o6);
+            o14 = (unsigned short) ((Globals::iPadLarge ? 144.0f : 74.0f) + base);
             trigger = Globals::iPadLarge ? 298.0f : 149.0f;
         }
     }
