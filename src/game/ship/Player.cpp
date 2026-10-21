@@ -861,17 +861,13 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
         soundId = kWeaponSounds[type];
     else if ((unsigned int) this->kiPlayer->shipGroup <= 10)
         soundId = kRaceShootSounds[this->kiPlayer->shipGroup];
-    FModSound *sound = Globals::sound;
-    AudioStateView *options = reinterpret_cast<AudioStateView *>(Globals::options);
-    if ((channel == 2 || channel == 3 || channel == 8) && sound->isPlaying(soundId)) {
-        if (options->soundEnabledFlag)
+    if ((channel == 2 || channel == 3 || channel == 8) && Globals::sound->isPlaying(soundId)) {
+        if (Globals::options[15])
             Globals::sound->updateEvent3DAttributes(soundId, pos, nullptr, false);
         return;
     }
-    Globals::sound->play(soundId, options->soundEnabledFlag ? pos : nullptr, nullptr, volume);
+    Globals::sound->play(soundId, Globals::options[15] ? pos : nullptr, nullptr, volume);
 }
-
-
 
 void Player::damage(int amount, bool ownFire, int weaponId) {
     if (!this->vulnerable || !this->active || this->hitpoints < 1)
@@ -1081,16 +1077,15 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
     Matrix transform = mat;
     if (this->guns == nullptr || this->shootingEnabled == 0)
         return true;
-    if (slot < 0 || (unsigned int) slot >= this->guns->size() || (*this->guns)[slot] == nullptr)
+    if (!((unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot] != nullptr))
         return true;
-    bool ready = true;
+    int ready = 1;
     for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
         Gun *gun = (*(*this->guns)[slot])[i];
-        unsigned int kind = gun->weaponType - 6;
-        if (kind <= 28 && ((1u << kind) & 0x10000003) != 0 && gun->lifetimes[0] >= 0) {
+        if ((gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34) && gun->lifetimes[0] >= 0) {
             gun->ignite();
         } else if (gun->itemIndex == itemIndex && gun->timer > gun->fireDelay) {
-            if (kind <= 28 && ((1u << kind) & 0x10000003) != 0)
+            if (gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34)
                 gun->level->field_69 = 1;
             if (gun->shoot(mat, (int) target, flag)) {
                 this->flShake += 0.008f;
@@ -1103,7 +1098,7 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
                 return true;
             }
             if (gun->ammoCount < 1)
-                ready = false;
+                ready = 0;
         }
     }
     return ready;
