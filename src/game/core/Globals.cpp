@@ -12,16 +12,19 @@ namespace {
         float colorB;
 
         // Bytes 0x0c..0x13: a single 8-byte region read under several overlapping
-        // interpretations. Canonical storage is the byte array; the former named
-        // members are accessed via reinterpret_cast at their byte offset within it:
+        // interpretations. The leading volume bytes stay in a byte array; flagAt0f
+        // is a named int16 so its store does not alias the volume bytes:
         //   musicVolume  uint8  @0x0c -> _region[0]
         //   volumePair   int16  @0x0c -> reinterpret_cast<int16_t&>(_region[0])
         //   sfxVolume    uint8  @0x0d -> _region[1]
         //   ambientVolume uint8 @0x0e -> _region[2]
-        //   flagAt0f     int16  @0x0f -> reinterpret_cast<int16_t&>(_region[3])
-        //   flagAt10     int16  @0x10 -> reinterpret_cast<int16_t&>(_region[4])
-        //   flagAt11     uint8  @0x11 -> _region[5]
-        uint8_t _region[8];
+        //   flagAt0f     int16  @0x0f -> flagAt0f
+        //   flagAt10     int16  @0x10 -> byte-offset 0x10 cast
+        //   flagAt11     uint8  @0x11 -> flagAt11
+        uint8_t _region[3];
+        int16_t flagAt0f;
+        uint8_t flagAt11;
+        uint8_t _pad12[2];
 
         float glowR;
         float glowG;
@@ -91,6 +94,8 @@ namespace {
     static_assert(offsetof(GameSettingsRecord, colorG) == 0x04, "colorG");
     static_assert(offsetof(GameSettingsRecord, colorB) == 0x08, "colorB");
     static_assert(offsetof(GameSettingsRecord, _region) == 0x0c, "_region");
+    static_assert(offsetof(GameSettingsRecord, flagAt0f) == 0x0f, "flagAt0f");
+    static_assert(offsetof(GameSettingsRecord, flagAt11) == 0x11, "flagAt11");
     static_assert(offsetof(GameSettingsRecord, glowR) == 0x14, "glowR");
     static_assert(offsetof(GameSettingsRecord, glowG) == 0x18, "glowG");
     static_assert(offsetof(GameSettingsRecord, tintR) == 0x1c, "tintR");
@@ -318,6 +323,7 @@ Generator *Globals::generator;
 #include "engine/file/FileRead.h"
 #include "engine/math/Transform.h"
 #include "engine/render/ParticleSettingsRef.h"
+#include "engine/core/ArrayReleaseClasses.h"
 
 #include <new>
 
@@ -661,7 +667,7 @@ Globals::Globals() {
     settings->colorG = 0.5f;
     settings->colorB = 0.5f;
     reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
-    reinterpret_cast<int16_t &>(settings->_region[4]) = 0;
+    *reinterpret_cast<int16_t *>(reinterpret_cast<uint8_t *>(settings) + 0x10) = 0;
 
     settings->glowR = 0.5f;
     settings->glowG = 0.5f;
@@ -788,28 +794,27 @@ void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *en
         *missionSlot = (int) (long) m;
     }
 
-    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     int *flagFFFF = (int *) &Globals::lastRecordWritten;
     int *langSettingSlot = &Globals::recordSlots;
     char *langFlag = (char *) &Globals::iPad;
     char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
+    GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
 
-    char lang = *langFlag;
-    settings->_region[5] = 1;
+    settings->flagAt0f = 0x101;
+    settings->flagAt11 = 1;
+    settings->glowR = 1.0f;
+    settings->glowG = 1.0f;
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
     settings->enableFlag30 = 1;
     settings->colorR = 0.5f;
     settings->colorG = 0.5f;
     settings->colorB = 0.5f;
     settings->tintB = 0.5f;
     settings->brightness = 1.0f;
-    settings->glowR = 1.0f;
-    settings->glowG = 1.0f;
-    settings->tintR = 0.6f;
-    settings->tintG = 0.6f;
-    reinterpret_cast<int16_t &>(settings->_region[3]) = 0x101;
     *zeroByte = 0;
     *flagFFFF = -1;
-    *langSettingSlot = (lang == 0) ? 6 : 0xc;
+    *langSettingSlot = (*langFlag == 0) ? 6 : 0xc;
 
     Galaxy *galaxy = new Galaxy();
     Globals::galaxy = galaxy;
@@ -861,12 +866,12 @@ void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *en
         settings->_region[1] = 0;
     }
 
-    Globals::instantActionPoints = 0;
-    Globals::first_start_ever = true;
     Globals::globals->resetHints();
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
     Globals::initMemoryWarning = 0;
+    Globals::instantActionPoints = 0;
+    Globals::first_start_ever = true;
 
     Layout *layout = new Layout();
     Globals::layout = layout;
