@@ -6079,10 +6079,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x33) {
-        hitpoints = (int) ((float) hitpoints * 1.7f);
-    } else if (type == 0x2c) {
+    if (type == 0x2c) {
         hitpoints = (int) ((float) hitpoints * 2.25f);
+    } else if (type == 0x33) {
+        hitpoints = (int) ((float) hitpoints * 1.7f);
     } else if (type == 0x31) {
         hitpoints = (int) ((float) hitpoints * 17.0f);
     }
@@ -6109,7 +6109,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int z = wz + jitterZ - 20000;
     player->setEmpData(empPoints, empTime);
 
-    PlayerFixedObject *ship = nullptr;
+    KIPlayer *ship = nullptr;
     if (shipClass == 0) {
         PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
@@ -6117,13 +6117,16 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        if (type == 0x2c || type == 0x31) {
+        if (type == 0x2c) {
             delete fighter->cargo;
             fighter->cargo = nullptr;
         } else if (type == 0x33) {
             fighter->field_0x25 = 0;
+        } else if (type == 0x31) {
+            delete fighter->cargo;
+            fighter->cargo = nullptr;
         }
-        ship = (PlayerFixedObject *) fighter;
+        ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
         PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
@@ -6184,7 +6187,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fixed;
     }
     ship->setLevel(this);
-    return ship;
+    return (PlayerFixedObject *) ship;
 }
 
 void Level::almostKillWanted(int index) {
@@ -6897,7 +6900,8 @@ void Level::createWingmen() {
                                    nullptr, true, false);
 
         Vector position = player->geometry->getPosition();
-        position += player->geometry->getRightVector() * (i == 0 ? -1000.0f : (i == 1 ? 2000.0f : 0.0f));
+        Vector right = player->geometry->getRightVector();
+        position += right * (i == 0 ? -1000.0f : (i == 1 ? 2000.0f : 0.0f));
         position -= player->geometry->getDirection() * 2000.0f;
         position.y += i == 2 ? 1000.0f : 0.0f;
         (*wingmen)[i]->setPosition(position);
