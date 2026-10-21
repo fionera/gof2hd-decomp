@@ -611,10 +611,8 @@ namespace {
 
 uint32_t AEFile::crc32_ccitt(const String &text) {
     uint32_t crc = 0;
-    for (int index = 0; index < (int32_t) text.size(); index++) {
-        uint16_t value = *AEStr_index(text, index);
-        crc = crc32Table[(value ^ crc) & 0xff] ^ (crc >> 8);
-    }
+    for (int index = 0; index < text.length; index++)
+        crc = (crc >> 8) ^ crc32Table[(crc ^ *text[index]) & 0xff];
     return crc;
 }
 
