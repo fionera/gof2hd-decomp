@@ -359,10 +359,10 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
     this->touchDown = 0;
     if (this->choiceVisible || this->chatActive) {
         int choice = this->choiceWindow->OnTouchEnd(x, y);
-        if (choice == 1)
-            this->chatActive = 0;
-        else if (choice == 0)
+        if (choice == 0)
             this->onKeyPress(0x10000);
+        else if (choice == 1)
+            this->chatActive = 0;
         return 0;
     }
     if (this->mapVisible) {
@@ -383,8 +383,8 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
             return 1;
         if (this->selectedAgent >= 0 && (*this->agents)[this->selectedAgent]->isGenericAgent())
             (*this->agents)[this->selectedAgent]->setEvent(1);
-        this->mode = 0;
         this->singleOffer = 0;
+        this->mode = 0;
         return 0;
     }
     if (this->listVisible) {
@@ -412,8 +412,8 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
             return 0;
         }
         if (this->agents != 0) {
-            this->hoverAgent = -1;
             this->selectedAgent = -1;
+            this->hoverAgent = -1;
             for (unsigned int i = 0; i < this->agents->size(); i++) {
                 Vector *topLeft = (*this->agentRects)[i * 2];
                 Vector *bottomRight = (*this->agentRects)[i * 2 + 1];
@@ -511,9 +511,8 @@ int SpaceLounge::OnTouchEnd(int x, int y) {
                 case 8:
                 case 9:
                 case 10: {
-                    float factor = 1.0f;
-                    if (offer >= 8 && offer <= 10)
-                        factor = Globals::options[56] ? 1.0f : 2.0f;
+                    float premium = Globals::options[56] ? 1.0f : 2.0f;
+                    float factor = offer >= 8 && offer <= 10 ? premium : 1.0f;
                     int credits = Globals::status->getCredits();
                     if (factor * (float) agent->getSellItemPrice() > (float) credits) {
                         this->choiceWindow->set(Globals::status->replaceHash(*Globals::gameText->getText(203),
