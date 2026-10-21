@@ -276,28 +276,28 @@ void IParticleSystem::emit(int delta) {
 
 void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
     int age = this->particleAges[index];
-    int setIndex = this->particleSetIds[index];
-    char *def = (char *) ParticleSettingsRef::cur + (setIndex + setIndex * 4) * 32;
+    const ParticleSettings::SetDefinition &def =
+            reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[this->particleSetIds[index]];
 
-    float t = (float) age / (float) *(int *) (def + 0x28);
+    float t = (float) age / (float) def.lifetime;
     t = t > 1.0f ? 1.0f : t;
     float inv = 1.0f - t;
-    uint32_t c0 = *(uint32_t *) (def + 0x34);
-    uint32_t c1 = *(uint32_t *) (def + 0x38);
-    alpha = (inv * (float) (c0 >> 24) + t * (float) (c1 >> 24)) * 0.003921569f;
-    red = (inv * (float) ((c0 >> 16) & 0xff) + t * (float) ((c1 >> 16) & 0xff)) * 0.003921569f;
-    green = (inv * (float) ((c0 >> 8) & 0xff) + t * (float) ((c1 >> 8) & 0xff)) * 0.003921569f;
-    blue = (inv * (float) (c0 & 0xff) + t * (float) (c1 & 0xff)) * 0.003921569f;
+    uint32_t c0 = def.color0;
+    uint32_t c1 = def.color1;
+    int fadeFrames = def.fadeFrames;
+    alpha = (t * (float) (c1 >> 24) + inv * (float) (c0 >> 24)) * 0.003921569f;
+    red = (t * (float) ((c1 >> 16) & 0xff) + inv * (float) ((c0 >> 16) & 0xff)) * 0.003921569f;
+    green = (t * (float) ((c1 >> 8) & 0xff) + inv * (float) ((c0 >> 8) & 0xff)) * 0.003921569f;
+    blue = (t * (float) (c1 & 0xff) + inv * (float) (c0 & 0xff)) * 0.003921569f;
 
-    int fadeFrames = *(int *) (def + 0x3c);
     if (age < fadeFrames) {
         float fade = (float) age / (float) fadeFrames;
         if (this->alphaFade != 0) {
-            alpha = fade * alpha;
-            red = fade * red;
-            green = fade * green;
+            alpha *= fade;
+            red *= fade;
+            green *= fade;
         } else {
-            blue = fade * blue;
+            blue *= fade;
         }
     }
 }
@@ -331,36 +331,25 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     this->maxParticles = 0;
     this->flags = 0;
 
-    int count = sets.size();
-    const ParticleSettings::ParticleSet *src = sets.data();
-    int firstFlags = 0;
-    uint32_t maxParticles = 0;
-    while (count != 0) {
-        int set = *src;
+    for (uint32_t i = 0; i < sets.size(); i++) {
+        int set = sets[i];
         if (set != -1) {
-            char *def = (char *) ParticleSettingsRef::cur + (set + set * 4) * 32;
-            uint32_t particles = *(uint32_t *) (def + 0x10);
-            if ((int) maxParticles <= (int) particles) {
-                maxParticles = particles;
-            }
-            this->maxParticles = maxParticles;
-            if (firstFlags == 0) {
-                firstFlags = *(int *) (def + 0xc);
-                this->flags = firstFlags;
+            const ParticleSettings::SetDefinition &def =
+                    reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur).sets[set];
+            this->maxParticles = this->maxParticles > def.count ? this->maxParticles : def.count;
+            if (this->flags == 0) {
+                this->flags = def.flags;
             }
         }
-        --count;
-        ++src;
     }
 
     this->particleSetIndex = 0;
     this->emitTimer = 0;
-    this->particleAges = new int[maxParticles];
-    this->particleSetIds = new int8_t[(int) maxParticles];
+    this->particleAges = new int[(uint32_t) this->maxParticles];
+    this->particleSetIds = new int8_t[this->maxParticles];
 
-    for (int i = 0; i < (int) maxParticles; ++i) {
+    for (int i = 0; i < this->maxParticles; ++i) {
         this->particleSetIds[i] = (int8_t) 200;
-        maxParticles = this->maxParticles;
     }
 
     this->initialized = 0;
