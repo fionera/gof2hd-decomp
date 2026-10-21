@@ -105,8 +105,8 @@ GameRecord::GameRecord() {
     this->field_0xc8 = 0;
     this->field_0xcc = 0;
     this->field_0xd0 = 0;
-    this->field_0xd4 = 0;
     this->field_0xd8 = 0;
+    this->field_0xd4 = 0;
     this->field_0xdc = 0;
     this->field_0x1b8 = 0;
     this->field_0x1c0 = 0;
@@ -134,10 +134,8 @@ GameRecord::GameRecord() {
     this->field_0x180 = 0;
     this->field_0x184 = 0;
 
-    this->field_0x1a4 = 0;
-    this->field_0x1a8 = 0;
-    this->field_0x1ac = 0;
-    this->field_0x1b0 = 0;
+    for (int i = 0; i < 4; i++)
+        this->collectedBounties[i] = 0;
 
     this->field_0x1b4 = 0;
 }
@@ -585,10 +583,10 @@ afterDlcUnsaleable:
             }
         }
         st = Globals::status;
-        st->collectedBounties[0] = this->field_0x1a4;
-        st->collectedBounties[1] = this->field_0x1a8;
-        st->collectedBounties[2] = this->field_0x1ac;
-        st->collectedBounties[3] = this->field_0x1b0;
+        st->collectedBounties[0] = this->collectedBounties[0];
+        st->collectedBounties[1] = this->collectedBounties[1];
+        st->collectedBounties[2] = this->collectedBounties[2];
+        st->collectedBounties[3] = this->collectedBounties[3];
         station = Globals::status->getStation();
         if (Station_getIndex(station) == 0x6c) {
             Station *stStation = Globals::status->getStation();

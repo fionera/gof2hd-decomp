@@ -94,28 +94,22 @@ void HackingGame::rotateRightCW(int *state) {
     this->rotatingRight = true;
 }
 
-HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex) {
+HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmount, int dockingIndex) {
     this->type = type;
-    int scaledType = type + type * 2;
-    int savedRewardItem = rewardItem;
-    int savedCanvas = canvas;
-    int base = scaledType * 4;
+    // Each hacking-game type has its own set of six tiles plus their highlighted versions.
     for (int i = 0; i != 6; ++i) {
-        unsigned int handle;
-        Globals::Canvas->Image2DCreate((uint16_t)(i + 0x1f4a), handle);
-        this->tileImages[base + i] = handle;
-        Globals::Canvas->Image2DCreate((uint16_t)(i + 0x1f50), handle);
-        this->tileImages[base + 6 + i] = handle;
+        Globals::Canvas->Image2DCreate((uint16_t) (i + 8010), *(unsigned int *) &this->tileImages[type * 12 + i]);
+        Globals::Canvas->Image2DCreate((uint16_t) (i + 8016), *(unsigned int *) &this->tileImages[type * 12 + 6 + i]);
     }
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f48, *(unsigned int *) &this->bottomImage);
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f49, *(unsigned int *) &this->topImage);
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f47, *(unsigned int *) &this->mainImage);
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f46, *(unsigned int *) &this->arrowActive);
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f44, *(unsigned int *) &this->arrowIdle);
-    Globals::Canvas->Image2DCreate((uint16_t) 0x1f45, *(unsigned int *) &this->markImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 8008, *(unsigned int *) &this->bottomImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 8009, *(unsigned int *) &this->topImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 8007, *(unsigned int *) &this->mainImage);
+    Globals::Canvas->Image2DCreate((uint16_t) 8006, *(unsigned int *) &this->arrowActive);
+    Globals::Canvas->Image2DCreate((uint16_t) 8004, *(unsigned int *) &this->arrowIdle);
+    Globals::Canvas->Image2DCreate((uint16_t) 8005, *(unsigned int *) &this->markImage);
 
-    this->difficulty = savedCanvas;
-    this->rewardItem = savedRewardItem;
+    this->difficulty = difficulty;
+    this->rewardItem = rewardItem;
     this->rewardAmount = rewardAmount;
     this->dockingIndex = dockingIndex;
     reInit();
