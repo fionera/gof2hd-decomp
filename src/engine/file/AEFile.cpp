@@ -503,18 +503,19 @@ void AEFile::collectFilesInPakFiles(String &path) {
 }
 
 void AEFile::sortPakFileEntryList() {
-    int32_t count = (int32_t) AEFile::pakFileEntryList->size();
-    if (count == 0) {
+    uint32_t count = AEFile::pakFileEntryList->size();
+    if (count == 0)
         return;
-    }
 
-    for (int32_t pass = count - 1; pass >= 0; pass--) {
-        for (int32_t index = 0; index < pass; index++) {
-            AEPakFileEntry *left = AEFile::pakFileEntryList->data()[index];
-            AEPakFileEntry *right = AEFile::pakFileEntryList->data()[index + 1];
+    // Bubble sort by CRC so findPakFile can binary-search.
+    for (uint32_t pass = count - 1; (int32_t) pass >= 0; pass--) {
+        for (uint32_t index = 0; index != pass; index++) {
+            AEPakFileEntry **pair = &AEFile::pakFileEntryList->data()[index];
+            AEPakFileEntry *left = pair[0];
+            AEPakFileEntry *right = pair[1];
             if (left->crc > right->crc) {
                 AEFile::pakFileEntryList->data()[index] = right;
-                AEFile::pakFileEntryList->data()[index + 1] = left;
+                (&AEFile::pakFileEntryList->data()[index])[1] = left;
             }
         }
     }
