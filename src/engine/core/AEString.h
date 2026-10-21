@@ -15,11 +15,9 @@ namespace AbyssEngine {
 
         String(const char *cstr, bool reverse = false);
 
-        AESTRING_SHIM String(const String &other) : data(nullptr), length(0) { Set(other.data); }
-
         String(const uint16_t *wstr, bool reverse);
 
-        String(const String &other, bool reverse);
+        String(const String &other, bool reverse = false);
 
         explicit String(char c);
 
