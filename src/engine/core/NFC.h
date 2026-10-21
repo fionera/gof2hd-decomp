@@ -17,27 +17,27 @@ public:
 
     void iap_buy_dlc_valkyrie();
 
-    void iap_buy_credits_100_000();
+    static void iap_buy_credits_100_000();
 
-    void iap_buy_credits_300_000();
+    static void iap_buy_credits_300_000();
 
-    void iap_buy_credits_1_000_000();
+    static void iap_buy_credits_1_000_000();
 
-    void iap_buy_credits_3_000_000();
+    static void iap_buy_credits_3_000_000();
 
-    void iap_buy_credits_10_000_000();
+    static void iap_buy_credits_10_000_000();
 
     void iap_restore_purchases();
 
-    void free_credits_rateGame();
+    static void free_credits_rateGame();
 
-    void free_credits_subscribeToYoutubeChannel();
+    static void free_credits_subscribeToYoutubeChannel();
 
-    void free_credits_likeGOF2OnFacebook();
+    static void free_credits_likeGOF2OnFacebook();
 
-    void free_credits_likeFishlabsOnFacebook();
+    static void free_credits_likeFishlabsOnFacebook();
 
-    void free_credits_followOnTwitter();
+    static void free_credits_followOnTwitter();
 
     void showMoreGames();
 
