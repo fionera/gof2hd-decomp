@@ -222,10 +222,6 @@ PlayerEgo::PlayerEgo(Player *player)
     this->yawRamp = 0;
     this->field_0x260 = 0;
     this->field_0x264 = 0;
-    this->rollAccum = 0;
-    this->field_0x26c = 0;
-    this->yawAccumD = 0;
-    this->field_0x274 = 0;
 
     this->player = player;
     player->setPlayShootSound(true, 2);
@@ -316,14 +312,22 @@ PlayerEgo::PlayerEgo(Player *player)
     this->freeLookMode = 0;
     this->field_0x354 = Globals::status->inBlackMarketSystem();
     this->maxBank = this->handling * 750.0f / 63.0f * 1.2f;
-    this->bankFactor = 15.139356f;
+    this->bankFactor = 15.139357f;
     this->field_0x20 = 0;
     for (int i = 0; i < 5; i++)
         this->bankHistory[i] = 0;
     this->bankHistoryIndex = 0;
     this->bankHistoryFilled = 0;
+    this->rollAccum = 0;
+    this->field_0x26c = 0;
+    this->yawAccumD = 0;
+    this->field_0x274 = 0;
     this->hitShakeTimer = 0;
     this->hitShake = 0;
+    this->easeMatrix = nullptr;
+    this->field_0x35c = 0;
+    this->dockTotalAmount = 0;
+    this->dockTransferedAmount = 0;
     this->field_0x84 = 1;
     this->spacePoint = 0;
     this->engineSoundId = -1;
