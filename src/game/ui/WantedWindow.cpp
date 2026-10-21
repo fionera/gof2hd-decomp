@@ -175,10 +175,10 @@ bool WantedWindow::OnTouchEnd(int x, int y) {
     if (this->showingMap) {
         if (this->starMap->OnTouchEnd(x, y)) {
             // Back from the star map: restore the window frame.
-            int width;
             int height;
+            int halfWidth;
+            int width;
             if (Globals::iPad) {
-                int halfWidth;
                 if (Globals::iPadHD) {
                     height = 703;
                     halfWidth = 457;
@@ -192,6 +192,8 @@ bool WantedWindow::OnTouchEnd(int x, int y) {
                     }
                     halfWidth = (unsigned int) width >> 1;
                 }
+                this->windowWidth = width;
+                this->windowHeight = height;
                 this->windowX = (Globals::w >> 1) - halfWidth;
                 this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
             } else {
@@ -199,9 +201,10 @@ bool WantedWindow::OnTouchEnd(int x, int y) {
                 height = Globals::h;
                 this->windowX = 0;
                 this->windowY = 0;
+                this->windowWidth = width;
+                this->windowHeight = height;
             }
-            this->windowWidth = width;
-            this->windowHeight = height;
+
             this->showingMap = 0;
         }
         return false;
@@ -404,9 +407,9 @@ int WantedWindow::init() {
     }
 
     int width;
+    int halfWidth;
     int height;
     if (Globals::iPad) {
-        int halfWidth;
         if (Globals::iPadHD) {
             height = 703;
             halfWidth = 457;
@@ -420,6 +423,8 @@ int WantedWindow::init() {
             }
             halfWidth = (unsigned int) width >> 1;
         }
+        this->windowWidth = width;
+        this->windowHeight = height;
         this->windowX = (Globals::w >> 1) - halfWidth;
         this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
     } else {
@@ -427,9 +432,9 @@ int WantedWindow::init() {
         height = Globals::h;
         this->windowX = 0;
         this->windowY = 0;
+        this->windowWidth = width;
+        this->windowHeight = height;
     }
-    this->windowWidth = width;
-    this->windowHeight = height;
 
     // Preselect the first active wanted person.
     this->selectedWanted = 0;
