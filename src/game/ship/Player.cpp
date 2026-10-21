@@ -51,7 +51,6 @@ static const int kWeaponSounds[233] = {
     2265, -1, -1, -1, -1, 2254, 2267, 2268, 2252, -1, 2269, -1,
     2275, 2276, 2278, 2277, 2280,
 };
-static float **g_update_speed = nullptr;
 
 struct SlaveLink {
     int field_0x0;
@@ -71,7 +70,6 @@ static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
 #endif
 
 
-void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
 // lint: void_ptr (external symbol; retyping the param breaks symbol parity)
 
@@ -497,8 +495,8 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->hitVector[0] = 0.0f;
     self->hitVector[1] = 0.0f;
     self->hitVector[2] = 0.0f;
-    self->position[1] = 0.0f;
-    self->position[2] = 0.0f;
+    self->lastPosition.y = 0.0f;
+    self->lastPosition.z = 0.0f;
     self->radius = radius;
     self->numPrimaryGuns = numPrimary;
     self->numSecondaryGuns = numSecondary;
@@ -511,7 +509,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
     self->shootingEnabled = 1;
-    self->position[0] = 0.0f;
+    self->lastPosition.x = 0.0f;
     self->flShake = 0.0f;
     self->bombForce = 0.0f;
     self->empForce = 0.0f;
@@ -571,8 +569,8 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
     Vector tmp = AbyssEngine::AEMath::MatrixGetPosition(
         *reinterpret_cast<const Matrix *>(self->transform));
-    *(Vector *) self->position = tmp;
-    self->enginePositionVec = (Vector *) (__INTPTR_TYPE__) -1;
+    self->lastPosition = tmp;
+    self->engineSoundId = -1;
 }
 
 Vector Player::getPosition() {
@@ -698,7 +696,7 @@ lab_3164:
     float f = (float) self->empData;
     reinterpret_cast<uint16_t &>(self->empDisabledByte) = 1;
     self->empPoints = 0;
-    (self->pad_e8[0]) = 0;
+    self->empTimer = 0;
     self->empForce = f;
     self->updateDamageRate();
     return;
@@ -1212,75 +1210,43 @@ void Player::setMaxArmorHP(int value) {
 }
 
 
-static void (**g_update_transform)(float *, float *, int) = nullptr;
 
-static const float k_update_a = 0.0f;
-static const float k_update_b = 0.0f;
-static const float k_update_c = 0.0f;
 
-Vector *Player::update(int dt, bool doSound) {
-    Player * self = this;
-
-    int b4 = self->damageTimer + dt;
-    self->damageTimer = b4;
-    if (b4 > 3000) {
-        self->damaged = 0;
-        self->damageTimer = 0;
+void Player::update(int dt, bool doSound) {
+    this->damageTimer += dt;
+    if (this->damageTimer > 3000) {
+        this->damageTimer = 0;
+        this->damaged = 0;
     }
 
-    Vector *result = 0;
-
-    if (reinterpret_cast<uint16_t &>(self->empDisabledByte) != 0) {
-        int e = self->empData + dt;
-        float ef = (float) self->empData;
-        float ef2 = (float) e;
-        int maxEmp = self->maxEmpPoints;
-        float mf = (float) maxEmp;
-        float v = (ef2 / ef) * mf;
-        self->empData = e;
-        self->empPoints = (int) v;
-        if (maxEmp < (int) v) {
-            reinterpret_cast<uint16_t &>(self->empDisabledByte) = 0;
-            self->empPoints = maxEmp;
-            Globals::status->field_134 = Globals::status->field_134 - 1;
-            self->empData = 0;
+    if (this->empDisabledByte) {
+        this->empTimer += dt;
+        this->empPoints = (int) ((float) this->empTimer / (float) this->empData * (float) this->maxEmpPoints);
+        if (this->empPoints > this->maxEmpPoints) {
+            this->empPoints = this->maxEmpPoints;
+            this->empDisabledByte = 0;
+            Globals::status->field_134--;
+            this->empTimer = 0;
         }
-        ((Player *) (self))->updateDamageRate();
+        this->updateDamageRate();
     }
 
-    AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(gEngine);
-    if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (Vector *) (__INTPTR_TYPE__) -1) {
-        if (self->engineSoundPlaying != 0) {
-            self->StopEngineSound();
-        }
-    } else {
-        float *transform = self->transform;
-        void (*fn)(float *, float *, int) = *g_update_transform;
-        float local[3];
-        float spd = (float) (**g_update_speed);
-        fn(*g_update_speed, local, (int) (long) transform);
-        float tmpA[3], tmpB[3], tmpC[3];
-        float d = (*(Vector *) tmpA = *(const Vector *) self->position - *(const Vector *) local,
-                   AbyssEngine::AEMath::VectorLength(*(const Vector *) tmpA));
-        *(Vector *) tmpB = d * *(const Vector *) tmpA;
-        *(Vector *) tmpC = *(const Vector *) tmpB;
-        *(Vector *) tmpC /= (float) dt;
-        (void) spd;
-        fn(tmpB, local, (int) (long) transform);
-        FMOD::Event *ev = (Globals::sound)->updateEvent3DAttributes(
-            self->engineEvent, 0, (Vector *) tmpB, (Vector *) tmpC, false);
-        self->engineEvent = ev;
-        self->engineSoundPlaying = 1;
-        fn(tmpA, local, (int) (long) transform);
-        *(Vector *) self->position = *(Vector *) tmpA;
+    if (Globals::options[15] && doSound && this->engineSoundId != -1) {
+        const Matrix &transform = reinterpret_cast<const Matrix &>(this->transform[0]);
+        Vector velocity = (float) Player::velocity
+                          * (AbyssEngine::AEMath::MatrixGetPosition(transform) - this->lastPosition)
+                          / (float) dt;
+        Vector position = AbyssEngine::AEMath::MatrixGetPosition(transform);
+        this->engineEvent = Globals::sound->updateEvent3DAttributes(this->engineEvent, this->engineSoundId,
+                                                                   &position, &velocity, false);
+        this->engineSoundPlaying = 1;
+        this->lastPosition = AbyssEngine::AEMath::MatrixGetPosition(transform);
+    } else if (this->engineSoundPlaying) {
+        this->StopEngineSound();
     }
 
-    float speed = (float) dt;
-    float nf = self->flShake + speed * k_update_a * k_update_b;
-    self->flShake = nf;
-    FloatVectorMax(&result, nf, k_update_c, 2, 0x20);
-
-    return result;
+    float shake = this->flShake + (float) dt * -0.001f * 0.025f;
+    this->flShake = shake < 0.0f ? 0.0f : shake;
 }
 
 bool Player::shoot(int slot, int itemIndex, long long target, bool flag) {
@@ -1386,15 +1352,12 @@ Array<Player *> *Player::getEnemies() {
     return this->enemies;
 }
 
-void Player::PlayEngineSound(int unused, Vector *vec) {
-    (void) unused;
-    this->enginePositionVec = vec;
-    if (reinterpret_cast<AudioStateView *>(Globals::appManager)->soundEnabledFlag != 0) {
-        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(
-            *reinterpret_cast<const Matrix *>(this->transform));
-        FMOD::Event *ev = ((FModSound *) Globals::sound)->updateEvent3DAttributes(
-            this->engineEvent, 0, (Vector *) this->enginePositionVec, &pos, false);
-        this->engineEvent = ev;
+void Player::PlayEngineSound(int soundId, Vector *position) {
+    this->engineSoundId = soundId;
+    if (Globals::options[15]) {
+        Vector pos = AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<const Matrix &>(this->transform[0]));
+        this->engineEvent = Globals::sound->updateEvent3DAttributes(this->engineEvent, this->engineSoundId, &pos,
+                                                                   nullptr, true);
         this->engineSoundPlaying = 1;
     }
 }
@@ -1422,4 +1385,4 @@ void Player::StopEngineSound() {
     }
 }
 
-Vector *Player::velocity;
+int Player::velocity;
