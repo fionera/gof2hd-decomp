@@ -10,7 +10,7 @@ namespace AbyssEngine {
         Vector::operator const float *() const { return &x; }
 
         float &Vector::operator[](int i) { return (&x)[i]; }
-        float Vector::operator[](int i) const { return (&x)[i]; }
+        const float &Vector::operator[](int i) const { return (&x)[i]; }
 
         Vector &Vector::operator=(const Vector &other) {
             x = other.x;
@@ -194,17 +194,9 @@ namespace AbyssEngine {
 
         Vector VectorNormalize(const Vector &value) {
             const float length = ::sqrtf(value.x * value.x + value.y * value.y + value.z * value.z);
-            Vector result;
-            if (length == 0.0f) {
-                result.x = 0.0f;
-                result.y = 1.0f;
-                result.z = 0.0f;
-            } else {
-                result.x = value.x / length;
-                result.y = value.y / length;
-                result.z = value.z / length;
-            }
-            return result;
+            if (length == 0.0f)
+                return Vector(0.0f, 1.0f, 0.0f);
+            return Vector(value.x / length, value.y / length, value.z / length);
         }
 
         float VectorLength(const Vector &value) {

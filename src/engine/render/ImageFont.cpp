@@ -107,8 +107,8 @@ namespace AbyssEngine {
             return;
 
         bool forward = (canvas->field_0x1c | rtl) != 0;
-        int step = forward ? 1 : -1;
         int index = forward ? 0 : len - 1;
+        int step = forward ? 1 : -1;
         if (Engine::enableReverseFlag != 0 && GameText::getLanguage() == 9 &&
             GameText::isNonArabicString(text, len) != 0) {
             index = 0;
@@ -200,13 +200,10 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
-        unsigned int i = 0;
-        unsigned short v;
-        do {
-            v = (unsigned short) i;
-            i = i + 1;
-        } while (v < count);
-        return (int) i;
+        int i = 0;
+        while ((unsigned short) i++ < count) {
+        }
+        return i;
     }
 }
 
@@ -222,7 +219,9 @@ namespace AbyssEngine {
                     int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
                     int adv = font->spacing + w;
                     // A narrow (11 px) space glyph is drawn two pixels tighter.
-                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
                     break;
                 }
             }
@@ -266,7 +265,9 @@ namespace AbyssEngine {
                 if (font->codes[g] == str[i]) {
                     int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
                     int adv = font->spacing + w;
-                    total += (w == 11 && font->codes[g] == ' ') ? adv - 2 : adv;
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
                     break;
                 }
             }
@@ -303,28 +304,16 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        uint16_t *table = (*slot)->codes;
-        if (table != 0)
-            delete[] table;
+        if ((*slot)->codes != 0)
+            delete[] (*slot)->codes;
         (*slot)->codes = 0;
 
-        unsigned int i = 0;
-        Mesh **glyphs;
-        ImageFont *f;
-        for (;;) {
-            f = *slot;
-            glyphs = f->glyphMeshes;
-            if (f->glyphCount <= i)
-                break;
-            MeshRelease(engine, &glyphs[i]);
-            ++i;
-        }
+        for (unsigned short i = 0; i < (*slot)->glyphCount; i++)
+            MeshRelease(engine, &(*slot)->glyphMeshes[i]);
 
-        if (glyphs != 0) {
-            operator delete[](glyphs); // lint: operator_call (a builtin delete[] lets -Oz hoist it above the null test)
-            f = *slot;
-        }
-        f->glyphMeshes = 0;
+        if ((*slot)->glyphMeshes != 0)
+            delete[] (*slot)->glyphMeshes;
+        (*slot)->glyphMeshes = 0;
 
         if (*slot != 0)
             delete *slot;

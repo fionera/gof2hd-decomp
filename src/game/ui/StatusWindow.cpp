@@ -40,7 +40,7 @@ StatusWindow::~StatusWindow() {
     this->detailLines = 0;
 }
 
-int StatusWindow::OnTouchMove(int x, int y) {
+bool StatusWindow::OnTouchMove(int x, int y) {
     if ((Globals::layout->field_0xc_leftMargin < y && y < Globals::h - Globals::layout->field_0x10_rightMargin) ||
         Globals::mouse_wheel != 0) {
         int delta = y - this->lastTouchY;
@@ -69,7 +69,7 @@ int StatusWindow::OnTouchMove(int x, int y) {
                 (*this->medalButtons)[i]->OnTouchMove(x, y);
         }
     }
-    return 0;
+    return false;
 }
 
 float StatusWindow::getRelativeScrollStartPos() {
@@ -141,7 +141,7 @@ int StatusWindow::OnTouchEnd(int x, int y) {
     return 0;
 }
 
-int StatusWindow::OnTouchBegin(int x, int y) {
+bool StatusWindow::OnTouchBegin(int x, int y) {
     this->lastTouchY = y;
     this->touchStartY = y;
     this->scrollVelocity = 0;
@@ -158,7 +158,7 @@ int StatusWindow::OnTouchBegin(int x, int y) {
                 (*this->medalButtons)[i]->OnTouchBegin(x, y);
         }
     }
-    return 0;
+    return false;
 }
 
 float StatusWindow::getRelativeScrollHeight() {
@@ -534,7 +534,7 @@ void StatusWindow::draw() {
                                     rowY + Globals::layout->field_0x4 * 4, false);
     }
 
-    if (Globals::iPad || this->activeTab == 1) {
+    if (this->activeTab == 1 || Globals::iPad) {
         // Medal grid.
         int columnW = this->boxWidth / 3;
         int gridX;
@@ -564,15 +564,15 @@ void StatusWindow::draw() {
             Globals::Canvas->SetColor(0xffffffff);
             Globals::layout->drawBox(2, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         Globals::layout->field_0x4 * this->detailLines->size() -
-                                         Globals::layout->field_0x4c * 2,
+                                         (Globals::layout->field_0x4 * this->detailLines->size() +
+                                         Globals::layout->field_0x4c * 2),
                                      this->boxWidth,
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
                                      String(""));
             Globals::layout->drawBox(5, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         Globals::layout->field_0x4 * this->detailLines->size() -
-                                         Globals::layout->field_0x4c * 2,
+                                         (Globals::layout->field_0x4 * this->detailLines->size() +
+                                         Globals::layout->field_0x4c * 2),
                                      this->boxWidth,
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
                                      String(""));

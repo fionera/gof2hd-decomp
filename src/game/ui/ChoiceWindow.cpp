@@ -10,14 +10,14 @@
 #include "game/ui/TouchButton.h"
 #include "engine/render/PaintCanvas.h"
 
-int ChoiceWindow::OnTouchMove(int x, int y) {
+bool ChoiceWindow::OnTouchMove(int x, int y) {
     if (this->buttonsVisible != 0) {
         if (this->leftButton != nullptr) this->leftButton->OnTouchMove(x, y);
         if (this->rightButton != nullptr) this->rightButton->OnTouchMove(x, y);
         if (this->miscButton != nullptr) this->miscButton->OnTouchMove(x, y);
     }
     if (this->scrollWindow != nullptr) this->scrollWindow->OnTouchMove(x, y);
-    return 0;
+    return false;
 }
 
 uint8_t ChoiceWindow::hasChoice() {
@@ -75,14 +75,14 @@ void ChoiceWindow::removeButtons() {
     this->buttonsVisible = 0;
 }
 
-int ChoiceWindow::OnTouchBegin(int x, int y) {
+bool ChoiceWindow::OnTouchBegin(int x, int y) {
     if (this->buttonsVisible != 0) {
         if (this->leftButton != nullptr) this->leftButton->OnTouchBegin(x, y);
         if (this->rightButton != nullptr) this->rightButton->OnTouchBegin(x, y);
         if (this->miscButton != nullptr) this->miscButton->OnTouchBegin(x, y);
     }
     if (this->scrollWindow != nullptr) this->scrollWindow->OnTouchBegin(x, y);
-    return 0;
+    return false;
 }
 
 ChoiceWindow::~ChoiceWindow() {

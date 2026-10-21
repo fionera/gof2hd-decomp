@@ -23,8 +23,8 @@ public:
     Mesh **transformedMeshes;
     AbyssEngine::Matrix *transforms;
     int8_t *lodLevels;
-    uint8_t *enabled;
-    uint8_t *visible;
+    bool *enabled;
+    bool *visible;
     int cols;
     uint8_t dirty;
 

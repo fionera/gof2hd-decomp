@@ -32,7 +32,7 @@ AEPakFile::~AEPakFile() {
     Release();
 }
 
-uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+bool AEPakFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
     FileInterface *file;
     if (bytes != 0 && (file = fileInterface) != nullptr) {
@@ -88,7 +88,7 @@ uint32_t AENormalFile::Release() {
     return 1;
 }
 
-uint32_t AENormalFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
+bool AENormalFile::Read(uint32_t bytes, void *buffer) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
     if (file != nullptr) {
         return file->Read(bytes, buffer);
@@ -268,7 +268,7 @@ void AEFile::Close(uint32_t handle) {
     AEFile::file->data()[handle] = nullptr;
 }
 
-uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
+bool AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     if (AEFile::fileInterface != nullptr && handle < AEFile::file->size()) {
         AELowLevelFile *file = AEFile::file->data()[handle];
@@ -279,16 +279,16 @@ uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: 
     return 0;
 }
 
-uint32_t AEFile::Read(bool &value, uint32_t handle) { return Read(1, &value, handle); }
-uint32_t AEFile::Read(char &value, uint32_t handle) { return Read(1, &value, handle); }
-uint32_t AEFile::Read(int8_t &value, uint32_t handle) { return Read(1, &value, handle); }
-uint32_t AEFile::Read(uint8_t &value, uint32_t handle) { return Read(1, &value, handle); }
-uint32_t AEFile::Read(int16_t &value, uint32_t handle) { return Read(2, &value, handle); }
-uint32_t AEFile::Read(uint16_t &value, uint32_t handle) { return Read(2, &value, handle); }
-uint32_t AEFile::Read(int32_t &value, uint32_t handle) { return Read(4, &value, handle); }
-uint32_t AEFile::Read(uint32_t &value, uint32_t handle) { return Read(4, &value, handle); }
-uint32_t AEFile::Read(int64_t &value, uint32_t handle) { return Read(8, &value, handle); }
-uint32_t AEFile::Read(float &value, uint32_t handle) { return Read(4, &value, handle); }
+bool AEFile::Read(bool &value, uint32_t handle) { return Read(1, &value, handle); }
+bool AEFile::Read(char &value, uint32_t handle) { return Read(1, &value, handle); }
+bool AEFile::Read(int8_t &value, uint32_t handle) { return Read(1, &value, handle); }
+bool AEFile::Read(uint8_t &value, uint32_t handle) { return Read(1, &value, handle); }
+bool AEFile::Read(int16_t &value, uint32_t handle) { return Read(2, &value, handle); }
+bool AEFile::Read(uint16_t &value, uint32_t handle) { return Read(2, &value, handle); }
+bool AEFile::Read(int32_t &value, uint32_t handle) { return Read(4, &value, handle); }
+bool AEFile::Read(uint32_t &value, uint32_t handle) { return Read(4, &value, handle); }
+bool AEFile::Read(int64_t &value, uint32_t handle) { return Read(8, &value, handle); }
+bool AEFile::Read(float &value, uint32_t handle) { return Read(4, &value, handle); }
 
 uint32_t AEFile::Read(String &value, uint32_t handle, bool wide) {
     uint32_t length;
@@ -714,7 +714,3 @@ Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
 Array<AELowLevelFile *> *AEFile::file;
 char *AEFile::appRoot;
 
-uint32_t AEPakFile::Write(uint32_t, void *) { // lint: void_ptr virtual buffer param; Pv baked into mangled name
-    // lint: void_ptr virtual buffer param; Pv baked into mangled name
-    return 0;
-}

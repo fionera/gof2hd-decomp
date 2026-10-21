@@ -138,17 +138,17 @@ namespace AbyssEngine {
                 glUniform1i(this->uUVAnimationLoc, mesh->hasAnimation);
             glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
 
-            glUniform3fv(this->uAmbientColor0Loc, 1, (float *) &engine->lightAmbientShaded);
-            glUniform3fv(this->uDiffuseColor0Loc, 1, (float *) &engine->field_0x2fc);
-            glUniform3fv(this->uSpecularColor0Loc, 1, (float *) &engine->lightDiffuseShaded);
+            glUniform3fv(this->uAmbientColor0Loc, 1, (float *) engine->ambientShaded[0]);
+            glUniform3fv(this->uDiffuseColor0Loc, 1, (float *) engine->diffuseShaded[0]);
+            glUniform3fv(this->uSpecularColor0Loc, 1, (float *) engine->specularShaded[0]);
 
             glUniform4f(this->uLightDirection0Loc, engine->lightDir.x, engine->lightDir.y,
                         engine->lightDir.z, engine->lightDirty[0]);
 
             if (engine->lightCount >= 2) {
-                glUniform3fv(this->uAmbientColor1Loc, 1, (float *) &engine->lightSpecularShaded);
-                glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) &engine->field_0x308);
-                glUniform3fv(this->uSpecularColor1Loc, 1, (float *) &engine->particleAmbient);
+                glUniform3fv(this->uAmbientColor1Loc, 1, (float *) engine->ambientShaded[1]);
+                glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) engine->diffuseShaded[1]);
+                glUniform3fv(this->uSpecularColor1Loc, 1, (float *) engine->specularShaded[1]);
                 glUniform4f(this->uLightDirection1Loc, engine->field_0x33c.x, engine->field_0x33c.y,
                             engine->field_0x33c.z, engine->lightDirty[1]);
             } else {

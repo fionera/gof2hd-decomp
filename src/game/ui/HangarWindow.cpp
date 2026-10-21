@@ -20,16 +20,11 @@
 #include "engine/core/GameText.h"
 #include "game/menu/ModStation.h"
 
-static const String g_HangarWindow_emptyDialogText;
 
 void Status_replaceHash(...);
 
 static inline int IDIV(int a, int b) { return a / b; }
 static inline unsigned int UDIV(unsigned int a, unsigned int b) { return a / b; }
-
-unsigned char *AppManager_GetApplicationData();
-
-unsigned char *AppManager_GetApplicationModule(unsigned int id);
 
 static inline unsigned char *ApplicationManager_GetApplicationData() { return (unsigned char *)Globals::appManager->GetApplicationData(); }
 
@@ -62,7 +57,6 @@ static int *g_hw_screenHeight;
 static AbyssEngine::ImageFont **g_hw_font;
 static RecordHandler **g_hw_recordHandler;
 static uint8_t *g_hw_optionFlags;
-static unsigned int *g_hw_dlcModuleId;
 static uint8_t *g_hw_blackMarketHintFlag;
 static uint8_t *g_hw_introHintFlag;
 static int *g_hw_headerTextId;
@@ -426,12 +420,14 @@ void HangarWindow::update(int delta) {
 
     if (this->hangarList->getCurrentTabItems() != 0) {
         int minOffset = this->visibleHeight - this->currentContentHeight;
-        if (minOffset > -1) {
+        if (minOffset < 0) {
+            if (minOffset > this->scrollOffset) {
+                this->damping = 1.0f;
+                this->velocity = (float) (minOffset - this->scrollOffset) * 0.5f;
+            }
+        } else {
             this->scrollOffset = 0;
             this->velocity = 0;
-        } else if (minOffset > this->scrollOffset) {
-            this->damping = 1.0f;
-            this->velocity = (float) (minOffset - this->scrollOffset) * 0.5f;
         }
     }
 
@@ -562,7 +558,7 @@ void HangarWindow::render() {
     PaintCanvas *canvas = Globals::Canvas;
     ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
 
-    unsigned char *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
+    unsigned char *dlc = (unsigned char *) Globals::appManager->GetApplicationModule(5);
 
     bool dlcShown = dlc != 0 && (*(uint8_t *) ((char *) (dlc) + (0x18))) != 0;
 
@@ -846,7 +842,7 @@ void HangarWindow::render() {
             }
         }
     } else {
-        unsigned char *appData = AppManager_GetApplicationData();
+        unsigned char *appData = ApplicationManager_GetApplicationData();
         (void) appData;
         if (this->listModeFlag == 0) {
             for (int slot = 0x30; slot <= 0x40; slot += 4) {
@@ -930,7 +926,7 @@ float HangarWindow::getRelativeScrollHeight() {
     return (float)(e + a) / (float)a;
 }
 
-int HangarWindow::OnTouchBegin(int touch, int coord) {
+bool HangarWindow::OnTouchBegin(int touch, int coord) {
     this->holdTime = 0;
     this->repeatTimer = 0;
     bool handled = Globals::layout->OnTouchBegin(touch, coord);
@@ -947,7 +943,7 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
             }
         }
         this->dialog->OnTouchBegin(touch, coord);
-        return 0;
+        return false;
     }
 
     this->lastTouchY = coord;
@@ -957,7 +953,7 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
 
     if (this->viewMode == 1) {
         this->listItemWindow->OnTouchBegin(touch, coord);
-        return 0;
+        return false;
     }
 
     bool outsideList = true;
@@ -996,10 +992,10 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
                     String("#C"));
         }
         this->dialog->set(msg, !this->localBluePrint);
-        this->dialogActive = 1;
         this->bluePrintPurchasePending = 1;
+        this->dialogActive = 1;
         this->suppressTouchEnd = 1;
-        return 0;
+        return false;
     }
 
     for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
@@ -1016,7 +1012,7 @@ int HangarWindow::OnTouchBegin(int touch, int coord) {
         this->autoEquipPending = 0;
         this->autoEquipSecondaryWeapons(this->autoEquipIndex);
     }
-    return 0;
+    return false;
 }
 
 int HangarWindow::highlightItem(ListItem *item) {
@@ -1070,7 +1066,7 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
     }
 }
 
-unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
+bool HangarWindow::OnTouchMove(int touch, int coord) {
     Globals::layout->OnTouchMove(touch, coord);
 
     if (this->dialogActive != 0) {
@@ -1085,12 +1081,12 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
             }
         }
         this->dialog->OnTouchMove(touch, coord);
-        return 0;
+        return false;
     }
 
     if (this->viewMode == 1) {
         this->listItemWindow->OnTouchMove(touch, coord);
-        return 0;
+        return false;
     }
 
     Layout *layout = Globals::layout;
@@ -1123,7 +1119,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
     for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
         (*this->tabButtons)[i]->OnTouchMove(touch, coord);
     }
-    return 0;
+    return false;
 }
 
 void HangarWindow::setSellMode(bool buy) {
@@ -1220,8 +1216,8 @@ void HangarWindow::setSellMode(bool buy) {
                     if (listItem != 0 && listItem->isItem() &&
                         listItem->item->getIndex() == this->bluePrint->getIndex() &&
                         Globals::status->getShip()->hasEquipment(listItem->item->getIndex(), 1)) {
-                        this->autoEquipIndex = i;
                         this->autoEquipPending = 1;
+                        this->autoEquipIndex = i;
                         this->autoEquipSecondaryWeapons(i);
                         this->autoEquipPending = 0;
                         break;
@@ -2087,8 +2083,8 @@ bool HangarWindow::selectItem(ListItem *item) {
                                          String("#ITEM1")),
             *Globals::gameText->getText(1274 + item->item->getIndex()), String("#ITEM2"));
         this->dialog->set(message, true);
-        this->replaceEquipPending = 1;
         this->dialogActive = 1;
+        this->replaceEquipPending = 1;
         this->pendingMountItem = item->item;
         this->pendingDemountItem = mounted;
         break;

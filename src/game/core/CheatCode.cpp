@@ -15,26 +15,24 @@ namespace AbyssEngine {
     }
 
     bool CheatCode::Update(uint16_t key) {
-        Array<uint16_t> *a = keys;
-        uint32_t p = pos;
-        uint16_t *d = a->data();
-        uint32_t n = a->size();
-        if (p >= n) {
+        if ((uint32_t) pos >= keys->size())
+            return false;
+        if ((*keys)[pos] == key) {
+            pos++;
+            if ((uint32_t) pos == keys->size()) {
+                pos = 0;
+                return true;
+            }
             return false;
         }
-        if (d[p] != key) {
-            bool first = (d[0] == key);
-            uint32_t one = (uint32_t) first;
-            pos = (first && n != one);
-            return n == one;
+        pos = 0;
+        if ((*keys)[pos] == key)
+            pos++;
+        if ((uint32_t) pos == keys->size()) {
+            pos = 0;
+            return true;
         }
-        p = p + 1;
-        uint32_t np = p;
-        if (p == n) {
-            np = 0;
-        }
-        pos = np;
-        return p == n;
+        return false;
     }
 
     CheatHandler::CheatHandler(KeyCode *k) {

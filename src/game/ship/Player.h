@@ -82,11 +82,11 @@ public:
     int32_t damageTimer;
     float gammaHP;
     uint8_t pad_bc[4];
-    uint8_t active;
+    bool active;
     uint8_t damaged;
     uint8_t vulnerable;
     uint8_t shootingEnabled;
-    float hitVector[3];
+    Vector hitVector;
     KIPlayer *kiPlayer;
     float bombForce;
     float empForce;
@@ -169,7 +169,7 @@ public:
 
     int getShieldHP();
 
-    unsigned char isActive();
+    bool isActive();
 
     unsigned char isAlwaysEnemy();
 

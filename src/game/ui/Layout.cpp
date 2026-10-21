@@ -120,16 +120,16 @@ void Layout::drawFooter() {
     this->drawFooter(false, true);
 }
 
-int Layout::OnTouchMove(int x, int y) {
+bool Layout::OnTouchMove(int x, int y) {
     if (this->helpButtonEnabled != 0)
         this->helpButton->OnTouchMove(x, y);
     if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
     if (this->backButton->isVisible() != 0)
-        return static_cast<int>(this->backButton->OnTouchMove(x, y));
-    return static_cast<int>(this->secondaryButton->OnTouchMove(x, y));
+        return this->backButton->OnTouchMove(x, y);
+    return this->secondaryButton->OnTouchMove(x, y);
 }
 
 int Layout::OnTouchEnd(int x, int y) {
@@ -188,347 +188,347 @@ void Layout::drawEmptyFooter(bool showBack) {
 
 Layout::Layout() {
     if (Globals::iPadHD) {
-        this->field_0x4 = 21;
         this->windowTopInset = 42;
-        this->field_0xc_leftMargin = 40;
         this->field_0x10_rightMargin = 52;
-        this->footerTextInset = 30;
-        this->headerTitleY = 12;
-        this->field_0x1c = 28;
-        this->field_0x20_top = 7;
-        this->field_0x24 = 7;
-        this->buttonInsetX = 7;
-        this->field_0x2c_rowHeight = 4;
+        this->field_0xc_leftMargin = 40;
         this->field_0x30_rowHeight = 42;
+        this->buttonInsetX = 7;
+        this->headerTitleY = 12;
+        this->field_0x4 = 21;
+        this->footerTextInset = 30;
+        this->field_0x20_top = 7;
         this->field_0x34 = 8;
-        this->field_0x38 = 9;
+        this->field_0x1c = 28;
+        this->field_0x2c_rowHeight = 4;
         this->field_0x3c = 82;
         this->field_0x40 = 140;
-        this->field_0x44 = 7;
-        this->field_0x48 = 15;
+        this->field_0x24 = 7;
+        this->field_0x38 = 9;
         this->field_0x4c = 7;
-        this->field_0x50 = 125;
-        this->field_0x54 = 487;
-        this->field_0x58 = 341;
-        this->field_0x5c = 63;
-        this->field_0x60 = 90;
         this->field_0x64 = 112;
         this->field_0x68 = 566;
+        this->field_0x48 = 15;
+        this->field_0x54 = 487;
+        this->field_0x44 = 7;
         this->field_0x6c = 191;
+        this->field_0x60 = 90;
+        this->field_0x50 = 125;
+        this->field_0x58 = 341;
+        this->field_0x5c = 63;
+        this->field_0x2c0 = -2;
         this->field_0x70_rowHeight = 63;
         this->field_0x74 = 161;
         this->field_0x78 = 369;
-        this->field_0x7c = 12;
+        this->field_0x2c4 = 126;
+        this->field_0x2d8 = 141;
+        this->field_0x2d4 = 112;
+        this->field_0x2d0 = 63;
+        this->field_0x94 = 14;
+        this->field_0x98 = 590;
         this->field_0x80_touchMargin = 14;
+        this->field_0x2cc = 126;
         this->field_0x84 = 112;
+        this->field_0x7c = 12;
+        this->field_0xa0 = 35;
+        this->field_0x2c8 = 63;
         this->field_0x88 = 42;
         this->field_0x8c = 45;
         this->field_0x90 = 0.46222221851348877f;
-        this->field_0x94 = 14;
-        this->field_0x98 = 590;
-        this->field_0x9c = 70;
-        this->field_0xa0 = 35;
         this->field_0xa4 = 7;
+        this->field_0x9c = 70;
         this->field_0xa8 = 85;
+        this->field_0xc8 = 5;
         this->field_0xac = 85;
         this->field_0xb0 = 4;
-        this->field_0xb4 = 20;
         this->field_0xb8 = 25;
-        this->field_0xbc = 11;
-        this->field_0xc0 = 9;
-        this->field_0xc4 = 11;
-        this->field_0xc8 = 5;
-        this->field_0xcc = 253;
+        this->field_0xb4 = 20;
+        this->field_0x298_buttonYBias = 118;
+        this->field_0x29c_buttonRowGap = 16;
         this->centerYBase = 21;
+        this->field_0xc4 = 11;
+        this->field_0xbc = 11;
+        this->field_0x294_buttonWidth = 281;
         this->marqueeWidth = 28;
-        this->progressBarYBase = 52;
-        this->field_0xdc = 14.0625f;
         this->animSpeedScale = 1.40625f;
-        this->driftSpeedDivisor = 28.125f;
-        this->ringRadiusScale = 1.40625f;
-        this->ringNearMidThreshold = 56;
-        this->field_0xf0 = 112;
-        this->ringMidFarThreshold = 281;
-        this->field_0xf8 = 562;
+        this->field_0xcc = 253;
+        this->field_0xc0 = 9;
+        this->field_0x2ac_metricC = 147;
         this->hudInset = 7;
-        this->oreLabelYOffset = 2;
+        this->progressBarYBase = 52;
+        this->ringNearMidThreshold = 56;
         this->oreTextYOffset = 5;
+        this->field_0xdc = 14.0625f;
+        this->ringMidFarThreshold = 281;
+        this->oreLabelYOffset = 2;
+        this->driftSpeedDivisor = 28.125f;
+        this->field_0xf0 = 112;
+        this->field_0xf8 = 562;
+        this->field_0x2a4_metricA = 154;
+        this->field_0x2b8 = 9;
+        this->field_0x2a0_listRowGap = 16;
         this->field_0x108 = -2;
-        this->field_0x10c_rowBaseY = 1;
-        this->field_0x110_strip58 = 2;
-        this->field_0x114_strip5c = 1;
-        this->field_0x118 = 9;
-        this->field_0x11c = 35;
-        this->field_0x120 = 21;
-        this->field_0x124 = 1;
-        this->field_0x128 = 1;
+        this->field_0x2a8_metricB = 140;
+        this->ringRadiusScale = 1.40625f;
         this->field_0x12c = 21;
+        this->field_0x110_strip58 = 2;
         this->field_0x130 = 78;
+        this->field_0x120 = 21;
+        this->field_0x10c_rowBaseY = 1;
+        this->field_0x114_strip5c = 1;
+        this->field_0x2b0 = 42;
+        this->field_0x11c = 35;
+        this->field_0x118 = 9;
         this->field_0x134 = 151;
+        this->field_0x124 = 1;
+        this->field_0x2b4 = 35;
+        this->field_0x128 = 1;
         this->field_0x138 = 66;
         this->field_0x13c = 23;
         this->field_0x140 = 15;
         this->field_0x144 = 18;
         this->field_0x148 = 2;
+        this->field_0x178 = 84;
+        this->field_0x158 = 70;
         this->field_0x14c = 189;
         this->field_0x150 = 5;
-        this->field_0x154 = 70;
-        this->field_0x158 = 70;
-        this->field_0x15c = 206;
-        this->field_0x160 = 68;
-        this->field_0x164 = 0;
         this->field_0x168 = 35;
-        this->field_0x16c = 184;
+        this->field_0x164 = 0;
+        this->field_0x160 = 68;
+        this->field_0x154 = 70;
+        this->field_0x15c = 206;
         this->field_0x170 = 174;
-        this->field_0x174 = 84;
-        this->field_0x178 = 84;
         this->field_0x17c = 217;
+        this->field_0x16c = 184;
+        this->field_0x174 = 84;
+        this->field_0x198 = 16;
+        this->field_0x1b8 = 46;
         this->field_0x180 = 23;
         this->field_0x184 = 163;
-        this->field_0x188 = 23;
-        this->field_0x18c = 244;
+        this->field_0x1bc = 1;
         this->field_0x190 = -6;
+        this->field_0x18c = 244;
         this->field_0x194 = 8;
-        this->field_0x198 = 16;
-        this->field_0x19c = 90;
-        this->field_0x1a0 = 18;
         this->field_0x1a4 = 22;
         this->field_0x1a8 = 22;
+        this->field_0x188 = 23;
+        this->field_0x19c = 90;
         this->field_0x1ac = 243;
+        this->field_0x1a0 = 18;
         this->field_0x1b0 = 18;
         this->field_0x1b4 = 42;
-        this->field_0x1b8 = 46;
-        this->field_0x1bc = 1;
         this->field_0x1c0 = 92;
-        this->field_0x1c4 = 26;
-        this->field_0x1c8 = 40;
-        this->field_0x1cc = 50;
-        this->field_0x1d0 = 7;
         this->field_0x1d4 = 17;
-        this->field_0x1d8 = 5;
+        this->field_0x1c4 = 26;
+        this->field_0x1cc = 50;
         this->field_0x1dc = 14;
+        this->field_0x1d8 = 5;
+        this->field_0x1d0 = 7;
+        this->field_0x1c8 = 40;
         this->eventBannerScale = 1.40625f;
-        this->field_0x294_buttonWidth = 281;
-        this->field_0x298_buttonYBias = 118;
-        this->field_0x29c_buttonRowGap = 16;
-        this->field_0x2a0_listRowGap = 16;
-        this->field_0x2a4_metricA = 154;
-        this->field_0x2a8_metricB = 140;
-        this->field_0x2ac_metricC = 147;
-        this->field_0x2b0 = 42;
-        this->field_0x2b4 = 35;
-        this->field_0x2b8 = 9;
-        this->field_0x2c0 = -2;
-        this->field_0x2c4 = 126;
-        this->field_0x2c8 = 63;
-        this->field_0x2cc = 126;
-        this->field_0x2d0 = 63;
-        this->field_0x2d4 = 112;
-        this->field_0x2d8 = 141;
     } else {
-        this->field_0x4 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
-        this->windowTopInset = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
-        this->field_0xc_leftMargin = Globals::n9 ? 51 : (Globals::retinaDisplay ? 58 : 29);
-        this->field_0x10_rightMargin = Globals::n9 ? 58 : (Globals::retinaDisplay ? 74 : 37);
-        this->footerTextInset = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22);
-        this->headerTitleY = Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 9);
-        this->field_0x1c = Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20);
-        this->field_0x20_top = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
-        this->field_0x24 = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
         this->buttonInsetX = Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5);
-        this->field_0x30_rowHeight = Globals::n9 ? 51 : (Globals::retinaDisplay ? 60 : 30);
         this->field_0x2c_rowHeight = Globals::n9 ? 6 : (Globals::retinaDisplay ? 6 : 3);
-        this->field_0x38 = Globals::n9 ? 12 : (Globals::retinaDisplay ? 14 : 7);
+        this->field_0x20_top = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
         this->field_0x34 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 12 : 6);
+        this->field_0x4 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
+        this->field_0x1c = Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20);
+        this->field_0x10_rightMargin = Globals::n9 ? 58 : (Globals::retinaDisplay ? 74 : 37);
+        this->field_0xc_leftMargin = Globals::n9 ? 51 : (Globals::retinaDisplay ? 58 : 29);
+        this->field_0x38 = Globals::n9 ? 12 : (Globals::retinaDisplay ? 14 : 7);
+        this->field_0x24 = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
+        this->headerTitleY = Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 9);
+        this->windowTopInset = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
         this->field_0x3c = Globals::n9 ? 106 : (Globals::retinaDisplay ? 118 : 59);
-        this->field_0x44 = Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5);
+        this->footerTextInset = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22);
+        this->field_0x30_rowHeight = Globals::n9 ? 51 : (Globals::retinaDisplay ? 60 : 30);
         this->field_0x40 = Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100);
+        this->field_0x54 = Globals::n9 ? 520 : (Globals::retinaDisplay ? 694 : 347);
         this->field_0x4c = Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 5);
         this->field_0x48 = Globals::n9 ? 16 : (Globals::retinaDisplay ? 22 : 11);
-        this->field_0x54 = Globals::n9 ? 520 : (Globals::retinaDisplay ? 694 : 347);
+        this->field_0x68 = Globals::n9 ? 545 : (Globals::iPadLarge ? 806 : (Globals::retinaDisplay ? 606 : (Globals::iPad ? 403 : 303)));
         this->field_0x50 = Globals::n9 ? 160 : (Globals::retinaDisplay ? 178 : 89);
         this->field_0x58 = Globals::n9 ? 364 : (Globals::retinaDisplay ? 486 : 243);
+        this->field_0x44 = Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5);
         this->field_0x5c = Globals::n9 ? 51 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)));
-        this->field_0x60 = Globals::n9 ? 79 : (Globals::iPadLarge ? 128 : (Globals::retinaDisplay ? 88 : (Globals::iPad ? 64 : 44)));
+        this->field_0x2cc = Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60)));
         this->field_0x64 = Globals::n9 ? 108 : (Globals::iPadLarge ? 160 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 80 : 60)));
-        this->field_0x68 = Globals::n9 ? 545 : (Globals::iPadLarge ? 806 : (Globals::retinaDisplay ? 606 : (Globals::iPad ? 403 : 303)));
+        this->field_0x60 = Globals::n9 ? 79 : (Globals::iPadLarge ? 128 : (Globals::retinaDisplay ? 88 : (Globals::iPad ? 64 : 44)));
         this->field_0x6c = Globals::n9 ? 170 : (Globals::iPadLarge ? 272 : (Globals::retinaDisplay ? 262 : (Globals::iPad ? 136 : 131)));
-        this->field_0x2c0 = Globals::n9 ? -3 : (Globals::retinaDisplay ? -4 : -2);
         this->field_0x70_rowHeight = Globals::n9 ? 51 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)));
         this->field_0x74 = Globals::n9 ? 207 : (Globals::retinaDisplay ? 230 : 115);
         this->field_0x78 = Globals::n9 ? 473 : (Globals::retinaDisplay ? 526 : 263);
-        this->field_0x2c4 = Globals::n9 ? 108 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60)));
-        this->field_0x2c8 = Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)));
-        this->field_0x2cc = Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60)));
         this->field_0x2d0 = Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)));
+        this->field_0x2c8 = Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)));
+        this->field_0x94 = Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10);
+        this->field_0x2c0 = Globals::n9 ? -3 : (Globals::retinaDisplay ? -4 : -2);
         this->field_0x2d4 = (Globals::n9 ? (Globals::iPad ? 160 : 100) : (Globals::iPad ? (Globals::retinaDisplay ? 160 : 100) : (Globals::retinaDisplay ? 100 : 60)));
+        this->field_0x88 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
         this->field_0x2d8 = (Globals::n9 ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? (Globals::retinaDisplay ? 200 : 125) : (Globals::retinaDisplay ? 125 : 75)));
         this->field_0x7c = Globals::n9 ? 13 : (Globals::retinaDisplay ? 18 : 9);
-        this->field_0x80_touchMargin = Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10);
         this->field_0x84 = Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80);
-        this->field_0x88 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
-        this->field_0x8c = Globals::n9 ? 57 : (Globals::retinaDisplay ? 64 : 32);
-        this->field_0x90 = Globals::n9 ? 0.32499998807907104f : (Globals::retinaDisplay ? 0.32499998807907104f : (Globals::iPad ? 0.32499998807907104f : 0.6499999761581421f));
-        this->field_0x94 = Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10);
+        this->field_0x80_touchMargin = Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10);
         this->field_0x98 = Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420);
+        this->field_0x8c = Globals::n9 ? 57 : (Globals::retinaDisplay ? 64 : 32);
+        this->field_0xa0 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 50 : 25);
+        this->field_0x90 = Globals::n9 ? 0.32499998807907104f : (Globals::retinaDisplay ? 0.32499998807907104f : (Globals::iPad ? 0.32499998807907104f : 0.6499999761581421f));
         this->field_0x9c = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
+        this->field_0xa4 = Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5);
         this->field_0xac = Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41)));
         this->field_0xa8 = Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41)));
-        this->marqueeWidth = Globals::n9 ? 36 : (Globals::retinaDisplay ? 40 : 20);
-        this->centerYBase = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
-        this->field_0xa0 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 50 : 25);
-        this->field_0xa4 = Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5);
-        this->progressBarYBase = Globals::n9 ? 55 : (Globals::retinaDisplay ? 74 : 37);
-        this->hudInset = Globals::n9 ? 0 : (Globals::retinaDisplay ? 10 : 5);
-        this->oreLabelYOffset = Globals::n9 ? 5 : (Globals::retinaDisplay ? 4 : 2);
-        this->oreTextYOffset = Globals::n9 ? 4 : (Globals::retinaDisplay ? 5 : 3);
+        this->field_0xc8 = Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 4);
+        this->field_0xb4 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 29 : 15);
+        this->field_0xb0 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3);
         this->field_0x298_buttonYBias = Globals::n9 ? 146 : (Globals::retinaDisplay ? 168 : 84);
+        this->field_0xbc = Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8);
+        this->field_0x2c4 = Globals::n9 ? 108 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60)));
+        this->field_0xc4 = Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 8);
+        this->centerYBase = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
+        this->field_0xc0 = Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6);
+        this->field_0xb8 = Globals::n9 ? 25 : (Globals::retinaDisplay ? 36 : 18);
+        this->field_0xcc = Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180);
+        this->oreTextYOffset = Globals::n9 ? 4 : (Globals::retinaDisplay ? 5 : 3);
+        this->marqueeWidth = Globals::n9 ? 36 : (Globals::retinaDisplay ? 40 : 20);
         this->field_0xdc = Globals::n9 ? 15.0f : (Globals::retinaDisplay ? 20.0f : 10.0f);
-        this->animSpeedScale = Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f);
-        this->driftSpeedDivisor = Globals::n9 ? 12.0f : (Globals::retinaDisplay ? 10.0f : 20.0f);
-        this->ringRadiusScale = Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f);
         this->field_0x294_buttonWidth = Globals::n9 ? 360 : (Globals::retinaDisplay ? 400 : 200);
         this->field_0x29c_buttonRowGap = Globals::n9 ? 8 : (Globals::retinaDisplay ? 24 : 12);
-        this->field_0xb0 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3);
-        this->field_0xb4 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 29 : 15);
-        this->field_0xb8 = Globals::n9 ? 25 : (Globals::retinaDisplay ? 36 : 18);
-        this->field_0xbc = Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8);
-        this->field_0xc0 = Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6);
-        this->field_0xc4 = Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 8);
-        this->field_0xc8 = Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 4);
-        this->field_0xcc = Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180);
-        this->ringNearMidThreshold = Globals::n9 ? 60 : (Globals::retinaDisplay ? 80 : 40);
-        this->field_0xf0 = Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80);
-        this->ringMidFarThreshold = Globals::n9 ? 300 : (Globals::retinaDisplay ? 400 : 200);
-        this->field_0xf8 = Globals::n9 ? 600 : (Globals::retinaDisplay ? 800 : 400);
-        this->field_0x2a0_listRowGap = Globals::n9 ? 6 : (Globals::retinaDisplay ? 24 : 12);
-        this->field_0x2a4_metricA = Globals::n9 ? 198 : (Globals::retinaDisplay ? 220 : 110);
-        this->field_0x2a8_metricB = Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100);
+        this->hudInset = Globals::n9 ? 0 : (Globals::retinaDisplay ? 10 : 5);
+        this->animSpeedScale = Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f);
+        this->progressBarYBase = Globals::n9 ? 55 : (Globals::retinaDisplay ? 74 : 37);
         this->field_0x2ac_metricC = Globals::n9 ? 189 : (Globals::retinaDisplay ? 210 : 105);
-        this->field_0x108 = Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0);
-        this->field_0x10c_rowBaseY = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
+        this->field_0x2a0_listRowGap = Globals::n9 ? 6 : (Globals::retinaDisplay ? 24 : 12);
+        this->field_0xf8 = Globals::n9 ? 600 : (Globals::retinaDisplay ? 800 : 400);
+        this->driftSpeedDivisor = Globals::n9 ? 12.0f : (Globals::retinaDisplay ? 10.0f : 20.0f);
+        this->oreLabelYOffset = Globals::n9 ? 5 : (Globals::retinaDisplay ? 4 : 2);
+        this->ringMidFarThreshold = Globals::n9 ? 300 : (Globals::retinaDisplay ? 400 : 200);
+        this->ringNearMidThreshold = Globals::n9 ? 60 : (Globals::retinaDisplay ? 80 : 40);
         this->field_0x110_strip58 = Globals::n9 ? 1 : (Globals::retinaDisplay ? 1 : 2);
-        this->field_0x114_strip5c = Globals::n9 ? -1 : (Globals::retinaDisplay ? -1 : 1);
+        this->field_0x2a8_metricB = Globals::n9 ? 180 : (Globals::retinaDisplay ? 200 : 100);
+        this->field_0xf0 = Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80);
+        this->field_0x108 = Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0);
+        this->ringRadiusScale = Globals::n9 ? 1.5f : (Globals::retinaDisplay ? 2.0f : 1.0f);
+        this->field_0x2a4_metricA = Globals::n9 ? 198 : (Globals::retinaDisplay ? 220 : 110);
+        this->field_0x120 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 28 : 15);
+        this->field_0x10c_rowBaseY = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
+        this->field_0x12c = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
+        this->field_0x11c = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 25);
+        this->field_0x2b8 = Globals::n9 ? 14 : (Globals::retinaDisplay ? 16 : 7);
         this->field_0x2b0 = Globals::n9 ? 54 : (Globals::retinaDisplay ? 60 : 30);
         this->field_0x2b4 = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 25);
-        this->field_0x2b8 = Globals::n9 ? 14 : (Globals::retinaDisplay ? 16 : 7);
+        this->field_0x114_strip5c = Globals::n9 ? -1 : (Globals::retinaDisplay ? -1 : 1);
         this->field_0x118 = Globals::n9 ? 13 : (Globals::retinaDisplay ? 14 : 7);
-        this->field_0x11c = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 25);
-        this->field_0x120 = Globals::n9 ? 22 : (Globals::retinaDisplay ? 28 : 15);
-        this->field_0x124 = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
         this->field_0x128 = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
-        this->field_0x12c = Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15);
-        this->field_0x130 = Globals::n9 ? 60 : (Globals::iPadLarge ? 112 : (Globals::retinaDisplay ? 80 : (Globals::iPad ? 56 : 40)));
+        this->field_0x124 = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
         this->field_0x134 = Globals::n9 ? 120 : (Globals::iPadLarge ? 216 : (Globals::retinaDisplay ? 160 : (Globals::iPad ? 108 : 80)));
-        this->field_0x14c = Globals::n9 ? 243 : (Globals::retinaDisplay ? 270 : 135);
         this->field_0x138 = Globals::n9 ? 52 : (Globals::iPadLarge ? 94 : (Globals::retinaDisplay ? 70 : (Globals::iPad ? 47 : 35)));
+        this->field_0x130 = Globals::n9 ? 60 : (Globals::iPadLarge ? 112 : (Globals::retinaDisplay ? 80 : (Globals::iPad ? 56 : 40)));
         this->field_0x13c = Globals::n9 ? 25 : (Globals::retinaDisplay ? 34 : 17);
         this->field_0x140 = Globals::n9 ? 19 : (Globals::retinaDisplay ? 22 : 11);
         this->field_0x144 = Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13);
         this->field_0x148 = Globals::n9 ? 19 : (Globals::retinaDisplay ? 4 : 2);
-        this->field_0x150 = Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4);
-        this->field_0x154 = Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 14 : (Globals::retinaDisplay ? 30 : 15)));
+        this->field_0x178 = Globals::iPadLarge ? 120 : (Globals::iPad ? 60 : (Globals::n9 ? 27 : (Globals::retinaDisplay ? 44 : 22)));
+        this->field_0x14c = Globals::n9 ? 243 : (Globals::retinaDisplay ? 270 : 135);
         this->field_0x158 = Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 28 : 14)));
+        this->field_0x150 = Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4);
+        this->field_0x17c = Globals::iPadLarge ? 310 : (Globals::iPad ? 155 : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 170 : 85)));
+        this->field_0x154 = Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 14 : (Globals::retinaDisplay ? 30 : 15)));
+        this->field_0x164 = Globals::iPadLarge ? 0 : (Globals::iPad ? 0 : (Globals::n9 ? 23 : (Globals::retinaDisplay ? 25 : 13)));
         this->field_0x15c = Globals::iPadLarge ? 294 : (Globals::iPad ? 147 : (Globals::n9 ? 136 : (Globals::retinaDisplay ? 158 : 79)));
         this->field_0x160 = Globals::iPadLarge ? 98 : (Globals::iPad ? 49 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 26 : 13)));
-        this->field_0x164 = Globals::iPadLarge ? 0 : (Globals::iPad ? 0 : (Globals::n9 ? 23 : (Globals::retinaDisplay ? 25 : 13)));
+        this->field_0x170 = Globals::iPadLarge ? 248 : (Globals::iPad ? 124 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 128 : 64)));
         this->field_0x168 = Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 25);
         this->field_0x16c = Globals::iPadLarge ? 262 : (Globals::iPad ? 131 : (Globals::n9 ? 115 : (Globals::retinaDisplay ? 138 : 69)));
-        this->field_0x170 = Globals::iPadLarge ? 248 : (Globals::iPad ? 124 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 128 : 64)));
         this->field_0x174 = Globals::iPadLarge ? 84 : (Globals::iPad ? 42 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30)));
-        this->field_0x178 = Globals::iPadLarge ? 120 : (Globals::iPad ? 60 : (Globals::n9 ? 27 : (Globals::retinaDisplay ? 44 : 22)));
-        this->field_0x17c = Globals::iPadLarge ? 310 : (Globals::iPad ? 155 : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 170 : 85)));
+        this->field_0x198 = Globals::iPadLarge ? 24 : (Globals::iPad ? 12 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 12 : 6)));
+        this->field_0x18c = Globals::iPadLarge ? 446 : (Globals::iPad ? 223 : (Globals::n9 ? 320 : (Globals::retinaDisplay ? 348 : 174)));
         this->field_0x180 = Globals::n9 ? 30 : (Globals::retinaDisplay ? 34 : 17);
         this->field_0x184 = Globals::iPadLarge ? 346 : (Globals::iPad ? 173 : (Globals::n9 ? 210 : (Globals::retinaDisplay ? 232 : 116)));
         this->field_0x188 = Globals::n9 ? 30 : (Globals::retinaDisplay ? 34 : 17);
-        this->field_0x18c = Globals::iPadLarge ? 446 : (Globals::iPad ? 223 : (Globals::n9 ? 320 : (Globals::retinaDisplay ? 348 : 174)));
         this->field_0x190 = Globals::iPadLarge ? -8 : (Globals::n9 ? -4 : (Globals::iPad ? -4 : (Globals::retinaDisplay ? -2 : -1)));
+        this->field_0x1a4 = Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16);
         this->field_0x194 = Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6);
-        this->field_0x198 = Globals::iPadLarge ? 24 : (Globals::iPad ? 12 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 12 : 6)));
         this->field_0x19c = Globals::iPadLarge ? 128 : (Globals::iPad ? 64 : (Globals::n9 ? 54 : (Globals::retinaDisplay ? 90 : 45)));
         this->field_0x1a0 = Globals::iPadLarge ? 26 : (Globals::iPad ? 13 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 14 : 7)));
-        this->field_0x1a4 = Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16);
         this->field_0x1a8 = Globals::n9 ? 24 : (Globals::retinaDisplay ? 32 : 16);
         this->field_0x1ac = Globals::iPadLarge ? 346 : (Globals::iPad ? 173 : (Globals::n9 ? 208 : (Globals::retinaDisplay ? 232 : 116)));
-        this->eventBannerScale = Globals::n9 ? 2.0f : (Globals::retinaDisplay ? 2.0f : 1.0f);
-        this->field_0x1c0 = Globals::n9 ? 80 : (Globals::retinaDisplay ? 132 : 66);
+        this->field_0x1bc = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
+        this->field_0x1b0 = Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13);
         this->field_0x1c4 = Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19);
         this->field_0x1c8 = Globals::n9 ? 43 : (Globals::retinaDisplay ? 58 : 29);
+        this->field_0x1c0 = Globals::n9 ? 80 : (Globals::retinaDisplay ? 132 : 66);
         this->field_0x1cc = Globals::n9 ? 54 : (Globals::retinaDisplay ? 72 : 36);
-        this->field_0x1b0 = Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13);
-        this->field_0x1b4 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
-        this->field_0x1b8 = Globals::n9 ? 40 : (Globals::retinaDisplay ? 66 : 33);
-        this->field_0x1bc = Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1);
-        this->field_0x1d0 = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
         this->field_0x1d4 = Globals::n9 ? 18 : (Globals::retinaDisplay ? 24 : 12);
-        this->field_0x1d8 = Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4);
         this->field_0x1dc = Globals::n9 ? 14 : (Globals::retinaDisplay ? 20 : 10);
+        this->field_0x1d0 = Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5);
+        this->field_0x1b8 = Globals::n9 ? 40 : (Globals::retinaDisplay ? 66 : 33);
+        this->field_0x1d8 = Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4);
+        this->field_0x1b4 = Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30);
+        this->eventBannerScale = Globals::n9 ? 2.0f : (Globals::retinaDisplay ? 2.0f : 1.0f);
     }
     this->field_0x1e8 = Globals::iPadHD ? 1 : (Globals::n9 ? 1 : (Globals::retinaDisplay ? 1 : 0));
-    this->field_0x1e4 = Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x1fc = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
+    this->field_0x1f0 = Globals::iPadHD ? 26 : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
+    this->field_0x1f8 = (Globals::iPadHD ? 2 : (Globals::iPad ? (Globals::retinaDisplay ? 4 : 2) : 2));
+    this->field_0x1f4 = (Globals::iPadHD ? 22 : (Globals::iPad ? (Globals::retinaDisplay ? 32 : 16) : (Globals::retinaDisplay ? 4 : 2)));
+    this->field_0x200 = Globals::iPadHD ? -18 : (Globals::n9 ? -26 : (Globals::retinaDisplay ? -26 : -13));
+    this->field_0x208 = Globals::iPadHD ? 5 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 8 : 4));
+    this->field_0x1e4 = Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x1ec = Globals::iPadHD ? 26 : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
+    this->field_0x204 = Globals::iPadHD ? 12 : (Globals::n9 ? 16 : (Globals::retinaDisplay ? 18 : 9));
+    this->field_0x214 = Globals::iPadHD ? 1 : (Globals::n9 ? -2 : (Globals::retinaDisplay ? -2 : 1));
+    this->field_0x210 = Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
+    this->orbitInfoStationY = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
+    this->orbitInfoTextX = Globals::iPadHD ? 8 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6));
+    this->field_0x20c = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
+    this->field_0x24c = Globals::iPadHD ? -2 : (Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0));
+    this->field_0x218 = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
     this->orbitInfoSystemY = Globals::iPadHD ? 28 : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
+    this->field_0x254 = Globals::iPadHD ? 5 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 8 : 4));
     this->orbitInfoSecurityY = Globals::iPadHD ? 49 : (Globals::n9 ? 52 : (Globals::retinaDisplay ? 70 : 35));
     this->quickMenuHeaderLift = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
     this->quickMenuIconGap = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
+    this->field_0x238_blk16.d = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
     this->field_0x234 = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x238_blk16.a = Globals::iPadHD ? 70 : (Globals::n9 ? 90 : (Globals::retinaDisplay ? 100 : 50));
-    this->field_0x24c = Globals::iPadHD ? -2 : (Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0));
-    this->field_0x250 = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
-    this->field_0x20c = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
-    this->field_0x218 = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
-    this->orbitInfoStationY = Globals::iPadHD ? 7 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 10 : 5));
-    this->field_0x204 = Globals::iPadHD ? 12 : (Globals::n9 ? 16 : (Globals::retinaDisplay ? 18 : 9));
-    this->field_0x208 = Globals::iPadHD ? 5 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 8 : 4));
-    this->field_0x210 = Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4));
-    this->field_0x214 = Globals::iPadHD ? 1 : (Globals::n9 ? -2 : (Globals::retinaDisplay ? -2 : 1));
-    this->orbitInfoTextX = Globals::iPadHD ? 8 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6));
     this->field_0x238_blk16.b = Globals::iPadHD ? 21 : (Globals::n9 ? 27 : (Globals::retinaDisplay ? 30 : 15));
+    this->field_0x250 = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x238_blk16.c = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
-    this->field_0x238_blk16.d = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
     this->field_0x248 = Globals::iPadHD ? 239 : (Globals::n9 ? 306 : (Globals::retinaDisplay ? 340 : 170));
-    this->field_0x278 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
-    this->field_0x264 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
-    this->field_0x268 = Globals::iPadHD ? 11 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8));
-    this->field_0x26c = Globals::iPadHD ? 92 : (Globals::n9 ? 99 : (Globals::retinaDisplay ? 132 : 66));
-    this->field_0x270 = Globals::iPadHD ? 98 : (Globals::n9 ? 105 : (Globals::retinaDisplay ? 140 : 70));
-    this->field_0x254 = Globals::iPadHD ? 5 : (Globals::n9 ? 7 : (Globals::retinaDisplay ? 8 : 4));
     this->field_0x258 = Globals::iPadHD ? 2 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 4 : 2));
     this->field_0x25c = Globals::iPadHD ? 22 : (Globals::n9 ? 28 : (Globals::retinaDisplay ? 32 : 16));
     this->field_0x260 = Globals::iPadHD ? 1 : (Globals::n9 ? 0 : (Globals::retinaDisplay ? 0 : 1));
     this->field_0x274 = Globals::iPadHD ? 136 : (Globals::n9 ? 145 : (Globals::retinaDisplay ? 194 : 97));
-    this->field_0x27c = Globals::iPadHD ? 28 : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->field_0x280 = Globals::iPadHD ? 0 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 5 : 0));
+    this->field_0x26c = Globals::iPadHD ? 92 : (Globals::n9 ? 99 : (Globals::retinaDisplay ? 132 : 66));
+    this->field_0x278 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
+    this->field_0x268 = Globals::iPadHD ? 11 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8));
+    this->field_0x264 = Globals::iPadHD ? 421 : (Globals::n9 ? 450 : (Globals::retinaDisplay ? 600 : 300));
+    this->field_0x270 = Globals::iPadHD ? 98 : (Globals::n9 ? 105 : (Globals::retinaDisplay ? 140 : 70));
     this->scrollBarHandle = Globals::iPadHD ? 0 : (Globals::n9 ? 1 : (Globals::retinaDisplay ? 1 : 0));
-    this->scrollBarInset = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
+    this->field_0x27c = Globals::iPadHD ? 28 : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
     this->rewardBoxWidth = Globals::iPadHD ? 140 : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
-    this->rewardBoxY = Globals::iPadHD ? 77 : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
     this->rewardBoxY2 = (Globals::iPadHD ? 132 : (Globals::n9 ? 111 : (Globals::iPadLarge ? (Globals::retinaDisplay ? 254 : 127) : (Globals::iPad ? (Globals::retinaDisplay ? 144 : 72) : (Globals::retinaDisplay ? 186 : 55)))));
     this->rewardBoxHeight = Globals::n9 ? 352 : (Globals::retinaDisplay ? 392 : 196);
     this->rewardBoxX = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
-    this->field_0x2bc = Globals::iPadHD ? 2 : (Globals::n9 ? 3 : 2);
-    this->footerButtonOffset = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
-    this->field_0x200 = Globals::iPadHD ? -18 : (Globals::n9 ? -26 : (Globals::retinaDisplay ? -26 : -13));
-    this->field_0x1f0 = Globals::iPadHD ? 26 : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
-    this->field_0x1f4 = (Globals::iPadHD ? 22 : (Globals::iPad ? (Globals::retinaDisplay ? 32 : 16) : (Globals::retinaDisplay ? 4 : 2)));
-    this->field_0x1f8 = (Globals::iPadHD ? 2 : (Globals::iPad ? (Globals::retinaDisplay ? 4 : 2) : 2));
-    this->field_0x284_sliderSlot5Enabled = Globals::n9 ? 0 : 1;
-    this->field_0x285 = 1;
+    this->rewardBoxY = Globals::iPadHD ? 77 : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
     this->field_0x286 = Globals::n9 ? 0 : 1;
-    this->field_0x288 = Globals::n9 ? 20 : 0;
+    this->scrollBarInset = Globals::iPadHD ? 1 : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
+    this->footerButtonOffset = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
+    this->field_0x285 = 1;
     this->field_0x28c = Globals::n9 ? -19 : 0;
     this->field_0x290 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3);
+    this->field_0x288 = Globals::n9 ? 20 : 0;
     this->field_0x2f4 = Globals::iPadHD ? 112 : (Globals::iPadLarge ? 160 : (Globals::iPad ? 80 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30))));
+    this->field_0x2bc = Globals::iPadHD ? 2 : (Globals::n9 ? 3 : 2);
     this->field_0x2f8 = Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : (Globals::iPad ? 200.0f : (Globals::n9 ? 150.0f : (Globals::retinaDisplay ? 200.0f : 100.0f))));
     this->field_0x2fc = Globals::iPadHD ? 50 : (Globals::iPadLarge ? 72 : 36);
-    this->field_0x300 = Globals::iPadHD ? 281 : (Globals::iPadLarge ? 400 : 200);
     this->field_0x304 = Globals::iPadHD ? 492 : (Globals::iPadLarge ? 700 : 350);
     this->choiceWindowTitleHeight = Globals::iPadHD ? 351 : (Globals::iPadLarge ? 500 : 250);
-    this->field_0x30c = Globals::iPadLarge ? 6 : (Globals::iPad ? 3 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3)));
     this->field_0x310 = Globals::iPadLarge ? -24 : (Globals::iPad ? -12 : (Globals::n9 ? -8 : (Globals::retinaDisplay ? -9 : -5)));
     this->field_0x314 = Globals::iPadLarge ? -10 : (Globals::iPad ? -5 : (Globals::n9 ? -8 : (Globals::retinaDisplay ? -8 : -5)));
+    this->field_0x30c = Globals::iPadLarge ? 6 : (Globals::iPad ? 3 : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3)));
+    this->field_0x284_sliderSlot5Enabled = Globals::n9 ? 0 : 1;
     this->field_0x318 = Globals::iPadLarge ? 8 : (Globals::iPad ? 4 : 0);
+    this->field_0x300 = Globals::iPadHD ? 281 : (Globals::iPadLarge ? 400 : 200);
     this->helpWindowX = Globals::iPadHD ? 331 : (Globals::iPadLarge ? 472 : (Globals::n9 ? 236 : (Globals::retinaDisplay ? 236 : (Globals::iPad ? 236 : 118))));
     this->helpWindowY = Globals::iPadHD ? 202 : (Globals::iPadLarge ? 288 : (Globals::iPad ? 144 : (Globals::n9 ? 150 : (Globals::retinaDisplay ? 150 : 76))));
 }
@@ -540,9 +540,11 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     int iw = Globals::Canvas->GetImage2DWidth(img);
     int cols = w / iw;
     int fullW = cols * iw;
+    int remW = w - fullW;
     int ih = Globals::Canvas->GetImage2DHeight(img);
     int rows = h / ih;
     int fullH = rows * ih;
+    int remH = h - fullH;
 
     for (int r = 0; r < rows; r++) {
         int px = x;
@@ -552,8 +554,6 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         }
     }
 
-    int remH = h - fullH;
-    int remW = w - fullW;
     if (remW > 0) {
         int py = y;
         for (int r = 0; r < rows; r++) {
@@ -639,6 +639,10 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
 }
 
 
+void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
+    this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
+}
+
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     int cornerW = Globals::Canvas->GetImage2DWidth(corner);
     int cornerH = Globals::Canvas->GetImage2DHeight(corner);
@@ -658,13 +662,11 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int cols = spanW / edgeW;
     int topY = pad + y;
     int bottomEdgeY = h - inset + topY;
-    int edgeX = cornerW + pad + x;
-    for (int i = 0; i < cols; i++) {
-        Globals::Canvas->DrawImage2D(edge, edgeX, topY);
-        Globals::Canvas->DrawImage2D(edge, edgeX, bottomEdgeY, 2);
-        edgeX += edgeW;
-    }
     int remW = spanW - cols * edgeW;
+    for (int i = 0; i < cols; i++) {
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, topY);
+        Globals::Canvas->DrawImage2D(edge, cornerW + pad + x + i * edgeW, bottomEdgeY, 2);
+    }
     if (remW > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 0.0f, 0, 0, cols * edgeW + (pad + x + cornerW), topY);
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remW, edgeH, 3.14159274f, 0, 0, spanW + (pad + x + cornerW),
@@ -674,19 +676,19 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     // Left and right edges (the edge image rotated by -90/+90 degrees).
     int spanH = h - cornerH * 2 - inset * 2;
     int rows = spanH / edgeW;
-    int rightEdgeX = w + x + pad;
     int edgeTop = pad + y + cornerH;
-    int edgeY = cornerH + pad + y;
-    for (int i = 0; i < rows; i++) {
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x, edgeW + edgeY);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, rightEdgeX, edgeY);
-        edgeY += rows * edgeW;
-    }
     int remH = spanH - rows * edgeW;
+    for (int i = 0; i < rows; i++) {
+        // Note: the original steps by rows * edgeW per tile, not edgeW.
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, -1.57079637f, 0, 0, pad + x,
+                                      edgeW + cornerH + pad + y + i * rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, edgeW, edgeH, 1.57079637f, 0, 0, w + x + pad,
+                                      cornerH + pad + y + i * rows * edgeW);
+    }
     if (remH > 0) {
         Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, -1.57079637f, 0, 0, pad + x, spanH + edgeTop);
-        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, rightEdgeX - inset * 2,
-                                      edgeTop + rows * edgeW);
+        Globals::Canvas->DrawRegion2D(edge, 0, 0, remH, edgeH, 1.57079637f, 0, 0, w + x + pad - inset * 2,
+                                      cornerH + pad + y + rows * edgeW);
     }
 }
 
@@ -760,22 +762,6 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
     unsigned int savedColor = Globals::Canvas->GetColor();
     Globals::Canvas->SetColor(this->drawColor);
     switch (style) {
-    case 0: {
-            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x348);
-            Globals::Canvas->DrawImage2D(this->field_0x348, x, y);
-            this->drawBGPattern(this->field_0x34c, capW + x, y, w - capW * 2, h);
-            Globals::Canvas->DrawImage2D(this->field_0x348, w + x - capW, y, 1);
-            if (text.size() == 0)
-                break;
-            int textX = Globals::layout->field_0x44;
-            if (flags & 2)
-                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-            else if (flags & 4)
-                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x1c >> 1) + 1 - this->textBaselineAdjust,
-                                        false);
-            break;
-    }
     case 1: {
             int capW = Globals::Canvas->GetImage2DWidth(this->field_0x350);
             Globals::Canvas->DrawImage2D(this->field_0x350, x, y);
@@ -789,6 +775,22 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             else if (flags & 4)
                 textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x5c >> 1) + 1 - this->textBaselineAdjust,
+                                        false);
+            break;
+    }
+    case 0: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x348);
+            Globals::Canvas->DrawImage2D(this->field_0x348, x, y);
+            this->drawBGPattern(this->field_0x34c, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x348, w + x - capW, y, 1);
+            if (text.size() == 0)
+                break;
+            int textX = Globals::layout->field_0x44;
+            if (flags & 2)
+                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            else if (flags & 4)
+                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x1c >> 1) + 1 - this->textBaselineAdjust,
                                         false);
             break;
     }
@@ -950,60 +952,85 @@ void Layout::reload() {
     this->bgPatternImage = -1;
     this->headerPatternImage = -1;
     this->headerIconImage = -1;
+    this->footerImageLeft = -1;
+    this->footerFillImage = -1;
+    this->footerImageRight = -1;
+    this->field_0x340 = -1;
+    this->footerPatternImage = -1;
+    this->field_0x348 = -1;
+    this->field_0x34c = -1;
+    this->field_0x350 = -1;
+    this->field_0x354 = -1;
+    this->field_0x358 = -1;
+    this->field_0x35c = -1;
+    this->field_0x360 = -1;
+    this->field_0x364 = -1;
+    this->field_0x368 = -1;
+    this->field_0x36c = -1;
+    this->field_0x370 = -1;
+    this->scrollBarImage = -1;
+    this->scrollBarFillImage = -1;
+    this->field_0x37c = -1;
+    this->field_0x380 = -1;
+    this->field_0x384 = -1;
+    this->field_0x388 = -1;
+    this->field_0x38c = -1;
+    this->field_0x390 = -1;
+    this->field_0x394 = -1;
+    this->tipBoxImage = -1;
+    this->field_0x39c = -1;
+    this->field_0x3a0 = -1;
     this->field_0x3a8 = -1;
 
-    memset(&this->footerImageLeft, 0xff, 0x70);
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x4ff),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x4ff),
                           reinterpret_cast<unsigned int &>(this->headerPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x500), reinterpret_cast<unsigned int &>(this->headerCapImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->footerFillImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x507),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x500), reinterpret_cast<unsigned int &>(this->headerCapImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->footerFillImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x507),
                           reinterpret_cast<unsigned int &>(this->footerPatternImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x482), reinterpret_cast<unsigned int &>(this->field_0x348));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x481), reinterpret_cast<unsigned int &>(this->field_0x34c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x486),
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x482), reinterpret_cast<unsigned int &>(this->field_0x348));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x481), reinterpret_cast<unsigned int &>(this->field_0x34c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x486),
                           reinterpret_cast<unsigned int &>(this->scrollBarFillImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->rewardIconImage));
 
     if (Globals::iPad == 0) {
-        canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
-        (Globals::Canvas)->Image2DCreate(static_cast<unsigned short>(0x488),
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x488),
                                      reinterpret_cast<unsigned int &>(this->field_0x370));
     } else {
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
-        canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
-        (Globals::Canvas)->Image2DCreate(static_cast<unsigned short>(0x6bc),
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x6bc),
                                      reinterpret_cast<unsigned int &>(this->field_0x370));
     }
 
-    canvas->Image2DCreate(static_cast<unsigned short>(0x530), reinterpret_cast<unsigned int &>(this->field_0x360));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x531), reinterpret_cast<unsigned int &>(this->field_0x364));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x52f), reinterpret_cast<unsigned int &>(this->field_0x368));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47c), reinterpret_cast<unsigned int &>(this->field_0x384));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47d), reinterpret_cast<unsigned int &>(this->field_0x380));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47b), reinterpret_cast<unsigned int &>(this->field_0x388));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x47a), reinterpret_cast<unsigned int &>(this->field_0x38c));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x484), reinterpret_cast<unsigned int &>(this->field_0x390));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x483), reinterpret_cast<unsigned int &>(this->field_0x394));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
-    canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x530), reinterpret_cast<unsigned int &>(this->field_0x360));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x531), reinterpret_cast<unsigned int &>(this->field_0x364));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x52f), reinterpret_cast<unsigned int &>(this->field_0x368));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47c), reinterpret_cast<unsigned int &>(this->field_0x384));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47d), reinterpret_cast<unsigned int &>(this->field_0x380));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47b), reinterpret_cast<unsigned int &>(this->field_0x388));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x47a), reinterpret_cast<unsigned int &>(this->field_0x38c));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x484), reinterpret_cast<unsigned int &>(this->field_0x390));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x483), reinterpret_cast<unsigned int &>(this->field_0x394));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
+    Globals::Canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
 
     TouchButton *bBack = new TouchButton(
         *Globals::gameText->getText(0xaa), 2, this->buttonInsetX, Globals::h - 3, 0x21);
@@ -1011,7 +1038,7 @@ void Layout::reload() {
     this->backButtonWidth = bBack->getWidth();
 
     unsigned img535 = 0xffffffff;
-    (Globals::Canvas)->Image2DCreate(0x535, img535);
+    Globals::Canvas->Image2DCreate(0x535, img535);
     TouchButton *b2;
     if (img535 == 0xffffffff) {
         b2 = new TouchButton(*Globals::gameText->getText(0xab), 2, this->buttonInsetX,
@@ -1023,12 +1050,12 @@ void Layout::reload() {
     this->secondaryButton = b2;
 
     unsigned img471 = 0xffffffff;
-    (Globals::Canvas)->Image2DCreate(0x471, img471);
+    Globals::Canvas->Image2DCreate(0x471, img471);
     TouchButton *bHelp =
         new TouchButton(img471, 1, Globals::w, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
 
-    int th = (Globals::Canvas)->GetTextHeight(
+    int th = Globals::Canvas->GetTextHeight(
         static_cast<unsigned int>(reinterpret_cast<unsigned long>(Globals::font)));
     this->choiceWindowOpen = 0;
     this->choiceWindow = nullptr;
@@ -1036,8 +1063,8 @@ void Layout::reload() {
     this->textBaselineAdjust = th / 2 - 1;
     this->drawColor = -1;
     this->resetWindowDimensions();
-    this->rewardMessageTimer = 0;
     this->helpButtonEnabled = 0;
+    this->rewardMessageTimer = 0;
     this->field_0x3d8 = 0;
     this->fading = 0;
     this->fadeOut = 0;
@@ -1133,10 +1160,6 @@ void Layout::drawWindow(String title, int x, int y, int w, int h) {
 
 void Layout::drawMask() {
     this->drawMask(0, 0, Globals::w, Globals::h);
-}
-
-void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
-    this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
 }
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text) {

@@ -321,31 +321,9 @@ Generator *Globals::generator;
 
 #include <new>
 
-static inline uint32_t nextInt_71aa4(AbyssEngine::AERandom *self) { return self->nextInt(); }
-
 static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return self->nextInt(bound); }
 
 void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-int AERandom_nextIntB(int rng, int bound);
-
-static inline void * Galaxy_dtor(void *g) { ((Galaxy*)g)->~Galaxy(); return (void *)(g); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Status_dtor(void *s) { ((Status*)s)->~Status(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void *AERandom_dtor(void *r) { ((AbyssEngine::AERandom*)r)->~AERandom(); return r; } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Layout_dtor(void *l) { ((Layout*)l)->~Layout(); return (void *)(l); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-void *Generator_dtor(void *g); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * FModSound_dtor(void *s) { ((FModSound*)s)->~FModSound(); return (void *)(s); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * Achievements_dtor(void *a) { ((Achievements*)a)->~Achievements(); return (void *)(a); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline void * ImageFactory_dtor(void *f) { ((ImageFactory*)f)->~ImageFactory(); return (void *)(f); } // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
-static inline int Station_getIndex(int station) { return (int)(((Station*)(long)station)->getIndex()); }
 
 
 extern int g_android_leaderboard_scores[8];
@@ -371,26 +349,8 @@ static_assert(sizeof(HintsBuffer) == 0x40, "HintsBuffer size");
 
 
 
-static const float gSCS_f86f8 = 210.9375f;
-static const float gSCS_f86fc = 300.0f;
-static const float gSCS_f8700 = 150.0f;
-static const float gSCS_f8704 = -126.5625f;
-static const float gSCS_f8708 = 92.8125f;
-static const float gSCS_f870c = 180.0f;
-static const float gSCS_f8710 = 90.0f;
-static const float gSCS_f8714 = 132.0f;
-static const float gSCS_f8718 = 66.0f;
-static const float gSCS_f871c = 313.59375f;
-static const float gSCS_f8720 = 2.8125f;
-static const float gSCS_f8724 = 446.0f;
-static const float gSCS_f8728 = 223.0f;
-static const float gSCS_f872c = -2.8125f;
-static const float gSCS_f8730 = 54.0f;
 
 
-static inline char rdflag(char *const g) { return *g; }
-static inline int *rdobj(int *const g) { return g; }
-static inline CoordsObject *rdcoords(CoordsObject *const g) { return g; }
 
 
 
@@ -455,43 +415,9 @@ static const int gRaceTable[64] = {
     8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3,
     3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1};
 
-static const float gSCF_b90 = 56.25f;
-static const float gSCF_b10 = 63.28125f;
-static const float gSCF_b14 = 210.9375f;
-static const float gSCF_b7c = 63.28125f;
-static const float gSCF_b80 = 90.0f;
-static const float gSCF_b84 = 45.0f;
-static const float gSCF_b88 = 300.0f;
-static const float gSCF_b8c = 150.0f;
-static const float gSCF_b94 = 80.0f;
-static const float gSCF_b98 = 40.0f;
-static const float gSCF_b9c = 107.28125f;
-static const float gSCF_ba0 = 5.625f;
-static const float gSCF_ba4 = 18.09375f;
-static const float gSCF_ba8 = 19.28125f;
-static const float gSCF_bac = 112.5f;
-static const float gSCF_bb0 = 94.21875f;
-static const float gSCF_bb4 = 152.0f;
-static const float gSCF_bb8 = 77.0f;
-static const float gSCF_bbc = 160.0f;
-static const float gSCF_bc0 = 80.0f;
-static const float gSCF_bc4 = 134.0f;
-static const float gSCF_bc8 = 67.0f;
-static const float gSCF_bcc = 100.0625f;
-static const float gSCF_bd0 = 209.53125f;
-static const float gSCF_bd4 = 144.0f;
-static const float gSCF_bd8 = 74.0f;
-static const float gSCF_bdc = 298.0f;
-static const float gSCF_be0 = 149.0f;
-static const float gSCF_be4 = 132.1875f;
-static const float gSCF_be8 = 0.0f;
-static const float gSCF_bec = 189.0f;
-static const float gSCF_bf0 = 94.0f;
 
 
-static inline char rf(char *const g) { return *g; }
 static inline int rint(int *const g) { return *g; }
-static inline int *robj(int *const g) { return g; }
 static inline CoordsObject *rcoords(CoordsObject *const g) { return g; }
 
 static inline unsigned short clampU(float v) {
@@ -854,7 +780,7 @@ Globals::~Globals() {
 // GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
 // null gI_* placeholder pointers, which folded init to a 2-byte stub.)
 
-int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
     (void) engine;
     int *missionSlot = (int *) &Mission::empty;
     if (*missionSlot == 0) {
@@ -924,9 +850,9 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     *fmodSlotP = fmod;
     fmod->init();
 
-    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
-    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
-    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
+    (*fmodSlotP)->enableCategory(1, reinterpret_cast<bool &>(settings->_region[1]));
+    (*fmodSlotP)->enableCategory(2, reinterpret_cast<bool &>(settings->_region[0]));
+    (*fmodSlotP)->enableCategory(3, reinterpret_cast<bool &>(settings->_region[2]));
     (*fmodSlotP)->setVolume(1, settings->colorR);
     (*fmodSlotP)->setVolume(2, settings->colorG);
     (*fmodSlotP)->setVolume(3, settings->colorB);
@@ -937,25 +863,8 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     Globals::instantActionPoints = 0;
     Globals::first_start_ever = true;
-    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
-    obj->slots[0] = 0;
-    obj->slots[1] = 0;
-    obj->slots[2] = 0;
-    obj->slots[3] = 0;
-    obj->slots[4] = 0;
-    obj->slots[5] = 0;
-    obj->slots[6] = 0;
-    obj->slots[7] = 0;
-    obj->slots[8] = 0;
-    obj->slots[9] = 0;
-    obj->slots[10] = 0;
-    obj->slots[11] = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
-    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
-    flagByteObj->flag = 0;
+    Globals::globals->resetHints();
+    Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
     Globals::initMemoryWarning = 0;
 
@@ -964,9 +873,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     layout->reload();
     ParticleSettingsRef::initialize();
 
-    Array<int> *arr = new Array<int>();
-    this->soundResources = arr;
-    return (int) (long) arr;
+    this->soundResources = new Array<int>();
 }
 
 void Globals::resetHints() {
@@ -1619,13 +1526,14 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             } else if (Globals::status->inSupernovaSystem()) {
                 if (Globals::status->getCurrentCampaignMission() == 89) {
                     Globals::sound->play(2238, nullptr, nullptr, 0.0f);
-                } else if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
-                           Globals::status->getMission()->getTargetStation() ==
+                } else if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty() ||
+                           Globals::status->getMission()->getTargetStation() !=
                            Globals::status->getStation()->getIndex()) {
-                    Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242, nullptr,
-                                         nullptr, 0.0f);
-                } else {
                     Globals::sound->play(148, nullptr, nullptr, 0.0f);
+                } else if (Globals::status->getCurrentCampaignMission() >= 106) {
+                    Globals::sound->play(2242, nullptr, nullptr, 0.0f);
+                } else {
+                    Globals::sound->play(2241, nullptr, nullptr, 0.0f);
                 }
             } else if (Globals::status->inDeepScienceOrbit()) {
                 Globals::sound->play(152, nullptr, nullptr, 0.0f);
@@ -1652,241 +1560,616 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
             return gDialogueSoundPairs[i + 1];
         }
     }
-
-    if (agent == 0) {
+    if (agent == nullptr) {
         return -1;
     }
-
-    int race = ((Agent *) (agent))->getRace();
-    int male = ((Agent *) (agent))->isMale();
-
-    int category;
+    int race = agent->getRace();
+    bool male = agent->isMale();
+    int soundId;
     if (race == 3) {
-        int *parts = ((Agent *) (agent))->getImageParts();
-        if (parts != 0) {
-            int *p = ((Agent *) (agent))->getImageParts();
-            category = (*p == 2) ? 3 : 0;
+        if (agent->getImageParts() == nullptr) {
+            race = 2;
         } else {
-            category = 2;
+            race = agent->getImageParts()[0] == 2 ? 3 : 0;
         }
-    } else {
-        category = race;
     }
-
-    int isMale = male;
-    int soundId = -1;
-    switch (category) {
-        case 0:
-        case 5: {
-            if (isMale == 0) {
-                if ((unsigned) (code - 0x172) > 0x13) {
-                    break;
-                }
-                static const int femaleTable[20] = {
-                    0x2a7, 0x29b, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x295, 0x29c,
-                    0x29d, 0x29e, 0x29f, 0x2a0, 0x296, 0x297, 0x298, 0x299, 0x29a, 0x294,
-                };
-                soundId = femaleTable[code - 0x172];
+    switch (race) {
+    case 0:
+    case 5:
+        if (!male) {
+            switch (code) {
+            case 389:
+                soundId = 660;
                 break;
+            case 370:
+                soundId = 679;
+                break;
+            case 371:
+                soundId = 667;
+                break;
+            case 372:
+                soundId = 673;
+                break;
+            case 373:
+                soundId = 674;
+                break;
+            case 374:
+                soundId = 675;
+                break;
+            case 375:
+                soundId = 676;
+                break;
+            case 376:
+                soundId = 677;
+                break;
+            case 377:
+                soundId = 678;
+                break;
+            case 378:
+                soundId = 661;
+                break;
+            case 379:
+                soundId = 668;
+                break;
+            case 380:
+                soundId = 669;
+                break;
+            case 381:
+                soundId = 670;
+                break;
+            case 382:
+                soundId = 671;
+                break;
+            case 383:
+                soundId = 672;
+                break;
+            case 384:
+                soundId = 662;
+                break;
+            case 385:
+                soundId = 663;
+                break;
+            case 386:
+                soundId = 664;
+                break;
+            case 387:
+                soundId = 665;
+                break;
+            case 388:
+                soundId = 666;
+                break;
+            default:
+                return -1;
             }
-
-            switch (code) {
-                case 0x172: soundId = 0x2bb; break;
-                case 0x173: soundId = 0x2af; break;
-                case 0x174: soundId = 0x2b5; break;
-                case 0x175: soundId = 0x2b6; break;
-                case 0x176: soundId = 0x2b7; break;
-                case 0x177: soundId = 0x2b8; break;
-                case 0x178: soundId = 0x2b9; break;
-                case 0x179: soundId = 0x2ba; break;
-                case 0x17a: soundId = 0x2a9; break;
-                case 0x17b: soundId = 0x2b0; break;
-                case 0x17c: soundId = 0x2b1; break;
-                case 0x17d: soundId = 0x2b2; break;
-                case 0x17e: soundId = 0x2b3; break;
-                case 0x17f: soundId = 0x2b4; break;
-                case 0x180: soundId = 0x2aa; break;
-                case 0x181: soundId = 0x2ab; break;
-                case 0x182: soundId = 0x2ac; break;
-                case 0x183: soundId = 0x2ad; break;
-                case 0x184: soundId = 0x2ae; break;
-                case 0x185: soundId = 0x2a8; break;
-                case 0x1aa: soundId = 0x2c1; break;
-                case 0x1ab: soundId = 0x2c2; break;
-                case 0x1ac: soundId = 0x2c3; break;
-                case 0x1ad: soundId = 0x2c6; break;
-                case 0x1ae: soundId = 0x2c7; break;
-                case 0x1af: soundId = 0x2c8; break;
-                case 0x1bd: soundId = 0x2bc; break;
-                case 0x1be: soundId = 0x2bd; break;
-                case 0x1bf: soundId = 0x2be; break;
-                case 0x139: soundId = 0x2cb; break;
-                default: break;
-            }
-            break;
+        break;
         }
-        case 1: {
-            switch (code) {
-                case 0x172: soundId = 0x2df; break;
-                case 0x173: soundId = 0x2d3; break;
-                case 0x174: soundId = 0x2d9; break;
-                case 0x175: soundId = 0x2da; break;
-                case 0x176: soundId = 0x2db; break;
-                case 0x177: soundId = 0x2dc; break;
-                case 0x178: soundId = 0x2dd; break;
-                case 0x179: soundId = 0x2de; break;
-                case 0x17a: soundId = 0x2cd; break;
-                case 0x17b: soundId = 0x2d4; break;
-                case 0x17c: soundId = 0x2d5; break;
-                case 0x17d: soundId = 0x2d6; break;
-                case 0x17e: soundId = 0x2d7; break;
-                case 0x17f: soundId = 0x2d8; break;
-                case 0x180: soundId = 0x2ce; break;
-                case 0x181: soundId = 0x2cf; break;
-                case 0x182: soundId = 0x2d0; break;
-                case 0x183: soundId = 0x2d1; break;
-                case 0x184: soundId = 0x2d2; break;
-                case 0x185: soundId = 0x2cc; break;
-                case 0x1aa: soundId = 0x2e5; break;
-                case 0x1ab: soundId = 0x2e6; break;
-                case 0x1ac: soundId = 0x2e7; break;
-                case 0x1ad: soundId = 0x2ea; break;
-                case 0x1ae: soundId = 0x2eb; break;
-                case 0x1af: soundId = 0x2ec; break;
-                case 0x1bd: soundId = 0x2e0; break;
-                case 0x1be: soundId = 0x2e1; break;
-                case 0x1bf: soundId = 0x2e2; break;
-                default: break;
-            }
+        switch (code) {
+        case 389:
+            soundId = 680;
             break;
-        }
-        case 2:
-        case 3:
-            switch (code) {
-                case 0x172: soundId = 0x27e; break;
-                case 0x173: soundId = 0x272; break;
-                case 0x174: soundId = 0x278; break;
-                case 0x175: soundId = 0x279; break;
-                case 0x176: soundId = 0x27a; break;
-                case 0x177: soundId = 0x27b; break;
-                case 0x178: soundId = 0x27c; break;
-                case 0x179: soundId = 0x27d; break;
-                case 0x17a: soundId = 0x26c; break;
-                case 0x17b: soundId = 0x273; break;
-                case 0x17c: soundId = 0x274; break;
-                case 0x17d: soundId = 0x275; break;
-                case 0x17e: soundId = 0x276; break;
-                case 0x17f: soundId = 0x277; break;
-                case 0x180: soundId = 0x26d; break;
-                case 0x181: soundId = 0x26e; break;
-                case 0x182: soundId = 0x26f; break;
-                case 0x183: soundId = 0x270; break;
-                case 0x184: soundId = 0x271; break;
-                case 0x185: soundId = 0x26b; break;
-                case 0x1aa: soundId = 0x285; break;
-                case 0x1ab: soundId = 0x286; break;
-                case 0x1ac: soundId = 0x287; break;
-                case 0x1ad: soundId = 0x28a; break;
-                case 0x1ae: soundId = 0x28b; break;
-                case 0x1af: soundId = 0x28c; break;
-                case 0x1b0: soundId = 0x24c; break;
-                case 0x1b2: soundId = 0x24a; break;
-                case 0x1ba: soundId = 0x24d; break;
-                case 0x1bd: soundId = 0x27f; break;
-                case 0x1be: soundId = 0x281; break;
-                case 0x1bf: soundId = 0x282; break;
-                case 0x139: soundId = 0x28f; break;
-                default: break;
-            }
+        case 370:
+            soundId = 699;
             break;
-        case 4: {
-            switch (code) {
-                case 0x172: soundId = 0x267; break;
-                case 0x173: soundId = 0x25b; break;
-                case 0x174: soundId = 0x261; break;
-                case 0x175: soundId = 0x262; break;
-                case 0x176: soundId = 0x263; break;
-                case 0x177: soundId = 0x264; break;
-                case 0x178: soundId = 0x265; break;
-                case 0x179: soundId = 0x266; break;
-                case 0x17a: soundId = 0x255; break;
-                case 0x17b: soundId = 0x25c; break;
-                case 0x17c: soundId = 0x25d; break;
-                case 0x17d: soundId = 0x25e; break;
-                case 0x17e: soundId = 0x25f; break;
-                case 0x17f: soundId = 0x260; break;
-                case 0x180: soundId = 0x256; break;
-                case 0x181: soundId = 599; break;
-                case 0x182: soundId = 600; break;
-                case 0x183: soundId = 0x259; break;
-                case 0x184: soundId = 0x25a; break;
-                case 0x185: soundId = 0x26a; break;
-                case 0x139: soundId = 0x268; break;
-                default: break;
-            }
+        case 371:
+            soundId = 687;
             break;
-        }
-        case 6: {
-            switch (code) {
-                case 0x172: soundId = 0x230; break;
-                case 0x173: soundId = 0x2f6; break;
-                case 0x174: soundId = 0x22a; break;
-                case 0x175: soundId = 0x22b; break;
-                case 0x176: soundId = 0x22c; break;
-                case 0x177: soundId = 0x22d; break;
-                case 0x178: soundId = 0x22e; break;
-                case 0x179: soundId = 0x22f; break;
-                case 0x17a: soundId = 0x2f0; break;
-                case 0x17b: soundId = 0x225; break;
-                case 0x17c: soundId = 0x226; break;
-                case 0x17d: soundId = 0x227; break;
-                case 0x17e: soundId = 0x228; break;
-                case 0x17f: soundId = 0x229; break;
-                case 0x180: soundId = 0x2f1; break;
-                case 0x181: soundId = 0x2f2; break;
-                case 0x182: soundId = 0x2f3; break;
-                case 0x183: soundId = 0x2f4; break;
-                case 0x184: soundId = 0x2f5; break;
-                case 0x185: soundId = 0x2ef; break;
-                case 0x139: soundId = 0x231; break;
-                default: break;
-            }
+        case 372:
+            soundId = 693;
             break;
-        }
-        case 7: {
-            switch (code) {
-                case 0x172: soundId = 0x246; break;
-                case 0x173: soundId = 0x23a; break;
-                case 0x174: soundId = 0x240; break;
-                case 0x175: soundId = 0x241; break;
-                case 0x176: soundId = 0x242; break;
-                case 0x177: soundId = 0x243; break;
-                case 0x178: soundId = 0x244; break;
-                case 0x179: soundId = 0x245; break;
-                case 0x17a: soundId = 0x234; break;
-                case 0x17b: soundId = 0x23b; break;
-                case 0x17c: soundId = 0x23c; break;
-                case 0x17d: soundId = 0x23d; break;
-                case 0x17e: soundId = 0x23e; break;
-                case 0x17f: soundId = 0x23f; break;
-                case 0x180: soundId = 0x235; break;
-                case 0x181: soundId = 0x236; break;
-                case 0x182: soundId = 0x237; break;
-                case 0x183: soundId = 0x238; break;
-                case 0x184: soundId = 0x239; break;
-                case 0x185: soundId = 0x233; break;
-                case 0x139: soundId = 0x247; break;
-                default: break;
-            }
+        case 373:
+            soundId = 694;
             break;
-        }
-        case 8:
-            if ((unsigned) (code - 0x1b3) <= 5) {
-                soundId = code + 0x9b;
-            }
+        case 374:
+            soundId = 695;
+            break;
+        case 375:
+            soundId = 696;
+            break;
+        case 376:
+            soundId = 697;
+            break;
+        case 377:
+            soundId = 698;
+            break;
+        case 378:
+            soundId = 681;
+            break;
+        case 379:
+            soundId = 688;
+            break;
+        case 380:
+            soundId = 689;
+            break;
+        case 381:
+            soundId = 690;
+            break;
+        case 382:
+            soundId = 691;
+            break;
+        case 383:
+            soundId = 692;
+            break;
+        case 384:
+            soundId = 682;
+            break;
+        case 385:
+            soundId = 683;
+            break;
+        case 386:
+            soundId = 684;
+            break;
+        case 387:
+            soundId = 685;
+            break;
+        case 388:
+            soundId = 686;
+            break;
+        case 426:
+            soundId = 705;
+            break;
+        case 427:
+            soundId = 706;
+            break;
+        case 428:
+            soundId = 707;
+            break;
+        case 429:
+            soundId = 710;
+            break;
+        case 430:
+            soundId = 711;
+            break;
+        case 431:
+            soundId = 712;
+            break;
+        case 445:
+            soundId = 700;
+            break;
+        case 446:
+            soundId = 701;
+            break;
+        case 447:
+            soundId = 702;
+            break;
+        case 313:
+            soundId = 715;
             break;
         default:
+            return -1;
+        }
+        break;
+    case 1:
+        switch (code) {
+        case 389:
+            soundId = 716;
             break;
+        case 370:
+            soundId = 735;
+            break;
+        case 371:
+            soundId = 723;
+            break;
+        case 372:
+            soundId = 729;
+            break;
+        case 373:
+            soundId = 730;
+            break;
+        case 374:
+            soundId = 731;
+            break;
+        case 375:
+            soundId = 732;
+            break;
+        case 376:
+            soundId = 733;
+            break;
+        case 377:
+            soundId = 734;
+            break;
+        case 378:
+            soundId = 717;
+            break;
+        case 379:
+            soundId = 724;
+            break;
+        case 380:
+            soundId = 725;
+            break;
+        case 381:
+            soundId = 726;
+            break;
+        case 382:
+            soundId = 727;
+            break;
+        case 383:
+            soundId = 728;
+            break;
+        case 384:
+            soundId = 718;
+            break;
+        case 385:
+            soundId = 719;
+            break;
+        case 386:
+            soundId = 720;
+            break;
+        case 387:
+            soundId = 721;
+            break;
+        case 388:
+            soundId = 722;
+            break;
+        case 426:
+            soundId = 741;
+            break;
+        case 427:
+            soundId = 742;
+            break;
+        case 428:
+            soundId = 743;
+            break;
+        case 429:
+            soundId = 746;
+            break;
+        case 430:
+            soundId = 747;
+            break;
+        case 431:
+            soundId = 748;
+            break;
+        case 445:
+            soundId = 736;
+            break;
+        case 446:
+            soundId = 737;
+            break;
+        case 447:
+            soundId = 738;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 2:
+    case 3:
+        switch (code) {
+        case 389:
+            soundId = 619;
+            break;
+        case 370:
+            soundId = 638;
+            break;
+        case 371:
+            soundId = 626;
+            break;
+        case 372:
+            soundId = 632;
+            break;
+        case 373:
+            soundId = 633;
+            break;
+        case 374:
+            soundId = 634;
+            break;
+        case 375:
+            soundId = 635;
+            break;
+        case 376:
+            soundId = 636;
+            break;
+        case 377:
+            soundId = 637;
+            break;
+        case 378:
+            soundId = 620;
+            break;
+        case 379:
+            soundId = 627;
+            break;
+        case 380:
+            soundId = 628;
+            break;
+        case 381:
+            soundId = 629;
+            break;
+        case 382:
+            soundId = 630;
+            break;
+        case 383:
+            soundId = 631;
+            break;
+        case 384:
+            soundId = 621;
+            break;
+        case 385:
+            soundId = 622;
+            break;
+        case 386:
+            soundId = 623;
+            break;
+        case 387:
+            soundId = 624;
+            break;
+        case 388:
+            soundId = 625;
+            break;
+        case 426:
+            soundId = 645;
+            break;
+        case 427:
+            soundId = 646;
+            break;
+        case 428:
+            soundId = 647;
+            break;
+        case 429:
+            soundId = 650;
+            break;
+        case 430:
+            soundId = 651;
+            break;
+        case 431:
+            soundId = 652;
+            break;
+        case 432:
+            soundId = 588;
+            break;
+        case 434:
+            soundId = 586;
+            break;
+        case 442:
+            soundId = 589;
+            break;
+        case 445:
+            soundId = 639;
+            break;
+        case 446:
+            soundId = 641;
+            break;
+        case 447:
+            soundId = 642;
+            break;
+        case 313:
+            soundId = 655;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 4:
+        switch (code) {
+        case 378:
+            soundId = 597;
+            break;
+        case 389:
+            soundId = 618;
+            break;
+        case 370:
+            soundId = 615;
+            break;
+        case 371:
+            soundId = 603;
+            break;
+        case 372:
+            soundId = 609;
+            break;
+        case 373:
+            soundId = 610;
+            break;
+        case 374:
+            soundId = 611;
+            break;
+        case 375:
+            soundId = 612;
+            break;
+        case 376:
+            soundId = 613;
+            break;
+        case 377:
+            soundId = 614;
+            break;
+        case 379:
+            soundId = 604;
+            break;
+        case 380:
+            soundId = 605;
+            break;
+        case 381:
+            soundId = 606;
+            break;
+        case 382:
+            soundId = 607;
+            break;
+        case 383:
+            soundId = 608;
+            break;
+        case 384:
+            soundId = 598;
+            break;
+        case 385:
+            soundId = 599;
+            break;
+        case 386:
+            soundId = 600;
+            break;
+        case 387:
+            soundId = 601;
+            break;
+        case 388:
+            soundId = 602;
+            break;
+        case 313:
+            soundId = 616;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 6:
+        switch (code) {
+        case 389:
+            soundId = 751;
+            break;
+        case 370:
+            soundId = 560;
+            break;
+        case 371:
+            soundId = 758;
+            break;
+        case 372:
+            soundId = 554;
+            break;
+        case 373:
+            soundId = 555;
+            break;
+        case 374:
+            soundId = 556;
+            break;
+        case 375:
+            soundId = 557;
+            break;
+        case 376:
+            soundId = 558;
+            break;
+        case 377:
+            soundId = 559;
+            break;
+        case 378:
+            soundId = 752;
+            break;
+        case 379:
+            soundId = 549;
+            break;
+        case 380:
+            soundId = 550;
+            break;
+        case 381:
+            soundId = 551;
+            break;
+        case 382:
+            soundId = 552;
+            break;
+        case 383:
+            soundId = 553;
+            break;
+        case 384:
+            soundId = 753;
+            break;
+        case 385:
+            soundId = 754;
+            break;
+        case 386:
+            soundId = 755;
+            break;
+        case 387:
+            soundId = 756;
+            break;
+        case 388:
+            soundId = 757;
+            break;
+        case 313:
+            soundId = 561;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 7:
+        switch (code) {
+        case 389:
+            soundId = 563;
+            break;
+        case 370:
+            soundId = 582;
+            break;
+        case 371:
+            soundId = 570;
+            break;
+        case 372:
+            soundId = 576;
+            break;
+        case 373:
+            soundId = 577;
+            break;
+        case 374:
+            soundId = 578;
+            break;
+        case 375:
+            soundId = 579;
+            break;
+        case 376:
+            soundId = 580;
+            break;
+        case 377:
+            soundId = 581;
+            break;
+        case 378:
+            soundId = 564;
+            break;
+        case 379:
+            soundId = 571;
+            break;
+        case 380:
+            soundId = 572;
+            break;
+        case 381:
+            soundId = 573;
+            break;
+        case 382:
+            soundId = 574;
+            break;
+        case 383:
+            soundId = 575;
+            break;
+        case 384:
+            soundId = 565;
+            break;
+        case 385:
+            soundId = 566;
+            break;
+        case 386:
+            soundId = 567;
+            break;
+        case 387:
+            soundId = 568;
+            break;
+        case 388:
+            soundId = 569;
+            break;
+        case 313:
+            soundId = 583;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    case 8:
+        switch (code) {
+        case 435:
+            soundId = 590;
+            break;
+        case 436:
+            soundId = 591;
+            break;
+        case 437:
+            soundId = 592;
+            break;
+        case 438:
+            soundId = 593;
+            break;
+        case 439:
+            soundId = 594;
+            break;
+        case 440:
+            soundId = 595;
+            break;
+        default:
+            return -1;
+        }
+        break;
+    default:
+        return -1;
     }
     return soundId;
 }
@@ -2221,145 +2504,68 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
                              unsigned short &o8, unsigned short &o9, unsigned short &o10,
                              unsigned short &o11, unsigned short &o12, unsigned short &o13,
                              unsigned short &o14) {
-    int screenH = Globals::h;
-    char isPhone = rdflag((char *) &Globals::iPadHD);
-    int bottom = ((-0x19 - p2) - p3) + screenH;
-
-    float thresh = gSCS_f86f8;
-    if (isPhone == 0) {
-        thresh = (rdflag((char *) &Globals::iPadLarge) == 0) ? gSCS_f8700 : gSCS_f86fc;
-    }
+    CoordsObject *coords = (CoordsObject *) Globals::options;
+    int bottom = Globals::h + (-25 - p2 - p3);
+    float minSteer = Globals::iPadHD ? 210.9375f : (!Globals::iPadLarge ? 150.0f : 300.0f);
     if (bottom < p1) {
         p1 = bottom;
     }
-    float fp1 = static_cast<float>(p1);
-
-    unsigned short uv;
-    int iv;
-    if (thresh < fp1) {
-        iv = (int) fp1;
-        uv = (unsigned short) iv;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = (int) fp1;
-        char flag8;
-        if (isPhone == 0) {
-            flag8 = rdflag((char *) &Globals::iPadLarge);
-            goto label8508;
-        }
-        goto common;
-    label8508:
-        uv = (flag8 == 0) ? 0x14 : 0x28;
-        o5 = uv;
-        o6 = (unsigned short) iv;
-        o13 = uv;
-        {
-            float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
-            float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
-            float val = static_cast<float>(o6);
-            float r = val - sub;
-            o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-            o7 = 0x14;
-            (void) add14;
-            goto label8556;
-        }
+    float steer = (float) p1;
+    if (minSteer > steer) {
+        coords->steerValue = Globals::iPadHD ? 210 : (!Globals::iPadLarge ? 150 : 300);
     } else {
-        if (isPhone == 0) {
-            char flag = rdflag((char *) &Globals::iPadLarge);
-            iv = (flag == 0) ? 0x96 : 0x12c;
-            rdcoords((CoordsObject *) Globals::options)->steerValue = iv;
-            char flag8 = (flag == 0) ? 0 : 1;
-            (void) flag8;
-            goto label8508;
-        }
-        uv = 0xd2;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = 0xd2;
+        coords->steerValue = (int) steer;
     }
-
-common: {
-        float fv = gSCS_f8708;
-        o5 = 0x1c;
-        o6 = uv;
-        o13 = 0x1c;
-        float val = static_cast<float>(o6);
-        float r = val + gSCS_f8704;
-        o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-        o7 = 0x14;
-        (void) fv;
+    float stickGap;
+    if (Globals::iPadHD) {
+        o5 = 28;
+        o6 = coords->steerValue;
+        o13 = 28;
+        o14 = (unsigned short) ((float) o6 + -126.5625f);
+        o7 = 20;
+        stickGap = 92.8125f;
+    } else {
+        unsigned short margin = !Globals::iPadLarge ? 20 : 40;
+        o5 = margin;
+        o6 = coords->steerValue;
+        o13 = margin;
+        o14 = (unsigned short) ((float) o6 - (!Globals::iPadLarge ? 90.0f : 180.0f));
+        o7 = 20;
+        stickGap = !Globals::iPadLarge ? 66.0f : 132.0f;
     }
-
-label8556: {
-        unsigned absp2 = (unsigned) (p2 - (p2 >> 31));
-        float fv = gSCS_f8708;
-        float val6 = static_cast<float>(o6);
-        float r8 = fv + val6;
-        o8 = (unsigned short) ((0.0f < r8) ? (short) (int) r8 : 0);
-        o9 = (unsigned short) (o7 + (short) (absp2 >> 1));
-        o10 = (unsigned short) (o8 + (short) (absp2 >> 1));
-
-        float val6b = static_cast<float>(o6);
-        float fv2;
-        float acc;
-        if (isPhone == 0) {
-            bool b = (rdflag((char *) &Globals::iPadLarge) == 0);
-            acc = (b ? gSCS_f8728 : gSCS_f8724) + val6b;
-            fv2 = b ? 2.0f : 4.0f;
+    o8 = (unsigned short) (stickGap + (float) o6);
+    o9 = o7 + p2 / 2;
+    o10 = o8 + p2 / 2;
+    float knob = (float) o6;
+    float edge;
+    if (Globals::iPadHD) {
+        knob = knob + 313.59375f;
+        edge = 2.8125f;
+    } else {
+        knob = (!Globals::iPadLarge ? 223.0f : 446.0f) + knob;
+        edge = !Globals::iPadLarge ? 2.0f : 4.0f;
+    }
+    unsigned knobPos = (unsigned) knob;
+    o12 = knobPos;
+    float top = (float) (Globals::h - p4);
+    if (top - edge < (float) knobPos) {
+        int big;
+        int small;
+        if (Globals::iPadHD) {
+            big = 243;
+            small = 187;
+            knobPos = (unsigned) ((float) knobPos - (top + -2.8125f));
         } else {
-            acc = val6b + gSCS_f871c;
-            fv2 = gSCS_f8720;
+            big = !Globals::iPadLarge ? 173 : 346;
+            small = !Globals::iPadLarge ? 133 : 266;
+            knobPos = (unsigned) ((float) knobPos - (top - (!Globals::iPadLarge ? 2.0f : 4.0f)));
         }
-        int i12 = (0.0f < acc) ? (int) acc : 0;
-        o12 = (unsigned short) i12;
-
-        float top = static_cast<float>(screenH - p4);
-        float f12 = static_cast<float>((unsigned) i12);
-        if (f12 <= top - fv2) {
-            unsigned short u11;
-            if (isPhone == 0) {
-                u11 = (rdflag((char *) &Globals::iPadLarge) == 0) ? 0x14 : 0x28;
-            } else {
-                u11 = 0x1c;
-            }
-            o11 = u11;
-        } else {
-            int a, b;
-            if (isPhone == 0) {
-                float fv14 = 4.0f;
-                a = 0x15a;
-                char flag8 = rdflag((char *) &Globals::iPadLarge);
-                if (flag8 == 0) fv14 = 2.0f;
-                b = 0x10a;
-                float d = f12 - (top - fv14);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                if (flag8 == 0) {
-                    a = 0xad;
-                    b = 0x85;
-                }
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                float fv15 = 4.0f;
-                if (rdflag((char *) &Globals::iPadLarge) == 0) fv15 = 2.0f;
-                o12 = (unsigned short) ((0.0f < top - fv15) ? (short) (int) (top - fv15) : 0);
-            } else {
-                a = 0xf3;
-                b = 0xbb;
-                float d = f12 - (top + gSCS_f872c);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                o12 = (unsigned short) ((0.0f < top - gSCS_f8720) ? (short) (int) (top - gSCS_f8720) : 0);
-            }
-        }
+        o12 = knobPos;
+        float t = (float) knobPos / 54.0f;
+        o11 = (unsigned short) ((float) small + (t < 1.0f ? t : 1.0f) * (float) (big - small));
+        o12 = (unsigned short) (top - (Globals::iPadHD ? 2.8125f : (!Globals::iPadLarge ? 2.0f : 4.0f)));
+    } else {
+        o11 = Globals::iPadHD ? 28 : (!Globals::iPadLarge ? 20 : 40);
     }
 }
 
@@ -2369,127 +2575,69 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
                             unsigned short &o11, unsigned short &o12, unsigned short &o13,
                             unsigned short &o14, unsigned short &o15, unsigned short &o16,
                             unsigned short &o17) {
-    char isPhone = rf((char *) &Globals::iPadHD);
-    float fbase = gSCF_b14;
-    float fwid = gSCF_b10;
-    if (isPhone == 0) {
-        bool b = (rf((char *) &Globals::iPadLarge) == 0);
-        fwid = b ? gSCF_b84 : gSCF_b80;
-        fbase = b ? gSCF_b8c : gSCF_b88;
+    CoordsObject *coords = (CoordsObject *) Globals::options;
+    float minFire = Globals::iPadHD ? 210.9375f : (Globals::iPadLarge ? 300.0f : 150.0f);
+    float margin = Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f);
+    int bottom = Globals::h - p2;
+    float requested = (float) p1;
+    float fire = requested;
+    if (margin + (float) bottom < requested) {
+        fire = (Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom;
     }
-
-    int colDelta = rint((int *) &Globals::h) - p2;
-    float fcol = static_cast<float>(colDelta);
-    float fp1 = static_cast<float>(p1);
-    float fmax = fp1;
-    if (fwid + fcol < fp1) {
-        fmax = gSCF_b7c;
-        if (isPhone == 0) {
-            fmax = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-        }
-        fmax = fmax + fcol;
-    }
-
-    int iv;
-    float adj13 = gSCF_b90;
-    float wField;
-    if (fbase < fmax) {
-        float t = gSCF_b7c;
-        if (isPhone == 0) {
-            t = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-        }
-        float fp1b = fp1;
-        if (t + fcol < fp1) {
-            fp1b = gSCF_b7c;
-            if (isPhone == 0) {
-                fp1b = (rf((char *) &Globals::iPadLarge) == 0) ? gSCF_b84 : gSCF_b80;
-            }
-            fp1b = fp1b + fcol;
-        }
-        wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-        iv = (int) fp1b;
-        rcoords((CoordsObject *) Globals::options)->fireValue = (int) fp1b;
-        adj13 = gSCF_b90;
-        if (isPhone == 0) {
-            char flag6 = rf((char *) &Globals::iPadLarge);
-            adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
-        }
+    if (minFire > fire) {
+        coords->fireValue = Globals::iPadHD ? 210 : (Globals::iPadLarge ? 300 : 150);
     } else {
-        if (isPhone == 0) {
-            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-            char flag6 = rf((char *) &Globals::iPadLarge);
-            iv = (flag6 == 0) ? 0x96 : 0x12c;
-            rcoords((CoordsObject *) Globals::options)->fireValue = iv;
-            adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
-        } else {
-            iv = 0xd2;
-            wField = static_cast<float>(rint((int *) &Globals::w) - p2);
-            rcoords((CoordsObject *) Globals::options)->fireValue = 0xd2;
+        float clamped = requested;
+        if ((Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom < requested) {
+            clamped = (Globals::iPadHD ? 63.28125f : (Globals::iPadLarge ? 90.0f : 45.0f)) + (float) bottom;
         }
+        coords->fireValue = (int) clamped;
     }
-
-    o6 = clampU(wField + adj13);
-    o7 = (unsigned short) iv;
-    o8 = (unsigned short) (o6 + (short) (p2 >> 1));
-    o9 = (unsigned short) (o7 + (short) (p2 >> 1));
-
-    float tail;
-    unsigned short u16;
-    if (isPhone == 0) {
-        char flag6 = rf((char *) &Globals::iPadLarge);
-        float a10 = (flag6 == 0) ? gSCF_bb8 : gSCF_bb4;
-        o10 = clampU(a10 + static_cast<float>(o6));
-        float a11 = (flag6 == 0) ? 4.0f : 8.0f;
-        o11 = clampU(a11 + static_cast<float>(o7));
-        float a12 = (flag6 == 0) ? 15.0f : 28.0f;
-        o12 = clampU(a12 + static_cast<float>(o6));
-        float a13 = (flag6 == 0) ? 13.0f : 27.0f;
-        o13 = clampU(a13 + static_cast<float>(o7));
-        float a16 = (flag6 == 0) ? gSCF_bc0 : gSCF_bbc;
-        u16 = clampU(a16 + static_cast<float>(o6));
-        tail = (flag6 == 0) ? gSCF_bc8 : gSCF_bc4;
+    o6 = (unsigned short) ((float) (Globals::w - p2) + (Globals::iPadHD ? 56.25f : (Globals::iPadLarge ? 80.0f : 40.0f)));
+    o7 = coords->fireValue;
+    o8 = o6 + (unsigned) p2 / 2;
+    o9 = o7 + (unsigned) p2 / 2;
+    float last;
+    float six = (float) o6;
+    if (Globals::iPadHD) {
+        o10 = (unsigned short) (six + 107.28125f);
+        o11 = (unsigned short) ((float) o7 + 5.625f);
+        o12 = (unsigned short) ((float) o6 + 18.09375f);
+        o13 = (unsigned short) ((float) o7 + 19.28125f);
+        o16 = (unsigned short) ((float) o6 + 112.5f);
+        last = 94.21875f;
     } else {
-        o10 = clampU(static_cast<float>(o6) + gSCF_b9c);
-        o11 = clampU(static_cast<float>(o7) + gSCF_ba0);
-        o12 = clampU(static_cast<float>(o6) + gSCF_ba4);
-        o13 = clampU(static_cast<float>(o7) + gSCF_ba8);
-        u16 = clampU(static_cast<float>(o6) + gSCF_bac);
-        tail = gSCF_bb0;
+        o10 = (unsigned short) ((Globals::iPadLarge ? 152.0f : 77.0f) + six);
+        o11 = (unsigned short) ((Globals::iPadLarge ? 8.0f : 4.0f) + (float) o7);
+        o12 = (unsigned short) ((Globals::iPadLarge ? 28.0f : 15.0f) + (float) o6);
+        o13 = (unsigned short) ((Globals::iPadLarge ? 27.0f : 13.0f) + (float) o7);
+        o16 = (unsigned short) ((Globals::iPadLarge ? 160.0f : 80.0f) + (float) o6);
+        last = Globals::iPadLarge ? 134.0f : 67.0f;
     }
-
-    o16 = u16;
-    o17 = clampU(static_cast<float>(o7) - tail);
-
-    unsigned short u14;
-    float t15;
-    if (colDelta < iv) {
+    o17 = (unsigned short) ((float) o7 - last);
+    float trigger;
+    if (coords->fireValue > bottom) {
         o5 = p3;
-        float w = static_cast<float>(o6);
-        if (isPhone != 0) {
-            u14 = clampU(w + -2.0f);
-            t15 = gSCF_be4;
+        float base = (float) o6;
+        if (Globals::iPadHD) {
+            o14 = (unsigned short) (base + -2.0f);
+            trigger = 132.1875f;
         } else {
-            char flag = rf((char *) &Globals::iPadLarge);
-            float a = (flag == 0) ? gSCF_be8 : -2.0f;
-            u14 = clampU(a + gSCF_be4);
-            t15 = (flag == 0) ? gSCF_bf0 : gSCF_bec;
+            o14 = (unsigned short) ((Globals::iPadLarge ? -2.0f : 0.0f) + base);
+            trigger = Globals::iPadLarge ? 189.0f : 94.0f;
         }
     } else {
         o5 = p4;
-        float w = static_cast<float>(o6);
-        if (isPhone != 0) {
-            u14 = clampU(w + gSCF_bcc);
-            t15 = gSCF_bd0;
+        float base = (float) o6;
+        if (Globals::iPadHD) {
+            o14 = (unsigned short) (base + 100.0625f);
+            trigger = 209.53125f;
         } else {
-            char flag = rf((char *) &Globals::iPadLarge);
-            float a = (flag == 0) ? gSCF_bd8 : gSCF_bd4;
-            u14 = clampU(a + gSCF_bd0);
-            t15 = (flag == 0) ? gSCF_be0 : gSCF_bdc;
+            o14 = (unsigned short) ((Globals::iPadLarge ? 144.0f : 74.0f) + base);
+            trigger = Globals::iPadLarge ? 298.0f : 149.0f;
         }
     }
-
-    o14 = u14;
-    o15 = clampU(t15 + static_cast<float>(o7));
+    o15 = (unsigned short) (trigger + (float) o7);
 }
 
 String Globals::getKeyBindingReplaceString(int key) {

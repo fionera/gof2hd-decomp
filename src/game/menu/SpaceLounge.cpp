@@ -1424,9 +1424,9 @@ void SpaceLounge::updateScreenPositions() {
     }
 
     Array<KIPlayer *> *figures = this->cutScene->level->getEnemies();
-    Vector offset = Vector();
-    Vector pos = Vector();
-    Vector screen = Vector();
+    Vector screen = {0.0f, 0.0f, 0.0f};
+    Vector pos = {0.0f, 0.0f, 0.0f};
+    Vector offset = {0.0f, 0.0f, 0.0f};
     PaintCanvas *canvas = Globals::Canvas;
     offset = 150.0f * MatrixGetRight(*(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent()));
 
@@ -1487,17 +1487,8 @@ void SpaceLounge::update(int dt) {
         float wave = Sinf(this->headBobPhase);
         float amplitude = (float) this->headBobSteps * 0.85f;
         amplitude = amplitude < 3.5f ? amplitude : 3.5f;
-        if (this->cameraAnimating != 0) {
-            float turn = this->headEase->GetValue();
-            if (SPACELOUNGE_ABS(turn - this->headEase->GetMaxValue()) < 0.25f) {
-                float target = (float) (5 - Globals::rnd->nextInt(10));
-                this->headBobReverse = turn > target;
-                this->headEase->SetRange(turn, target);
-                this->headBobSteps = Globals::rnd->nextInt(4) + 1;
-            }
-            int steps = this->headBobSteps;
-            this->headEase->Increase((float) ((this->headBobReverse ? -steps : steps) * dt));
-        } else {
+        float bob = wave * amplitude;
+        if (this->cameraAnimating == 0) {
             PaintCanvas *canvas = Globals::Canvas;
             this->baseMatrix = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
             this->cameraAnimating = 1;
@@ -1509,8 +1500,17 @@ void SpaceLounge::update(int dt) {
                 this->headEase = new AbyssEngine::EaseInOut(0.0f, 5.0f);
             }
             this->headBobSteps = 2;
+        } else {
+            float turn = this->headEase->GetValue();
+            if (SPACELOUNGE_ABS(turn - this->headEase->GetMaxValue()) < 0.25f) {
+                float target = (float) (5 - Globals::rnd->nextInt(10));
+                this->headBobReverse = turn > target;
+                this->headEase->SetRange(turn, target);
+                this->headBobSteps = Globals::rnd->nextInt(4) + 1;
+            }
+            int steps = this->headBobSteps;
+            this->headEase->Increase((float) ((this->headBobReverse ? -steps : steps) * dt));
         }
-        float bob = wave * amplitude;
         Matrix view = MatrixSetRotation(view, 0.0f, this->headEase->GetValue() / 35.0f, 0.0f);
         MatrixSetTranslation(view, 0.0f, bob, 0.0f);
         view *= this->baseMatrix;
@@ -1876,7 +1876,7 @@ unsigned char SpaceLounge::hangarNeedsUpdate() {
     return this->hangarUpdate;
 }
 
-int SpaceLounge::OnTouchBegin(int x, int y) {
+bool SpaceLounge::OnTouchBegin(int x, int y) {
     this->touchDown = 1;
     this->touchX = x;
     this->touchY = y;
@@ -1884,25 +1884,25 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 
     if (this->choiceVisible != 0 || this->chatActive != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     if (this->mapVisible != 0) {
         this->starMap->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     if (this->listVisible != 0) {
         this->listWindow->OnTouchBegin(x, y);
         Globals::layout->OnTouchBegin(x, y);
         this->scrollWindow->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
         case 0:
             if (this->introDone == 0) {
-                return 0;
+                return false;
             }
             if (this->agents != 0) {
                 float fx = (float) x;
@@ -1930,21 +1930,21 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 
     Globals::layout->OnTouchBegin(x, y);
     this->scrollWindow->OnTouchBegin(x, y);
-    return 0;
+    return false;
 }
 
-int SpaceLounge::OnTouchMove(int x, int y) {
+bool SpaceLounge::OnTouchMove(int x, int y) {
     this->touchX = x;
     this->touchY = y;
 
     if (this->choiceVisible != 0 || this->chatActive != 0) {
         this->choiceWindow->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     if (this->mapVisible != 0) {
         this->starMap->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     switch (this->mode) {
@@ -1981,7 +1981,7 @@ int SpaceLounge::OnTouchMove(int x, int y) {
     } else {
         this->scrollWindow->OnTouchMove(x, y);
     }
-    return 0;
+    return false;
 }
 
 int SpaceLounge::OnTouchEnd(int x, int y) {

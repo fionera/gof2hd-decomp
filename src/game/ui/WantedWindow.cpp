@@ -19,10 +19,10 @@
 #include "game/menu/ModStation.h"
 
 
-int WantedWindow::OnTouchMove(int x, int y) {
+bool WantedWindow::OnTouchMove(int x, int y) {
     if (this->showingMap != 0) {
         this->starMap->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     Layout **layout = &Globals::layout;
@@ -62,7 +62,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
         selected = 0xffffffffu;
     }
     this->highlightedWanted = selected;
-    return 0;
+    return false;
 }
 
 void WantedWindow::update(int dt) {
@@ -105,10 +105,10 @@ void WantedWindow::update(int dt) {
 }
 
 
-int WantedWindow::OnTouchBegin(int x, int y) {
+bool WantedWindow::OnTouchBegin(int x, int y) {
     if (this->showingMap != 0) {
         this->starMap->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     this->lastDragY = y;
@@ -130,7 +130,7 @@ int WantedWindow::OnTouchBegin(int x, int y) {
     }
 
     this->highlightedWanted = this->getWantedAtPosition(x, y);
-    return 0;
+    return false;
 }
 
 void WantedWindow::render3D() {
@@ -407,12 +407,7 @@ int WantedWindow::init() {
 
     int width;
     int height;
-    if (!Globals::iPad) {
-        this->windowX = 0;
-        this->windowY = 0;
-        height = Globals::h;
-        width = Globals::w;
-    } else {
+    if (Globals::iPad) {
         int halfWidth;
         if (Globals::iPadHD) {
             height = 703;
@@ -429,6 +424,11 @@ int WantedWindow::init() {
         }
         this->windowX = (Globals::w >> 1) - halfWidth;
         this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
+    } else {
+        width = Globals::w;
+        height = Globals::h;
+        this->windowX = 0;
+        this->windowY = 0;
     }
     this->windowWidth = width;
     this->windowHeight = height;
@@ -470,8 +470,8 @@ int WantedWindow::init() {
 
     if (this->detailButton != nullptr)
         delete this->detailButton;
-    this->starMap = nullptr;
     this->detailButton = nullptr;
+    this->starMap = nullptr;
     this->showingMap = 0;
     this->hangarUpdate = 0;
     this->detailButton = new TouchButton(
@@ -482,7 +482,7 @@ int WantedWindow::init() {
             detailWidth, 33, 4);
     this->hangarUpdate = 0;
     this->lastButtonHit = 1;
-    return 1;
+    return this->lastButtonHit;
 }
 
 

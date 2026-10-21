@@ -3,10 +3,12 @@
 #include <cstdint>
 
 namespace AbyssEngine {
+    struct CurveKeyframe; // defined in AbyssEngine.cpp (the only TU that touches keyframes)
+
     struct Curve {
         uint16_t count;
         uint16_t pad0x2;
-        unsigned char *entries; // array of CurveKeyframe*, cast at use sites (keyframe type is file-local)
+        CurveKeyframe **entries;
     };
 }
 

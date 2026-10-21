@@ -13,7 +13,19 @@ namespace AbyssEngine {
         uint32_t pad44;
         uint8_t *dataB;
 
-        ~ResourceTransform();
+        // Inline (the original exports only a WEAK D2, emitted at 0x77ebc.. by the PaintCanvas TU,
+        // right after ReleaseAllResources).
+        ~ResourceTransform() {
+            if (this->dataA != nullptr) {
+                ::operator delete[](this->dataA); // lint: operator_call -- explicit call keeps the null test (a delete[] expression elides it; orig keeps the cbz)
+            }
+            this->dataA = nullptr;
+
+            if (this->dataB != nullptr) {
+                ::operator delete[](this->dataB); // lint: operator_call -- see above
+            }
+            this->dataB = nullptr;
+        }
     };
 }
 #endif

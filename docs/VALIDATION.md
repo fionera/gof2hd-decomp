@@ -23,6 +23,17 @@ libgcc helpers (`__aeabi_idiv`, `_Unwind_*`, ...), which therefore stay unversio
 original — then libc++abi.a and libgcc.a last, with ndk-build's default `--exclude-libs=libgcc.a`
 (the original defines `__aeabi_ldivmod` locally without exporting it).
 
+Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the original's link order
+(`tools/gen_link_order.py`, recovered from the original's .dynsym, gold emits symbols in input
+order), the system `-l` libs up to libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
+(hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
+undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
+NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions): gold (same r18b
+binary as the original's) emits dynamic symbols by iterating its symbol hash table, so the order
+is a function of the complete symbol-insertion sequence (every object, every referenced symbol,
+in input order) and is expected to converge only as object contents/membership converge — not a
+knob to tune directly.
+
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
 reproduces the original's interleaved .text function order from the original's symbol addresses;
@@ -50,66 +61,55 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
 is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 
-## Current state — symbol parity (2026-07-26)
+## Current state — symbol parity (2026-10-21)
 
 ```
-original: 5370   ours: 5420   extra: 50 (all allowlisted)   missing: 0   (wrong_type: 0   absent: 0)
+original: 5370   ours: 5370   extra: 0   missing: 0   (wrong_type: 0   absent: 0)
 ```
 
-**Zero missing, zero wrong_type** — every function and object the original exports, with the correct
-signature, is present. The 12 formerly broken zero-size UB stubs have all been reconstructed (see
-the fidelity section).
-The **50 extra** symbols are all documented in `tools/sodiff_allow.txt`, so the `diff` target exits
-0; any extra beyond the list is a hard failure. They break down as 34 ctor/dtor aliases (below),
-15 engine flag globals (below), and `gof2::kJNIEnvCallAnchors`:
+**Exact defined-export parity**: every function and object the original exports is present with
+the correct signature, and we export nothing it does not. `tools/sodiff_allow.txt` is empty; any
+extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
+reconstructed (see the fidelity section).
 
-### Reducible (already fixed)
-Moving an empty/simple **out-of-line** ctor/dtor **inline into the header** makes clang emit it weak
-and fold the redundant complete-object variant (C1/D1) into the base-object variant (C2/D2) the
-original exports. Done for `GameData`, `EaseInOutMatrix::~EaseInOutMatrix`, `KeyFrame::KeyFrame`
-(40 → 36), `Array<Radio*>::~Array` through its TU merge, and `AEMath::Matrix::Matrix` (36 → 34).
-This is the template for any further reductions.
+### Reducible (all fixed)
+How the former 50 allowlisted extras were removed — the template for any new one:
 
-### Irreducible under the "no linker scripts" rule (34 symbols)
-**Compiler-emitted C1/C2 & D1/D2 constructor/destructor alias duplicates.** clang emits both the
-complete-object (C1/D1) and base-object (C2/D2) variant; for a class with no virtual bases they are
-identical and the original's link kept only one name. The inline trick above removes the duplicate
-**only when an out-of-line odr-use of the surviving variant happens to remain** — verified
-empirically that for most of these classes inlining *also* drops the C2/D2 the original keeps
-(`Camera`, `Material`, `ParticleSettings`, `ResourceTransform` each went `missing` when inlined).
-Forcing the out-of-line copy back would require `__attribute__((used))` or a `--version-script`,
-both forbidden. These are therefore left as a documented delta:
+- **C1/D1 alias duplicates of inline/template ctors and dtors.** clang (`-mconstructor-aliases`)
+  emits a C1/D1 alias next to C2/D2 only for a *strong or weak_odr* definition. An implicitly
+  instantiated / inline (`linkonce_odr`) one is RAUW'd to the C2/D2 variant, which is the only
+  name the original exports. So: no explicit `template Array<T>::Array()` / `~Array()`
+  instantiations (they are `weak_odr` and exported both variants for 12 `Array<T>`s — each is
+  implicitly instantiated by its real user anyway), and empty ctors/dtors the original emits weak
+  go inline in the header (`GameData`, `EaseInOutMatrix`, `KeyFrame`, `AEMath::Matrix`, the
+  Resource*/Material/Camera/String set, ...).
+- **`ParticleSettings` D1**: the original's `~ParticleSettings` is the implicit (weak) dtor,
+  odr-used only by `__GLOBAL__sub_I_ParticleSettings.cpp`, which constructs
+  `ParticleSettingsRef::init` then `::cur` (both `ParticleSettings` objects, not byte arrays) and
+  registers the dtor with `__cxa_atexit`. Modelling the statics with their real type reproduces
+  that initializer and the weak D2-only export.
+- **Engine flag globals (15)**: `src/engine/core/EngineFlags.cpp` held invented never-set flags
+  (`g_Engine_shaderModeFlag`, `g_Mesh_vboEnabledFlag`, ...). Only two still had a user, a bogus
+  `getAppVersion` body that duplicated `Engine::InitGL` through `AE_getInitGL*` shims (they stood
+  for `Engine::enableShader` / `Engine::EnablePostEffect`). The original's `getAppVersion` is a
+  size-0 symbol aliasing `Engine::InitGL`, so the body was dropped and the TU deleted.
+- **`gof2::kJNIEnvCallAnchors`**: a table odr-using the five `_JNIEnv::Call*Method` members. Their
+  real callers (`NFC::iap_buy_*`, `NFC::isPad/getWidth/getHeight`,
+  `FileInterfaceAndroid::Read/Write/Close`) are decompiled, so the table was deleted.
 
-- `AbyssEngine::ResourceMesh` C1`(const char*,u16,bool)`, D1
-- `AbyssEngine::ResourceTexture` C1`(const char*,float)`, C1`(const String&,float)`, D1
-- `AbyssEngine::ResourceMaterial` C1`(u16,BlendMode)`, C1`(u16,u16,BlendMode)`
-- `AbyssEngine::ResourceTransform` D1
-- `AbyssEngine::Camera` C1`(float×5)`
-- `AbyssEngine::Material` C1`(Material*)`, C1`()`, D1
-- `AbyssEngine::String` C1`(char)`, C1`(int)`, C1`(float)`, C1`(long long)`, C2`(const String&)`
-- `ParticleSettings` D1
-- 11 `Array<T>` instantiations (`Array<String>`, `Array<TouchSlider*>`, `Array<BluePrint*>`,
-  `Array<GameRecord*>`, `Array<PendingProduct*>`, `Array<KeyCode*>`, `Array<Array<String>*>`,
-  `Array<Array<ImagePart*>>`, `Array<Array<String*>>`, `Array<signed char*>`, `Array<bool>`) —
-  C1 and/or D1/D2.
+### Static initializers (.init_array)
+The three `.init_array` entries are instruction-identical to the original's and in its order:
+Engine.cpp (`Engine::tv_modes` as `Array<int>` with `atexit(~Array)`, then `renderer`, `vendor`),
+the touch buffer (`touches = realloc(touches, sizeof(Touch))`), and ParticleSettings.cpp
+(`ParticleSettingsRef::init`, `::cur`). Any new namespace-scope object with a non-trivial
+ctor/dtor adds an entry the original does not have.
 
-`AbyssEngine::String` is additionally the polymorphic `{vtable,data,length}` class noted as needing
-a full re-model; its copy-ctor delta (`C2(const String&)` vs the original's `C2(const String&,bool)`)
-is part of that and is not safe to change piecemeal.
-
-### Engine flag globals (15 symbols)
-`src/engine/core/EngineFlags.cpp` (commit dcdcb0e1) holds never-set engine flags
-(`g_Mesh_vboEnabledFlag`, `g_Engine_shaderModeFlag`, `g_Camera_frustumEnabledFlag`, …,
-`g_MeshRelease_freeFn`) split into their own TU **with external linkage** so `-Oz` cannot
-constant-fold the null through the flag-gated engine functions (the original keeps them as
-internal data, accessed GOT-indirect). Hidden visibility would change the GOT codegen and
-`__attribute__` is banned, so the 15 exports stay as a documented delta.
-
-### Not-yet-wired (1 symbol)
-- `gof2::kJNIEnvCallAnchors` — an internal table whose purpose is to odr-use the five
-  `_JNIEnv::Call*Method` member functions (which the original **does** export). It must stay until
-  its real consumer in the JNI dispatch path is decompiled and references it; internalizing it now
-  GCs the table and drops those five exported methods.
+### Known import delta: `posix_memalign`
+The original imports `memalign`, not `posix_memalign`: it links the NDK's `libandroid_support.a`
+after `libc++abi.a` (ndk-build's `c++_static` for a pre-21 `APP_PLATFORM`), whose hidden
+`posix_memalign` (at 0x19ae14, between the libc++abi code and libgcc's `__aeabi_ldivmod`) wraps
+`memalign`. libc++abi's `fallback_malloc.o`/`stdlib_new_delete.o` are the users. Our link does not
+pass `libandroid_support.a`, so `posix_memalign` stays an import; fixing it is a link-input change.
 
 ## Structural invariants — all at 0
 
@@ -173,6 +173,10 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   entry address was "named" and produced phantom linked_exact flips on untouched functions
   whenever unrelated code shifted the layout (±2-5 noise per relink, observed on BeamGun dtors /
   shader Init family).
+- **Calls through gold interworking veneers resolve to their destination** (2026-10-21): a
+  `bl`/`b.w` into a Thumb->ARM veneer (`bx pc; nop; ldr ip,[pc]; add pc,ip,pc; .word`) is named by
+  the veneer's target (PLT entry or function). Before, such calls masked as local, so a call to a
+  decompiler shim import could score `linked_exact`; 26 rows were demoted (linked 4184 -> 4158).
 - **Data references compare by what they name** (2026-10-21): every PIC `ldr rX,[pc,#N]` /
   `add rX,pc` address is resolved — a GOT slot to the symbol its dynamic relocation binds
   (GLOB_DAT/ABS32; RELATIVE slots to the object they point at), a direct address to the exported
@@ -202,12 +206,12 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1314, linked_exact 4090, avg 97.06%**
+Current numbers (of **4523** compared): **byte_exact 1330, linked_exact 4246, avg 98.51%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (595 names; a typo'd callee is a hard
+`tools/sodiff_allow.txt`, undefined-import set pinned (207 names, the original's count: the only delta is posix_memalign for memalign; a typo'd callee is a hard
 failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.

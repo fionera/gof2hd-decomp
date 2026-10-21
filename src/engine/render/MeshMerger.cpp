@@ -10,8 +10,8 @@
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
-    this->matrices = nullptr;
     this->canvas = canvas;
+    this->matrices = nullptr;
     this->cols = 1;
     this->flags = flags;
     this->rows = (int) transforms.size();
@@ -40,13 +40,13 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         for (uint32_t v = 0; v < (mesh = this->sourceMeshes[i])->vertexCount; v++) {
             if (mesh->vertexFormat & 1) {
                 Vector p = AbyssEngine::AEMath::MatrixTransformVector(
-                        transforms.data()[i], *(Vector *) (mesh->positions + positionOffset));
+                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->positions + positionOffset));
                 canvas->MeshSetPoint(this->mergedMeshId, (uint16_t) (vertexBase + v), p.x, p.y, p.z);
                 mesh = this->sourceMeshes[i];
             }
             if (mesh->vertexFormat & 4) {
                 Vector n = AbyssEngine::AEMath::MatrixRotateVector(
-                        transforms.data()[i], *(Vector *) (mesh->normals + positionOffset));
+                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->normals + positionOffset));
                 canvas->MeshSetNormal(this->mergedMeshId, (uint16_t) (vertexBase + v), n);
                 mesh = this->sourceMeshes[i];
             }
@@ -107,16 +107,16 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
     for (int i = 0; i < this->rows; i++) {
         this->matrices[i] = Matrix();
     }
-    this->enabledFlags = new uint8_t[this->rows];
+    this->enabledFlags = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->enabledFlags[i] = 1;
+        this->enabledFlags[i] = true;
     }
-    this->visibleFlags = new uint8_t[this->rows];
+    this->visibleFlags = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->visibleFlags[i] = 1;
+        this->visibleFlags[i] = true;
     }
-    this->dirty = 0;
     this->flags = flags;
+    this->dirty = 0;
     this->initialized = 0;
 }
 
@@ -190,10 +190,10 @@ void MeshMerger::render() {
 void MeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        int visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+        bool visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
                                                                  mesh->boundsRadius);
         if (visible != this->visibleFlags[i]) {
-            this->visibleFlags[i] = (uint8_t) visible;
+            this->visibleFlags[i] = visible;
             if (this->enabledFlags[i] != 0)
                 this->dirty = 1;
         }
@@ -240,7 +240,7 @@ void MeshMerger::init() {
 
     for (int i = 0; i < this->rows; i++) {
         int c = 0;
-        if (this->lods[i] >= -1 && this->cols <= this->lods[i]) {
+        if (this->lods[i] < -1 || this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
         for (; c < this->cols; c++) {
@@ -256,8 +256,8 @@ void MeshMerger::init() {
     uint32_t indexCount = 0;
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->sourceMeshes[i];
-        indexCount += (uint32_t) mesh->indexCount / 3u;
         vertexCount += mesh->vertexCount;
+        indexCount += (uint32_t) mesh->indexCount / 3u;
     }
 
     this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
@@ -283,14 +283,14 @@ MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         out->indices = mesh->indices;
 
     if (mesh->vertexFormat & 1) {
-        out->positions = new unsigned char[mesh->vertexCount * 12];
+        out->positions = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->positions)[i] =
                     AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
     }
     if (mesh->vertexFormat & 4) {
-        out->normals = new unsigned char[mesh->vertexCount * 12];
+        out->normals = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
                     AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));

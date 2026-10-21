@@ -47,7 +47,7 @@ public:
 
     // lint: void_ptr virtual override return type baked into vtable/symbol
 
-    uint32_t Read(uint32_t n, void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
+    bool Read(uint32_t n, void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
 
     uint32_t Write(uint32_t n, const void *buf) override; // lint: void_ptr virtual override param (FileInterface byte buffer)
 
@@ -85,7 +85,9 @@ public:
 
     void SetSaveDirectory(String dir) override;
 
-    String GetDirPreFix() override;
+    String GetDirPreFix() override { // inline: orig WEAK
+        return String("");
+    }
 
     static jmethodID methodRead;
     static int fileCounter;

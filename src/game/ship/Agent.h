@@ -94,7 +94,7 @@ public:
 
     void setOfferAccepted(bool v);
 
-    Triple *setSellItemData(int index, int quantity, int price);
+    void setSellItemData(int index, int quantity, int price);
 
     void setStationName(AbyssEngine::String src);
 

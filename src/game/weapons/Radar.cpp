@@ -1265,10 +1265,19 @@ music:
     this->field_0x1bc = 0;
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
-    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
-    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
-    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
-    long long squared = dy * dy + dx * dx + dz * dz;
+    // positions are halved first so the squared 64-bit sum stays in range
+    x1 *= 0.5f;
+    y1 *= 0.5f;
+    z1 *= 0.5f;
+    x2 *= 0.5f;
+    y2 *= 0.5f;
+    z2 *= 0.5f;
+    long long dx = static_cast<long long>(x1 - x2);
+    long long dx2 = dx * dx;
+    long long dz = static_cast<long long>(z1 - z2);
+    long long dz2 = dz * dz;
+    long long dy = static_cast<long long>(y1 - y2);
+    long long squared = dy * dy + dx2 + dz2;
     int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
     int meters = distance << 3;
 

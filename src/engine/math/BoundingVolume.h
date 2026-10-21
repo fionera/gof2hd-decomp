@@ -9,12 +9,8 @@
 class BoundingVolume {
 public:
     Array<BoundingVolume *> *children;
-    float centerX;
-    float centerY;
-    float centerZ;
-    float extentsX;
-    float extentsY;
-    float extentsZ;
+    AbyssEngine::AEMath::Vector position; // reference point (the owner's position)
+    AbyssEngine::AEMath::Vector offset;   // volume centre relative to position
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
 
@@ -36,7 +32,8 @@ public:
 
     void setVolumes(Array<BoundingVolume *> *arr);
 
-    void staticProjectCollisionOnSurface(const AbyssEngine::AEMath::Vector &v, Array<BoundingVolume *> *vols);
+    static AbyssEngine::AEMath::Vector staticProjectCollisionOnSurface(const AbyssEngine::AEMath::Vector &point,
+                                                                      Array<BoundingVolume *> *volumes);
 
     AbyssEngine::AEMath::Vector getProjectionVector(const AbyssEngine::AEMath::Vector &v);
 };

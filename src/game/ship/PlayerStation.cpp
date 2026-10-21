@@ -244,14 +244,13 @@ PlayerStation::PlayerStation(Station *station)
         int cursor = 1;
         for (int i = 0; i < count; ++i) {
             int *data = collision->data();
-            int type = data[cursor];
+            int type = data[cursor++];
             BoundingVolume *volume;
             if (type == 0) {
-                int *entry = data + cursor;
-                float x = (float) -entry[1];
-                float y = (float) entry[3];
-                float z = (float) entry[2];
-                extent.x = (float) entry[4];
+                float x = (float) -data[cursor];
+                float y = (float) data[cursor + 2];
+                float z = (float) data[cursor + 1];
+                extent.x = (float) data[cursor + 3];
                 if (alienOrbit) {
                     extent *= 0.4f;
                 } else {
@@ -261,15 +260,14 @@ PlayerStation::PlayerStation(Station *station)
                     extent *= -1.0f;
                 }
                 volume = new BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, extent.x);
-                cursor += 5;
+                cursor += 4;
             } else if (type == 1) {
-                int *entry = data + cursor;
-                extent.x = (float) entry[4];
-                float x = (float) -entry[1];
-                float y = (float) entry[3];
-                float z = (float) entry[2];
-                extent.z = (float) entry[5];
-                extent.y = (float) entry[6];
+                extent.x = (float) data[cursor + 3];
+                float x = (float) -data[cursor];
+                float y = (float) data[cursor + 2];
+                float z = (float) data[cursor + 1];
+                extent.z = (float) data[cursor + 4];
+                extent.y = (float) data[cursor + 5];
                 if (alienOrbit) {
                     extent *= 0.9f;
                 } else {
@@ -277,9 +275,8 @@ PlayerStation::PlayerStation(Station *station)
                 }
                 volume = new BoundingAAB(x, y, z, 0.0f, 0.0f, 0.0f, extent.x + extent.x, extent.y + extent.y,
                                          extent.z + extent.z);
-                cursor += 7;
+                cursor += 6;
             } else {
-                ++cursor;
                 continue;
             }
             (*(BoundingVolumeList *) this->boundingVolumes)[i] = volume;
@@ -419,8 +416,5 @@ Vector PlayerStation::getProjectionVector(const Vector &position) {
 }
 
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
-    Vector result;
-    reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(
-        position, (BoundingVolumeList *) this->boundingVolumes);
-    return result;
+    return BoundingVolume::staticProjectCollisionOnSurface(position, (BoundingVolumeList *) this->boundingVolumes);
 }

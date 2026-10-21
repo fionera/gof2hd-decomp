@@ -4,6 +4,7 @@
 #include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
 #include "engine/render/IParticleSystem.h"
+#include "engine/render/PaintCanvas.h"
 #include "engine/render/ParticleSettings.h"
 
 #include "engine/math/Matrix.h"
@@ -51,7 +52,23 @@ public:
                      float u1, float v1, bool maskedColor, float size0, float size1,
                      const Vector &velocity) override;
 
-    void setAlpha(int index, uint32_t color, float alpha);
+    void setAlpha(int index, uint32_t color, float alpha) { // inline: orig WEAK
+        float r = (float) (color >> 24) * 0.003921569f;
+        float g = (float) ((color >> 16) & 0xff) * 0.003921569f;
+        float b = (float) ((color >> 8) & 0xff) * 0.003921569f;
+        float a = (float) (color & 0xff) * 0.003921569f;
+
+        if (this->alphaFade) {
+            r *= alpha;
+            g *= alpha;
+            b *= alpha;
+        } else {
+            a *= alpha;
+        }
+
+        this->canvas->SpriteSystemSetRGBA(this->resource,
+                                          (uint16_t)(this->idOffset + index), r, g, b, a);
+    }
 
     void updateAreaExitParticle(int index, float dt);
 

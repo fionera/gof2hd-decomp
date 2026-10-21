@@ -8,7 +8,7 @@
 static bool g_transform_matrix_flag = false;
 
 namespace AbyssEngine {
-    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
+    bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
                                     AEMath::Matrix *matrix, Camera *camera);
 
     void Transform::SetCurrentAnimationTime(longlong value) {
@@ -399,12 +399,12 @@ namespace AbyssEngine {
 
     void Transform::SetAnimationState(AnimationMode mode, void *) { // lint: void_ptr method parameter baked into mangled symbol
         // lint: void_ptr method parameter baked into mangled symbol
-        if (mode == AnimationMode_0) {
-            this->animating = false;
-            this->flags = mode;
-        } else if (mode == static_cast<AnimationMode>(3)) {
+        if (mode == static_cast<AnimationMode>(3)) {
             this->animating = true;
             this->currentTime = this->rangeStart;
+        } else if (mode == AnimationMode_0) {
+            this->animating = false;
+            this->flags = mode;
         }
     }
 
@@ -450,10 +450,12 @@ namespace AbyssEngine {
             int index = -1;
             KeyFrame **cursor = this->keyFrames.data();
             KeyFrame *next;
+            longlong nextTime;
             do {
                 next = *cursor++;
                 ++index;
-            } while (next->timestamp < current);
+                nextTime = next->timestamp;
+            } while (nextTime < current);
             this->currentKeyFrameIndex = index;
 
             if (index == 0) {
@@ -477,12 +479,15 @@ namespace AbyssEngine {
             } else {
                 KeyFrame *prev = cursor[-2];
                 longlong prevTime = prev->timestamp;
-                Quaternion fromRotation(prev->rotation);
-                float elapsed = (float) (current - prevTime);
-                float span = (float) (next->timestamp - prevTime);
-                Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
-                float t = elapsed / span;
-                this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
+                float t;
+                {
+                    Quaternion fromRotation(prev->rotation);
+                    float elapsed = (float) (current - prevTime);
+                    float span = (float) (nextTime - prevTime);
+                    Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
+                    t = elapsed / span;
+                    this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
+                }
 
                 this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
                                                        this->keyFrames[this->currentKeyFrameIndex]->translation, t);
@@ -492,9 +497,11 @@ namespace AbyssEngine {
                 KeyFrame *to = this->keyFrames[this->currentKeyFrameIndex];
                 this->alpha = from->alpha + t * (to->alpha - from->alpha);
 
-                Quaternion fromLocal(from->localRotation);
-                Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
-                this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
+                {
+                    Quaternion fromLocal(from->localRotation);
+                    Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
+                    this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
+                }
 
                 this->localTranslation = AEMath::VectorLerp(
                     this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,

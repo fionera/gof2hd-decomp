@@ -87,11 +87,6 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->armorHP = 0;
     self->maxArmorHP = 0;
     self->maxShieldHP = 0;
-    self->hitVector[0] = 0.0f;
-    self->hitVector[1] = 0.0f;
-    self->hitVector[2] = 0.0f;
-    self->lastPosition.y = 0.0f;
-    self->lastPosition.z = 0.0f;
     self->radius = radius;
     self->numPrimaryGuns = numPrimary;
     self->numSecondaryGuns = numSecondary;
@@ -104,7 +99,6 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
     self->shootingEnabled = 1;
-    self->lastPosition.x = 0.0f;
     self->flShake = 0.0f;
     self->bombForce = 0.0f;
     self->empForce = 0.0f;
@@ -547,9 +541,9 @@ void Player::setVulnerable(bool value) {
 }
 
 void Player::setHitVector(float x, float y, float z) {
-    this->hitVector[0] = x;
-    this->hitVector[1] = y;
-    this->hitVector[2] = z;
+    this->hitVector.x = x;
+    this->hitVector.y = y;
+    this->hitVector.z = z;
 }
 
 void Player::setBombForce(float value) {
@@ -569,11 +563,7 @@ float Player::getEmpForce() {
 }
 
 Vector Player::getHitVector() {
-    Vector out;
-    double xy = *(double *) this->hitVector;
-    out.z = this->hitVector[2];
-    *(double *) &out.x = xy;
-    return out;
+    return this->hitVector;
 }
 
 int Player::getGunRegenRate(int slot) {
@@ -845,7 +835,7 @@ void Player::setActive(bool value) {
     this->active = value;
 }
 
-unsigned char Player::isActive() {
+bool Player::isActive() {
     return this->active;
 }
 

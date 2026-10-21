@@ -102,7 +102,6 @@ template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
 
 template void ArrayReleaseClasses<PendingProduct *>(Array<PendingProduct *> &);
 
-template void ArrayReleaseClasses<Node *>(Array<Node *> &);
 
 template void ArrayReleaseClasses<BluePrint *>(Array<BluePrint *> &);
 
@@ -123,34 +122,3 @@ template void ArrayAdd<unsigned char>(const unsigned char *, unsigned int, Array
 template void ArrayAdd<Player *>(Player * const *, unsigned int, Array<Player *> &);
 
 template void ArrayAdd<Player *>(const Array<Player *> &, Array<Player *> &);
-
-class GameRecord;
-
-namespace AbyssEngine {
-    class KeyCode;
-    class String;
-}
-
-template Array<GameRecord *>::~Array();
-
-template Array<TouchSlider *>::Array();
-
-template Array<TouchSlider *>::~Array();
-
-template Array<PendingProduct *>::~Array();
-
-template Array<BluePrint *>::Array();
-
-template Array<BluePrint *>::~Array();
-
-template Array<AbyssEngine::KeyCode *>::Array();
-
-template Array<AbyssEngine::KeyCode *>::~Array();
-
-template Array<Array<ImagePart *> *>::Array();
-
-template Array<Array<AbyssEngine::String *> *>::Array();
-
-template Array<Array<AbyssEngine::String *> *>::~Array();
-
-template Array<bool>::~Array();

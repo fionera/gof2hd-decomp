@@ -16,11 +16,11 @@ public:
 
     ~AEPakFile() override;
 
-    uint32_t Write(uint32_t bytes, void *buffer) override; // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    uint32_t Write(uint32_t, void *) override { return 0; } // lint: void_ptr virtual buffer param; Pv baked into mangled name; inline: orig WEAK
 
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
-    uint32_t Read(uint32_t bytes, void *buffer) override; // lint: void_ptr virtual buffer param; Pv baked into mangled name
+    bool Read(uint32_t bytes, void *buffer) override; // lint: void_ptr virtual buffer param; Pv baked into mangled name
 
     // lint: void_ptr virtual buffer param; Pv baked into mangled name
 

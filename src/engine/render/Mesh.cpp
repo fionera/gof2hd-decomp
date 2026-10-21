@@ -68,8 +68,8 @@ namespace AbyssEngine {
         *reinterpret_cast<AEMath::BSphere *>(&this->boundsCenterX) =
                 *reinterpret_cast<const AEMath::BSphere *>(&src->boundsCenterX);
 
-        this->vboByteSize = 0;
         this->vertexFormat = src->vertexFormat;
+        this->vboByteSize = 0;
         this->materialId = 0;
         this->shaderAnimValue0 = 0;
         this->vertexCount = src->vertexCount;
@@ -94,8 +94,8 @@ namespace AbyssEngine {
 
         *reinterpret_cast<AEMath::Vector *>(&this->pivotX) = *reinterpret_cast<const AEMath::Vector *>(&src->pivotX);
 
-        this->shared = 1;
         this->hasAnimation = src->hasAnimation;
+        this->shared = 1;
         this->uploaded = src->uploaded;
         this->positionVBO = src->positionVBO;
         this->indexVBO = src->indexVBO;
@@ -445,7 +445,7 @@ namespace AbyssEngine {
         m->field_0x2a = triCount;
 
         float *f = new float[vertexCount * 3];
-        m->positions = (unsigned char *) f;
+        m->positions = f;
         memset(f, 0, vertexCount * 3 * sizeof(float));
 
         if (vertexFormat & 0x10) {
@@ -460,7 +460,7 @@ namespace AbyssEngine {
         }
         if (vertexFormat & 4) {
             f = new float[vertexCount * 3];
-            m->normals = (unsigned char *) f;
+            m->normals = f;
             memset(f, 0, vertexCount * 3 * sizeof(float));
             if (Engine::enableShader) {
                 f = new float[vertexCount * 3];
@@ -520,7 +520,7 @@ namespace AbyssEngine {
                 return -1;
             }
             mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             mesh = *slot;
             unsigned int count = mesh->vertexCount * 3;
             for (unsigned int i = 0; i != count; i++) {
@@ -541,7 +541,7 @@ namespace AbyssEngine {
                 return -1;
             }
             mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             mesh = *slot;
             unsigned int count = mesh->vertexCount * 3;
             for (unsigned int i = 0; i != count; i++) {
@@ -556,7 +556,7 @@ namespace AbyssEngine {
             delete[] (unsigned char *) raw;
         } else if ((flags & 0x18) != 0) {
             Mesh *mesh = *slot;
-            mesh->positions = new unsigned char[mesh->vertexCount * 12];
+            mesh->positions = new float[mesh->vertexCount * 3];
             if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
                 return -1;
         }
@@ -611,7 +611,7 @@ namespace AbyssEngine {
                     return -1;
                 }
                 mesh = *slot;
-                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                mesh->normals = new float[mesh->vertexCount * 3];
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
@@ -643,7 +643,7 @@ namespace AbyssEngine {
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
                 Mesh *mesh = *slot;
-                mesh->normals = new unsigned char[mesh->vertexCount * 12];
+                mesh->normals = new float[mesh->vertexCount * 3];
                 if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
                     return -1;
             }
@@ -762,121 +762,80 @@ namespace AbyssEngine {
         if (engine == 0 || path == 0)
             return -4;
 
-        Mesh *m = (Mesh *) ::operator new(0x88); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-        memset(m, 0, 0x88);
-        m->boundsRadiusSq = 1.0f;
-        *out = m;
-        m->material = mat;
+        *out = new Mesh();
+        (*out)->material = mat;
 
         unsigned int handle = 0;
-        if (AEFile::OpenRead(path, &m->positionVBO) == 0) {
-            if (*out != 0)
-                ::operator delete(*out); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
+        if (AEFile::OpenRead(path, &handle) == 0) {
+            delete *out;
             *out = 0;
             return -1;
         }
 
+        // File magic: "AEMesh" (bit 0x4) or one of the version-tagged "V2AEMesh".."V5AEMesh" (0x1, 0x2, 0x8, 0x10),
+        // compared on the first 7 bytes.
         char magic[8] = "*******";
-        if (AEFile::Read((uint32_t)(7), magic, handle) == 0) {
-            MeshRelease(engine, out);
-            AEFile::Close(handle);
-            return -1;
-        }
-
-        // Mesh-file format magic (verified vs original signature table @0x1da3d0:
-        // "AEMesh\0", "V2AEMesh\0".."V5AEMesh\0"). The 7-byte magic is matched
-        // against "AEMesh\0" and the first 7 bytes of the version-tagged variants;
-        // each full match keeps its fmt bit set. Bits: AEMesh=0x4, V2=0x1, V3=0x2,
-        // V4=0x8, V5=0x10 (downstream: 0x1b => read version short, 0x1a => submeshes).
-        const char *sigMesh = "AEMesh";
-        const char *sigV2 = "V2AEMesh";
-        const char *sigV3 = "V3AEMesh";
-        const char *sigV4 = "V4AEMesh";
-        const char *sigV5 = "V5AEMesh";
-        unsigned int fmt = 0x1f;
-        for (int i = 0; i < 7; ++i) {
-            char ch = magic[i];
-            if (sigMesh[i] != ch) fmt &= ~4u;
-            if (sigV2[i] != ch) fmt &= ~1u;
-            if (sigV3[i] != ch) fmt &= ~2u;
-            if (sigV4[i] != ch) fmt &= ~8u;
-            if (sigV5[i] != ch) fmt &= ~0x10u;
-        }
-
-        if (fmt == 0) {
-            MeshRelease(engine, out);
-            AEFile::Close(handle);
-            return -1;
-        }
-
-        if ((fmt & 0x1b) != 0) {
-            unsigned short ver = 0;
-            if (AEFile::Read((uint32_t)(2), &ver, handle) == 0) {
-                MeshRelease(engine, out);
-                AEFile::Close(handle);
-                return -1;
+        if (AEFile::Read(7, magic, handle) == 0)
+            goto fail;
+        {
+            const char *sigMesh = "AEMesh";
+            const char *sigV2 = "V2AEMesh";
+            const char *sigV3 = "V3AEMesh";
+            const char *sigV4 = "V4AEMesh";
+            const char *sigV5 = "V5AEMesh";
+            unsigned int fmt = 0x1f;
+            for (int i = 0; i < 7; ++i) {
+                if (sigMesh[i] != magic[i]) fmt &= ~4u;
+                if (sigV2[i] != magic[i]) fmt &= ~1u;
+                if (sigV3[i] != magic[i]) fmt &= ~2u;
+                if (sigV4[i] != magic[i]) fmt &= ~8u;
+                if (sigV5[i] != magic[i]) fmt &= ~0x10u;
             }
-        }
+            if (fmt == 0)
+                goto fail;
 
-        if (AEFile::Read((uint32_t)(1), &(*out)->vertexFormat, handle) == 0 || (*out)->vertexFormat == 0) {
-            MeshRelease(engine, out);
-            AEFile::Close(handle);
-            return -1;
-        }
+            timeBetweenFrames = 1000000.0f;
+            if ((fmt & 0x1b) != 0 && AEFile::Read(2, magic, handle) == 0)
+                goto fail;
+            if (AEFile::Read(1, *out, handle) == 0 || (*out)->vertexFormat == 0)
+                goto fail;
 
-        bool ok = false;
-        if ((fmt & 0x1a) == 0) {
-            if (MeshReadData(engine, handle, fmt, out, mat) != -1)
-                ok = true;
-        } else {
-            unsigned short subCount = 0;
-            if (AEFile::Read((uint32_t)(2), &subCount, handle) == 0) {
-                MeshRelease(engine, out);
-                AEFile::Close(handle);
-                return -1;
-            }
-            if (subCount < 2) {
-                if (MeshReadData(engine, handle, fmt, out, mat) != -1)
-                    ok = true;
+            if ((fmt & 0x1a) == 0) {
+                if (MeshReadData(engine, handle, fmt, out, mat) == -1)
+                    goto fail;
             } else {
-                (*out)->animation = new Transform();
-                for (unsigned int s = 0; s < subCount; ++s) {
-                    Mesh *childPtr = (Mesh *) ::operator new(0x88); // lint: operator_call (explicit call: a builtin new/delete expression changes the -Oz null tests)
-                    memset(childPtr, 0, 0x88);
-                    childPtr->boundsRadiusSq = 1.0f;
-                    childPtr->vboEligible = 1;
-                    childPtr->vertexFormat = (*out)->vertexFormat;
-                    childPtr->material = mat;
-                    if (MeshReadData(engine, handle, fmt, &childPtr, mat) == -1) {
-                        MeshRelease(engine, out);
-                        AEFile::Close(handle);
-                        return -1;
-                    }
-                    ((AEMath::BSphere *) &(*out)->boundsCenterX)->Merge(
-                        *(const AEMath::BSphere *) &childPtr->boundsCenterX);
-                    {
-                        EngineArrayHeader *a = (EngineArrayHeader *) &(*out)->animation->meshes;
-                        a->capacity = a->count + 1;
-                        a->data = (unsigned char *) realloc(a->data, (a->count + 1) * sizeof(Mesh *));
-                        ((Mesh **) a->data)[a->count] = childPtr;
-                        a->count = a->capacity;
+                unsigned short subMeshCount;
+                if (AEFile::Read(2, &subMeshCount, handle) == 0)
+                    goto fail;
+                if (subMeshCount < 2) {
+                    if (MeshReadData(engine, handle, fmt, out, mat) == -1)
+                        goto fail;
+                } else {
+                    // Several sub-meshes: each becomes a child mesh of a fresh animation transform.
+                    (*out)->animation = new Transform();
+                    for (unsigned int i = 0; i < subMeshCount; i++) {
+                        Mesh *child = new Mesh();
+                        child->vboEligible = 1;
+                        child->vertexFormat = (*out)->vertexFormat;
+                        child->material = mat;
+                        if (MeshReadData(engine, handle, fmt, &child, mat) == -1)
+                            goto fail;
+                        ((AEMath::BSphere *) &(*out)->boundsCenterX)->Merge(
+                                *(const AEMath::BSphere *) &child->boundsCenterX);
+                        ArrayAdd(child, (*out)->animation->meshes);
                     }
                 }
-                ok = true;
             }
         }
 
-        if (ok) {
-            AEFile::Close(handle);
-            Transform *xf = (*out)->animation;
-            if (xf != 0) {
-                xf->CollectAnimationData();
-                long long t = (long long) (0.0f);
-                xf->SetAnimationRangeInTime(t, t);
-            }
-            return 1;
+        AEFile::Close(handle);
+        if ((*out)->animation != 0) {
+            (*out)->animation->CollectAnimationData();
+            (*out)->animation->SetAnimationRangeInTime((long long) timeBetweenFrames, 10000000LL);
         }
+        return 1;
 
+    fail:
         MeshRelease(engine, out);
         AEFile::Close(handle);
         return -1;
@@ -948,10 +907,10 @@ namespace AbyssEngine {
         if (m->uploaded != 0 || (short) m->indexCount == 0)
             return -4;
 
-        unsigned char *pos = m->positions;
+        float *pos = m->positions;
         unsigned char *tex = m->texCoords;
         unsigned char *col = m->colors;
-        unsigned char *nrm = m->normals;
+        float *nrm = m->normals;
         unsigned char *tan = m->tangents;
         unsigned char *bin = m->binormals;
 

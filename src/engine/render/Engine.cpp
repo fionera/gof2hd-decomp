@@ -27,6 +27,7 @@ bool AbyssEngine::PostEffectFlag;
 #include "engine/render/Mesh.h"
 #include "engine/render/Material.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/render/AELoadedTexture.h"
 #include "engine/render/ShaderBaseStruct.h"
 #include "engine/render/shaders/TextureShader.h"
 #include "engine/render/shaders/SimpleShader.h"
@@ -88,17 +89,6 @@ namespace {
     unsigned char g_Engine_postEffectFlag;
     int g_Engine_postEffectCounter = 1;
 
-    struct TextureEntry {
-        uint32_t glTexture;
-        unsigned char pad_04[0x10 - 0x04];
-        float texEnv;
-        unsigned char isCube;
-    };
-#if __SIZEOF_POINTER__ == 4
-    static_assert(__builtin_offsetof(TextureEntry, glTexture) == 0x00, "TextureEntry::glTexture");
-    static_assert(__builtin_offsetof(TextureEntry, texEnv) == 0x10, "TextureEntry::texEnv");
-    static_assert(__builtin_offsetof(TextureEntry, isCube) == 0x14, "TextureEntry::isCube");
-#endif
 }
 
 void glError() {
@@ -160,9 +150,9 @@ void Engine::LightSetRimColor(float red, float green, float blue) {
     if (Engine::enableShader == 0) {
         return;
     }
-    this->rimColor.x = red;
-    this->rimColor.y = green;
-    this->rimColor.z = blue;
+    this->rimColor[0] = red;
+    this->rimColor[1] = green;
+    this->rimColor[2] = blue;
     return this->ShaderUpdate();
 }
 
@@ -373,9 +363,9 @@ void Engine::Initialize(InitializeCallback *callback) {
 }
 
 void Engine::LightSetParticleAmbient(float red, float green, float blue) {
-    this->field_0x314.x = red;  // particle ambient @0x314
-    this->field_0x314.y = green;
-    this->field_0x314.z = blue;
+    this->particleAmbientColor[0] = red;  // particle ambient @0x314
+    this->particleAmbientColor[1] = green;
+    this->particleAmbientColor[2] = blue;
 }
 
 void Engine::SetPerspMatrix(float *matrix) {
@@ -692,23 +682,23 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
-    uint32_t texture = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+    uint32_t texture = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+    float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
     if (currentLODBias != env) {
         currentLODBias = env;
         if (Engine::enableShader != 0) {
-            if (BiasErrorOutputFlag != 0) {
-                BiasErrorOutputFlag = 0;
+            if (BiasErrorOutputFlag) {
+                BiasErrorOutputFlag = false;
             }
         } else {
             glTexEnvf(0x8500, 0x8501, env);
         }
     }
-    if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+    if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
         glBindTexture(0x8513, texture);
     } else {
         glBindTexture(0xde1, texture);
@@ -889,10 +879,9 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     int count = this->lightCount;
     for (int index = 0; index < count; index += 1) {
         const LightColor &src = (&this->lightSpecular)[index];
-        Vector &dst = (&this->lightDiffuseShaded)[index] /* specular-shaded[2] @0x2e4 */;
-        dst.x = src.r * red;
-        dst.y = src.g * green;
-        dst.z = src.b * blue;
+        this->specularShaded[index][0] = src.r * red;
+        this->specularShaded[index][1] = src.g * green;
+        this->specularShaded[index][2] = src.b * blue;
     }
     return this->ShaderUpdate();
 }
@@ -910,10 +899,9 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
     int count = this->lightCount;
     for (int index = 0; index < count; index += 1) {
         const LightColor &src = (&this->lightAmbient)[index];
-        Vector &dst = (&this->lightAmbientShaded)[index];
-        dst.x = (src.r + red) * this->materialAmbient[0];
-        dst.y = (src.g + green) * this->materialAmbient[1];
-        dst.z = (src.b + blue) * this->materialAmbient[2];
+        this->ambientShaded[index][0] = (src.r + red) * this->materialAmbient[0];
+        this->ambientShaded[index][1] = (src.g + green) * this->materialAmbient[1];
+        this->ambientShaded[index][2] = (src.b + blue) * this->materialAmbient[2];
     }
     return this->ShaderUpdate();
 }
@@ -950,10 +938,12 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
             }
         } else if (g_Engine_postEffectFlag == 1) {
             this->postEffectFlags &= ~4u;
-            g_Engine_postEffectFlag = 0;
             g_Engine_postEffectCounter = 1;
+            g_Engine_postEffectFlag = 0;
+        } else if (g_Engine_postEffectCounter <= 0) {
+            g_Engine_postEffectFlag = 1;
         } else {
-            g_Engine_postEffectFlag = g_Engine_postEffectCounter <= 0;
+            g_Engine_postEffectFlag = 0;
         }
     }
 }
@@ -971,10 +961,9 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     int lightCount = this->lightCount;
     for (int i = 0; i < lightCount; i += 1) {
         const LightColor &src = (&this->lightDiffuse)[i];
-        Vector &dst = (&this->field_0x2fc)[i]; /* diffuse-shaded[2] @0x2fc */
-        dst.x = src.r * red;
-        dst.y = src.g * green;
-        dst.z = src.b * blue;
+        this->diffuseShaded[i][0] = src.r * red;
+        this->diffuseShaded[i][1] = src.g * green;
+        this->diffuseShaded[i][2] = src.b * blue;
     }
     return this->ShaderUpdate();
 }
@@ -1061,7 +1050,7 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1200, &src.r);
     }
-    float *dst = &(&this->lightAmbientShaded)[index].x;
+    float *dst = this->ambientShaded[index];
     dst[0] = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
     dst[1] = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
     dst[2] = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
@@ -1093,7 +1082,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1201, &src.r);
     }
-    float *dst = &(&this->field_0x2fc)[index].x; /* diffuse-shaded[2] @0x2fc */
+    float *dst = this->diffuseShaded[index]; /* diffuse-shaded[2] @0x2fc */
     dst[0] = this->materialDiffuse[0] * red;
     dst[1] = src.g * this->materialDiffuse[1];
     dst[2] = src.b * this->materialDiffuse[2];
@@ -1137,9 +1126,9 @@ Engine::Engine()
     this->lightingEnabled = 0;
     this->field_0x48 = 0;
     this->onDestroyCallback = 0;
-    this->rimColor.x = 0;
-    this->rimColor.y = 0;
-    this->rimColor.z = 0;
+    this->rimColor[0] = 0;
+    this->rimColor[1] = 0;
+    this->rimColor[2] = 0;
     this->field_0x34 = 0;
     this->field_0x38 = 0;
     this->accelRaw[0] = 0;
@@ -1168,15 +1157,15 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
     uint32_t texture =
-            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->glTexture;
+            this->appManager->paintCanvas->cubeTextures.data_[first]->glId;
     if ((uint32_t) this->boundTextures[0] != texture) {
         glActiveTexture(0x84c0);
-        float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[first])->texEnv;
+        float env = this->appManager->paintCanvas->cubeTextures.data_[first]->scale;
         if (currentLODBias != env) {
             currentLODBias = env;
             if (Engine::enableShader != 0) {
-                if (BiasErrorOutputFlag != 0) {
-                    BiasErrorOutputFlag = 0;
+                if (BiasErrorOutputFlag) {
+                    BiasErrorOutputFlag = false;
                 }
             } else {
                 glTexEnvf(0x8500, 0x8501, env);
@@ -1199,7 +1188,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     }
 
     uint32_t texture2 =
-            ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[second])->glTexture;
+            this->appManager->paintCanvas->cubeTextures.data_[second]->glId;
     if ((uint32_t) this->boundTextures[1] != texture2) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
@@ -1347,23 +1336,23 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
                 continue;
             }
             uint32_t texture =
-                    ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->glTexture;
+                    this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
             if ((uint32_t) this->boundTextures[slot] == texture) {
                 continue;
             }
             glActiveTexture(slot + 0x84c0);
-            float env = ((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->texEnv;
+            float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
             if (currentLODBias != env) {
                 currentLODBias = env;
                 if (Engine::enableShader != 0) {
-                    if (BiasErrorOutputFlag != 0) {
-                        BiasErrorOutputFlag = 0;
+                    if (BiasErrorOutputFlag) {
+                        BiasErrorOutputFlag = false;
                     }
                 } else {
                     glTexEnvf(0x8500, 0x8501, env);
                 }
             }
-            if (((TextureEntry *) this->appManager->paintCanvas->cubeTextures.data_[textureIndex])->isCube != 0) {
+            if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
                 glBindTexture(0x8513, texture);
             } else {
                 glBindTexture(0xde1, texture);
@@ -1451,27 +1440,27 @@ void Engine::ResetLightParam() {
     this->sceneAmbient[1] = 0.0f;
     this->sceneAmbient[2] = 0.0f;
     this->sceneAmbient[3] = 1.0f;
-    this->lightAmbientShaded.x = 0.0f;
-    this->lightAmbientShaded.y = 0.0f;
-    this->lightAmbientShaded.z = 0.0f;
-    this->lightSpecularShaded.x = 0.0f;
-    this->lightSpecularShaded.y = 0.0f;
-    this->lightSpecularShaded.z = 0.0f;
-    this->lightDiffuseShaded.x = 0.0f;
-    this->lightDiffuseShaded.y = 0.0f;
-    this->lightDiffuseShaded.z = 0.0f;
-    this->particleAmbient.x = 0.0f;
-    this->particleAmbient.y = 0.0f;
-    this->particleAmbient.z = 0.0f;
-    this->field_0x2fc.x = 0.8f;
-    this->field_0x2fc.y = 0.8f;
-    this->field_0x2fc.z = 0.8f;
-    this->field_0x308.x = 0.0f;
-    this->field_0x308.y = 0.0f;
-    this->field_0x308.z = 0.0f;
-    this->field_0x314.x = 0.0f;
-    this->field_0x314.y = 0.0f;
-    this->field_0x314.z = 0.0f;
+    this->ambientShaded[0][0] = 0.0f;
+    this->ambientShaded[0][1] = 0.0f;
+    this->ambientShaded[0][2] = 0.0f;
+    this->ambientShaded[1][0] = 0.0f;
+    this->ambientShaded[1][1] = 0.0f;
+    this->ambientShaded[1][2] = 0.0f;
+    this->specularShaded[0][0] = 0.0f;
+    this->specularShaded[0][1] = 0.0f;
+    this->specularShaded[0][2] = 0.0f;
+    this->specularShaded[1][0] = 0.0f;
+    this->specularShaded[1][1] = 0.0f;
+    this->specularShaded[1][2] = 0.0f;
+    this->diffuseShaded[0][0] = 0.8f;
+    this->diffuseShaded[0][1] = 0.8f;
+    this->diffuseShaded[0][2] = 0.8f;
+    this->diffuseShaded[1][0] = 0.0f;
+    this->diffuseShaded[1][1] = 0.0f;
+    this->diffuseShaded[1][2] = 0.0f;
+    this->particleAmbientColor[0] = 0.0f;
+    this->particleAmbientColor[1] = 0.0f;
+    this->particleAmbientColor[2] = 0.0f;
 
     if (Engine::enableShader == 0) {
         glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
@@ -1521,7 +1510,7 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1202, &src.r);
     }
-    float *dst = &(&this->lightDiffuseShaded)[index].x; /* specular-shaded[2] @0x2e4 */
+    float *dst = this->specularShaded[index]; /* specular-shaded[2] @0x2e4 */
     dst[0] = this->materialSpecular[0] * red;
     dst[1] = src.g * this->materialSpecular[1];
     dst[2] = src.b * this->materialSpecular[2];
@@ -1766,10 +1755,9 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     int count = this->lightCount;
     for (int index = 0; index < count; index += 1) {
         const LightColor &src = (&this->lightAmbient)[index];
-        Vector &dst = (&this->lightAmbientShaded)[index];
-        dst.x = (this->sceneAmbient[0] + src.r) * red;
-        dst.y = (this->sceneAmbient[1] + src.g) * green;
-        dst.z = (this->sceneAmbient[2] + src.b) * blue;
+        this->ambientShaded[index][0] = (this->sceneAmbient[0] + src.r) * red;
+        this->ambientShaded[index][1] = (this->sceneAmbient[1] + src.g) * green;
+        this->ambientShaded[index][2] = (this->sceneAmbient[2] + src.b) * blue;
     }
     return this->ShaderUpdate();
 }
@@ -1791,13 +1779,13 @@ unsigned char AbyssEngine::Engine::UseAdvancedShader = 1;
 unsigned char AbyssEngine::Engine::enableReverseFlag = 1;
 int AbyssEngine::Engine::tv_h;
 int AbyssEngine::Engine::tv_w;
-AbyssEngine::String AbyssEngine::Engine::vendor;
+Array<int> AbyssEngine::Engine::tv_modes;
 unsigned char AbyssEngine::Engine::DrawFBO;
 int AbyssEngine::Engine::vboSize;
 unsigned char AbyssEngine::Engine::DEBUGKEY;
 unsigned char AbyssEngine::Engine::TVEnable;
 float AbyssEngine::Engine::farPlane;
 AbyssEngine::String AbyssEngine::Engine::renderer;
-AbyssEngine::AEMath::Vector AbyssEngine::Engine::tv_modes;
+AbyssEngine::String AbyssEngine::Engine::vendor;
 unsigned char AbyssEngine::Engine::WireFrame;
 float AbyssEngine::Engine::nearPlane;

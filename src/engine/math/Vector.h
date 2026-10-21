@@ -6,13 +6,17 @@ namespace AbyssEngine {
         struct Vector {
             float x, y, z;
 
+            Vector() : x(0.0f), y(0.0f), z(0.0f) {}
+
+            Vector(float x, float y, float z) : x(x), y(y), z(z) {}
+
             operator float *();
 
             operator const float *() const;
 
             float &operator[](int i);
 
-            float operator[](int i) const;
+            const float &operator[](int i) const;
 
             Vector &operator=(const Vector &o);
 

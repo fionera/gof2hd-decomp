@@ -99,7 +99,7 @@ public:
     int iconOffsetY;
     uint8_t replaceEquipPending;
     bool upgradeMode;
-    uint8_t localBluePrint;
+    bool localBluePrint;
     uint8_t listModeFlag;
     int buttonWidth;
     int gridButtonHeight;
@@ -111,11 +111,11 @@ public:
 
     ~HangarWindow();
 
-    int OnTouchBegin(int touch, int coord);
+    bool OnTouchBegin(int touch, int coord);
 
     bool OnTouchEnd(int x, int y);
 
-    unsigned int OnTouchMove(int touch, int coord);
+    bool OnTouchMove(int touch, int coord);
 
     unsigned char isInitialized();
 

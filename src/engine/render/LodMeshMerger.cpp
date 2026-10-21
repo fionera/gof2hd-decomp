@@ -36,10 +36,10 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
 void LodMeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        int isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+        bool isVisible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
                                                                    mesh->boundsRadius);
         if (isVisible != this->visible[i]) {
-            this->visible[i] = (uint8_t) isVisible;
+            this->visible[i] = isVisible;
             if (this->enabled[i] != 0)
                 this->dirty = 1;
         }
@@ -104,25 +104,24 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     this->cols = cols;
     ArraySetLength(cols * rows, this->meshes);
 
-    int count = cols * this->rows;
-    this->transformedMeshes = new Mesh *[count];
-    memset(this->transformedMeshes, 0, count * sizeof(Mesh *));
+    this->transformedMeshes = new Mesh *[cols * this->rows];
+    memset(this->transformedMeshes, 0, cols * this->rows * sizeof(Mesh *));
     this->lodLevels = new int8_t[this->rows];
     memset(this->lodLevels, 0, this->rows);
     this->transforms = new Matrix[this->rows];
     for (int i = 0; i < this->rows; i++) {
         this->transforms[i] = Matrix();
     }
-    this->enabled = new uint8_t[this->rows];
+    this->enabled = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->enabled[i] = 1;
+        this->enabled[i] = true;
     }
-    this->visible = new uint8_t[this->rows];
+    this->visible = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->visible[i] = 1;
+        this->visible[i] = true;
     }
-    this->dirty = 0;
     this->flags = flags;
+    this->dirty = 0;
     this->initialized = 0;
 }
 
@@ -133,7 +132,7 @@ void LodMeshMerger::init() {
 
     for (int i = 0; i < rows; i++) {
         int c = 0;
-        if (lodLevels[i] >= -1 && cols <= lodLevels[i]) {
+        if (lodLevels[i] < -1 || cols <= lodLevels[i]) {
             lodLevels[i] = 0;
         }
         for (; c < cols; c++) {
@@ -148,8 +147,8 @@ void LodMeshMerger::init() {
     uint32_t indexCount = 0;
     for (int i = 0; i < rows; i++) {
         Mesh *mesh = meshes.data()[i];
-        indexCount += (uint32_t) mesh->indexCount / 3u;
         vertexCount += mesh->vertexCount;
+        indexCount += (uint32_t) mesh->indexCount / 3u;
     }
     if (vertexCount > 65535u) vertexCount = 65535u;
     if (indexCount > 65535u) indexCount = 65535u;
@@ -177,14 +176,14 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         out->indices = mesh->indices;
 
     if (mesh->vertexFormat & 1) {
-        out->positions = new unsigned char[mesh->vertexCount * 12];
+        out->positions = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->positions)[i] =
                     AbyssEngine::AEMath::MatrixTransformVector(m, ((const Vector *) mesh->positions)[i]);
         }
     }
     if (mesh->vertexFormat & 4) {
-        out->normals = new unsigned char[mesh->vertexCount * 12];
+        out->normals = new float[mesh->vertexCount * 3];
         for (unsigned int i = 0; i < mesh->vertexCount; i++) {
             ((Vector *) out->normals)[i] = AbyssEngine::AEMath::VectorNormalize(
                     AbyssEngine::AEMath::MatrixRotateVector(m, ((const Vector *) mesh->normals)[i]));

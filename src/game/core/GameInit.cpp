@@ -20,6 +20,8 @@
 // module registration), teardown and the loading-screen callback. GameData's implicit ctor/dtor
 // are emitted here as well (.text 0xd03e4..0xd0d14).
 
+static void cheatFunction(int code, void *data); // lint: void_ptr (CheatFunc callback ABI)
+
 void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHolder) { // lint: void_ptr (exported free function; mangled signature is fixed)
     canvas->ClearBuffer(0xff);
     canvas->Begin2d();
@@ -192,16 +194,13 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->SetApplicationData(data);
     engine->appManager->SetLoadingCallback(&loadingScreen, Globals::font);
 
-    engine->appManager->RegisterApplicationModule(
-        2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
-    engine->appManager->RegisterApplicationModule(
-        1, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModMainMenu()));
-    engine->appManager->RegisterApplicationModule(
-        5, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModStation()));
-    engine->appManager->RegisterApplicationModule(
-        0, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MTitle()));
+    MGame *game = new MGame();
+    engine->appManager->RegisterApplicationModule(2, game);
+    engine->appManager->RegisterApplicationModule(1, new ModMainMenu());
+    engine->appManager->RegisterApplicationModule(5, new ModStation());
+    engine->appManager->RegisterApplicationModule(0, new MTitle());
 
-    engine->appManager->CheatSetCallback(&OnCheatActivated, nullptr);
+    engine->appManager->CheatSetCallback(&cheatFunction, game);
     engine->appManager->CheatAddCode(AbyssEngine::String("754753835", false), 0);
     engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
     engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
@@ -221,4 +220,10 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->field_0x74 = false;
     AbyssEngine::Engine::lodBiasNormal = -0.5f;
     AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
+}
+
+// Cheat callback registered with the MGame module as its context. File-local in the Android build
+// (absent from .dynsym, at 0xd0d14 after GameData's ctor; the iOS dump names it
+// cheatFunction(int, void*)); its body is empty there.
+static void cheatFunction(int code, void *data) { // lint: void_ptr (CheatFunc callback ABI)
 }

@@ -59,22 +59,22 @@ public:
     int activeMission;
     Array<Radio *> *radioMessages;
     int field_0x5c;
-    uint8_t flag_0x60;
-    uint8_t flag_0x61;
-    uint8_t flag_0x62;
-    uint8_t flag_0x63;
-    uint8_t flag_0x64;
-    uint8_t flag_0x65;
-    uint8_t flag_0x66;
-    uint8_t flag_0x67;
-    uint8_t flag_0x68;
-    uint8_t flag_0x69;
-    uint8_t flag_0x6a;
-    uint8_t flag_0x6b;
-    uint8_t flag_0x6c;
-    uint8_t flag_0x6d;
-    uint8_t flag_0x6e;
-    uint8_t flag_0x6f;
+    bool flag_0x60;
+    bool flag_0x61;
+    bool flag_0x62;
+    bool flag_0x63;
+    bool flag_0x64;
+    bool flag_0x65;
+    bool flag_0x66;
+    bool flag_0x67;
+    bool flag_0x68;
+    bool flag_0x69;
+    bool flag_0x6a;
+    bool flag_0x6b;
+    bool flag_0x6c;
+    bool flag_0x6d;
+    bool flag_0x6e;
+    bool flag_0x6f;
 
     // was union { ChoiceWindow* choiceWindow; FlagWord choiceWindowFlags; }
     ChoiceWindow *choiceWindow;
@@ -148,7 +148,7 @@ public:
     Vector lightDirection;
     void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     bool savedPostEffect; // post effect state saved when the hangar opens
-    uint8_t _pad_0x12d[3];
+    bool cameraFlip[3]; // @0x12d: idle-camera axis flips (bool: original negates with eor #1)
     float camKeyX;
     float camKeyY;
     float camKeyZ;
@@ -175,9 +175,12 @@ public:
 
     void OnKeyPress(long long unused, long long key) override;
 
-    void OnKeyRelease(long long unused, long long key) override;
+    void OnKeyRelease(long long, long long) override {
+    }
 
-    int ShowLoadingScreen() override;
+    int ShowLoadingScreen() override {
+        return 1;
+    }
 
     void OnRelease() override;
 
@@ -195,11 +198,11 @@ public:
 
     void OnTouchMove(int x, int y, void *touch) override; // lint: void_ptr
 
-    void OnTouchBegin(int x, int y) override;
+    void OnTouchBegin(int x, int y) override {}
 
-    void OnTouchEnd(int x, int y) override;
+    void OnTouchEnd(int x, int y) override {}
 
-    void OnTouchMove(int x, int y) override;
+    void OnTouchMove(int x, int y) override {}
 
     void OnUpdate() override;
 
