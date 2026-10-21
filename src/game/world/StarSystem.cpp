@@ -597,20 +597,22 @@ void StarSystem::render() {
         if (this->planetsArray->size() >= 2) {
             if (i == 0) {
                 Matrix m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-                Vector target = (*this->positionsArray)[0] + cameraPos;
-                Vector up;
-                if (this->supernovaSystem) {
-                    up.x = 1.0f;
-                    up.y = 0.0f;
-                    up.z = 0.0f;
-                } else {
-                    up = MatrixGetUp(m);
+                {
+                    Vector target = (*this->positionsArray)[0] + cameraPos;
+                    Vector up;
+                    if (this->supernovaSystem) {
+                        up.x = 1.0f;
+                        up.y = 0.0f;
+                        up.z = 0.0f;
+                    } else {
+                        up = MatrixGetUp(m);
+                    }
+                    m = MatrixGetLookAt(target, cameraPos, up);
                 }
-                m = MatrixGetLookAt(target, cameraPos, up);
                 (*this->planetsArray)[0]->setRotation(0.0f, 0.0f, 0.0f);
                 Vector scaling = (*this->planetsArray)[0]->getScaling();
                 float grow = (this->lensFlare->intensity + -10.0f) * 0.015625f;
-                grow = grow > 0.0f ? grow : 0.0f;
+                grow = grow < 0.0f ? 0.0f : grow;
                 if (this->supernovaSystem) {
                     MatrixSetScaling(m, scaling.x, scaling.y, scaling.z);
                 } else {
@@ -620,9 +622,11 @@ void StarSystem::render() {
                 if (this->supernovaSystem) {
                     scaling *= 0.3f;
                     m = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
-                    Vector streakTarget = (*this->positionsArray)[0] + cameraPos;
-                    Vector streakUp = MatrixGetUp(m);
-                    m = MatrixGetLookAt(streakTarget, cameraPos, streakUp);
+                    {
+                        Vector streakTarget = (*this->positionsArray)[0] + cameraPos;
+                        Vector streakUp = MatrixGetUp(m);
+                        m = MatrixGetLookAt(streakTarget, cameraPos, streakUp);
+                    }
                     MatrixSetScaling(m, grow + scaling.x, grow + scaling.y, scaling.z);
                     this->sunStreak->setMatrix(m);
                     this->renderSunStreak();
