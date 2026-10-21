@@ -1121,61 +1121,46 @@ int LevelScript::process(int delta) {
         // the original's jump order.
         int cm = Globals::status->getCurrentCampaignMission();
         switch (cm) {
-            case 158: { // 0x13885c (nested dispatch on m_nState: 1/2/3 -> 0x138878/0x13d724/0x13d74e)
-                if (m_nState == 3) {
-                    // State 3 @0x13d74e: a "reinforcement" pulse. The primary 64-bit script timer
-                    // (m_nScriptTimerA:m_nScriptCounterA @0x90) advances every frame; every 4000ms
-                    // (once it passes 4001) it resets and, if the escort marker enemies[0] has drawn
-                    // within 25000 units of the player and a 39% dice roll lands (AERandom::nextInt(100)
-                    // >= 61), it wakes the first still-dormant escort in enemies[1..3]. The secondary
-                    // 64-bit clock (m_nScriptTimerB:m_nScriptCounterB @0x98) is the overall dwell timer
-                    // handled by the shared tail below.
-                    long long *timerA = reinterpret_cast<long long *>(&m_nScriptTimerA);
-                    *timerA += delta; // 0x13d76c strd (unconditional)
-                    if (*timerA >= 4001) {
-                        *timerA = 0;
-                        // 0x13d792: distance from the escort marker to the player. FP @0x13d720 = 25000.0f.
-                        Vector toPlayer = (*enemies)[0]->getPosition() - player->getPosition(); // vtable+0x28
-                        if (AbyssEngine::AEMath::VectorLength(toPlayer) < 25000.0f &&
-                            Globals::rnd->nextInt(100) >= 61) { // 0x13d7de
-                            for (int i = 1; i <= 3; ++i) {
-                                if (!(*enemies)[i]->player->isActive()) {
-                                    // 0x145816: wake the first still-dormant escort and re-seat it under AI.
-                                    (*enemies)[i]->revive();          // vtable+0x18
-                                    (*enemies)[i]->setActive(true);
-                                    (*enemies)[i]->setPosition((*enemies)[i]->getPosition()); // vtable+0x44
-                                    (*enemies)[i]->player->turnEnemy();
-                                    break;
-                                }
-                            }
+            case 158: {
+                if (m_nState == 1) {
+                    // Fly the marker ship in towards the station.
+                    m_nScriptTimerA += delta;
+                    float approach = (float) m_nScriptTimerA / -34000.0f + 1.0f;
+                    float step = (float) delta;
+                    m_pCamera->translate(step * 4.8f * approach, 0.0f, (float) -delta * 0.7f * approach);
+                    AEGeometry *marker = m_pGeometry4;
+                    Vector target{9000.0f, 0.0f, -13000.0f};
+                    marker->setDirection(AbyssEngine::AEMath::VectorNormalize(target - marker->getPosition()),
+                                         Vector{0.0f, 1.0f, 0.0f});
+                    if (m_nScriptTimerA <= 29999) {
+                        m_pGeometry4->moveForward(step * 2.5f);
+                    }
+                    if (m_nScriptTimerA > 25000) {
+                        if (!(*enemies)[0]->isVisible()) {
+                            (*enemies)[0]->setVisible(true);
+                            (*enemies)[0]->setActive(true);
                         }
                     }
-                    // DEFERRED 0x14585a: the shared dwell tail merges two entry points (timerA on the
-                    //   <4001 path @0x140516 vs. timerB @0x14585a) into one 25001-threshold compare that
-                    //   also toggles (PlayerFighter*)enemies[0]->field_0x140; the merge's source-level
-                    //   shape is ambiguous, so the tail is left for a later pass.
-                    break;
-                }
-                if (m_nState == 2) {
-                    // State 2 @0x13d724: hold-and-close. The primary 64-bit script timer
-                    // (m_nScriptTimerA:m_nScriptCounterA @0x90) keeps counting up until it caps
-                    // at 3000, driving the marker's forward drift; the secondary counter
-                    // (m_nScriptTimerB:m_nScriptCounterB @0x98) is the overall dwell clock. Once
-                    // it passes 12001 frames and radio message #2 is over, hand off (0x140414).
-                    // FP immediate @0x140604 = 0.1f.
-                    long long *timer = reinterpret_cast<long long *>(&m_nScriptTimerA);
-                    long long *counterB = reinterpret_cast<long long *>(&m_nScriptTimerB);
-                    if (*timer <= 2999) {
-                        *timer += delta;
+                    (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    player->geometry->rotate(step / 2000.0f, step / 2000.0f, step / 2000.0f);
+                    if (m_nScriptTimerA >= 20000) {
+                        ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
+                        if (m_nScriptTimerA >= 34000) {
+                            m_nScriptTimerA = 0;
+                            m_nScriptTimerB = 0;
+                            ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(true);
+                            m_nState = 2;
+                        }
                     }
-                    *counterB += delta;
-                    (*enemies)[0]->geometry->moveForward((float) *timer * 0.1f);
-                    if (*counterB > 12001 &&
-                        ((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        // Arrival handoff (0x140414): the marker has reached the player; return
-                        // control. Reset the player's gun-delay, drop the cinematic look-at camera
-                        // and re-target it on the player, un-freeze/reveal/re-route the player, and
-                        // restore the HUD/radar chrome before re-warming the LODs.
+                } else if (m_nState == 2) {
+                    // Hold while the marker drifts closer, then hand control back to the player.
+                    if (m_nScriptTimerA <= 2999) {
+                        m_nScriptTimerA += delta;
+                    }
+                    m_nScriptTimerB += delta;
+                    (*enemies)[0]->geometry->moveForward((float) m_nScriptTimerA * 0.1f);
+                    if (m_nScriptTimerB >= 12001 && ((RadioMessage *) ((*messages)[2]))->isOver()) {
                         field_0x24 = 0;
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
@@ -1183,81 +1168,46 @@ int LevelScript::process(int delta) {
                         player->setComputerControlled(false);
                         player->setFreeze(false);
                         player->setVisible(true);
-                        player->setSpeed(2.0f);          // 0x40000000
-                        m_pHud->visible = 1;             // m_pHud byte @0x1 = 1
-                        m_pRadar->enabled = 1;        // m_pRadar byte @0x48 = 1
+                        player->setSpeed(2.0f);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
                         player->player->setVulnerable(true);
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0;       // cinematicBreak_ (m_nFlags high byte @0x11) = 0
-                        // DEFERRED 0x14049c..0x140512: the escort-wrapper tail.
-                        //   ARRAY IDENTITY RESOLVED: [sp,#96] = r8 = m_pLevel->getEnemies()
-                        //   (prologue 0x137d54 `mov r8, r0` after Level::getEnemies; stored by
-                        //   0x137d68 `strd r4,r8,[sp,#92]` into slot 0x60; never overwritten). So
-                        //   elem0 = (*enemies)[0] = data[0].
-                        //   RESOLVED: at 0x140490 r0 = [sp,#96] = the ENTIRE enemies Array (not elem0);
-                        //   r4 = that array. So [r4+4] = array->data, [data+0] = elem0 (a KIPlayer*).
-                        //   [elem0+4] is therefore KIPlayer::player (member at KIPlayer offset +4 --
-                        //   vtable occupies +0), a real Player*: it is (*enemies)[0]->player, matching
-                        //   the Player::setAlwaysEnemy(bool) target exactly and the sibling idiom
-                        //   (*enemies)[i]->player->setAlwaysEnemy(true). setCloakingPossible/setAIDisabled
-                        //   take elem0 itself ((PlayerFighter*)(*enemies)[0]).
-                        //   The aim uses AEMath unary+binary operator-: dir @0x1404e2/0x1404ec is
-                        //   -(player->getPosition() - elem0->getPosition()); receiver is player->geometry.
-                        ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);   // 0x1404a2
-                        (*enemies)[0]->player->setAlwaysEnemy(true);                    // 0x1404ae, [elem0+4] = ->player
-                        ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);        // 0x1404b8
-                        player->geometry->setDirection(                                // 0x14050c
+                        m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
+                        m_nScriptTimerB = 0;
+                        ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);
+                        (*enemies)[0]->player->setAlwaysEnemy(true);
+                        ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
+                        player->geometry->setDirection(
                                 AbyssEngine::AEMath::VectorNormalize(
                                         -(player->getPosition() - (*enemies)[0]->getPosition())),
                                 Vector{0.0f, 1.0f, 0.0f});
                         m_nState = 3;
                     }
-                    break;
-                }
-                if (m_nState != 1) {
-                    break; // -> post-switch tail (0x144e36)
-                }
-                // State 1 @0x138878: a per-frame fly-in animation. Advance the 64-bit script counter
-                // (m_nScriptTimerA:m_nScriptCounterA) by delta, derive a normalized time from it, pan
-                // the camera, re-aim the marker (m_pGeometry4 @0xcc) toward a fixed world point and, past
-                // successive counter thresholds, moveForward it, wake enemies[0], and hand off. FP
-                // immediates decoded from the .rodata pool:
-                //   @0x1389ac = -34000.0f, @0x1389b0 = 4.8f, @0x1389b4 = 0.7f (camera pan);
-                //   @0x1389b8 = 9000.0f, @0x1389bc = -13000.0f (aim target x/z); @0x143964 = 2000.0f.
-                long long *counter = reinterpret_cast<long long *>(&m_nScriptTimerA);
-                *counter += delta;
-                float t = (float) *counter / -34000.0f + 1.0f;
-                m_pCamera->translate((float) delta * 4.8f * t, 0.0f, (float) (-delta) * 0.7f * t);
-
-                Vector aimTarget{9000.0f, 0.0f, -13000.0f};
-                Vector aimDir = aimTarget - m_pGeometry4->getPosition();
-                m_pGeometry4->setDirection(AbyssEngine::AEMath::VectorNormalize(aimDir),
-                                           Vector{0.0f, 1.0f, 0.0f});
-
-                if (*counter <= 29999) {
-                    m_pGeometry4->moveForward((float) delta * 2.5f);
-                }
-                if (*counter > 25000) {
-                    // Reveal enemies[0] once the marker has closed most of the distance.
-                    if (!(*enemies)[0]->isVisible()) {
-                        (*enemies)[0]->setVisible(true);
-                        (*enemies)[0]->setActive(true);
-                    }
-                }
-                // Continuation (0x14384e): drag enemies[0] onto the marker, follow it and slowly spin
-                // the player, then two counter gates finish the fly-in.
-                (*enemies)[0]->geometry->setPosition(m_pGeometry4->getPosition());
-                m_pCamera->setTarget((*enemies)[0]->geometry);
-                player->geometry->rotate((float) delta / 2000.0f, (float) delta / 2000.0f,
-                                         (float) delta / 2000.0f);
-                if (*counter >= 20000) {
-                    ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(false);
-                    if (*counter >= 34000) {
+                } else if (m_nState == 3) {
+                    // Every 4s a dormant escort may join the fight; every 25s the marker toggles.
+                    m_nScriptTimerA += delta;
+                    m_nScriptTimerB += delta;
+                    if (m_nScriptTimerA >= 4001) {
                         m_nScriptTimerA = 0;
+                        if (AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition())
+                            < 25000.0f && Globals::rnd->nextInt(100) >= 61) {
+                            for (unsigned int i = 1; i <= 3; i++) {
+                                if (!(*enemies)[i]->player->isActive()) {
+                                    (*enemies)[i]->revive();
+                                    (*enemies)[i]->setActive(true);
+                                    (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
+                                    (*enemies)[i]->player->turnEnemy();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (m_nScriptTimerB >= 25001) {
                         m_nScriptTimerB = 0;
-                        ((PlayerFighter *) (*enemies)[0])->setExhaustVisible(true);
-                        m_nState = 2;
+                        ((PlayerFighter *) (*enemies)[0])->field_0x140 = !((PlayerFighter *) (*enemies)[0])->field_0x140;
                     }
                 }
                 break;
@@ -2237,106 +2187,107 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 41: { // 0x139d56
+            case 41: {
+                // The freighter escape: escorts jump in, the freighter powers up and leaves.
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 0) {
-                    // Radio message #4 in state 0 (0x13e400): begin the mining-plant approach
-                    // cutscene. Drop the player out of turret/free-look/first-person, reset the
-                    // camera, stop shooting, hide the HUD/radar, latch the look-at cam and hand
-                    // control to the AI, then reframe the camera onto the mining plant.
-                    player->setTurretMode(false);                       // 0x13e40a
-                    resetCamera(m_pLevel);                              // 0x13e414
-                    player->setFreeLookMode(false);                     // 0x13e41c
-                    m_pCamera->enableFirstPersonCam(false);             // 0x13e424
-                    player->hideShipForFirstPersonCameraView(false);    // 0x13e42c
-                    player->stopShooting(0);                            // 0x13e434
-                    m_pHud->visible = 0;                                // [m_pHud+1] = 0  (0x13e444)
-                    m_pRadar->enabled = 0;                           // [m_pRadar+0x48] = 0 (0x13e44c)
-                    m_bCinematicBreak = 1;               // strb 1 -> this+0x11 cinematicBreak (0x13e452)
-                    m_pCamera->setLookAtCam(true);                      // 0x13e454
-                    player->setComputerControlled(true);               // 0x13e45c
-                    player->player->setVulnerable(false);              // 0x13e464
-                    player->freeze = 1;                                 // strb 1 -> player+0x24 (0x13e43c)
-                    // Stage escorts [1]/[2]/[3] onto the plant (enemies[0]): revive each, copy the
-                    // plant's position onto it, mark its pilot as the plant's enemy, then arm it
-                    // (field_0x38 = 0; setState(1)). (disasm 0x13e470..0x13e4bc, loop r6 = 1..3)
-                    for (int i = 1; i < 4; ++i) {
-                        (*enemies)[i]->revive();                        // vtable+0x18, 0x13e478
-                        Vector plantPos0 = (*enemies)[0]->getPosition();// vtable+0x28, 0x13e486
-                        (*enemies)[i]->setPosition(plantPos0);          // vtable+0x44, 0x13e490
-                        (*enemies)[i]->player->setEnemy((*enemies)[0]->player); // 0x13e4a2
-                        (*enemies)[i]->field_0x38 = 0;                  // str 0 -> [enemy+0x38] (0x13e4ae)
-                        (*enemies)[i]->setState(1);                     // vtable+0x5c, 0x13e4b6
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    player->freeze = 1;
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    m_bCinematicBreak = 1;
+                    m_pCamera->setLookAtCam(true);
+                    player->setComputerControlled(true);
+                    player->player->setVulnerable(false);
+                    for (int i = 1; i < 4; i++) {
+                        (*enemies)[i]->revive();
+                        (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
+                        (*enemies)[i]->player->setEnemy((*enemies)[0]->player);
+                        (*enemies)[i]->field_0x38 = 0;
+                        (*enemies)[i]->setState(1);
                     }
-                    // ============================================================================
-                    // CANONICAL CAMERA-AIM CHAIN (proven, reusable). Two distinct AEMath idioms
-                    // recur across the deferred blocks of this function; keep them straight:
-                    //
-                    //   (A) CAMERA LOCAL-MATRIX CREEP  (proven byte/linked-exact at case 131 states
-                    //       1&2, and now case 154 state 2). Offsets a follow-camera's local matrix
-                    //       translation along a basis. C++ form:
-                    //           Matrix local = *(Matrix*)canvas->CameraGetLocal(
-                    //                              canvas->CameraGetCurrent());
-                    //           Vector *tempVec = (Vector*)&field_0x28;   // scratch @this+0x28
-                    //           Vector *scratch = (Vector*)&field_0x40;   // scratch @this+0x40
-                    //           *tempVec = AEMath::MatrixGetPosition(local);
-                    //           *scratch = <src>->GetDirVector();
-                    //           *tempVec += *scratch * (k_dir);
-                    //           *scratch = <src>->geometry->getRightVector();
-                    //           *tempVec += *scratch * (k_right);
-                    //           *scratch = <src>->GetUpVector();
-                    //           *tempVec += *scratch * (k_up);
-                    //           m_pCamera->setFixed(true);
-                    //           AEMath::MatrixSetTranslation(local, *tempVec);
-                    //           m_pCamera->setLocal(local);
-                    //       ARM: op=(r6/r9), op*(r4/fp), op+=(r8) via three GOT slots; dir/right/up
-                    //       fetch order is fixed. Scalars are the last vldr before each op* (may be
-                    //       compounded, e.g. step*const where step is a reused vmul base).
-                    //
-                    //   (B) GEOMETRY setDirection AIM  (this block, still DEFERRED). Aims a target at
-                    //       a point: dir = normalize(target - here); setDirection(dir, {0,1,0}). Uses
-                    //       AEMath::Vector::operator= (0x20fe98), VectorNormalize (0x210260), unary
-                    //       operator- neg (0x21054c), then setDirection (0x21052c). Distinct from (A):
-                    //       there is NO CameraGetLocal/MatrixGetPosition/setLocal here.
-                    // ----------------------------------------------------------------------------
-                    // DEFERRED 0x13e4be..0x13e5e2: idiom (B) aiming escorts [1]/[2]/[3]
-                    //   (via [data+4]/[data+8]/[data+0xc]) at three level-space points from the pool
-                    //   ({-40000,500,-30000}@0x13e838/830/83c, {-41000,100,-31000}@0x13e850/858/854,
-                    //   {-42000,?, -32000}@0x13e85c/860). The first per-enemy op is a vtable+0x20
-                    //   (KIPlayer::translate) call with the scratch aim point -- the exact
-                    //   operator chain / translate-vs-aim role isn't proven yet, so idiom (B) stays
-                    //   deferred (no clean byte-exact sibling for the neg/translate ordering).
-                    // Reframe the camera onto the plant: aim at enemies[2], sit at enemies[0].
-                    KIPlayer *plant = (*enemies)[0];
-                    m_pCamera->setTarget((*enemies)[2]->geometry);      // 0x13e5f0
-                    Vector plantPos = plant->getPosition();             // 0x13e604
-                    m_pCamera->setPosition(plantPos);                   // 0x13e60a
-                    // translate immediates from pool 0x13e864/0x13e868: {-38000, 0, -30200}.
-                    m_pCamera->translate(-38000.0f, 0.0f, -30200.0f);   // 0x13e616
-                    m_pLevel->lodManager->forceUpdate(delta, false);    // 0x13e622
-                    m_nState = 1;                                       // 0x13d0e -> [this+0x1c] = 1
-                    break;
-                }
-                if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
-                    // Radio message #5 in state 1: finish the mining-plant approach cutscene --
-                    // stop rotating the camera, freeze the target, fire its emitters and re-aim.
+                    m_tempVec = Vector{-40000.0f, 500.0f, -30000.0f};
+                    (*enemies)[1]->translate(m_tempVec);
+                    (*enemies)[1]->geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(-m_tempVec),
+                                                          Vector{0.0f, 1.0f, 0.0f});
+                    m_tempVec = Vector{-41000.0f, -200.0f, -31000.0f};
+                    (*enemies)[2]->translate(m_tempVec);
+                    (*enemies)[2]->geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(-m_tempVec),
+                                                          Vector{0.0f, 1.0f, 0.0f});
+                    m_tempVec = Vector{-42000.0f, 100.0f, -32000.0f};
+                    (*enemies)[3]->translate(m_tempVec);
+                    (*enemies)[3]->geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(-m_tempVec),
+                                                          Vector{0.0f, 1.0f, 0.0f});
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pCamera->setPosition((*enemies)[0]->getPosition());
+                    m_pCamera->translate(-38000.0f, 0.0f, -30200.0f);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 1;
+                } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
                     m_nState = 2;
                     m_pCamera->setRotationAroundTarget(false);
                     (*enemies)[0]->geometry->updateReferenceMatrix();
                     m_pLevel->field_74->enableSystemEmit(field_0xe0, true);
                     m_pLevel->field_74->enableSystemEmit(field_0xe4, true);
-                    KIPlayer *target = (*m_pLevel->getEnemies())[0];
-                    target->player->setHitpoints(9999999);
-                    ((PlayerFixedObject *) target)->setMoving(false);
-                    m_pCamera->setTarget(target->geometry);
-                    Vector pos = target->getPosition();
-                    m_pCamera->setPosition(pos);
-                    m_pCamera->translate(-3000.0f, -2000.0f, 3000.0f);
-                    // FModSound::play(0x9b, ...) DEFERRED @0x139e1c
-                    target->player->StopEngineSound();
+                    KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
+                    freighter->player->setHitpoints(9999999);
+                    ((PlayerFixedObject *) freighter)->setMoving(false);
+                    m_pCamera->setTarget(freighter->geometry);
+                    m_pCamera->setPosition(freighter->getPosition());
+                    m_pCamera->translate(-3000.0f, -2000.0f, 12000.0f);
+                    Globals::sound->play(155, nullptr, nullptr, 0.0f);
+                    (*enemies)[0]->player->StopEngineSound();
                     m_nScriptTimerA = 0;
-                    // -> post-switch tail (0x144e36)
-                } else {
-                    // DEFERRED 0x13c5f6: message #5 not-triggered / wrong-state sub-branch.
+                } else if (m_nState == 2) {
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
+                    KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
+                    freighter->translate(Vector{0.0f, (float) -delta, (float) (2 * delta)});
+                    freighter->geometry->rotate(0.0f, 0.0f, (float) delta * 3.0e-5f);
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 15001) {
+                        m_nState = 3;
+                    }
+                } else if (m_nState == 3) {
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
+                    KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
+                    freighter->setPosition(2006.0f, -31500.0f, -86720.0f);
+                    freighter->geometry->setRotation(-0.4f, 0.0f, 1.8f);
+                    ((PlayerFixedObject *) freighter)->setExhaustVisible(false);
+                    m_pCamera->setPosition(freighter->getPosition());
+                    m_pCamera->translate(3000.0f, 1000.0f, 2000.0f);
+                    m_pCamera->useTargetsUpVector(false);
+                    for (unsigned int i = 1; i < enemies->count; i++) {
+                        KIPlayer *ship = (*enemies)[i];
+                        if (ship != nullptr && ship->shipGroup == 9) {
+                            ship->player->setEnemy(player->player);
+                        }
+                    }
+                    m_nScriptTimerA = 0;
+                    m_nState = 4;
+                } else if (m_nState == 4) {
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
+                    m_nScriptTimerA += delta;
+                    m_pCamera->translate((float) delta, (float) delta, (float) (-2 * delta));
+                    if (m_nScriptTimerA >= 15001) {
+                        Globals::sound->stop(156);
+                        m_nState = 5;
+                        (*enemies)[0]->player->setHitpoints(100);
+                        (*enemies)[0]->speed = 0.0f;
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        m_bCinematicBreak = 0;
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->useTargetsUpVector(true);
+                        player->setComputerControlled(false);
+                        player->player->setVulnerable(true);
+                        player->freeze = 0;
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                    }
                 }
                 break;
             }
@@ -2694,21 +2645,122 @@ int LevelScript::process(int delta) {
                 m_nState = 1; // shared tail 0x13aba4 -> 0x13edde
                 break;
             }
-            case 125: { // 0x139f9c
-                // Once radio message #1 has fired (still in state 0), build the scripted flight route
-                // and hand it to both the level and the player, then arm the script timer.
-                if (m_nState != 0) {
-                    break; // -> tail (0x13b43e)
-                }
-                if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
-                    m_nState = m_nState + 1; // 0 -> 1
-                    // Route point table from .rodata @0x202778 (three ints).
+            case 125: {
+                // Pirate hideout: fly the route in, label the three docking ports, then ambush.
+                if (m_nState == 0 && ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                    m_nState++;
                     int routePoints[3] = {-70000, 0, -130000};
                     Route *route = new Route(routePoints, 3);
                     m_pLevel->setPlayerRoute(route);
                     player->setRoute(route);
                     m_nScriptTimerA = 0;
-                    // -> tail (0x13b518)
+                } else if (m_nState == 1 && player->getRoute() != 0
+                           && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
+                    m_nState = 2;
+                    for (int i = 8; i <= 10; i++) {
+                        PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
+                        port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
+                        (*enemies)[i]->setActive(true);
+                        (*enemies)[i]->field_0x74 = 0;
+                    }
+                }
+                if (m_nState == 2) {
+                    if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        int spread = 0;
+                        for (int i = 2; i < 6; i++) {
+                            (*enemies)[i]->awake();
+                            KIPlayer *pirate = (*enemies)[i];
+                            Vector playerPos = player->getPosition();
+                            int sideX = Globals::rnd->nextInt(100);
+                            int offsetY = Globals::rnd->nextInt(1000);
+                            int offsetZ = Globals::rnd->nextInt(2000);
+                            int sideZ = Globals::rnd->nextInt(100);
+                            Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
+                                          (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
+                            pirate->setPosition(playerPos + offset);
+                            (*enemies)[i]->geometry->setDirection(
+                                    AbyssEngine::AEMath::VectorNormalize(player->getPosition() - (*enemies)[i]->getPosition()),
+                                    Vector{0.0f, 1.0f, 0.0f});
+                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                            (*enemies)[i]->player->setEnemy(player->player);
+                            spread += 2000;
+                        }
+                        player->setTurretMode(false);
+                        resetCamera(m_pLevel);
+                        if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
+                        }
+                        player->setFreeLookMode(false);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        player->stopShooting(0);
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        m_pCamera->setLookAtCam(true);
+                        player->setVisible(false);
+                        player->setFreeze(true);
+                        AEGeometry *leader = (*enemies)[4]->geometry;
+                        m_pCamera->setTarget(leader);
+                        m_tempVec = leader->getPosition();
+                        m_tempVec += leader->getDirection() * 4000.0f;
+                        m_tempVec += leader->getUpVector() * -500.0f;
+                        m_tempVec += leader->getRightVector() * -500.0f;
+                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_nScriptTimerA = 0;
+                        m_nState++;
+                    }
+                } else if (m_nState == 3) {
+                    float step = (float) (2 * delta);
+                    for (int i = 2; i < 6; i++) {
+                        (*enemies)[i]->geometry->moveForward(step);
+                    }
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 7001) {
+                        for (int i = 2; i < 6; i++) {
+                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
+                        }
+                        m_nState = 4;
+                        player->setVisible(true);
+                        player->setFreeze(false);
+                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
+                        if (!m_pLevel->getPlayer()->isDockedToDockingPoint()) {
+                            m_pRadar->lockedEnemy = nullptr;
+                            m_pRadar->dockNavPtr = nullptr;
+                        }
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pLevel->getPlayer()->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
+                        player->geometry->setDirection(
+                                AbyssEngine::AEMath::VectorNormalize((*enemies)[4]->getPosition() - player->getPosition()),
+                                Vector{0.0f, 1.0f, 0.0f});
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        player->setComputerControlled(false);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                    }
+                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                           && player->getHackingGameDockIndex() >= 0) {
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                            ->setName(String("", false));
+                    ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
+                    player->deleteHackingGame();
+                    m_nState++;
+                    if (m_nState == 6) {
+                        for (int i = 6; i < 8; i++) {
+                            (*enemies)[i]->awake();
+                            KIPlayer *guard = (*enemies)[i];
+                            guard->setPosition(player->getPosition()
+                                               + Vector{(float) (i * 1000 + 19000), (float) (i * 50 + 2000), 25000.0f});
+                        }
+                    }
                 }
                 break;
             }
@@ -3062,70 +3114,424 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 157: { // 0x13a308
-                // Head (0x13a308): pick the escort-ship index by device tier. On a weak device running
-                // the HD build the boss escorts occupy the high slots (23), otherwise slot 12. The
-                // sibling indices (11/10 resp. 22/21) are computed by the original but unused on this
-                // path. `(*enemies)[idx]` is a PlayerStation, and its rootGeometry (field @0x140) is the
-                // world anchor the on-screen marker geometries snap onto each frame.
-                int markerIndex = Globals::isRunningHDonWeakDevice ? 12 : 23; // 0x13a30a/0x13a32a
-                PlayerStation *escort = (PlayerStation *) (*enemies)[markerIndex];
-                // Marker A (m_pGeometry2 @0xc0): if visible, ride it onto the escort anchor and refresh
-                // its live transform (0x13a340).
+            case 157: {
+                // Supernova finale: the alien station escapes, the sun collapses and the player is
+                // thrown out to the next system. The escort ship slots depend on the device tier.
+                int stationIndex = 12;
+                int chaserIndex = 11;
+                int fighterIndex = 10;
+                if (!Globals::isRunningHDonWeakDevice) {
+                    stationIndex = 23;
+                    chaserIndex = 22;
+                    fighterIndex = 21;
+                }
                 if (m_pGeometry2->isVisible()) {
-                    m_pGeometry2->setPosition(escort->rootGeometry->getPosition());
-                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry2->transform);
-                    t->Update((long long) delta, true);
+                    m_pGeometry2->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry2->transform))
+                            ->Update((long long) delta, true);
                 }
-                // Marker B (m_pGeometry3 @0xc4): same treatment (0x13a382).
                 if (m_pGeometry3->isVisible()) {
-                    m_pGeometry3->setPosition(escort->rootGeometry->getPosition());
-                    AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                            Globals::Canvas->TransformGetTransform(m_pGeometry3->transform);
-                    t->Update((long long) delta, true);
+                    m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
+                            ->Update((long long) delta, true);
                 }
-                // Dispatch on m_nState (0x13a3d0). State 1 skips setup; state 0 spawns the marker; any
-                // other state jumps to the post-exit cold branch.
-                if (m_nState != 1) {
-                    if (m_nState != 0) {
-                        // DEFERRED 0x13cde8: m_nState >= 2 cold sub-branch (post-exit steady state).
-                        break;
-                    }
-                    // State 0 (0x13a3de): spawn the fly-in marker geometry (m_pGeometry4 @0xcc), place it
-                    // far off to the side facing +Z with +Y up, then advance to state 1.
-                    AEGeometry *marker = new AEGeometry(Globals::Canvas);
-                    m_pGeometry4 = marker;
-                    marker->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
-                    marker->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                if (m_nState == 0) {
+                    m_pGeometry4 = new AEGeometry(Globals::Canvas);
+                    m_pGeometry4->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
+                    m_pGeometry4->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
                     m_nState = 1;
                 }
-                // States 0/1 both fall through here (0x13a42e): wait for the mission radio message to
-                // finish, then run the standard cutscene-exit teardown.
-                if (!(*m_pLevel->getMessages())[0]->isOver()) {
-                    // DEFERRED 0x13cde4: radio-not-over -> shared tail.
-                    break;
-                }
-                if (player->isInRocketControl()) {
-                    // 0x13a44a: hand rocket control back and stop the rumble.
-                    resetCamera(m_pLevel);
-                    player->setRocketControl(nullptr, nullptr);
-                    player->killLiberator();
+                if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    if (player->isInRocketControl()) {
+                        resetCamera(m_pLevel);
+                        player->setRocketControl(nullptr, nullptr);
+                        player->killLiberator();
+                        m_pCamera->setRumblePercentage(0.0f, 0);
+                    }
+                    m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setTarget(m_pGeometry4);
+                    m_pCamera->setPosition(m_pGeometry4->getPosition());
+                    m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
+                    player->player->setVulnerable(false);
+                    player->setFreeze(true);
+                    m_nScriptTimerA = 0;
+                    m_nState = 2;
+                } else if (m_nState == 2) {
+                    m_nScriptTimerA += delta;
+                    m_pGeometry4->translate(0.0f, 0.0f, (float) (delta * 3));
+                    m_pCamera->translate(0.0f, 0.0f, (float) delta);
+                    if (m_nScriptTimerA >= 16001) {
+                        m_nScriptTimerA = 0;
+                        for (unsigned int i = 0; i < enemies->count; i++) {
+                            KIPlayer *ship = (*enemies)[i];
+                            if (ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44) {
+                                ship->setVisible(true);
+                                ship->setActive(true);
+                            }
+                        }
+                        m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
+                        m_tempVec = (*enemies)[fighterIndex]->getPosition();
+                        m_tempVec += Vector{-1500.0f, -5000.0f, 2500.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nState = 3;
+                    }
+                } else if (m_nState == 3) {
+                    m_nScriptTimerA += delta;
+                    float lift = (float) m_nScriptTimerA / -15000.0f + 1.0f;
+                    if (lift < 0.0f) {
+                        lift = 0.0f;
+                    }
+                    m_pCamera->translate(0.0f, lift * (float) delta, 0.0f);
+                    if (m_nScriptTimerA >= 8001) {
+                        m_nScriptTimerB = 0;
+                        m_nState = 4;
+                    }
+                } else if (m_nState == 4) {
+                    if (m_nScriptTimerB <= 6999) {
+                        m_nScriptTimerB += delta;
+                    }
+                    m_nScriptTimerA += delta;
+                    float lift = (float) m_nScriptTimerA / -15000.0f + 1.0f;
+                    if (lift < 0.0f) {
+                        lift = 0.0f;
+                    }
+                    m_pCamera->translate(0.0f, lift * (float) delta, 0.0f);
+                    for (unsigned int i = 0; i < enemies->count; i++) {
+                        KIPlayer *ship = (*enemies)[i];
+                        if (ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44) {
+                            ship->geometry->moveForward((float) m_nScriptTimerB * 0.02f);
+                        }
+                    }
+                    if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nScriptTimerA >= 18001) {
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
+                        player->setFreeze(false);
+                        player->setVisible(true);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        player->player->setVulnerable(true);
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                        for (unsigned int i = 0; i < enemies->count; i++) {
+                            KIPlayer *ship = (*enemies)[i];
+                            if (ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44) {
+                                ship->setVisible(true);
+                                ship->setActive(true);
+                                ((PlayerFighter *) ship)->setAIDisabled(false);
+                                Vector offset;
+                                if (ship->shipGroupFlag == 44) {
+                                    ((PlayerFighter *) ship)->setCloakingPossible(true);
+                                    offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
+                                    offset.z = (float) (Globals::rnd->nextInt(30000) - 87000);
+                                    offset.x = 120000.0f;
+                                } else {
+                                    offset.y = (float) (Globals::rnd->nextInt(6000) - 3000);
+                                    offset.z = (float) (Globals::rnd->nextInt(6000) - 7000);
+                                    offset.x = 20000.0f;
+                                }
+                                ship->translate(offset);
+                            }
+                        }
+                        m_nState = 5;
+                    }
+                } else if (m_nState == 5) {
+                    int destroyed;
+                    if (Globals::isRunningHDonWeakDevice) {
+                        destroyed = 5;
+                        for (int i = 6; i < 12; i++) {
+                            destroyed += (*enemies)[i]->isDead();
+                        }
+                    } else {
+                        destroyed = 0;
+                        for (int i = 11; i < 22; i++) {
+                            destroyed += (*enemies)[i]->isDead();
+                        }
+                    }
+                    m_nScriptTimerB += delta;
+                    if (m_nScriptTimerB >= 25001) {
+                        m_nScriptTimerB = 0;
+                        PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
+                        fighter->field_0x140 = !fighter->field_0x140;
+                    }
+                    if ((destroyed >= 9 && m_nScriptTime > 200000)
+                        || (*enemies)[fighterIndex]->player->getHitpoints()
+                           < (*enemies)[fighterIndex]->player->getMaxHitpoints() / 4) {
+                        if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
+                        }
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        player->player->setVulnerable(false);
+                        player->setFreeze(true);
+                        m_pCamera->setLookAtCam(true);
+                        KIPlayer *chaser = (*enemies)[chaserIndex];
+                        m_pCamera->setTarget(chaser->geometry);
+                        m_tempVec = (*enemies)[stationIndex]->getPosition();
+                        m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        chaser->setPosition(m_tempVec + Vector{15000.0f, -200.0f, 1000.0f});
+                        chaser->geometry->setDirection(
+                                AbyssEngine::AEMath::VectorNormalize((*enemies)[stationIndex]->getPosition()
+                                                                     - chaser->getPosition()),
+                                Vector{0.0f, 1.0f, 0.0f});
+                        chaser->setVisible(true);
+                        chaser->setActive(true);
+                        (*enemies)[fighterIndex]->player->setVulnerable(false);
+                        ((PlayerFighter *) (*enemies)[fighterIndex])->field_0x140 = 0;
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nScriptTimerA = 0;
+                        m_nState = 6;
+                    }
+                } else if (m_nState == 6) {
+                    m_nScriptTimerA += delta;
+                    KIPlayer *chaser = (*enemies)[chaserIndex];
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (chaser->getPosition().x > (*enemies)[stationIndex]->getPosition().x) {
+                        chaser->geometry->moveForward((float) (delta * 3));
+                    }
+                    if (((RadioMessage *) ((*messages)[10]))->isTriggered()) {
+                        chaser->setVisible(false);
+                        chaser->setActive(false);
+                        chaser->setPosition(50000.0f, 50000.0f, 50000.0f);
+                        m_pCamera->setTarget(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry);
+                        m_nScriptTimerA = 0;
+                        m_nState = 7;
+                    }
+                } else if (m_nState == 7 && ((RadioMessage *) ((*messages)[10]))->isOver()) {
+                    PlayerStation *station = (PlayerStation *) (*enemies)[stationIndex];
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = station->getPosition();
+                    Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
+                    if (m_nScriptTimerA <= 9999) {
+                        m_nScriptTimerA += delta;
+                    }
+                    station->rootGeometry->moveForward((float) m_nScriptTimerA / 10000.0f * (float) (-10 * delta));
+                    if (station->rootGeometry->getPosition().z > 100000.0f) {
+                        KIPlayer *fighter = (*enemies)[fighterIndex];
+                        fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
+                        m_tempVec = AbyssEngine::AEMath::VectorNormalize(
+                                (*enemies)[stationIndex]->getPosition() + Vector{0.0f, 0.0f, 40000.0f}
+                                - fighter->getPosition());
+                        fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
+                        ((PlayerFighter *) fighter)->setAIDisabled(true);
+                        fighter->setVisible(true);
+                        fighter->setActive(true);
+                        player->setComputerControlled(true);
+                        player->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
+                        player->setSpeed(4.0f);
+                        player->setFreeze(false);
+                        player->setPosition(*m_pCamera->getPosition() + Vector{5000.0f, 300.0f, -14000.0f});
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_pCamera->setTarget(station->rootGeometry);
+                        m_nScriptTimerA = 0;
+                        m_nState = 8;
+                    }
+                } else if (m_nState == 8) {
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = (*enemies)[stationIndex]->getPosition();
+                    Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
+                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (-10 * delta));
+                    KIPlayer *fighter = (*enemies)[fighterIndex];
+                    fighter->geometry->moveForward((float) (4 * delta));
+                    fighter->player->shoot(0, (long long) delta, false);
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 12001 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
+                        m_tempVec = (*enemies)[stationIndex]->getPosition();
+                        m_pCamera->setPosition(m_tempVec + Vector{35000.0f, 0.0f, 70000.0f});
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        fighter->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        player->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        fighter->setVisible(false);
+                        fighter->setActive(false);
+                        player->setSpeed(10.0f);
+                        m_nScriptTimerA = 0;
+                        m_nScriptTimerB = 0;
+                        m_nState = 9;
+                    }
+                } else if (m_nState == 9) {
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = (*enemies)[stationIndex]->getPosition();
+                    Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
+                    KIPlayer *fighter = (*enemies)[fighterIndex];
+                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (-10 * delta));
+                    fighter->geometry->moveForward((float) (2 * delta));
+                    fighter->player->shoot(0, (long long) delta, false);
+                    m_nScriptTimerA += delta;
+                    m_nScriptTimerB += delta;
+                    if (m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
+                        fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
+                        fighter->setVisible(true);
+                        fighter->setActive(true);
+                    }
+                    m_tempVec = AbyssEngine::AEMath::VectorNormalize((*enemies)[stationIndex]->getPosition()
+                                                                     - fighter->getPosition());
+                    fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
+                    if (((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr) {
+                        m_pExplosion = new Explosion(0);
+                        m_pExplosion->addFireStreaks();
+                        m_pExplosion->setScaling(5.0f);
+                        m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{-2000.0f, 1000.0f, -8000.0f},
+                                            Vector{0.0f, 0.0f, 0.0f});
+                        Globals::sound->play(2244, nullptr, nullptr, 0.0f);
+                        m_nScriptTimerA = 0;
+                        m_nFlashCountdown = 300;
+                    }
+                    if (m_nFlashCountdown > 0) {
+                        m_nFlashCountdown -= delta;
+                        if (m_nFlashCountdown <= 0) {
+                            m_nFlashCountdown = 0;
+                            m_pGeometry2->setPosition(
+                                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
+                            m_pGeometry2->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                            m_pGeometry2->setVisible(true);
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry2->transform))
+                                    ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+                        }
+                    }
+                    if (m_pExplosion != nullptr) {
+                        m_pExplosion->update(delta, nullptr);
+                        m_nScriptTimerA += delta;
+                        if (m_nScriptTimerA >= 6001) {
+                            m_nScriptTimerA = -2000;
+                            Globals::sound->play(2244, nullptr, nullptr, 0.0f);
+                            m_pExplosion->start((*enemies)[stationIndex]->getPosition()
+                                                + Vector{-6000.0f, 2000.0f, -10000.0f},
+                                                Vector{0.0f, 0.0f, 0.0f});
+                        }
+                    }
+                    if (((RadioMessage *) ((*messages)[14]))->isOver()) {
+                        m_tempVec = (*enemies)[stationIndex]->getPosition();
+                        m_pCamera->setPosition(m_tempVec + Vector{50000.0f, 0.0f, 70000.0f});
+                        m_nScriptTimerA = 0;
+                        m_nScriptTimerB = 0;
+                        fighter->setVisible(false);
+                        player->setVisible(false);
+                        m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
+                        m_pGeometry3->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                        m_pGeometry3->setVisible(true);
+                        m_pGeometry2->setVisible(false);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                        m_nState = 10;
+                    }
+                } else if (m_nState == 10) {
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = (*enemies)[stationIndex]->getPosition();
+                    Globals::sound->updateEvent3DAttributes(2251, &pos, &zero, false);
+                    m_nScriptTimerB += delta;
                     m_pCamera->setRumblePercentage(0.0f, 0);
+                    if (m_nScriptTimerB > 2000 && m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
+                        m_pExplosion->setScaling(10.0f);
+                        m_pExplosion->start((*enemies)[stationIndex]->getPosition()
+                                            - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
+                                            Vector{0.0f, 0.0f, 0.0f});
+                        Globals::sound->play(2243, nullptr, nullptr, 0.0f);
+                        m_pCamera->setRumblePercentage(100.0f, 30);
+                    }
+                    m_pExplosion->update(delta, nullptr);
+                    m_pCamera->translate((float) (-2 * delta), 0.0f, (float) -delta * 0.33f);
+                    if (((RadioMessage *) ((*messages)[15]))->isOver()) {
+                        m_nScriptTimerA += delta;
+                        if (m_nScriptTimerA >= 3001) {
+                            m_pGeometry1->setPosition(
+                                    ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
+                            m_pGeometry1->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                    ->SetVisible(false);
+                            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                    ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                            m_nScriptTimerA = 0;
+                            m_nState++;
+                        }
+                    }
+                } else if (m_nState == 11) {
+                    m_nScriptTimerA += delta;
+                    m_pCamera->translate((float) (-3 * delta), 0.0f, (float) -delta * 0.33f);
+                    if (m_nScriptTimerA >= 6001) {
+                        if (m_nScriptTimerA - delta <= 6000) {
+                            Globals::sound->play(2247, nullptr, nullptr, 0.0f);
+                        }
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                ->SetVisible(true);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                ->Update((long long) delta, true);
+                        if (m_nScriptTimerA >= 10001) {
+                            m_pGeometry4->setPosition((*enemies)[stationIndex]->getPosition());
+                            m_pGeometry4->setDirection(m_pLevel->getStarSystem()->getLightDirection(),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+                            m_pCamera->setTarget(m_pGeometry4);
+                            m_nScriptTimerA = 0;
+                            (*enemies)[fighterIndex]->setVisible(false);
+                            (*enemies)[fighterIndex]->setActive(false);
+                            m_nState++;
+                        }
+                    }
+                } else if (m_nState == 12) {
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA < 3000) {
+                        m_pCamera->translate((float) (-20 * delta), 0.0f, (float) (-20 * delta));
+                    } else if (m_nScriptTimerA < 7000) {
+                        m_pCamera->translate((float) (-3 * delta), 0.0f, (float) (-10 * delta));
+                    }
+                    if (m_nScriptTimerA < 5000) {
+                        m_pGeometry4->moveForward((float) (35 * delta));
+                    }
+                    if (m_nScriptTimerA < 6000) {
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                                ->Update((long long) delta, true);
+                    }
+                    m_pCamera->setRumblePercentage(100.0f, (int) ((float) m_nScriptTimerA / 6500.0f * 30.0f));
+                    if (m_nScriptTimerA >= 5000 && m_nScriptTimerA - delta < 5000) {
+                        m_pLevel->switchSkyboxForSupernovaReversal();
+                    }
+                    if (m_nScriptTimerA >= 5500 && m_nScriptTimerA - delta < 5500) {
+                        m_pExplosion->setScaling(25.0f);
+                        m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{0.0f, 0.0f, -12000.0f}
+                                            - m_pLevel->getStarSystem()->getLightDirection() * 3000.0f,
+                                            Vector{0.0f, 0.0f, 0.0f});
+                    }
+                    if (m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700) {
+                        m_pGeometry1->setVisible(false);
+                        (*enemies)[stationIndex]->setVisible(false);
+                        Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
+                        Globals::sound->play(2248, nullptr, nullptr, 0.0f);
+                    }
+                    if (m_nScriptTimerA >= 5500) {
+                        m_pExplosion->update(delta, nullptr);
+                    }
+                    if (m_nScriptTimerA > 5000 && m_nScriptTimerA < 6000) {
+                        AEGeometry *planet = (*(Array<AEGeometry *> *) m_pLevel->getStarSystem()->getPlanets())[0];
+                        if (m_nScriptTimerA < 5500) {
+                            planet->setScaling(planet->getScaling() * 0.8f);
+                        } else {
+                            planet->setScaling(planet->getScaling() * 1.7f);
+                        }
+                    }
+                    if (m_nScriptTimerA >= 6500) {
+                        m_nState++;
+                        Globals::status->nextCampaignMission(true);
+                        Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
+                        Globals::status->field_64 = player->player->getHitpoints();
+                        Globals::status->field_5c = player->player->getShieldHP();
+                        Globals::status->field_60 = player->player->getArmorHP();
+                        Globals::status->field_68 = player->player->getGammaHP();
+                        Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
+                        player->player->setGammaHP(100);
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                    }
                 }
-                // Standard cutscene-exit teardown (0x13a46e).
-                // DEFERRED 0x13a47a/0x13a47e/0x13a486: set the high byte of m_nFlags @+0x11 and clear the
-                //   Hud status byte @+1 and Radar flag @+0x48 -- all land in unnamed padding / packed
-                //   half-words in our model; naming them would risk layout drift.
-                m_pCamera->setLookAtCam(true);
-                m_pCamera->setTarget(m_pGeometry4);
-                m_pCamera->setPosition(m_pGeometry4->getPosition());
-                m_pCamera->translate(-10000.0f, 5000.0f, 25000.0f);
-                player->player->setVulnerable(false);
-                player->setFreeze(true);
-                m_nScriptTimerA = 0;                      // strd zeroes [this+0x90]
-                m_nState = 2;
-                // -> post-switch tail (0x143d0e)
                 break;
             }
             case 40: { // 0x13a4d8
@@ -5131,10 +5537,8 @@ int LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 16: { // 0x13b014
-                // Intro-approach cutscene exit (radio message #0). Once the intro chatter has fired
-                // and we are still in state 0, hand control back to the computer, hide the HUD/radar
-                // cinematic overlay and reframe the camera behind enemies[0].
+            case 16: {
+                // Wormhole tutorial: show the target, open the wormhole and send the enemies through.
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -5142,8 +5546,8 @@ int LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
+                    m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
-                    m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
@@ -5154,7 +5558,87 @@ int LevelScript::process(int delta) {
                     m_pCamera->setPosition(camPos);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
-                    // -> post-switch tail (0x144e36)
+                } else if (m_nState == 1) {
+                    m_pCamera->translate((float) -delta, 0.0f, (float) (-3 * delta));
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        player->setComputerControlled(false);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                        m_nState = 2;
+                    }
+                } else if (m_nState == 2 && m_nScriptTime >= 20001) {
+                    m_nState = 3;
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
+                    m_nState = 4;
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
+                    (*m_pLevel->getLandmarks())[3]->setVisible(true);
+                    player->setTurretMode(false);
+                    resetCamera(m_pLevel);
+                    player->setFreeLookMode(false);
+                    m_pCamera->enableFirstPersonCam(false);
+                    player->hideShipForFirstPersonCameraView(false);
+                    player->stopShooting(0);
+                    m_bCinematicBreak = 1;
+                    m_pHud->visible = 0;
+                    m_pRadar->enabled = 0;
+                    player->setComputerControlled(true);
+                    player->freeze = 1;
+                    m_pCamera->setLookAtCam(true);
+                    m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getLandmarks())[3]->geometry);
+                    Vector camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
+                    camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
+                    m_pCamera->setPosition(camPos);
+                    camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
+                    int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
+                    Route *route = new Route(routePoints, 3);
+                    camPos.z += -15000.0f;
+                    for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
+                        KIPlayer *ship = (*m_pLevel->getEnemies())[i];
+                        if (ship != nullptr && ship->shipGroup == 9) {
+                            ship->setPosition(camPos.x, camPos.y - 2000.0f + (float) Globals::rnd->nextInt(4000),
+                                              camPos.z - 2000.0f + (float) Globals::rnd->nextInt(4000));
+                            ship->geometry->setDirection(
+                                    AbyssEngine::AEMath::VectorNormalize((*m_pLevel->getLandmarks())[3]->getPosition()
+                                                                         - ship->getPosition()),
+                                    Vector{0.0f, 1.0f, 0.0f});
+                            ship->setRoute(route->clone());
+                            ship->player->setEnemies(nullptr);
+                        }
+                    }
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                } else if (m_nState == 4) {
+                    m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
+                    if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        m_nState = 5;
+                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
+                            KIPlayer *ship = (*m_pLevel->getEnemies())[i];
+                            if (ship != nullptr && ship->shipGroup == 9) {
+                                ship->setVisible(false);
+                                ship->setDead();
+                            }
+                        }
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                    }
+                } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 5) {
+                    m_nState = 6;
+                    player->freeze = 0;
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->enabled = 1;
+                    resetCamera(m_pLevel);
+                    m_bCinematicBreak = 0;
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                 }
                 break;
             }
@@ -5237,8 +5721,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     field_0x8c = 0;
     m_nScriptTimerA = 0;
     m_nScriptTimerB = 0;
-    field_0xa0 = 0;
-    field_0xa4 = 0;
+    m_nFlashCountdown = 0;
     m_bRenderParticles = 0;
     field_0xa9 = 0;
     m_pParticleGeom0 = nullptr;
