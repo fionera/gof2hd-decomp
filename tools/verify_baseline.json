@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1308,
-  "linked_exact": 3934,
+  "linked_exact": 3936,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 94.68,
+  "avg_match": 94.75,
   "compared": 4523
  },
  "data": {
@@ -67,7 +67,6 @@
   "_Z18Station_getName_oiv",
   "_Z18Station_hasItem_oii",
   "_Z18Station_hasShip_oiP7Station",
-  "_Z18Status_replaceHashPvS_S_S_",
   "_Z18Status_replaceHashPvS_S_S_S_",
   "_Z18_mtw_draw_mainMenuPv",
   "_Z18_mtw_draw_missionsPv",
