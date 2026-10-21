@@ -61,9 +61,9 @@ public:
 
     void *readAgent(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 
-    void *readAllPreviewRecords(); // lint: void_ptr (method signature; return type fixed)
+    Array<GameRecord *> *readAllPreviewRecords();
 
-    void *readAllRecords(); // lint: void_ptr (method signature; return type fixed)
+    Array<GameRecord *> *readAllRecords();
 
     void *readMission(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
 

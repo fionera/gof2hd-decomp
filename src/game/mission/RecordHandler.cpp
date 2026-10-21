@@ -194,30 +194,22 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
     canvas->SwapBuffer();
 }
 
-static int *g_RH_recordCount = nullptr;
-
-void *RecordHandler::readAllRecords() { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Array<GameRecord *> *arr = new Array<GameRecord *>();
-    int *cnt = g_RH_recordCount;
-    ArraySetLength(*cnt, *arr);
-    for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = this->recordStoreRead(i);
-        (*arr)[i] = r;
+Array<GameRecord *> *RecordHandler::readAllRecords() {
+    Array<GameRecord *> *records = new Array<GameRecord *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        (*records)[i] = this->recordStoreRead(i);
     }
-    return arr;
+    return records;
 }
 
-void *RecordHandler::readAllPreviewRecords() { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    Array<GameRecord *> *arr = new Array<GameRecord *>();
-    int *cnt = g_RH_recordCount;
-    ArraySetLength(*cnt, *arr);
-    for (int i = 0; i < *cnt; i++) {
-        GameRecord *r = this->recordStoreReadPreview(i);
-        (*arr)[i] = r;
+Array<GameRecord *> *RecordHandler::readAllPreviewRecords() {
+    Array<GameRecord *> *records = new Array<GameRecord *>();
+    ArraySetLength(Globals::recordSlots, *records);
+    for (int i = 0; i < Globals::recordSlots; i++) {
+        (*records)[i] = this->recordStoreReadPreview(i);
     }
-    return arr;
+    return records;
 }
 
 bool RecordHandler::notEnoughMemory() {
@@ -481,18 +473,10 @@ GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
     return gr;
 }
 
-static const char RH_lit0[] = "";
-
-static const char RH_lit1[] = "";
-
-static const char RH_lit2[] = "";
-
-RecordHandler::RecordHandler()
-    : currentMission(0),
-      currentAgent(0),
-      optionsPath(RH_lit0),
-      recordDir(RH_lit1),
-      backupDir(RH_lit2) {
+RecordHandler::RecordHandler() {
+    optionsPath = String("gof2_save_options");
+    recordDir = String("gof2_save_game_");
+    backupDir = String("gof2_save_game_preview_");
 }
 
 RecordHandler::~RecordHandler() {
