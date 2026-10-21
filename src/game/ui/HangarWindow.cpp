@@ -1441,220 +1441,156 @@ void HangarWindow::setSellMode(bool buy) {
     self->bluePrintItem = self->selectedItem;
 }
 
-void HangarWindow::selectItem(ListItem *item) {
-    HangarWindow *self = this;
-    ListItem *li = item;
-    self->selectedItem = item;
-    if (item != nullptr && item->isShip() != 0)
-        self->selectedItem->ship->adjustPrice();
+bool HangarWindow::selectItem(ListItem *item) {
+    this->selectedItem = item;
+    if (item != 0 && item->isShip())
+        this->selectedItem->ship->adjustPrice();
 
-    int tab = self->hangarList->getCurrentTab();
-
-    if (tab == 2) {
-        if (item->isSelectable() != 0 && item->isPendingProduct() == 0) {
-            BluePrint *bp = li->bluePrint;
-            self->bluePrint = bp;
-            self->hangarList->fillIngredientsList(bp, bp != nullptr);
-            self->hangarList->setCurrentTab(0, true);
-            self->refreshCurrentContentHeight();
-            if (self->specialMode != 0)
-                self->specialMode = 0;
+    switch (this->hangarList->getCurrentTab()) {
+    case 0: {
+        if (!item->isSelectable())
+            break;
+        this->savedScrollOffset = this->scrollOffset;
+        this->scrollOffsetBackup = 0;
+        this->scrollOffset = 0;
+        if (!Globals::hints[31] && item->isSlot()) {
+            this->dialog->set(*Globals::gameText->getText(587));
+            Globals::hints[31] = 1;
+            this->dialogActive = 1;
         }
-        return;
-    }
-
-    if (tab == 1) {
-        if (((ListItem *) (item))->isSelectable() == 0)
-            return;
-        if (((ListItem *) (item))->isShip() == 0) {
-            if (((Item *) (li->item))->isUnsaleable() != 0)
-                return;
-
-            uint8_t was = self->buyMode;
-            self->buyMode = (uint8_t)(was ^ 1);
-            if (was == 0) {
-                unsigned char *flags = *g_hw_itemFlags;
-                if ((*(uint8_t *) ((char *) (flags) + (0x1d))) == 0) {
-                    Globals::gameText->getText(*g_hw_sellMsgTextId1);
-                    self->dialog->set(g_HangarWindow_emptyDialogText);
-                    (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
-                    self->dialogActive = 1;
+        if (!item->isSelectable())
+            break;
+        Item *current = this->hangarList->getCurrentItem()->item;
+        if (current != 0) {
+            if (current->isUnsaleable()) {
+                this->dialog->set(*Globals::gameText->getText(323));
+                this->dialogActive = 1;
+                break;
+            }
+            if (current->getSort() == 20) {
+                int passengers = reinterpret_cast<int32_t &>(Globals::status->_byte_0x34);
+                if (passengers >= 1 && item->inTabIndex >= 0 &&
+                    Globals::status->getShip()->getMaxPassengers() - current->getAttribute(34) <
+                    reinterpret_cast<int32_t &>(Globals::status->_byte_0x34)) {
+                    this->dialog->set(*Globals::gameText->getText(323));
+                    this->dialogActive = 1;
+                    break;
                 }
-                self->savedStationAmount = ((Item *) (li->item))->getStationAmount();
-                self->savedAmount = ((Item *) (li->item))->getAmount();
-                self->savedCredits = Globals::status->getCredits();
-                self->savedLoad = self->currentLoad;
+            }
+        }
+        if (item->inTabIndex >= 0) {
+            this->demountItem(current, this->hangarList->getCurrentItem()->subTabIndex);
+            break;
+        }
+        Item *mounted = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
+        if (item->item->getSort() == 21) {
+            if (Globals::status->getShip()->getIndex() == 44 ||
+                Globals::status->getShip()->getIndex() == 49 || mounted == 0) {
+                this->mountItem(item->item);
+                break;
+            }
+        } else if (mounted == 0) {
+            this->mountItem(item->item);
+            break;
+        }
+        if (item->item->canBeInstalledMultipleTimes()) {
+            this->mountItem(item->item);
+            break;
+        }
+        // Replace the already mounted item of the same kind?
+        String message = *Globals::gameText->getText(287);
+        message = Globals::status->replaceHash(
+            Globals::status->replaceHash(message, *Globals::gameText->getText(1274 + mounted->getIndex()),
+                                         String("#ITEM1")),
+            *Globals::gameText->getText(1274 + item->item->getIndex()), String("#ITEM2"));
+        this->dialog->set(message, true);
+        this->replaceEquipPending = 1;
+        this->dialogActive = 1;
+        this->pendingMountItem = item->item;
+        this->pendingDemountItem = mounted;
+        break;
+    }
+    case 1: {
+        if (!item->isSelectable())
+            break;
+        if (item->isShip()) {
+            int price = item->ship->getPrice();
+            if (price > Globals::status->getCredits() + Globals::status->getShip()->getPrice() && !this->upgradeMode) {
+                String message = Globals::status->replaceHash(
+                    *Globals::gameText->getText(203),
+                    String(Globals::layout->formatCredits(item->getPrice() - Globals::status->getCredits() -
+                                                          Globals::status->getShip()->getPrice()), false),
+                    String("#C"));
+                message += String("\n\n") + *Globals::gameText->getText(124);
+                this->dialog->set(message, true);
+                this->notEnoughCredits = 1;
+                this->dialogActive = 1;
+            } else if (reinterpret_cast<int32_t &>(Globals::status->_byte_0x34) >= 1) {
+                this->dialog->set(*Globals::gameText->getText(336));
+                this->dialogActive = 1;
+            } else if (Globals::status->getCurrentCampaignMission() == 77 &&
+                       Globals::status->getShip()->getIndex() == 37) {
+                this->dialog->set(*Globals::gameText->getText(325));
+                this->dialogActive = 1;
+            } else if (Globals::status->getShip()->getIndex() == item->ship->getIndex()) {
+                this->dialog->set(*Globals::gameText->getText(329));
+                this->dialogActive = 1;
             } else {
-                if (((ListItem *) (item))->isItem() != 0 && ((Item *) (li->item))->getType() != 4) {
-                    unsigned char *flags = *g_hw_itemFlags;
-                    if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
-                        Globals::gameText->getText(*g_hw_sellMsgTextId2);
-                        self->dialog->set(g_HangarWindow_emptyDialogText);
-                        (*(uint8_t *) ((char *) (flags) + (0x1e))) = 1;
-                        self->dialogActive = 1;
-                    }
-                }
-                int li = ((ListItem *) (item))->getIndex();
-                if (li > 0x83 && ((ListItem *) (item))->getIndex() < 0x9a) {
-                    int base = ((Globals *) *g_hw_globals)->field_0xac;
-                    *((uint8_t *) (*(int *) ((char *) (uintptr_t) base + (4))) + ((ListItem *) (item))->
-                      getIndex() - 0x84) = 1;
-                }
-                self->autoEquipPending = 1;
-                self->autoEquipIndex = self->hangarList->getCurrentItemIndex();
-
-                Globals::status->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
-                Globals::status->getStation()->setItems(Item::extractItems(self->itemList, false), false);
-                if (self->itemList != 0) {
-                    ArrayReleaseClasses(*self->itemList);
-                    delete self->itemList;
-                }
-                self->itemList = 0;
-
-                ItemArray *mixed = Item::mixItems((ItemArray *) (Globals::status->getShip()->getCargo()),
-                                                  (ItemArray *) (Globals::status->getStation()->getItems()));
-                self->itemList = mixed;
-                self->hangarList->initShopTab((Array<Item *> *) (mixed), Globals::status->getStation()->getShips());
-                self->hangarList->initShipTab(Globals::status->getShip());
+                this->shipSwapPending = 1;
+                this->dialog->set(*Globals::gameText->getText(this->upgradeMode ? 333 : 304), true);
+                this->dialogActive = 1;
             }
-            return;
+            break;
         }
-
-        int price = ((Ship *) (li->ship))->getPrice();
-        Globals *globals = (Globals *) *g_hw_globals;
-        int credits = Globals::status->getCredits();
-        int oldPrice = Globals::status->getShip()->getPrice();
-        if (oldPrice + credits < price && self->upgradeMode == 0) {
-            String line, priceStr, fmt, msg, suffix, combined;
-            priceStr = Globals::layout->formatCredits(
-                ((ListItem *) (item))->getPrice() - Globals::status->getCredits() - Globals::status->getShip()->
-                getPrice());
-            ((String *) &line)->Set((priceStr).data);
-            Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
-            Globals::gameText->getText(*g_hw_notEnoughTextId);
-            combined = suffix + suffix;
-            *((String *) &msg) += combined;
-            self->dialog->set(*(String *) &msg, true);
-            self->dialogActive = 1;
-            self->notEnoughCredits = 1;
-            return;
-        }
-
-        if (globals->field_0x34 < 1) {
-            if (Globals::status->getCurrentCampaignMission() == 0x4d &&
-                Globals::status->getShip()->getIndex() == 0x25) {
-                Globals::gameText->getText(*g_hw_unsaleableTextId);
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-                self->dialogActive = 1;
-                return;
+        if (item->item->isUnsaleable())
+            break;
+        this->buyMode = !this->buyMode;
+        if (this->buyMode) {
+            if (!Globals::hints[29]) {
+                this->dialog->set(*Globals::gameText->getText(588));
+                Globals::hints[29] = 1;
+                this->dialogActive = 1;
             }
-            int a = Globals::status->getShip()->getIndex();
-            int b = ((Ship *) (li->ship))->getIndex();
-            if (a != b) {
-                self->shipSwapPending = 1;
-                Globals::gameText->getText(*g_hw_sellMsgTextId2);
-                self->dialog->set(*(String *) Globals::gameText->getText(*g_hw_sellMsgTextId2), true);
-                self->dialogActive = 1;
-                return;
-            }
-            Globals::gameText->getText(*g_hw_buyBaseTextId);
-            self->dialog->set(g_HangarWindow_emptyDialogText);
-            self->dialogActive = 1;
-        } else {
-            Globals::gameText->getText(*g_hw_buyBaseTextId);
-            self->dialog->set(g_HangarWindow_emptyDialogText);
-            self->dialogActive = 1;
+            this->savedStationAmount = item->item->getStationAmount();
+            this->savedAmount = item->item->getAmount();
+            this->savedCredits = Globals::status->getCredits();
+            this->savedLoad = this->currentLoad;
+            break;
         }
-        return;
-    }
-
-    if (tab != 0) {
-        return;
-    }
-
-    if (((ListItem *) (item))->isSelectable() == 0)
-        return;
-
-    self->scrollOffsetBackup = 0;
-    self->savedScrollOffset = self->scrollOffset;
-    self->scrollOffset = 0;
-
-    unsigned char *flags0 = *g_hw_itemFlags;
-    if ((*(uint8_t *) ((char *) (flags0) + (0x1f))) == 0 && ((ListItem *) (item))->isSlot() != 0) {
-        Globals::gameText->getText(*g_hw_slotMsgTextId);
-        self->dialog->set(g_HangarWindow_emptyDialogText);
-        (*(uint8_t *) ((char *) (flags0) + (0x1f))) = 1;
-        self->dialogActive = 1;
-    }
-
-    if (((ListItem *) (item))->isSelectable() == 0)
-        return;
-
-    ListItem *cur = self->hangarList->getCurrentItem();
-    Item *curItem = cur->item;
-    if (curItem != nullptr) {
-        if (curItem->isUnsaleable() != 0) {
-            Globals::gameText->getText(*g_hw_unsaleableTextId);
-            self->dialog->set(g_HangarWindow_emptyDialogText);
-            self->dialogActive = 1;
-            return;
+        if (item->isItem() && item->item->getType() != 4 && !Globals::hints[30]) {
+            this->dialog->set(*Globals::gameText->getText(589));
+            Globals::hints[30] = 1;
+            this->dialogActive = 1;
         }
-        if (((Item *) (curItem))->getSort() == 0x14) {
-            Globals *globals = (Globals *) *g_hw_globals;
-            int passengerCount = globals->field_0x34;
-            int chosen = passengerCount;
-            if (passengerCount > 0)
-                chosen = li->inTabIndex;
-            int adj = passengerCount - 1;
-            if (passengerCount >= 1)
-                adj = chosen;
-            if (adj >= 0 == (passengerCount >= 1)) {
-                int maxPax = Globals::status->getShip()->getMaxPassengers();
-                int used = ((Item *) (curItem))->getAttribute(0);
-                if (maxPax - used < globals->field_0x34) {
-                    Globals::gameText->getText(*g_hw_unsaleableTextId);
-                    self->dialog->set(g_HangarWindow_emptyDialogText);
-                    self->dialogActive = 1;
-                    return;
-                }
-            }
+        if (item->getIndex() >= 132 && item->getIndex() <= 153) {
+            (*Globals::status->field_ac)[item->getIndex() - 132] = true;
         }
+        this->autoEquipPending = 1;
+        this->autoEquipIndex = this->hangarList->getCurrentItemIndex();
+        Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
+        Globals::status->getStation()->setItems(Item::extractItems(this->itemList, false), false);
+        if (this->itemList != 0) {
+            ArrayReleaseClasses(*this->itemList);
+            delete this->itemList;
+        }
+        this->itemList = 0;
+        this->itemList = Item::mixItems(Globals::status->getShip()->getCargo(), Globals::status->getStation()->getItems());
+        this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
+        this->hangarList->initShipTab(Globals::status->getShip());
+        break;
     }
-
-    if (li->inTabIndex >= 0) {
-        ListItem *ci = self->hangarList->getCurrentItem();
-        self->demountItem(curItem, ci->subTabIndex);
-        return;
+    case 2:
+        if (!item->isSelectable() || item->isPendingProduct())
+            break;
+        this->bluePrint = item->bluePrint;
+        this->hangarList->fillIngredientsList(item->bluePrint, false);
+        this->hangarList->setCurrentTab(4, true);
+        this->refreshCurrentContentHeight();
+        if (this->specialMode)
+            this->specialMode = 0;
+        break;
     }
-
-    Globals *globals = (Globals *) *g_hw_globals;
-    int sort = li->item->getSort();
-    Item *existing = Globals::status->getShip()->getFirstEquipmentOfSort(sort);
-    bool conflict = false;
-    if (((Item *) (li->item))->getSort() == 0x15) {
-        if (Globals::status->getShip()->getIndex() != 0x2c &&
-            existing != 0 && Globals::status->getShip()->getIndex() != 0x31)
-            conflict = true;
-    } else if (existing != 0) {
-        conflict = true;
-    }
-
-    if (conflict && li->item->canBeInstalledMultipleTimes() == 0) {
-        String name, copy, etext, fmt, result, etext2, fmt2, result2;
-        ((String *) &copy)->Set((name).data);
-        ((Item *) (existing))->getIndex();
-        Status_replaceHash(&result, globals, &copy, &etext, &fmt);
-        ((Item *) (li->item))->getIndex();
-        Status_replaceHash(&result2, globals, &result, &etext2, &fmt2);
-        self->dialog->set(*(String *) &name, true);
-        self->replaceEquipPending = 1;
-        self->dialogActive = 1;
-        self->pendingMountItem = li->item;
-        self->pendingDemountItem = existing;
-        return;
-    }
-
-    self->mountItem(li->item);
+    return false;
 }
 
 float HangarWindow::getRelativeScrollHeight() {

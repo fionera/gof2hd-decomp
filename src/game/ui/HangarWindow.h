@@ -53,7 +53,7 @@ public:
     unsigned int progressBarFillImage;
     BluePrint *bluePrint;
     ListItem *bluePrintItem;
-    uint8_t buyMode;
+    bool buyMode;
     uint8_t specialMode;
     int savedStationAmount;
     uint16_t shipSwapPending;
@@ -154,7 +154,7 @@ public:
 
     void render3D();
 
-    void selectItem(ListItem *item);
+    bool selectItem(ListItem *item);
 
     void setSellMode(bool buy);
 
