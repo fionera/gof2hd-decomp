@@ -121,14 +121,6 @@ HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmo
 
 
 
-static inline int half_i(int value) {
-    return value / 2;
-}
-
-static inline int layoutOffset(unsigned char *layout, uint32_t off) {
-    return *(int32_t *) (layout + off);
-}
-
 void HackingGame::render2D() {
     Globals::Canvas->SetColor(0xffffffffu);
     bool solved = true;
