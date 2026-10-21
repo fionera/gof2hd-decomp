@@ -111,12 +111,12 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
 
     this->field_0x130 = -1;
     this->field_0x134 = -1;
-    this->field_0x128 = 50000;
     this->field_0x138 = -1;
     this->rotate = 2.0f;
-    this->shootError = 500.0f / 65536.0f;
+    this->shootError = 500.0f * 1.525878e-5f;
     this->speed = 2.0f;
     this->field_0x1b0 = 1500;
+    this->field_0x128 = 50000;
     this->boostProb = 5;
     this->field_0x38 = 0;
     this->field_0x140 = 0;
