@@ -267,64 +267,182 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
     }
-    case 12:
+    case 12: {
         Globals::Canvas->Image2DCreate(1138, (unsigned int &) this->imgFrameL);
         Globals::Canvas->Image2DCreate(1139, (unsigned int &) this->imgFrameTL);
-        goto imageButton;
-    case 13:
-        Globals::Canvas->Image2DCreate(1303, (unsigned int &) this->imgFrameL);
-        Globals::Canvas->Image2DCreate(1304, (unsigned int &) this->imgFrameTL);
-        this->imgFrameBL = this->imgFrameTL;
-        goto imageButton;
-    case 14:
-        Globals::Canvas->Image2DCreate(1340, (unsigned int &) this->imgFrameL);
-        Globals::Canvas->Image2DCreate(1339, (unsigned int &) this->imgFrameTL);
-        goto labelledButton;
-    case 15:
-        Globals::Canvas->Image2DCreate(1342, (unsigned int &) this->imgFrameL);
-        Globals::Canvas->Image2DCreate(1341, (unsigned int &) this->imgFrameTL);
-        goto labelledButton;
-    case 16:
-        this->imgFrameL = subId;
-        Globals::Canvas->Image2DCreate(3001, (unsigned int &) this->imgFrameTL);
-        goto imageButton;
-    case 17:
-        Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->imgFrameL);
-        Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->imgFrameTL);
-        goto labelledButton;
-    case 18:
-    case 20:
-        if (kind == 20) {
-            Globals::Canvas->Image2DCreate(8046, (unsigned int &) this->imgFrameL);
-            Globals::Canvas->Image2DCreate(8047, (unsigned int &) this->imgFrameTL);
-        } else {
-            Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->imgFrameL);
-            Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->imgFrameTL);
-        }
-        goto labelledButton;
-    case 19: {
-        this->imgFrameL = subId;
-        this->imgFrameTL = this->image;
-        this->height = Globals::Canvas->GetImage2DHeight(subId);
-        int w = Globals::Canvas->GetImage2DWidth(subId);
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(subId) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(subId) / 2;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->imgFrameL) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->imgFrameL) / 2;
+        break;
+    }
+    case 13: {
+        Globals::Canvas->Image2DCreate(1303, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(1304, (unsigned int &) this->imgFrameTL);
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->imgFrameL) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->imgFrameL) / 2;
+        break;
+    }
+    case 14: {
+        Globals::Canvas->Image2DCreate(1340, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(1339, (unsigned int &) this->imgFrameTL);
+        unsigned short language = GameText::getLanguage();
+        float lineFactor;
+        if (language < 16 && ((1 << language) & 0x8c00))
+            lineFactor = 1.0f;
+        else
+            lineFactor = language == 14 ? 1.0f : 1.5f;
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
+        this->textOffsetY = (int) ((float) (this->height / 2) +
+                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
+        this->touchMargin = Globals::layout->field_0x80_touchMargin;
+        break;
+    }
+    case 15: {
+        Globals::Canvas->Image2DCreate(1342, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(1341, (unsigned int &) this->imgFrameTL);
+        unsigned short language = GameText::getLanguage();
+        float lineFactor;
+        if (language < 16 && ((1 << language) & 0x8c00))
+            lineFactor = 1.0f;
+        else
+            lineFactor = language == 14 ? 1.0f : 1.5f;
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
+        this->textOffsetY = (int) ((float) (this->height / 2) +
+                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
+        this->touchMargin = Globals::layout->field_0x80_touchMargin;
+        break;
+    }
+    case 16: {
+        this->imgFrameL = subId;
+        Globals::Canvas->Image2DCreate(3001, (unsigned int &) this->imgFrameTL);
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->imgFrameL) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->imgFrameL) / 2;
+        break;
+    }
+    case 17: {
+        Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->imgFrameTL);
+        unsigned short language = GameText::getLanguage();
+        float lineFactor;
+        if (language < 16 && ((1 << language) & 0x8c00))
+            lineFactor = 1.0f;
+        else
+            lineFactor = language == 14 ? 1.0f : 1.5f;
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
+        this->textOffsetY = (int) ((float) (this->height / 2) +
+                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
+        this->touchMargin = Globals::layout->field_0x80_touchMargin;
+        break;
+    }
+    case 18: {
+        Globals::Canvas->Image2DCreate(3008, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(3009, (unsigned int &) this->imgFrameTL);
+        unsigned short language = GameText::getLanguage();
+        float lineFactor;
+        if (language < 16 && ((1 << language) & 0x8c00))
+            lineFactor = 1.0f;
+        else
+            lineFactor = language == 14 ? 1.0f : 1.5f;
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
+        this->textOffsetY = (int) ((float) (this->height / 2) +
+                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
+        this->touchMargin = Globals::layout->field_0x80_touchMargin;
+        break;
+    }
+    case 19: {
+        this->imgFrameL = subId;
+        this->imgFrameTL = this->image;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->imgFrameL) / 2;
+        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->imgFrameL) / 2;
+        break;
+    }
+    case 20: {
+        Globals::Canvas->Image2DCreate(8046, (unsigned int &) this->imgFrameL);
+        Globals::Canvas->Image2DCreate(8047, (unsigned int &) this->imgFrameTL);
+        unsigned short language = GameText::getLanguage();
+        float lineFactor;
+        if (language < 16 && ((1 << language) & 0x8c00))
+            lineFactor = 1.0f;
+        else
+            lineFactor = language == 14 ? 1.0f : 1.5f;
+        this->imgFrameBL = this->imgFrameTL;
+        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
+        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
+        this->layoutHeight = this->height;
+        this->width = w;
+        this->leftWidth = w;
+        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
+        this->textOffsetY = (int) ((float) (this->height / 2) +
+                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
+        this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
     }
     default: {
-        const int *frames = Globals::iPad ? g_TB_frameImagesTablet[kind] : g_TB_frameImagesPhone[kind];
-        Globals::Canvas->Image2DCreate(frames[0], (unsigned int &) this->imgFrameL);
-        Globals::Canvas->Image2DCreate(frames[1], (unsigned int &) this->imgFrameM);
-        Globals::Canvas->Image2DCreate(frames[2], (unsigned int &) this->imgFrameR);
-        Globals::Canvas->Image2DCreate(frames[3], (unsigned int &) this->imgFrameTL);
-        Globals::Canvas->Image2DCreate(frames[4], (unsigned int &) this->imgFrameT);
-        Globals::Canvas->Image2DCreate(frames[5], (unsigned int &) this->imgFrameTR);
-        Globals::Canvas->Image2DCreate(frames[6], (unsigned int &) this->imgFrameBL);
-        Globals::Canvas->Image2DCreate(frames[7], (unsigned int &) this->imgFrameB);
-        Globals::Canvas->Image2DCreate(frames[8], (unsigned int &) this->imgFrameBR);
+        if (Globals::iPad) {
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][0], (unsigned int &) this->imgFrameL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][1], (unsigned int &) this->imgFrameM);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][2], (unsigned int &) this->imgFrameR);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][3], (unsigned int &) this->imgFrameTL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][4], (unsigned int &) this->imgFrameT);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][5], (unsigned int &) this->imgFrameTR);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][6], (unsigned int &) this->imgFrameBL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][7], (unsigned int &) this->imgFrameB);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesTablet[kind][8], (unsigned int &) this->imgFrameBR);
+        } else {
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][0], (unsigned int &) this->imgFrameL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][1], (unsigned int &) this->imgFrameM);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][2], (unsigned int &) this->imgFrameR);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][3], (unsigned int &) this->imgFrameTL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][4], (unsigned int &) this->imgFrameT);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][5], (unsigned int &) this->imgFrameTR);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][6], (unsigned int &) this->imgFrameBL);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][7], (unsigned int &) this->imgFrameB);
+            Globals::Canvas->Image2DCreate(g_TB_frameImagesPhone[kind][8], (unsigned int &) this->imgFrameBR);
+        }
         this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameTL);
         this->leftWidth = Globals::Canvas->GetImage2DWidth(this->imgFrameTL);
         this->midWidth = Globals::Canvas->GetImage2DWidth(this->imgFrameT);
@@ -342,39 +460,6 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         break;
     }
     }
-    goto done;
-
-imageButton: {
-        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
-        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetImage2DWidth(this->imgFrameL) / 2;
-        this->textOffsetY = this->height / 2 - Globals::Canvas->GetImage2DHeight(this->imgFrameL) / 2;
-        goto done;
-    }
-
-labelledButton: {
-        unsigned short language = GameText::getLanguage();
-        float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
-            lineFactor = 1.0f;
-        else
-            lineFactor = language == 14 ? 1.0f : 1.5f;
-        this->imgFrameBL = this->imgFrameTL;
-        this->height = Globals::Canvas->GetImage2DHeight(this->imgFrameL);
-        int w = Globals::Canvas->GetImage2DWidth(this->imgFrameL);
-        this->layoutHeight = this->height;
-        this->width = w;
-        this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height / 2) +
-                                   lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
-        this->touchMargin = Globals::layout->field_0x80_touchMargin;
-    }
-
-done:
     this->setPosition(x, y, flags0);
 }
 
