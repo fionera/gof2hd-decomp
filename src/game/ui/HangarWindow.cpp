@@ -21,87 +21,6 @@
 #include "game/menu/ModStation.h"
 
 
-void Status_replaceHash(...);
-
-static inline int IDIV(int a, int b) { return a / b; }
-static inline unsigned int UDIV(unsigned int a, unsigned int b) { return a / b; }
-
-static inline unsigned char *ApplicationManager_GetApplicationData() { return (unsigned char *)Globals::appManager->GetApplicationData(); }
-
-void Status_changeCredits(void *globals); // lint: void_ptr cross-file shim, mangled param type
-
-float VectorSignedToFloat(int v, int mode);
-
-void TouchButton_ctor_text(void *btn, void *text, int a, int b, int c, char k); // lint: void_ptr cross-file shim, mangled param type
-
-// lint: void_ptr cross-file shim, mangled param type
-
-void TouchButton_ctor_text2(void *btn, void *text, int a, int b, int c, int d, char k); // lint: void_ptr cross-file shim, mangled param type
-
-// lint: void_ptr cross-file shim, mangled param type
-
-void TouchButton_ctor_img(void *btn, void *img, int a, int b, int c, int d, char k, char m); // lint: void_ptr cross-file shim, mangled param type
-
-// lint: void_ptr cross-file shim, mangled param type
-
-void TouchButton_ctor_img2(void *btn, void *imgA, void *imgB, int a, int b, int c, char k); // lint: void_ptr cross-file shim, mangled param type
-
-// lint: void_ptr cross-file shim, mangled param type
-
-void TouchButton_getPosition(void *btn, float *x, float *y); // lint: void_ptr cross-file shim, mangled param type
-
-static Globals **g_hw_globals;
-static Layout **g_hw_layout;
-static int *g_hw_screenWidth;
-static int *g_hw_screenHeight;
-static AbyssEngine::ImageFont **g_hw_font;
-static RecordHandler **g_hw_recordHandler;
-static uint8_t *g_hw_optionFlags;
-static uint8_t *g_hw_blackMarketHintFlag;
-static uint8_t *g_hw_introHintFlag;
-static int *g_hw_headerTextId;
-static int *g_hw_shipNameBase;
-static int *g_hw_itemNameBase;
-static float g_hw_lineScale;
-static unsigned int *g_hw_modStationId;
-static int *g_hw_bpDoneTextId;
-static int *g_hw_notEnoughTextId;
-static int *g_hw_helpTextId;
-static int *g_hw_sellShipTextId;
-static int *g_hw_baseTextId;
-static FModSound **g_hw_sound = &Globals::sound;
-static int *g_hw_bpTextId;
-static int *g_hw_buyTextId;
-static int *g_hw_buyTextId2;
-static char *g_hw_buyFlag;
-static int *g_hw_buyWidth;
-static int *g_hw_buyHeight;
-static unsigned char **g_hw_itemFlags;
-static int *g_hw_sellTextId1;
-static int *g_hw_sellTextId2;
-static int *g_hw_routesTextId;
-static int *g_hw_bpStations;
-static int *g_hw_unsaleableTextId;
-static int *g_hw_slotMsgTextId;
-static int *g_hw_buyBaseTextId;
-static int *g_hw_sellMsgTextId1;
-static int *g_hw_sellMsgTextId2;
-static int *g_hw_equipTextId;
-static int *g_hw_freeCreditsTextId;
-static int **g_hw_posXArray;
-static int **g_hw_posYArray;
-static unsigned int **g_hw_imageCountSlot;
-static uint8_t *g_hw_specialModeFlag;
-static uint8_t *g_hw_listModeFlag;
-static float g_hw_posScale;
-
-static const char hw_rnd_empty[1] = "", hw_rnd_a[1] = "", hw_rnd_b[1] = "",
-        hw_rnd_c[1] = "", hw_rnd_d[1] = "", hw_rnd_e[1] = "", hw_rnd_x[1] = "";
-static const char hw_buy_yes[1] = "", hw_buy_no[1] = "", hw_buy_icon[1] = "";
-static const char hw_buy2_yes[1] = "", hw_buy2_no[1] = "", hw_buy2_icon[1] = "";
-static const char hw_init_buy[1] = "", hw_init_sell[1] = "", hw_init_lbl[1] = "",
-        hw_init_more[1] = "", hw_init_back[1] = "", hw_init_help[1] = "";
-
 // Credits granted by the five free-credit offers (index 0 is the "rate us" entry without reward).
 static const int FREE_CREDIT_AMOUNTS[6] = {0, 7500, 5000, 5000, 5000, 7500};
 
@@ -1233,7 +1152,7 @@ bool HangarWindow::OnTouchBegin(int touch, int coord) {
 
 int HangarWindow::highlightItem(ListItem *item) {
     if (item != nullptr && item->isSelectable() != 0) {
-        (*g_hw_sound)->play(0x7c, nullptr, nullptr, 0);
+        Globals::sound->play(0x7c, nullptr, nullptr, 0);
         unsigned flag = 0;
         if (this->selectedItem != item) {
             flag = item->isTextButton() ^ 1;
@@ -2113,7 +2032,7 @@ void HangarWindow::demountItem(Item *item, int slot) {
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
-    (*g_hw_sound)->play(0x60, nullptr, nullptr, 0.0f);
+    Globals::sound->play(0x60, nullptr, nullptr, 0.0f);
 }
 
 void HangarWindow::mountItem(Item *item) {
@@ -2162,7 +2081,7 @@ void HangarWindow::mountItem(Item *item) {
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
-    (*g_hw_sound)->play(0x62, nullptr, nullptr, 0.0f);
+    Globals::sound->play(0x62, nullptr, nullptr, 0.0f);
 }
 
 void HangarWindow::showCreditsBuyWindow() {
