@@ -18,8 +18,7 @@ namespace AbyssEngine {
         float alpha;
         uint32_t field_0x4c;
         int64_t timestamp;
-        uint32_t channelFlags;
-        uint32_t channelFlagsHi;
+        uint64_t channels;  // bit mask of the animated channels this key sets
 
         // Defined inline so the complete-object ctor (C1) folds into the base-object C2 the
         // original exports (see docs/VALIDATION.md).
@@ -28,8 +27,7 @@ namespace AbyssEngine {
             __builtin_memset(this, 0, 0x48);
             scale = AEMath::Vector{1.0f, 1.0f, 1.0f};
             localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
-            channelFlags = 0;
-            channelFlagsHi = 0;
+            channels = 0;
             alpha = 1.0f;
         }
     };
@@ -43,8 +41,7 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(KeyFrame, localRotation) == 0x3c, "KeyFrame::localRotation");
     static_assert(__builtin_offsetof(KeyFrame, alpha) == 0x48, "KeyFrame::alpha");
     static_assert(__builtin_offsetof(KeyFrame, timestamp) == 0x50, "KeyFrame::timestamp");
-    static_assert(__builtin_offsetof(KeyFrame, channelFlags) == 0x58, "KeyFrame::channelFlags");
-    static_assert(__builtin_offsetof(KeyFrame, channelFlagsHi) == 0x5c, "KeyFrame::channelFlagsHi");
+    static_assert(__builtin_offsetof(KeyFrame, channels) == 0x58, "KeyFrame::channels");
 #endif
 }
 

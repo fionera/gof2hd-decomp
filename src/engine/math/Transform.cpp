@@ -170,10 +170,8 @@ namespace AbyssEngine {
             float a = (float) (keyTime - next->timestamp);
             float b = (float) (keyTime - prev->timestamp);
             float t = 1.0f - a / b;
-            uint flags0 = key->channelFlags;
-            uint flags1 = key->channelFlagsHi;
-            uint next0 = next->channelFlags;
-            uint next1 = next->channelFlagsHi;
+            ulonglong flags0 = key->channels;
+            ulonglong next0 = next->channels;
 
             if ((flags0 & 0x40) && !(next0 & 0x40))
                 next->rotation.x = lerp_float(prev->rotation.x, key->rotation.x, t);
@@ -213,8 +211,7 @@ namespace AbyssEngine {
                 next->localScale.y = lerp_float(prev->localScale.y, key->localScale.y, t);
             if ((flags0 & 0x8000) && !(next0 & 0x8000))
                 next->localScale.z = lerp_float(prev->localScale.z, key->localScale.z, t);
-            next->channelFlags = next0 | flags0;
-            next->channelFlagsHi = next1 | flags1;
+            next->channels = next0 | flags0;
             ++i;
         }
 
@@ -223,29 +220,29 @@ namespace AbyssEngine {
         )
         {
             KeyFrame *dst = items[index];
-            uint flags0 = key->channelFlags;
-            if ((flags0 & 0x40) && !(dst->channelFlags & 0x40)) dst->rotation.x = key->rotation.x;
-            if ((flags0 & 0x80) && !(dst->channelFlags & 0x80)) dst->rotation.y = key->rotation.y;
-            if ((flags0 & 0x100) && !(dst->channelFlags & 0x100)) dst->rotation.z = key->rotation.z;
-            if ((flags0 & 0x1) && !(dst->channelFlags & 0x1)) dst->translation.x = key->translation.x;
-            if ((flags0 & 0x2) && !(dst->channelFlags & 0x2)) dst->translation.y = key->translation.y;
-            if ((flags0 & 0x4) && !(dst->channelFlags & 0x4)) dst->translation.z = key->translation.z;
-            if ((flags0 & 0x8) && !(dst->channelFlags & 0x8)) dst->scale.x = key->scale.x;
-            if ((flags0 & 0x10) && !(dst->channelFlags & 0x10)) dst->scale.y = key->scale.y;
-            if ((flags0 & 0x20) && !(dst->channelFlags & 0x20)) dst->scale.z = key->scale.z;
-            if ((flags0 & 0x200) && !(dst->channelFlags & 0x200)) dst->alpha = key->alpha;
-            if ((flags0 & 0x10000) && !(dst->channelFlags & 0x10000))
+            ulonglong flags0 = key->channels;
+            if ((flags0 & 0x40) && !(dst->channels & 0x40)) dst->rotation.x = key->rotation.x;
+            if ((flags0 & 0x80) && !(dst->channels & 0x80)) dst->rotation.y = key->rotation.y;
+            if ((flags0 & 0x100) && !(dst->channels & 0x100)) dst->rotation.z = key->rotation.z;
+            if ((flags0 & 0x1) && !(dst->channels & 0x1)) dst->translation.x = key->translation.x;
+            if ((flags0 & 0x2) && !(dst->channels & 0x2)) dst->translation.y = key->translation.y;
+            if ((flags0 & 0x4) && !(dst->channels & 0x4)) dst->translation.z = key->translation.z;
+            if ((flags0 & 0x8) && !(dst->channels & 0x8)) dst->scale.x = key->scale.x;
+            if ((flags0 & 0x10) && !(dst->channels & 0x10)) dst->scale.y = key->scale.y;
+            if ((flags0 & 0x20) && !(dst->channels & 0x20)) dst->scale.z = key->scale.z;
+            if ((flags0 & 0x200) && !(dst->channels & 0x200)) dst->alpha = key->alpha;
+            if ((flags0 & 0x10000) && !(dst->channels & 0x10000))
                 dst->localRotation.x = key->localRotation.x;
-            if ((flags0 & 0x20000) && !(dst->channelFlags & 0x20000))
+            if ((flags0 & 0x20000) && !(dst->channels & 0x20000))
                 dst->localRotation.y = key->localRotation.y;
-            if ((flags0 & 0x40000) && !(dst->channelFlags & 0x40000))
+            if ((flags0 & 0x40000) && !(dst->channels & 0x40000))
                 dst->localRotation.z = key->localRotation.z;
-            if ((flags0 & 0x400) && !(dst->channelFlags & 0x400)) dst->localTranslation.x = key->localTranslation.x;
-            if ((flags0 & 0x800) && !(dst->channelFlags & 0x800)) dst->localTranslation.y = key->localTranslation.y;
-            if ((flags0 & 0x1000) && !(dst->channelFlags & 0x1000)) dst->localTranslation.z = key->localTranslation.z;
-            if ((flags0 & 0x2000) && !(dst->channelFlags & 0x2000)) dst->localScale.x = key->localScale.x;
-            if ((flags0 & 0x4000) && !(dst->channelFlags & 0x4000)) dst->localScale.y = key->localScale.y;
-            if ((flags0 & 0x8000) && !(dst->channelFlags & 0x8000)) dst->localScale.z = key->localScale.z;
+            if ((flags0 & 0x400) && !(dst->channels & 0x400)) dst->localTranslation.x = key->localTranslation.x;
+            if ((flags0 & 0x800) && !(dst->channels & 0x800)) dst->localTranslation.y = key->localTranslation.y;
+            if ((flags0 & 0x1000) && !(dst->channels & 0x1000)) dst->localTranslation.z = key->localTranslation.z;
+            if ((flags0 & 0x2000) && !(dst->channels & 0x2000)) dst->localScale.x = key->localScale.x;
+            if ((flags0 & 0x4000) && !(dst->channels & 0x4000)) dst->localScale.y = key->localScale.y;
+            if ((flags0 & 0x8000) && !(dst->channels & 0x8000)) dst->localScale.z = key->localScale.z;
         }
     }
 
@@ -714,13 +711,11 @@ namespace AbyssEngine {
                 key->localScale = this->keyFrames[index - 1]->localScale;
                 key->localRotation = this->keyFrames[index - 1]->localRotation;
             }
-            key->channelFlags |= this->keyFrames[index - 1]->channelFlags;
-            key->channelFlagsHi |= this->keyFrames[index - 1]->channelFlagsHi;
+            key->channels |= this->keyFrames[index - 1]->channels;
         }
 
     store:
-        key->channelFlags |= (uint) flags;
-        key->channelFlagsHi |= (uint) ((ulonglong) flags >> 32);
+        key->channels |= flags;
         switch (flags) {
             case 0x1:
                 key->translation.x = values[0];
@@ -847,8 +842,7 @@ namespace AbyssEngine {
             key->rotation = this->keyFrames[index - 1]->rotation;
             KeyFrame *previous = this->keyFrames[index - 1];
             key->timestamp = previous->timestamp;
-            key->channelFlags = previous->channelFlags;
-            key->channelFlagsHi = previous->channelFlagsHi;
+            key->channels = previous->channels;
         }
 
         // Store the incoming channel values on the new key.
@@ -957,8 +951,7 @@ namespace AbyssEngine {
         }
 
         key->timestamp = time;
-        key->channelFlagsHi |= (uint) ((ulonglong) flags >> 32);
-        key->channelFlags |= (uint) flags;
+        key->channels |= flags;
 
         if (this->keyFrames.size() == 0) {
             ArrayAdd(key, this->keyFrames);
@@ -972,14 +965,12 @@ namespace AbyssEngine {
                 break;
             if (i == 0)
                 continue;
-            if (((this->keyFrames[i]->channelFlags & (uint) flags) |
-                 (this->keyFrames[i]->channelFlagsHi & (uint) ((ulonglong) flags >> 32))) != 0)
+            if ((this->keyFrames[i]->channels & (ulonglong) flags) != 0)
                 continue;
             KeyFrame *before = this->keyFrames[i - 1];
             float t = (float) (this->keyFrames[i]->timestamp - before->timestamp) /
                       (float) (time - before->timestamp);
-            this->keyFrames[i]->channelFlags |= (uint) flags;
-            this->keyFrames[i]->channelFlagsHi |= (uint) ((ulonglong) flags >> 32);
+            this->keyFrames[i]->channels |= flags;
             switch (flags) {
                 case 0x1:
                     this->keyFrames[i]->translation.x = before->translation.x + t * (key->translation.x - before->translation.x);
@@ -1063,8 +1054,7 @@ namespace AbyssEngine {
 
         if (i == this->keyFrames.size()) {
             // Appending: inherit every channel the new key does not set from the last key.
-            uint lo = key->channelFlags;
-            uint hi = key->channelFlagsHi;
+            ulonglong lo = key->channels;
             if ((lo & 0x40) == 0)
                 key->rotation.x = this->keyFrames[this->keyFrames.size() - 1]->rotation.x;
             if ((lo & 0x80) == 0)
@@ -1103,8 +1093,7 @@ namespace AbyssEngine {
                 key->localScale.y = this->keyFrames[this->keyFrames.size() - 1]->localScale.y;
             if ((lo & 0x8000) == 0)
                 key->localScale.z = this->keyFrames[this->keyFrames.size() - 1]->localScale.z;
-            key->channelFlags = lo | (uint) flags;
-            key->channelFlagsHi = hi | (uint) ((ulonglong) flags >> 32);
+            key->channels = lo | flags;
             ArrayAdd(key, this->keyFrames);
             return;
         }
@@ -1112,8 +1101,7 @@ namespace AbyssEngine {
         KeyFrame *existing = this->keyFrames[i];
         if (existing->timestamp == time) {
             // Same time: fold the new key into the existing one (additive / multiplicative).
-            uint lo = existing->channelFlags;
-            uint hi = existing->channelFlagsHi;
+            ulonglong lo = existing->channels;
             {
                 float v = key->rotation.x;
                 if ((lo & 0x40) != 0)
@@ -1223,10 +1211,8 @@ namespace AbyssEngine {
                     v = v * existing->localScale.z;
                 existing->localScale.z = v;
             }
-            existing->channelFlags = lo | (uint) flags;
-            existing->channelFlagsHi = hi | (uint) ((ulonglong) flags >> 32);
-            key->channelFlags |= (uint) flags;
-            key->channelFlagsHi |= (uint) ((ulonglong) flags >> 32);
+            existing->channels = lo | flags;
+            key->channels |= flags;
             UpdateKeyFrames(key, i);
             delete key;
             return;
@@ -1249,8 +1235,7 @@ namespace AbyssEngine {
         key->localTranslation = AEMath::VectorLerp(this->keyFrames[i - 1]->localTranslation,
                                                    this->keyFrames[i]->localTranslation, t);
         key->localScale = AEMath::VectorLerp(this->keyFrames[i - 1]->localScale, this->keyFrames[i]->localScale, t);
-        key->channelFlags |= this->keyFrames[i - 1]->channelFlags;
-        key->channelFlagsHi |= this->keyFrames[i - 1]->channelFlagsHi;
+        key->channels |= this->keyFrames[i - 1]->channels;
         switch (flags) {
             case 0x1:
                 key->translation.x = values[0];
