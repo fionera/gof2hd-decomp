@@ -224,9 +224,10 @@ void IParticleSystem::emit(int delta) {
                 pos.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
         }
 
+        int lifeRandom = def.lifeRandom;
         float life = def.lifeBase;
-        if (def.lifeRandom != 0) {
-            life += (float) this->random.nextInt(def.lifeRandom);
+        if (lifeRandom != 0) {
+            life += (float) this->random.nextInt(lifeRandom);
             float uA = uvp[0];
             float uB = uvp[1];
             float vA = uvp[2];
