@@ -192,9 +192,7 @@ static inline int Status_getStation_msc() { return (int)(Globals::status->getSta
 
 static inline int Status_getSystem_msc() { return (int)(Globals::status->getSystem()); }
 
-const int *ModStation_msc_camCoordTable();
 
-const int *ModStation_msc_camRotTable();
 
 // Credit reward per medal grade (none, gold, silver, bronze).
 static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
@@ -632,9 +630,7 @@ static inline void Generator_dtor_oi(Generator *g) { g->~Generator(); }
 static inline void Generator_computerTradeGoods_oi(Generator * g, Station * s) { g->computerTradeGoods(s); }
 static inline int Generator_getShipBuyList_oi(Station * s) { return (int)(Globals::generator->getShipBuyList(s)); }
 
-const int *ModStation_msc_camCoordTable();
 
-const int *ModStation_msc_camRotTable();
 
 unsigned ModStation_oi_cameraHandle();
 
@@ -651,6 +647,10 @@ void ChoiceWindow_set1_oiImpl(ChoiceWindow *cw, int textStr);
 void NewsTicker_build_oiImpl(ModStation * self);
 void DlcMenu_build_oiImpl(ModStation * self);
 
+// Hangar camera key positions per station race (iPad layout).
+static const int gHangarCamPosIPad[30] = {725, 899, -2271, 1630, 1199, -1933, -2934, 1027, -1890, 1759,
+                                          909, -2232, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 1200, 800, -2978, 1759, 909, -2232, 0, 0, 0};
 // Hangar camera key positions per station race (non-iPad layout).
 static const int gHangarCamPos[30] = {1076, 900, -2273, 1787, 1086, -1632, -2247, 1010, -1845, 1800,
                                       800, -1778, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -675,70 +675,72 @@ int Status_holder_frag();
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
 
 ModStation::ModStation() {
+    this->idleBox = nullptr;
+    this->field_0x108 = 0;
+    this->field_0x10c = 0;
+    this->lightDirection.x = 0.0f;
+    this->lightDirection.y = 0.0f;
+    this->lightDirection.z = 0.0f;
     this->dt = 0;
-    reinterpret_cast<uint8_t*>(&this->cameraTween)[3] = 0;
-    reinterpret_cast<uint16_t&>(this->cameraTween) = 0;
+    this->flag_0xb3 = 0;
+    this->flag_0xb0 = 0;
+    this->flag_0xb1 = 0;
     this->stationActive = 0;
     this->flag_0x69 = 0;
     this->state = 100;
-    this->starMap = 0;
-    this->cutScene = 0;
-    this->newsTicker = 0;
-    reinterpret_cast<uint32_t&>(this->cameraTween) = 0;
-    this->dlcMenu = 0;
+    this->starMap = nullptr;
+    this->cutScene = nullptr;
+    this->newsTicker = nullptr;
+    this->cameraTween = nullptr;
+    this->dlcMenu = nullptr;
     this->activeMission = 0;
-    this->radioMessages = 0;
+    this->radioMessages = nullptr;
+    this->flag_0xdc = 0;
+    this->flag_0xdd = 0;
     this->flag_0x6e = 0;
     this->pendingHangarClose = 0;
-    this->m_pDialogueWindow = 0;
-    this->choiceWindow = 0;
+    this->flag_0x148 = 0;
+    this->choiceWindow = nullptr;
+    this->spaceLounge = nullptr;
+    this->hangarWindow = nullptr;
+    this->statusWindow = nullptr;
+    this->m_pDialogueWindow = nullptr;
+    this->dialogueWindow = nullptr;
+    this->medalChoiceWindow = nullptr;
+    this->buttonRow = nullptr;
+    this->buttonLaunch = nullptr;
+    this->buttonCredits = nullptr;
+    this->scrollBox = nullptr;
+    this->dialogueMission = nullptr;
 
-    Station *st = (Station *) Status_getStation_msc();
+    Matrix nearKey;
     int race;
-    if (st->getIndex() == 0x65) {
+    if (Globals::status->getStation()->getIndex() == 101) {
         race = 8;
+    } else if (Globals::status->getStation()->getIndex() == 100) {
+        race = 7;
     } else {
-        st = (Station *) Status_getStation_msc();
-        if (st->getIndex() == 100) {
-            race = 7;
-        } else {
-            race = ((SolarSystem *) (long) Status_getSystem_msc())->getRace();
-        }
+        race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
     }
 
-    AbyssEngine::EaseInOutMatrix *cam;
-    {
-        const int *coord = ModStation_msc_camCoordTable();
-        const int *rot = ModStation_msc_camRotTable();
+    this->camKeyX = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3];
+    this->camKeyY = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1];
+    this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
+    MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
+    const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
+    MatrixSetRotation(nearKey, gHangarCamPitch[race], yawTable[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
+    Matrix farKey;
+    MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
+                         (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1],
+                         (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2]);
+    MatrixSetRotation(farKey, gHangarCamPitch[race], (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
+                      (AbyssEngine::AEMath::RotationOrder) 2);
+    this->cameraTween = new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
+    Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), nearKey);
 
-        int ix = race * 3, iy = race * 3 + 1, iz = race * 3 + 2;
-        float kx = VectorSignedToFloat(coord[ix], 0);
-        float ky = VectorSignedToFloat(coord[iy], 0);
-        float kz = VectorSignedToFloat(coord[iz], 0);
-        float yaw = VectorSignedToFloat(rot[race], 0);
-
-        this->camCoordX = kx;
-        this->camCoordY = ky;
-        this->camCoordZ = kz;
-
-        Matrix nearKey, farKey;
-        MatrixSetTranslation(nearKey, kx, ky, kz);
-        MatrixSetRotation(nearKey, 0.0f, yaw, 0.0f);
-
-        MatrixSetTranslation(farKey, kx, ky, kz);
-        MatrixSetRotation(farKey, 0.0f, yaw, 0.0f);
-
-        cam = new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
-    }
-    this->cameraTween = cam;
-
-    unsigned camHandle = *(unsigned *) Globals::Canvas;
-    AbyssEngine::Matrix *cur = (AbyssEngine::Matrix *) Globals::Canvas->CameraGetCurrent();
-    Globals::Canvas->CameraSetLocal(camHandle, *cur);
-
-    this->easeX = new AbyssEngine::EaseInOut();
-    this->easeY = new AbyssEngine::EaseInOut();
-    this->easeZ = new AbyssEngine::EaseInOut();
+    this->easeX = new AbyssEngine::EaseInOut(this->camKeyX, this->camKeyX);
+    this->easeY = new AbyssEngine::EaseInOut(this->camKeyY, this->camKeyY);
+    this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ, this->camKeyZ);
 }
 
 ModStation::~ModStation() {
@@ -1221,7 +1223,7 @@ int ModStation::OnInitialize() {
             this->activeTouch = nullptr;
             this->flag_0xb3 = 0;
             this->loadTick = 0;
-            reinterpret_cast<uint8_t &>(this->field_0x148) = 0;
+            this->flag_0x148 = 0;
             this->state = 1;
             break;
         }

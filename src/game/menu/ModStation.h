@@ -155,7 +155,8 @@ public:
     AbyssEngine::EaseInOut *easeX;
     AbyssEngine::EaseInOut *easeY;
     AbyssEngine::EaseInOut *easeZ;
-    uint32_t field_0x148;
+    uint8_t flag_0x148;
+    uint8_t _pad_0x149[3];
     uint8_t field_0x14c[0x278 - 0x14c];
     float camCoordX;
     float camCoordY;
@@ -258,7 +259,7 @@ static_assert(__builtin_offsetof(ModStation, flag_0x118) == 0x118, "");
 static_assert(__builtin_offsetof(ModStation, lightDirection) == 0x11c, "");
 static_assert(__builtin_offsetof(ModStation, savedPostEffect) == 0x12c, "");
 static_assert(__builtin_offsetof(ModStation, camKeyX) == 0x130, "");
-static_assert(__builtin_offsetof(ModStation, field_0x148) == 0x148, "");
+static_assert(__builtin_offsetof(ModStation, flag_0x148) == 0x148, "");
 static_assert(__builtin_offsetof(ModStation, field_0x14c) == 0x14c, "");
 #endif
 
