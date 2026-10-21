@@ -837,9 +837,8 @@ void SpaceLounge::startChat() {
                 message = *Globals::gameText->getText(agent->field_0x28);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 message += String(" ") + *Globals::gameText->getText(877);
-                message = Globals::status->replaceHash(
-                    message, String(((SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex()))->getName(), false),
-                    String("#S"));
+                SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
+                message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
                 message = Globals::status->replaceHash(
                     message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
             } else {
