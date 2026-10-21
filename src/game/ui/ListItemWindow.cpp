@@ -472,13 +472,12 @@ void ListItemWindow::update(int frameTime) {
 
     int idx = this->item->ship->getIndex();
 
-    float baseAngle = this->baseAngle;
+    float tableAngle = g_liw_u_angleTable[idx] + this->baseAngle;
     this->previewAngle = (float) this->dragAccum / g_liw_u_angleScale;
 
     PaintCanvas **canvas = &Globals::Canvas;
     Matrix *loc = (Matrix *) (*canvas)->TransformGetLocal(this->shipTransform);
     AbyssEngine::AEMath::MatrixSetRotation(*loc, 0.0f, this->previewAngle, 0.0f);
-    float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
     loc = (Matrix *) (*canvas)->TransformGetLocal(this->shipTransform);
     AbyssEngine::AEMath::MatrixSetScaling(*loc, tableAngle, tableAngle, tableAngle);
 

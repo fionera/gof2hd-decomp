@@ -7,6 +7,10 @@
 #include "engine/math/AEMath.h"
 
 namespace AbyssEngine {
+    class Camera;
+    float CameraSetPerspective(float fov, float aspect, float nearPlane, float farPlane, float param5,
+                               Camera *cam);
+
     class Camera {
     public:
         float position[3];
@@ -18,7 +22,11 @@ namespace AbyssEngine {
         float frustumInvCosX;
         float frustumInvCosY;
 
-        Camera(float fov, float aspect, float nearPlane, float farPlane, float param5);
+        // Inline (weak C2 emitted in PaintCanvas.cpp right after CameraCreate, as in the original).
+        // Original omits the redundant projection identity-init (CameraSetPerspective overwrites it).
+        Camera(float fov, float aspect, float nearPlane, float farPlane, float param5) {
+            CameraSetPerspective(fov, aspect, nearPlane, farPlane, param5, this);
+        }
     };
 
 #if __SIZEOF_POINTER__ == 4

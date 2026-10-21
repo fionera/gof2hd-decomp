@@ -22,13 +22,13 @@ namespace AbyssEngine {
 
         String(const String &other, bool reverse = false);
 
-        explicit String(char c);
+        explicit String(char c) : data(nullptr) { Set((long long) c); }
 
-        explicit String(int v);
+        explicit String(int v) : data(nullptr) { Set((long long) v); }
 
-        explicit String(float v);
+        explicit String(float v) : data(nullptr) { Set(v); }
 
-        explicit String(long long v);
+        explicit String(long long v) : data(nullptr) { Set(v); }
 
         virtual ~String();
 

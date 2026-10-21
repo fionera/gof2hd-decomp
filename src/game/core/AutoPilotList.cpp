@@ -1,4 +1,5 @@
 #include "game/core/AutoPilotList.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/core/GameText.h"
 #include "engine/render/PaintCanvas.h"
