@@ -32,7 +32,7 @@ namespace AbyssEngine {
                                Camera *camera);
     void CameraSetPerspective(float fov, float aspect, float width, float height,
                                Camera *camera);
-    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
+    bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
                                     Camera *camera);
     int CameraIsPointinViewFrustum(const AEMath::Vector &point, AEMath::Matrix *view, Camera *camera);
     void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTextures);
@@ -2189,7 +2189,7 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     out = this->materials.count - 1;
 }
 
-int PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
+bool PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
     if (radius == 0.0f || this->currentCamera >= this->cameras.count) {
         return 1;
     }

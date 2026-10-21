@@ -8,7 +8,7 @@
 static bool g_transform_matrix_flag = false;
 
 namespace AbyssEngine {
-    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
+    bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
                                     AEMath::Matrix *matrix, Camera *camera);
 
     void Transform::SetCurrentAnimationTime(longlong value) {

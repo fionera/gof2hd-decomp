@@ -107,16 +107,16 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
     for (int i = 0; i < this->rows; i++) {
         this->matrices[i] = Matrix();
     }
-    this->enabledFlags = new uint8_t[this->rows];
+    this->enabledFlags = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->enabledFlags[i] = 1;
+        this->enabledFlags[i] = true;
     }
-    this->visibleFlags = new uint8_t[this->rows];
+    this->visibleFlags = new bool[this->rows];
     for (int i = 0; i < this->rows; i++) {
-        this->visibleFlags[i] = 1;
+        this->visibleFlags[i] = true;
     }
-    this->dirty = 0;
     this->flags = flags;
+    this->dirty = 0;
     this->initialized = 0;
 }
 
@@ -190,10 +190,10 @@ void MeshMerger::render() {
 void MeshMerger::update() {
     for (int i = 0; i < this->rows; i++) {
         Mesh *mesh = this->transformedMeshes[i];
-        int visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
+        bool visible = this->canvas->CameraIsSphereinViewFrustum(*(const Vector *) &mesh->boundsCenterX,
                                                                  mesh->boundsRadius);
         if (visible != this->visibleFlags[i]) {
-            this->visibleFlags[i] = (uint8_t) visible;
+            this->visibleFlags[i] = visible;
             if (this->enabledFlags[i] != 0)
                 this->dirty = 1;
         }

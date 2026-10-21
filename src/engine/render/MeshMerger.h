@@ -30,8 +30,8 @@ public:
     Matrix *matrices;
     Mesh *mergedMesh;
     int8_t *lods;
-    uint8_t *enabledFlags;
-    uint8_t *visibleFlags;
+    bool *enabledFlags;
+    bool *visibleFlags;
     int cols;
     uint8_t dirty;
 

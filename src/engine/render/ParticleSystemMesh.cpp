@@ -135,14 +135,14 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     this->pointCount = quads << 2;
 
     if ((flags & 0x8000) == 0) {
-        this->particleVelocities = new Vector[particleCount]();
+        this->particleVelocities = new Vector[particleCount];
     } else {
         if (sets.size() != 0) {
             int set = (int) sets.data()[0];
             if (set != -1 && *(float *) ((char *) ParticleSettingsRef::cur + set * 160 + 0x40) > 0.0f)
                 this->pointCount = (quads << 2) + (stride << 2);
         }
-        this->particleVelocities = new Vector[particleCount * edgeCount * 2]();
+        this->particleVelocities = new Vector[particleCount * edgeCount * 2];
     }
     this->field_0x78 = 0;
     this->field_0x7c = 0;
