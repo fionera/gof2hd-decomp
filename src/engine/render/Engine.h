@@ -106,13 +106,13 @@ namespace AbyssEngine {
         float normalMatrix[9];
 
         LightColor lightDiffuse;
-        uint8_t _pad0x238[16];
+        LightColor lightDiffuse1;   // 0x238: second light (GL_LIGHT1)
 
         LightColor lightSpecular;
-        uint8_t _pad0x258[16];
+        LightColor lightSpecular1;  // 0x258
 
         LightColor lightAmbient;
-        uint8_t _pad0x278[16];
+        LightColor lightAmbient1;   // 0x278
 
         float sceneAmbient[4];
 

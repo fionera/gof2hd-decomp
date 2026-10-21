@@ -1263,53 +1263,54 @@ void Engine::SetEyePosition(float x, float y, float z) {
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {
-    Engine * self = this;
-    const float *m = matrix;
     if (Engine::enableShader != 0) {
-        self->normalMatrix[0] = m[0];
-        self->normalMatrix[1] = m[4];
-        self->normalMatrix[2] = m[8];
-        self->normalMatrix[3] = m[1];
-        self->normalMatrix[4] = m[5];
-        self->normalMatrix[5] = m[9];
-        self->normalMatrix[6] = m[2];
-        self->normalMatrix[7] = m[6];
-        self->normalMatrix[8] = m[10];
-        float gl[16] = {
-            m[0], m[4], m[8], 0.0f,
-            m[1], m[5], m[9], 0.0f,
-            m[2], m[6], m[10], 0.0f,
-            m[3], m[7], m[11], 1.0f,
-        };
-        memcpy(self->modelMatrixGL, gl, 0x40);
-        Vector tmp;
-        if (self->lightDirty[0] == 0.0f) {
-            tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                matrix, self->field_0x468);
-            tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
-            self->lightDir = tmp;
+        const float *m = matrix.m;
+        this->normalMatrix[0] = m[0];
+        this->normalMatrix[1] = m[4];
+        this->normalMatrix[2] = m[8];
+        this->normalMatrix[3] = m[1];
+        this->normalMatrix[4] = m[5];
+        this->normalMatrix[5] = m[9];
+        this->normalMatrix[6] = m[2];
+        this->normalMatrix[7] = m[6];
+        this->normalMatrix[8] = m[10];
+        float *gl = this->modelMatrixGL;
+        gl[0] = m[0];
+        gl[1] = m[4];
+        gl[2] = m[8];
+        gl[3] = 0.0f;
+        gl[4] = m[1];
+        gl[5] = m[5];
+        gl[6] = m[9];
+        gl[7] = 0.0f;
+        gl[8] = m[2];
+        gl[9] = m[6];
+        gl[10] = m[10];
+        gl[11] = 0.0f;
+        gl[12] = m[3];
+        gl[13] = m[7];
+        gl[14] = m[11];
+        gl[15] = 1.0f;
+        if (this->lightDirty[0] == 0.0f) {
+            this->lightDir = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x468));
         } else {
-            self->lightDir = self->field_0x468;
+            this->lightDir = this->field_0x468;
         }
-        if (self->lightCount > 1) {
-            if (self->lightDirty[1] == 0.0f) {
-                tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                    matrix, self->field_0x474);
-                tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
-                self->field_0x33c = tmp;
+        if (this->lightCount > 1) {
+            if (this->lightDirty[1] == 0.0f) {
+                this->field_0x33c = AbyssEngine::AEMath::VectorNormalize(
+                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x474));
             } else {
-                self->field_0x33c = self->field_0x474;
+                this->field_0x33c = this->field_0x474;
             }
         }
-        self->ShaderUpdate();
-        tmp = AbyssEngine::AEMath::MatrixInverseTransformVector(
-            matrix, self->eyePosition);
-        self->lightColor = tmp;
-        self->lightColor.x /= m[12];
-        self->lightColor.y /= m[13];
-        self->lightColor.z /= m[14];
+        this->ShaderUpdate();
+        this->lightColor = AbyssEngine::AEMath::MatrixInverseTransformVector(matrix, this->eyePosition);
+        this->lightColor.x /= m[12];
+        this->lightColor.y /= m[13];
+        this->lightColor.z /= m[14];
     }
-    return;
 }
 
 void Engine::LightSetLight(unsigned int light) {
@@ -1411,27 +1412,66 @@ void Engine::ResetLightParam() {
     this->materialDiffuse[0] = 0.8f;
     this->materialDiffuse[1] = 0.8f;
     this->materialDiffuse[2] = 0.8f;
-    this->materialDiffuse[3] = 0x3f800000;
+    this->materialDiffuse[3] = 1.0f;
     this->materialAmbient[0] = 0.2f;
     this->materialAmbient[1] = 0.2f;
     this->materialAmbient[2] = 0.2f;
-    this->materialAmbient[3] = 0x3f800000;
-    this->materialSpecular[0] = 0;
-    this->materialSpecular[2] = 0x3f800000ULL;
-    this->materialShininess = 0;
+    this->materialAmbient[3] = 1.0f;
+    this->materialSpecular[0] = 0.0f;
+    this->materialSpecular[1] = 0.0f;
+    this->materialSpecular[2] = 0.0f;
+    this->materialSpecular[3] = 1.0f;
+    this->materialShininess = 0.0f;
+
     this->lightAmbient.r = 0.0f;
     this->lightAmbient.g = 0.0f;
     this->lightAmbient.b = 0.0f;
     this->lightAmbient.a = 1.0f;
-
-    Vector up;
-    up.x = 0.0f;
-    up.y = 1.0f;
-    up.z = 0.0f;
-    this->field_0x468 = up;
-    this->field_0x474 = up;
-    this->lightDirty[0] = 0.0f;
-    this->lightDirty[1] = 0.0f;
+    this->lightDiffuse.r = 1.0f;
+    this->lightDiffuse.g = 1.0f;
+    this->lightDiffuse.b = 1.0f;
+    this->lightDiffuse.a = 1.0f;
+    this->lightSpecular.r = 1.0f;
+    this->lightSpecular.g = 1.0f;
+    this->lightSpecular.b = 1.0f;
+    this->lightSpecular.a = 1.0f;
+    this->lightAmbient1.r = 0.0f;
+    this->lightAmbient1.g = 0.0f;
+    this->lightAmbient1.b = 0.0f;
+    this->lightAmbient1.a = 1.0f;
+    this->lightDiffuse1.r = 0.0f;
+    this->lightDiffuse1.g = 0.0f;
+    this->lightDiffuse1.b = 0.0f;
+    this->lightDiffuse1.a = 1.0f;
+    this->lightSpecular1.r = 0.0f;
+    this->lightSpecular1.g = 0.0f;
+    this->lightSpecular1.b = 0.0f;
+    this->lightSpecular1.a = 1.0f;
+    this->sceneAmbient[0] = 0.0f;
+    this->sceneAmbient[1] = 0.0f;
+    this->sceneAmbient[2] = 0.0f;
+    this->sceneAmbient[3] = 1.0f;
+    this->lightAmbientShaded.x = 0.0f;
+    this->lightAmbientShaded.y = 0.0f;
+    this->lightAmbientShaded.z = 0.0f;
+    this->lightSpecularShaded.x = 0.0f;
+    this->lightSpecularShaded.y = 0.0f;
+    this->lightSpecularShaded.z = 0.0f;
+    this->lightDiffuseShaded.x = 0.0f;
+    this->lightDiffuseShaded.y = 0.0f;
+    this->lightDiffuseShaded.z = 0.0f;
+    this->particleAmbient.x = 0.0f;
+    this->particleAmbient.y = 0.0f;
+    this->particleAmbient.z = 0.0f;
+    this->field_0x2fc.x = 0.8f;
+    this->field_0x2fc.y = 0.8f;
+    this->field_0x2fc.z = 0.8f;
+    this->field_0x308.x = 0.0f;
+    this->field_0x308.y = 0.0f;
+    this->field_0x308.z = 0.0f;
+    this->field_0x314.x = 0.0f;
+    this->field_0x314.y = 0.0f;
+    this->field_0x314.z = 0.0f;
 
     if (Engine::enableShader == 0) {
         glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
@@ -1442,7 +1482,23 @@ void Engine::ResetLightParam() {
         glMaterialfv(0x408, 0x1202, this->materialSpecular);
         glMaterialf(0x408, 0x1601, this->materialShininess);
     }
-    return;
+
+    {
+        Vector up;
+        up.x = 0.0f;
+        up.y = 1.0f;
+        up.z = 0.0f;
+        this->field_0x468 = up;
+    }
+    this->lightDirty[0] = 0.0f;
+    {
+        Vector up;
+        up.x = 0.0f;
+        up.y = 1.0f;
+        up.z = 0.0f;
+        this->field_0x474 = up;
+    }
+    this->lightDirty[1] = 0.0f;
 }
 
 void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsigned int light) {
