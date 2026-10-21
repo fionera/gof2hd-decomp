@@ -432,7 +432,51 @@ ModStation::~ModStation() {
 }
 
 void ModStation::leaveStation() {
-    leaveStation();
+    if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad()) {
+        this->choiceWindow->set(*Globals::gameText->getText(204));
+        this->flag_0x63 = 1;
+        return;
+    }
+    int firePower;
+    if (Globals::status->getCurrentCampaignMission() == 6 ||
+        (Globals::status->getCurrentCampaignMission() == 7 &&
+         ((firePower = Globals::status->getShip()->getFirePower(), reinterpret_cast<float &>(firePower) == 0.0f) ||
+          Globals::status->getShip()->getCombinedHP() == Globals::status->getShip()->getBaseHP()))) {
+        // Ship::firePower holds a float; Ship::getFirePower() is declared int in our headers.
+        if (Globals::status->getShip()->hasCargoType(0) || Globals::status->getShip()->hasCargoType(3))
+            this->choiceWindow->set(*Globals::gameText->getText(530));
+        else
+            this->choiceWindow->set(*Globals::gameText->getText(529));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (Globals::status->getCurrentCampaignMission() == 20 &&
+        Globals::status->getStation()->getIndex() ==
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+        this->choiceWindow->set(*Globals::gameText->getText(531));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (Globals::status->getCurrentCampaignMission() == 21 &&
+        Globals::status->getStation()->getIndex() ==
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+        if (!Globals::status->getShip()->hasEquipment(41, 1) && !Globals::status->getShip()->hasEquipment(42, 1) &&
+            !Globals::status->getShip()->hasEquipment(43, 1)) {
+            this->choiceWindow->set(*Globals::gameText->getText(531));
+            this->flag_0x63 = 1;
+            return;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 77 && Globals::status->getShip()->getIndex() != 37) {
+        this->choiceWindow->set(*Globals::gameText->getText(326));
+        this->flag_0x63 = 1;
+        return;
+    }
+    if (this->flag_0x63 || this->flag_0x69 || this->flag_0x6a)
+        return;
+    this->choiceWindow->set(*Globals::gameText->getText(397), true);
+    this->choiceWindow->left();
+    this->flag_0xb2 = 1;
+    this->flag_0x63 = 1;
 }
 
 static int *g_ModStation_cm_credit1 = 0;
@@ -536,47 +580,40 @@ void ModStation::OnRender3D() {
     ((PaintCanvas *) Globals::Canvas)->End3d();
 }
 
-static int **g_rl_engineHolder = 0;
-
-static int g_rl_lightFlag = 0;
-
-static inline int ApplicationManager_GetEngine_rl() { return (int)(intptr_t) Globals::appManager->GetEngine(); }
-
-static inline int Status_getSystem_rl() { return (int)(Globals::status->getSystem()); }
-
-int SolarSystem_getRace_rl();
-
-int rl_engineFromHolder(int holder);
-
-void Engine_resetStationLight(int engine, int race);
-
-void Engine_LightEnable_rl(int engine, int flag);
-
 void ModStation::resetLight() {
-    int holder = *(int *) g_rl_engineHolder;
-    rl_engineFromHolder(holder);
-    rl_engineFromHolder(holder);
-    rl_engineFromHolder(holder);
-
-    Status_getSystem_rl();
-    int race = SolarSystem_getRace_rl();
-    int engine;
-    switch (race) {
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetMaterialColorAmbient(0.7f, 0.7f, 0.7f);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightDirection(-this->lightDirection.x, -this->lightDirection.y,
+                                                             -this->lightDirection.z, 0x4000);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorDiffuse(1.0f, 1.0f, 1.0f, 0x4000);
+    switch (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()) {
         case 1:
-        case 2:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.25f, 0.55f, 0.25f, 0x4000);
+            break;
         case 3:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.45f, 0.25f, 0.25f, 0x4000);
+            break;
+        case 2:
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.15f, 0.15f, 0.35f, 0x4000);
+            break;
         case 8:
-            engine = ApplicationManager_GetEngine_rl();
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.83f, 0.28f, 0.12f, 0x4000);
             break;
         default:
-            engine = ApplicationManager_GetEngine_rl();
+            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorAmbient(0.25f, 0.25f, 0.25f, 0x4000);
             break;
     }
-    Engine_resetStationLight(engine, race);
-    engine = ApplicationManager_GetEngine_rl();
-
-    engine = ApplicationManager_GetEngine_rl();
-    Engine_LightEnable_rl(engine, g_rl_lightFlag);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetLightColorSpecular(0.5f, 0.5f, 0.5f, 0x4000);
+    static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())
+        ->LightSetMaterialColorShininess(96.0f);
 }
 
 static int *g_ou_stack = 0;
@@ -969,8 +1006,8 @@ void ModStation::OnUpdate() {
     }
 
     if (this->flag_0x100 == 0) {
-        float cur = reinterpret_cast<float&>(this->scrollFlags);
-        float tgt = reinterpret_cast<float&>(this->scrollTarget);
+        float cur = reinterpret_cast<float&>(this->flag_0x118);
+        float tgt = this->lightDirection.x;
         float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
         if (cur < tgt) {
             cur += step;
@@ -981,7 +1018,7 @@ void ModStation::OnUpdate() {
         }
         if (cur < 0.0f) cur = 0.0f;
         if (cur > 1.0f) cur = 1.0f;
-        reinterpret_cast<float&>(this->scrollFlags) = cur;
+        reinterpret_cast<float&>(this->flag_0x118) = cur;
         Engine_setHangarLightIntensity_ou(cur);
     }
     if ((int) (intptr_t) this->cutScene != 0 && this->flag_0x60 == 0) {
@@ -1511,7 +1548,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch)
         return;
     int starMapOpen = this->flag_0x60;
-    reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 0;
+    this->flag_0x118 = 0;
     this->activeTouch = 0;
     if (starMapOpen != 0)
         return;
@@ -2264,7 +2301,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) { // lint: void_ptr
     // lint: void_ptr
     if (this->activeTouch != 0)
         return;
-    reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 1;
+    this->flag_0x118 = 1;
     this->activeTouch = touch;
     int flag = this->flag_0x60;
     this->touchX = x;
@@ -2722,7 +2759,7 @@ void ModStation::OnInitialize() {
         }
 
         ((Status *) (intptr_t) *(int *) &Globals::status)->field_f8 = 1;
-        reinterpret_cast<uint8_t*>(&this->scrollFlags)[0] = 0;
+        this->flag_0x118 = 0;
         this->activeTouch = 0;
         this->flag_0xb3 = 0;
         this->loadTick = 0;

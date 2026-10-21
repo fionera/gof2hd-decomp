@@ -142,14 +142,11 @@ public:
     int touchX;
     // was union { int touchY; float touchYf; } -- float view: reinterpret_cast<float&>(touchY)
     int touchY;
-    // was union { FlagWord scrollFlags; float scrollFlagsf; }
-    //   flag bytes: reinterpret over &scrollFlags; float view: reinterpret_cast<float&>(scrollFlags)
-    int scrollFlags;
-
-    // was union { int scrollTarget; float scrollTargetf; } -- float view: reinterpret_cast<float&>(scrollTarget)
-    int scrollTarget;
-    int field_0x120;
-    int field_0x124;
+    uint8_t flag_0x118;
+    uint8_t flag_0x119;
+    uint8_t flag_0x11a;
+    uint8_t flag_0x11b;
+    Vector lightDirection;
     void *activeTouch; // lint: void_ptr -- opaque platform touch handle, same ABI as OnTouch* touch param
     uint32_t field_0x12c;
     int camKeyX;
@@ -257,9 +254,8 @@ static_assert(__builtin_offsetof(ModStation, flag_0x100) == 0x100, "");
 static_assert(__builtin_offsetof(ModStation, idleBox) == 0x104, "");
 static_assert(__builtin_offsetof(ModStation, touchX) == 0x110, "");
 static_assert(__builtin_offsetof(ModStation, touchY) == 0x114, "");
-static_assert(__builtin_offsetof(ModStation, scrollFlags) == 0x118, "");
-static_assert(__builtin_offsetof(ModStation, scrollTarget) == 0x11c, "");
-static_assert(__builtin_offsetof(ModStation, field_0x120) == 0x120, "");
+static_assert(__builtin_offsetof(ModStation, flag_0x118) == 0x118, "");
+static_assert(__builtin_offsetof(ModStation, lightDirection) == 0x11c, "");
 static_assert(__builtin_offsetof(ModStation, field_0x12c) == 0x12c, "");
 static_assert(__builtin_offsetof(ModStation, camKeyX) == 0x130, "");
 static_assert(__builtin_offsetof(ModStation, field_0x148) == 0x148, "");
