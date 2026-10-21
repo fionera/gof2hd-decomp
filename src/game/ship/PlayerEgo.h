@@ -64,11 +64,9 @@ public:
     uint8_t shieldVisible;
     float shieldRadius;
 
-    float maneuverParam;
-    // rollMatrix relocated here: it fills the original matrix region at 0x44..0x80
-    // (AEMath::Matrix is float[15] = 0x3c, ending exactly at field_0x80 = 0x80).
-    AbyssEngine::AEMath::Matrix rollMatrix;
-    float field_0x80;
+    AbyssEngine::AEMath::Matrix rollMatrix;  // 0x40..0x7c (ctor calls Matrix::Matrix() on this+0x40)
+    float rocketPitch;                       // 0x7c (up/down in rocket control)
+    float rocketYaw;                         // 0x80 (left/right in rocket control)
     uint8_t _pad_0x84[4]; // original field_0x84 region (1-byte field + 3 pad)
     int targetFollowCamera;
 
@@ -314,7 +312,7 @@ public:
 
     void dockToStream(bool param);
 
-    float down(int frameTime, float delta);
+    void down(int frameTime, float delta);
 
     void draw(bool allowHud);
 
@@ -472,7 +470,7 @@ public:
 
     int levelCollision();
 
-    float left(int frameTime, float delta);
+    void left(int frameTime, float delta);
 
     unsigned char lostMiningGame();
 
@@ -500,7 +498,7 @@ public:
 
     void revive();
 
-    float right(int frameTime, float delta);
+    void right(int frameTime, float delta);
 
     void roll(int amount);
 
@@ -586,7 +584,7 @@ public:
 
     void turnVertical(int a, float v);
 
-    float up(int frameTime, float delta);
+    void up(int frameTime, float delta);
 
     void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
 
@@ -602,11 +600,10 @@ public:
 static_assert(__builtin_offsetof(PlayerEgo, field_0x4) == 0x4, "PlayerEgo::transform overlay offset");
 // levelScript is the storage the former `rocketReturnMatrix` Matrix view aliased (offset 0x10).
 static_assert(__builtin_offsetof(PlayerEgo, levelScript) == 0x10, "PlayerEgo::rocketReturnMatrix overlay offset");
-static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
 static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x88, "PlayerEgo::targetFollowCamera offset");
 
 // Former-drift fields: each now lands at the offset encoded in its name (Ghidra-verified).
-static_assert(__builtin_offsetof(PlayerEgo, field_0x80) == 0x80, "");
+static_assert(__builtin_offsetof(PlayerEgo, rocketYaw) == 0x80, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xac) == 0xac, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb0) == 0xb0, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0xb2) == 0xb2, "");
@@ -633,7 +630,7 @@ static_assert(__builtin_offsetof(PlayerEgo, field_0x309) == 0x309, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x32d) == 0x32d, "");
 static_assert(__builtin_offsetof(PlayerEgo, field_0x394) == 0x394, "");
 // Relocated matrices and the field immediately after the last drift field, to pin the tail.
-static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x44, "");
+static_assert(__builtin_offsetof(PlayerEgo, rollMatrix) == 0x40, "");
 static_assert(__builtin_offsetof(PlayerEgo, turretHudMatrix) == 0x2ac, "");
 static_assert(__builtin_offsetof(PlayerEgo, volatileGoods) == 0x398, "");
 static_assert(sizeof(PlayerEgo) == 0x3a0, "");
