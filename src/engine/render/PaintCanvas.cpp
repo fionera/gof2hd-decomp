@@ -2069,20 +2069,17 @@ void PaintCanvas::End3d() {
     this->SetBlendMode((AbyssEngine::BlendMode) 8);
     for (unsigned int i = 0; i < this->materials.count; i++) {
         AbyssEngine::Material *mat = this->materials.data_[i];
-        unsigned int cap;
-        if (mat->blendMode == 8) {
-            AbyssEngine::MaterialDraw(this, this->engine, mat, true);
-            continue;
+        if (mat->blendMode == 36) {
+            this->engine->GlEnable(0x1100021, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100021, false);
         } else if (mat->blendMode == 16) {
-            cap = 0x1100016;
-        } else if (mat->blendMode == 36) {
-            cap = 0x1100021;
-        } else {
-            continue;
+            this->engine->GlEnable(0x1100016, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100016, false);
+        } else if (mat->blendMode == 8) {
+            AbyssEngine::MaterialDraw(this, this->engine, mat, true);
         }
-        this->engine->GlEnable(cap, true);
-        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
-        this->engine->GlEnable(cap, false);
     }
     this->SetBlendMode((AbyssEngine::BlendMode) 9);
     for (unsigned int i = 0; i < this->materials.count; i++) {
@@ -2202,21 +2199,19 @@ void PaintCanvas::End3d() {
     bool refract = false;
     for (unsigned int i = 0; i < this->materials.count; i++) {
         AbyssEngine::Material *mat = this->materials.data_[i];
-        unsigned int cap;
-        unsigned int meshCount;
-        if (mat->blendMode == 34) {
-            meshCount = mat->meshes.count;
-            cap = 0x1100018;
-        } else if (mat->blendMode == 14) {
-            meshCount = mat->meshes.count;
-            cap = 0x1100015;
-        } else {
-            continue;
+        if (mat->blendMode == 14) {
+            unsigned int meshCount = mat->meshes.count;
+            this->engine->GlEnable(0x1100015, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100015, false);
+            refract |= meshCount != 0;
+        } else if (mat->blendMode == 34) {
+            unsigned int meshCount = mat->meshes.count;
+            this->engine->GlEnable(0x1100018, true);
+            AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
+            this->engine->GlEnable(0x1100018, false);
+            refract |= meshCount != 0;
         }
-        this->engine->GlEnable(cap, true);
-        AbyssEngine::MaterialDraw(this, this->engine, this->materials.data_[i], true);
-        this->engine->GlEnable(cap, false);
-        refract |= meshCount != 0;
     }
     bool disableRefract = Engine::DisableRefract;
     this->SetBlendMode((AbyssEngine::BlendMode) 3);
