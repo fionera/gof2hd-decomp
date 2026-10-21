@@ -453,10 +453,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
                     }
                 }
-            } else if (i == 1) {
-                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
             } else if (i == 3) {
                 Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
+            } else if (i == 1) {
+                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
             }
         }
         if (!turretMode) {
