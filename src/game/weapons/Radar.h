@@ -9,6 +9,7 @@
 #include "engine/math/Vector.h"
 
 class Player;
+class PlayerAsteroid;
 
 class Hud;
 class KIPlayer;
@@ -25,7 +26,7 @@ public:
     KIPlayer *dockNavPtr;
 
     KIPlayer *lockedAsteroid;
-    KIPlayer *field_0x10;
+    PlayerAsteroid *field_0x10; // asteroid lock candidate (own pointer type: no 4-wide zero store in the ctor)
     KIPlayer *field_0x14;
     KIPlayer *field_0x18;
     KIPlayer *field_0x1c;

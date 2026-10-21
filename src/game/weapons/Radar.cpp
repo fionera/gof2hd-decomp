@@ -1131,7 +1131,7 @@ asteroids:
                 if (this->field_0x10 != this->asteroids->data()[best]) {
                     this->asteroidLockTimer = 0;
                 }
-                this->field_0x10 = this->asteroids->data()[best];
+                this->field_0x10 = static_cast<PlayerAsteroid *>(this->asteroids->data()[best]);
                 asteroidHit = true;
             }
 

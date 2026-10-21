@@ -42,7 +42,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     int added = 0;
     int attempts = 0;
     bool repeatLast = false;
-    while (added < wanted && attempts < 100) {
+    while (attempts < 100 && added < wanted) {
         NewsItem *item = (*allItems)[Globals::rnd->nextInt(allItems->size())];
         SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
         if (system->getIndex() > 21 && item->id == 13) {
