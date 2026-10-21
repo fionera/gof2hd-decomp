@@ -178,10 +178,10 @@ int WantedWindow::OnTouchEnd(int x, int y) {
             int width;
             int height;
             if (!Globals::iPad) {
-                height = Globals::h;
-                width = Globals::w;
                 this->windowX = 0;
                 this->windowY = 0;
+                height = Globals::h;
+                width = Globals::w;
             } else {
                 int halfWidth;
                 if (Globals::iPadHD) {
