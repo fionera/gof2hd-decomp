@@ -238,7 +238,7 @@ void ParticleSystemSprite::setParticle(const Vector &pos, float scale, uint32_t 
     (void) size1;
     (void) velocity;
 
-    this->canvas->SpriteSystemSetPosition(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
+    this->canvas->SpriteSystemSetPosition(this->resource, (uint16_t) (this->currentParticle + this->idOffset),
                                           pos.x, pos.y, pos.z);
     this->canvas->SpriteSystemSetSize(this->resource, (uint16_t) (this->idOffset + this->currentParticle),
                                       (short) scale);
