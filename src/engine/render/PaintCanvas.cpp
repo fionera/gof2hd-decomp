@@ -23,6 +23,7 @@ namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
                    signed char meshType, Mesh **out);
     int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat);
+    int ImageCreateRegionFromFile(Engine *engine, const char *path, unsigned short index, Image2D *region);
     int MeshConvertToVBO(Mesh *mesh);
     void CameraSetPerspective(float a, float b, float c, float width, float height,
                                Camera *camera);
@@ -69,6 +70,11 @@ namespace {
         uint16_t width;
         uint16_t height;
         uint8_t restoreFlag;
+
+        PCImage2DView()
+                : mesh(0), textureId(0), regionA(0), regionB(0), u0(0), v0(0), width(0), height(0),
+                  restoreFlag(0) {
+        }
     };
 
     struct PCRegionView {
@@ -218,7 +224,7 @@ namespace {
     struct PCFontView {
         uint16_t key;
         uint8_t pad02[0x08 - 0x02];
-        char *atlas;
+        int texture;  // 0x08: texture handle of the glyph atlas
     };
 
     struct PCGravView {
@@ -276,7 +282,7 @@ namespace {
     static_assert(offsetof(PCCubeTexView, scale) == 0x10, "cube scale");
     static_assert(offsetof(PCCubeTexView, restoreFlag) == 0x14, "cube restore");
     static_assert(offsetof(PCCubeTexView, memSize) == 0x18, "cube mem");
-    static_assert(offsetof(PCFontView, atlas) == 0x08, "font atlas");
+    static_assert(offsetof(PCFontView, texture) == 0x08, "font texture");
     static_assert(offsetof(PCGravView, angle) == 0x08, "grav angle");
     static_assert(offsetof(PCRegionView, height) == 0x1c, "region h");
 #endif
@@ -381,11 +387,8 @@ static inline float paintcanvas_ext_gsp_signedtofloat(int v, unsigned int mode) 
 
 void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *paintcanvas_ext_i2d_findres(void *self, unsigned short id); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_i2d_texcreate(void *self, unsigned short id, bool b); // lint: void_ptr (external symbol; mangling must match lib)
 
-int paintcanvas_ext_i2d_imgregion(void *eng, char *path, unsigned short region, void *img); // lint: void_ptr (external symbol; mangling must match lib)
 
 void paintcanvas_ext_gsp2_matidentity(void *out, void *m); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -2288,44 +2291,39 @@ void PaintCanvas::FontCreate(unsigned short resId, unsigned int &out,
     if (res == 0) {
         return;
     }
+    // Payload: texture resource id, font index.
     unsigned short *info = (unsigned short *) res->payload;
-    PCResourceView *texres = (PCResourceView *) this->FindResource(*info);
+    PCResourceView *texres = (PCResourceView *) this->FindResource(info[0]);
     if (texres == 0) {
         return;
     }
     if (texres->handle == -1) {
-        unsigned int texTmp; this->TextureCreate(*info, texTmp, false);
+        unsigned int texture = 0;
+        this->TextureCreate(info[0], texture, false);
     }
     if (res->handle != -1) {
         out = (unsigned int) res->handle;
         return;
     }
     AbyssEngine::ImageFont *font = 0;
-    char *texpath = *(char **) texres->payload;
-    int ok = AbyssEngine::ImageCreateFontFromFile(this->engine, texpath, info[1], &font);
-    if (ok != 1) {
+    if (AbyssEngine::ImageCreateFontFromFile(this->engine, *(char **) texres->payload, info[1], &font) != 1) {
         return;
     }
     if (texres->handle != -1) {
-        *(int *) font = texres->handle;
+        ((PCFontView *) font)->texture = texres->handle;
     }
-    PCArrayAdd<AbyssEngine::ImageFont *>((AbyssEngine::ImageFont *) font, (PCArrayHeader *) &this->fonts);
-    int idx = this->fonts.count - 1;
-    res->handle = idx;
-    out = idx;
+    ArrayAdd<AbyssEngine::ImageFont *>(font, this->fonts);
+    res->handle = (int) this->fonts.count - 1;
+    out = (unsigned int) res->handle;
 
-    Engine *eng = (Engine *) this->engine;
-    int cur = eng->field_0x78;
-    if (cur == -1) {
-        eng->field_0x78 = idx;
-    } else {
-        PCFontView *curFont = (PCFontView *) (this->fonts.data_)[cur];
-        if (curFont->key <= ((PCFontView *) font)->key) {
-            int curH = AbyssEngine::ImageFontGetHeight((AbyssEngine::ImageFont *) curFont);
-            int newH = AbyssEngine::ImageFontGetHeight(font);
-            if (newH < curH) {
-                eng->field_0x78 = out;
-            }
+    // Track the smallest font (by glyph height) as the engine default.
+    Engine *eng = this->engine;
+    if (eng->field_0x78 == -1) {
+        eng->field_0x78 = (int) out;
+    } else if (((PCFontView *) this->fonts.data_[eng->field_0x78])->key <= ((PCFontView *) font)->key) {
+        int curH = AbyssEngine::ImageFontGetHeight(this->fonts.data_[eng->field_0x78]);
+        if (curH > AbyssEngine::ImageFontGetHeight(font)) {
+            this->engine->field_0x78 = (int) out;
         }
     }
 }
@@ -2914,32 +2912,31 @@ PaintCanvas::~PaintCanvas() {
 }
 
 void PaintCanvas::Image2DCreate(unsigned short resId, unsigned int &out) {
-    PCResourceView *res = (PCResourceView *) paintcanvas_ext_i2d_findres(this, resId);
+    PCResourceView *res = (PCResourceView *) this->FindResource(resId);
     if (res == 0) {
         return;
     }
+    // Payload: texture resource id, region index.
     unsigned short *info = (unsigned short *) res->payload;
-    PCResourceView *texres = (PCResourceView *) paintcanvas_ext_i2d_findres(this, *info);
+    PCResourceView *texres = (PCResourceView *) this->FindResource(info[0]);
     if (texres == 0) {
         return;
     }
     if (texres->handle == -1) {
-        paintcanvas_ext_i2d_texcreate(this, *info, true);
+        unsigned int texture = 0;
+        this->TextureCreate(info[0], texture, false);
     }
     unsigned int idx = (unsigned int) res->handle;
     if (idx == 0xffffffff) {
-        PCImage2DView *img = (PCImage2DView *) operator new(0x18);
-        memset(img, 0, 0x18);
-        char *texpath = *(char **) texres->payload;
-        int ok = paintcanvas_ext_i2d_imgregion(this->engine, texpath,
-                                               info[1], img);
-        if (ok != 1) {
+        PCImage2DView *img = new PCImage2DView();
+        if (AbyssEngine::ImageCreateRegionFromFile(this->engine, *(char **) texres->payload, info[1],
+                                                   (AbyssEngine::Image2D *) img) != 1) {
             return;
         }
         if (texres->handle != -1) {
             img->textureId = (uint32_t) texres->handle;
         }
-        PCArrayAdd<AbyssEngine::Image2D *>((AbyssEngine::Image2D *) img, (PCArrayHeader *) &this->images);
+        ArrayAdd<AbyssEngine::Image2D *>((AbyssEngine::Image2D *) img, this->images);
         idx = this->images.count - 1;
         res->handle = (int) idx;
     }
@@ -3766,7 +3763,7 @@ void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
                              int x, int y, bool b) {
     if (index < this->fonts.count) {
         PCFontView *font = (PCFontView *) (this->fonts.data_)[index];
-        this->SetTexture((unsigned int)(uintptr_t)font->atlas, (unsigned int)-1);
+        this->SetTexture((unsigned int) font->texture, (unsigned int)-1);
         AbyssEngine::ImageFont *font2 = (this->fonts.data_)[index];
         AbyssEngine::ImageFontDrawString(font2, str, x, y, this, this->engine, b);
     }
@@ -3786,7 +3783,7 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
         return;
     }
     PCFontView *font0 = (PCFontView *) ((char **) this->fonts.data_)[index];
-    paintcanvas_ext_dsc_settexture(this, (unsigned int) (uintptr_t) font0->atlas);
+    paintcanvas_ext_dsc_settexture(this, (unsigned int) font0->texture);
     paintcanvas_ext_dsc_getcolor(this);
 
     char str[16];
@@ -4607,7 +4604,7 @@ void PaintCanvas::DrawString(unsigned int index, const AbyssEngine::String &str,
                              int x, int y, bool b) {
     if (index < this->fonts.count) {
         PCFontView *font = (PCFontView *) (this->fonts.data_)[index];
-        this->SetTexture((unsigned int)(uintptr_t)font->atlas, (unsigned int)-1);
+        this->SetTexture((unsigned int) font->texture, (unsigned int)-1);
         AbyssEngine::ImageFont *font2 = (this->fonts.data_)[index];
         const unsigned short *data = (const unsigned short *)str;
         AbyssEngine::ImageFontDrawString(font2, data, str.size(), x, y, this, this->engine, b);
