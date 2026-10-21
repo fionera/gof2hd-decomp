@@ -274,8 +274,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->field_0x124 = Globals::w / 16;
     this->field_0x128 = Globals::w / 6;
     this->turretScopeHalfWidth = Globals::w / 8;
-    if (Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr &&
-        Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(50) != 0) {
+    Item *turret = Globals::status->getShip()->getFirstEquipmentOfSort(35);
+    if (turret != nullptr && turret->getAttribute(50) != 0) {
         this->turretScopeHalfWidth = (int) (
                 (float) Globals::status->getShip()->getFirstEquipmentOfSort(35)->getAttribute(50) / 100.0f *
                 (float) this->turretScopeHalfWidth);
