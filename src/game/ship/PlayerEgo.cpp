@@ -580,8 +580,8 @@ bool PlayerEgo::hasCloak() {
     return this->cloak != 0;
 }
 
-unsigned char PlayerEgo::hasVolatileGoods() {
-    return ((uint8_t &) this->volatileGoods);
+bool PlayerEgo::hasVolatileGoods() {
+    return this->volatileGoods;
 }
 
 float PlayerEgo::getVolatileForce() {
@@ -3284,9 +3284,8 @@ bool PlayerEgo::explosionEnded() {
     return 8000 < this->explosionTimer;
 }
 
-unsigned char PlayerEgo::aboutToReachAutoTarget() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->aboutToReachAutoTargetFlag);
+bool PlayerEgo::aboutToReachAutoTarget() {
+    return this->aboutToReachAutoTargetFlag;
 }
 
 void PlayerEgo::resetGunDelay() {

@@ -17,7 +17,7 @@ public:
     uint8_t hasTurretAndWeapon;
     int credits;
     bool gotAllMedals_;
-    uint8_t gotAllGoldMedals_;
+    bool gotAllGoldMedals_;
     uint8_t gotAllSupernovaMedals_;
     int medalCount;
 

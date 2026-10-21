@@ -371,7 +371,7 @@ bool Achievements::gotAllMedals() {
 }
 
 bool Achievements::gotAllGoldMedals() {
-    return reinterpret_cast<bool &>(this->gotAllGoldMedals_);
+    return this->gotAllGoldMedals_;
 }
 
 uint8_t Achievements::gotAllSupernovaMedals() {

@@ -236,7 +236,7 @@ void Player::setNeverAttack(bool value) {
     this->neverAttack = value;
 }
 
-unsigned char Player::doesNeverAttack() {
+bool Player::doesNeverAttack() {
     return this->neverAttack;
 }
 
@@ -253,7 +253,7 @@ void Player::setAlwaysFriend(bool value) {
     this->turnedEnemyFlag = 0;
 }
 
-unsigned char Player::isAlwaysFriend() {
+bool Player::isAlwaysFriend() {
     return this->alwaysFriend;
 }
 

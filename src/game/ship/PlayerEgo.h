@@ -225,7 +225,7 @@ public:
     uint8_t field_0x32d;
     uint8_t visible;
     uint8_t exhaustVisible;
-    uint8_t aboutToReachAutoTargetFlag;
+    bool aboutToReachAutoTargetFlag;
     int maneuverType;
     AbyssEngine::AEMath::Vector strafeTargetVec;
     AbyssEngine::AEMath::Vector facingVec;
@@ -253,7 +253,7 @@ public:
     uint32_t cloakMaterial2;    // 0x38c
     uint32_t cloakMaterial3;    // 0x390
     int originalBlendMode;
-    uint8_t volatileGoods;
+    bool volatileGoods;
     uint8_t field_0x399;
     uint8_t field_0x39a;
     uint8_t lostMiningGameFlag;
@@ -274,7 +274,7 @@ public:
 
     void StopEngineSound();
 
-    unsigned char aboutToReachAutoTarget();
+    bool aboutToReachAutoTarget();
 
     void addGun(Gun *gun, int x);
 
@@ -410,7 +410,7 @@ public:
 
     bool hasCloak();
 
-    unsigned char hasVolatileGoods();
+    bool hasVolatileGoods();
 
     void hideShipForFirstPersonCameraView(bool param);
 
