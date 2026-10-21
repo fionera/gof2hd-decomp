@@ -460,9 +460,9 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
     if (this->m_starMapActive) {
         if (this->m_pStarMap->OnTouchEnd(x, y)) {
             int width;
+            int halfWidth;
             int height;
             if (Globals::iPad) {
-                int halfWidth;
                 if (Globals::iPadHD) {
                     height = 703;
                     halfWidth = 457;
@@ -476,6 +476,8 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
                     }
                     halfWidth = (unsigned int) width >> 1;
                 }
+                this->m_width = width;
+                this->m_height = height;
                 this->m_x = (Globals::w >> 1) - halfWidth;
                 this->m_y = (Globals::h >> 1) - ((unsigned int) height >> 1);
             } else {
@@ -483,9 +485,9 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
                 height = Globals::h;
                 this->m_x = 0;
                 this->m_y = 0;
+                this->m_width = width;
+                this->m_height = height;
             }
-            this->m_width = width;
-            this->m_height = height;
             this->m_starMapActive = 0;
         }
         return false;
@@ -537,7 +539,8 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
         Globals::layout->resetWindowDimensions();
         return true;
     }
-    if (Globals::layout->helpPressed())
+    bool (Layout::*helpPressedFn)() = reinterpret_cast<bool (Layout::*)()>(&Layout::helpPressed);
+    if ((Globals::layout->*helpPressedFn)())
         Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
     return false;
 }
