@@ -67,9 +67,9 @@ namespace AbyssEngine {
 
         void Set(long long v);
 
-        static int StrLen(const char *s);
+        int StrLen(const char *s);
 
-        static int StrLen(const unsigned short *s);
+        int StrLen(const unsigned short *s);
 
         static int GetStringLength(const char *s);
 
@@ -157,7 +157,7 @@ namespace AbyssEngine {
 
         static uint16_t *getWCharFromUtf8(char *utf8, int len);
 
-        static char16_t termChar;
+        static unsigned short termChar;
     };
 
     String operator+(const String &a, const String &b);

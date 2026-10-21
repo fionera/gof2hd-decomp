@@ -19,12 +19,15 @@ String::~String() {
 }
 
 char *String::GetAEChar() const {
-    unsigned int len = (unsigned int) this->length;
-    unsigned int n = len + 1;
+    if (this->length == 0) {
+        char *empty = new char[1];
+        empty[0] = 0;
+        return empty;
+    }
+    unsigned int n = this->length + 1;
     char *out = new char[n];
-    for (unsigned int i = 0; i < len; i++)
-        out[i] = (char) (this->data[i] & 0xff);
-    out[len] = 0;
+    for (unsigned int i = 0; i < n; i++)
+        out[i] = (char) this->data[i];
     return out;
 }
 
@@ -136,11 +139,10 @@ void *String::Split(String sep) { // lint: void_ptr exported String method retur
     return 0;
 }
 
-static unsigned short g_String_nullChar = 0;
 
 unsigned short *String::operator[](int i) {
     if (i < 0 || i >= this->length)
-        return &g_String_nullChar;
+        return &termChar;
     return this->data + i;
 }
 
@@ -182,9 +184,9 @@ void String::Set(long long v) {
 
 int String::StrLen(const char *s) {
     const char *p = s;
-    while (*p != '\0')
-        p++;
-    return (int) (p - s);
+    while (*p++ != '\0') {
+    }
+    return (int) (p - s) - 1;
 }
 
 unsigned int String::Compare(const char *s) {
@@ -305,9 +307,9 @@ void String::Trim() {
 
 int String::GetStringLength(const char *s) {
     const char *p = s;
-    while (*p != '\0')
-        p++;
-    return (int) (p - s);
+    while (*p++ != '\0') {
+    }
+    return (int) (p - s) - 1;
 }
 
 void String::ToLowerCase() {
@@ -379,12 +381,12 @@ void String::Set(const unsigned short *s) {
 }
 
 void String::ConvertFromUTF8() {
-    if (this->length == 0)
+    if (this->data == nullptr)
         return;
 
-    char *bytes = ((String *) (this))->GetAEChar();
-    uint16_t *wide = String::getWCharFromUtf8(bytes, this->length);
-    ((String *) (this))->Set_wchar(wide);
+    char *bytes = GetAEChar();
+    uint16_t *wide = String::getWCharFromUtf8(GetAEChar(), this->length);
+    Set(wide);
     delete[] bytes;
     delete[] wide;
 }
@@ -499,9 +501,9 @@ int String::StrLen(const unsigned short *s) {
     if (s == 0)
         return 0;
     const unsigned short *p = s;
-    while (*p != 0)
-        p++;
-    return (int) (p - s);
+    while (*p++ != 0) {
+    }
+    return (int) (p - s) - 1;
 }
 
 String String::SubString(unsigned int start, unsigned int end) {
@@ -651,7 +653,7 @@ unsigned int String::IndexOf(unsigned int start, const String &needle) {
 
 const unsigned short *String::operator[](int i) const {
     if (i < 0 || i >= this->length)
-        return &g_String_nullChar;
+        return &termChar;
     return this->data + i;
 }
 
@@ -699,52 +701,59 @@ String::String(float v) : data(nullptr) { ctor_float(v); }
 String::String(long long v) : data(nullptr) { ctor_longlong(v); }
 
 String &String::operator+=(const String &other) {
-    const unsigned short *src = other.data;
-    int n = other.length;
-    if (src && n > 0) {
-        int newLen = this->length + n;
-        unsigned short *nd = new unsigned short[newLen + 1];
-        for (int i = 0; i < this->length; i++) nd[i] = this->data[i];
-        for (int i = 0; i < n; i++) nd[this->length + i] = src[i];
-        nd[newLen] = 0;
-        if (this->data) delete[] this->data;
-        this->data = nd;
-        this->length = newLen;
+    if (other.length != 0) {
+        String tmp(other);
+        int oldLength = this->length;
+        this->length = oldLength + tmp.length;
+        unsigned short *grown = (unsigned short *) realloc(this->data, this->length * 2 + 2);
+        this->data = grown;
+        memcpy(grown + oldLength, tmp.data, tmp.length * 2);
+        grown[this->length] = 0;
     }
     return *this;
 }
 
 String &String::operator+=(const char &c) {
-    unsigned short ch = (unsigned short) *(const unsigned char *) &c;
-    {
-        int newLen = this->length + 1;
-        unsigned short *nd = new unsigned short[newLen + 1];
-        for (int i = 0; i < this->length; i++) nd[i] = this->data[i];
-        nd[this->length] = ch;
-        nd[newLen] = 0;
-        if (this->data) delete[] this->data;
-        this->data = nd;
-        this->length = newLen;
+    if (this->length != 0) {
+        int oldLength = this->length;
+        this->length = oldLength + 1;
+        this->data = (unsigned short *) realloc(this->data, (oldLength + 2) * 2);
+        this->data[this->length - 1] = (unsigned short) c;
+        this->data[this->length] = 0;
+    } else {
+        this->data = new unsigned short[2];
+        this->data[0] = (unsigned short) c;
+        this->data[1] = 0;
+        this->length = 1;
     }
     return *this;
 }
 
 String &String::operator+=(const int &v) {
-    String tmp((long long) v);
-    *this += tmp;
-    return *this;
+    long long wide = v;
+    return *this += wide;
 }
 
 String &String::operator+=(const float &v) {
     String tmp(v);
-    *this += tmp;
+    if (tmp.length != 0) {
+        int oldLength = this->length;
+        this->length = oldLength + tmp.length;
+        this->data = (unsigned short *) realloc(this->data, this->length * 2 + 2);
+        memcpy(this->data + oldLength, tmp.data, tmp.length * 2);
+    }
     return *this;
 }
 
 String &String::operator+=(const long long &v) {
     String tmp(v);
-    *this += tmp;
+    if (tmp.length != 0) {
+        int oldLength = this->length;
+        this->length = oldLength + tmp.length;
+        this->data = (unsigned short *) realloc(this->data, this->length * 2 + 2);
+        memcpy(this->data + oldLength, tmp.data, tmp.length * 2);
+    }
     return *this;
 }
 
-char16_t AbyssEngine::String::termChar;
+unsigned short AbyssEngine::String::termChar;

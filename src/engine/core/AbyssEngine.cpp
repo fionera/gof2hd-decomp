@@ -2952,7 +2952,7 @@ namespace AbyssEngine {
 
 int GetStringLength(AbyssEngine::String str) {
     const unsigned short *p = str.GetAEWChar();
-    while (*p)
-        ++p;
-    return static_cast<int>(p - str.GetAEWChar());
+    while (*p++) {
+    }
+    return static_cast<int>(p - str.GetAEWChar()) - 1;
 }
