@@ -193,12 +193,12 @@ void StatusWindow::update(int frameTime) {
     int bottom = this->viewportHeight - this->contentHeight;
     if (bottom < 0) {
         if (off < bottom) {
-            this->scrollDamping = 1.0f;
             this->scrollVelocityF = (float) (bottom - off) * 0.5f;
+            this->scrollDamping = 1.0f;
         }
     } else {
-        this->scrollVelocityF = 0.0f;
         this->scrollOffset = 0;
+        this->scrollVelocityF = 0.0f;
     }
 
     for (unsigned int idx = 0; idx < this->tabButtons->size(); idx++) {
