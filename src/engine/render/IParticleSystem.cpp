@@ -97,12 +97,10 @@ void IParticleSystem::emit(int delta) {
     int set = this->particleSets[this->particleSetIndex];
     if (set == -1)
         return;
-    if ((this->flags & 0x80) != 0) {
-        if ((this->flags & 0x100) != 0 || this->particleAges[0] != -1)
-            return;
-    } else if ((this->flags & 0x100) != 0) {
+    if ((this->flags & 0x100) != 0)
         return;
-    }
+    if ((this->flags & 0x80) != 0 && this->particleAges[0] != -1)
+        return;
 
     Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
     Vector right = AbyssEngine::AEMath::MatrixGetRight(*this->matrix);
@@ -152,7 +150,7 @@ void IParticleSystem::emit(int delta) {
     float *uvp = uv;
 
     float step; // uninitialised as in the original; on the paths that skip assigning it, it only feeds a zero product
-    for (int i = 0; i < count; i++) {
+    for (int i = 1; i <= count; i++) {
         this->particleSetIds[this->currentParticle] = (int8_t) set;
         this->particleAges[this->currentParticle] = 0;
         if (((this->flags >> 24) & 0x2) != 0)
@@ -178,9 +176,9 @@ void IParticleSystem::emit(int delta) {
 
         float phase;
         if (def.oneShot == 1)
-            phase = (float) (i + 1);
+            phase = (float) i;
         else
-            phase = (float) i + (float) this->random.nextInt(10000) * 0.0001f;
+            phase = (float) (i - 1) + (float) this->random.nextInt(10000) * 0.0001f;
 
         Vector pos = {0.0f, 0.0f, 0.0f};
         if ((this->flags & 0xc0) != 0) {
@@ -188,8 +186,8 @@ void IParticleSystem::emit(int delta) {
             phase = 0.0f;
         } else if (distance < 1.0f) {
             pos = position;
-            count = i + 1;
-            phase = (float) (i + 1);
+            count = i;
+            phase = (float) i;
         } else {
             step = (this->flags & 0x10) != 0 ? def.flLifetime
                                               : distance / (float) count;
@@ -228,14 +226,13 @@ void IParticleSystem::emit(int delta) {
 
         float life = def.lifeBase;
         if (def.lifeRandom != 0) {
-            float extra = (float) this->random.nextInt(def.lifeRandom);
+            life += (float) this->random.nextInt(def.lifeRandom);
             float uA = uvp[0];
             float uB = uvp[1];
             float vA = uvp[2];
             float vB = uvp[3];
             uint32_t color = def.color0;
             bool masked = def.fadeFrames > 0 || def.colorFlag > 0.0f;
-            life += extra;
             float size0 = def.startSize + (float) this->random.nextInt(def.lifeRandom);
             float size1 = def.endSize + (float) this->random.nextInt(def.lifeRandom);
             Vector vel = def.velocityFromSlot != 0.0f
@@ -249,8 +246,8 @@ void IParticleSystem::emit(int delta) {
             float vB = uvp[3];
             uint32_t color = def.color0;
             bool masked = def.fadeFrames > 0 || def.colorFlag > 0.0f;
-            float size1 = def.endSize;
             float size0 = def.startSize;
+            float size1 = def.endSize;
             Vector vel = def.velocityFromSlot != 0.0f
                          ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
                          : makeVector(0.0f, 0.0f, 0.0f);
