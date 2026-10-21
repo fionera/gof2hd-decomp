@@ -6338,24 +6338,28 @@ void Level::assignGuns() {
                 } else if ((*enemies)[i]->field_0x3f_b) {
                     int type = (*enemies)[i]->getType();
                     int item;
-                    if (type == 18881) {
-                        gun->weaponType = ITEM_SORT_BLASTER;
-                        gun->setIndex(20);
-                        gun->offset = Vector{0.0f, 0.0f, 250.0f};
-                        item = 212;
-                        mesh = 6797;
-                    } else if (type == 18880) {
-                        gun->weaponType = ITEM_SORT_LASER;
-                        gun->setIndex(2);
-                        gun->offset = Vector{0.0f, 0.0f, 250.0f};
-                        item = 211;
-                        mesh = 6756;
-                    } else {
-                        gun->weaponType = ITEM_SORT_BLASTER;
-                        gun->setIndex(14);
-                        gun->offset = Vector{0.0f, 0.0f, 300.0f};
-                        item = 213;
-                        mesh = 6790;
+                    switch (type) {
+                        case 18880:
+                            gun->weaponType = ITEM_SORT_LASER;
+                            gun->setIndex(2);
+                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
+                            item = 211;
+                            mesh = 6756;
+                            break;
+                        case 18881:
+                            gun->weaponType = ITEM_SORT_BLASTER;
+                            gun->setIndex(20);
+                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
+                            item = 212;
+                            mesh = 6797;
+                            break;
+                        default:
+                            gun->weaponType = ITEM_SORT_BLASTER;
+                            gun->setIndex(14);
+                            gun->offset = Vector{0.0f, 0.0f, 300.0f};
+                            item = 213;
+                            mesh = 6790;
+                            break;
                     }
                     gun->field_0xa8 = 1;
                     gun->damage = (*Globals::items)[item]->getAttribute(9);
@@ -6379,13 +6383,13 @@ void Level::assignGuns() {
                     }
                 }
             }
-            if (mission == 7) {
-                if ((*enemies)[i]->shipGroup == 8) {
-                    gun->damage = (int) (gun->damage * 0.5f);
+            if (mission == 70) {
+                if (!(*enemies)[i]->isWingMan()) {
+                    gun->setIndex(183);
+                    mesh = 14297;
                 }
-            } else if (mission == 70 && !(*enemies)[i]->isWingMan()) {
-                gun->setIndex(183);
-                mesh = 14297;
+            } else if (mission == 7 && (*enemies)[i]->shipGroup == 8) {
+                gun->damage = (int) (gun->damage * 0.5f);
             }
 
             if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()) {
@@ -6393,23 +6397,26 @@ void Level::assignGuns() {
                     && Globals::lastCampaignMissionFailCount >= 3 && (*enemies)[i]->isEnemy()) {
                     gun->damage = (int) (gun->damage * 0.7f);
                 }
-            } else if (mission == 145 && (*enemies)[i]->shipGroupFlag == 49) {
-                gun->weaponType = ITEM_SORT_CLUSTER_MISSILE;
-                gun->setIndex(214);
-                gun->damage *= 2;
-                mesh = 14240;
-            } else if ((mission == 157 || mission == 158) && (*enemies)[i]->shipGroupFlag == 49) {
-                gun->weaponType = ITEM_SORT_LASER;
-                gun->setIndex(7);
-                gun->damage *= 3;
-                mesh = 6764;
-            } else if (wanted != nullptr && (*enemies)[i]->field_0x42) {
-                int weapon = wanted->getWeapon();
-                gun->setIndex(weapon);
-                int sort = (*Globals::items)[weapon]->getAttribute(2);
-                mesh = g_cg_meshTable[weapon];
-                gun->weaponType = sort;
-                gun->damage *= 4;
+            } else {
+                int group = (*enemies)[i]->shipGroupFlag;
+                if (mission == 145 && group == 49) {
+                    gun->weaponType = ITEM_SORT_CLUSTER_MISSILE;
+                    gun->setIndex(214);
+                    gun->damage *= 2;
+                    mesh = 14240;
+                } else if ((mission == 157 || mission == 158) && group == 49) {
+                    gun->weaponType = ITEM_SORT_LASER;
+                    gun->setIndex(7);
+                    gun->damage *= 3;
+                    mesh = 6764;
+                } else if (wanted != nullptr && (*enemies)[i]->field_0x42) {
+                    int weapon = wanted->getWeapon();
+                    gun->setIndex(weapon);
+                    int sort = (*Globals::items)[weapon]->getAttribute(2);
+                    mesh = g_cg_meshTable[weapon];
+                    gun->weaponType = sort;
+                    gun->damage *= 4;
+                }
             }
 
             int sort = gun->weaponType;
