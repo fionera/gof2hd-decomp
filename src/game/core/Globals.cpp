@@ -2554,145 +2554,65 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
                              unsigned short &o8, unsigned short &o9, unsigned short &o10,
                              unsigned short &o11, unsigned short &o12, unsigned short &o13,
                              unsigned short &o14) {
-    int screenH = Globals::h;
-    char isPhone = rdflag((char *) &Globals::iPadHD);
-    int bottom = ((-0x19 - p2) - p3) + screenH;
-
-    float thresh = gSCS_f86f8;
-    if (isPhone == 0) {
-        thresh = (rdflag((char *) &Globals::iPadLarge) == 0) ? gSCS_f8700 : gSCS_f86fc;
-    }
+    CoordsObject *coords = (CoordsObject *) Globals::options;
+    int bottom = Globals::h + (-25 - p2 - p3);
+    float minSteer = Globals::iPadHD ? 210.9375f : (Globals::iPadLarge ? 300.0f : 150.0f);
     if (bottom < p1) {
         p1 = bottom;
     }
-    float fp1 = static_cast<float>(p1);
-
-    unsigned short uv;
-    int iv;
-    if (thresh < fp1) {
-        iv = (int) fp1;
-        uv = (unsigned short) iv;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = (int) fp1;
-        char flag8;
-        if (isPhone == 0) {
-            flag8 = rdflag((char *) &Globals::iPadLarge);
-            goto label8508;
-        }
-        goto common;
-    label8508:
-        uv = (flag8 == 0) ? 0x14 : 0x28;
-        o5 = uv;
-        o6 = (unsigned short) iv;
-        o13 = uv;
-        {
-            float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
-            float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
-            float val = static_cast<float>(o6);
-            float r = val - sub;
-            o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-            o7 = 0x14;
-            (void) add14;
-            goto label8556;
-        }
+    float steer = (float) p1;
+    if (minSteer > steer) {
+        coords->steerValue = Globals::iPadHD ? 210 : (Globals::iPadLarge ? 300 : 150);
     } else {
-        if (isPhone == 0) {
-            char flag = rdflag((char *) &Globals::iPadLarge);
-            iv = (flag == 0) ? 0x96 : 0x12c;
-            rdcoords((CoordsObject *) Globals::options)->steerValue = iv;
-            char flag8 = (flag == 0) ? 0 : 1;
-            (void) flag8;
-            goto label8508;
-        }
-        uv = 0xd2;
-        rdcoords((CoordsObject *) Globals::options)->steerValue = 0xd2;
+        coords->steerValue = (int) steer;
     }
-
-common: {
-        float fv = gSCS_f8708;
-        o5 = 0x1c;
-        o6 = uv;
-        o13 = 0x1c;
-        float val = static_cast<float>(o6);
-        float r = val + gSCS_f8704;
-        o14 = (unsigned short) ((0.0f < r) ? (short) (int) r : 0);
-        o7 = 0x14;
-        (void) fv;
+    float stickGap;
+    if (Globals::iPadHD) {
+        o5 = 28;
+        o6 = coords->steerValue;
+        o13 = 28;
+        o14 = (unsigned short) ((float) o6 + -126.5625f);
+        stickGap = 92.8125f;
+    } else {
+        unsigned short margin = Globals::iPadLarge ? 40 : 20;
+        o5 = margin;
+        o6 = coords->steerValue;
+        o13 = margin;
+        o14 = (unsigned short) ((float) o6 - (Globals::iPadLarge ? 180.0f : 90.0f));
+        stickGap = Globals::iPadLarge ? 132.0f : 66.0f;
     }
-
-label8556: {
-        unsigned absp2 = (unsigned) (p2 - (p2 >> 31));
-        float fv = gSCS_f8708;
-        float val6 = static_cast<float>(o6);
-        float r8 = fv + val6;
-        o8 = (unsigned short) ((0.0f < r8) ? (short) (int) r8 : 0);
-        o9 = (unsigned short) (o7 + (short) (absp2 >> 1));
-        o10 = (unsigned short) (o8 + (short) (absp2 >> 1));
-
-        float val6b = static_cast<float>(o6);
-        float fv2;
-        float acc;
-        if (isPhone == 0) {
-            bool b = (rdflag((char *) &Globals::iPadLarge) == 0);
-            acc = (b ? gSCS_f8728 : gSCS_f8724) + val6b;
-            fv2 = b ? 2.0f : 4.0f;
+    o7 = 20;
+    o8 = (unsigned short) (stickGap + (float) o6);
+    o9 = o7 + p2 / 2;
+    o10 = o8 + p2 / 2;
+    float knob;
+    float edge;
+    if (Globals::iPadHD) {
+        knob = (float) o6 + 313.59375f;
+        edge = 2.8125f;
+    } else {
+        knob = (Globals::iPadLarge ? 446.0f : 223.0f) + (float) o6;
+        edge = Globals::iPadLarge ? 4.0f : 2.0f;
+    }
+    o12 = (unsigned short) knob;
+    float top = (float) (Globals::h - p4);
+    if (top - edge < (float) o12) {
+        int big;
+        int small;
+        if (Globals::iPadHD) {
+            big = 243;
+            small = 187;
+            o12 = (unsigned short) ((float) o12 - (top + -2.8125f));
         } else {
-            acc = val6b + gSCS_f871c;
-            fv2 = gSCS_f8720;
+            big = Globals::iPadLarge ? 346 : 173;
+            small = Globals::iPadLarge ? 266 : 133;
+            o12 = (unsigned short) ((float) o12 - (top - (Globals::iPadLarge ? 4.0f : 2.0f)));
         }
-        int i12 = (0.0f < acc) ? (int) acc : 0;
-        o12 = (unsigned short) i12;
-
-        float top = static_cast<float>(screenH - p4);
-        float f12 = static_cast<float>((unsigned) i12);
-        if (f12 <= top - fv2) {
-            unsigned short u11;
-            if (isPhone == 0) {
-                u11 = (rdflag((char *) &Globals::iPadLarge) == 0) ? 0x14 : 0x28;
-            } else {
-                u11 = 0x1c;
-            }
-            o11 = u11;
-        } else {
-            int a, b;
-            if (isPhone == 0) {
-                float fv14 = 4.0f;
-                a = 0x15a;
-                char flag8 = rdflag((char *) &Globals::iPadLarge);
-                if (flag8 == 0) fv14 = 2.0f;
-                b = 0x10a;
-                float d = f12 - (top - fv14);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                if (flag8 == 0) {
-                    a = 0xad;
-                    b = 0x85;
-                }
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                float fv15 = 4.0f;
-                if (rdflag((char *) &Globals::iPadLarge) == 0) fv15 = 2.0f;
-                o12 = (unsigned short) ((0.0f < top - fv15) ? (short) (int) (top - fv15) : 0);
-            } else {
-                a = 0xf3;
-                b = 0xbb;
-                float d = f12 - (top + gSCS_f872c);
-                int i16 = (0.0f < d) ? (int) d : 0;
-                o12 = (unsigned short) i16;
-                float fd = static_cast<float>((unsigned) i16);
-                float fr = static_cast<float>(a - b);
-                float scale = 1.0f;
-                if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
-                float base = static_cast<float>(b);
-                base = base + scale * fr;
-                o11 = (unsigned short) ((0.0f < base) ? (short) (int) base : 0);
-                o12 = (unsigned short) ((0.0f < top - gSCS_f8720) ? (short) (int) (top - gSCS_f8720) : 0);
-            }
-        }
+        float t = (float) o12 / 54.0f;
+        o11 = (unsigned short) ((float) small + (t < 1.0f ? t : 1.0f) * (float) (big - small));
+        o12 = (unsigned short) (top - (Globals::iPadHD ? 2.8125f : (Globals::iPadLarge ? 4.0f : 2.0f)));
+    } else {
+        o11 = Globals::iPadHD ? 28 : (Globals::iPadLarge ? 40 : 20);
     }
 }
 
