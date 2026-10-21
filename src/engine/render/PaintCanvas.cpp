@@ -44,7 +44,7 @@ namespace AbyssEngine {
     class ImageFont;
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count);
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start, unsigned int count);
-    int ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
+    void ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     int ImageFontGetHeight(ImageFont *font);
