@@ -1112,12 +1112,13 @@ int RecordHandler::recordStoreWrite(int slot) {
     Array<PendingProduct *> *pending =
         Globals::status->getPendingProducts();
     if (pending != 0) {
-        int count = 0;
-        for (unsigned i = 0; i < pending->size(); i++) {
-            if ((*pending)[i] != 0) {
-                count++;
-            }
-        }
+        auto countProducts = [](Array<PendingProduct *> *products) {
+            int count = 0;
+            for (unsigned i = 0; i < products->size(); ++i)
+                if ((*products)[i]) ++count;
+            return count;
+        };
+        int count = countProducts(pending);
         if (count != 0) {
             AEFile::Write((int32_t) count, fd);
             for (unsigned i = 0; i < pending->size(); i++) {
