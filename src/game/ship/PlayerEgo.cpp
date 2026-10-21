@@ -1679,7 +1679,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             ParticleSettings &settings = reinterpret_cast<ParticleSettings &>(ParticleSettingsRef::cur);
             for (unsigned int i = 0; i < this->level->field_a4->size(); i++) {
                 float scale = (*this->level->field_a4)[i]->getScaling().x;
-                reinterpret_cast<float &>(settings.sets[29 + i].lifeBase) =
+                settings.sets[29 + i].lifeBase =
                     scale * 250.0f * (this->getBoostPercentage() * 0.5f + 1.0f);
             }
         }

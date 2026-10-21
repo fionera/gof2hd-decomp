@@ -114,10 +114,10 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
         if (prevFrame < 0)
             prevFrame = 0;
         if (frame != prevFrame) {
-            float u0 = reinterpret_cast<const float &>(def.uvU0);
-            float v0 = reinterpret_cast<const float &>(def.uvV0);
-            float du = reinterpret_cast<const float &>(def.uvU1) - u0;
-            float dv = reinterpret_cast<const float &>(def.uvV1) - v0;
+            float u0 = def.uvU0;
+            float v0 = def.uvV0;
+            float du = def.uvU1 - u0;
+            float dv = def.uvV1 - v0;
             float u = u0 + du * (float) frame;
             float row = (float) (int) (u + 0.0009765625f);
             u -= row;
