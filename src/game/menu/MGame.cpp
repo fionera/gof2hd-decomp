@@ -2159,8 +2159,8 @@ afterCam:
             if (self->usingJumpDrive == 0)
                 Globals::status->jumpgateUsed();
             if (Level::programmedStation->equals(Globals::status->playerStation) != 0) {
-                Level::comingFromAlienWorld = 1;
                 Level::initStreamOutPosition = 1;
+                Level::comingFromAlienWorld = 1;
                 Globals::status->setStation(Globals::status->playerStation);
             }
             Level::programmedStation = nullptr;
