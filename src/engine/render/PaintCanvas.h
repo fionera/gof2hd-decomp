@@ -259,7 +259,7 @@ namespace AbyssEngine {
 
         void FontSetSpacing(unsigned int index, short spacing);
 
-        int FontGetYOffset(unsigned int index);
+        short FontGetYOffset(unsigned int index);
 
         void FontSetYOffset(unsigned int index, short yoff);
 

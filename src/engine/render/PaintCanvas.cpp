@@ -1828,7 +1828,7 @@ int PaintCanvas::MeshGetTriCount(AbyssEngine::Mesh *mesh) {
     return 0;
 }
 
-int PaintCanvas::FontGetYOffset(unsigned int index) {
+short PaintCanvas::FontGetYOffset(unsigned int index) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         return AbyssEngine::ImageFontGetYOffset(font);
