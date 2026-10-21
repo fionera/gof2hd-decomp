@@ -3,30 +3,6 @@
 
 #include <jni.h>
 
-typedef _jclass *(*NFC_FindClassFn)(_JNIEnv *, _jclass *);
-
-typedef _jmethodID *(*NFC_GetStaticMethodFn)(_JNIEnv *, _jclass *, const char *, const char *);
-
-static inline void (*nfc_jni_slot(_JNIEnv *env, unsigned offset))() {
-    return *(void (**)()) ((char *) *(void (***)()) env + offset);
-}
-
-static inline _jclass *nfc_find_class(_JNIEnv *env, _jclass *name) {
-    return ((NFC_FindClassFn) nfc_jni_slot(env, 0x18))(env, name);
-}
-
-static inline _jmethodID *nfc_get_static_method(_JNIEnv *env, _jclass *cls, const char *name, const char *sig) {
-    return ((NFC_GetStaticMethodFn) nfc_jni_slot(env, 0x1c4))(env, cls, name, sig);
-}
-
-void NFC_CallStaticVoidMethod(_JNIEnv * env, _jclass * cls, _jmethodID * method);
-
-int NFC_CallStaticBooleanMethod(_JNIEnv * env, _jclass * cls, _jmethodID * method);
-
-int NFC_CallStaticIntMethod(_JNIEnv * env, _jclass * cls, _jmethodID * method);
-
-void NFC_DeleteLocalRef(_JNIEnv * env);
-
 class NFC {
 public:
     NFC();
@@ -82,19 +58,19 @@ public:
 
 extern int g_android_back_button_pressed;
 
-bool IsDialogVisible(int);
+int IsDialogVisible(int);
 
-bool IsDialogNotVisible(int);
+int IsDialogNotVisible(int);
 
-bool IsDialogNotVisible2(int);
+int IsDialogNotVisible2(int);
 
-bool IsStarMapNotVisible(int);
+int IsStarMapNotVisible(int);
 
-bool IsInGameSubMenuNotActive(int);
+int IsInGameSubMenuNotActive(int);
 
-bool IsInGameSubMenuActive(int);
+int IsInGameSubMenuActive(int);
 
-bool IsInPrimaryMenu(int);
+int IsInPrimaryMenu(int);
 
 int HideMouse();
 

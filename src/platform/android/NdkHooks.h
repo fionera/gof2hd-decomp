@@ -3,6 +3,22 @@
 
 #include <jni.h>
 
+// JNI environment of the render thread (set by ToJNI_initialize, defined in JniBridge.cpp).
+extern JNIEnv *g_pEnv;
+
+// Purchase-in-flight flags raised by the NFC store buttons.
+extern int gi_iap_buy_dlc1_pressed;
+extern int gi_iap_buy_dlc2_pressed;
+extern int gi_iap_buy_dlc3_pressed;
+extern int gi_iap_buy_dlc4_pressed;
+extern int gi_iap_buy_dlc5_pressed;
+
+extern int gi_iap_buy_credit_pack1_pressed;
+extern int gi_iap_buy_credit_pack2_pressed;
+extern int gi_iap_buy_credit_pack3_pressed;
+extern int gi_iap_buy_credit_pack4_pressed;
+extern int gi_iap_buy_credit_pack5_pressed;
+
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 int setBaughtCredits(int amount);
 

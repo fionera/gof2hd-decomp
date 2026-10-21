@@ -146,7 +146,7 @@ public:
     static int is_choice_window_visible;
     static int is_menu_visible;
     static int is_hacking_visible;
-    static unsigned char isStarMapVisible;
+    static bool isStarMapVisible;
     static unsigned char isCinematicModeActive;
     static int mouseCursorActivated;
     static unsigned char showMouseDuringGameOver;
