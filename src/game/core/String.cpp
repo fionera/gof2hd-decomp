@@ -50,10 +50,13 @@ void String::ReplaceString(String find, String repl) {
         this->Set(acc.data);
 }
 
-void String::ReplaceChar(char from, char to) {
-    for (int i = 0; i < this->length; i++)
-        if ((unsigned int) this->data[i] == (unsigned int) (int) from)
-            this->data[i] = (unsigned short) (short) to;
+String *String::ReplaceChar(char from, char to) {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++)
+        if (this->data[i] == (unsigned char) from)
+            this->data[i] = (unsigned char) to;
+    return this;
 }
 
 void String::Reverse() {
@@ -65,16 +68,11 @@ void String::Reverse() {
 }
 
 String *String::ToUpperCase() {
-    for (int i = 0; i < this->length; i++) {
-        short c = (short) this->data[i];
-        unsigned short u = (unsigned short) (c - 0x61);
-        bool above = u > 0x19;
-        bool eq1a = u == 0x1a;
-        if (above) {
-            u = (unsigned short) (c - 0xe0);
-            eq1a = u == 0x1e;
-        }
-        if (!above || u < 0x1e || eq1a) {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
+        unsigned short c = this->data[i];
+        if ((unsigned short) (c - 'a') < 26 || (unsigned short) (c - 0xe0) < 31) {
             this->data[i] = (unsigned short) (c - 0x20);
         } else {
             switch (c) {
@@ -86,13 +84,13 @@ String *String::ToUpperCase() {
                     break;
                 case 0x86: this->data[i] = 0x8f;
                     break;
-                case 0x83:
-                case 0x85:
+                case 0x91: this->data[i] = 0x92;
+                    break;
+                case 0x94: this->data[i] = 0x99;
+                    break;
+                case 0xa4: this->data[i] = 0xa5;
                     break;
                 default:
-                    if (c == 0x91) this->data[i] = 0x92;
-                    else if (c == 0x94) this->data[i] = 0x99;
-                    else if (c == 0xa4) this->data[i] = 0xa5;
                     break;
             }
         }
@@ -190,28 +188,27 @@ int String::StrLen(const char *s) {
 unsigned int String::Compare(const char *s) {
     if (this->length == 0)
         return 1;
-
+    const unsigned short *a = this->data;
     bool reachedEnd = false;
-    uint16_t cur = 0;
-    unsigned int other = 0;
-    int i = 0;
-    for (; i < this->length && (cur = (uint16_t) this->data[i]) != 0; i++) {
-        other = (unsigned int) (unsigned char) *s;
-        if (other == 0 || other != cur)
-            goto done;
-        s++;
+    unsigned short ca;
+    unsigned char cb;
+    for (int i = 0;; i++) {
+        ca = a[i];
+        if (ca == 0) {
+            cb = (unsigned char) s[i];
+            reachedEnd = true;
+            break;
+        }
+        cb = (unsigned char) s[i];
+        if (cb == 0 || cb != ca)
+            break;
     }
-    other = (unsigned int) (unsigned char) *s;
-    reachedEnd = true;
-    cur = 0;
-done:
-    if (other != 0) {
-        char d = (char) cur - (char) other;
-        if (reachedEnd)
-            d = -1;
-        return (unsigned int) (int) d;
-    }
-    return (unsigned int) (cur != 0);
+    if (cb == 0)
+        return ca != 0;
+    int d = ca - cb;
+    if (reachedEnd)
+        d = -1;
+    return (signed char) d;
 }
 
 void String::Set(const char *s) {
@@ -241,73 +238,50 @@ void String::Set(const char *s) {
     }
 }
 
-int String::Compare(const String &otherRef) {
-    const String *other = &otherRef;
-    short result;
-    if (other->length == this->length) {
-        int i = 0;
-        short sc = 0, oc = 0;
+signed char String::Compare(const String &other) {
+    signed char result;
+    if (other.length == this->length) {
+        const unsigned short *a = this->data;
+        const unsigned short *b = other.data;
         bool reachedEnd = false;
+        unsigned short ca, cb;
         while (true) {
-            sc = (i < this->length) ? (short) this->data[i] : 0;
-            oc = (i < other->length) ? (short) other->data[i] : 0;
-            if (sc == 0) {
+            ca = *a;
+            cb = *b;
+            if (ca == 0) {
                 reachedEnd = true;
-                sc = 0;
                 break;
             }
-            if (oc != sc) {
-                reachedEnd = false;
+            if (cb != ca)
                 break;
-            }
-            i++;
+            b++;
+            a++;
         }
-        if (oc == 0) {
-            result = sc;
-            if (sc != 0)
-                result = 1;
-        } else {
-            result = sc - oc;
-            if (reachedEnd)
-                result = -1;
-        }
+        if (cb == 0)
+            result = ca != 0;
+        else if (reachedEnd)
+            result = -1;
+        else
+            result = (signed char) (ca - cb);
     } else {
-        result = 0xff;
+        result = -1;
     }
-    return (int) (char) result;
+    return result;
 }
 
-void String::Trim() {
-    int len = this->length;
-    if (len == 0)
-        return;
-
-    int start = 0;
-    while (start < len) {
-        unsigned short c = this->data[start];
-        if (c != 0x20 && c != 9)
-            break;
-        start++;
+String *String::Trim() {
+    if (this->data != nullptr && this->length != 0) {
+        unsigned int start = 0;
+        while (start < (unsigned int) this->length &&
+               (this->data[start] == ' ' || this->data[start] == '\t'))
+            start++;
+        unsigned int end = (unsigned int) this->length;
+        while (this->data[end - 1] == '\t' || this->data[end - 1] == ' ')
+            end--;
+        String trimmed = SubString(start, end);
+        Set(trimmed.data);
     }
-    int end = len;
-    while (end > 0) {
-        unsigned short c = this->data[end - 1];
-        if (c != 0x20 && c != 9)
-            break;
-        end--;
-    }
-    if (start < end) {
-        int sublen = end - start;
-        unsigned short *sub = (unsigned short *) ::operator new[]((sublen + 1) * 2);
-        memcpy(sub, this->data + start, (size_t) sublen * 2);
-        sub[sublen] = 0;
-        this->Set(sub);
-        ::operator delete[](sub);
-    } else {
-        if (this->data) delete[] this->data;
-        this->data = nullptr;
-        this->length = 0;
-    }
+    return this;
 }
 
 int String::GetStringLength(const char *s) {
@@ -317,47 +291,34 @@ int String::GetStringLength(const char *s) {
     return (int) (p - s) - 1;
 }
 
-void String::ToLowerCase() {
-    for (int i = 0; i < this->length; i++) {
-        short c = (short) this->data[i];
-        unsigned short u = (unsigned short) (c - 0x41);
-        bool above = u > 0x19;
-        bool eq1a = u == 0x1a;
-        if (above) {
-            u = (unsigned short) (c - 0xc0);
-            eq1a = u == 0x1e;
-        }
-        if (!above || u < 0x1e || eq1a) {
+String *String::ToLowerCase() {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
+        unsigned short c = this->data[i];
+        if ((unsigned short) (c - 'A') < 26 || (unsigned short) (c - 0xc0) < 31) {
             this->data[i] = (unsigned short) (c + 0x20);
         } else {
             switch (c) {
+                case 0x9a: this->data[i] = 0x81;
+                    break;
+                case 0x90: this->data[i] = 0x82;
+                    break;
                 case 0x8e: this->data[i] = 0x84;
                     break;
                 case 0x8f: this->data[i] = 0x86;
-                    break;
-                case 0x90: this->data[i] = 0x82;
                     break;
                 case 0x92: this->data[i] = 0x91;
                     break;
                 case 0x99: this->data[i] = 0x94;
                     break;
-                case 0x9a: this->data[i] = 0x81;
-                    break;
-                case 0x91:
-                case 0x93:
-                case 0x94:
-                case 0x95:
-                case 0x96:
-                case 0x97:
-                case 0x98:
+                case 0xa5: this->data[i] = 0xa4;
                     break;
                 default:
-                    if (c == 0xa5)
-                        this->data[i] = 0xa4;
                     break;
             }
         }
-    }
+    }    return this;
 }
 
 String &String::operator=(const String &other) {
@@ -519,26 +480,18 @@ int String::StrLen(const unsigned short *s) {
 }
 
 String String::SubString(unsigned int start, unsigned int end) {
-    String out;
-    unsigned int slen = (unsigned int) this->length;
-    if (start < end && start < slen) {
-        unsigned int hi = end > slen ? slen : end;
-        {
-            const unsigned short *_src = this->data + start;
-            int _n = (int) (hi - start);
-            if (out.data) delete[] out.data;
-            out.data = nullptr;
-            out.length = 0;
-            if (_src && _n >= 0) {
-                unsigned short *_nd = new unsigned short[_n + 1];
-                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-                _nd[_n] = 0;
-                out.data = _nd;
-                out.length = _n;
-            }
-        }
+    String sub;
+    if (start < end) {
+        unsigned int n = end - start;
+        if (sub.data) delete[] sub.data;
+        sub.data = nullptr;
+        sub.data = new unsigned short[n + 1];
+        memcpy(sub.data, this->data + start, n * 2);
+        sub.length = (int) n;
+        sub.data[n] = 0;
+        return sub;
     }
-    return out;
+    return String();
 }
 
 uint16_t *String::getWCharFromUtf8(char *s, int len) {
@@ -645,20 +598,23 @@ unsigned int String::IndexOf(const String &needle) {
 }
 
 unsigned int String::IndexOf(unsigned int start, const String &needle) {
-    unsigned int slen = (unsigned int) this->length;
+    const unsigned short *nd = needle.data;
     unsigned int nlen = (unsigned int) needle.length;
-    while (start < slen && nlen <= slen - start) {
-        if (needle.data[0] == this->data[start]) {
-            unsigned int k = 0;
-            while (start + k < slen && this->data[start + k] == needle.data[k]) {
-                if (nlen <= k + 1)
-                    return start;
-                k++;
-            }
-            start += k;
-        } else {
+    unsigned int slen = (unsigned int) this->length;
+    while (start < slen) {
+        if (nlen > slen - start)
+            return 0xffffffff;
+        if (nd[0] != this->data[start]) {
             start++;
+            continue;
         }
+        unsigned int k = 0;
+        while (nd[k] == this->data[start + k]) {
+            if (k + 1 >= nlen)
+                return start;
+            k++;
+        }
+        start += k;
     }
     return 0xffffffff;
 }

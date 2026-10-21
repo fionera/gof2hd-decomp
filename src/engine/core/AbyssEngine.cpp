@@ -2465,7 +2465,7 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     bool operator==(const String &a, const String &b) {
         String tmp(a);
-        int cmp = tmp.Compare_str(const_cast<String *>(&b));
+        int cmp = tmp.Compare(b);
         return cmp != 0;
     }
 }

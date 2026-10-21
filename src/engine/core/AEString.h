@@ -73,7 +73,7 @@ namespace AbyssEngine {
 
         static int GetStringLength(const char *s);
 
-        int Compare(const String &other);
+        signed char Compare(const String &other);
 
         unsigned int Compare(const char *s);
 
@@ -88,7 +88,6 @@ namespace AbyssEngine {
         const unsigned short *operator[](int i) const;
 
         AESTRING_SHIM unsigned int Compare_char(const char *s) { return Compare(s); }
-        AESTRING_SHIM int Compare_str(String *other) { return Compare(*other); }
 
         void ConvertFromUTF8();
 
@@ -100,7 +99,7 @@ namespace AbyssEngine {
 
         void PrintOut();
 
-        void ReplaceChar(char from, char to);
+        String *ReplaceChar(char from, char to);
 
         void ReplaceString(String find, String repl);
 
@@ -121,11 +120,11 @@ namespace AbyssEngine {
 
         String SubString(unsigned int start, unsigned int end);
 
-        void ToLowerCase();
+        String *ToLowerCase();
 
         String *ToUpperCase();
 
-        void Trim();
+        String *Trim();
 
         int ValueOf();
 
