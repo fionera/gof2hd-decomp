@@ -145,7 +145,6 @@ static float g_ccm_pos0 = 50000.0f;
 
 
 
-static int *g_cs_diffRec = nullptr;
 
 static int *g_ag_diffRec = nullptr;
 
@@ -5903,94 +5902,130 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
     return volumes;
 }
 
-PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group) {
-    Level * thisptr = this;
-    int camp = Globals::status->getCurrentCampaignMission();
-
-    int x = 0, y = 0, z = 0;
-    if (wp != 0) {
-        x = wp->x;
-        y = wp->y;
-        z = wp->z;
-    }
-    AbyssEngine::AERandom *rng = Globals::rnd;
-    int jx = rng->nextInt(40000);
-    int jy = rng->nextInt(40000);
-    int jz = rng->nextInt(40000);
-
-    int lvl = Globals::status->getLevel();
-    if (0x15 <= lvl) lvl = 0x14;
-    int ramp = (Globals::status->gameWon() != 0) ? 0xb4 : (camp << 2);
-    int hp = ramp + lvl * 0xe + 0x14;
-    if (type == 0x33) hp = (int) ((float) hp * 1.7f);
-    else if (type == 0x31) hp = (int) ((float) hp * 17.0f);
-    else if (type == 0x2c) hp = (int) ((float) hp * 2.25f);
-    if ((unsigned) (camp - 0x31) < 8 && (0x8fU >> ((unsigned) (camp - 0x31) & 0xff) & 1) != 0)
-        hp = 0x10e;
-
-    int dmgLvl = Globals::status->getLevel();
-    if (0x15 <= dmgLvl) dmgLvl = 0x14;
-    int empA = dmgLvl * 5 + 0x28;
-    int empB;
-    if (shipClass == 1) {
-        int mul = (type == 0xe) ? 0x19 : 5;
-        empA = empA * 3;
-        hp = mul * hp;
-        empB = 45000;
+PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
+    int mission = Globals::status->getCurrentCampaignMission();
+    int wx, wy, wz;
+    if (waypoint != nullptr) {
+        wx = waypoint->x;
+        wy = waypoint->y;
+        wz = waypoint->z;
     } else {
-        empB = 15000;
+        wy = 0;
+        wx = 0;
+        wz = 0;
     }
-    hp = (int) ((float) hp + (((DifficultyRecord *) (intptr_t) * g_cs_diffRec)->hpScale - 0.5f) * (float) hp);
-    if (camp == 0x9a) {
-        int alien = Globals::status->inAlienOrbit();
-        hp = hp << (alien & (race == 9));
+    int jitterX = Globals::rnd->nextInt(40000);
+    int jitterY = Globals::rnd->nextInt(40000);
+    int jitterZ = Globals::rnd->nextInt(40000);
+
+    int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
+    int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
+    if (type == 0x33) {
+        hitpoints = (int) ((float) hitpoints * 1.7f);
+    } else if (type == 0x2c) {
+        hitpoints = (int) ((float) hitpoints * 2.25f);
+    } else if (type == 0x31) {
+        hitpoints = (int) ((float) hitpoints * 17.0f);
     }
+    if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
+        hitpoints = 270;
+    }
+    int empPoints = (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 5 + 40;
+    int empTime;
+    if (shipClass == 1) {
+        hitpoints *= type == 14 ? 25 : 5;
+        empPoints *= 3;
+        empTime = 45000;
+    } else {
+        empTime = 15000;
+    }
+    hitpoints = (int) ((float) hitpoints + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * (float) hitpoints);
+    if (mission == 0x9a) {
+        hitpoints <<= Globals::status->inAlienOrbit() & (race == 9);
+    }
+    int armor = Globals::status->hardCoreMode() ? 650 : 1000;
+    Player *player = new Player(armor, hitpoints, 1, 1, 0);
+    int x = wx + jitterX - 20000;
+    int y = wy + jitterY - 20000;
+    int z = wz + jitterZ - 20000;
+    player->setEmpData(empPoints, empTime);
 
-    Player *pl = (Player *) ::operator new(0x114);
-    int playerHp = (Globals::status->hardCoreMode() != 0) ? 0x28a : 1000;
-    new(pl) Player(playerHp, hp, 1, 1, 0);
-    float fx = (float) (x + jx - 20000);
-    float fy = (float) (y + jy - 20000);
-    float fz = (float) (z + jz - 20000);
-    pl->setEmpData(empA, empB);
-
-    PlayerFixedObject *obj = 0;
+    PlayerFixedObject *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *pf = (PlayerFighter *) ::operator new(0x2f0);
-        new(pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
-        obj = (PlayerFixedObject *) pf;
-        AEGeometry *gg = Globals::globals->getShipGroup(type, race, group);
-        obj->setShipGroup(gg, type, hostile != 0);
-        if (this->missionPtr != 1 && this->missionPtr != 0x17) {
-            AEGeometry *g = obj->parentGeometry;
-            if (g == 0) g = obj->geometry;
-            this->lodManager->addObject(g);
+        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+        if (missionPtr != 1 && missionPtr != 23) {
+            KIPlayer *kiFighter = fighter;
+            lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        if (type == 0x2c || type == 0x31 || type == 0x33) {
-            if (type == 0x33) obj->field_0x25 = 0;
-            if (type != 0x33 && obj->cargo != 0) {
-                delete obj->cargo;
-                obj->cargo = 0;
-            }
+        if (type == 0x2c || type == 0x31) {
+            delete fighter->cargo;
+            fighter->cargo = nullptr;
+        } else if (type == 0x33) {
+            fighter->field_0x25 = 0;
         }
+        ship = (PlayerFixedObject *) fighter;
     } else if (shipClass == 1) {
-        obj = (PlayerFixedObject *) ::operator new(0x1bc);
-        new(obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
-
-        int wreck = -1;
-        BoundingVolume *bv = nullptr;
-        obj->setWreckedMeshId(wreck);
-        obj->setBV(bv);
-        AEGeometry *gg = Globals::globals->getShipGroup(type, race, 0);
-        obj->setShipGroup(gg, type, false);
-        this->lodManager->addObject(obj->geometry);
-        *(unsigned char *) &obj->field_0x40 = 1;
+        // capital ships: hull collision boxes per race
+        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
+        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+        switch (race) {
+            case 0:
+                if (type == 14) {
+                    ArraySetLength(11, *volumes);
+                    (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -2240.0f, 21608.0f, 760.0f, 640.0f, 2890.0f);
+                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -2342.0f, 18392.0f, 1260.0f, 3560.0f, 3670.0f);
+                    (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, -786.0f, 8926.0f, 7410.0f, 7740.0f, 15540.0f);
+                    (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, -4950.0f, 9656.0f, 820.0f, 1040.0f, 7150.0f);
+                    (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 3420.0f, -452.0f, 1310.0f, 940.0f, 4880.0f);
+                    (*volumes)[5] = new BoundingAAB(x, y, z, 0.0f, -270.0f, -9018.0f, 7520.0f, 6870.0f, 20470.0f);
+                    (*volumes)[6] = new BoundingAAB(x, y, z, 0.0f, -5088.0f, -7962.0f, 1300.0f, 2900.0f, 13210.0f);
+                    (*volumes)[7] = new BoundingAAB(x, y, z, 0.0f, 3526.0f, -11604.0f, 3260.0f, 880.0f, 10640.0f);
+                    (*volumes)[8] = new BoundingAAB(x, y, z, 0.0f, 5212.0f, -12332.0f, 3260.0f, 2640.0f, 8410.0f);
+                    (*volumes)[9] = new BoundingAAB(x, y, z, 0.0f, 2004.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
+                    (*volumes)[10] = new BoundingAAB(x, y, z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
+                    fixed->setWreckedMeshId(0x4780);
+                } else {
+                    ArraySetLength(3, *volumes);
+                    (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
+                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
+                    (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
+                    fixed->setWreckedMeshId(0x477e);
+                }
+                break;
+            case 1:
+                ArraySetLength(5, *volumes);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, 351.0f, 5827.0f, 3930.0f, 1590.0f, 2070.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 616.0f, 4573.0f, 4440.0f, 2120.0f, 1035.0f);
+                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 780.0f, 3303.0f, 4970.0f, 2620.0f, 1895.0f);
+                (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 456.0f, -309.0f, 2695.0f, 3530.0f, 6600.0f);
+                (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
+                fixed->setWreckedMeshId(0x477f);
+                break;
+            case 2:
+                ArraySetLength(3, *volumes);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -85.0f, 24.0f, 4335.0f, 1245.0f, 10880.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 710.0f, 292.0f, 2990.0f, 935.0f, 11450.0f);
+                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 1510.0f, -2886.0f, 2750.0f, 1010.0f, 2750.0f);
+                fixed->setWreckedMeshId(0x477d);
+                break;
+            case 3:
+                ArraySetLength(2, *volumes);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+                fixed->setWreckedMeshId(0x477c);
+                break;
+            default:
+                break;
+        }
+        fixed->setBV(volumes);
+        fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
+        lodManager->addObject(fixed->geometry);
+        fixed->field_0x40 = 1;
+        ship = fixed;
     }
-
-    if (obj != 0)
-
-        obj->setLevel(thisptr);
-    return obj;
+    ship->setLevel(this);
+    return ship;
 }
 
 void Level::almostKillWanted(int index) {
