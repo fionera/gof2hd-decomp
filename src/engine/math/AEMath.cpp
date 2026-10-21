@@ -278,27 +278,31 @@ namespace AbyssEngine {
 
         Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
             Matrix result;
-
-            result.m[0] = lhs.m[0] * rhs.m[0] + lhs.m[1] * rhs.m[4] + lhs.m[2] * rhs.m[8];
-            result.m[1] = lhs.m[0] * rhs.m[1] + lhs.m[1] * rhs.m[5] + lhs.m[2] * rhs.m[9];
-            result.m[2] = lhs.m[0] * rhs.m[2] + lhs.m[1] * rhs.m[6] + lhs.m[2] * rhs.m[10];
-            result.m[3] = lhs.m[3] + lhs.m[0] * rhs.m[3] + lhs.m[1] * rhs.m[7] + lhs.m[2] * rhs.m[11];
-
-            result.m[4] = lhs.m[4] * rhs.m[0] + lhs.m[5] * rhs.m[4] + lhs.m[6] * rhs.m[8];
-            result.m[5] = lhs.m[4] * rhs.m[1] + lhs.m[5] * rhs.m[5] + lhs.m[6] * rhs.m[9];
-            result.m[6] = lhs.m[4] * rhs.m[2] + lhs.m[5] * rhs.m[6] + lhs.m[6] * rhs.m[10];
-            result.m[7] = lhs.m[7] + lhs.m[4] * rhs.m[3] + lhs.m[5] * rhs.m[7] + lhs.m[6] * rhs.m[11];
-
-            result.m[8] = lhs.m[8] * rhs.m[0] + lhs.m[9] * rhs.m[4] + lhs.m[10] * rhs.m[8];
-            result.m[9] = lhs.m[8] * rhs.m[1] + lhs.m[9] * rhs.m[5] + lhs.m[10] * rhs.m[9];
-            result.m[10] = lhs.m[8] * rhs.m[2] + lhs.m[9] * rhs.m[6] + lhs.m[10] * rhs.m[10];
-            result.m[11] = lhs.m[11] + lhs.m[8] * rhs.m[3] + lhs.m[9] * rhs.m[7] + lhs.m[10] * rhs.m[11];
-
-            result.m[12] = lhs.m[12] * rhs.m[12];
-            result.m[13] = lhs.m[13] * rhs.m[13];
-            result.m[14] = lhs.m[14] * rhs.m[14];
-            result.m[15] = 1.0f;
-
+            const float m0 = lhs.m[0] * rhs.m[0] + lhs.m[1] * rhs.m[4] + lhs.m[2] * rhs.m[8];
+            const float m1 = lhs.m[0] * rhs.m[1] + lhs.m[1] * rhs.m[5] + lhs.m[2] * rhs.m[9];
+            const float m2 = lhs.m[0] * rhs.m[2] + lhs.m[1] * rhs.m[6] + lhs.m[2] * rhs.m[10];
+            const float m3 = lhs.m[3] + (lhs.m[0] * rhs.m[3] + lhs.m[1] * rhs.m[7] + lhs.m[2] * rhs.m[11]);
+            const float m4 = lhs.m[4] * rhs.m[0] + lhs.m[5] * rhs.m[4] + lhs.m[6] * rhs.m[8];
+            const float m5 = lhs.m[4] * rhs.m[1] + lhs.m[5] * rhs.m[5] + lhs.m[6] * rhs.m[9];
+            const float m6 = lhs.m[4] * rhs.m[2] + lhs.m[5] * rhs.m[6] + lhs.m[6] * rhs.m[10];
+            const float m7 = lhs.m[7] + (lhs.m[4] * rhs.m[3] + lhs.m[5] * rhs.m[7] + lhs.m[6] * rhs.m[11]);
+            const float m8 = lhs.m[8] * rhs.m[0] + lhs.m[9] * rhs.m[4] + lhs.m[10] * rhs.m[8];
+            const float m9 = lhs.m[8] * rhs.m[1] + lhs.m[9] * rhs.m[5] + lhs.m[10] * rhs.m[9];
+            const float m10 = lhs.m[8] * rhs.m[2] + lhs.m[9] * rhs.m[6] + lhs.m[10] * rhs.m[10];
+            const float m11 = lhs.m[11] + (lhs.m[8] * rhs.m[3] + lhs.m[9] * rhs.m[7] + lhs.m[10] * rhs.m[11]);
+            result.m[0] = m0;
+            result.m[1] = m1;
+            result.m[2] = m2;
+            result.m[3] = m3;
+            result.m[4] = m4;
+            result.m[5] = m5;
+            result.m[6] = m6;
+            result.m[7] = m7;
+            result.m[8] = m8;
+            result.m[9] = m9;
+            result.m[10] = m10;
+            result.m[11] = m11;
+            result.scaleVector() = lhs.scaleVector() * rhs.scaleVector();
             return result;
         }
 
