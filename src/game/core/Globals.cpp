@@ -854,7 +854,7 @@ Globals::~Globals() {
 // GOT-indirect load, which &Global compiles to in PIC. (Previously stubbed as
 // null gI_* placeholder pointers, which folded init to a 2-byte stub.)
 
-int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
     (void) engine;
     int *missionSlot = (int *) &Mission::empty;
     if (*missionSlot == 0) {
@@ -924,9 +924,9 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     *fmodSlotP = fmod;
     fmod->init();
 
-    (*fmodSlotP)->enableCategory(1, settings->_region[1]);
-    (*fmodSlotP)->enableCategory(2, settings->_region[0]);
-    (*fmodSlotP)->enableCategory(3, settings->_region[2]);
+    (*fmodSlotP)->enableCategory(1, reinterpret_cast<bool &>(settings->_region[1]));
+    (*fmodSlotP)->enableCategory(2, reinterpret_cast<bool &>(settings->_region[0]));
+    (*fmodSlotP)->enableCategory(3, reinterpret_cast<bool &>(settings->_region[2]));
     (*fmodSlotP)->setVolume(1, settings->colorR);
     (*fmodSlotP)->setVolume(2, settings->colorG);
     (*fmodSlotP)->setVolume(3, settings->colorB);
@@ -937,25 +937,8 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     Globals::instantActionPoints = 0;
     Globals::first_start_ever = true;
-    InitZeroObject *obj = (InitZeroObject *) Globals::hints;
-    obj->slots[0] = 0;
-    obj->slots[1] = 0;
-    obj->slots[2] = 0;
-    obj->slots[3] = 0;
-    obj->slots[4] = 0;
-    obj->slots[5] = 0;
-    obj->slots[6] = 0;
-    obj->slots[7] = 0;
-    obj->slots[8] = 0;
-    obj->slots[9] = 0;
-    obj->slots[10] = 0;
-    obj->slots[11] = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2b]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x2f]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x33]) = 0;
-    reinterpret_cast<int32_t &>(reinterpret_cast<uint8_t *>(obj->slots)[0x37]) = 0;
-    InitFlagByte *flagByteObj = (InitFlagByte *) &Globals::gameLoaded;
-    flagByteObj->flag = 0;
+    Globals::globals->resetHints();
+    Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
     Globals::initMemoryWarning = 0;
 
@@ -964,9 +947,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     layout->reload();
     ParticleSettingsRef::initialize();
 
-    Array<int> *arr = new Array<int>();
-    this->soundResources = arr;
-    return (int) (long) arr;
+    this->soundResources = new Array<int>();
 }
 
 void Globals::resetHints() {
