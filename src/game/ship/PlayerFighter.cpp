@@ -157,7 +157,7 @@ static inline void PF_enableEmit(int base, int handle, int enable) {
 }
 
 void PlayerFighter::setLevel(Level *lvl) {
-    ((KIPlayer *) (this))->setLevel(lvl);
+    KIPlayer::setLevel(lvl);
     Level *lev = (Level *) (intptr_t) this->level();
 
     int v;
@@ -2129,12 +2129,11 @@ void PlayerFighter::push(int dt) {
 
 
 void PlayerFighter::reset() {
-    ((KIPlayer *) (this))->reset();
+    KIPlayer::reset();
     this->crateCaptured() = 1;
 
-    Vector spawn = {this->posX, this->posY, this->posZ};
-    this->workingPosition = spawn;
-    this->renderPosition() = spawn;
+    this->workingPosition = Vector{this->posX, this->posY, this->posZ};
+    this->renderPosition() = Vector(this->workingPosition);
 
     this->deltaTime = 0;
     this->deltaTimeHi = 0;
@@ -2150,12 +2149,13 @@ void PlayerFighter::reset() {
         this->state = 0;
     }
 
-    this->resetVecA() = (Vector){0, 0, 0};
-    this->resetVecB = (Vector){0, 0, 0};
-    this->resetVecC = (Vector){0, 0, 0};
+    this->resetVecA() = Vector{0, 0, 0};
+    this->resetVecB = Vector{0, 0, 0};
+    this->resetVecC = Vector{0, 0, 0};
 
     this->isMissionCrate() = 0;
     this->missionCrateLost() = 0;
+    this->missionCrateCaptured() = 0;
     this->crateLost() = 0;
     this->crateCaptured() = 1;
     this->field_0x140 = 0;
