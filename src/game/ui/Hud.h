@@ -311,7 +311,7 @@ public:
 
     uint8_t cargoFull();
 
-    void catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender, bool slotMode,
+    void catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender, bool slotMode,
                     bool aggregate);
 
     void checkIfQuickMenuIsEmpty();

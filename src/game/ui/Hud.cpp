@@ -529,267 +529,50 @@ static const char g_Hud_ccHashN[1] = {0};
 static const char g_Hud_ccUnit[1] = {0};
 static const char g_Hud_ccUnit2[1] = {0};
 
-void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender,
+void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender,
                      bool slotMode, bool aggregate) {
     this->field_0x1d0 = 0;
-    this->cargoFullFlag = single ? 1 : 0;
-
+    this->cargoFullFlag = cargoFull;
+    ListItem *item;
     if (missionDelivery) {
-        GameText *gt = Globals::gameText;
-        String *base = gt->getText(0x219);
-        String *dst = &this->field_0x1f4;
-        *((String *) (dst)) = *((String *) (base));
-
-        Status *tmpl = Globals::status;
-        char a40[12];
-        ((String *) (a40))->Set(((String *) (dst))->data);
-        int type = Globals::status->getMission()->getType();
-        String *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
-        char a4c[12];
-        ((String *) (a4c))->Set(((String *) (typeTxt))->data);
-        char a58[12];
-        ((String *) (a58))->ctor_char(g_Hud_ccHashX, false);
-        char out1[12];
-        Status_replaceHash(out1, tmpl, a40, a4c, a58);
-        *((String *) (dst)) = *((String *) (out1));
-        {
-            String *_s = ((String *) (out1));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a58));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a4c));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a40));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        tmpl = Globals::status;
-        char a64[12];
-        ((String *) (a64))->Set(((String *) (dst))->data);
-        char a70[12];
-        ((String *) (a70))->Set((long long) (1));
-        char a7c[12];
-        ((String *) (a7c))->ctor_char(g_Hud_ccHashN, false);
-        char out2[12];
-        Status_replaceHash(out2, tmpl, a64, a70, a7c);
-        *((String *) (dst)) = *((String *) (out2));
-        {
-            String *_s = ((String *) (out2));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a7c));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a70));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a64));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        String *str = new String(*(String *) dst);
-        ListItem *item = new ListItem(str);
+        this->field_0x1f4 = *Globals::gameText->getText(537);
+        this->field_0x1f4 = Globals::status->replaceHash(
+            String(this->field_0x1f4, false),
+            String(*Globals::gameText->getText(Globals::status->getMission()->getType() == 3 ? 1390 : 1391), false),
+            String("#N"));
+        this->field_0x1f4 = Globals::status->replaceHash(String(this->field_0x1f4, false), String(1), String("#Q"));
+        item = new ListItem(new String(this->field_0x1f4, false));
         item->itemId = itemId;
-        addToEventQueue(item);
-        return;
-    }
-
-    if (single) {
-        GameText *gt = Globals::gameText;
-        String *txt = gt->getText(0x142);
-        *((String *) (&this->field_0x1f4)) = *((String *) (txt));
-        String *str = new String(this->field_0x1f4);
-        ListItem *item = new ListItem(str, 1);
-        addToEventQueue(item);
-        return;
-    }
-
-    if (count < 1) return;
-
-    GameText *gt = Globals::gameText;
-
-    if (aggregate && this->eventQueueDirty != 0) {
-        char a0[12];
-        ((String *) (a0))->Set((long long) (this->cargoAggregateCount));
-        char ac[12];
-        ((String *) (ac))->ctor_char(g_Hud_ccUnit, false);
-        char a94[12];
-        *(String *) a94 = *(String *) a0 + *(String *) ac;
-        char a88[12];
-        ((String *) (a88))->Set(((String *) (a94))->data);
-        String *unit = gt->getText(itemId + 0x4fa);
-        char k34[12];
-        *(String *) k34 = *(String *) a88 + *(String *) unit;
-        {
-            String *_s = ((String *) (a88));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a94));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (ac));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a0));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        char b8[12];
-        ((String *) (b8))->Set(((String *) (k34))->data);
-        int idx = sameHudEventAsBeforeAggregate(*(String *) b8);
-        {
-            String *_s = ((String *) (b8));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        if (idx >= 0) {
-            this->eventQueueTimer = 2000;
-            this->cargoAggregateCount += count;
-            char nAc[12];
-            ((String *) (nAc))->Set((long long) (this->cargoAggregateCount));
-            char nC4[12];
-            ((String *) (nC4))->ctor_char(g_Hud_ccUnit2, false);
-            char nA0[12];
-            *(String *) nA0 = *(String *) nAc + *(String *) nC4;
-            char n94[12];
-            ((String *) (n94))->Set(((String *) (nA0))->data);
-            String *u2 = gt->getText(itemId + 0x4fa);
-            char n88[12];
-            *(String *) n88 = *(String *) n94 + *(String *) u2;
-            *((String *) ((*this->eventQueue)[idx]->name)) = *((String *) (n88));
-            {
-                String *_s = ((String *) (n88));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (n94));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nA0));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nC4));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nAc));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (k34));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
+    } else {
+        if (cargoFull) {
+            this->field_0x1f4 = *Globals::gameText->getText(322);
+            this->addToEventQueue(new ListItem(new String(this->field_0x1f4, false), 1));
             return;
         }
-        {
-            String *_s = ((String *) (k34));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
+        if (count < 1)
+            return;
+        if (aggregate && this->eventQueueDirty) {
+            String text = String(String(this->cargoAggregateCount) + String("t "), false) +
+                          *Globals::gameText->getText(itemId + 1274);
+            int index = this->sameHudEventAsBeforeAggregate(String(text, false));
+            if (index >= 0) {
+                this->eventQueueTimer = 2000;
+                this->cargoAggregateCount += count;
+                *(*this->eventQueue)[index]->name = String(String(this->cargoAggregateCount) + String("t "), false) +
+                                                    *Globals::gameText->getText(itemId + 1274);
+                return;
+            }
         }
+        this->cargoAggregateCount = count;
+        this->field_0x1f4 = String(String(count) + String("t "), false) + *Globals::gameText->getText(itemId + 1274);
+        item = new ListItem(new String(this->field_0x1f4, false));
+        item->itemId = itemId;
+        if (!slotMode || extender)
+            item->buttonKind = 2;
+        if (slotMode)
+            item->selectable = 1;
     }
-
-    this->cargoAggregateCount = count;
-    char a0[12];
-    ((String *) (a0))->Set((long long) (this->cargoAggregateCount));
-    char ac[12];
-    ((String *) (ac))->ctor_char(g_Hud_ccUnit, false);
-    char a94[12];
-    *(String *) a94 = *(String *) a0 + *(String *) ac;
-    char a88[12];
-    ((String *) (a88))->Set(((String *) (a94))->data);
-    String *unit = gt->getText(itemId + 0x4fa);
-    char k34[12];
-    *(String *) k34 = *(String *) a88 + *(String *) unit;
-    *((String *) (&this->field_0x1f4)) = *((String *) (k34));
-    {
-        String *_s = ((String *) (k34));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a88));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a94));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (ac));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a0));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    String *str = new String(this->field_0x1f4);
-    ListItem *item = new ListItem(str);
-    item->itemId = itemId;
-    if (!slotMode || extender) item->buttonKind = 2;
-    if (slotMode) item->selectable = 1;
-    addToEventQueue(item);
+    this->addToEventQueue(item);
 }
 
 void Hud::drawEventString(String text, bool rightAlign) {
