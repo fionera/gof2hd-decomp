@@ -97,13 +97,13 @@ both forbidden. These are therefore left as a documented delta:
 a full re-model; its copy-ctor delta (`C2(const String&)` vs the original's `C2(const String&,bool)`)
 is part of that and is not safe to change piecemeal.
 
-### Engine flag globals (15 symbols)
-`src/engine/core/EngineFlags.cpp` (commit dcdcb0e1) holds never-set engine flags
-(`g_Mesh_vboEnabledFlag`, `g_Engine_shaderModeFlag`, `g_Camera_frustumEnabledFlag`, …,
-`g_MeshRelease_freeFn`) split into their own TU **with external linkage** so `-Oz` cannot
-constant-fold the null through the flag-gated engine functions (the original keeps them as
-internal data, accessed GOT-indirect). Hidden visibility would change the GOT codegen and
-`__attribute__` is banned, so the 15 exports stay as a documented delta.
+### Engine flag globals (removed 2026-10-21)
+`src/engine/core/EngineFlags.cpp` used to hold 15 invented, never-set flag globals
+(`g_Engine_shaderModeFlag`, `g_Mesh_vboEnabledFlag`, ...). Only two had a remaining user, the
+bogus `getAppVersion` body (a duplicate of `Engine::InitGL` routed through `AE_getInitGL*` shims):
+they stood for `Engine::enableShader` and `Engine::EnablePostEffect`. The original's
+`getAppVersion` is a size-0 symbol aliasing `Engine::InitGL`, so that body was dropped and the TU
+deleted; the 15 exports and the 3 `AE_getInitGL*` imports are gone.
 
 ### Not-yet-wired (1 symbol)
 - `gof2::kJNIEnvCallAnchors` — an internal table whose purpose is to odr-use the five

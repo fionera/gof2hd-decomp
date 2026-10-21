@@ -43,26 +43,6 @@ _ZN5ArrayIPS_IPN11AbyssEngine6StringEEED1Ev
 _ZN5ArrayIPaED2Ev
 _ZN5ArrayIbED1Ev
 #
-# -- Engine flag globals (src/engine/core/EngineFlags.cpp, commit dcdcb0e1): never-set flags the
-#    original keeps as internal data, split to their own TU with external linkage so -Oz cannot
-#    constant-fold the null through the flag-gated engine functions. Hidden visibility would
-#    change the GOT-indirect codegen and __attribute__ is banned, so the exports stay.
-_ZN11AbyssEngine20g_MeshRelease_freeFnE
-_ZN11AbyssEngine21g_Mesh_shaderPathFlagE
-_ZN11AbyssEngine21g_Mesh_tangentDelFlagE
-_ZN11AbyssEngine21g_Mesh_vboByteCounterE
-_ZN11AbyssEngine21g_Mesh_vboEnabledFlagE
-_ZN11AbyssEngine22g_Mesh_extraArraysFlagE
-_ZN11AbyssEngine22g_Mesh_keepCpuCopyFlagE
-_ZN11AbyssEngine23g_Engine_fboEnabledFlagE
-_ZN11AbyssEngine23g_Engine_shaderModeFlagE
-_ZN11AbyssEngine25g_MeshIntersect_flipVFlagE
-_ZN11AbyssEngine25g_Mesh_tangentEnabledFlagE
-_ZN11AbyssEngine25g_SpriteSystem_uvFlipFlagE
-_ZN11AbyssEngine26g_SpriteSystem_tangentFlagE
-_ZN11AbyssEngine27g_Camera_frustumEnabledFlagE
-_ZN11AbyssEngine28g_GameText_arabicEnabledFlagE
-#
 # -- Vendored / not-yet-wired (docs/VALIDATION.md)
 # libcrypto data symbol the original's static link garbage-collected.
 # odr-use anchor keeping the five _JNIEnv::Call*Method exports alive until the real JNI dispatch
