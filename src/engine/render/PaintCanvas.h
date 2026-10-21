@@ -6,6 +6,7 @@
 #include "../core/AEString.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/Resource.h"
 #include "engine/core/Node.h"
 #include "engine/math/Transform.h"
 
@@ -194,11 +195,11 @@ namespace AbyssEngine {
         void DrawImage2D(unsigned int index, int x, int y, int w, int h, unsigned char alignFlags,
                          unsigned char anchorFlags, unsigned char flipFlags);
 
-        void DrawRegion2D(unsigned int index, float unused, int rotSteps, int pivotX, int pivotY, int transX,
+        void DrawRegion2D(unsigned int index, float angle, int pivotX, int pivotY, int posX, int posY,
                           float scaleX, float scaleY);
 
-        void DrawRegion2D(unsigned int index, int srcX, int srcY, int destW, int destH, float unused, int transY,
-                          int pivotX, int pivotY, int transX);
+        void DrawRegion2D(unsigned int index, int srcX, int srcY, int width, int height, float angle, int pivotX,
+                          int pivotY, int posX, int posY);
 
         void Image2DCreate(unsigned short resId, unsigned int &out);
 
@@ -389,7 +390,18 @@ namespace AbyssEngine {
 
         void SetResourceList(AbyssEngine::Resource *const *list, unsigned int count);
 
-        void *FindResource(unsigned short id); // lint: void_ptr (ABI method return; mangling must match lib)
+        // Inline in the original's PaintCanvas.h (weak symbol in the binary): callers therefore
+        // see no inferred readonly attribute and reload resource payload fields after the call.
+        void *FindResource(unsigned short id) { // lint: void_ptr (ABI method return; mangling must match lib)
+            unsigned int count = this->resources.count;
+            for (unsigned int i = 0; i < count; ++i) {
+                Resource *res = this->resources.data_[i];
+                if (res && res->id == id) {
+                    return res;
+                }
+            }
+            return 0;
+        }
 
         int ResourceLoaded(unsigned int index, ResourceType type);
 
