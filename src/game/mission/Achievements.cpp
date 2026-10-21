@@ -141,8 +141,9 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                     // Number of different ores / cores / ... collected.
                     Array<bool> *found = m == 2 ? Globals::status->field_94
                                                 : m == 3 ? Globals::status->field_98 : Globals::status->field_ac;
+                    unsigned k = 0;
                     int cnt = 0;
-                    for (unsigned k = 0; k < found->size(); ++k)
+                    for (; k < found->size(); ++k)
                         cnt += (int) (*found)[k];
                     reached = cnt >= req;
                     break;
@@ -171,8 +172,9 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                 case 12: {
                     // 22 visited-system flags.
                     bool *visited = Globals::status->field_b4->data_;
+                    int k = 0;
                     int cnt = 0;
-                    for (int k = 0; k < 22; k++)
+                    for (; k < 22; k++)
                         cnt += (int) visited[k];
                     reached = cnt >= req;
                     break;
@@ -186,9 +188,10 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                     break;
                 }
                 case 14: {
-                    int cnt = 0;
                     Array<BluePrint *> *bp = Globals::status->bluePrints;
-                    for (unsigned k = 0; k < bp->size(); ++k)
+                    unsigned k = 0;
+                    int cnt = 0;
+                    for (; k < bp->size(); ++k)
                         if ((*bp)[k]->productionCount > 0)
                             cnt += 1;
                     reached = cnt >= req;
@@ -332,34 +335,34 @@ void Achievements::initCheckEquipmentAndWeapons() {
 }
 
 void Achievements::countMedals() {
-    int *r3 = this->medals;
-    int total = 0;
+    int *medals = this->medals;
+    this->medalCount = 0;
     int golds = 0;
-    this->medalCount = total;
-    for (int i = 0; i < 36; ++i) {
-        int v = r3[i];
-        if (v != 0) {
-            total++;
-            if (v == 1) {
-                this->medalCount = total;
+    for (int i = 0; i < 36; i++) {
+        switch (medals[i]) {
+            case 0:
+                break;
+            case 1:
+                this->medalCount++;
                 golds++;
-            } else {
-                this->medalCount = total;
-            }
+                break;
+            default:
+                this->medalCount++;
+                break;
         }
     }
-    const int *base2 = r3 + 36;
+    const int *supernovaMedals = medals + 36;
     int j = 0;
-    int supers = 0;
-    for (; j < 9; ++j) {
-        if (base2[j] != 0)
-            supers++;
+    int supernovas = 0;
+    for (; j < 9; j++) {
+        if (supernovaMedals[j] != 0)
+            supernovas++;
     }
-    int sOk = (supers == 9);
-    int gOk = (golds == 36);
-    this->gotAllSupernovaMedals_ = (uint8_t)(sOk & gOk);
-    this->gotAllGoldMedals_ = (uint8_t)gOk;
-    this->gotAllMedals_ = total == 36;
+    int allSupernovas = supernovas == 9;
+    int allGolds = golds == 36;
+    this->gotAllSupernovaMedals_ = (uint8_t) (allSupernovas & allGolds);
+    this->gotAllGoldMedals_ = (uint8_t) allGolds;
+    this->gotAllMedals_ = this->medalCount == 36;
 }
 
 bool Achievements::gotAllMedals() {

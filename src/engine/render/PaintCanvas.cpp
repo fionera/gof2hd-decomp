@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); }
+namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); void SpriteSystemSetAllSize(short, SpriteSystem*); int MeshConvertToVBO(Mesh*); }
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
@@ -174,10 +174,6 @@ namespace {
         float factor4c;
     };
 
-    struct PCCameraParamsView {
-        uint32_t raw[3];
-    };
-
     struct PCCameraEyeView {
         uint8_t pad00[0x18];
         float eyeX;
@@ -313,35 +309,24 @@ namespace {
     }
 }
 
-void paintcanvas_ext_has_vibration(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_sprite_allsize(unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_change_mat(void *, void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_mat_intern(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_camera_apply(void *, unsigned int, unsigned int, unsigned int); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_convert_vbo(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_add_resource(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_draw_mesh(void *, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-void paintcanvas_ext_set_reslist(AbyssEngine::Resource * const *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 namespace AbyssEngine {
     int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
 }
 
-void paintcanvas_ext_get_accel(void *); // lint: void_ptr (external symbol; mangling must match lib)
 
 
 
@@ -380,8 +365,8 @@ unsigned int PaintCanvas::CameraGetCurrent() {
     return cur;
 }
 
-void PaintCanvas::HasVibration() {
-    return paintcanvas_ext_has_vibration(this->engine);
+bool PaintCanvas::HasVibration() {
+    return this->engine->HasVibration();
 }
 
 float *PaintCanvas::CameraGetLocal(unsigned int index) {
@@ -552,7 +537,7 @@ void PaintCanvas::SpriteSystemSetAllSize(unsigned int index, short size) {
     if (index < this->spriteSystems.count) {
         AbyssEngine::SpriteSystem *sprite = (this->spriteSystems.data_)[index];
         if (sprite) {
-            return paintcanvas_ext_sprite_allsize(size, sprite);
+            return AbyssEngine::SpriteSystemSetAllSize(size, sprite);
         }
     }
 }
@@ -663,7 +648,7 @@ void PaintCanvas::MeshChangeResourceMaterial(unsigned int meshIndex, unsigned sh
         if (idx + 1 != 0) {
             PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
             AbyssEngine::Material *mat = (this->materials.data_)[idx];
-            return paintcanvas_ext_change_mat(this, mesh, mat);
+            return this->MeshChangeMaterialIntern((AbyssEngine::Mesh *) mesh, mat);
         }
     }
 }
@@ -869,7 +854,7 @@ void PaintCanvas::SetProjOrthoMatrix() {
 void PaintCanvas::MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, AbyssEngine::Material *mat) {
     if (mesh && mat) {
         mesh->material = mat;
-        return paintcanvas_ext_mat_intern(this, mesh->animation);
+        return this->MeshChangeMaterialIntern(mesh->animation, mat);
     }
 }
 
@@ -913,8 +898,8 @@ unsigned int PaintCanvas::GetColor() {
 void PaintCanvas::CameraSetCurrent(unsigned int index) {
     this->currentCamera = index;
     if (index < this->cameras.count) {
-        PCCameraParamsView *cam = (PCCameraParamsView *) (this->cameras.data_)[index];
-        return paintcanvas_ext_camera_apply(this, cam->raw[0], cam->raw[1], cam->raw[2]);
+        AbyssEngine::Camera *cam = (this->cameras.data_)[index];
+        return this->SetProjectionMatrix3d(cam->position[0], cam->position[1], cam->position[2]);
     }
 }
 
@@ -1033,8 +1018,7 @@ void PaintCanvas::SetShaderMode(int mode) {
 
 void PaintCanvas::MeshConvertToVBO(unsigned int index) {
     if (index < this->meshes.count) {
-        return paintcanvas_ext_convert_vbo(
-            this->meshes.data_[index]);
+        AbyssEngine::MeshConvertToVBO(this->meshes.data_[index]);
     }
 }
 
@@ -1243,7 +1227,7 @@ void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str
 }
 
 void PaintCanvas::AddResource(AbyssEngine::Resource *resource) {
-    return paintcanvas_ext_add_resource(resource, &this->resources);
+    return ArrayAdd(resource, this->resources);
 }
 
 void PaintCanvas::TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex) {
@@ -1394,7 +1378,7 @@ void PaintCanvas::Initialize(bool landscape) {
 void PaintCanvas::DrawMesh(unsigned int index) {
     if (index < this->meshes.count) {
         PCMeshView *mesh = (PCMeshView *) this->meshes.data_[index];
-        return paintcanvas_ext_draw_mesh(this->engine, mesh);
+        return AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) mesh);
     }
 }
 
@@ -1571,7 +1555,7 @@ void PaintCanvas::MeshChangeMaterial(unsigned int meshIndex, unsigned short matI
         meshIndex < this->meshes.count) {
         PCMeshView *mesh = (PCMeshView *) this->meshes.data_[meshIndex];
         AbyssEngine::Material *mat = (this->materials.data_)[matIndex];
-        return paintcanvas_ext_change_mat(this, mesh, mat);
+        return this->MeshChangeMaterialIntern((AbyssEngine::Mesh *) mesh, mat);
     }
 }
 
@@ -1922,8 +1906,8 @@ void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
     out = result;
 }
 
-void PaintCanvas::GetGravValue() {
-    return paintcanvas_ext_get_grav(this->engine);
+double *PaintCanvas::GetGravValue() {
+    return this->engine->GetGravValue();
 }
 
 void PaintCanvas::BeginBG() {
@@ -1990,7 +1974,7 @@ void PaintCanvas::FontCreate(unsigned short resId, unsigned int &out,
 }
 
 void PaintCanvas::SetResourceList(AbyssEngine::Resource * const * list, unsigned int count) {
-    return paintcanvas_ext_set_reslist(list, count, &this->resources);
+    return ArrayAdd(list, count, this->resources);
 }
 
 void PaintCanvas::MaterialResourceChangeTexture(unsigned int resId,
@@ -2272,8 +2256,8 @@ AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in) {
     return this->GetReverseString(AbyssEngine::String(in, false), this->field_0x1c == 0);
 }
 
-void PaintCanvas::GetAccelValue() {
-    return paintcanvas_ext_get_accel(this->engine);
+double *PaintCanvas::GetAccelValue() {
+    return this->engine->GetAccelValue();
 }
 
 void PaintCanvas::ResetPersMatrix() {

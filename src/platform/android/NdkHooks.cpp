@@ -140,10 +140,9 @@ extern "C" void ndk23_ndkDone() { // lint: extern_c (native ABI boundary; origin
     }
 }
 
-extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             // lint: void_ptr (ndk* touch handle param, baked ABI)
-                                             float x, float y) {
-    ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
+// The original forwards its four core-register arguments unchanged to AddTouch (b.w AddTouch).
+extern "C" void ndk23_handleTouchScreenEvent(int x, int y, int id, int action) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    AddTouch(x, y, id, action);
 }
 
 extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)

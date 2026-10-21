@@ -107,8 +107,8 @@ namespace AbyssEngine {
             return;
 
         bool forward = (canvas->field_0x1c | rtl) != 0;
-        int step = forward ? 1 : -1;
         int index = forward ? 0 : len - 1;
+        int step = forward ? 1 : -1;
         if (Engine::enableReverseFlag != 0 && GameText::getLanguage() == 9 &&
             GameText::isNonArabicString(text, len) != 0) {
             index = 0;

@@ -13,13 +13,22 @@ namespace AbyssEngine {
 
         void BSphere::Merge(const Transform &t) {
             // World-space bounds of the transform: moved centre, radius scaled by the largest axis.
-            Vector center = MatrixTransformVector(t.worldMatrix, t.boundingCenter);
-            BSphere sphere = {center, 0.0f, 1.0f};
-            Vector extent = {t.boundingRadius, t.boundingRadius, t.boundingRadius};
-            Vector rotated = MatrixRotateVector(t.worldMatrix, extent);
-            float ax = rotated.x > 0.0f ? rotated.x : -rotated.x;
-            float ay = rotated.y > 0.0f ? rotated.y : -rotated.y;
-            float az = rotated.z > 0.0f ? rotated.z : -rotated.z;
+            BSphere sphere;
+            sphere.radius2 = 1.0f;
+            Vector v = MatrixTransformVector(t.worldMatrix, t.boundingCenter);
+            sphere.center.x = v.x;
+            sphere.center.y = v.y;
+            sphere.center.z = v.z;
+            v.x = t.boundingRadius;
+            v.y = t.boundingRadius;
+            v.z = t.boundingRadius;
+            Vector rotated = MatrixRotateVector(t.worldMatrix, v);
+            v.x = rotated.x;
+            v.y = rotated.y;
+            v.z = rotated.z;
+            float ax = v.x > 0.0f ? v.x : -v.x;
+            float ay = v.y > 0.0f ? v.y : -v.y;
+            float az = v.z > 0.0f ? v.z : -v.z;
             if (ax > ay)
                 ay = ax;
             if (ay > az)

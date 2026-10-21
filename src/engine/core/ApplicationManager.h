@@ -234,7 +234,7 @@ namespace AbyssEngine {
 
         void VibrateEnable(bool enable);
 
-        void VibrateSupported();
+        bool VibrateSupported();
     };
 }
 

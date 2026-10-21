@@ -19,10 +19,10 @@
 #include "game/menu/ModStation.h"
 
 
-int WantedWindow::OnTouchMove(int x, int y) {
+bool WantedWindow::OnTouchMove(int x, int y) {
     if (this->showingMap != 0) {
         this->starMap->OnTouchMove(x, y);
-        return 0;
+        return false;
     }
 
     Layout **layout = &Globals::layout;
@@ -62,7 +62,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
         selected = 0xffffffffu;
     }
     this->highlightedWanted = selected;
-    return 0;
+    return false;
 }
 
 void WantedWindow::update(int dt) {
@@ -105,10 +105,10 @@ void WantedWindow::update(int dt) {
 }
 
 
-int WantedWindow::OnTouchBegin(int x, int y) {
+bool WantedWindow::OnTouchBegin(int x, int y) {
     if (this->showingMap != 0) {
         this->starMap->OnTouchBegin(x, y);
-        return 0;
+        return false;
     }
 
     this->lastDragY = y;
@@ -130,7 +130,7 @@ int WantedWindow::OnTouchBegin(int x, int y) {
     }
 
     this->highlightedWanted = this->getWantedAtPosition(x, y);
-    return 0;
+    return false;
 }
 
 void WantedWindow::render3D() {

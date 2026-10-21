@@ -343,7 +343,7 @@ public:
 
     int OnTouchEnd(int x, int y);
 
-    int OnTouchMove(int x, int y);
+    bool OnTouchMove(int x, int y);
 
     void drawBG();
 

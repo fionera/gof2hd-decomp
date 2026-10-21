@@ -59,7 +59,7 @@ static const int CAMPAIGN_GOAL_TEXT[164] = {
 
 
 
-int MissionsWindow::OnTouchMove(int p1, int p2) {
+bool MissionsWindow::OnTouchMove(int p1, int p2) {
     if (this->m_mode == 1)
         return this->m_pWantedWindow->OnTouchMove(p1, p2);
     if (this->m_choiceActive) {
@@ -78,10 +78,10 @@ int MissionsWindow::OnTouchMove(int p1, int p2) {
         if (this->m_pMapButton) this->m_pMapButton->OnTouchMove(p1, p2);
         if (this->m_pRejectButton) this->m_pRejectButton->OnTouchMove(p1, p2);
     }
-    return 0;
+    return false;
 }
 
-int MissionsWindow::OnTouchBegin(int p1, int p2) {
+bool MissionsWindow::OnTouchBegin(int p1, int p2) {
     if (this->m_mode == 1)
         return this->m_pWantedWindow->OnTouchBegin(p1, p2);
     if (this->m_choiceActive) {
@@ -100,7 +100,7 @@ int MissionsWindow::OnTouchBegin(int p1, int p2) {
         if (this->m_pMapButton) this->m_pMapButton->OnTouchBegin(p1, p2);
         if (this->m_pRejectButton) this->m_pRejectButton->OnTouchBegin(p1, p2);
     }
-    return 0;
+    return false;
 }
 
 void MissionsWindow::setHangarUpdate(bool v) {

@@ -81,10 +81,12 @@ Array<Ship *> *Station::getShips() { return ships; }
 void Station::addItem(Item *item) {
     int index = -1;
     if (items != nullptr) {
-        for (uint32_t i = 0; i < items->size(); i++) {
-            if ((*items)[i]->equals(item)) {
-                index = (int) i;
-                break;
+        if (items->size() != 0) {
+            for (uint32_t i = 0; i < items->size(); i++) {
+                if ((*items)[i]->equals(item)) {
+                    index = (int) i;
+                    break;
+                }
             }
         }
     } else {
@@ -201,10 +203,12 @@ uint32_t Station::hasShip(int index) {
 void Station::addShip(Ship *ship) {
     int index = -1;
     if (ships != nullptr) {
-        for (uint32_t i = 0; i < ships->size(); i++) {
-            if ((*ships)[i]->equals(ship)) {
-                index = (int) i;
-                break;
+        if (ships->size() != 0) {
+            for (uint32_t i = 0; i < ships->size(); i++) {
+                if ((*ships)[i]->equals(ship)) {
+                    index = (int) i;
+                    break;
+                }
             }
         }
     } else {
