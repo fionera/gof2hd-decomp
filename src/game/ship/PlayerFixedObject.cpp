@@ -293,8 +293,8 @@ void PlayerFixedObject::update(int dt) {
             this->level->friendDied();
         if (this->kind() == 0x37a3)
             this->level->pirateStationAction(false);
-        this->moving = 0;
         this->state = 3;
+        this->moving = 0;
         this->hasCargo = this->cargoAvailable();
         if (this->hasCargo)
             this->createCrate(0);
@@ -364,7 +364,9 @@ void PlayerFixedObject::update(int dt) {
                     Player *enemy = this->player->getEnemy(i);
                     this->targetEnemy = (int32_t) (intptr_t) enemy;
                     this->targetPos() = enemy->getPosition();
-                    this->homingTarget = this->targetPos();
+                    this->homingTarget.x = this->targetPos().x;
+                    this->homingTarget.y = this->targetPos().y;
+                    this->homingTarget.z = this->targetPos().z;
                     break;
                 }
             }
@@ -375,7 +377,7 @@ void PlayerFixedObject::update(int dt) {
         this->homingDir.x = vx;
         this->homingDir.y = vy;
         this->homingDir.z = vz;
-        if (vx < 50000.0f && vz > -50000.0f && vx > -50000.0f && vy < 50000.0f && vy > -50000.0f && vz < 50000.0f) {
+        if (vy < 50000.0f && vy > -50000.0f && vz < 50000.0f && vz > -50000.0f && vx > -50000.0f && vx < 50000.0f) {
             this->state = 1;
             this->player->setActive(true);
         }
@@ -401,18 +403,16 @@ void PlayerFixedObject::update(int dt) {
                 this->position() = this->geometry->getPosition();
                 for (unsigned int i = 0; i < this->wreckCollision->size(); i++)
                     (*this->wreckCollision)[i]->update(this->position().x, this->position().y, this->position().z);
-                unsigned short material;
                 switch (this->wreckType) {
-                    case 0: material = 0x824c; break;
-                    case 1: material = 0x8248; break;
-                    case 2: material = 0x8249; break;
-                    case 3: material = 0x824a; break;
-                    case 4: material = 0x824b; break;
-                    default: material = 0x824d; break;
+                    case 0: this->wreckMaterial = 0x824c; break;
+                    case 1: this->wreckMaterial = 0x8248; break;
+                    case 2: this->wreckMaterial = 0x8249; break;
+                    case 3: this->wreckMaterial = 0x824a; break;
+                    case 4: this->wreckMaterial = 0x824b; break;
+                    default: this->wreckMaterial = 0x824d; break;
                 }
-                this->wreckMaterial = material;
                 unsigned int materialId;
-                Globals::Canvas->MaterialCreate(material, materialId);
+                Globals::Canvas->MaterialCreate((unsigned short) this->wreckMaterial, materialId);
                 Globals::Canvas->MeshChangeMaterial(this->wreckGeometry->meshId, materialId);
             }
             if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()
@@ -459,8 +459,8 @@ void PlayerFixedObject::update(int dt) {
                 scale = 8.0f;
             this->explosion->setScaling(scale);
             this->explosion->start(this->position(), Vector{0.0f, 0.0f, 0.0f});
-            this->rumbleTimer = 1;
             this->explosionElapsed = 0;
+            this->rumbleTimer = 1;
             if (this->level->getPlayer() && this->level->getPlayer()->getTargetFollowCamera()) {
                 float distance = AbyssEngine::AEMath::VectorLength(
                     this->position() - *this->level->getPlayer()->getTargetFollowCamera()->getPosition());
