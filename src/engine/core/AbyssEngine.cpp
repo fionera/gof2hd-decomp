@@ -656,10 +656,17 @@ namespace AbyssEngine {
                                  i < (unsigned int) curve->count; ++i) {
             CurveKeyframe *entry = data[i];
             int8_t tag = (int8_t) entry->tag;
-            if (tag == 3 || tag == 2)
-                operator delete(entry);
-            else if (tag == 1)
-                operator delete(entry);
+            switch (tag) {
+                case 3:
+                    operator delete(entry);
+                    break;
+                case 2:
+                    operator delete(entry);
+                    break;
+                case 1:
+                    operator delete(entry);
+                    break;
+            }
             curve = (Curve *) *slot;
         }
 
@@ -1321,49 +1328,44 @@ namespace AbyssEngine {
         if (vertexCount < 4 || triCount == 0 || (vertexFormat & 1) == 0)
             return -4;
 
-        Mesh *m = (Mesh *) operator new(0x88);
-
-        memset(m, 0, 0x88);
-        m->boundsRadiusSq = 1.0f;
-
+        Mesh *m = new Mesh();
         *out = m;
-        m->vertexCount = (short) vertexCount;
         m->vertexFormat = vertexFormat;
-        m->indexCount = (short) (triCount + (triCount << 1));
-        m->field_0x2a = (short) triCount;
+        m->vertexCount = vertexCount;
+        m->indexCount = triCount * 3;
+        m->field_0x2a = triCount;
 
-        unsigned int posBytes = (unsigned int) vertexCount * 0xc;
-        unsigned char *p = (unsigned char *) operator new[](posBytes);
-        m->positions = p;
-        memset(p, 0, posBytes);
+        float *f = new float[vertexCount * 3];
+        m->positions = (unsigned char *) f;
+        memset(f, 0, vertexCount * 3 * sizeof(float));
 
         if (vertexFormat & 0x10) {
-            p = (unsigned char *) operator new[]((unsigned int) triCount * 6);
-            m->indices = p;
-            memset(p, 0, (unsigned int) triCount * 6);
+            unsigned short *idx = new unsigned short[triCount * 3];
+            (*out)->indices = (unsigned char *) idx;
+            memset(idx, 0, triCount * 3 * sizeof(unsigned short));
         }
         if (vertexFormat & 2) {
-            p = (unsigned char *) operator new[]((unsigned int) vertexCount << 3);
-            m->texCoords = p;
-            memset(p, 0, (unsigned int) vertexCount << 3);
+            f = new float[vertexCount * 2];
+            m->texCoords = (unsigned char *) f;
+            memset(f, 0, vertexCount * 2 * sizeof(float));
         }
         if (vertexFormat & 4) {
-            p = (unsigned char *) operator new[](posBytes);
-            m->normals = p;
-            memset(p, 0, posBytes);
-            if (*g_Mesh_tangentEnabledFlag != 0) {
-                p = (unsigned char *) operator new[](posBytes);
-                m->tangents = p;
-                memset(p, 0, posBytes);
-                p = (unsigned char *) operator new[](posBytes);
-                m->binormals = p;
-                memset(p, 0, posBytes);
+            f = new float[vertexCount * 3];
+            m->normals = (unsigned char *) f;
+            memset(f, 0, vertexCount * 3 * sizeof(float));
+            if (Engine::enableShader) {
+                f = new float[vertexCount * 3];
+                m->tangents = (unsigned char *) f;
+                memset(f, 0, vertexCount * 3 * sizeof(float));
+                f = new float[vertexCount * 3];
+                m->binormals = (unsigned char *) f;
+                memset(f, 0, vertexCount * 3 * sizeof(float));
             }
         }
         if (vertexFormat & 8) {
-            p = (unsigned char *) operator new[]((unsigned int) vertexCount << 4);
-            m->colors = p;
-            memset(p, 0, (unsigned int) vertexCount << 4);
+            f = new float[vertexCount * 4];
+            m->colors = (unsigned char *) f;
+            memset(f, 0, vertexCount * 4 * sizeof(float));
         }
 
         return 1;
