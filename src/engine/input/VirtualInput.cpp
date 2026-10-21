@@ -425,9 +425,9 @@ matched:
             break;
         case 7: *reinterpret_cast<float *>(g_aimAssist) = 0.01f;
             break;
-        case 8: engine->autoPilotEngaged = 0x3f800000;
+        case 8: engine->wheelDelta = 1.0f;
             break;
-        case 9: engine->autoPilotEngaged = static_cast<int>(0xbf800000);
+        case 9: engine->wheelDelta = -1.0f;
             break;
         case 0x13: *g_pressFireFlag = 1;
             break;
@@ -596,9 +596,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     }
 
     if (keyHeld(8))
-        engine->autoPilotEngaged = static_cast<int>(floatToBits(-1.0f));
+        engine->wheelDelta = -1.0f;
     if (keyHeld(9))
-        engine->autoPilotEngaged = static_cast<int>(floatToBits(1.0f));
+        engine->wheelDelta = 1.0f;
 
     if (keyHeld(11)) {
         Globals::rotateShipInStation = floatToBits(keyHeld(14) ? -40.0f : -20.0f);

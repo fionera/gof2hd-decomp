@@ -152,7 +152,7 @@ namespace AbyssEngine {
         unsigned char *addData;
         int addDataSize;
 
-        int autoPilotEngaged;
+        float wheelDelta; // mouse-wheel / zoom key delta (float)
 
         uint8_t _pad0x364[4];
 

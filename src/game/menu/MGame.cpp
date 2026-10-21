@@ -327,7 +327,7 @@ void MGame::switchCamera(int id) {
             this->levelScript->resetCamera(this->level);
             this->camera->setRotationAroundTarget(false);
             this->player->setFreeLookMode(false);
-            static_cast<Engine *>(this->applicationManager->GetEngine())->autoPilotEngaged = 0;
+            static_cast<Engine *>(this->applicationManager->GetEngine())->wheelDelta = 0.0f;
             break;
         case 1:
         case 3:

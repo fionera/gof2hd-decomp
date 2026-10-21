@@ -3349,7 +3349,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     }
     if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
     AbyssEngine::Engine *eng = (AbyssEngine::Engine *) Globals::appManager->GetEngine();
-    ((AbyssEngine::Engine *) eng)->autoPilotEngaged = 0;
+    ((AbyssEngine::Engine *) eng)->wheelDelta = 0.0f;
     ((int &) this->thrust) = 0x3f800000;
 }
 
