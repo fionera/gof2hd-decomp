@@ -586,21 +586,21 @@ String Globals::getBoundedString(const String &text, int width) {
     return result;
 }
 
-static const float gSCS_f86f8 = 0;
-static const float gSCS_f86fc = 0;
-static const float gSCS_f8700 = 0;
-static const float gSCS_f8704 = 0;
-static const float gSCS_f8708 = 0;
-static const float gSCS_f870c = 0;
-static const float gSCS_f8710 = 0;
-static const float gSCS_f8714 = 0;
-static const float gSCS_f8718 = 0;
-static const float gSCS_f871c = 0;
-static const float gSCS_f8720 = 0;
-static const float gSCS_f8724 = 0;
-static const float gSCS_f8728 = 0;
-static const float gSCS_f872c = 0;
-static const float gSCS_f8730 = 0;
+static const float gSCS_f86f8 = 210.9375f;
+static const float gSCS_f86fc = 300.0f;
+static const float gSCS_f8700 = 150.0f;
+static const float gSCS_f8704 = -126.5625f;
+static const float gSCS_f8708 = 92.8125f;
+static const float gSCS_f870c = 180.0f;
+static const float gSCS_f8710 = 90.0f;
+static const float gSCS_f8714 = 132.0f;
+static const float gSCS_f8718 = 66.0f;
+static const float gSCS_f871c = 313.59375f;
+static const float gSCS_f8720 = 2.8125f;
+static const float gSCS_f8724 = 446.0f;
+static const float gSCS_f8728 = 223.0f;
+static const float gSCS_f872c = -2.8125f;
+static const float gSCS_f8730 = 54.0f;
 
 
 static inline char rdflag(char *const g) { return *g; }
