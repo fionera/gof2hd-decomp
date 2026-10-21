@@ -135,7 +135,7 @@ void PlayerTurret::setScaling(float scale) {
 
 void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry) {
     // Aim 1500 units ahead of the current enemy along its flight direction.
-    Matrix matrix = *(const Matrix *) this->currentEnemy->transform;
+    Matrix matrix = this->currentEnemy->transform;
     this->aimPoint() = this->currentEnemy->getPosition() + VectorNormalize(MatrixGetDir(matrix)) * 1500.0f;
 
     if (this->isSentryGun())
@@ -195,12 +195,12 @@ void PlayerTurret::update(int delta) {
     }
 
     if (this->turretHost != nullptr) {
-        Matrix hostMatrix = *(const Matrix *) this->turretHost->player->transform;
+        Matrix hostMatrix = this->turretHost->player->transform;
         this->hostWorldOffset() = MatrixRotateVector(hostMatrix, this->hostOffset);
         this->geometry->setMatrix(hostMatrix);
         this->geometry->translate(this->hostWorldOffset());
     }
-    *(Matrix *) this->player->transform = this->geometry->getMatrix();
+    this->player->transform = this->geometry->getMatrix();
     this->cachedPosition() = this->geometry->getPosition();
 
     if (this->player->getHitpoints() <= 0 && this->state != 3 && this->state != 4) {
