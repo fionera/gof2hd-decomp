@@ -1480,22 +1480,25 @@ void Level::createFighterTurrets() {
             continue;
         }
         PlayerTurret *turret;
-        if (ship->shipGroupFlag == 0x2d) {
-            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
-            turret->player->setVulnerable(false);
-            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-            turret->setHost(ship, Vector{0.0f, 172.25f, -460.7f});
-            ship->field_0x10 = (int) (intptr_t) turret;
-            turret->shipGroup = 8;
-        } else if (ship->shipGroupFlag == 0x33) {
-            turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
-            turret->player->setVulnerable(false);
-            turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
-            turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
-            ship->field_0x10 = (int) (intptr_t) turret;
-            turret->shipGroup = 0;
-        } else {
-            continue;
+        switch (ship->shipGroupFlag) {
+            case 0x33:
+                turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+                turret->player->setVulnerable(false);
+                turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+                turret->setHost(ship, Vector{0.0f, 470.0f, -83.0f});
+                turret->shipGroup = 0;
+                ship->field_0x10 = (int) (intptr_t) turret;
+                break;
+            case 0x2d:
+                turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
+                turret->player->setVulnerable(false);
+                turret->player->setMaxHitpoints(ship->player->getMaxHitpoints());
+                turret->setHost(ship, Vector{0.0f, 172.25f, -460.7f});
+                ship->field_0x10 = (int) (intptr_t) turret;
+                turret->shipGroup = 8;
+                break;
+            default:
+                continue;
         }
         turret->field_0x74 = 1;
         ArrayAdd((KIPlayer *) turret, *enemies);
@@ -5279,8 +5282,8 @@ static inline float clampChannel(float scaled) {
 }
 
 void Level::flashScreen(int type) {
-    flashType = type;
     flashActive = 1;
+    flashType = type;
     int dur = 2000;
     if (type == 1) {
         dur = 7000;
@@ -5290,24 +5293,30 @@ void Level::flashScreen(int type) {
     }
     flashDurationA = dur;
     flashDurationB = dur;
-    if (flashType == 2) {
-        flashColor.x = i_r * 1.5f;
-        flashColor.y = i_g * 1.5f;
-        flashColor.z = i_b * 1.5f;
-    } else if (flashType == 4) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 255.0f;
-    } else if (flashType == 3) {
-        flashColor.x = 0;
-        flashColor.y = 0;
-        flashColor.z = 0;
-        player->hitCamera();
-    } else {
-        float k = (flashType == 1) ? 8.0f : 5.0f;
-        flashColor.x = clampChannel(k * i_r);
-        flashColor.y = clampChannel(k * i_g);
-        flashColor.z = clampChannel(k * i_b);
+    switch (flashType) {
+        case 3:
+            flashColor.x = 0;
+            flashColor.y = 0;
+            flashColor.z = 0;
+            player->hitCamera();
+            break;
+        case 2:
+            flashColor.x = i_r * 1.5f;
+            flashColor.y = i_g * 1.5f;
+            flashColor.z = i_b * 1.5f;
+            break;
+        case 4:
+            flashColor.x = 0;
+            flashColor.y = 0;
+            flashColor.z = 255.0f;
+            break;
+        default: {
+            float k = (flashType == 1) ? 8.0f : 5.0f;
+            flashColor.x = clampChannel(k * i_r);
+            flashColor.y = clampChannel(k * i_g);
+            flashColor.z = clampChannel(k * i_b);
+            break;
+        }
     }
     flashAlpha = 255.0f;
 }
