@@ -1137,49 +1137,39 @@ int MenuTouchWindow::loadGame(int slot) {
     RecordHandler *rh = new RecordHandler();
     GameRecord *rec = rh->readRecord(slot);
 
-    if (rec == 0) {
-        Globals::status->resetGame();
-        ChoiceWindow *cw = this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x64);
-        cw->set(*s, false);
-        this->loadFailedDialogShowing = 1;
-        this->messageShowing = 1;
-        delete rh;
-        return 0;
-    }
-
-    Status *flags = Globals::status;
-    bool versionOk = (rec->versionMismatchFlag == 0) || (flags->byte_0x37 != 0);
-    if (versionOk) {
-        bool dlcOk = (rec->dlcRequiredFlag == 0) || (flags->byte_0x35 != 0);
-        if (dlcOk) {
-            Globals::status->resetGame();
-            rec->load();
-            delete rh;
+    if (rec != 0) {
+        if (rec->versionMismatchFlag != 0 && Globals::options[55] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(102), false);
+            this->messageShowing = 1;
             delete rec;
-            ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
-            ms->setGameLoaded();
-            Globals::switch_to_target_setting = 0;
-            Globals::appManager->SetCurrentApplicationModule(5);
-            return 1;
+            delete rh;
+            return 0;
         }
-
-        ChoiceWindow *cw = this->choiceWindow;
-        String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x65);
-        cw->set(*s, false);
+        if (rec->dlcRequiredFlag != 0 && Globals::options[53] == 0) {
+            this->choiceWindow->set(*Globals::gameText->getText(101), false);
+            this->messageShowing = 1;
+            delete rec;
+            delete rh;
+            return 0;
+        }
+    } else {
+        Globals::status->resetGame();
+        this->choiceWindow->set(*Globals::gameText->getText(100), false);
         this->messageShowing = 1;
-        delete rec;
+        this->loadFailedDialogShowing = 1;
         delete rh;
         return 0;
     }
 
-    ChoiceWindow *cw = this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x66);
-    cw->set(*s, false);
-    this->messageShowing = 1;
-    delete rec;
+    Globals::status->resetGame();
+    rec->load();
     delete rh;
-    return 0;
+    delete rec;
+    ModStation *ms = (ModStation *) Globals::appManager->GetApplicationModule(5);
+    ms->setGameLoaded();
+    Globals::switch_to_target_setting = 0;
+    Globals::appManager->SetCurrentApplicationModule(5);
+    return 1;
 }
 
 void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
@@ -1619,19 +1609,17 @@ void MenuTouchWindow::draw() {
 float MenuTouchWindow::getRelativeScrollHeight() {
     int content = this->contentHeight;
     int page = this->pageHeight;
-    if (content <= page)
+    if (content > page)
         return 0.0f;
-    int off = this->scrollOffset;
-    int numer;
-    if (off >= 1) {
-        numer = content - off;
-    } else {
-        if (off >= content - page) {
-            return (float) content / (float) page;
-        }
-        numer = off + page;
+
+    int pos = this->scrollOffset;
+    if (pos >= 1) {
+        return (float) (content - pos) / (float) page;
     }
-    return (float) numer / (float) page;
+    if (pos >= content - page) {
+        return (float) content / (float) page;
+    }
+    return (float) (pos + page) / (float) page;
 }
 
 void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
