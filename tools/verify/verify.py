@@ -180,10 +180,72 @@ def pool_norm(blob, off, resolver):
         return "pool:short"
     val = struct.unpack_from("<I", blob, word_off)[0]
     lo, hi = resolver.addr_range if resolver else (0, 0)
+    # "@<val>" carries the raw word for reconcile(); it is stripped before comparing
     if lo <= val < hi:
         name = resolver.resolve_entry(val) if resolver else None
-        return f"pool:sym:{name}" if name else "pool:addr"
-    return f"pool:0x{val:x}"
+        return (f"pool:sym:{name}" if name else "pool:addr") + f"@{val:x}"
+    return f"pool:0x{val:x}@{val:x}"
+
+
+def reconcile(a_norm, b_norm):
+    """Strip the raw-value tags from pool entries and unify aligned pool words whose raw values are
+    identical on both sides: a word with the same value in both links is the same datum, even if
+    on one side it merely happens to equal an address in that link's range (or a function entry).
+    Two words that resolve to DIFFERENT symbols never unify."""
+    def key(n):
+        return n.split("@", 1)[0] if n.startswith("pool:") else n
+    a = [key(n) for n in a_norm]
+    b = [key(n) for n in b_norm]
+    if a == b:
+        return a, b
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag != "replace" or i2 - i1 != j2 - j1:
+            continue
+        for i, j in zip(range(i1, i2), range(j1, j2)):
+            x, y = a_norm[i], b_norm[j]
+            if not (x.startswith("pool:") and y.startswith("pool:") and "@" in x and "@" in y):
+                continue
+            if x.split("@", 1)[1] != y.split("@", 1)[1]:
+                continue
+            if a[i].startswith("pool:sym:") and b[j].startswith("pool:sym:") and a[i] != b[j]:
+                continue
+            b[j] = a[i]
+    return a, b
+
+
+def _objdump_lines(objdump, tmp, thumb, start=0, stop=None):
+    cmd = [objdump, "-D", "-b", "binary", "-m", "arm",
+           "-M", "force-thumb" if thumb else "reg-names-std", tmp]
+    if start:
+        cmd.insert(1, f"--start-address={start:#x}")
+    if stop is not None:
+        cmd.insert(1, f"--stop-address={stop:#x}")
+    out = subprocess.run(cmd, capture_output=True, text=True).stdout
+    lines = []
+    for ln in out.splitlines():
+        m = ADDR_COL.match(ln)
+        if not m:
+            continue
+        lines.append((int(m.group(1), 16), ANNOT.sub("", m.group(2)).strip()))
+    return lines
+
+
+def _pool_bytes(lines, thumb):
+    """Literal-pool byte offsets: targets of pc-relative loads, found by a linear sweep that skips
+    lines lying inside already-known pool data -- pool words that happen to decode as a
+    pc-relative load must not mark (and thereby mask) real code as pool."""
+    pool = set()
+    for addr, insn in lines:
+        if addr in pool:
+            continue
+        pm = PCREL_LOAD.match(insn)
+        if pm:
+            mnem, reg, imm = pm.group(1), pm.group(2), int(pm.group(3) or 0)
+            tgt = ((addr + (4 if thumb else 8)) & ~3) + imm
+            width = 8 if (mnem == "ldrd" or (mnem == "vldr" and reg.startswith("d"))) else 4
+            pool.update(range(tgt, tgt + width))
+    return pool
 
 
 def disassemble(objdump, blob, thumb, base=0, resolver=None):
@@ -191,23 +253,32 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
     with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
         f.write(blob); tmp = f.name
     try:
-        cmd = [objdump, "-D", "-b", "binary", "-m", "arm",
-               "-M", "force-thumb" if thumb else "reg-names-std", tmp]
-        out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        lines = _objdump_lines(objdump, tmp, thumb)
+        # Inline literal pools are decoded as instructions. In Thumb a pool word that happens to
+        # decode as IT puts spurious condition suffixes on the REAL code after it -- and binutils
+        # recovers IT state by scanning backwards, so restarting the decode does not help. Decode
+        # a copy with every pool byte pair replaced by a Thumb NOP instead; pool words are still
+        # compared by their real value (pool_norm reads the original blob).
+        if thumb:
+            pool = _pool_bytes(lines, thumb)
+            if pool:
+                clean = bytearray(blob)
+                for b in pool:
+                    if b < len(clean):
+                        clean[b] = 0x00 if (b & 1) == 0 else 0xbf
+                with open(tmp, "wb") as f:
+                    f.write(clean)
+                lines = _objdump_lines(objdump, tmp, thumb)
     finally:
         os.unlink(tmp)
-    lines = []
-    for ln in out.splitlines():
-        m = ADDR_COL.match(ln)
-        if not m:
-            continue
-        lines.append((int(m.group(1), 16), ANNOT.sub("", m.group(2)).strip()))
     # pass 1: literal-pool bytes = targets of pc-relative loads (ARM pc bias +8, Thumb +4 word-aligned)
     pool = set()
     pic_delta = set()  # pool words consumed by the ldr rX,[pc,#N] / add rX,pc PIC idiom: the word
     #                    is an address DELTA that changes every link -- mask it, never name it
     #                    (a delta accidentally equal to a function entry must not compare as sym)
     for i, (addr, insn) in enumerate(lines):
+        if addr in pool:
+            continue
         pm = PCREL_LOAD.match(insn)
         if pm:
             mnem, reg, imm = pm.group(1), pm.group(2), int(pm.group(3) or 0)
@@ -233,7 +304,9 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
             if (addr & ~3) == last_word:
                 continue
             last_word = addr & ~3
-            raw.append(insn)
+            w = addr & ~3
+            raw.append(f".word 0x{struct.unpack_from('<I', blob, w)[0]:08x}"
+                       if w + 4 <= len(blob) else insn)
             norm.append("pool:addr" if addr in pic_delta
                         else pool_norm(blob, addr, resolver))
             continue
@@ -288,6 +361,7 @@ def main():
                                   o["thumb"], o["value"], orig_res)
         uraw, unorm = disassemble(args.objdump, ours_elf.bytes_at(u["value"], u["size"]),
                                   u["thumb"], u["value"], ours_res)
+        onorm, unorm = reconcile(onorm, unorm)
         print(demangle_map([name])[name])
         print(f"  orig {o['size']}B @{o['value']:#x}  |  ours {u['size']}B @{u['value']:#x}"
               f"   ('|' structural diff, '~' link-address diff only)")
@@ -325,6 +399,7 @@ def main():
         be = ob == ub
         _, on = disassemble(args.objdump, ob, o["thumb"], o["value"], orig_res)
         _, un = disassemble(args.objdump, ub, u["thumb"], u["value"], ours_res)
+        on, un = reconcile(on, un)
         le = on == un and o["size"] == u["size"]
         pct = 100.0 if be else score(on, un)
         byte_exact += be
