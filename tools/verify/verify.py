@@ -294,6 +294,30 @@ def _pool_bytes(lines, thumb):
     return pool
 
 
+TB_INSN = re.compile(r"^tb([bh])(?:\.w)?\s+\[pc,")
+
+
+def _jump_tables(lines, blob, skip):
+    """Thumb-2 tbb/tbh tables: byte offsets they occupy. Each table starts right after its tbb/tbh
+    (pc+4) and ends where its smallest branch target begins (targets = table start + 2*entry)."""
+    tab = set()
+    for addr, insn in lines:
+        if addr in tab or addr in skip:
+            continue
+        m = TB_INSN.match(insn)
+        if not m:
+            continue
+        es = 1 if m.group(1) == "b" else 2
+        start = addr + 4
+        pos, end = start, len(blob)
+        while pos + es <= min(end, len(blob)):
+            v = blob[pos] if es == 1 else struct.unpack_from("<H", blob, pos)[0]
+            end = min(end, start + 2 * v)
+            pos += es
+        tab.update(range(start, max(pos, start)))
+    return tab
+
+
 def disassemble(objdump, blob, thumb, base=0, resolver=None):
     """Return (raw_lines, normalized_lines) for a code blob disassembled in the right mode."""
     with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
@@ -305,11 +329,17 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
         # recovers IT state by scanning backwards, so restarting the decode does not help. Decode
         # a copy with every pool byte pair replaced by a Thumb NOP instead; pool words are still
         # compared by their real value (pool_norm reads the original blob).
+        # tbb/tbh jump tables get the same treatment; entries compare by raw value (they are
+        # intra-function offsets, link-independent).
+        jtab = set()
         if thumb:
-            pool = _pool_bytes(lines, thumb)
-            if pool:
+            for _ in range(2):
+                pool = _pool_bytes(lines, thumb)
+                jtab = _jump_tables(lines, blob, pool)
+                if not pool and not jtab:
+                    break
                 clean = bytearray(blob)
-                for b in pool:
+                for b in pool | jtab:
                     if b < len(clean):
                         clean[b] = 0x00 if (b & 1) == 0 else 0xbf
                 with open(tmp, "wb") as f:
@@ -324,7 +354,7 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
     #                    is an address DELTA that changes every link -- mask it, never name it
     #                    (a delta accidentally equal to a function entry must not compare as sym)
     for i, (addr, insn) in enumerate(lines):
-        if addr in pool:
+        if addr in pool or addr in jtab:
             continue
         pm = PCREL_LOAD.match(insn)
         if pm:
@@ -351,6 +381,11 @@ def disassemble(objdump, blob, thumb, base=0, resolver=None):
     #                   (masked) word value -- collapse to one entry per 4-byte word so the
     #                   sequence length never depends on meaningless pool contents
     for addr, insn in lines:
+        if addr in jtab and addr not in pool:
+            last_word = None
+            raw.append(f".short 0x{blob[addr] | (blob[addr + 1] << 8 if addr + 1 < len(blob) else 0):04x}")
+            norm.append(raw[-1])
+            continue
         if addr in pic_delta or addr in pool:
             if (addr & ~3) == last_word:
                 continue

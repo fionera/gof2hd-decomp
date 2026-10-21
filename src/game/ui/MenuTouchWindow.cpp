@@ -1,5 +1,6 @@
 #include "engine/core/ArrayReleaseClasses.h"
 #include "game/ui/MenuTouchWindow.h"
+#include "engine/render/ImageFactory.h"
 #include "game/menu/ModStation.h"
 #include "engine/core/AbyssEngine.h"
 #include "game/ui/TouchSlider.h"
@@ -235,7 +236,6 @@ void _mtw_ScrollTouchWindow_update(void *w); // lint: void_ptr (external symbol;
 
 void _mtw_MissionsWindow_update(void *w); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-void _mtw_startSupernovaChallenge_impl(void *self); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -492,111 +492,83 @@ static inline void freeObj(T **slot, void *(*dtor)(void *)) { // lint: void_ptr 
 }
 
 MenuTouchWindow::~MenuTouchWindow() {
-    {
-        Array<TouchButton *> *a = this->buttons;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttons;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttons = 0;
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
     }
-    {
-        Array<TouchButton *> *a = this->optionsButtons;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->optionsButtons;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->optionsButtons = 0;
+    this->buttons = 0;
+    if (this->optionsButtons != 0) {
+        ArrayReleaseClasses(*this->optionsButtons);
+        delete this->optionsButtons;
     }
-    {
-        Array<TouchButton *> *a = this->scrollEntries;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->scrollEntries;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->scrollEntries = 0;
+    this->optionsButtons = 0;
+    if (this->scrollEntries != 0) {
+        ArrayReleaseClasses(*this->scrollEntries);
+        delete this->scrollEntries;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB4;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB4;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB4 = 0;
+    this->scrollEntries = 0;
+    if (this->buttonsB4 != 0) {
+        ArrayReleaseClasses(*this->buttonsB4);
+        delete this->buttonsB4;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB8;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB8;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB8 = 0;
+    this->buttonsB4 = 0;
+    if (this->buttonsB8 != 0) {
+        ArrayReleaseClasses(*this->buttonsB8);
+        delete this->buttonsB8;
     }
-    {
-        Array<TouchButton *> *a = this->buttonsB0;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->buttonsB0;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->buttonsB0 = 0;
+    this->buttonsB8 = 0;
+    if (this->buttonsB0 != 0) {
+        ArrayReleaseClasses(*this->buttonsB0);
+        delete this->buttonsB0;
     }
-
-    {
-        Array<TouchSlider *> *a = (Array<TouchSlider *> *) this->sliders;
-        if (a != 0) {
-            ArrayReleaseClasses<TouchSlider *>(*a);
-            Array<TouchSlider *> *b = this->sliders;
-            if (b != 0) ::operator delete(_mtw_Array_TS_dtor(b));
-        }
-        this->sliders = 0;
+    this->buttonsB0 = 0;
+    if (this->sliders != 0) {
+        ArrayReleaseClasses(*this->sliders);
+        delete this->sliders;
     }
-
-    {
-        Array<TouchButton *> *a = this->scrollSlots;
-        if (a != 0) {
-            _mtw_ArrayReleaseClasses_TB(a);
-            Array<TouchButton *> *b = this->scrollSlots;
-            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-        }
-        this->scrollSlots = 0;
+    this->sliders = 0;
+    if (this->scrollSlots != 0) {
+        ArrayReleaseClasses(*this->scrollSlots);
+        delete this->scrollSlots;
     }
-
-    {
-        Array<AbyssEngine::String *> **slots[2] = {&this->previewStrings0, &this->previewStrings1};
-        for (int k = 0; k < 2; k++) {
-            Array<AbyssEngine::String *> *a = *slots[k];
-            if (a != 0) {
-                _mtw_ArrayReleaseClasses_Str(a);
-                Array<AbyssEngine::String *> *b = *slots[k];
-                if (b != 0) ::operator delete(_mtw_Array_Str_dtor(b));
-            }
-            *slots[k] = 0;
-        }
+    this->scrollSlots = 0;
+    if (this->previewStrings0 != 0) {
+        ArrayReleaseClasses(*this->previewStrings0);
+        delete this->previewStrings0;
     }
-
-    freeObj(&this->optBtnCC, _mtw_TouchButton_dtor);
-    freeObj(&this->okButton, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD0, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD4, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnD8, _mtw_TouchButton_dtor);
-    freeObj(&this->optBtnDC, _mtw_TouchButton_dtor);
-
-    freeObj(&this->choiceWindow, _mtw_ChoiceWindow_dtor);
-    freeObj(&this->backButton, _mtw_TouchButton_dtor);
-    freeObj(&this->scrollExtraButton, _mtw_TouchButton_dtor);
-
-    freeObj(&this->scrollWindowA, _mtw_ScrollTouchWindow_dtor);
-    freeObj(&this->scrollWindowB, _mtw_ScrollTouchWindow_dtor);
-
-    if (this->heapBufA != 0) ::operator delete[](this->heapBufA);
+    this->previewStrings0 = 0;
+    if (this->previewStrings1 != 0) {
+        ArrayReleaseClasses(*this->previewStrings1);
+        delete this->previewStrings1;
+    }
+    this->previewStrings1 = 0;
+    delete this->optBtnCC;
+    this->optBtnCC = 0;
+    delete this->okButton;
+    this->okButton = 0;
+    delete this->optBtnD0;
+    this->optBtnD0 = 0;
+    delete this->optBtnD4;
+    this->optBtnD4 = 0;
+    delete this->optBtnD8;
+    this->optBtnD8 = 0;
+    delete this->optBtnDC;
+    this->optBtnDC = 0;
+    delete this->choiceWindow;
+    this->choiceWindow = 0;
+    delete this->backButton;
+    this->backButton = 0;
+    delete this->scrollExtraButton;
+    this->scrollExtraButton = 0;
+    delete this->scrollWindowA;
+    this->scrollWindowA = 0;
+    delete this->scrollWindowB;
+    this->scrollWindowB = 0;
+    if (this->heapBufA != 0)
+        ::operator delete[](this->heapBufA);
     this->heapBufA = 0;
-    if (this->heapBufB != 0) ::operator delete[](this->heapBufB);
+    if (this->heapBufB != 0)
+        ::operator delete[](this->heapBufB);
     this->heapBufB = 0;
 }
 
@@ -705,7 +677,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
                 s54.length = 0;
             }
             GameRecord *slot = rec->data_[i];
-            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, slot->playTimeObj);
+            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, (void *) (intptr_t) slot->playTime); // lint: void_ptr (shim param)
             String *e;
             String **rowData;
 
@@ -1498,7 +1470,65 @@ void MenuTouchWindow::update(int dt) {
 }
 
 void MenuTouchWindow::startSupernovaChallenge() {
-    _mtw_startSupernovaChallenge_impl(this);
+    Globals::status->resetGame();
+    Globals::status->setCurrentCampaignMission(152);
+    Globals::status->setShip(Globals::ships->data_[46]->makeShip(-1));
+
+    Item *it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[230]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[231]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[73]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 0);
+    it = Globals::items->data_[54]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 1);
+    it = Globals::items->data_[59]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 2);
+    it = Globals::items->data_[83]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 3);
+    it = Globals::items->data_[206]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 4);
+    it = Globals::items->data_[75]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 5);
+    it = Globals::items->data_[76]->makeItem();
+    Globals::status->getShip()->setEquipment(it, 6);
+    it = Globals::items->data_[216]->makeItem(5);
+    Globals::status->getShip()->setEquipment(it, 0);
+
+    Station *station = reinterpret_cast<Station *>(Globals::galaxy->getStation(111));
+    Globals::status->setStation(station);
+    Mission *mission = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0, 0,
+                                   station->getIndex(), 1);
+    Globals::status->setMission(mission);
+    Globals::status->setFreelanceMission(mission);
+
+    unsigned char *hints = Globals::hints;
+    hints[23] = 1;
+    hints[8] = 1;
+    hints[9] = 1;
+    hints[10] = 1;
+    hints[28] = 1;
+    hints[21] = 1;
+    hints[19] = 1;
+    hints[13] = 1;
+    hints[14] = 1;
+    hints[15] = 1;
+    hints[41] = 1;
+    hints[34] = 1;
+    hints[32] = 1;
+    hints[33] = 1;
+    Globals::status->setKills(500);
+    Globals::status->setKills(220);
+    Globals::sound->stop(Globals::sound->currentMusicEvent);
+    Globals::switch_to_target_setting = -1;
+    Globals::enterSpaceLounge = 0;
+    Globals::globals->playMusicAndFadeOutCurrent(1);
+    Globals::status->field_5c = -1;
+    Globals::status->field_60 = -1;
+    Globals::status->field_64 = -1;
+    Globals::appManager->SetCurrentApplicationModule(2);
 }
 
 

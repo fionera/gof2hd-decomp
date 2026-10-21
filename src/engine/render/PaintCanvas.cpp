@@ -22,9 +22,9 @@ namespace AbyssEngine {
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag); // lint: void_ptr (exported TextureCreateFromFileIntern signature)
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
                    signed char meshType, Mesh **out);
-    float CameraSetPerspective(float a, float b, float c, float width, float height,
+    void CameraSetPerspective(float a, float b, float c, float width, float height,
                                Camera *camera);
-    float CameraSetPerspective(float fov, float aspect, float width, float height,
+    void CameraSetPerspective(float fov, float aspect, float width, float height,
                                Camera *camera);
     int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, AEMath::Matrix *view,
                                     Camera *camera);
@@ -37,13 +37,13 @@ namespace AbyssEngine {
     class ImageFont;
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count);
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start, unsigned int count);
-    void ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
+    int ImageFontCheckString(ImageFont *font, const unsigned short *str, unsigned int count);
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y, PaintCanvas *canvas, Engine *engine, bool flag);
     int ImageFontGetHeight(ImageFont *font);
     short ImageFontGetSpacing(ImageFont *font);
     void ImageFontSetSpacing(ImageFont *font, short spacing);
-    int ImageFontGetYOffset(ImageFont *font);
+    short ImageFontGetYOffset(ImageFont *font);
     void ImageFontSetYOffset(ImageFont *font, short yOffset);
     int ImageCreateFontFromFile(Engine *engine, const char *path, unsigned short index, ImageFont **out);
     void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *sys);
@@ -1714,7 +1714,7 @@ int PaintCanvas::MeshGetTriCount(AbyssEngine::Mesh *mesh) {
     return 0;
 }
 
-int PaintCanvas::FontGetYOffset(unsigned int index) {
+short PaintCanvas::FontGetYOffset(unsigned int index) {
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         return AbyssEngine::ImageFontGetYOffset(font);
@@ -3270,7 +3270,7 @@ void PaintCanvas::DrawTransform(Transform *tf, const AbyssEngine::AEMath::Matrix
             world *= tf->rotationMatrix;
         }
         for (unsigned int i = 0; i < tf->meshes.size(); i++) {
-            this->DrawMesh(tf->meshes[i], world, m3, tf->id, tf->localMatrix);
+            this->DrawMesh(tf->meshes[i], world, m3, tf->color, tf->localMatrix);
         }
         for (unsigned int i = 0; i < tf->children.size(); i++) {
             if (this->currentCamera < this->cameras.count &&
@@ -3680,7 +3680,7 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
         *(AbyssEngine::AEMath::Matrix*)posM = *(const AbyssEngine::AEMath::Matrix*)s3 * *(const AbyssEngine::AEMath::Matrix*)a;
         worldM = *(const AbyssEngine::AEMath::Matrix*)posM;
 
-        unsigned int resColor = resTf->id;
+        unsigned int resColor = resTf->color;
         uvM = resTf->localMatrix;
         meshColor = mulColors(resColor, color);
     }
@@ -4393,7 +4393,7 @@ void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str
     if (index < this->fonts.count) {
         AbyssEngine::ImageFont *font = (this->fonts.data_)[index];
         const unsigned short *data = (const unsigned short *) str;
-        return AbyssEngine::ImageFontCheckString(font, data, str.length);
+        AbyssEngine::ImageFontCheckString(font, data, str.length);
     }
 }
 

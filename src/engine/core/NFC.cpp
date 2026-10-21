@@ -1,310 +1,279 @@
 #include "engine/core/NFC.h"
-
-static _JNIEnv **nfc_env;
-static int *nfc_purchase_flag;
-static _jclass **nfc_class_slot;
-static char nfc_class_name[1];
-static const char nfc_method_name[1] = {0};
-static const char nfc_method_sig[1] = {0};
+#include "game/core/Globals.h"
+#include "platform/android/NdkHooks.h"
 
 NFC::NFC() {
 }
 
 void NFC::iap_buy_dlc_full_package() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_dlc5_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_dlc_full_package", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_dlc_vip() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_dlc4_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_dlc_vip", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_dlc_supernova() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_dlc3_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_dlc_supernova", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_dlc_kaamo_club() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_dlc2_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_dlc_kaamo_club", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_dlc_valkyrie() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_dlc1_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_dlc_valkyrie", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_credits_100_000() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_credit_pack1_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_credits_100_000", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_credits_300_000() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_credit_pack2_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_credits_300_000", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_credits_1_000_000() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_credit_pack3_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_credits_1_000_000", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_credits_3_000_000() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_credit_pack4_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_credits_3_000_000", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_buy_credits_10_000_000() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    *nfc_purchase_flag = 1;
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    gi_iap_buy_credit_pack5_pressed = 1;
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_buy_credits_10_000_000", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::iap_restore_purchases() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "iap_restore_purchases", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::free_credits_rateGame() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "free_credits_rateGame", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::free_credits_subscribeToYoutubeChannel() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "free_credits_subscribeToYoutubeChannel", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::free_credits_likeGOF2OnFacebook() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "free_credits_likeGOF2OnFacebook", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::free_credits_likeFishlabsOnFacebook() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "free_credits_likeFishlabsOnFacebook", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::free_credits_followOnTwitter() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "free_credits_followOnTwitter", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::showMoreGames() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "showMoreGames", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::rateGame() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "rateGame", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::openTermsOfService() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "openTermsOfService", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
 }
 
 void NFC::openPrivacyPolicy() {
-    _JNIEnv *env = *nfc_env;
-    if (env == nullptr)
+    if (g_pEnv == nullptr)
         return;
 
-    _jclass *cls = nfc_find_class(env, *nfc_class_slot);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    NFC_CallStaticVoidMethod(env, cls, method);
+    jclass cls = g_pEnv->FindClass(interface_path);
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "openPrivacyPolicy", "()V");
+    g_pEnv->CallStaticVoidMethod(cls, method);
+}
+
+// Clears a pending Java exception left behind by a DeviceInfo query.
+static void clearPendingException(JNIEnv *env) {
+    if (env->ExceptionCheck())
+        env->ExceptionClear();
 }
 
 bool NFC::isPad() {
-    _JNIEnv *env = *nfc_env;
-    _jclass *cls = nfc_find_class(env, (_jclass *) nfc_class_name);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    int value = NFC_CallStaticBooleanMethod(env, cls, method);
-    NFC_DeleteLocalRef(env);
+    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "isPad", "()Z");
+    jboolean value = g_pEnv->CallStaticBooleanMethod(cls, method);
+    clearPendingException(g_pEnv);
     return value != 0;
 }
 
 int NFC::getWidth() {
-    _JNIEnv *env = *nfc_env;
-    _jclass *cls = nfc_find_class(env, (_jclass *) nfc_class_name);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    int value = NFC_CallStaticIntMethod(env, cls, method);
-    NFC_DeleteLocalRef(env);
+    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "getDisplayWidth", "()I");
+    jint value = g_pEnv->CallStaticIntMethod(cls, method);
+    clearPendingException(g_pEnv);
     return value;
 }
 
 int NFC::getHeight() {
-    _JNIEnv *env = *nfc_env;
-    _jclass *cls = nfc_find_class(env, (_jclass *) nfc_class_name);
-    _jmethodID *method = nfc_get_static_method(env, cls, nfc_method_name, nfc_method_sig);
-    int value = NFC_CallStaticIntMethod(env, cls, method);
-    NFC_DeleteLocalRef(env);
+    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jmethodID method = g_pEnv->GetStaticMethodID(cls, "getDisplayHeight", "()I");
+    jint value = g_pEnv->CallStaticIntMethod(cls, method);
+    clearPendingException(g_pEnv);
     return value;
 }
 
-static int is_dialogue_window_visible;
-static int is_choice_window_visible;
-static int is_menu_visible;
-static bool isStarMapVisible;
-static int subMenuIndex;
-static int topMenuIndex;
-static int menu_touch_window_type;
+int IsDialogVisible(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) != 0;
+}
+
+int IsDialogNotVisible(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) == 0;
+}
+
+int IsDialogNotVisible2(int) {
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+            Globals::is_menu_visible) == 0;
+}
+
+int IsStarMapNotVisible(int) {
+    return !Globals::isStarMapVisible;
+}
+
+int IsInGameSubMenuNotActive(int) {
+    if (Globals::subMenuIndex != -1 || Globals::is_menu_visible != 0)
+        return false;
+    return !Globals::isStarMapVisible;
+}
+
+int IsInGameSubMenuActive(int) {
+    return Globals::subMenuIndex != -1;
+}
+
+int IsInPrimaryMenu(int) {
+    return Globals::is_menu_visible != 0 && Globals::topMenuIndex == 0 &&
+           Globals::menu_touch_window_type == 0 && Globals::is_dialogue_window_visible == 0 &&
+           Globals::is_choice_window_visible == 0 && !Globals::isStarMapVisible;
+}
+
 int g_android_back_button_pressed = 0;
 
-bool IsDialogVisible(int) {
-    return is_dialogue_window_visible != 0 || is_choice_window_visible != 0;
-}
-
-bool IsDialogNotVisible(int) {
-    return is_dialogue_window_visible == 0 && is_choice_window_visible == 0;
-}
-
-bool IsDialogNotVisible2(int) {
-    return is_dialogue_window_visible == 0 && is_choice_window_visible == 0 &&
-           is_menu_visible == 0;
-}
-
-bool IsStarMapNotVisible(int) {
-    return !isStarMapVisible;
-}
-
-bool IsInGameSubMenuNotActive(int) {
-    if (subMenuIndex == -1 && topMenuIndex == 0)
-        return is_menu_visible == 0;
-    return false;
-}
-
-bool IsInGameSubMenuActive(int) {
-    return subMenuIndex != -1;
-}
-
-bool IsInPrimaryMenu(int) {
-    if (is_menu_visible == 0)
-        return false;
-    if (topMenuIndex != 0 || menu_touch_window_type != 0 ||
-        is_dialogue_window_visible != 0 || is_choice_window_visible != 0)
-        return false;
-    return !isStarMapVisible;
-}
-
-static int g_mouseHidden;
 static int g_mouseCaptured;
-static int g_mouseConfig;
 static int g_useJoystick;
+static int g_mouseConfig = 1;
 
 int HideMouse() {
-    return g_mouseHidden;
+    return g_mouseCaptured;
 }
 
 void CaptureMouse(int capture) {
     g_mouseCaptured = capture;
 }
 
+// TODO(decomp): the original stores into VirtualInput's merged .data block (mouse configuration
+// read by keyPressed/simulateTouch); this TU has no reader, so the store is dead here.
 int SwitchToOtherMouseConifguration(int config) {
     g_mouseConfig = config;
     return 0;

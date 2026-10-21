@@ -13,6 +13,7 @@ class AEGeometry;
 class Agent;
 class BoundingVolume;
 class Station;
+class SolarSystem;
 class Status;
 class FModSound;
 class Galaxy;
@@ -90,7 +91,7 @@ public:
 
     String getKeyActionName(int action);
 
-    void getRandomSystemForDrinks();
+    SolarSystem *getRandomSystemForDrinks();
 
     String replaceKeyBindingTokens(const String &src);
 
@@ -146,7 +147,7 @@ public:
     static int is_choice_window_visible;
     static int is_menu_visible;
     static int is_hacking_visible;
-    static unsigned char isStarMapVisible;
+    static bool isStarMapVisible;
     static unsigned char isCinematicModeActive;
     static int mouseCursorActivated;
     static unsigned char showMouseDuringGameOver;
@@ -247,7 +248,7 @@ public:
     static int other_buttons_x[10];
     static int other_buttons_y[10];
     static unsigned char showWingmanMenu;
-    static unsigned char first_start_ever;
+    static bool first_start_ever;
     static int globalPriceRaise;
     static unsigned char initMemoryWarning;
     static int instantActionType;
@@ -272,14 +273,14 @@ public:
     static int lastStationMusicPlayed;
     static int menu_touch_window_type;
     static unsigned char useLowResTexturesForHD;
-    static char *instantActionPlayerName;
+    static AbyssEngine::String *instantActionPlayerName;
     static unsigned char isRunningHDonWeakDevice;
     static float quickmenu_button_start_x;
     static float quickmenu_button_start_y;
     static int lastCampaignMissionFailed;
     static int secondaryWeaponsProbChange;
     static int lastCampaignMissionFailCount;
-    static unsigned char startLiteVersionWithMoreCredits;
+    static bool startLiteVersionWithMoreCredits;
     static AbyssEngine::AERandom *rnd;
     static void *font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)

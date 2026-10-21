@@ -66,7 +66,7 @@ namespace AbyssEngine {
 
         bool operator!=(const Matrix &lhs, const Matrix &rhs);
 
-        void MatrixMultiply(const Matrix &lhs, const Matrix &rhs);
+        Matrix MatrixMultiply(const Matrix &lhs, const Matrix &rhs);
 
         Matrix MatrixIdentity(Matrix & matrix);
 

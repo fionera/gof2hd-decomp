@@ -612,78 +612,76 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 
-static Array<Ship *> **g_Generator_allShips;
-static int g_Generator_shipRaces[0x40];
-static uint8_t *g_Generator_shipFlags;
-static Array<Wanted *> ***g_Generator_wantedList;
+// Race each ship type is sold with (index = ship index).
+static const int kShipRaces[64] = {
+    3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0, 2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    8, 0, 0, 2, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 3, 3, 3, 1, 1, 0, 8, 1, 1, 0, 3, 2, 0, 0, 8, 1, 3, 1,
+};
+
 
 Array<Ship *> *Generator::getShipBuyList(Station *station) {
-    Status *status = Globals::status;
-    if ((station->getSystem() == 0xf &&
-         status->getCurrentCampaignMission() < 0x10) ||
-        station->getIndex() == 0x65 || station->getIndex() == 0x6c ||
-        status->inSupernovaSystem() != 0) {
+    if ((station->getSystem() == 15 && Globals::status->getCurrentCampaignMission() < 16) ||
+        station->getIndex() == 101 || station->getIndex() == 108 || Globals::status->inSupernovaSystem()) {
         return nullptr;
     }
 
-    Array<Ship *> *allShips = *g_Generator_allShips;
-
-    if (station->getIndex() == 100 && status->dlc1Won()) {
-        Array<Ship *> *result = new Array<Ship *>();
-        for (int i = 0; i != 0x40; ++i) {
-            Ship *base = allShips->data()[i];
-            if (base->hasJumpDriveIntegrated() && base->getIndex() != 0x25) {
-                Ship *ship = base->makeShip(-1);
-                ArrayAdd(ship, *result);
-                Ship *added = result->data()[result->size() - 1];
-                added->setRace(g_Generator_shipRaces[i]);
-                added->adjustPrice();
+    if (station->getIndex() == 100 && Globals::status->dlc1Won()) {
+        Array<Ship *> *list = new Array<Ship *>();
+        for (int i = 0; i != 64; ++i) {
+            Ship *ship = (*Globals::ships)[i];
+            if (ship->hasJumpDriveIntegrated() && ship->getIndex() != 37) {
+                ArrayAdd(ship->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(kShipRaces[i]);
+                list->data()[list->size() - 1]->adjustPrice();
             }
         }
-        return result;
+        return list;
     }
 
-    if (station->getIndex() == 0x6b) {
-        Array<Ship *> *result = new Array<Ship *>();
-        for (int i = 0; i != 0x32; ++i) {
-            if (g_Generator_shipRaces[i] == 8) {
-                Ship *ship = allShips->data()[i]->makeShip(-1);
-                ArrayAdd(ship, *result);
-                Ship *added = result->data()[result->size() - 1];
-                added->setRace(8);
-                added->adjustPrice();
+    if (station->getIndex() == 107) {
+        Array<Ship *> *list = new Array<Ship *>();
+        for (int i = 0; i != 50; ++i) {
+            if (kShipRaces[i] == 8) {
+                ArrayAdd((*Globals::ships)[i]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(8);
+                list->data()[list->size() - 1]->adjustPrice();
             }
         }
-        if (g_Generator_shipFlags[0x37] != 0) {
-            Array<Wanted *> *wanted = **g_Generator_wantedList;
-            if (wanted != nullptr && wanted->size() != 0) {
-                const int offsets[4] = {0x18, 0x30, 0x48, 0x60};
-                const int ships[4] = {0x2d, 0x2e, 0x2f, 0x30};
-                for (int i = 0; i != 4; ++i) {
-                    Wanted *w = *(Wanted **) ((char *) wanted->data() + offsets[i]);
-                    if (w->isTerminated()) {
-                        Ship *ship = allShips->data()[ships[i]]->makeShip(-1);
-                        ArrayAdd(ship, *result);
-                        Ship *added = result->data()[result->size() - 1];
-                        added->setRace(8);
-                        added->adjustPrice();
-                    }
-                }
+        if (Globals::options[55] && Globals::status->wanted != nullptr && Globals::status->wanted->size() != 0) {
+            if ((*Globals::status->wanted)[6]->isTerminated()) {
+                ArrayAdd((*Globals::ships)[45]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(8);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            if ((*Globals::status->wanted)[12]->isTerminated()) {
+                ArrayAdd((*Globals::ships)[46]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(8);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            if ((*Globals::status->wanted)[18]->isTerminated()) {
+                ArrayAdd((*Globals::ships)[47]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(8);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            if ((*Globals::status->wanted)[24]->isTerminated()) {
+                ArrayAdd((*Globals::ships)[48]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(8);
+                list->data()[list->size() - 1]->adjustPrice();
             }
         }
-        return result;
+        return list;
     }
 
-    int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
-    bool gold = station->getIndex() == 10 &&
-                Globals::achievements->gotAllGoldMedals();
+    int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : false;
     int stationIndex = station->getIndex();
+    int stationId = station->getIndex();
     int count;
-    if (gold) {
+    if (allGold) {
         count = 1;
     } else {
-        count = Globals::rnd->nextInt();
-        if (stationIndex == 0x29) {
+        count = Globals::rnd->nextInt(6);
+        if (stationIndex == 41) {
             ++count;
         }
         if (count == 0) {
@@ -691,393 +689,298 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         }
     }
 
-    Array<Ship *> *result = new Array<Ship *>();
-    ArraySetLength(count, *result);
-
-    int forcedShip = gold ? 8 : 10;
-    for (int i = 0; i < count; ++i) {
-        bool first = i == 0;
-        bool forced = gold || (first && stationIndex == 0x29);
-        int shipIndex = forced ? forcedShip : 0;
-        bool unique = false;
-        while (!unique) {
-            if (!forced && (stationIndex != 0x4e || !first)) {
-                shipIndex =
-                        Globals::globals->getRandomEnemyFighter(race);
+    Array<Ship *> *list = new Array<Ship *>();
+    ArraySetLength(count, *list);
+    int goldShip = allGold ? 8 : 10;
+    bool kaamoStation = stationId == 78;
+    for (int slot = 0; slot < count; ++slot) {
+        bool first = slot == 0;
+        bool fixedShip = allGold || (first && stationIndex == 41);
+        bool forced = fixedShip || (kaamoStation && first);
+        int fixed = fixedShip ? goldShip : 0;
+        int ship;
+        bool duplicate;
+        do {
+            ship = fixed;
+            if (!forced) {
+                ship = Globals::globals->getRandomEnemyFighter(race);
             }
-            if (count > 1 &&
-                Globals::rnd->nextInt() < 0x16) {
-                int roll = Globals::rnd->nextInt();
-                if (!forced && (stationIndex != 0x4e || !first)) {
-                    int enemyRace = roll;
-                    if (enemyRace == race || enemyRace == 4) {
-                        enemyRace = 8;
-                    }
-                    shipIndex = Globals::globals->getRandomEnemyFighter(enemyRace);
+            if (count >= 2 && Globals::rnd->nextInt(100) <= 21) {
+                int otherRace = Globals::rnd->nextInt(5);
+                ship = fixed;
+                if (!forced) {
+                    ship = Globals::globals->getRandomEnemyFighter(otherRace == race || otherRace == 4 ? 8 : otherRace);
                 }
             }
-            unique = true;
+            duplicate = false;
             for (int j = 0; j < count; ++j) {
-                if (result->data()[j] != 0 &&
-                    result->data()[j]->getIndex() == shipIndex) {
-                    unique = false;
+                if (list->data()[j] != nullptr && list->data()[j]->getIndex() == ship) {
+                    duplicate = true;
                     break;
                 }
             }
-        }
-        result->data()[i] = allShips->data()[shipIndex]->makeShip(-1);
-        result->data()[i]->setRace(g_Generator_shipRaces[shipIndex]);
-        result->data()[i]->adjustPrice();
+        } while (duplicate);
+        list->data()[slot] = (*Globals::ships)[ship]->makeShip(-1);
+        list->data()[slot]->setRace(kShipRaces[ship]);
+        list->data()[slot]->adjustPrice();
     }
 
-    bool terranBonus = false;
-    int raceFlag = 0;
-    if (race == 0) {
-        if (Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x3e]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(3);
-            added->adjustPrice();
-        }
-        terranBonus = true;
-    } else if (race == 1) {
-        raceFlag = 1;
-        if (Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x3f]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
-        }
-    } else if (race == 2 &&
-               Globals::rnd->nextInt() == 0) {
-        Ship *ship = allShips->data()[0x3d]->makeShip(-1);
-        ArrayAdd(ship, *result);
-        Ship *added = result->data()[result->size() - 1];
-        added->setRace(1);
-        added->adjustPrice();
+    bool terranExtras = false;
+    bool vossExtras = false;
+    switch (race) {
+        case 0:
+            if (Globals::rnd->nextInt(7) == 0) {
+                ArrayAdd((*Globals::ships)[62]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(3);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            terranExtras = true;
+            break;
+        case 1:
+            if (Globals::rnd->nextInt(5) == 0) {
+                ArrayAdd((*Globals::ships)[63]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(1);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            vossExtras = true;
+            break;
+        case 2:
+            if (Globals::rnd->nextInt(8) == 0) {
+                ArrayAdd((*Globals::ships)[61]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(1);
+                list->data()[list->size() - 1]->adjustPrice();
+            }
+            break;
     }
-
-    if (g_Generator_shipFlags[0x35] && status->dlc1Won() && raceFlag) {
-        if (Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x27]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
+    if (Globals::options[53] && (Globals::status->dlc1Won() & vossExtras)) {
+        if (Globals::rnd->nextInt(2) == 0) {
+            ArrayAdd((*Globals::ships)[39]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(1);
+            list->data()[list->size() - 1]->adjustPrice();
         }
-        if (Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x29]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
+        if (Globals::rnd->nextInt(2) == 0) {
+            ArrayAdd((*Globals::ships)[41]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(1);
+            list->data()[list->size() - 1]->adjustPrice();
         }
     }
-
-    if (g_Generator_shipFlags[0x37] != 0) {
-        if (raceFlag &&
-            Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x36]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
+    if (Globals::options[55]) {
+        if (vossExtras && Globals::rnd->nextInt(4) == 0) {
+            ArrayAdd((*Globals::ships)[54]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(1);
+            list->data()[list->size() - 1]->adjustPrice();
         }
-        if (station->getIndex() == 0x78 &&
-            status->getCurrentCampaignMission() > 0x9e &&
-            (status->hardCoreMode() ||
-             Globals::achievements->gotAllSupernovaMedals())) {
-            Ship *ship = allShips->data()[0x2c]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
+        if (station->getIndex() == 120 && Globals::status->getCurrentCampaignMission() >= 159 &&
+            (Globals::status->hardCoreMode() ||
+             (!Globals::status->hardCoreMode() && Globals::achievements->gotAllSupernovaMedals()))) {
+            ArrayAdd((*Globals::ships)[44]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(1);
+            list->data()[list->size() - 1]->adjustPrice();
         }
-        if (station->getIndex() == 0x78 &&
-            status->getCurrentCampaignMission() > 0x9e) {
-            Ship *ship = allShips->data()[0x31]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(1);
-            added->adjustPrice();
+        if (station->getIndex() == 120 && Globals::status->getCurrentCampaignMission() >= 159) {
+            ArrayAdd((*Globals::ships)[49]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(1);
+            list->data()[list->size() - 1]->adjustPrice();
         }
-        if (terranBonus &&
-            Globals::rnd->nextInt() == 0) {
-            Ship *ship = allShips->data()[0x33]->makeShip(-1);
-            ArrayAdd(ship, *result);
-            Ship *added = result->data()[result->size() - 1];
-            added->setRace(0);
-            added->adjustPrice();
+        if (terranExtras && Globals::rnd->nextInt(8) == 0) {
+            ArrayAdd((*Globals::ships)[51]->makeShip(-1), *list);
+            list->data()[list->size() - 1]->setRace(0);
+            list->data()[list->size() - 1]->adjustPrice();
         }
     }
-
-    if (station->getSystem() == 0x11 &&
-        Globals::rnd->nextInt() == 0) {
-        Ship *ship = allShips->data()[0x2a]->makeShip(-1);
-        ArrayAdd(ship, *result);
-        Ship *added = result->data()[result->size() - 1];
-        added->setRace(1);
-        added->adjustPrice();
+    if (station->getSystem() == 17 && Globals::rnd->nextInt(3) == 0) {
+        ArrayAdd((*Globals::ships)[42]->makeShip(-1), *list);
+        list->data()[list->size() - 1]->setRace(1);
+        list->data()[list->size() - 1]->adjustPrice();
     }
-    if (station->getSystem() == 0x11 &&
-        Globals::rnd->nextInt() == 0) {
-        Ship *ship = allShips->data()[0x2b]->makeShip(-1);
-        ArrayAdd(ship, *result);
-        Ship *added = result->data()[result->size() - 1];
-        added->setRace(2);
-        added->adjustPrice();
+    if (station->getSystem() == 17 && Globals::rnd->nextInt(3) == 0) {
+        ArrayAdd((*Globals::ships)[43]->makeShip(-1), *list);
+        list->data()[list->size() - 1]->setRace(2);
+        list->data()[list->size() - 1]->adjustPrice();
     }
-    if (station->getSystem() == 0x11 &&
-        Globals::rnd->nextInt() == 0) {
-        Ship *ship = allShips->data()[0x34]->makeShip(-1);
-        ArrayAdd(ship, *result);
-        Ship *added = result->data()[result->size() - 1];
-        added->setRace(0);
-        added->adjustPrice();
+    if (station->getSystem() == 17 && Globals::rnd->nextInt(3) == 0) {
+        ArrayAdd((*Globals::ships)[52]->makeShip(-1), *list);
+        list->data()[list->size() - 1]->setRace(0);
+        list->data()[list->size() - 1]->adjustPrice();
     }
-
-    return result;
+    return list;
 }
 
-typedef Item *(*ItemFactory)(Item *, int, int);
-
-static Array<Item *> **g_Generator_allItems;
-static ItemFactory g_Generator_introFactory;
-static int *g_Generator_jumpDriveBoost;
-static int *g_Generator_weaponBoost;
-static uint8_t *g_Generator_unlockFlags;
-static int g_Generator_kaamoAllowed[10];
-static int g_Generator_blockedItems[9];
+// Items sold at the Kaamo Club station (106).
+static const int kKaamoStationItems[10] = {101, 102, 103, 107, 108, 109, 114, 124, 0, 0};
+// Items never auto-unlocked into a shop when their occurrence is 0.
+static const int kNeverUnlockedItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 
 Array<Item *> *Generator::getItemBuyList(Station *station) {
-    Status *status = Globals::status;
-    int stationIndex = station->getIndex();
-
-    if (stationIndex == 0x4e &&
-        status->getCurrentCampaignMission() < 7) {
+    if (station->getIndex() == 78 && Globals::status->getCurrentCampaignMission() <= 6) {
         Array<Item *> *items = new Array<Item *>();
         ArraySetLength(3, *items);
-        Array<Item *> *all = *g_Generator_allItems;
-        ItemFactory makeIntro = g_Generator_introFactory;
-        items->data()[0] = makeIntro(all->data()[0], 1, 0);
-        items->data()[1] = makeIntro(all->data()[0x16], 1, 0);
-        items->data()[2] = makeIntro(all->data()[0x37], 1, 0);
+        items->data()[0] = (*Globals::items)[0]->makeItem(1, 0);
+        items->data()[1] = (*Globals::items)[22]->makeItem(1, 0);
+        items->data()[2] = (*Globals::items)[55]->makeItem(1, 0);
         return items;
     }
-
-    if (station->getIndex() == 0x6c ||
-        status->inSupernovaSystem() != 0) {
+    if (station->getIndex() == 108 || Globals::status->inSupernovaSystem()) {
         return nullptr;
     }
 
-    uint32_t stationId = station->getIndex();
+    int stationId = station->getIndex();
     Array<Item *> *result = new Array<Item *>();
-
-    Array<Item *> *allItems = *g_Generator_allItems;
-    Galaxy *galaxy = Globals::galaxy;
-    Array<SolarSystem *> *systems = galaxy->getSystems();
+    Array<Item *> *items = Globals::items;
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
     int stationTec = station->getTecLevel();
     int minTec = stationTec / 2;
     if (stationTec < 4) {
         minTec = 1;
     }
-    if ((stationId | 2) == 0x6b) {
+    if ((stationId | 2) == 107) {
         minTec = 0;
     }
 
-    if (status->getCurrentCampaignMission() == 0x8b &&
-        station->getSystem() == 0x19) {
-        ArrayAdd(allItems->data()[0xbe]->makeItem(), *result);
+    if (Globals::status->getCurrentCampaignMission() == 139 && station->getSystem() == 25) {
+        ArrayAdd((*items)[190]->makeItem(), *result);
+    }
+    if (stationId == 126) {
+        Item *item = (*items)[209]->makeItem();
+        int amount = Globals::status->getCurrentCampaignMission() == 117 ? 1 : Globals::rnd->nextInt(10) + 1;
+        ArrayAdd(item->makeItem(amount), *result);
     }
 
-    if (stationId == 0x7e) {
-        Item *item = allItems->data()[0xd1]->makeItem();
-        int amount = 1;
-        if (status->getCurrentCampaignMission() != 0x75) {
-            amount = Globals::rnd->nextInt() + 1;
-        }
-        item->setAmount(amount);
-        ArrayAdd(item, *result);
+    Globals::rnd->reset();
+    float priceFactor = 1.5f;
+    if ((float) (Globals::status->getCurrentCampaignMission() + 25) / 45.0f < 1.5f) {
+        priceFactor = (float) (Globals::status->getCurrentCampaignMission() + 25) / 45.0f;
     }
 
-    AbyssEngine::AERandom *random = Globals::rnd;
-    float campaignFactor =
-            (float) (status->getCurrentCampaignMission() + 0x19) / 100.0f;
-    if (campaignFactor > 1.5f) {
-        campaignFactor = 1.5f;
-    }
-
-    for (uint32_t i = 0; i < allItems->size(); ++i) {
-        Item *item = allItems->data()[i];
-        int itemIndex = item->getIndex();
-        bool systemGood = itemIndex >= 0x84 && itemIndex < 0x9a;
-        bool forcedStation = false;
-
-        if (station->getIndex() == item->getAttribute(0x3d)) {
-            if ((item->getIndex() < 0xc4 || item->getIndex() > 0xc4 ||
-                 status->getCurrentCampaignMission() > 0x8d) &&
-                (item->getIndex() < 0xc6 || item->getIndex() > 0xc8 ||
-                 status->getCurrentCampaignMission() > 0x8d)) {
-                forcedStation = true;
+    for (unsigned i = 0; i < items->size(); ++i) {
+        Item *item = (*items)[i];
+        bool systemGood = item->getIndex() >= 132 && item->getIndex() < 154;
+        bool stationExclusive = false;
+        if (station->getIndex() == item->getAttribute(61)) {
+            if ((item->getIndex() < 196 || item->getIndex() > 196 ||
+                 Globals::status->getCurrentCampaignMission() >= 142) &&
+                (item->getIndex() < 198 || item->getIndex() > 200 ||
+                 Globals::status->getCurrentCampaignMission() >= 142)) {
+                stationExclusive = true;
             }
         }
-
-        if (stationId == 0x6a) {
-            bool allowed = false;
-            for (uint32_t j = 0; j < 10; ++j) {
-                if (g_Generator_kaamoAllowed[j] == item->getIndex() ||
-                    systemGood) {
-                    allowed = true;
+        if (stationId == 106) {
+            unsigned k = 0;
+            while (true) {
+                if (k > 9) {
+                    goto next;
+                }
+                if (systemGood || kKaamoStationItems[k++] == item->getIndex()) {
                     break;
                 }
             }
-            if (!allowed) {
-                continue;
+        }
+
+        {
+            int occurrence = item->getOccurence();
+            if (item->getIndex() == 122 && Globals::energyCellsProbChange != 0) {
+                occurrence = (int) ((float) occurrence +
+                                    (float) (Globals::energyCellsProbChange * occurrence) * 0.01f);
             }
-        }
-
-        int occurrence = item->getOccurence();
-        if (item->getIndex() == 0x7a && *g_Generator_jumpDriveBoost != 0) {
-            occurrence = (int) ((float) occurrence +
-                                (float) (occurrence *
-                                         *g_Generator_jumpDriveBoost) *
-                                0.05f);
-        }
-        if (item->getType() == 1 && *g_Generator_weaponBoost != 0) {
-            occurrence =
-                    (int) ((float) occurrence +
-                           (float) (occurrence * *g_Generator_weaponBoost) * 0.05f);
-        }
-
-        int sort = item->getSort();
-        int mission = status->getCurrentCampaignMission();
-        if (occurrence == 0 &&
-            ((itemIndex > 0xc3 && g_Generator_unlockFlags[0x37] != 0) ||
-             (itemIndex < 0xc4 && g_Generator_unlockFlags[0x35] != 0))) {
-            occurrence = 0;
-            if (itemIndex != 0x55 && item->getType() != 4 &&
-                item->getIngredients() == 0 &&
-                (itemIndex != 0xb5 || mission > 0x3a) &&
-                (((sort != 0x22 && (sort | 2) != 0x23) || mission > 0x8d) &&
-                 (sort != 0x24 && (mission > 0x8d || sort != 0x2b))) &&
-                ((1 < (uint32_t)((itemIndex & 0xfffffff7) - 0xd1)) &&
-                 (mission > 0x5d || itemIndex != 0xcd))) {
-                bool blocked = false;
-                for (uint32_t j = 0; j < 9; ++j) {
-                    if (g_Generator_blockedItems[j] == itemIndex) {
-                        blocked = true;
+            if (item->getType() == 1 && Globals::secondaryWeaponsProbChange != 0) {
+                occurrence = (int) ((float) occurrence +
+                                    (float) (Globals::secondaryWeaponsProbChange * occurrence) * 0.01f);
+            }
+            int index = item->getIndex();
+            int sort = item->getSort();
+            int mission = Globals::status->getCurrentCampaignMission();
+            if (occurrence == 0 && ((index >= 196 && Globals::options[55]) || (index <= 195 && Globals::options[53]))) {
+                occurrence = 0;
+                if (index != 85 && item->getType() != 4 && item->getIngredients() == 0 &&
+                    (index != 181 || mission >= 59) &&
+                    !((sort == 34 || (sort | 2) == 35) && mission < 142) && sort != 36 &&
+                    !(sort == 43 && mission < 142) && (unsigned) ((index & ~8) - 209) >= 2 &&
+                    !(index == 205 && mission < 94)) {
+                    bool blocked = false;
+                    for (unsigned k = 0; k < 9; ++k) {
+                        if (kNeverUnlockedItems[k] == index) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (!blocked && (sort != 29 || Globals::status->inBlackMarketSystem())) {
+                        int roll = Globals::rnd->nextInt(30);
+                        occurrence = (int) ((float) roll + ((float) item->getTecLevel() / -10.0f + 1.0f) * 30.0f);
                     }
                 }
-                if (!blocked &&
-                    (sort != 0x1d || status->inBlackMarketSystem() != 0)) {
-                    int roll = random->nextInt();
-                    occurrence =
-                            (int) ((float) roll +
-                                   ((float) item->getTecLevel() / -10.0f + 1.0f) *
-                                   30.0f);
-                }
             }
-        }
 
-        int itemTec = item->getTecLevel();
-        bool accept = forcedStation;
-        if (!accept) {
-            if (item->getIngredients() == 0 &&
-                (uint32_t)((i & 0x7fffffff) - 0xd9) > 1 && i != 0xa4 &&
-                i != 0xaf && occurrence != 0 &&
-                itemTec <= station->getTecLevel() &&
-                item->getSinglePrice() != 0) {
-                if (item->getAttribute(0x3c) == 1 &&
-                    systems->data()[station->getSystem()]->getRace() !=
-                    1) {
-                    continue;
-                }
-                if (stationId != 0x6a && systemGood &&
-                    item->getIndex() != station->getSystem() + 0x84) {
-                    continue;
-                }
-                accept = true;
+            int tec = item->getTecLevel();
+            if (!stationExclusive) {
+                if (item->getIngredients() != 0) goto next;
+                int slot = (int) (i & 0x7fffffff);
+                if ((unsigned) (slot - 217) < 2 || slot == 164 || slot == 175) goto next;
+                if (occurrence == 0 || tec > station->getTecLevel()) goto next;
+                if (item->getSinglePrice() == 0) goto next;
+                if (item->getAttribute(60) == 1 && (*systems)[station->getSystem()]->getRace() != 1) goto next;
+                if (stationId != 106 && systemGood && item->getIndex() != station->getSystem() + 132) goto next;
             }
-        }
-
-        if (!accept) {
-            continue;
-        }
-        if (status->hardCoreMode() &&
-            (item->getSort() == 0x17 || item->getSort() == 0x18)) {
-            continue;
-        }
-        if (stationId == 0x6b && item->getType() != 3) {
-            continue;
-        }
-        if (stationId == 0x69 &&
-            (!item->isWeapon() && item->getSort() != 0x1c)) {
-            continue;
-        }
-        if (stationId == 0x65 && !item->isWeapon()) {
-            continue;
-        }
-        if (stationId == 0x6a && item->getType() != 4) {
-            continue;
-        }
-
-        int randomGate = (int) (campaignFactor * (float) occurrence);
-        if (!forcedStation) {
-            if ((itemTec > stationTec && !systemGood) ||
-                random->nextInt() >= randomGate) {
-                continue;
+            if (Globals::status->hardCoreMode() && (item->getSort() == 23 || item->getSort() == 24)) goto next;
+            switch (stationId) {
+                case 107:
+                    if (item->getType() != 3) goto next;
+                    break;
+                case 105:
+                    if (!item->isWeapon() && item->getSort() != 28) goto next;
+                    break;
+                case 101:
+                    if (!item->isWeapon()) goto next;
+                    break;
             }
-            if (item->getIndex() != 0x7a && itemTec < minTec &&
-                random->nextInt() >= 0x3d) {
-                continue;
+            if (stationId == 106 && item->getType() != 4) goto next;
+
+            int chance = (int) (priceFactor * (float) occurrence);
+            if (!stationExclusive) {
+                if (tec > stationTec && !systemGood) goto next;
+                if (Globals::rnd->nextInt(100) >= chance) goto next;
+                if (tec < minTec && item->getIndex() != 122 && Globals::rnd->nextInt(100) > 60) goto next;
             }
-        }
 
-        int minSystem = item->getMinPriceSystem();
-        int minX = systems->data()[minSystem]->getX();
-        int minY = systems->data()[minSystem]->getY();
-        int stationSystem = station->getSystem();
-        int stationX = systems->data()[stationSystem]->getX();
-        int stationY = systems->data()[stationSystem]->getY();
-        int distance =
-                galaxy->invDistancePercent(stationX, stationY, minX, minY);
-        int amount = random->nextInt() + 5;
-
-        if (item->getType() == 4 || item->getType() == 1) {
-            if (item->getIndex() != 0x6d && item->getType() == 4) {
-                if (distance > 0x32) {
-                    float hard = status->hardCoreMode() ? 2.0f : 20.0f;
-                    int scaled = (int) (((float) (distance - 0x32) / 100.0f) *
-                                        hard);
-                    if (scaled < 2) {
-                        scaled = 1;
+            int minX = (*systems)[item->getMinPriceSystem()]->getX();
+            int minY = (*systems)[item->getMinPriceSystem()]->getY();
+            int distance = Globals::galaxy->invDistancePercent((*systems)[station->getSystem()]->getX(),
+                                                               (*systems)[station->getSystem()]->getY(), minX, minY);
+            int base = Globals::rnd->nextInt(15);
+            int amount = base + 5;
+            if (item->getType() == 4 || item->getType() == 1) {
+                if (item->getIndex() == 109) {
+                    amount /= 2;
+                    if (amount < 1) {
+                        amount = 1;
                     }
-                    amount *= scaled;
+                } else if (item->getType() == 4) {
+                    if (distance > 50) {
+                        float far = (float) (distance - 50) / 50.0f;
+                        int scale = (int) (far * (Globals::status->hardCoreMode() ? 2.0f : 20.0f));
+                        if (scale <= 1) {
+                            scale = 1;
+                        }
+                        amount *= scale;
+                    }
+                    if (item->getIndex() == 110 && amount > Globals::rnd->nextInt(10) + 10) {
+                        amount = Globals::rnd->nextInt(10) + 10;
+                    }
                 }
-                if (item->getIndex() == 0x6e &&
-                    random->nextInt() + 10 < amount) {
-                    amount = random->nextInt() + 10;
+            } else {
+                amount /= 5;
+                if (amount < 1) {
+                    amount = 1;
                 }
             }
-        } else {
-            amount /= 5;
-            if (amount < 1) {
-                amount = 1;
-            }
+            ArrayAdd(item->makeItem(amount), *result);
         }
-
-        Item *newItem = item->makeItem();
-        newItem->setAmount(amount);
-        ArrayAdd(newItem, *result);
+    next:;
     }
-
     return result;
 }
 
-static Array<Item *> **g_Generator_lootItems;
-static int g_Generator_typeChances[8];
+// Chance (in %) that a randomly drawn loot item of each Item type is accepted.
+static const int kLootTypeChance[6] = {10, 40, 2, 10, 100, 10};
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
@@ -1087,73 +990,57 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         return result;
     }
 
-    Array<Item *> **itemsPtr = g_Generator_lootItems;
-    Array<Item *> *itemsForOccurence = *itemsPtr;
-    Array<Item *> *items = *itemsPtr;
-    int itemCount = (int) itemsForOccurence->size();
-
-    int pairCount = Globals::rnd->nextInt();
-    if (Globals::rnd->nextInt() == 0) {
+    Array<Item *> *items = Globals::items;
+    int pairCount = Globals::rnd->nextInt(3);
+    if (Globals::rnd->nextInt(3) == 0) {
         return nullptr;
     }
 
     Array<int> *result = new Array<int>();
-    uint32_t length = (uint32_t)(pairCount << 1);
-    if (pairCount == 0) {
-        length = 2;
-    }
-    ArraySetLength(length, *result);
+    ArraySetLength(pairCount == 0 ? 2u : (uint32_t) (pairCount << 1), *result);
 
+    Array<Item *> *allItems = Globals::items;
+    int type = 0;
     for (uint32_t out = 0; out < result->size(); out += 2) {
         bool found = false;
-        int type = 0;
         int selected = 0;
-
-        for (uint32_t tries = 0; !found && tries < 100; ++tries) {
-            selected = Globals::rnd->nextInt();
-            Item *item = items->data()[selected];
-            type = item->getType();
-            if (item->getIngredients() == 0 &&
-                Globals::rnd->nextInt() < g_Generator_typeChances[type]) {
-                int roll = Globals::rnd->nextInt();
-                int occurrence =
-                        itemsForOccurence->data()[selected]->getOccurence();
-                if (roll < occurrence && item->getSinglePrice() >= 1) {
+        uint32_t tries = 0;
+        while (!found && tries < 100) {
+            selected = Globals::rnd->nextInt(items->size());
+            type = (*allItems)[selected]->getType();
+            found = false;
+            if ((*allItems)[selected]->getIngredients() == 0 &&
+                Globals::rnd->nextInt(100) < kLootTypeChance[type] &&
+                Globals::rnd->nextInt(100) < (*items)[selected]->getOccurence() &&
+                (*allItems)[selected]->getSinglePrice() >= 1) {
+                if ((uint32_t) (selected - 217) < 2 || selected == 164 || selected == 175) {
+                    found = false;
+                } else if (type == 4 || (*allItems)[selected]->getTecLevel() <= 7) {
                     found = true;
-                    if ((uint32_t)(selected - 0xd9) < 2 || selected == 0xa4 ||
-                        selected == 0xaf) {
-                        found = false;
-                    } else if (type != 4 && item->getTecLevel() > 7) {
-                        found = false;
-                    }
                 }
             }
+            ++tries;
         }
 
         int count;
         if (found) {
             result->data()[out] = selected;
             if (type == 4) {
-                count = Globals::rnd->nextInt();
-                type = 4;
+                count = Globals::rnd->nextInt(9);
             } else {
-                count = Globals::rnd->nextInt();
+                count = Globals::rnd->nextInt(3);
             }
         } else {
-            result->data()[out] = Globals::rnd->nextInt() + 0x9a;
-            count = Globals::rnd->nextInt();
+            result->data()[out] = Globals::rnd->nextInt(10) + 154;
+            count = Globals::rnd->nextInt(9);
             type = 4;
         }
         result->data()[out | 1] = count + 1;
     }
 
-    Ship *ship = Globals::status->getShip();
-    if (ship->hasJumpDrive() != 0) {
-        ship = Globals::status->getShip();
-        if (ship->hasCargo(0x7a, 1) == 0 &&
-            Globals::rnd->nextInt() < 10) {
-            result->data()[0] = 0x7a;
-        }
+    if (Globals::status->getShip()->hasJumpDrive() && !Globals::status->getShip()->hasCargo(122, 1) &&
+        Globals::rnd->nextInt(100) < 10) {
+        result->data()[0] = 122;
     }
     return result;
 }
