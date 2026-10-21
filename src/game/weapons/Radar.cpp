@@ -1340,7 +1340,7 @@ void Radar::drawCurrentLock(Hud *) {
         String text(*Globals::gameText->getText(3236), false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
                                     this->field_0x214 + layoutField(0xc4), false);
         return;
     }
@@ -1348,8 +1348,8 @@ void Radar::drawCurrentLock(Hud *) {
         String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
         int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
         this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
-        int x = (Globals::w >> 1) - textWidth / 2;
-        this->qualitySprite->setPosition(x - Globals::layout->buttonInsetX - this->qualitySprite->getFrameWidth(),
+        int x = (Globals::w >> 1) - (textWidth >> 1);
+        this->qualitySprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->qualitySprite->getFrameWidth(),
                                          this->field_0x214 + layoutField(0xc0));
         this->qualitySprite->draw(1.0f, 1.0f);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
@@ -1368,23 +1368,25 @@ void Radar::drawCurrentLock(Hud *) {
         }
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
                                     (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2,
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1,
                                     this->field_0x214 + layoutField(0xc4), false);
         Globals::Canvas->SetColor(0xffffffff);
         return;
     }
 
     int x;
+    const String *label;
     if (target == station) {
-        text = title;
+        label = &title;
     } else if (target->name.length == 0) {
-        text = *Globals::gameText->getText(target->shipGroup + 406);
+        label = Globals::gameText->getText(target->shipGroup + 406);
     } else {
-        text = target->name;
+        label = &target->name;
     }
+    text = *label;
     if (target != station) {
         text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
-        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+        x = (Globals::w >> 1) - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1;
     } else {
         if (Globals::status->inAlienOrbit()) {
             if (Globals::status->dlc1Won()) {
@@ -1396,8 +1398,8 @@ void Radar::drawCurrentLock(Hud *) {
             this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
         }
         int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-        x = (Globals::w >> 1) - textWidth / 2;
-        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+        x = (Globals::w >> 1) - (textWidth >> 1);
+        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                       this->field_0x214 + layoutField(0xc8));
         this->lockSprite->draw(1.0f, 1.0f);
     }
@@ -1405,7 +1407,7 @@ void Radar::drawCurrentLock(Hud *) {
                                 this->field_0x214 + layoutField(0xc4), false);
     if (target != station && target->shipGroup != 10) {
         this->lockSprite->setFrame(target->shipGroup);
-        this->lockSprite->setPosition(x - Globals::layout->buttonInsetX - this->lockSprite->getFrameWidth(),
+        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                       this->field_0x214 + layoutField(0xc8));
         this->lockSprite->draw(1.0f, 1.0f);
     }
