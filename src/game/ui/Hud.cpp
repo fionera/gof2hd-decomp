@@ -1435,145 +1435,67 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
 
 
 
-static const char g_Hud_csZero[1] = {0};
-
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
-    int *layout = (int *) Globals::layout;
-    int *status = (int *) Globals::status;
-    int screenW = *(int *) &Globals::w;
-    Sprite *sprite = this->digitSprite;
-
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int fw = ((Sprite *) (sprite))->getFrameWidth();
-    int pad = layout[0xb];
-    int fh = ((Sprite *) (sprite))->getFrameHeight();
-    int y = layout[0xb];
-
-    char score[12];
-    ((String *) (score))->Set((long long) (status[0x61]));
-    int slen = (int) ((String *) score)->size();
-    if (slen < 7) {
-        for (int k = 0; k < 7 - slen; k++) {
-            char z[12], acc[12];
-            ((String *) (z))->ctor_char(g_Hud_csZero, false);
-            *(String *) acc = *(String *) z + *(String *) score;
-            *((String *) (score)) = *((String *) (acc));
-            {
-                String *_s = ((String *) (acc));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (z));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-        }
+    Globals::Canvas->SetColor(0xffffffff);
+    int digitW = this->digitSprite->getFrameWidth();
+    int overlap = Globals::layout->field_0x2c_rowHeight;
+    int digitH = this->digitSprite->getFrameHeight();
+    int y = Globals::layout->field_0x2c_rowHeight;
+    int screenW = Globals::w;
+    String score(Globals::status->field_0x184);
+    if (score.size() < 7) {
+        int pad = 7 - score.size();
+        for (int i = 0; i < pad; i++)
+            score = String("0") + score;
     }
-
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int dw = fw - pad;
+    Globals::Canvas->SetColor(0x77ccffff);
+    int step = digitW - overlap;
     int half = screenW / 2;
-    int span = (dw * 7) / 2;
-    int startX = half - span;
-    {
-        int len = (int) ((String *) score)->size();
-        int x = startX;
-        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-            char ch[12];
-            *((String *) (ch)) = ((String *) score)->SubString(i - 1, i);
-            int frame = ((String *) (ch))->ValueOf();
-            {
-                String *_s = ((String *) (ch));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            ((Sprite *) (sprite))->setFrame(frame);
-            ((Sprite *) (sprite))->setPosition(x, y);
-            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-            x += dw;
-        }
+    int span = step * 7 / 2;
+    int left = half - span;
+    int x = left;
+    for (unsigned int i = 0; i < score.size(); i++) {
+        int frame = score.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+        this->digitSprite->setPosition(x, y);
+        this->digitSprite->draw(1.0f, 1.0f);
+        x += step;
     }
-
-    if (status[0x60] > 0 && status[0x63] > 1) {
-        Globals::Canvas->SetColor((unsigned) (-1));
-        int yRow = y + fh + pad;
-        int scoreVal = status[0x60];
-        if (scoreVal < 0xbb9) {
-            if (scoreVal % 100 >= 0x32) {
-                int mult = status[0x63];
-                float bonus = (float) mult;
-                float base = (float) (mult * 1000);
-                char bonusStr[12];
-                ((String *) (bonusStr))->Set((long long) (int) ((bonus * 0.0f + 1.0f) * base));
-                int bl = (int) ((String *) bonusStr)->size();
-                int bx = (screenW / 2 - ((bl * dw) >> 1));
-                int bonusY = fh + yRow + pad;
-                int len = (int) ((String *) bonusStr)->size();
-                int x = bx;
-                for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-                    char ch[12];
-                    *((String *) (ch)) = ((String *) bonusStr)->SubString(i - 1, i);
-                    int frame = ((String *) (ch))->ValueOf();
-                    {
-                        String *_s = ((String *) (ch));
-                        if (_s->data) delete[] _s->data;
-                        _s->data = nullptr;
-                        _s->length = 0;
-                    }
-                    ((Sprite *) (sprite))->setFrame(frame);
-                    ((Sprite *) (sprite))->setPosition(x, bonusY);
-                    ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-                    x += dw;
-                }
-                {
-                    String *_s = ((String *) (bonusStr));
-                    if (_s->data) delete[] _s->data;
-                    _s->data = nullptr;
-                    _s->length = 0;
-                }
+    if (Globals::status->field_0x180 > 0 && Globals::status->field_0x18c >= 2) {
+        Globals::Canvas->SetColor(0xffffffff);
+        int rowGap = Globals::layout->field_0x2c_rowHeight;
+        y = y + digitH + rowGap;
+        if (Globals::status->field_0x180 <= 3000) {
+            if (Globals::status->field_0x180 % 100 < 50)
+                return;
+            int multiplier = Globals::status->field_0x18c;
+            String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
+            int bonusY = digitH + y;
+            int offset = 0;
+            for (unsigned int i = 0; i < bonus.size(); i++) {
+                int frame = bonus.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+                this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
+                                               bonusY + Globals::layout->field_0x2c_rowHeight);
+                offset += step;
+                this->digitSprite->draw(1.0f, 1.0f);
             }
         }
-        Globals::Canvas->DrawImage2D((unsigned) this->multiplierIconImage, pad + startX, 0);
-
-        char timeStr[12];
-        ((String *) (timeStr))->Set((long long) (status[0x63]));
-        int tx = (half + pad) - span + Globals::Canvas->GetImage2DWidth((unsigned) (0));
-        int len = (int) ((String *) timeStr)->size();
-        int x = tx;
-        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-            char ch[12];
-            *((String *) (ch)) = ((String *) timeStr)->SubString(i - 1, i);
-            int frame = ((String *) (ch))->ValueOf();
-            {
-                String *_s = ((String *) (ch));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            ((Sprite *) (sprite))->setFrame(frame);
-            ((Sprite *) (sprite))->setPosition(x, yRow);
-            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-            x += dw;
-        }
-        {
-            String *_s = ((String *) (timeStr));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
+        Globals::Canvas->DrawImage2D(this->multiplierIconImage, rowGap + left, y);
+        float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
+        float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
+        String multiplier(Globals::status->field_0x18c);
+        int mx = half + rowGap - span;
+        for (unsigned int i = 0; i < multiplier.size(); i++) {
+            int frame = multiplier.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
+            mx += step;
+            this->digitSprite->draw(scale, scale);
         }
     }
-    Globals::Canvas->SetColor((unsigned) (-1));
-    {
-        String *_s = ((String *) (score));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
 
