@@ -34,21 +34,16 @@ namespace AbyssEngine {
         }
         glEnableVertexAttribArray(this->aPosition);
 
-        int size;
-        const unsigned char *ptr;
-        if (mesh == 0) {
-            ptr = *(unsigned char **) &engine->lineVertexBase;
-            size = 2;
-        } else {
-            if (mesh->uploaded == 0) {
-                ptr = mesh->positions;
-            } else {
+        if (mesh != 0) {
+            if (mesh->uploaded != 0) {
                 glBindBuffer(0x8892, mesh->positionVBO);
-                ptr = 0;
+                glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            } else {
+                glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
             }
-            size = 3;
+        } else {
+            glVertexAttribPointer(this->aPosition, 2, 0x1406, 0, 0, *(unsigned char **) &engine->lineVertexBase);
         }
-        glVertexAttribPointer(this->aPosition, size, 0x1406, 0, 0, ptr);
     }
 
     void NoTexShader::Init(Engine *) {

@@ -5,7 +5,7 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/PaintCanvas.h"
 #include <GLES2/gl2.h>
-#include <arm_neon.h>
+#include <string.h>
 
 
 static const char *const kPostBWShaderVertexSource =
@@ -63,7 +63,8 @@ namespace AbyssEngine {
 
     void PostBWShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
-        this->dirty = 0;
+        if (this->dirty != 0)
+            this->dirty = 0;
 
         glEnableVertexAttribArray(this->aPosition);
         glEnableVertexAttribArray(this->aTexCoord);
@@ -80,23 +81,31 @@ namespace AbyssEngine {
     }
 
     void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
-        uint32x4_t zero = vdupq_n_u32(0);
-        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
-        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
         engine->currentProgram = this->program;
+        memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
 
-        engine->projMatrix[0] = 2.0f / (float) engine->GetDisplayWidth();
-        engine->projMatrix[5] = -(2.0f / (float) engine->GetDisplayHeight());
-        engine->projMatrix[10] = -1.0f;
+        engine->projMatrix[0] = 2.0f / (float) (int) engine->GetDisplayWidth();
+        engine->projMatrix[5] = -(2.0f / (float) (int) engine->GetDisplayHeight());
+        engine->projMatrix[10] = -0.05f;
+        engine->projMatrix[15] = 1.0f;
         engine->projMatrix[12] = -1.0f;
         engine->projMatrix[13] = 1.0f;
-        engine->projMatrix[15] = 1.0f;
 
-        float matrix[16] = {};
+        float matrix[15];
         matrix[0] = 1.0f;
+        matrix[1] = 0.0f;
+        matrix[2] = 0.0f;
+        matrix[3] = 0.0f;
+        matrix[4] = 0.0f;
         matrix[5] = 1.0f;
+        matrix[6] = 0.0f;
+        matrix[7] = 0.0f;
+        matrix[8] = 0.0f;
+        matrix[9] = 0.0f;
+        matrix[10] = 1.0f;
+        matrix[11] = 0.0f;
+        matrix[12] = 1.0f;
+        matrix[13] = 1.0f;
         matrix[14] = 1.0f;
         engine->SetWorldViewMatrix(reinterpret_cast<const AEMath::Matrix &>(matrix));
 
@@ -109,16 +118,10 @@ namespace AbyssEngine {
         glBindFramebuffer(0x8d40, engine->viewFramebuffer);
         glClear(0x4100);
 
-        int width;
-        int height;
-        if (engine->appManager->paintCanvas->gameOrientation == 2) {
-            width = engine->GetDisplayWidth();
-            height = engine->GetDisplayHeight();
-        } else {
-            width = engine->GetDisplayHeight();
-            height = engine->GetDisplayWidth();
-        }
-        glViewport(0, 0, width, height);
+        if (engine->appManager->paintCanvas->gameOrientation == 2)
+            glViewport(0, 0, engine->GetDisplayWidth(), engine->GetDisplayHeight());
+        else
+            glViewport(0, 0, engine->GetDisplayHeight(), engine->GetDisplayWidth());
 
         glEnableVertexAttribArray(this->aPosition);
         glEnableVertexAttribArray(this->aTexCoord);

@@ -88,7 +88,7 @@ namespace AbyssEngine {
     }
 
     void ColorMixAdd::SetInActive() {
-        for (int i = 2; i != 0; i = i - 1) {
+        for (int i = 0; i != 2; i++) {
             glDisableVertexAttribArray(this->a0Loc);
             glDisableVertexAttribArray(this->a1Loc);
         }

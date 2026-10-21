@@ -57,19 +57,11 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(aPosition);
         glEnableVertexAttribArray(aColor);
 
-        int index = aPosition;
-        int size;
-        const unsigned char *ptr;
-        int stride = 0;
-        if (mesh == 0) {
-            ptr = *(unsigned char **) &engine->lineVertexBase;
-            size = 2;
+        if (mesh != 0) {
+            glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(aColor, 4, 0x1406, 0, 0, mesh->colors);
         } else {
-            glVertexAttribPointer(index, 3, 0x1406, 0, stride, mesh->positions);
-            ptr = mesh->colors;
-            index = aColor;
-            size = 4;
+            glVertexAttribPointer(aPosition, 2, 0x1406, 0, 0, *(unsigned char **) &engine->lineVertexBase);
         }
-        glVertexAttribPointer(index, size, 0x1406, 0, stride, ptr);
     }
 }
