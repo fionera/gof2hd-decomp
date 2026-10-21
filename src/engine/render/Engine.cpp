@@ -265,16 +265,23 @@ void Engine::SetAccelValue(double x, double y, double z) {
 
 void Engine::ResetUVMatrix() {
     if (Engine::enableShader != 0) {
-        uint32_t one = 0x3f800000;
-        uint32x4_t zero = vdupq_n_u32(0);
-        uint32_t *uv = (uint32_t *) this->uvMatrix;
-        uv[0] = one;
-        uv[5] = one;
-        uv[10] = one;
-        uv[15] = one;
-        vst1q_u32(uv + 1, zero);
-        vst1q_u32(uv + 6, zero);
-        vst1q_u32(uv + 11, zero);
+        float *uv = this->uvMatrix;
+        uv[0] = 1.0f;
+        uv[1] = 0.0f;
+        uv[2] = 0.0f;
+        uv[3] = 0.0f;
+        uv[4] = 0.0f;
+        uv[5] = 1.0f;
+        uv[6] = 0.0f;
+        uv[7] = 0.0f;
+        uv[8] = 0.0f;
+        uv[9] = 0.0f;
+        uv[10] = 1.0f;
+        uv[11] = 0.0f;
+        uv[12] = 0.0f;
+        uv[13] = 0.0f;
+        uv[14] = 0.0f;
+        uv[15] = 1.0f;
         return;
     }
 
@@ -462,9 +469,9 @@ void Engine::ActivateRefractFBO() {
 }
 
 void Engine::LightSetParticleAmbient(float red, float green, float blue) {
-    this->particleAmbient.x = red;
-    this->particleAmbient.y = green;
-    this->particleAmbient.z = blue;
+    this->field_0x314.x = red;  // particle ambient @0x314
+    this->field_0x314.y = green;
+    this->field_0x314.z = blue;
 }
 
 void Engine::DeactivateRender2FracFBO() {
@@ -867,7 +874,7 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     int count = this->lightCount;
     for (int index = 0; index < count; index += 1) {
         const LightColor &src = (&this->lightSpecular)[index];
-        Vector &dst = (&this->lightSpecularShaded)[index];
+        Vector &dst = (&this->lightDiffuseShaded)[index] /* specular-shaded[2] @0x2e4 */;
         dst.x = src.r * red;
         dst.y = src.g * green;
         dst.z = src.b * blue;
@@ -949,7 +956,7 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     int lightCount = this->lightCount;
     for (int i = 0; i < lightCount; i += 1) {
         const LightColor &src = (&this->lightDiffuse)[i];
-        Vector &dst = (&this->lightDiffuseShaded)[i];
+        Vector &dst = (&this->field_0x2fc)[i]; /* diffuse-shaded[2] @0x2fc */
         dst.x = src.r * red;
         dst.y = src.g * green;
         dst.z = src.b * blue;
@@ -1083,10 +1090,10 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1200, &src.r);
     }
-    Vector &dst = (&this->lightAmbientShaded)[index];
-    dst.x = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
-    dst.y = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
-    dst.z = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
+    float *dst = &(&this->lightAmbientShaded)[index].x;
+    dst[0] = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
+    dst[1] = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
+    dst[2] = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
     return this->ShaderUpdate();
 }
 
@@ -1115,10 +1122,10 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1201, &src.r);
     }
-    Vector &dst = (&this->lightDiffuseShaded)[index];
-    dst.x = this->materialDiffuse[0] * red;
-    dst.y = src.g * this->materialDiffuse[1];
-    dst.z = src.b * this->materialDiffuse[2];
+    float *dst = &(&this->field_0x2fc)[index].x; /* diffuse-shaded[2] @0x2fc */
+    dst[0] = this->materialDiffuse[0] * red;
+    dst[1] = src.g * this->materialDiffuse[1];
+    dst[2] = src.b * this->materialDiffuse[2];
     return this->ShaderUpdate();
 }
 
@@ -1327,7 +1334,7 @@ void Engine::SetModelMatrix(const Matrix &matrix) {
 }
 
 void Engine::LightSetLight(unsigned int light) {
-    uint32_t values[4] = {0, 0, 0, 0};
+    float position[4] = {0.0f, 1.0f, 0.0f, 0.0f};
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -1338,12 +1345,12 @@ void Engine::LightSetLight(unsigned int light) {
         this->lightCount = count;
 
         const Vector &dir = (&this->field_0x468)[index];
-        values[0] = *(const uint32_t *) &dir.x;
-        values[1] = *(const uint32_t *) &dir.y;
-        values[2] = *(const uint32_t *) &dir.z;
-        values[3] = *(const uint32_t *) &this->lightDirty[index];
+        position[0] = dir.x;
+        position[1] = dir.y;
+        position[2] = dir.z;
+        position[3] = this->lightDirty[index];
         if (Engine::enableShader == 0) {
-            glLightfv(light, 0x1203, reinterpret_cast<const float *>(values));
+            glLightfv(light, 0x1203, position);
         }
     }
     return;
@@ -1481,10 +1488,10 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     if (Engine::enableShader == 0) {
         return glLightfv(light, 0x1202, &src.r);
     }
-    Vector &dst = (&this->lightSpecularShaded)[index];
-    dst.x = this->materialSpecular[0] * red;
-    dst.y = src.g * this->materialSpecular[1];
-    dst.z = src.b * this->materialSpecular[2];
+    float *dst = &(&this->lightDiffuseShaded)[index].x; /* specular-shaded[2] @0x2e4 */
+    dst[0] = this->materialSpecular[0] * red;
+    dst[1] = src.g * this->materialSpecular[1];
+    dst[2] = src.b * this->materialSpecular[2];
     return this->ShaderUpdate();
 }
 

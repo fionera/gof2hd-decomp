@@ -124,6 +124,10 @@ namespace AbyssEngine {
 
         float materialShininess;
 
+        // NOTE (verified against Engine::Light* in the binary): 0x2cc..0x31f is really three
+        // per-light Vector[2] arrays -- ambient-shaded @0x2cc, specular-shaded @0x2e4,
+        // diffuse-shaded @0x2fc -- followed by the particle ambient colour @0x314. The member
+        // names below predate that and are kept only because shader TUs reference them.
         Vector lightAmbientShaded;
         Vector lightSpecularShaded;
         Vector lightDiffuseShaded;
