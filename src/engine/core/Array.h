@@ -180,8 +180,8 @@ void ArrayRelease(Array<T> &a) {
 template<class T>
 void ArrayReleaseClasses(Array<T> &a) {
     for (unsigned int i = 0; i < a.capacity_; ++i) {
-        if (a.data_[i]) delete a.data_[i];
-        a.data_[i] = nullptr;
+        if (a[i]) delete a[i];
+        a[i] = nullptr;
     }
     if (a.data_) ::operator delete[](a.data_);
     a.data_ = nullptr;

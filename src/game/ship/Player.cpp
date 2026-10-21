@@ -61,7 +61,7 @@ void FloatVectorMax(void *out, float a, float b, int c, int d); // lint: void_pt
 
 void Player::pitchAllPrimaryGuns(float pitch) {
     if (this->guns != 0) {
-        Array<Gun *> *prim = this->guns->data()[0];
+        Array<Gun *> *prim = (*this->guns)[0];
         if (prim != 0) {
             int n = prim->size();
             for (int i = 0; n != i; i++) {

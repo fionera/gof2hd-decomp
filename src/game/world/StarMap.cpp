@@ -113,613 +113,6 @@ void MatrixSetRotation(void *matrix, float x, float y, float z, float w); // lin
 
 void *SystemPathFinder_ctor(void *finder); // lint: void_ptr (external symbol; mangling must match lib)
 
-uint8_t StarMap::missionChanged() {
-    return this->missionChangedFlag;
-}
-
-void StarMap::render() {
-    Globals::Canvas->SetColor((unsigned int) (0xffffffffu));
-    void(*renderGeometry)(AEGeometry *) = g_StarMap_render_geometry;
-    renderGeometry(this->bgLayer0);
-    renderGeometry(this->bgLayer1);
-    renderGeometry(this->bgLayer2);
-    renderGeometry(this->systemRoot);
-    Globals::Canvas->End3d();
-    Globals::Canvas->Begin3d();
-    if (this->starSystemRoot != 0) {
-        Globals::Canvas->SetTexture((unsigned int) (this->planetTexture), (unsigned int) (0xffffffffu));
-        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
-        this->planetGeom->render();
-        this->starSystemRoot->render();
-    }
-    if (this->markerGeom != 0) {
-        this->markerGeom->render();
-    }
-}
-
-void StarMap::renderBG() {
-}
-
-bool StarMap::isInPlanetMode() {
-    return this->mode == 3;
-}
-
-void StarMap::askForJumpIntoAlienWorld() {
-    ChoiceWindow *window = this->choiceWindow;
-    this->alienJumpPending = 1;
-    String *text = Globals::gameText->getText(0x1a6);
-    window->set(*text, true);
-    this->choiceVisible = 1;
-}
-
-void StarMap::setJumpMapMode(bool enabled, bool value) {
-    this->jumpMapModeA = (uint8_t) enabled;
-    this->jumpMapModeB = (uint8_t) value;
-}
-
-void StarMap::setStart(int start, int target) {
-    this->routeStart = target;
-    this->routeTarget = start;
-    delete this->systemPath;
-    this->systemPath = nullptr;
-    this->systemPath =
-            this->pathFinder->getSystemPath(this->systems, start, this->targetSystem);
-}
-
-StarMap::~StarMap() {
-    if (this->systemPositions != 0) {
-        ArrayReleaseClasses(*this->systemPositions);
-        delete this->systemPositions;
-    }
-    this->systemPositions = 0;
-
-    if (this->stationPositions != 0) {
-        ArrayReleaseClasses(*this->stationPositions);
-        delete this->stationPositions;
-    }
-    this->stationPositions = 0;
-
-    delete this->planetGeom;
-    this->planetGeom = (AEGeometry *) 0;
-
-    delete this->bgLayer0;
-    this->bgLayer0 = (AEGeometry *) 0;
-
-    delete this->bgLayer1;
-    this->bgLayer1 = (AEGeometry *) 0;
-
-    delete this->bgLayer2;
-    this->bgLayer2 = (AEGeometry *) 0;
-
-    delete this->easeX;
-    this->easeX = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->easeY;
-    this->easeY = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->easeZ;
-    this->easeZ = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->markerGeom;
-    this->markerGeom = (AEGeometry *) 0;
-
-    delete this->pathFinder;
-    this->pathFinder = (SystemPathFinder *) 0;
-}
-
-void StarMap::draw() {
-    String tmp;
-
-    int mode = this->mode;
-    int alpha = mode == 0 ? 0xff : 0;
-    this->alpha = alpha;
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        float v = EaseInOut_GetValue(this->easeZ);
-        float min = EaseInOut_GetMinValue(this->easeZ);
-        float max = this->easeZ->GetMaxValue();
-        float t = (v - min) / (max - min);
-        if (this->transitionIn != 0) {
-            t = 1.0f - t;
-        }
-        this->alpha = (int) (t * 255.0f);
-    }
-
-    if (mode != 3 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
-                                  (unsigned char) (this->alpha));
-        Array<Vector *> *positions = this->systemPositions;
-        for (uint32_t i = 0; i < positions->size(); i++) {
-            this->scratchVector = *positions->data()[i];
-            Array<int> *routes = (Array<int> *) this->systems->data()[i]->getRoutes();
-            if (routes != 0) {
-                for (uint32_t j = 0; j < routes->size(); j++) {
-                    uint32_t to = (uint32_t) routes->data()[j];
-                    if (to < positions->size()) {
-                        this->scratchVector2 = *positions->data()[to];
-                        if (this->scratchVector.z >= 0.0f || this->scratchVector2.z >= 0.0f) {
-                            Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
-                                                      (int) this->scratchVector2.x, (int) this->scratchVector2.y);
-                        }
-                    }
-                }
-            }
-        }
-        for (uint32_t i = 0; i < this->systems->size(); i++) {
-            drawOnScreenInfo((int) i, false);
-        }
-    }
-
-    if (this->selectedSystem >= 0 &&
-        (this->autoMode == 0 || this->autoTimer > 3999)) {
-        drawOnScreenInfo(this->selectedSystem, false);
-    }
-
-    if (this->starSystemRoot != 0 && this->stations != 0) {
-        SolarSystem *system = this->systems->data()[this->selectedSystem];
-        if (system->hasNoOwner() == 0) {
-            Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
-                                      (unsigned char) (this->alpha ^ 0xff));
-            Layout *drawLayout = (Layout *) *g_StarMap_draw_layout;
-            Globals::Canvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
-                                         drawLayout->field_0xc_leftMargin +
-                                         drawLayout->field_0x2c_rowHeight, (unsigned char) (0));
-            ((SolarSystem *) (&tmp))->getName();
-            Globals::Canvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
-                                        Globals::Canvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
-                                        drawLayout->field_0x2c_rowHeight * 2,
-                                        drawLayout->field_0xc_leftMargin +
-                                        drawLayout->field_0x2c_rowHeight + 2, false);
-        }
-        for (uint32_t i = 0; i < this->stations->size(); i++) {
-            if (i != (uint32_t) this->selectedStation) {
-                drawOnScreenInfo((int) i, true);
-            }
-        }
-        if (this->selectedStation >= 0) {
-            drawOnScreenInfo(this->selectedStation, true);
-        }
-    }
-
-    if (this->showKey != 0) {
-        drawKey();
-    }
-    tmp.copy((String *) ((GameText *) (*g_StarMap_draw_text))->getText(0x190), false);
-    ((Layout *) (*g_StarMap_draw_layout))->drawHeader(tmp);
-    ((Layout *) (*g_StarMap_draw_layout))->drawEmptyFooter(1);
-    this->backButton->draw();
-    if (this->choiceVisible != 0) {
-        this->choiceWindow->draw();
-    }
-}
-
-void StarMap::depart(bool jump) {
-    int selected = this->selectedStation;
-    if (selected < 0) {
-        return;
-    }
-
-    if (this->jumpMapModeA != 0) {
-        Array<Station *> *stations = this->stations;
-        Globals::status->departStation(stations->data()[selected]);
-        Level::programmedStation = 0;
-        Level::setInitStreamOut();
-        Globals::status->jumpgateUsed();
-        if (jump && this->jumpMapModeB != 0) {
-            int toSystem = stations->data()[selected]->getSystem();
-            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
-            Level::doInstantJump = (uint8_t)(toSystem != current);
-            if (toSystem != current) {
-                Level::energyCellsForNextJump = this->jumpCost;
-            }
-        } else {
-            Level::doInstantJump = 0;
-        }
-    } else {
-        if (Globals::status->getCurrentCampaignMission() == 3) {
-            goto cleanup;
-        }
-
-        Globals::status->field_5c = -1;
-        Globals::status->field_60 = -1;
-        Globals::status->field_64 = -1;
-        Globals::status->field_68 = -1;
-        Globals::status->departStation((Station *) Globals::status->getStation());
-
-        Station *target = this->stations->data()[this->selectedStation];
-        if (target->equals((Station *) Globals::status->getStation()) == 0) {
-            Level::programmedStation = target;
-        }
-
-        if (jump) {
-            Ship *ship = (Ship *) Globals::status->getShip();
-            if (ship->hasVolatileGoods() != 0) {
-                goto no_jump;
-            }
-            if (((Ship *) (Globals::status->getShip()))->hasJumpDriveIntegrated() == 0 && this->jumpMapModeB == 0) {
-                goto no_jump;
-            }
-            int toSystem = Level::programmedStation->getSystem();
-            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
-            Level::doInstantJump = (uint8_t)(toSystem != current);
-            if (toSystem != current) {
-                Level::energyCellsForNextJump = this->jumpCost;
-            }
-        } else {
-        no_jump:
-            Level::doInstantJump = 0;
-        }
-        Globals::achievements->resetNewMedals();
-    }
-
-cleanup: {
-        Array<Station *> *stations = this->stations;
-        for (uint32_t i = 0; i < stations->size(); i++) {
-            if (i != (uint32_t) this->selectedStation) {
-                delete (*stations)[i];
-                (*stations)[i] = 0;
-            }
-        }
-        delete stations;
-        this->stations = (Array<Station *> *) 0;
-    }
-    Globals::sound->stop(0x66);
-    Globals::switch_to_target_setting = 1;
-
-    Globals::appManager->SetCurrentApplicationModule(2);
-}
-
-static inline float absf_end(float v) {
-    return v < 0.0f ? -v : v;
-}
-
-int StarMap::OnTouchEnd(int x, int y) {
-    String help;
-
-    if (this->choiceVisible != 0) {
-        int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 1) {
-            this->choiceVisible = 0;
-            this->alienJumpPending = 0;
-            return 0;
-        }
-        if (result != 0) {
-            return 0;
-        }
-        this->choiceVisible = 0;
-        if (this->suppressNextClose != 0) {
-            this->suppressNextClose = 0;
-            return 0;
-        }
-        if (this->mode == 3) {
-            Station *station = this->stations->data()[this->selectedStation];
-            if (Station_getIndex(station) == Station_getIndex(Globals::status->getStation())) {
-                this->suppressNextClose = 0;
-                return 0;
-            }
-        }
-        if (this->alienJumpPending != 0 && this->mode == 0 &&
-            this->pad_0xa8_a == 0 && this->autoMode == 0) {
-            this->alienJumpPending = 0;
-            this->exitRequested = 1;
-            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
-            return 0;
-        }
-        if (this->pad_0xa8_a == 0 && this->mode == 3) {
-            if (this->jumpMapModeB == 0 ||
-                this->jumpCost <= this->cargoAmount) {
-                if (this->jumpMapModeA == 0) {
-                    depart(true);
-                    return 0;
-                }
-            } else if (this->jumpCost == 1 && this->jumpMapModeA == 0) {
-                depart(false);
-                return 0;
-            }
-            this->exitRequested = 1;
-            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
-        }
-        return 0;
-    }
-
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
-    }
-    Layout *layout = *g_StarMap_end_layout;
-    if (layout->choiceWindowOpen == 0 && layout->OnTouchEnd(x, y) != 0) {
-        if (this->mode == 3 && this->isGalaxyMode != 0) {
-            this->transitionOut = 1;
-            this->momentumFactor = 0.0f;
-            this->velocityX = 0.0f;
-            this->velocityY = 0.0f;
-            this->easeX->SetRange(this->scratchVector.x, this->scratchVector.x);
-            this->easeY->SetRange(this->scratchVector.y, this->scratchVector.y);
-            this->easeZ->SetRange(this->scratchVector.z, this->scratchVector.z);
-            ((FModSound *) (*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
-            return 0;
-        }
-
-        Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
-        ((FModSound *) (*g_StarMap_end_sound))->stop(0x66);
-        return 1;
-    }
-    if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
-        return 0;
-    }
-    if (this->backButton->OnTouchEnd(x, y) != 0) {
-        this->showKey ^= 1;
-    }
-    if (this->dragging != 0) {
-        float dx = this->touchDeltaX;
-        float dy = this->touchDeltaY;
-        this->momentumFactor = 0.9f;
-        this->dragging = 0;
-        this->velocityX = absf_end(dx) > 3.0f ? dx : 0.0f;
-        this->velocityY = absf_end(dy) > 3.0f ? dy : 0.0f;
-        if (this->mode == 0) {
-            if (this->selectedSystem >= 0 &&
-                this->autoMode == 0 &&
-                this->pad_0xa8_a == 0 &&
-                this->lastSelectedSystem == this->selectedSystem) {
-                if (this->jumpMapModeB == 0 &&
-                    ((SolarSystem *) (long) (Globals::status->getSystem()))->systemIsInSystemRoutes(
-                        Globals::status->getSystem()) ==
-                    0) {
-                    this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a4), false);
-                    this->choiceVisible = 1;
-                    return 0;
-                }
-                ((FModSound *) (*g_StarMap_end_sound))->play(0x6a, 0, 0, 0.0f);
-                initStarSystem();
-                this->transitionIn = 1;
-                Vector p;
-                ((AEGeometry *) (&p))->getPosition();
-                this->scratchVector = p;
-                this->scratchVector.z += 20.0f;
-                MatrixGetPosition(&p, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
-                this->scratchVector2 = p;
-                this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
-                this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
-                this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
-                this->momentumFactor = 0.0f;
-                this->velocityX = 0.0f;
-                this->velocityY = 0.0f;
-            } else if (this->selectedSystem >= 0) {
-                this->lastSelectedSystem = -1;
-                this->pathAnim = 1;
-            }
-        } else if (this->selectedStation >= 0) {
-            if (this->lastSelectedStation == this->selectedStation) {
-                if (this->choiceWindow == 0) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a3), true);
-                this->choiceVisible = 1;
-            } else {
-                ((FModSound *) (*g_StarMap_end_sound))->play(0x69, 0, 0, 0.0f);
-                this->stationCenterAnim = 1;
-            }
-        }
-    }
-    if (((Layout *) (layout))->helpPressed() != 0) {
-        help.copy((String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a5), false);
-        ((Layout *) (layout))->initHelpWindow(help);
-    }
-    return 0;
-}
-
-void StarMap::initLights() {
-    Engine *engine = (Engine *) Globals::appManager->GetEngine();
-    engine->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
-    Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
-}
-
-static inline float absf_update(float v) {
-    return v < 0.0f ? -v : v;
-}
-
-void StarMap::update(int dt) {
-    Matrix matrix;
-    Vector tmp;
-
-    this->lastDt = dt;
-    if (this->mode == 0 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Array<Vector *> *positions = this->systemPositions;
-        for (uint32_t i = 0; i < positions->size(); i++) {
-            ((AEGeometry *) (&tmp))->getPosition();
-            int visible = Globals::Canvas->GetScreenPosition(tmp, *positions->data()[i]);
-            positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
-        }
-    }
-    if (this->mode == 3 || this->transitionIn != 0 || this->transitionOut != 0) {
-        Array<Vector *> *positions = this->stationPositions;
-        if (positions != 0) {
-            for (uint32_t i = 0; i < positions->size(); i++) {
-                ((AEGeometry *) (&tmp))->getPosition();
-                int visible = Globals::Canvas->GetScreenPosition(tmp, *positions->data()[i]);
-                positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
-            }
-        }
-    }
-
-    if (this->markerGeom != 0) {
-        float v = EaseInOut_GetValue(this->easeZ);
-        float min = EaseInOut_GetMinValue(this->easeZ);
-        float max = this->easeZ->GetMaxValue();
-        float t = (v - min) / (max - min);
-        if (this->transitionOut != 0) {
-            t = 1.0f - t;
-        } else if (this->transitionIn == 0 && this->mode == 0) {
-            t = 1.0f;
-        }
-        float scale = (float) (0.5 + (double) t * 0.5);
-        this->markerGeom->setScaling(scale);
-        if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
-            ((AEGeometry *) (&tmp))->getPosition();
-            this->markerGeom->setPosition(tmp);
-        }
-        PaintCanvas *canvas = Globals::Canvas;
-        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
-        MatrixGetPosition(
-            &tmp, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()));
-        this->scratchVector = tmp;
-        ((AEGeometry *) (&tmp))->getPosition();
-        this->scratchVector -= tmp;
-        VectorNormalize(&tmp, &this->scratchVector);
-        this->scratchVector = tmp;
-        this->scratchVector.x += 0.5f;
-        Vector worldUp = {0.0f, 1.0f, 0.0f};
-        this->markerGeom->setDirection(this->scratchVector, worldUp);
-        ((AbyssEngine::Transform *) (((PaintCanvas *) (long) (canvas))->TransformGetTransform(0)))->Update(dt, false);
-    }
-
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        float step = (float) (dt * 15);
-        EaseInOut_Update(this->easeX, step);
-        EaseInOut_Update(this->easeY, step);
-        EaseInOut_Update(this->easeZ, step);
-        tmp.x = EaseInOut_GetCurrentValue(this->easeX);
-        tmp.y = EaseInOut_GetCurrentValue(this->easeY);
-        tmp.z = EaseInOut_GetCurrentValue(this->easeZ);
-        this->scratchVector = tmp;
-        PaintCanvas *canvas = Globals::Canvas;
-        __builtin_memcpy(
-            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
-        MatrixSetTranslation(&matrix, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
-        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
-                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
-        if (absf_update(this->scratchVector.x - this->easeX->GetMaxValue()) <= 1.0f &&
-            absf_update(this->scratchVector.y - this->easeY->GetMaxValue()) <= 1.0f &&
-            absf_update(this->scratchVector.z - this->easeZ->GetMaxValue()) <= 1.0f) {
-            if (this->transitionIn == 0) {
-                if (this->stationGeoms != 0) {
-                    ArrayReleaseClasses(*this->stationGeoms);
-                    delete this->stationGeoms;
-                    this->stationGeoms = 0;
-                }
-                if (this->ringGeoms != 0) {
-                    ArrayReleaseClasses(*this->ringGeoms);
-                    delete this->ringGeoms;
-                    this->ringGeoms = 0;
-                }
-                delete[] this->stationAngles;
-                this->stationAngles = (int *) 0;
-                delete[] this->stationDistances;
-                this->stationDistances = (int *) 0;
-                if (this->usedFlags != 0) {
-                    delete this->usedFlags;
-                    this->usedFlags = 0;
-                }
-                delete this->starSystemRoot;
-                this->mode = 0;
-                this->starSystemRoot = (AEGeometry *) 0;
-                this->systemGeoms->data()[this->selectedSystem]->setVisible(true);
-            } else {
-                this->mode = 3;
-            }
-            this->transitionIn = 0;
-            this->transitionOut = 0;
-        }
-        return;
-    }
-
-    ((FModSound *) (*g_StarMap_update_sound))->setParamValue(0, 0x66, 0.0f);
-    if (this->mode == 3) {
-        if (this->stationCenterAnim == 0 && this->dragging == 0) {
-            float vx = this->momentumFactor * this->velocityX;
-            float vy = this->momentumFactor * this->velocityY;
-            this->velocityX = vx;
-            this->velocityY = vy;
-            if (absf_update(vx) > 0.5f) {
-                this->yaw += vx;
-            }
-            if (absf_update(vy) > 0.5f) {
-                this->pitch += vy;
-            }
-        } else if (this->stationCenterAnim != 0 && this->selectedStation >= 0) {
-            int target = 0x8000 - ((int *) this->stationAngles)[this->selectedStation];
-            int diff = (int) this->yaw - target;
-            this->yaw += (float) (diff < 0 ? -diff : diff) * (diff < 0 ? 0.25f : -0.25f);
-            if (absf_update((float) diff) < 11.0f) {
-                this->stationCenterAnim = 0;
-            }
-        }
-        float speed = absf_update(this->velocityX + this->velocityY);
-        if (speed > 10.0f) {
-            speed = 10.0f;
-        }
-        this->spin += speed;
-        if (this->stationGeoms != 0) {
-            Array<AEGeometry *> *geoms = this->stationGeoms;
-            for (uint32_t i = 0; i < geoms->size(); i++) {
-                if (geoms->data()[i] != 0) {
-                    geoms->data()[i]->rotate((float) dt * 0.001f, 0.0f, 0.001f);
-                }
-            }
-        }
-        this->yaw = (float) ((int) this->yaw & 0xffff);
-        if (this->pitch < -90.0f) {
-            this->pitch = -90.0f;
-        }
-        if (this->pitch > 90.0f) {
-            this->pitch = 90.0f;
-        }
-        this->starSystemRoot->setRotation(this->pitch, 0.0f, this->yaw);
-        return;
-    }
-
-    if (this->mode == 0) {
-        if (this->pulseSystem >= 0 && this->autoMode != 0 &&
-            this->autoTimer < 4000) {
-            this->autoTimer += dt;
-            if (this->autoTimer > 3999) {
-                OnTouchBegin(*g_StarMap_update_screenW >> 1, *g_StarMap_update_screenH >> 1);
-            }
-            float scale = ((float) this->autoTimer / 4000.0f) * 1.5f;
-            this->systemGeoms->data()[this->pulseSystem]->setScaling(scale);
-        }
-        if (this->dragging == 0) {
-            float vx = this->momentumFactor * this->velocityX;
-            float vy = this->momentumFactor * this->velocityY;
-            this->velocityX = vx;
-            this->velocityY = vy;
-            if (absf_update(vx) > 0.5f) {
-                this->panX = (int) ((float) this->panX + vx);
-            }
-            if (absf_update(vy) > 0.5f) {
-                this->panY = (int) ((float) this->panY + vy);
-            }
-        }
-        PaintCanvas *canvas = Globals::Canvas;
-        __builtin_memcpy(
-            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
-                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
-        MatrixSetTranslation(&matrix,
-                             (this->cameraBaseX + (float) this->panX) * 20.0f,
-                             0.0f,
-                             (this->cameraBaseZ + (float) this->panY) * 20.0f);
-        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
-                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
-        if (this->pathAnim != 0) {
-            Array<uint8_t> *vis = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
-            uint32_t selected = this->selectedSystem;
-            if (vis != 0 && selected < vis->size() && vis->data()[selected] != 0) {
-                this->scratchVector = *this->systemPositions->data()[selected];
-                float targetX = (float) (*g_StarMap_update_screenW >> 1);
-                float targetY = (float) (*g_StarMap_update_screenH >> 1);
-                float sx = (this->scratchVector.x - targetX) / -30.0f;
-                float sy = (this->scratchVector.y - targetY) / -30.0f;
-                this->velocityX = sx;
-                this->velocityY = sy;
-                if (absf_update(sx) <= 2.0f && absf_update(sy) <= 2.0f) {
-                    this->pathAnim = 0;
-                    this->lastSelectedSystem = this->selectedSystem;
-                }
-            }
-        }
-    }
-}
 
 StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     void(*vecCtor)(Vector *) = g_StarMap_ctor_vecCtor;
@@ -774,14 +167,14 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     ArraySetLength(0x22, *systemPositions);
 
     for (uint32_t i = 0; i < systemsGeom->size(); i++) {
-        SolarSystem *sys = this->systems->data()[i];
+        SolarSystem *sys = (*this->systems)[i];
         int tex = sys->getTextureIndex();
         uint16_t image = (uint16_t)(tex + 0x4696);
         if (i == 0x1b && Globals::status->getCurrentCampaignMission() > 0x9d) {
             image = 0x469b;
         }
         AEGeometry *geom = new AEGeometry(image, Globals::Canvas, false);
-        systemsGeom->data()[i] = geom;
+        (*systemsGeom)[i] = geom;
         geom->setScaling(1.0f);
         float px = (float) ((int) (((100 - sys->getX()) / 100.0f) * 20000.0f) - 10000);
         float py = (float) ((int) (((100 - sys->getY()) / 100.0f) * 18000.0f) - 9000);
@@ -790,7 +183,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         geom->setPosition(posVec);
         root->addChild(geom->transform);
         Vector *pos = new Vector(zero);
-        systemPositions->data()[i] = pos;
+        (*systemPositions)[i] = pos;
     }
 
     Globals::rnd->reset();
@@ -809,481 +202,6 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     }
 
     init(jumpMapMode, mission, param3, param4);
-}
-
-static inline float absf_local(float v) {
-    return v < 0.0f ? -v : v;
-}
-
-uint32_t StarMap::OnTouchBegin(int x, int y) {
-    if (this->choiceVisible != 0) {
-        this->choiceWindow->OnTouchBegin(x, y);
-        return 0;
-    }
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return 0;
-    }
-
-    Layout *layout = *g_StarMap_touch_layout;
-    layout->OnTouchBegin(x, y);
-    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
-        this->stationCenterAnim != 0) {
-        return 0;
-    }
-    this->backButton->OnTouchBegin(x, y);
-    if (((Layout *) layout)->field_0xc_leftMargin >= y || y >= *g_StarMap_touch_screenH - ((Layout *) layout)->
-        field_0x10_rightMargin) {
-        return 0;
-    }
-    if (this->autoMode != 0 && this->autoTimer < 4000) {
-        return 0;
-    }
-
-    FModSound *sound = *g_StarMap_touch_sound;
-    sound->stop(0x66);
-    sound->play(0x66, 0, 0, 0.0f);
-
-    float fx = (float) x;
-    float fy = (float) y;
-    this->lastTouchX = fx;
-    this->lastTouchY = fy;
-    this->touchStartX = fx;
-    this->touchStartY = fy;
-    this->touchDeltaX = 0.0f;
-    this->touchDeltaY = 0.0f;
-    this->dragging = 1;
-    this->pathAnim = 0;
-
-    int oldSystem = this->selectedSystem;
-    if (this->mode == 0) {
-        this->jumpCost = 0;
-        this->selectedSystem = -1;
-        for (uint32_t i = 0; i < this->systemGeoms->size(); i++) {
-            Array<uint8_t> *vis = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
-            if (vis != 0 && i < vis->size() && vis->data()[i] != 0) {
-                this->scratchVector = *this->systemPositions->data()[i];
-                if (this->scratchVector.z > 0.0f &&
-                    absf_local(this->scratchVector.x - fx) < (float) this->hitRadius &&
-                    absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
-                    this->selectedSystem = (int) i;
-                    if (this->stations != 0) {
-                        ArrayReleaseClasses(*this->stations);
-                        delete this->stations;
-                        this->stations = (Array<Station *> *) 0;
-                    }
-                    this->stations = new Array<Station *>();
-                    FileRead *reader = (FileRead *) operator new(1);
-                    FileRead_ctor(reader);
-                    this->stations =
-                            (Array<Station *> *) reader->loadStationsBinary();
-                    operator delete(FileRead_dtor(reader));
-                    if (oldSystem != this->selectedSystem) {
-                        ((FModSound *) (sound))->play(0x67, 0, 0, 0.0f);
-                    }
-                    int current = Globals::status->getSystem();
-                    int dist = this->pathFinder->getJumpDistance(this->systems, current, this->selectedSystem);
-                    this->jumpCost = dist;
-                    if (dist == 0 && current != this->selectedSystem) {
-                        this->jumpCost = 4;
-                        if (this->systems->data()[i]->getRoutes() == 0) {
-                            this->noRoute = 1;
-                        }
-                    }
-                    if (Globals::status->hardCoreMode() != 0) {
-                        this->jumpCost <<= 1;
-                    }
-                    return 0;
-                }
-            }
-        }
-    } else if (this->mode == 3) {
-        Array<Vector *> *positions = this->stationPositions;
-        for (uint32_t i = 0; i < positions->size(); i++) {
-            this->scratchVector = *positions->data()[i];
-            if (this->scratchVector.z > 0.0f &&
-                absf_local(this->scratchVector.x - fx) < (float) this->hitRadius &&
-                absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
-                this->selectedStation = (int) i;
-                ((FModSound *) (sound))->play(0x68, 0, 0, 0.0f);
-                return 0;
-            }
-        }
-    }
-    return 0;
-}
-
-void StarMap::OnTouchMove(int x, int y) {
-    Matrix matrix;
-
-    if (this->choiceVisible != 0) {
-        this->choiceWindow->OnTouchMove(x, y);
-        return;
-    }
-    if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return;
-    }
-    Layout *layout = Globals::layout;
-    layout->OnTouchMove(x, y);
-    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
-        this->stationCenterAnim != 0) {
-        return;
-    }
-    this->backButton->OnTouchMove(x, y);
-    if (this->dragging == 0) {
-        return;
-    }
-
-    float fx = (float) x;
-    float fy = (float) y;
-    float lastX = this->lastTouchX;
-    float lastY = this->lastTouchY;
-    this->momentumFactor = 1.0f;
-    this->lastTouchX = fx;
-    this->lastTouchY = fy;
-    float dx = (fx - lastX) * this->dragScale;
-    float dy = this->dragScale * (fy - lastY);
-    this->touchDeltaX = dx;
-    this->touchDeltaY = dy;
-
-    if (this->mode == 0) {
-        float speed = absf_local(dx + dy);
-        if (speed > 10.0f) {
-            speed = 10.0f;
-        }
-        float targetX = (float) this->panX;
-        float targetY = (float) this->panY;
-        this->panX = (int) (dx + targetX);
-        this->panY = (int) (dy + targetY);
-        this->spin = this->spin + speed;
-        if (absf_local(this->touchStartX - fx) > 3.0f ||
-            absf_local(this->touchStartY - fy) > 3.0f) {
-            this->lastSelectedSystem = -1;
-            this->selectedSystem = -1;
-            this->jumpCost = 0;
-        }
-        Globals::Canvas->CameraGetCurrent();
-        __builtin_memcpy(&matrix, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()), 0x3c);
-        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(),
-                                        *(const AbyssEngine::AEMath::Matrix *) (&matrix));
-        return;
-    }
-
-    if (absf_local(this->touchStartX - fx) <= 3.0f ||
-        absf_local(this->touchStartY - fy) <= 3.0f) {
-        this->lastSelectedStation = -1;
-        this->selectedStation = -1;
-    }
-
-    float rotZ = dx * 16.0f;
-    float rotX = dy * 16.0f;
-    float pitch = this->pitch + rotX;
-    if (pitch < -90.0f) {
-        pitch = -90.0f;
-    }
-    if (pitch > 90.0f) {
-        pitch = 90.0f;
-    }
-    float yaw = (float) ((int) (this->yaw + rotZ) & 0xffff);
-    float absZ = absf_local(rotZ);
-    float absX = absf_local(rotX);
-    this->touchDeltaX = rotZ;
-    this->touchDeltaY = rotX;
-    this->velocityX = absZ > 3.0f ? rotZ : 0.0f;
-    this->velocityY = absX > 3.0f ? rotX : 0.0f;
-    this->yaw = yaw;
-    this->pitch = pitch;
-    this->starSystemRoot->setRotation(this->velocityY, yaw, this->velocityX);
-}
-
-void StarMap::drawKey() {
-    uint32_t canvas = (uint32_t)(uintptr_t)Globals::Canvas;
-    int imageWidth = Globals::Canvas->GetImage2DWidth((unsigned int) (this->keyImageDiscovered));
-    Layout *layout = *g_StarMap_drawKey_layout;
-    int screenW = *g_StarMap_drawKey_screenW;
-    int screenH = *g_StarMap_drawKey_screenH;
-    int boxW = this->keyBoxWidth;
-    int boxH = this->keyBoxHeight;
-    int marginY = ((Layout *) layout)->field_0x4;
-    int padY = ((Layout *) layout)->windowTopInset;
-    int rightPad = ((Layout *) layout)->field_0x10_rightMargin;
-    int lineH = ((Layout *) layout)->field_0x2c_rowHeight;
-
-    String empty;
-    int x = screenH - boxW;
-    ((Layout *) (layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, empty, 0);
-    int drawX = x + lineH;
-    int textX = imageWidth + lineH + drawX;
-    int y = ((screenW - lineH) - rightPad) - marginY;
-
-    void(*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
-    drawImage(canvas, this->keyImageRetreat, drawX, y);
-
-    GameText **textHolder = g_StarMap_drawKey_text;
-    String * (*getText)(GameText *, int) = g_StarMap_drawKey_getText;
-    unsigned char **fontHolder = g_StarMap_drawKey_font;
-    void(*drawString)(uint32_t, unsigned char *, String *, int, int, bool) = g_StarMap_drawKey_drawString;
-
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x112), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageDiscovered, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x191), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageCurrent, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x223), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageMission, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x22c), textX, y, false);
-    y -= ((Layout *) layout)->field_0x4;
-    drawImage(canvas, this->keyImageWanted, drawX, y);
-    drawString(canvas, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
-}
-
-void StarMap::initStarSystem() {
-    SolarSystem *system = this->systems->data()[this->selectedSystem];
-    uint32_t count = ((Array<int> *) system->getStations())->size();
-
-    Array<Station *> *stations = new Array<Station *>();
-    this->stations = stations;
-    ArraySetLength(count, *stations);
-    FileRead *reader = (FileRead *) operator new(1);
-    FileRead_ctor(reader);
-    this->stations = (Array<Station *> *) reader->loadStationsBinary();
-    operator delete(FileRead_dtor(reader));
-
-    this->stationAngles = new int[count];
-    this->stationDistances = new int[count];
-    this->centeredStation = -1;
-    Globals::rnd->setSeed((long long) system->getIndex() * 1000);
-
-    Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
-    this->stationGeoms = stationGeoms;
-    ArraySetLength(count + 1, *stationGeoms);
-
-    AEGeometry *root = new AEGeometry(Globals::Canvas);
-    this->starSystemRoot = root;
-
-    Array<bool> *used = new Array<bool>();
-    this->usedFlags = used;
-    ArraySetLength(stationGeoms->size(), *used);
-    for (uint32_t i = 0; i < used->size(); i++) {
-        (*used)[i] = false;
-    }
-
-    for (uint32_t i = 1; i < stationGeoms->size(); i++) {
-        uint32_t stationIndex = i - 1;
-        int tex = Station_getTextureIndex(this->stations->data()[stationIndex]);
-        AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), Globals::Canvas, false);
-        stationGeoms->data()[i] = geom;
-        this->stationAngles[stationIndex] =
-                Globals::rnd->nextInt(used->size()) *
-                (0x10000 / (int) used->size());
-        int dist = (i == 1) ? 0x1900 : this->stationDistances[i - 2];
-        dist += Globals::rnd->nextInt(0x15e0) + 0x640;
-        this->stationDistances[stationIndex] = dist;
-        Vector pos = {0.0f, 0.0f, (float) dist};
-        geom->translate(pos);
-        float scale = (float) (tex << 4) * 0.001f;
-        geom->setScaling(scale);
-        root->addChild(geom->transform);
-        if (this->markerGeom != 0 && this->selectedSystem == Globals::status->field_7c &&
-            Station_getIndex(this->stations->data()[stationIndex]) == Globals::status->field_80) {
-            this->centeredStation = i;
-        }
-    }
-
-    stationGeoms->data()[1]->setVisible(false);
-
-    Array<AEGeometry *> *rings = new Array<AEGeometry *>();
-    this->ringGeoms = rings;
-    ArraySetLength(count, *rings);
-    for (uint32_t i = 0; i < rings->size(); i++) {
-        AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, Globals::Canvas, false);
-        (*rings)[i] = ring;
-        root->addChild(ring->transform);
-        float scale = (float) (this->stationDistances[i] << 1) * 0.001f;
-        ring->setScaling(scale);
-    }
-
-    Vector selected;
-    ((AEGeometry *) (&selected))->getPosition();
-    root->setPosition(selected);
-    root->setScaling(0.0078125f);
-    root->setRotation(0.0f, 0.0f, 0.0f);
-    this->yaw = 4096.0f;
-    this->pitch = 0.0f;
-    this->selectedStation = -1;
-    Globals::Canvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
-
-    if (this->stationPositions != 0) {
-        ArrayReleaseClasses(*this->stationPositions);
-        delete this->stationPositions;
-        this->stationPositions = 0;
-    }
-    Array<Vector *> *stationPositions = new Array<Vector *>();
-    this->stationPositions = stationPositions;
-    ArraySetLength(this->stations->size(), *stationPositions);
-    for (uint32_t i = 0; i < stationPositions->size(); i++) {
-        Vector *p = new Vector{0.0f, 0.0f, 0.0f};
-        (*stationPositions)[i] = p;
-    }
-
-    gEngine->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
-    if (this->planetGeom != 0) {
-        delete this->planetGeom;
-    }
-    this->planetTexture = 0xffffffffu;
-    this->planetGeom = (AEGeometry *) 0;
-    uint16_t texture = (uint16_t)(0x2700 + system->getTextureIndex());
-    if (this->selectedSystem == 0x1b) {
-        texture = 0x2734;
-    }
-    Globals::Canvas->TextureCreate((unsigned short) (texture), nullptr, nullptr, this->planetTexture, false);
-    AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
-    this->planetGeom = planet;
-    planet->setPosition(selected);
-    planet->setRotation(0.0f, 0.0f, 0.0f);
-    planet->setScaling(1.0f);
-    this->systemGeoms->data()[this->selectedSystem]->setVisible(false);
-}
-
-void StarMap::drawOnScreenInfo(int index, bool stationMode) {
-    String name;
-    String line;
-    String value;
-
-    Array<Vector *> *positions =
-            stationMode ? this->stationPositions : this->systemPositions;
-    this->scratchVector = *positions->data()[index];
-    float x = this->scratchVector.x;
-    float y = this->scratchVector.y;
-    if (x < 0.0f || x > (float) (*g_StarMap_info_screenW + 0x32) ||
-        y < 0.0f || y > (float) (*g_StarMap_info_screenH + 0x32)) {
-        return;
-    }
-
-    PaintCanvas *canvas = Globals::Canvas;
-    canvas->SetColor((unsigned int) (0xffffffffu));
-    int *icons = this->iconBuffer;
-    for (int i = 0; i != 5; i++) {
-        icons[i] = -1;
-    }
-
-    if (stationMode) {
-        Station *station = this->stations->data()[index];
-        if (station->isDiscovered() != 0) {
-            icons[0] = this->keyImageDiscovered;
-        }
-        int current = Station_getIndex(Globals::status->getStation());
-        if (current == Station_getIndex(station)) {
-            icons[3] = this->keyImageCurrent;
-        }
-        ((Station *) (&name))->getName();
-        int textW = ((PaintCanvas *) (long) (canvas))->GetTextWidth((unsigned int) (long) (*g_StarMap_info_font), name);
-        int drawX = (int) (x - (float) (textW / 2));
-        int drawY = (int) (y + (float) (this->iconWidth >> 1) - 3.0f);
-        if (this->selectedStation == index) {
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0x80),
-                                                        (unsigned char) (0), (unsigned char) (this->alpha));
-            ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
-                                                          drawY, false);
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
-                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
-            if (Station_getTecLevel(station) > 0) {
-                line.copy((String *) ((GameText *) (*g_StarMap_info_text))->getText(0x200), false);
-                value.Set((long long) (Station_getTecLevel(station)));
-                name = line + value;
-                ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
-                                                              drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4,
-                                                              false);
-            }
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
-                                                           (unsigned char) (0x11));
-        } else {
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
-                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->cursorIcon), (int) x, (int) y,
-                                                           (unsigned char) (0x11));
-            ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
-                                                          drawY, false);
-        }
-    } else {
-        SolarSystem *system = this->systems->data()[index];
-        if (system->isFullyDiscovered() != 0) {
-            icons[0] = this->keyImageDiscovered;
-        }
-        if (Globals::status->getCurrentCampaignMission() == 0x34 &&
-            system->getStationEnumIndex(0x4a) >= 0) {
-            icons[1] = this->keyImageWanted;
-        }
-        Mission *mission = (Mission *) (long) Globals::status->getCampaignMission();
-        if (mission != 0 && mission->isEmpty() == 0) {
-            int target = mission->getTargetStation();
-            if (system->getStationEnumIndex(target) >= 0) {
-                icons[2] = this->keyImageMission;
-            }
-        }
-        Mission *freelance = (Mission *) Globals::status->getFreelanceMission();
-        if (freelance != 0 && freelance->isEmpty() == 0) {
-            int target = freelance->getTargetStation();
-            if (system->getStationEnumIndex(target) >= 0) {
-                icons[2] = this->keyImageMission;
-            }
-        }
-        ((SolarSystem *) (&name))->getName();
-        int textW = ((PaintCanvas *) (long) (canvas))->GetTextWidth((unsigned int) (long) (*g_StarMap_info_font), name);
-        int drawX = (int) (x - (float) (textW / 2));
-        int drawY = (int) (y + (float) (this->iconWidth >> 1) - 3.0f);
-        int currentSystem = Globals::status->getSystem();
-        if (currentSystem == system->getIndex()) {
-            ((Layout *) (*g_StarMap_info_layout))->getPulseValue((float) this->alpha);
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
-                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->currentMarkerIcon), (int) x, (int) y,
-                                                           (unsigned char) (0x11));
-        }
-        if (this->selectedSystem == index) {
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0x80),
-                                                        (unsigned char) (0), (unsigned char) (this->alpha));
-        } else if (this->selectedSystem >= 0) {
-            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
-                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
-        }
-        ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX, drawY,
-                                                      false);
-        ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
-                                                    (unsigned char) (0xff), (unsigned char) (this->alpha));
-        if (system->hasNoOwner() == 0) {
-            uint32_t image = this->raceImageDefault;
-            int race = system->getRace();
-            if (race == 2) {
-                image = this->raceImageB;
-            } else if (race == 1) {
-                image = this->raceImageA;
-            } else if (race == 0) {
-                image = this->raceImageNeutral;
-            }
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (image), drawX, drawY + 0xfd,
-                                                           (unsigned char) (0x11));
-        }
-        if (this->selectedSystem == index) {
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
-                                                           (unsigned char) (0x11));
-        } else {
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->cursorIcon), (int) x, (int) y,
-                                                           (unsigned char) (0x11));
-        }
-    }
-
-    float iconY = (float) (int) ((this->scratchVector.y - (float) (this->iconWidth >> 1)) + 10.0f);
-    float iconX = (float) (int) (this->scratchVector.x + (float) (this->iconWidth >> 1) - 7.0f);
-    for (int i = 0; i != 5; i++) {
-        int image = icons[i];
-        if (image != -1) {
-            int dx = (i == 0 && *g_StarMap_info_isGerman != 0) ? 0xc : 0x12;
-            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) ((uint32_t) image), (int) iconX - dx,
-                                                           (int) iconY, (unsigned char) (0));
-        }
-    }
 }
 
 int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
@@ -1459,5 +377,1088 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     }
     )
     ;
+    return 0;
+}
+
+StarMap::~StarMap() {
+    if (this->systemPositions != 0) {
+        ArrayReleaseClasses(*this->systemPositions);
+        delete this->systemPositions;
+    }
+    this->systemPositions = 0;
+
+    if (this->stationPositions != 0) {
+        ArrayReleaseClasses(*this->stationPositions);
+        delete this->stationPositions;
+    }
+    this->stationPositions = 0;
+
+    delete this->planetGeom;
+    this->planetGeom = (AEGeometry *) 0;
+
+    delete this->bgLayer0;
+    this->bgLayer0 = (AEGeometry *) 0;
+
+    delete this->bgLayer1;
+    this->bgLayer1 = (AEGeometry *) 0;
+
+    delete this->bgLayer2;
+    this->bgLayer2 = (AEGeometry *) 0;
+
+    delete this->easeX;
+    this->easeX = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->easeY;
+    this->easeY = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->easeZ;
+    this->easeZ = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->markerGeom;
+    this->markerGeom = (AEGeometry *) 0;
+
+    delete this->pathFinder;
+    this->pathFinder = (SystemPathFinder *) 0;
+}
+
+void StarMap::initStarSystem() {
+    SolarSystem *system = (*this->systems)[this->selectedSystem];
+    uint32_t count = ((Array<int> *) system->getStations())->size();
+
+    Array<Station *> *stations = new Array<Station *>();
+    this->stations = stations;
+    ArraySetLength(count, *stations);
+    FileRead *reader = (FileRead *) operator new(1);
+    FileRead_ctor(reader);
+    this->stations = (Array<Station *> *) reader->loadStationsBinary();
+    operator delete(FileRead_dtor(reader));
+
+    this->stationAngles = new int[count];
+    this->stationDistances = new int[count];
+    this->centeredStation = -1;
+    Globals::rnd->setSeed((long long) system->getIndex() * 1000);
+
+    Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
+    this->stationGeoms = stationGeoms;
+    ArraySetLength(count + 1, *stationGeoms);
+
+    AEGeometry *root = new AEGeometry(Globals::Canvas);
+    this->starSystemRoot = root;
+
+    Array<bool> *used = new Array<bool>();
+    this->usedFlags = used;
+    ArraySetLength(stationGeoms->size(), *used);
+    for (uint32_t i = 0; i < used->size(); i++) {
+        (*used)[i] = false;
+    }
+
+    for (uint32_t i = 1; i < stationGeoms->size(); i++) {
+        uint32_t stationIndex = i - 1;
+        int tex = Station_getTextureIndex((*this->stations)[stationIndex]);
+        AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), Globals::Canvas, false);
+        (*stationGeoms)[i] = geom;
+        this->stationAngles[stationIndex] =
+                Globals::rnd->nextInt(used->size()) *
+                (0x10000 / (int) used->size());
+        int dist = (i == 1) ? 0x1900 : this->stationDistances[i - 2];
+        dist += Globals::rnd->nextInt(0x15e0) + 0x640;
+        this->stationDistances[stationIndex] = dist;
+        Vector pos = {0.0f, 0.0f, (float) dist};
+        geom->translate(pos);
+        float scale = (float) (tex << 4) * 0.001f;
+        geom->setScaling(scale);
+        root->addChild(geom->transform);
+        if (this->markerGeom != 0 && this->selectedSystem == Globals::status->field_7c &&
+            Station_getIndex((*this->stations)[stationIndex]) == Globals::status->field_80) {
+            this->centeredStation = i;
+        }
+    }
+
+    (*stationGeoms)[1]->setVisible(false);
+
+    Array<AEGeometry *> *rings = new Array<AEGeometry *>();
+    this->ringGeoms = rings;
+    ArraySetLength(count, *rings);
+    for (uint32_t i = 0; i < rings->size(); i++) {
+        AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, Globals::Canvas, false);
+        (*rings)[i] = ring;
+        root->addChild(ring->transform);
+        float scale = (float) (this->stationDistances[i] << 1) * 0.001f;
+        ring->setScaling(scale);
+    }
+
+    Vector selected;
+    ((AEGeometry *) (&selected))->getPosition();
+    root->setPosition(selected);
+    root->setScaling(0.0078125f);
+    root->setRotation(0.0f, 0.0f, 0.0f);
+    this->yaw = 4096.0f;
+    this->pitch = 0.0f;
+    this->selectedStation = -1;
+    Globals::Canvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
+
+    if (this->stationPositions != 0) {
+        ArrayReleaseClasses(*this->stationPositions);
+        delete this->stationPositions;
+        this->stationPositions = 0;
+    }
+    Array<Vector *> *stationPositions = new Array<Vector *>();
+    this->stationPositions = stationPositions;
+    ArraySetLength(this->stations->size(), *stationPositions);
+    for (uint32_t i = 0; i < stationPositions->size(); i++) {
+        Vector *p = new Vector{0.0f, 0.0f, 0.0f};
+        (*stationPositions)[i] = p;
+    }
+
+    gEngine->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
+    if (this->planetGeom != 0) {
+        delete this->planetGeom;
+    }
+    this->planetTexture = 0xffffffffu;
+    this->planetGeom = (AEGeometry *) 0;
+    uint16_t texture = (uint16_t)(0x2700 + system->getTextureIndex());
+    if (this->selectedSystem == 0x1b) {
+        texture = 0x2734;
+    }
+    Globals::Canvas->TextureCreate((unsigned short) (texture), nullptr, nullptr, this->planetTexture, false);
+    AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
+    this->planetGeom = planet;
+    planet->setPosition(selected);
+    planet->setRotation(0.0f, 0.0f, 0.0f);
+    planet->setScaling(1.0f);
+    (*this->systemGeoms)[this->selectedSystem]->setVisible(false);
+}
+
+void StarMap::initLights() {
+    Engine *engine = (Engine *) Globals::appManager->GetEngine();
+    engine->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
+    Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
+}
+
+void StarMap::setStart(int start, int target) {
+    this->routeStart = target;
+    this->routeTarget = start;
+    delete this->systemPath;
+    this->systemPath = nullptr;
+    this->systemPath =
+            this->pathFinder->getSystemPath(this->systems, start, this->targetSystem);
+}
+
+void StarMap::depart(bool jump) {
+    int selected = this->selectedStation;
+    if (selected < 0) {
+        return;
+    }
+
+    if (this->jumpMapModeA != 0) {
+        Array<Station *> *stations = this->stations;
+        Globals::status->departStation((*stations)[selected]);
+        Level::programmedStation = 0;
+        Level::setInitStreamOut();
+        Globals::status->jumpgateUsed();
+        if (jump && this->jumpMapModeB != 0) {
+            int toSystem = (*stations)[selected]->getSystem();
+            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
+            Level::doInstantJump = (uint8_t)(toSystem != current);
+            if (toSystem != current) {
+                Level::energyCellsForNextJump = this->jumpCost;
+            }
+        } else {
+            Level::doInstantJump = 0;
+        }
+    } else {
+        if (Globals::status->getCurrentCampaignMission() == 3) {
+            goto cleanup;
+        }
+
+        Globals::status->field_5c = -1;
+        Globals::status->field_60 = -1;
+        Globals::status->field_64 = -1;
+        Globals::status->field_68 = -1;
+        Globals::status->departStation((Station *) Globals::status->getStation());
+
+        Station *target = (*this->stations)[this->selectedStation];
+        if (target->equals((Station *) Globals::status->getStation()) == 0) {
+            Level::programmedStation = target;
+        }
+
+        if (jump) {
+            Ship *ship = (Ship *) Globals::status->getShip();
+            if (ship->hasVolatileGoods() != 0) {
+                goto no_jump;
+            }
+            if (((Ship *) (Globals::status->getShip()))->hasJumpDriveIntegrated() == 0 && this->jumpMapModeB == 0) {
+                goto no_jump;
+            }
+            int toSystem = Level::programmedStation->getSystem();
+            int current = ((SolarSystem *) (long) Globals::status->getSystem())->getIndex();
+            Level::doInstantJump = (uint8_t)(toSystem != current);
+            if (toSystem != current) {
+                Level::energyCellsForNextJump = this->jumpCost;
+            }
+        } else {
+        no_jump:
+            Level::doInstantJump = 0;
+        }
+        Globals::achievements->resetNewMedals();
+    }
+
+cleanup: {
+        Array<Station *> *stations = this->stations;
+        for (uint32_t i = 0; i < stations->size(); i++) {
+            if (i != (uint32_t) this->selectedStation) {
+                delete (*stations)[i];
+                (*stations)[i] = 0;
+            }
+        }
+        delete stations;
+        this->stations = (Array<Station *> *) 0;
+    }
+    Globals::sound->stop(0x66);
+    Globals::switch_to_target_setting = 1;
+
+    Globals::appManager->SetCurrentApplicationModule(2);
+}
+
+bool StarMap::isInPlanetMode() {
+    return this->mode == 3;
+}
+
+void StarMap::setJumpMapMode(bool enabled, bool value) {
+    this->jumpMapModeA = (uint8_t) enabled;
+    this->jumpMapModeB = (uint8_t) value;
+}
+
+void StarMap::renderBG() {
+}
+
+void StarMap::render() {
+    Globals::Canvas->SetColor((unsigned int) (0xffffffffu));
+    void(*renderGeometry)(AEGeometry *) = g_StarMap_render_geometry;
+    renderGeometry(this->bgLayer0);
+    renderGeometry(this->bgLayer1);
+    renderGeometry(this->bgLayer2);
+    renderGeometry(this->systemRoot);
+    Globals::Canvas->End3d();
+    Globals::Canvas->Begin3d();
+    if (this->starSystemRoot != 0) {
+        Globals::Canvas->SetTexture((unsigned int) (this->planetTexture), (unsigned int) (0xffffffffu));
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
+        this->planetGeom->render();
+        this->starSystemRoot->render();
+    }
+    if (this->markerGeom != 0) {
+        this->markerGeom->render();
+    }
+}
+
+void StarMap::drawKey() {
+    uint32_t canvas = (uint32_t)(uintptr_t)Globals::Canvas;
+    int imageWidth = Globals::Canvas->GetImage2DWidth((unsigned int) (this->keyImageDiscovered));
+    Layout *layout = *g_StarMap_drawKey_layout;
+    int screenW = *g_StarMap_drawKey_screenW;
+    int screenH = *g_StarMap_drawKey_screenH;
+    int boxW = this->keyBoxWidth;
+    int boxH = this->keyBoxHeight;
+    int marginY = ((Layout *) layout)->field_0x4;
+    int padY = ((Layout *) layout)->windowTopInset;
+    int rightPad = ((Layout *) layout)->field_0x10_rightMargin;
+    int lineH = ((Layout *) layout)->field_0x2c_rowHeight;
+
+    String empty;
+    int x = screenH - boxW;
+    ((Layout *) (layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, empty, 0);
+    int drawX = x + lineH;
+    int textX = imageWidth + lineH + drawX;
+    int y = ((screenW - lineH) - rightPad) - marginY;
+
+    void(*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
+    drawImage(canvas, this->keyImageRetreat, drawX, y);
+
+    GameText **textHolder = g_StarMap_drawKey_text;
+    String * (*getText)(GameText *, int) = g_StarMap_drawKey_getText;
+    unsigned char **fontHolder = g_StarMap_drawKey_font;
+    void(*drawString)(uint32_t, unsigned char *, String *, int, int, bool) = g_StarMap_drawKey_drawString;
+
+    drawString(canvas, *fontHolder, getText(*textHolder, 0x112), textX, y, false);
+    y -= ((Layout *) layout)->field_0x4;
+    drawImage(canvas, this->keyImageDiscovered, drawX, y);
+    drawString(canvas, *fontHolder, getText(*textHolder, 0x191), textX, y, false);
+    y -= ((Layout *) layout)->field_0x4;
+    drawImage(canvas, this->keyImageCurrent, drawX, y);
+    drawString(canvas, *fontHolder, getText(*textHolder, 0x223), textX, y, false);
+    y -= ((Layout *) layout)->field_0x4;
+    drawImage(canvas, this->keyImageMission, drawX, y);
+    drawString(canvas, *fontHolder, getText(*textHolder, 0x22c), textX, y, false);
+    y -= ((Layout *) layout)->field_0x4;
+    drawImage(canvas, this->keyImageWanted, drawX, y);
+    drawString(canvas, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
+}
+
+void StarMap::drawOnScreenInfo(int index, bool stationMode) {
+    String name;
+    String line;
+    String value;
+
+    Array<Vector *> *positions =
+            stationMode ? this->stationPositions : this->systemPositions;
+    this->scratchVector = *(*positions)[index];
+    float x = this->scratchVector.x;
+    float y = this->scratchVector.y;
+    if (x < 0.0f || x > (float) (*g_StarMap_info_screenW + 0x32) ||
+        y < 0.0f || y > (float) (*g_StarMap_info_screenH + 0x32)) {
+        return;
+    }
+
+    PaintCanvas *canvas = Globals::Canvas;
+    canvas->SetColor((unsigned int) (0xffffffffu));
+    int *icons = this->iconBuffer;
+    for (int i = 0; i != 5; i++) {
+        icons[i] = -1;
+    }
+
+    if (stationMode) {
+        Station *station = (*this->stations)[index];
+        if (station->isDiscovered() != 0) {
+            icons[0] = this->keyImageDiscovered;
+        }
+        int current = Station_getIndex(Globals::status->getStation());
+        if (current == Station_getIndex(station)) {
+            icons[3] = this->keyImageCurrent;
+        }
+        ((Station *) (&name))->getName();
+        int textW = ((PaintCanvas *) (long) (canvas))->GetTextWidth((unsigned int) (long) (*g_StarMap_info_font), name);
+        int drawX = (int) (x - (float) (textW / 2));
+        int drawY = (int) (y + (float) (this->iconWidth >> 1) - 3.0f);
+        if (this->selectedStation == index) {
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0x80),
+                                                        (unsigned char) (0), (unsigned char) (this->alpha));
+            ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
+                                                          drawY, false);
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
+                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
+            if (Station_getTecLevel(station) > 0) {
+                line.copy((String *) ((GameText *) (*g_StarMap_info_text))->getText(0x200), false);
+                value.Set((long long) (Station_getTecLevel(station)));
+                name = line + value;
+                ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
+                                                              drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4,
+                                                              false);
+            }
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
+                                                           (unsigned char) (0x11));
+        } else {
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
+                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->cursorIcon), (int) x, (int) y,
+                                                           (unsigned char) (0x11));
+            ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
+                                                          drawY, false);
+        }
+    } else {
+        SolarSystem *system = (*this->systems)[index];
+        if (system->isFullyDiscovered() != 0) {
+            icons[0] = this->keyImageDiscovered;
+        }
+        if (Globals::status->getCurrentCampaignMission() == 0x34 &&
+            system->getStationEnumIndex(0x4a) >= 0) {
+            icons[1] = this->keyImageWanted;
+        }
+        Mission *mission = (Mission *) (long) Globals::status->getCampaignMission();
+        if (mission != 0 && mission->isEmpty() == 0) {
+            int target = mission->getTargetStation();
+            if (system->getStationEnumIndex(target) >= 0) {
+                icons[2] = this->keyImageMission;
+            }
+        }
+        Mission *freelance = (Mission *) Globals::status->getFreelanceMission();
+        if (freelance != 0 && freelance->isEmpty() == 0) {
+            int target = freelance->getTargetStation();
+            if (system->getStationEnumIndex(target) >= 0) {
+                icons[2] = this->keyImageMission;
+            }
+        }
+        ((SolarSystem *) (&name))->getName();
+        int textW = ((PaintCanvas *) (long) (canvas))->GetTextWidth((unsigned int) (long) (*g_StarMap_info_font), name);
+        int drawX = (int) (x - (float) (textW / 2));
+        int drawY = (int) (y + (float) (this->iconWidth >> 1) - 3.0f);
+        int currentSystem = Globals::status->getSystem();
+        if (currentSystem == system->getIndex()) {
+            ((Layout *) (*g_StarMap_info_layout))->getPulseValue((float) this->alpha);
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
+                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->currentMarkerIcon), (int) x, (int) y,
+                                                           (unsigned char) (0x11));
+        }
+        if (this->selectedSystem == index) {
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0x80),
+                                                        (unsigned char) (0), (unsigned char) (this->alpha));
+        } else if (this->selectedSystem >= 0) {
+            ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
+                                                        (unsigned char) (0xff), (unsigned char) (this->alpha));
+        }
+        ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX, drawY,
+                                                      false);
+        ((PaintCanvas *) (long) (canvas))->SetColor((unsigned char) (0xff), (unsigned char) (0xff),
+                                                    (unsigned char) (0xff), (unsigned char) (this->alpha));
+        if (system->hasNoOwner() == 0) {
+            uint32_t image = this->raceImageDefault;
+            int race = system->getRace();
+            if (race == 2) {
+                image = this->raceImageB;
+            } else if (race == 1) {
+                image = this->raceImageA;
+            } else if (race == 0) {
+                image = this->raceImageNeutral;
+            }
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (image), drawX, drawY + 0xfd,
+                                                           (unsigned char) (0x11));
+        }
+        if (this->selectedSystem == index) {
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
+                                                           (unsigned char) (0x11));
+        } else {
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->cursorIcon), (int) x, (int) y,
+                                                           (unsigned char) (0x11));
+        }
+    }
+
+    float iconY = (float) (int) ((this->scratchVector.y - (float) (this->iconWidth >> 1)) + 10.0f);
+    float iconX = (float) (int) (this->scratchVector.x + (float) (this->iconWidth >> 1) - 7.0f);
+    for (int i = 0; i != 5; i++) {
+        int image = icons[i];
+        if (image != -1) {
+            int dx = (i == 0 && *g_StarMap_info_isGerman != 0) ? 0xc : 0x12;
+            ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) ((uint32_t) image), (int) iconX - dx,
+                                                           (int) iconY, (unsigned char) (0));
+        }
+    }
+}
+
+void StarMap::draw() {
+    String tmp;
+
+    int mode = this->mode;
+    int alpha = mode == 0 ? 0xff : 0;
+    this->alpha = alpha;
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        float v = EaseInOut_GetValue(this->easeZ);
+        float min = EaseInOut_GetMinValue(this->easeZ);
+        float max = this->easeZ->GetMaxValue();
+        float t = (v - min) / (max - min);
+        if (this->transitionIn != 0) {
+            t = 1.0f - t;
+        }
+        this->alpha = (int) (t * 255.0f);
+    }
+
+    if (mode != 3 || this->transitionIn != 0 || this->transitionOut != 0) {
+        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
+                                  (unsigned char) (this->alpha));
+        Array<Vector *> *positions = this->systemPositions;
+        for (uint32_t i = 0; i < positions->size(); i++) {
+            this->scratchVector = *(*positions)[i];
+            Array<int> *routes = (Array<int> *) (*this->systems)[i]->getRoutes();
+            if (routes != 0) {
+                for (uint32_t j = 0; j < routes->size(); j++) {
+                    uint32_t to = (uint32_t) (*routes)[j];
+                    if (to < positions->size()) {
+                        this->scratchVector2 = *(*positions)[to];
+                        if (this->scratchVector.z >= 0.0f || this->scratchVector2.z >= 0.0f) {
+                            Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
+                                                      (int) this->scratchVector2.x, (int) this->scratchVector2.y);
+                        }
+                    }
+                }
+            }
+        }
+        for (uint32_t i = 0; i < this->systems->size(); i++) {
+            drawOnScreenInfo((int) i, false);
+        }
+    }
+
+    if (this->selectedSystem >= 0 &&
+        (this->autoMode == 0 || this->autoTimer > 3999)) {
+        drawOnScreenInfo(this->selectedSystem, false);
+    }
+
+    if (this->starSystemRoot != 0 && this->stations != 0) {
+        SolarSystem *system = (*this->systems)[this->selectedSystem];
+        if (system->hasNoOwner() == 0) {
+            Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
+                                      (unsigned char) (this->alpha ^ 0xff));
+            Layout *drawLayout = (Layout *) *g_StarMap_draw_layout;
+            Globals::Canvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
+                                         drawLayout->field_0xc_leftMargin +
+                                         drawLayout->field_0x2c_rowHeight, (unsigned char) (0));
+            ((SolarSystem *) (&tmp))->getName();
+            Globals::Canvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
+                                        Globals::Canvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
+                                        drawLayout->field_0x2c_rowHeight * 2,
+                                        drawLayout->field_0xc_leftMargin +
+                                        drawLayout->field_0x2c_rowHeight + 2, false);
+        }
+        for (uint32_t i = 0; i < this->stations->size(); i++) {
+            if (i != (uint32_t) this->selectedStation) {
+                drawOnScreenInfo((int) i, true);
+            }
+        }
+        if (this->selectedStation >= 0) {
+            drawOnScreenInfo(this->selectedStation, true);
+        }
+    }
+
+    if (this->showKey != 0) {
+        drawKey();
+    }
+    tmp.copy((String *) ((GameText *) (*g_StarMap_draw_text))->getText(0x190), false);
+    ((Layout *) (*g_StarMap_draw_layout))->drawHeader(tmp);
+    ((Layout *) (*g_StarMap_draw_layout))->drawEmptyFooter(1);
+    this->backButton->draw();
+    if (this->choiceVisible != 0) {
+        this->choiceWindow->draw();
+    }
+}
+
+uint8_t StarMap::missionChanged() {
+    return this->missionChangedFlag;
+}
+
+void StarMap::askForJumpIntoAlienWorld() {
+    ChoiceWindow *window = this->choiceWindow;
+    this->alienJumpPending = 1;
+    String *text = Globals::gameText->getText(0x1a6);
+    window->set(*text, true);
+    this->choiceVisible = 1;
+}
+
+static inline float absf_update(float v) {
+    return v < 0.0f ? -v : v;
+}
+
+void StarMap::update(int dt) {
+    Matrix matrix;
+    Vector tmp;
+
+    this->lastDt = dt;
+    if (this->mode == 0 || this->transitionIn != 0 || this->transitionOut != 0) {
+        Array<Vector *> *positions = this->systemPositions;
+        for (uint32_t i = 0; i < positions->size(); i++) {
+            ((AEGeometry *) (&tmp))->getPosition();
+            int visible = Globals::Canvas->GetScreenPosition(tmp, *(*positions)[i]);
+            (*positions)[i]->z = visible != 0 ? 1.0f : -1.0f;
+        }
+    }
+    if (this->mode == 3 || this->transitionIn != 0 || this->transitionOut != 0) {
+        Array<Vector *> *positions = this->stationPositions;
+        if (positions != 0) {
+            for (uint32_t i = 0; i < positions->size(); i++) {
+                ((AEGeometry *) (&tmp))->getPosition();
+                int visible = Globals::Canvas->GetScreenPosition(tmp, *(*positions)[i]);
+                (*positions)[i]->z = visible != 0 ? 1.0f : -1.0f;
+            }
+        }
+    }
+
+    if (this->markerGeom != 0) {
+        float v = EaseInOut_GetValue(this->easeZ);
+        float min = EaseInOut_GetMinValue(this->easeZ);
+        float max = this->easeZ->GetMaxValue();
+        float t = (v - min) / (max - min);
+        if (this->transitionOut != 0) {
+            t = 1.0f - t;
+        } else if (this->transitionIn == 0 && this->mode == 0) {
+            t = 1.0f;
+        }
+        float scale = (float) (0.5 + (double) t * 0.5);
+        this->markerGeom->setScaling(scale);
+        if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
+            ((AEGeometry *) (&tmp))->getPosition();
+            this->markerGeom->setPosition(tmp);
+        }
+        PaintCanvas *canvas = Globals::Canvas;
+        ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
+        MatrixGetPosition(
+            &tmp, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
+                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()));
+        this->scratchVector = tmp;
+        ((AEGeometry *) (&tmp))->getPosition();
+        this->scratchVector -= tmp;
+        VectorNormalize(&tmp, &this->scratchVector);
+        this->scratchVector = tmp;
+        this->scratchVector.x += 0.5f;
+        Vector worldUp = {0.0f, 1.0f, 0.0f};
+        this->markerGeom->setDirection(this->scratchVector, worldUp);
+        ((AbyssEngine::Transform *) (((PaintCanvas *) (long) (canvas))->TransformGetTransform(0)))->Update(dt, false);
+    }
+
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        float step = (float) (dt * 15);
+        EaseInOut_Update(this->easeX, step);
+        EaseInOut_Update(this->easeY, step);
+        EaseInOut_Update(this->easeZ, step);
+        tmp.x = EaseInOut_GetCurrentValue(this->easeX);
+        tmp.y = EaseInOut_GetCurrentValue(this->easeY);
+        tmp.z = EaseInOut_GetCurrentValue(this->easeZ);
+        this->scratchVector = tmp;
+        PaintCanvas *canvas = Globals::Canvas;
+        __builtin_memcpy(
+            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
+                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
+        MatrixSetTranslation(&matrix, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
+        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
+                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
+        if (absf_update(this->scratchVector.x - this->easeX->GetMaxValue()) <= 1.0f &&
+            absf_update(this->scratchVector.y - this->easeY->GetMaxValue()) <= 1.0f &&
+            absf_update(this->scratchVector.z - this->easeZ->GetMaxValue()) <= 1.0f) {
+            if (this->transitionIn == 0) {
+                if (this->stationGeoms != 0) {
+                    ArrayReleaseClasses(*this->stationGeoms);
+                    delete this->stationGeoms;
+                    this->stationGeoms = 0;
+                }
+                if (this->ringGeoms != 0) {
+                    ArrayReleaseClasses(*this->ringGeoms);
+                    delete this->ringGeoms;
+                    this->ringGeoms = 0;
+                }
+                delete[] this->stationAngles;
+                this->stationAngles = (int *) 0;
+                delete[] this->stationDistances;
+                this->stationDistances = (int *) 0;
+                if (this->usedFlags != 0) {
+                    delete this->usedFlags;
+                    this->usedFlags = 0;
+                }
+                delete this->starSystemRoot;
+                this->mode = 0;
+                this->starSystemRoot = (AEGeometry *) 0;
+                (*this->systemGeoms)[this->selectedSystem]->setVisible(true);
+            } else {
+                this->mode = 3;
+            }
+            this->transitionIn = 0;
+            this->transitionOut = 0;
+        }
+        return;
+    }
+
+    ((FModSound *) (*g_StarMap_update_sound))->setParamValue(0, 0x66, 0.0f);
+    if (this->mode == 3) {
+        if (this->stationCenterAnim == 0 && this->dragging == 0) {
+            float vx = this->momentumFactor * this->velocityX;
+            float vy = this->momentumFactor * this->velocityY;
+            this->velocityX = vx;
+            this->velocityY = vy;
+            if (absf_update(vx) > 0.5f) {
+                this->yaw += vx;
+            }
+            if (absf_update(vy) > 0.5f) {
+                this->pitch += vy;
+            }
+        } else if (this->stationCenterAnim != 0 && this->selectedStation >= 0) {
+            int target = 0x8000 - ((int *) this->stationAngles)[this->selectedStation];
+            int diff = (int) this->yaw - target;
+            this->yaw += (float) (diff < 0 ? -diff : diff) * (diff < 0 ? 0.25f : -0.25f);
+            if (absf_update((float) diff) < 11.0f) {
+                this->stationCenterAnim = 0;
+            }
+        }
+        float speed = absf_update(this->velocityX + this->velocityY);
+        if (speed > 10.0f) {
+            speed = 10.0f;
+        }
+        this->spin += speed;
+        if (this->stationGeoms != 0) {
+            Array<AEGeometry *> *geoms = this->stationGeoms;
+            for (uint32_t i = 0; i < geoms->size(); i++) {
+                if ((*geoms)[i] != 0) {
+                    (*geoms)[i]->rotate((float) dt * 0.001f, 0.0f, 0.001f);
+                }
+            }
+        }
+        this->yaw = (float) ((int) this->yaw & 0xffff);
+        if (this->pitch < -90.0f) {
+            this->pitch = -90.0f;
+        }
+        if (this->pitch > 90.0f) {
+            this->pitch = 90.0f;
+        }
+        this->starSystemRoot->setRotation(this->pitch, 0.0f, this->yaw);
+        return;
+    }
+
+    if (this->mode == 0) {
+        if (this->pulseSystem >= 0 && this->autoMode != 0 &&
+            this->autoTimer < 4000) {
+            this->autoTimer += dt;
+            if (this->autoTimer > 3999) {
+                OnTouchBegin(*g_StarMap_update_screenW >> 1, *g_StarMap_update_screenH >> 1);
+            }
+            float scale = ((float) this->autoTimer / 4000.0f) * 1.5f;
+            (*this->systemGeoms)[this->pulseSystem]->setScaling(scale);
+        }
+        if (this->dragging == 0) {
+            float vx = this->momentumFactor * this->velocityX;
+            float vy = this->momentumFactor * this->velocityY;
+            this->velocityX = vx;
+            this->velocityY = vy;
+            if (absf_update(vx) > 0.5f) {
+                this->panX = (int) ((float) this->panX + vx);
+            }
+            if (absf_update(vy) > 0.5f) {
+                this->panY = (int) ((float) this->panY + vy);
+            }
+        }
+        PaintCanvas *canvas = Globals::Canvas;
+        __builtin_memcpy(
+            &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
+                ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
+        MatrixSetTranslation(&matrix,
+                             (this->cameraBaseX + (float) this->panX) * 20.0f,
+                             0.0f,
+                             (this->cameraBaseZ + (float) this->panY) * 20.0f);
+        ((PaintCanvas *) (long) (canvas))->CameraSetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent(),
+                                                          *(const AbyssEngine::AEMath::Matrix *) (&matrix));
+        if (this->pathAnim != 0) {
+            Array<uint8_t> *vis = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
+            uint32_t selected = this->selectedSystem;
+            if (vis != 0 && selected < vis->size() && (*vis)[selected] != 0) {
+                this->scratchVector = *(*this->systemPositions)[selected];
+                float targetX = (float) (*g_StarMap_update_screenW >> 1);
+                float targetY = (float) (*g_StarMap_update_screenH >> 1);
+                float sx = (this->scratchVector.x - targetX) / -30.0f;
+                float sy = (this->scratchVector.y - targetY) / -30.0f;
+                this->velocityX = sx;
+                this->velocityY = sy;
+                if (absf_update(sx) <= 2.0f && absf_update(sy) <= 2.0f) {
+                    this->pathAnim = 0;
+                    this->lastSelectedSystem = this->selectedSystem;
+                }
+            }
+        }
+    }
+}
+
+static inline float absf_local(float v) {
+    return v < 0.0f ? -v : v;
+}
+
+uint32_t StarMap::OnTouchBegin(int x, int y) {
+    if (this->choiceVisible != 0) {
+        this->choiceWindow->OnTouchBegin(x, y);
+        return 0;
+    }
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        return 0;
+    }
+
+    Layout *layout = *g_StarMap_touch_layout;
+    layout->OnTouchBegin(x, y);
+    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
+        this->stationCenterAnim != 0) {
+        return 0;
+    }
+    this->backButton->OnTouchBegin(x, y);
+    if (((Layout *) layout)->field_0xc_leftMargin >= y || y >= *g_StarMap_touch_screenH - ((Layout *) layout)->
+        field_0x10_rightMargin) {
+        return 0;
+    }
+    if (this->autoMode != 0 && this->autoTimer < 4000) {
+        return 0;
+    }
+
+    FModSound *sound = *g_StarMap_touch_sound;
+    sound->stop(0x66);
+    sound->play(0x66, 0, 0, 0.0f);
+
+    float fx = (float) x;
+    float fy = (float) y;
+    this->lastTouchX = fx;
+    this->lastTouchY = fy;
+    this->touchStartX = fx;
+    this->touchStartY = fy;
+    this->touchDeltaX = 0.0f;
+    this->touchDeltaY = 0.0f;
+    this->dragging = 1;
+    this->pathAnim = 0;
+
+    int oldSystem = this->selectedSystem;
+    if (this->mode == 0) {
+        this->jumpCost = 0;
+        this->selectedSystem = -1;
+        for (uint32_t i = 0; i < this->systemGeoms->size(); i++) {
+            Array<uint8_t> *vis = (Array<uint8_t> *) Globals::status->getSystemVisibilities();
+            if (vis != 0 && i < vis->size() && (*vis)[i] != 0) {
+                this->scratchVector = *(*this->systemPositions)[i];
+                if (this->scratchVector.z > 0.0f &&
+                    absf_local(this->scratchVector.x - fx) < (float) this->hitRadius &&
+                    absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
+                    this->selectedSystem = (int) i;
+                    if (this->stations != 0) {
+                        ArrayReleaseClasses(*this->stations);
+                        delete this->stations;
+                        this->stations = (Array<Station *> *) 0;
+                    }
+                    this->stations = new Array<Station *>();
+                    FileRead *reader = (FileRead *) operator new(1);
+                    FileRead_ctor(reader);
+                    this->stations =
+                            (Array<Station *> *) reader->loadStationsBinary();
+                    operator delete(FileRead_dtor(reader));
+                    if (oldSystem != this->selectedSystem) {
+                        ((FModSound *) (sound))->play(0x67, 0, 0, 0.0f);
+                    }
+                    int current = Globals::status->getSystem();
+                    int dist = this->pathFinder->getJumpDistance(this->systems, current, this->selectedSystem);
+                    this->jumpCost = dist;
+                    if (dist == 0 && current != this->selectedSystem) {
+                        this->jumpCost = 4;
+                        if ((*this->systems)[i]->getRoutes() == 0) {
+                            this->noRoute = 1;
+                        }
+                    }
+                    if (Globals::status->hardCoreMode() != 0) {
+                        this->jumpCost <<= 1;
+                    }
+                    return 0;
+                }
+            }
+        }
+    } else if (this->mode == 3) {
+        Array<Vector *> *positions = this->stationPositions;
+        for (uint32_t i = 0; i < positions->size(); i++) {
+            this->scratchVector = *(*positions)[i];
+            if (this->scratchVector.z > 0.0f &&
+                absf_local(this->scratchVector.x - fx) < (float) this->hitRadius &&
+                absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
+                this->selectedStation = (int) i;
+                ((FModSound *) (sound))->play(0x68, 0, 0, 0.0f);
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+
+void StarMap::OnTouchMove(int x, int y) {
+    Matrix matrix;
+
+    if (this->choiceVisible != 0) {
+        this->choiceWindow->OnTouchMove(x, y);
+        return;
+    }
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        return;
+    }
+    Layout *layout = Globals::layout;
+    layout->OnTouchMove(x, y);
+    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
+        this->stationCenterAnim != 0) {
+        return;
+    }
+    this->backButton->OnTouchMove(x, y);
+    if (this->dragging == 0) {
+        return;
+    }
+
+    float fx = (float) x;
+    float fy = (float) y;
+    float lastX = this->lastTouchX;
+    float lastY = this->lastTouchY;
+    this->momentumFactor = 1.0f;
+    this->lastTouchX = fx;
+    this->lastTouchY = fy;
+    float dx = (fx - lastX) * this->dragScale;
+    float dy = this->dragScale * (fy - lastY);
+    this->touchDeltaX = dx;
+    this->touchDeltaY = dy;
+
+    if (this->mode == 0) {
+        float speed = absf_local(dx + dy);
+        if (speed > 10.0f) {
+            speed = 10.0f;
+        }
+        float targetX = (float) this->panX;
+        float targetY = (float) this->panY;
+        this->panX = (int) (dx + targetX);
+        this->panY = (int) (dy + targetY);
+        this->spin = this->spin + speed;
+        if (absf_local(this->touchStartX - fx) > 3.0f ||
+            absf_local(this->touchStartY - fy) > 3.0f) {
+            this->lastSelectedSystem = -1;
+            this->selectedSystem = -1;
+            this->jumpCost = 0;
+        }
+        Globals::Canvas->CameraGetCurrent();
+        __builtin_memcpy(&matrix, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()), 0x3c);
+        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(),
+                                        *(const AbyssEngine::AEMath::Matrix *) (&matrix));
+        return;
+    }
+
+    if (absf_local(this->touchStartX - fx) <= 3.0f ||
+        absf_local(this->touchStartY - fy) <= 3.0f) {
+        this->lastSelectedStation = -1;
+        this->selectedStation = -1;
+    }
+
+    float rotZ = dx * 16.0f;
+    float rotX = dy * 16.0f;
+    float pitch = this->pitch + rotX;
+    if (pitch < -90.0f) {
+        pitch = -90.0f;
+    }
+    if (pitch > 90.0f) {
+        pitch = 90.0f;
+    }
+    float yaw = (float) ((int) (this->yaw + rotZ) & 0xffff);
+    float absZ = absf_local(rotZ);
+    float absX = absf_local(rotX);
+    this->touchDeltaX = rotZ;
+    this->touchDeltaY = rotX;
+    this->velocityX = absZ > 3.0f ? rotZ : 0.0f;
+    this->velocityY = absX > 3.0f ? rotX : 0.0f;
+    this->yaw = yaw;
+    this->pitch = pitch;
+    this->starSystemRoot->setRotation(this->velocityY, yaw, this->velocityX);
+}
+
+static inline float absf_end(float v) {
+    return v < 0.0f ? -v : v;
+}
+
+int StarMap::OnTouchEnd(int x, int y) {
+    String help;
+
+    if (this->choiceVisible != 0) {
+        int result = this->choiceWindow->OnTouchEnd(x, y);
+        if (result == 1) {
+            this->choiceVisible = 0;
+            this->alienJumpPending = 0;
+            return 0;
+        }
+        if (result != 0) {
+            return 0;
+        }
+        this->choiceVisible = 0;
+        if (this->suppressNextClose != 0) {
+            this->suppressNextClose = 0;
+            return 0;
+        }
+        if (this->mode == 3) {
+            Station *station = (*this->stations)[this->selectedStation];
+            if (Station_getIndex(station) == Station_getIndex(Globals::status->getStation())) {
+                this->suppressNextClose = 0;
+                return 0;
+            }
+        }
+        if (this->alienJumpPending != 0 && this->mode == 0 &&
+            this->pad_0xa8_a == 0 && this->autoMode == 0) {
+            this->alienJumpPending = 0;
+            this->exitRequested = 1;
+            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+            return 0;
+        }
+        if (this->pad_0xa8_a == 0 && this->mode == 3) {
+            if (this->jumpMapModeB == 0 ||
+                this->jumpCost <= this->cargoAmount) {
+                if (this->jumpMapModeA == 0) {
+                    depart(true);
+                    return 0;
+                }
+            } else if (this->jumpCost == 1 && this->jumpMapModeA == 0) {
+                depart(false);
+                return 0;
+            }
+            this->exitRequested = 1;
+            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+        }
+        return 0;
+    }
+
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        return 0;
+    }
+    Layout *layout = *g_StarMap_end_layout;
+    if (layout->choiceWindowOpen == 0 && layout->OnTouchEnd(x, y) != 0) {
+        if (this->mode == 3 && this->isGalaxyMode != 0) {
+            this->transitionOut = 1;
+            this->momentumFactor = 0.0f;
+            this->velocityX = 0.0f;
+            this->velocityY = 0.0f;
+            this->easeX->SetRange(this->scratchVector.x, this->scratchVector.x);
+            this->easeY->SetRange(this->scratchVector.y, this->scratchVector.y);
+            this->easeZ->SetRange(this->scratchVector.z, this->scratchVector.z);
+            ((FModSound *) (*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
+            return 0;
+        }
+
+        Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+        ((FModSound *) (*g_StarMap_end_sound))->stop(0x66);
+        return 1;
+    }
+    if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
+        return 0;
+    }
+    if (this->backButton->OnTouchEnd(x, y) != 0) {
+        this->showKey ^= 1;
+    }
+    if (this->dragging != 0) {
+        float dx = this->touchDeltaX;
+        float dy = this->touchDeltaY;
+        this->momentumFactor = 0.9f;
+        this->dragging = 0;
+        this->velocityX = absf_end(dx) > 3.0f ? dx : 0.0f;
+        this->velocityY = absf_end(dy) > 3.0f ? dy : 0.0f;
+        if (this->mode == 0) {
+            if (this->selectedSystem >= 0 &&
+                this->autoMode == 0 &&
+                this->pad_0xa8_a == 0 &&
+                this->lastSelectedSystem == this->selectedSystem) {
+                if (this->jumpMapModeB == 0 &&
+                    ((SolarSystem *) (long) (Globals::status->getSystem()))->systemIsInSystemRoutes(
+                        Globals::status->getSystem()) ==
+                    0) {
+                    this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a4), false);
+                    this->choiceVisible = 1;
+                    return 0;
+                }
+                ((FModSound *) (*g_StarMap_end_sound))->play(0x6a, 0, 0, 0.0f);
+                initStarSystem();
+                this->transitionIn = 1;
+                Vector p;
+                ((AEGeometry *) (&p))->getPosition();
+                this->scratchVector = p;
+                this->scratchVector.z += 20.0f;
+                MatrixGetPosition(&p, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
+                this->scratchVector2 = p;
+                this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
+                this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
+                this->easeZ->SetRange(this->scratchVector2.z, this->scratchVector.z);
+                this->momentumFactor = 0.0f;
+                this->velocityX = 0.0f;
+                this->velocityY = 0.0f;
+            } else if (this->selectedSystem >= 0) {
+                this->lastSelectedSystem = -1;
+                this->pathAnim = 1;
+            }
+        } else if (this->selectedStation >= 0) {
+            if (this->lastSelectedStation == this->selectedStation) {
+                if (this->choiceWindow == 0) {
+                    this->choiceWindow = new ChoiceWindow();
+                }
+                this->choiceWindow->set(*(String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a3), true);
+                this->choiceVisible = 1;
+            } else {
+                ((FModSound *) (*g_StarMap_end_sound))->play(0x69, 0, 0, 0.0f);
+                this->stationCenterAnim = 1;
+            }
+        }
+    }
+    if (((Layout *) (layout))->helpPressed() != 0) {
+        help.copy((String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a5), false);
+        ((Layout *) (layout))->initHelpWindow(help);
+    }
     return 0;
 }
