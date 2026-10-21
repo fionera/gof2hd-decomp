@@ -67,6 +67,10 @@ set(GOF2_NDK_LIBCXX_INC    "${_root}/sources/cxx-stl/llvm-libc++/include"       
 set(GOF2_NDK_LIBCXXABI_INC "${_root}/sources/cxx-stl/llvm-libc++abi/include"         CACHE PATH "" FORCE)
 set(GOF2_NDK_SUPPORT_INC   "${_root}/sources/android/support/include"               CACHE PATH "" FORCE)
 set(GOF2_NDK_LIBCXXABI_SRC "${_root}/sources/cxx-stl/llvm-libc++abi/src"             CACHE PATH "" FORCE)
+# libgcc (the armv7-a/thumb multilib the driver selects for -march=armv7-a -mthumb), linked last as
+# ndk-build does: the helpers libfmodex.so re-exports (__aeabi_idiv, _Unwind_*, ...) bind to it
+# dynamically; only what it lacks (__aeabi_ldivmod) is pulled from here.
+set(GOF2_NDK_LIBGCC_A "${_gcc}/lib/gcc/arm-linux-androideabi/4.9.x/armv7-a/thumb/libgcc.a" CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_LIBCXXABI_A   "${_root}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a" CACHE FILEPATH "" FORCE)
 set(GOF2_NDK_CRT_LIBDIR    "${_root}/platforms/android-16/arch-arm/usr/lib"          CACHE PATH "" FORCE)
 
