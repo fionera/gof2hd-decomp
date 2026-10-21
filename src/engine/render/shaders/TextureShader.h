@@ -20,19 +20,19 @@ namespace AbyssEngine {
         static int ShaderIndex;
 
         uint32_t programExt;
-        int positionAttrib[2];
-        int texcoordAttrib[2];
-        int mvpUniform[2];
-        int colorUniform[2];
-        int textureUniform[2];
-        int worldViewUniform[2];
-        int textureModeUniform[2];
-        int lightUniform[2];
-        int fogNearUniform[2];
-        int fogFarUniform[2];
-        int activeTextureUniform[2];
-        int fogColorUniform[2];
-        int alphaUniform[2];
+        int aPositionLoc[2];
+        int aTexCoordLoc[2];
+        int uWorldMatrixLoc[2];
+        int uGlColorLoc[2];
+        int sTextureLoc[2];
+        int uUvMatrixLoc[2];
+        int uUVAnimationLoc[2];
+        int uFogColorLoc[2];
+        int uFogMaxDistLoc[2];
+        int uFogMinDistLoc[2];
+        int uEnableFogLoc[2];
+        int uEyePosModelLoc[2];
+        int uDarkenValueLoc[2];
 
         TextureShader();
 

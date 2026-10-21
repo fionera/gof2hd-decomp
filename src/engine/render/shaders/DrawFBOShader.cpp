@@ -8,6 +8,26 @@
 #include <arm_neon.h>
 
 
+static const char *const kDrawFBOShaderVertexSource =
+    "attribute highp vec4 a_position;\n"
+    "attribute mediump vec2 a_texCoord;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "\tgl_Position = u_WorldMatrix * a_position;\n"
+    "\tv_texCoord = a_texCoord;\n"
+    "}\n";
+
+static const char *const kDrawFBOShaderFragmentSource =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "void main(void)\n"
+    "{\n"
+    "   gl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb;\n"
+    "}\n";
+
 namespace AbyssEngine {
     int DrawFBOShader::ShaderIndex;
 
@@ -19,34 +39,34 @@ namespace AbyssEngine {
     }
 
     void DrawFBOShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram("DrawFBOShader.vsh", "DrawFBOShader.fsh");
+        this->program = this->ES2LoadProgram(kDrawFBOShaderVertexSource, kDrawFBOShaderFragmentSource);
 
-        this->positionLoc = glGetAttribLocation(this->program, "position");
-        this->texCoordLoc = glGetAttribLocation(this->program, "texCoord");
-        this->worldViewMatrixLoc = glGetUniformLocation(this->program, "worldViewMatrix");
-        this->textureLoc = glGetUniformLocation(this->program, "texture");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
-        glUniform1i(this->textureLoc, 0);
+        glUniform1i(this->sTextureBaseLoc, 0);
     }
 
     void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->dirty != 0) {
             this->dirty = 0;
         }
 
-        glEnableVertexAttribArray(this->positionLoc);
-        glEnableVertexAttribArray(this->texCoordLoc);
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
 
         if (mesh->uploaded == 0) {
-            glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
         }
     }
 
@@ -111,14 +131,14 @@ namespace AbyssEngine {
             engine->ActivateRender2FracFBO();
         }
 
-        glEnableVertexAttribArray(this->positionLoc);
-        glEnableVertexAttribArray(this->texCoordLoc);
-        glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
         Mesh *quadMesh = engine->quadMesh;
-        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, quadMesh->positions);
+        glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, quadMesh->positions);
         quadMesh = engine->quadMesh;
-        glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, quadMesh->texCoords);
+        glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, quadMesh->texCoords);
 
         glClear(0x4000);
         glClear(0x100);
@@ -127,8 +147,8 @@ namespace AbyssEngine {
         int drawHeight = engine->GetDisplayHeight();
         engine->DrawQuad(0, 0, drawWidth, drawHeight);
 
-        glDisableVertexAttribArray(this->positionLoc);
-        glDisableVertexAttribArray(this->texCoordLoc);
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
         glEnable(0xb71);
         glClear(0x100);
 
@@ -139,7 +159,7 @@ namespace AbyssEngine {
     }
 
     void DrawFBOShader::SetInActive() {
-        glDisableVertexAttribArray(this->positionLoc);
-        glDisableVertexAttribArray(this->texCoordLoc);
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 }

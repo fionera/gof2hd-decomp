@@ -19,24 +19,24 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aTexCoord;
-        int aNormal;
-        int aTangent;
-        int aBitangent;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
 
-        int uMvpMatrix;
-        int uNormalMatrix;
-        int uLightPosition;
-        int uEyePosition;
-        int uTexture0;
-        int uTexture1;
-        int uTexture2;
-        int uAmbientColor;
-        int uDiffuseColor;
-        int uSpecularColor;
-        int uEmissiveColor;
-        int uMaterialShininess;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int sTexture2Loc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
+        int uSpecularPowerLoc;
 
         GenericShader();
 

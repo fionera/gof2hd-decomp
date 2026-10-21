@@ -19,26 +19,26 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aTexCoord;
-        int aNormal;
-        int uMvpMatrix;
-        int uModelViewMatrix;
-        int uNormalMatrix;
-        int uColor0;
-        int uColor1;
-        int uAmbientColor;
-        int uTexture;
-        int uLight0Direction;
-        int uLight0Color;
-        int uLight1Direction;
-        int uLight1Color;
-        int uLight2Direction;
-        int uLight2Color;
-        int uShininess;
-        int uSpecularColor;
-        int uModelMatrix;
-        int uHasScaleAnimation;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int uWorldMatrixLoc;
+        int uFullModelMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightDirection0Loc;
+        int uLightDirection1Loc;
+        int uGlColorLoc;
+        int sTextureLoc;
+        int uAmbientColor0Loc;
+        int uAmbientColor1Loc;
+        int uDiffuseColor0Loc;
+        int uDiffuseColor1Loc;
+        int uSpecularColor0Loc;
+        int uSpecularColor1Loc;
+        int uSpecularPowerLoc;
+        int uEyePosModelLoc;
+        int uUvMatrixLoc;
+        int uUVAnimationLoc;
 
         TextureLightShader();
 

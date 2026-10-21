@@ -54,15 +54,17 @@ public:
     char field_0x42;
     uint8_t reviveLockFlag;
 
-    int field_0x44;
+    uint8_t field_0x44;
+    uint8_t _pad_0x45[3];
     int field_0x48;
-    int hasCargo;
+    uint8_t hasCargo;
+    uint8_t _pad_0x4d[3];
     Array<int> *cargo;
     Level *level;
     float posX;
     float posY;
     float posZ;
-    uint32_t field_0x64;
+    float speed;
     uint8_t diedWithMissionCrate;
 
     uint8_t lostMissionCrateToEgo;
@@ -88,7 +90,8 @@ public:
     int field_0x80;
     int field_0x84;
     int state;
-    int field_0x8c;
+    uint8_t field_0x8c;
+    uint8_t _pad_0x8d[3];
     int field_0x90;
     int field_0x94;
     int field_0x98;
@@ -103,13 +106,14 @@ public:
     uint8_t _pad_0xb3;
     Route *initialRoute;
     int field_0xb8;
-    int field_0xbc;
-    uint8_t field_0xc0;
-    uint8_t _pad_0xc1[3];
+    uint8_t field_0xbc;
+    uint8_t _pad_0xbd[3];
+    int field_0xc0;
     Array<uint32_t> *spacePointIds;
     int field_0xc8;
     Array<SpacePoint *> *spacePoints;
-    int carriesMissionCrate;
+    uint8_t carriesMissionCrate;
+    uint8_t _pad_0xd1[3];
     uint32_t jumpSphere;
     int field_0xd8;
     bool wingmanFlag;
@@ -138,7 +142,7 @@ public:
     int field_0x120;
 
     KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
-             float x, float y, float z, bool active);
+             float x, float y, float z, bool grouped);
 
     virtual ~KIPlayer();
 

@@ -19,10 +19,10 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aTexCoord;
-        int uWorldMatrix;
-        int sTexture;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int uWorldMatrixLoc;
+        int sTextureBaseLoc;
 
         TexOnlyShader();
 

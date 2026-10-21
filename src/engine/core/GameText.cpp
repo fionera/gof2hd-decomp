@@ -1,9 +1,6 @@
 #include "engine/core/GameText.h"
 #include "engine/file/AEFile.h"
 
-static unsigned short g_langCode_storage = 0;
-static unsigned short * volatile g_langCode = &g_langCode_storage;
-static unsigned short * volatile g_GameText_langReset = &g_langCode_storage;
 
 void GameText::release() {
     if (this->textTable == nullptr)
@@ -15,13 +12,11 @@ void GameText::release() {
 }
 
 short GameText::getLanguage() {
-    return (short) *g_langCode;
+    return static_cast<short>(currentLang);
 }
 
-static const char gRegionCodeStr[] = "";
-
 String GameText::getRegionCode() {
-    return String(gRegionCodeStr);
+    return String("gb");
 }
 
 void GameText::setSubstituteArray(int *pairs, unsigned count) {
@@ -35,134 +30,97 @@ void GameText::setSubstituteArray(int *pairs, unsigned count) {
     }
 }
 
-static const char *gLangPaths[17] = {0};
-static const char gLangPathDefault[] = "";
-static const char gLangPathEnglish[] = "";
-
 void GameText::setLanguage(short langId, int stringCount) {
-    if ((unsigned short)*g_langCode == (unsigned short)langId)
+    if (currentLang == static_cast<unsigned short>(langId))
         return;
 
     this->release();
     this->textCount = stringCount;
-    this->textTable = new String *[stringCount]();
-
-    String path(gLangPathDefault);
-    unsigned short code;
-
-    switch (langId) {
-        case 0: {
-            String tmp(gLangPaths[0]);
-            path = tmp;
-            code = 0;
-            break;
-        }
-        case 1: {
-            String tmp(gLangPaths[1]);
-            path = tmp;
-            code = 1;
-            break;
-        }
-        case 2: {
-            String tmp(gLangPaths[2]);
-            path = tmp;
-            code = 2;
-            break;
-        }
-        case 3: {
-            String tmp(gLangPaths[3]);
-            path = tmp;
-            code = 3;
-            break;
-        }
-        case 4: {
-            String tmp(gLangPaths[4]);
-            path = tmp;
-            code = 4;
-            break;
-        }
-        case 5: {
-            String tmp(gLangPaths[5]);
-            path = tmp;
-            code = 5;
-            break;
-        }
-        case 6: {
-            String tmp(gLangPaths[6]);
-            path = tmp;
-            code = 6;
-            break;
-        }
-        case 7: {
-            String tmp(gLangPaths[7]);
-            path = tmp;
-            code = 7;
-            break;
-        }
-        case 8: {
-            String tmp(gLangPaths[8]);
-            path = tmp;
-            code = 8;
-            break;
-        }
-        case 9: {
-            String tmp(gLangPaths[9]);
-            path = tmp;
-            code = 9;
-            break;
-        }
-        case 10: {
-            String tmp(gLangPaths[10]);
-            path = tmp;
-            code = 0;
-            break;
-        }
-        case 11: {
-            String tmp(gLangPaths[11]);
-            path = tmp;
-            code = 0;
-            break;
-        }
-        case 12: {
-            String tmp(gLangPaths[12]);
-            path = tmp;
-            code = 12;
-            break;
-        }
-        case 13: {
-            String tmp(gLangPaths[13]);
-            path = tmp;
-            code = 13;
-            break;
-        }
-        case 14: {
-            String tmp(gLangPaths[14]);
-            path = tmp;
-            code = 14;
-            break;
-        }
-        case 15: {
-            String tmp(gLangPaths[15]);
-            path = tmp;
-            code = 15;
-            break;
-        }
-        default: {
-            String tmp(gLangPaths[16]);
-            path = tmp;
-            code = 0;
-            break;
-        }
-    }
-    *g_langCode = code;
-
-    if (AEFile::FileExist(path) == 0) {
-        String fallback(gLangPathEnglish);
-        path = fallback;
-        *g_langCode = 0;
-    }
+    this->textTable = new String *[stringCount];
+    for (int i = 0; i < stringCount; ++i)
+        this->textTable[i] = nullptr;
 
     unsigned int file = 0;
+    String path("gb.lang");
+    switch (langId) {
+        case 0:
+            path = String("gb.lang");
+            currentLang = 0;
+            break;
+        case 1:
+            path = String("de.lang");
+            currentLang = 1;
+            break;
+        case 3:
+            path = String("it.lang");
+            currentLang = 3;
+            break;
+        case 2:
+            path = String("fr.lang");
+            currentLang = 2;
+            break;
+        case 4:
+            path = String("es.lang");
+            currentLang = 4;
+            break;
+        case 5:
+            path = String("ru.lang");
+            currentLang = 5;
+            break;
+        case 6:
+            path = String("pl.lang");
+            currentLang = 6;
+            break;
+        case 7:
+            path = String("pt.lang");
+            currentLang = 7;
+            break;
+        case 8:
+            path = String("cz.lang");
+            currentLang = 8;
+            break;
+        case 9:
+            path = String("ar.lang");
+            currentLang = 9;
+            break;
+        case 10:
+            path = String("gb.lang");
+            currentLang = 0;
+            break;
+        case 11:
+            path = String("gb.lang");
+            currentLang = 0;
+            break;
+        case 12:
+            path = String("ptl.lang");
+            currentLang = 12;
+            break;
+        case 13:
+            path = String("mex.lang");
+            currentLang = 13;
+            break;
+        case 14:
+            path = String("ko.lang");
+            currentLang = 14;
+            break;
+        case 15:
+            path = String("ja.lang");
+            currentLang = 15;
+            break;
+        default:
+            path = String("gb.lang");
+            currentLang = 0;
+            break;
+    }
+
+    if (!AEFile::FileExist(path)) {
+        // The shipped build converts the missing file name (for a stripped log call) and drops it.
+        char *missing = path.GetAEChar();
+        delete[] missing;
+        path = String("gb.lang");
+        currentLang = 0;
+    }
+
     AEFile::OpenRead(path, &file);
     this->ReadLangFile(file, stringCount);
 }
@@ -173,208 +131,218 @@ GameText::~GameText() {
     this->textTable = nullptr;
 }
 
-static unsigned gArabicTable[0x29 * 5] = {0};
+namespace {
+    // Arabic presentation forms: {letter, isolated, final, medial, initial}. Rows 37..40 are the
+    // lam-alef ligatures, keyed by the placeholder codes 2..5 that convertStringFromArabic writes.
+    const unsigned int kArabicForms[41][5] = {
+        {0x0621, 0xfe80, 0xfe80, 0xfe80, 0xfe80},
+        {0x0622, 0xfe81, 0xfe82, 0xfe82, 0xfe81},
+        {0x0623, 0xfe83, 0xfe84, 0xfe84, 0xfe83},
+        {0x0624, 0xfe85, 0xfe86, 0xfe86, 0xfe85},
+        {0x0625, 0xfe87, 0xfe88, 0xfe88, 0xfe87},
+        {0x0626, 0xfe89, 0xfe8a, 0xfe8c, 0xfe8b},
+        {0x0627, 0xfe8d, 0xfe8e, 0xfe8e, 0xfe8d},
+        {0x0628, 0xfe8f, 0xfe90, 0xfe92, 0xfe91},
+        {0x0629, 0xfe93, 0xfe94, 0xfe94, 0xfe93},
+        {0x062a, 0xfe95, 0xfe96, 0xfe98, 0xfe97},
+        {0x062b, 0xfe99, 0xfe9a, 0xfe9c, 0xfe9b},
+        {0x062c, 0xfe9d, 0xfe9e, 0xfea0, 0xfe9f},
+        {0x062d, 0xfea1, 0xfea2, 0xfea4, 0xfea3},
+        {0x062e, 0xfea5, 0xfea6, 0xfea8, 0xfea7},
+        {0x062f, 0xfea9, 0xfeaa, 0xfeaa, 0xfea9},
+        {0x0630, 0xfeab, 0xfeac, 0xfeac, 0xfeab},
+        {0x0631, 0xfead, 0xfeae, 0xfeae, 0xfead},
+        {0x0632, 0xfeaf, 0xfeb0, 0xfeb0, 0xfeaf},
+        {0x0633, 0xfeb1, 0xfeb2, 0xfeb4, 0xfeb3},
+        {0x0634, 0xfeb5, 0xfeb6, 0xfeb8, 0xfeb7},
+        {0x0635, 0xfeb9, 0xfeba, 0xfebc, 0xfebb},
+        {0x0636, 0xfebd, 0xfebe, 0xfec0, 0xfebf},
+        {0x0637, 0xfec1, 0xfec2, 0xfec4, 0xfec3},
+        {0x0638, 0xfec5, 0xfec6, 0xfec8, 0xfec7},
+        {0x0639, 0xfec9, 0xfeca, 0xfecc, 0xfecb},
+        {0x063a, 0xfecd, 0xfece, 0xfed0, 0xfecf},
+        {0x0640, 0x0640, 0x0640, 0x0640, 0x0640},
+        {0x0641, 0xfed1, 0xfed2, 0xfed4, 0xfed3},
+        {0x0642, 0xfed5, 0xfed6, 0xfed8, 0xfed7},
+        {0x0643, 0xfed9, 0xfeda, 0xfedc, 0xfedb},
+        {0x0644, 0xfedd, 0xfede, 0xfee0, 0xfedf},
+        {0x0645, 0xfee1, 0xfee2, 0xfee4, 0xfee3},
+        {0x0646, 0xfee5, 0xfee6, 0xfee8, 0xfee7},
+        {0x0647, 0xfee9, 0xfeea, 0xfeec, 0xfeeb},
+        {0x0648, 0xfeed, 0xfeee, 0xfeee, 0xfeed},
+        {0x0649, 0xfeef, 0xfef0, 0xfeef, 0xfeef},
+        {0x064a, 0xfef1, 0xfef2, 0xfef4, 0xfef3},
+        {0x0002, 0xfefb, 0xfefc, 0xfefc, 0xfefb},
+        {0x0003, 0xfef7, 0xfef8, 0xfef8, 0xfef7},
+        {0x0004, 0xfef9, 0xfefa, 0xfefa, 0xfef9},
+        {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
+    };
 
-int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
-    unsigned short i = 0;
-    int keep;
-    do {
-        if (count <= i) return 1;
-        keep = true;
-        unsigned short ch = str[i];
-        unsigned *row = gArabicTable;
-        int r = 0;
-        while (r != 0x29) {
-            for (int c = 0; c != 5; ++c)
-                keep = keep & (row[c] != ch);
-            ++r;
-            row += 5;
-        }
-        ++i;
-    } while (keep);
-    return 0;
+    // Letters that never join to the following letter.
+    const unsigned int kNonJoiningAfter[10] = {
+        0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625
+    };
 }
 
-static const char gInitLangStr[] = "";
+int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
+    for (unsigned short i = 0; i < count; ++i) {
+        bool nonArabic = true;
+        for (int r = 0; r < 41; ++r)
+            for (int c = 0; c < 5; ++c)
+                nonArabic &= kArabicForms[r][c] != str[i];
+        if (!nonArabic)
+            return 0;
+    }
+    return 1;
+}
+
 
 GameText::GameText() {
     GameText::currentLang = 0xffff;
     this->textCount = 0;
     this->textTable = nullptr;
-    String tmp(gInitLangStr);
-    this->fallbackText = tmp;
+    this->fallbackText = String("Error Language");
 }
 
-static const unsigned int gArabForms[(0x334 / 20) * 5] = {0};
-static const unsigned int gLamAlef[10 * 4] = {0};
-static const unsigned int gLamAlefForms[0x29 * 5] = {0};
-
-static inline bool isJoiner(unsigned short c) {
-    return c >= 0x600 && c != 0x60c && c != 0x61f;
+static inline bool isArabicJoining(unsigned short c) {
+    return c >= 0x600 && c != 0x61f && c != 0x60c;
 }
 
 String GameText::convertStringFromArabic(String in) {
-    String work;
-    work.Set((const unsigned short *) (in.index(0)));
-    unsigned int len = work.size();
+    String work(in);
+    unsigned short *buf = new unsigned short[work.length + 1];
+    memcpy(buf, static_cast<unsigned short *>(work), work.length * 2 + 2);
 
-    unsigned short *buf = new unsigned short[len + 1];
-    memcpy(buf, work.index(0), (unsigned long) (len * 2 + 2));
-
-    int inLen = (int) in.size();
-    unsigned int hi = (unsigned int) (inLen - 1);
-    unsigned int i = hi;
-
-    while (true) {
-        if (i > 0x7fffffff) {
-            String result;
-            result.Set((const unsigned short *) (buf));
-            delete[] buf;
-            return result;
-        }
-
+    int length = in.length;
+    int last = length - 1;
+    for (int i = last; i >= 0; --i) {
         if (i != 0) {
-            unsigned short prev = *in.index(i - 1);
-            unsigned short cur = *in.index(i);
+            unsigned short prev = *in[i - 1];
+            unsigned short cur = *in[i];
             if (prev == 0x644) {
-                unsigned short form = 2;
+                // lam + alef: collapse the pair into a ligature placeholder (rows 37..40)
+                unsigned short ligature;
+                bool merge = true;
                 switch (cur) {
-                    case 0x622: form = 5;
-                        break;
-                    case 0x623: form = 3;
-                        break;
-                    case 0x627: form = 2;
-                        break;
-                    default: break;
+                    case 0x627: ligature = 2; break;
+                    case 0x623: ligature = 3; break;
+                    case 0x625: ligature = 4; break;
+                    case 0x622: ligature = 5; break;
+                    default: merge = false; break;
                 }
-                buf[i] = form;
-
-                String merged;
-                merged.Set((const unsigned short *) (buf));
-                String head, tail;
-                head = merged.SubString(0, i);
-                tail = merged.SubString(i + 1, merged.size());
-                head += tail;
-
-                delete[] buf;
-
-                unsigned int mLen = head.size();
-                buf = new unsigned short[mLen + 1];
-                memcpy(buf, head.index(0), (unsigned long) (mLen * 2 + 2));
-                --i;
+                if (merge) {
+                    buf[i] = ligature;
+                    String merged(buf, false);
+                    String head = merged.SubString(0, i - 1);
+                    String tail = merged.SubString(i, merged.length);
+                    head += tail;
+                    delete[] buf;
+                    buf = new unsigned short[head.length + 1];
+                    memcpy(buf, static_cast<unsigned short *>(head), head.length * 2 + 2);
+                    --i;
+                }
             }
 
-            unsigned int k = 0;
-            for (; k < 10; ++k)
-                if (gLamAlef[k * 4] == (unsigned int) prev)
+            bool afterNonJoiner = false;
+            for (int k = 0; k <= 9; ++k) {
+                if (kNonJoiningAfter[k] == prev) {
+                    afterNonJoiner = true;
                     break;
-            if (k < 10) {
-                for (unsigned int r = 0; r < 0x29; ++r) {
-                    const unsigned int *row = &gLamAlefForms[r * 5];
-                    if (row[0] == (unsigned int) buf[i]) {
+                }
+            }
+            if (afterNonJoiner) {
+                for (int r = 0; r <= 40; ++r) {
+                    if (kArabicForms[r][0] == buf[i]) {
                         int form = 1;
-                        if ((int) i < (int) hi && isJoiner(buf[i + 1]))
-                            form = isJoiner(buf[i + 1]) ? 4 : 1;
-                        buf[i] = (unsigned short) row[form];
+                        if (i < last && isArabicJoining(buf[i + 1]))
+                            form = 4;
+                        buf[i] = kArabicForms[r][form];
                         break;
                     }
                 }
-            }
-        } else {
-            for (unsigned int r = 0; r < 0x334 / 20; ++r) {
-                const unsigned int *row = &gArabForms[r * 5];
-                if (row[0] == (unsigned int) buf[0]) {
-                    int form;
-                    if (inLen == 1 || buf[1] < 0x600) {
-                        form = 1;
-                    } else {
-                        unsigned short nxt = buf[1];
-                        form = (nxt == 0x60c || nxt == 0x61f) ? 1 : 4;
-                    }
-                    buf[0] = (unsigned short) row[form];
-                    break;
-                }
+                continue;
             }
         }
 
-        --i;
+        for (int r = 0; r < 41; ++r) {
+            if (kArabicForms[r][0] != buf[i])
+                continue;
+            int form;
+            if (i == 0) {
+                form = (length != 1 && isArabicJoining(buf[i + 1])) ? 4 : 1;
+            } else if (i < last) {
+                bool nextJoins = isArabicJoining(buf[i + 1]);
+                bool prevJoins = isArabicJoining(buf[i - 1]);
+                if (!nextJoins)
+                    form = prevJoins ? 2 : 1;
+                else
+                    form = prevJoins ? 3 : 4;
+            } else {
+                form = isArabicJoining(buf[i - 1]) ? 2 : 1;
+            }
+            buf[i] = kArabicForms[r][form];
+        }
     }
+
+    String result(buf, false);
+    delete[] buf;
+    return result;
 }
 
 void GameText::setLanguage(int langId) {
     this->setLanguage(static_cast<short>(0), langId);
 }
 
-static const char gLang5000Primary[] = "";
-static const char gLang5000Fallback[] = "";
-static const char gLang5001Primary[] = "";
-static const char gLang5001Fallback[] = "";
-
 AbyssEngine::String *GameText::getText(int key) {
-    if (key == 5001) {
-        static String s5001;
-        const char *txt = (*g_langCode != 1) ? gLang5001Fallback : gLang5001Primary;
-        s5001.ctor_char(txt, false);
-        return &s5001;
-    }
     if (key == 5000) {
-        static String s5000;
-        const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
-        s5000.ctor_char(txt, false);
-        return &s5000;
+        static String privacyPolicy(currentLang == 1 ? "Datenschutzb." : "Privacy Policy", false);
+        return &privacyPolicy;
+    }
+    if (key == 5001) {
+        static String termsOfService(currentLang == 1 ? "Nutzungsb." : "Terms of S.", false);
+        return &termsOfService;
     }
 
-    uint32_t pairCount = (uint32_t) this->substitutes.size();
-    int *pairs = this->substitutes.data();
-    for (uint32_t i = 0; i < pairCount; i += 2) {
-        if (pairs[i] == key) {
-            key = pairs[i + 1];
+    for (unsigned int i = 0; i < this->substitutes.size(); i += 2) {
+        if (this->substitutes[i] == key) {
+            key = this->substitutes[i + 1];
             break;
         }
     }
 
-    if (key >= 0 && key < this->textCount && this->textTable != nullptr) {
-        String *s = this->textTable[key];
-        if (s != nullptr)
-            return s;
-    }
+    if (key >= 0 && key < this->textCount && this->textTable != nullptr &&
+        this->textTable[key] != nullptr)
+        return this->textTable[key];
     return &this->fallbackText;
 }
 
 void GameText::ReadLangFile(unsigned int file, int count) {
-    if (file == 0)
+    if (file == 0) {
+        this->release();
         return;
+    }
 
-    short lang = *g_langCode;
     for (int i = 0; i < count; ++i) {
-        unsigned short len;
-        if (AEFile::Read(2, &len, file) == 0) {
+        unsigned short length;
+        if (!AEFile::Read(2, &length, file)) {
             this->release();
             break;
         }
+        length = static_cast<unsigned short>((length >> 8) | (length << 8));
 
-        unsigned int byteLen = (unsigned int) ((len >> 8) | (len << 8)) & 0xffff;
-
-        char *utf8 = new char[byteLen + 1];
-        if (AEFile::Read(byteLen, utf8, file) == 0) {
+        char *utf8 = new char[length + 1];
+        if (!AEFile::Read(length, utf8, file)) {
             delete[] utf8;
             this->release();
             break;
         }
-        utf8[byteLen] = '\0';
+        utf8[length] = '\0';
 
-        unsigned short *wide = String::getWCharFromUtf8(utf8, (int) byteLen);
-
-        String *s = new String;
-        if (lang == 9) {
-            String tmp;
-            tmp.Set((const unsigned short *) (wide));
-            *s = this->convertStringFromArabic(tmp);
-            this->textTable[i] = s;
-        } else {
-            s->Set((const unsigned short *) (wide));
-            this->textTable[i] = s;
-        }
+        unsigned short *wide = String::getWCharFromUtf8(utf8, length);
+        if (currentLang == 9)
+            this->textTable[i] = new String(this->convertStringFromArabic(String(wide, false)));
+        else
+            this->textTable[i] = new String(wide, false);
 
         delete[] wide;
         delete[] utf8;

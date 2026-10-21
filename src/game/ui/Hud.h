@@ -314,7 +314,7 @@ public:
     void catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender, bool slotMode,
                     bool aggregate);
 
-    Hud *checkIfQuickMenuIsEmpty();
+    void checkIfQuickMenuIsEmpty();
 
     void clearQueue();
 

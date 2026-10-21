@@ -466,68 +466,66 @@ int Status::getFreighterMissionStationBit(int station) {
     }
 }
 
-static int **g_ccpPriceMod = nullptr;
-
 void Status::calcCargoPrices() {
-    Galaxy *gal = Globals::galaxy;
-    Array<SolarSystem *> *systems = gal->getSystems();
-    AbyssEngine::AERandom *rng = Globals::rnd;
-    const float kPriceScale = 100.0f;
-    const float kJitter = 0.02f;
-
-    for (int src = 0; src != 3; src = src + 1) {
-        Array<Item *> *list;
-        if (src == 1)
-            list = ship->getEquipment();
-        else if (src == 0)
-            list = ship->getCargo();
-        else
-            list = station->getItems();
-        if (list == 0)
-            continue;
-
-        rng->setSeed((long long) station->getIndex());
-        bool ringWorld = false;
-        if (!inAlienOrbit())
-            ringWorld = (asSystem(system)->getIndex() == 0x19);
-
-        for (unsigned i = 0; i < list->size(); i = i + 1) {
-            Item *item = (*list)[i];
-            if (item == 0)
-                continue;
-
-            SolarSystem *itemSys = (*systems)[item->getIndex()];
-            SolarSystem *maxSys = (*systems)[item->getMaxPriceSystem()];
-            int dItem = gal->distancePercent(itemSys->getX(), itemSys->getY(),
-                                             maxSys->getX(), maxSys->getY());
-
-            SolarSystem *curSys = (*systems)[station->getIndex()];
-            int dHere = gal->distancePercent(itemSys->getX(), itemSys->getY(),
-                                             curSys->getX(), curSys->getY());
-
-            float t = ((kPriceScale / (float) dItem) * (float) dHere) / kPriceScale;
-            int minPrice = item->getMinPrice();
-            int band = item->getMaxPrice() - item->getMinPrice();
-            float clamp = t < 1.0f ? t : 1.0f;
-
-            if (item->getSinglePrice() > 0) {
-                int price;
-                if (ringWorld) {
-                    price = item->getMaxPrice();
-                } else {
-                    int base = minPrice + (int) (clamp * (float) band);
-                    int jitterMax = (int) ((float) base * kJitter);
-                    if (jitterMax < 2)
-                        jitterMax = 1;
-                    price = (base - jitterMax) + rng->nextInt((jitterMax << 1) | 1);
-                }
-                if (*g_ccpPriceMod != 0 && **g_ccpPriceMod != 0) {
-                    price = (int) ((float) price + (float) price * (float) (**g_ccpPriceMod) * 0.01f);
-                }
-                item->setPrice(price);
-            }
+    Array<SolarSystem *> *systems = Globals::galaxy->getSystems();
+    for (int list = 0; list != 3; list++) {
+        Array<Item *> *items;
+        switch (list) {
+            case 0:
+                items = this->ship->getCargo();
+                break;
+            case 1:
+                items = this->ship->getEquipment();
+                break;
+            default:
+                items = this->station->getItems();
+                break;
         }
-        rng->reset();
+        if (items == 0) {
+            continue;
+        }
+        Globals::rnd->setSeed((long long) this->station->getIndex());
+        bool ringWorld;
+        if (Globals::status->inAlienOrbit()) {
+            ringWorld = false;
+        } else {
+            ringWorld = asSystem(Globals::status->system)->getIndex() == 25;
+        }
+        for (unsigned i = 0; i < items->size(); i++) {
+            Item *item = (*items)[i];
+            if (item == 0) {
+                continue;
+            }
+            int priceRange = Globals::galaxy->distancePercent(
+                (*systems)[item->getMinPriceSystem()]->getX(), (*systems)[item->getMinPriceSystem()]->getY(),
+                (*systems)[item->getMaxPriceSystem()]->getX(), (*systems)[item->getMaxPriceSystem()]->getY());
+            int distance = Globals::galaxy->distancePercent(
+                (*systems)[(*items)[i]->getMinPriceSystem()]->getX(),
+                (*systems)[(*items)[i]->getMinPriceSystem()]->getY(),
+                (*systems)[this->station->getSystem()]->getX(), (*systems)[this->station->getSystem()]->getY());
+            float factor = 100.0f / (float) priceRange * (float) distance / 100.0f;
+            int minPrice = item->getMinPrice();
+            int priceBonus = (int) ((factor < 1.0f ? factor : 1.0f) * (float) (item->getMaxPrice() - item->getMinPrice()));
+            if (item->getSinglePrice() < 1) {
+                continue;
+            }
+            int price;
+            if (ringWorld) {
+                price = item->getMaxPrice();
+            } else {
+                int base = minPrice + priceBonus;
+                int jitter = (int) ((float) base * 0.02f);
+                if (jitter <= 1) {
+                    jitter = 1;
+                }
+                price = base - jitter + Globals::rnd->nextInt(jitter << 1 | 1);
+            }
+            if (Globals::globalPriceRaise != 0) {
+                price = (int) ((float) price + (float) price * (float) Globals::globalPriceRaise * 0.01f);
+            }
+            item->setPrice(price);
+        }
+        Globals::rnd->reset();
     }
 }
 
@@ -1072,177 +1070,833 @@ void Status::removeMission(Mission *mission) {
     }
 }
 
-static int g_ncmAchTable[3] = {0, 0, 0};
-
-struct Step {
-    short type;
-    int param;
-    short station;
-    unsigned char campaign;
-};
-
-static const Step kSteps[] = {
-    /*0x00*/ {0, 0, 0, 0},
-    /*0x01*/ {0x9a, 0, 0x4e, 1}, /*0x02*/ {0xb, 0, 0x4e, 0}, /*0x03*/ {0x9a, 0, 0x4e, 1},
-    /*0x04*/ {0xb, 0, 0x4e, 0}, /*0x05*/ {0x9e, 0, 0x4e, 0}, /*0x06*/ {0x4, 0, 0x4e, 0},
-    /*0x07*/ {0xb, 0, 0x4e, 0}, /*0x08*/ {0xb, 0, 0x4e, 0}, /*0x09*/ {0xb, 0, 0x4f, 0},
-    /*0x0a*/ {0xb, 0, 0x4c, 0}, /*0x0b*/ {0xb, 0, 0x4f, 0}, /*0x0c*/ {0x96, 0, 0, 1},
-    /*0x0d*/ {0x4, 0, 0x4f, 0}, /*0x0e*/ {0xb, 0, 0x62, 0}, /*0x0f*/ {0x4, 0, 0x62, 0},
-    /*0x10*/ {0xb, 0, 0x62, 0}, /*0x11*/ {0x9c, 0, 0x38, 0}, /*0x12*/ {0x9c, 0, 0x37, 0},
-    /*0x13*/ {0xbd, 0, 0x37, 1}, /*0x14*/ {0x4, 0, 0x37, 0}, /*0x15*/ {0xb, 0, 0x37, 0},
-    /*0x16*/ {0xb, 20000, 10, 0},/*0x17*/ {0x4, 0, 0x30, 0}, /*0x18*/ {0x4, 0, 0x30, 0},
-    /*0x19*/ {0x4, 0, 0x30, 0}, /*0x1a*/ {0xb, 0, 10, 0}, /*0x1b*/ {0x4, 0, 0x5b, 0},
-    /*0x1c*/ {0x4, 0, -1, 0}, /*0x1d*/ {0x9c, 0, 0x5b, 0}, /*0x1e*/ {0xb, 30000, 0x62, 0},
-    /*0x1f*/ {0xb, 0, 10, 0}, /*0x20*/ {0x8, 0, 10, 1}, /*0x21*/ {0xb, 0, 0x1d, 0},
-    /*0x22*/ {0xb, 0, 0x1d, 0}, /*0x23*/ {0xc, 0, 0x1b, 0}, /*0x24*/ {0xa0, 0, 0x1b, 0},
-    /*0x25*/ {0x4, 0, 0x16, 0}, /*0x26*/ {0xb, 0, 0x1e, 0}, /*0x27*/ {0xa1, 0, -1, 0},
-    /*0x28*/ {0x4, 0, -1, 0}, /*0x29*/ {0xa0, 0, -1, 0}, /*0x2a*/ {0xb, 0, 10, 0},
-    /*0x2b*/ {0xb, 0, 10, 0}, /*0x2c*/ {0, 0, 0, 1}, /*0x2d*/ {0xb, 0, 0x4a, 0},
-    /*0x2e*/ {0xb, 0, 0x3a, 0}, /*0x2f*/ {0xb, 0, 0x3a, 0}, /*0x30*/ {0x9c, 0, 0x3a, 0},
-    /*0x31*/ {0x9c, 0, 0x3e, 0}, /*0x32*/ {0x9c, 0, 0x19, 0}, /*0x33*/ {0xa0, 0, 0x19, 0},
-    /*0x34*/ {0, 0, 0, 0}, /*0x35*/ {0xb, 0, 0x4a, 0}, /*0x36*/ {0xb, 0, 0x65, 1},
-    /*0x37*/ {0x4, 0, 0x66, 0}, /*0x38*/ {0xb, 0, 0x65, 0}, /*0x39*/ {0xa6, 0, 0x65, 1},
-    /*0x3a*/ {0xa3, 0, 0x65, 1}, /*0x3b*/ {0xb, 50000, 0x65, 1}, /*0x3c*/ {0xa4, 0, 0x65, 0},
-    /*0x3d*/ {0xb, 0, 100, 0}, /*0x3e*/ {0x4, 0, 0x67, 0}, /*0x3f*/ {0x4, 0, 0x68, 0},
-    /*0x40*/ {0xb, 0, 100, 0}, /*0x41*/ {0xb, 0, 0x65, 0}, /*0x42*/ {0x4, 0, 0x68, 1},
-    /*0x43*/ {0x8, 0, 0x42, 1}, /*0x44*/ {0x6, 0, 0x42, 0}, /*0x45*/ {0x6, 0, 0x41, 0},
-    /*0x46*/ {0xb, 0, 0x42, 0}, /*0x47*/ {0xa4, 0, 0x65, 1}, /*0x48*/ {0xa, 0, 0x51, 0},
-    /*0x49*/ {0xb, 0, 100, 0}, /*0x4a*/ {0xb, 0, 100, 0}, /*0x4b*/ {0xb, 0, 100, 0},
-    /*0x4c*/ {0xb, 0, 0x65, 0}, /*0x4d*/ {0x4, 0, 0x65, 0}, /*0x4e*/ {0xa5, 0, -1, 0},
-    /*0x4f*/ {0x1, 0, 100, 0}, /*0x50*/ {0x4, 0, -1, 0}, /*0x51*/ {0xb, 0, 100, 0},
-    /*0x52*/ {0xb, 0, 100, 0}, /*0x53*/ {0, 0, 0, 0}, /*0x54*/ {0xa4, 0, 0, 0},
-    /*0x55*/ {0xb, 0, 100, 0}, /*0x56*/ {0x4, 0, 10, 0}, /*0x57*/ {0xb, 0, 10, 0},
-    /*0x58*/ {0x4, 0, 0x6d, 0},
-};
+// Campaign missions whose completion awards the medal flag at +0x17c.
+static const int kMedalCampaignMissions[3] = {93, 111, 143};
 
 void Status::nextCampaignMission(bool advance) {
-    (void) advance;
-    int prevTimeLo = (int) this->playingTime;
-    int prevTimeHi = (int) (this->playingTime >> 32);
-
-    int step = this->currentCampaignMission;
-    int next = step + 1;
-
-    for (int k = 0; k < 3; k = k + 1) {
-        if (next == g_ncmAchTable[k])
+    int mission = this->currentCampaignMission;
+    this->currentCampaignMission = mission + 1;
+    for (int i = 0; i < 3; i++) {
+        if (this->currentCampaignMission == kMedalCampaignMissions[i]) {
             this->field_0x17c = 1;
+        }
     }
+    reinterpret_cast<int64_t &>(this->field_0x100) = this->playingTime;
 
-    this->currentCampaignMission = next;
-    this->field_0x100 = prevTimeLo;
-    this->field_0x104 = prevTimeHi;
-
-    if (step == 0)
-        return;
-
-    if (step == 3) {
-        this->ship->setCargo(0);
-    } else if (step == 5) {
-        this->ship->removeAllCargo();
-    } else if (step == 7) {
-        Array<Item *> *eq = this->ship->getEquipment();
-        if (eq != 0)
-            for (unsigned i = 0; i < eq->size(); i = i + 1) {
-                Item *it = (*eq)[i];
-                if (it != 0) {
-                    it->setUnsaleable(false);
-                    it->setPrice(it->getSinglePrice());
+    switch (mission) {
+        case 52:
+        case 128:
+            nextCampaignMission(advance);
+            break;
+        case 147:
+        case 148:
+        case 149:
+        case 150:
+            setCampaignMission(new Mission(171, 0, 96));
+            break;
+        case 44: {
+            this->field_7c = -10;
+            this->field_80 = -10;
+            setCampaignMission(new Mission());
+            (*this->missions)[0]->setVisible(false);
+            int credits = this->credits + 40000;
+            if (credits < 0) {
+                credits = 0;
+            }
+            this->credits = credits;
+            break;
+        }
+        case 21:
+            setCampaignMission(new Mission(11, 0, 55));
+            break;
+        case 7: {
+            Array<Item *> *equipment = this->ship->getEquipment();
+            if (equipment != 0) {
+                for (unsigned i = 0; i < equipment->size(); i++) {
+                    if ((*equipment)[i] != 0) {
+                        (*equipment)[i]->setUnsaleable(false);
+                        (*equipment)[i]->setPrice((*Globals::items)[i]->getSinglePrice());
+                    }
                 }
             }
-        Array<Item *> *cg = this->ship->getCargo();
-        if (cg != 0)
-            for (unsigned i = 0; i < cg->size(); i = i + 1) {
-                Item *it = (*cg)[i];
-                if (it != 0) {
-                    it->setUnsaleable(false);
-                    it->setPrice(it->getSinglePrice());
+            Array<Item *> *cargo = this->ship->getCargo();
+            if (cargo != 0) {
+                for (unsigned i = 0; i < cargo->size(); i++) {
+                    if ((*cargo)[i] != 0) {
+                        (*cargo)[i]->setUnsaleable(false);
+                        (*cargo)[i]->setPrice((*Globals::items)[i]->getSinglePrice());
+                    }
                 }
             }
-    } else if (step == 9) {
-        Item *old = this->ship->getFirstEquipmentOfSort(0);
-        this->ship->removeEquipment(old);
-        this->ship->addEquipment(((Item *) 0)->makeItem());
-    }
-
-    Mission *tailMission;
-    if ((unsigned) step < sizeof(kSteps) / sizeof(kSteps[0])) {
-        const Step &s = kSteps[step];
-        Mission *m;
-        if (s.type == 0 && s.station == 0 && s.param == 0) {
-            m = new Mission();
-        } else {
-            m = new Mission(s.type, s.param, s.station);
+            setCampaignMission(new Mission(11, 0, 78));
+            break;
         }
-        if (s.campaign) {
-            setCampaignMission(m);
-            return;
+        case 38:
+            setCampaignMission(new Mission(11, 0, 30));
+            break;
+        case 11:
+            setCampaignMission(new Mission(11, 0, 79));
+            break;
+        case 47: {
+                this->field_8c = (int32_t)(intptr_t)this->ship;
+                this->ship = 0;
+                setShip((*Globals::ships)[9]->makeShip(-1));
+                this->ship->setRace(1);
+                Item *item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                Globals::status->fadeValue = 0;
+                setCampaignMission(new Mission(11, 0, 58));
+                break;
+            }
+        case 16:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 24: {
+            Array<Item *> *cargo = this->ship->getCargo();
+            if (cargo != 0) {
+                for (unsigned i = 0; i < cargo->size(); i++) {
+                    if ((*cargo)[i]->getIndex() == 131) {
+                        (*cargo)[i]->setUnsaleable(true);
+                        break;
+                    }
+                }
+            }
+            setCampaignMission(new Mission(156, 0, -1));
+            break;
         }
-        tailMission = m;
-    } else {
-        tailMission = new Mission(0xb, 0, 100);
-    }
-
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
-        if ((*missions)[i] == 0) {
-            (*missions)[i] = tailMission;
-            return;
+        case 14:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 18:
+            setCampaignMission(new Mission(156, 0, 55));
+            break;
+        case 42:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 45:
+        case 106:
+            break;
+        case 49:
+            setCampaignMission(new Mission(156, 0, 62));
+            break;
+        case 8:
+            setCampaignMission(new Mission(11, 0, 78));
+            break;
+        case 31:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 39:
+            setCampaignMission(new Mission(161, 0, -1));
+            break;
+        case 30:
+            setCampaignMission(new Mission(11, 30000, 98));
+            break;
+        case 32:
+            setCampaignMission(new Mission(8, 0, 10));
+            (*this->missions)[0]->setProductionGoods(164, 50);
+            break;
+        case 33:
+            this->ship->removeCargo(164, 50);
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 85) {
+                    (*this->bluePrints)[i]->unlock();
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[164]->makeItem(), 50, 10);
+                    break;
+                }
+            }
+            setCampaignMission(new Mission(11, 0, 30));
+            break;
+        case 29:
+            setCampaignMission(new Mission(156, 0, 91));
+            break;
+        case 1:
+            setCampaignMission(new Mission(154, 0, 78));
+            (*this->missions)[0]->setStatusValue(10);
+            break;
+        case 20:
+            setCampaignMission(new Mission(4, 0, 55));
+            break;
+        case 23:
+            this->field_80 = 48;
+            this->field_7c = 9;
+            setCampaignMission(new Mission(4, 0, 48));
+            break;
+        case 34:
+            setCampaignMission(new Mission(11, 0, 29));
+            break;
+        case 51:
+            setCampaignMission(new Mission(160, 0, 25));
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 53:
+            setCampaignMission(new Mission(11, 200000, 74));
+            break;
+        case 58:
+            if (Globals::status->field_90 != 0) {
+                delete Globals::status->field_90;
+            }
+            Globals::status->field_90 = 0;
+            Globals::status->field_90 = new Array<int>();
+            ArraySetLength(3, *Globals::status->field_90);
+            (*Globals::status->field_90)[0] = 56;
+            (*Globals::status->field_90)[1] = 45;
+            (*Globals::status->field_90)[2] = 22;
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 179) {
+                    (*this->bluePrints)[i]->lock();
+                }
+            }
+            setCampaignMission(new Mission(163, 0, 101));
+            (*this->missions)[0]->setStatusValue(0);
+            Globals::status->field_10c = 0;
+            break;
+        case 59: {
+            int statusValue = (*this->missions)[0]->getStatusValue();
+            setCampaignMission(new Mission(11, (statusValue + 1) * 50000, 101));
+            (*this->missions)[0]->setStatusValue(statusValue > 0);
+            break;
         }
+        case 73:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 77: {
+            Item *item = Globals::status->ship->getFirstEquipmentOfSort(18);
+            if (item != 0) {
+                Globals::status->ship->removeEquipment(item);
+            } else {
+                item = Globals::status->ship->getCargo(85);
+                if (item != 0) {
+                    Globals::status->ship->removeCargo(item);
+                }
+            }
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if (!(*this->bluePrints)[i]->isEmpty() && (*this->bluePrints)[i]->getStationIndex() == 101) {
+                    (*this->bluePrints)[i]->reset();
+                }
+            }
+            setCampaignMission(new Mission(4, 0, 101));
+            break;
+        }
+        case 80:
+            setCampaignMission(new Mission(4, 0, -1));
+            break;
+        case 87:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 99:
+            setCampaignMission(new Mission(4, 0, 98));
+            break;
+        case 109:
+            setCampaignMission(new Mission(171, 0, 10));
+            break;
+        case 113:
+            setCampaignMission(new Mission(4, 0, 83));
+            break;
+        case 157:
+            setCampaignMission(new Mission(4, 0, 111));
+            break;
+        case 159:
+            setCampaignMission(new Mission(170, 0, 10));
+            break;
+        case 0:
+            setCampaignMission(new Mission(11, 0, 78));
+            this->mission = (*this->missions)[0];
+            break;
+        case 2:
+            setCampaignMission(new Mission(11, 0, 78));
+            break;
+        case 12:
+            setCampaignMission(new Mission(150, 0, 0));
+            (*this->missions)[0]->setStatusValue(this->missionCount + 1);
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 28:
+            setCampaignMission(new Mission(4, 0, -1));
+            break;
+        case 54:
+            (*this->systemVisibilities)[23] = 1;
+            setCampaignMission(new Mission(11, 0, 101));
+            setShip((Ship *)(intptr_t)this->field_8c);
+            this->field_8c = 0;
+            break;
+        case 55: {
+                this->field_8c = (int32_t)(intptr_t)this->ship;
+                this->ship = 0;
+                setShip((*Globals::ships)[39]->makeShip(-1));
+                this->ship->setRace(1);
+                Item *item = (*Globals::items)[181]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[52]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 2);
+                setCampaignMission(new Mission(4, 0, 102));
+                break;
+            }
+        case 56:
+            setCampaignMission(new Mission(11, 150000, 101));
+            break;
+        case 57:
+            setCampaignMission(new Mission(166, 0, 101));
+            (*this->missions)[0]->setProductionGoods(179, 10);
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 179) {
+                    (*this->bluePrints)[i]->unlock();
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[127], 5, 101);
+                    break;
+                }
+            }
+            setShip((Ship *)(intptr_t)this->field_8c);
+            this->field_8c = 0;
+            break;
+        case 60:
+            setCampaignMission(new Mission(164, 0, 101));
+            break;
+        case 61:
+            (*this->systemVisibilities)[22] = 1;
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 62:
+            (*this->systemVisibilities)[24] = 1;
+            setCampaignMission(new Mission(4, 0, 103));
+            break;
+        case 63:
+            setCampaignMission(new Mission(4, 0, 104));
+            break;
+        case 64:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 65:
+            setCampaignMission(new Mission(11, 0, 101));
+            break;
+        case 66:
+            setCampaignMission(new Mission(4, 0, 104));
+            (*this->missions)[0]->setStatusValue(0);
+            Globals::status->station->addItem((*Globals::items)[60]->makeItem(5, 0));
+            Globals::status->station->addItem((*Globals::items)[61]->makeItem(5, 0));
+            Globals::status->station->addItem((*Globals::items)[62]->makeItem(5, 0));
+            break;
+        case 67:
+            setCampaignMission(new Mission(8, 0, 66));
+            (*this->missions)[0]->setProductionGoods(175, 1);
+            break;
+        case 68:
+            Globals::status->ship->removeCargo(175);
+            setCampaignMission(new Mission(6, 0, 66));
+            break;
+        case 69:
+            setCampaignMission(new Mission(6, 0, 65));
+            break;
+        case 70:
+            setCampaignMission(new Mission(11, 0, 66));
+            break;
+        case 71:
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 183) {
+                    (*this->bluePrints)[i]->unlock();
+                }
+            }
+            Globals::status->ship->addCargo((*Globals::items)[175]->makeItem(1));
+            setCampaignMission(new Mission(164, 150000, 101));
+            this->field_10c = 0;
+            break;
+        case 72:
+            setCampaignMission(new Mission(10, 0, 81));
+            break;
+        case 74:
+            Globals::status->station->removeShips();
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 75:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 76: {
+            Item *item = Globals::status->ship->getFirstEquipmentOfSort(18);
+            if (item != 0) {
+                item->setUnsaleable(true);
+            }
+            setCampaignMission(new Mission(11, 0, 101));
+            break;
+        }
+        case 78:
+            setCampaignMission(new Mission(165, 0, -1));
+            break;
+        case 79:
+            setCampaignMission(new Mission(1, 0, 100));
+            break;
+        case 81:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 82:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 83: {
+            Item *item = Globals::status->ship->getFirstEquipmentOfSort(18);
+            if (item == 0) {
+                item = Globals::status->ship->getCargo(85);
+            }
+            if (item != 0) {
+                item->setUnsaleable(false);
+            }
+            Globals::status->ship->addCargo((*Globals::items)[85]->makeItem(1));
+            setCampaignMission(new Mission());
+            (*this->missions)[0]->setVisible(false);
+            break;
+        }
+        case 84:
+            setCampaignMission(new Mission(164, 0, 0));
+            break;
+        case 85:
+            setCampaignMission(new Mission(11, 0, 100));
+            break;
+        case 86:
+            setCampaignMission(new Mission(4, 0, 10));
+            break;
+        case 88:
+            Globals::status->ship->removeCargo(104, 10);
+            (*Globals::status->systemVisibilities)[27] = 1;
+            (*Globals::status->systemVisibilities)[28] = 1;
+            setCampaignMission(new Mission(4, 0, 109));
+            break;
+        case 89:
+            Globals::status->stationsVisited--;
+            Globals::galaxy->getVisited()[109] = false;
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 90:
+            (*this->systemVisibilities)[27] = 1;
+            (*this->systemVisibilities)[28] = 1;
+            setCampaignMission(new Mission(184, 0, 110));
+            (*this->missions)[0]->setProductionGoods(0, 10);
+            (*this->missions)[0]->setStatusValue(10);
+            this->field_178 = 0;
+            break;
+        case 91:
+            setCampaignMission(new Mission(184, 0, 113));
+            (*this->missions)[0]->setProductionGoods(0, 10);
+            (*this->missions)[0]->setStatusValue(10);
+            break;
+        case 92:
+            setCampaignMission(new Mission(11, 0, 114));
+            break;
+        case 93: {
+                Item *item = (*Globals::items)[205]->makeItem(1);
+                Globals::status->ship->addCargo(item);
+                setCampaignMission(new Mission(184, 0, 111));
+                (*this->missions)[0]->setProductionGoods(0, 83);
+                (*this->missions)[0]->setStatusValue(83);
+                this->field_178 = 0;
+                break;
+            }
+        case 94:
+            setCampaignMission(new Mission(170, 0, 10));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 95:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 96:
+            setCampaignMission(new Mission(4, 0, 85));
+            break;
+        case 97:
+            (*Globals::status->systemVisibilities)[29] = 1;
+            setCampaignMission(new Mission(11, 0, 120));
+            break;
+        case 98:
+            setCampaignMission(new Mission(170, 0, 10));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 100:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 101: {
+                Item *item = (*Globals::items)[207]->makeItem(1);
+                Globals::status->ship->addCargo(item);
+                setCampaignMission(new Mission(184, 0, 113));
+                (*this->missions)[0]->setProductionGoods(0, 1700);
+                (*this->missions)[0]->setStatusValue(1700);
+                break;
+            }
+        case 102:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 103:
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 206) {
+                    (*this->bluePrints)[i]->unlock();
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[163]->makeItem(), 10, 10);
+                    break;
+                }
+            }
+            setCampaignMission(new Mission(166, 0, 10));
+            (*this->missions)[0]->setProductionGoods(206, 1);
+            break;
+        case 104:
+            setCampaignMission(new Mission(4, 0, 109));
+            break;
+        case 105:
+            setCampaignMission(new Mission(4, 0, 111));
+            break;
+        case 107:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 108:
+            setCampaignMission(new Mission(170, 0, 114));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 110:
+            setCampaignMission(new Mission(171, 0, 38));
+            break;
+        case 111:
+            setCampaignMission(new Mission(172, 0, 38));
+            (*this->missions)[0]->setProductionGoods(146, 1);
+            break;
+        case 112:
+            Globals::status->ship->removeCargo(146, 1);
+            setCampaignMission(new Mission(171, 0, 82));
+            break;
+        case 114:
+            setCampaignMission(new Mission(171, 0, 82));
+            break;
+        case 115:
+            setCampaignMission(new Mission(171, 0, 93));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 116:
+            (*this->systemVisibilities)[30] = 1;
+            setCampaignMission(new Mission(11, 0, 126));
+            break;
+        case 117:
+            setCampaignMission(new Mission(8, 0, 126));
+            (*this->missions)[0]->setProductionGoods(209, 1);
+            break;
+        case 118: {
+            Array<Item *> *cargo = this->ship->getCargo();
+            if (cargo != 0) {
+                for (unsigned i = 0; i < cargo->size(); i++) {
+                    if ((*cargo)[i]->getIndex() == 209) {
+                        (*cargo)[i]->setUnsaleable(true);
+                        break;
+                    }
+                }
+            }
+            setCampaignMission(new Mission(170, 0, 10));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        }
+        case 119:
+            setCampaignMission(new Mission(4, 0, 40));
+            break;
+        case 120:
+            setCampaignMission(new Mission(8, 0, 93));
+            (*this->missions)[0]->setProductionGoods(209, 1);
+            break;
+        case 121: {
+            Array<Item *> *cargo = this->ship->getCargo();
+            if (cargo != 0) {
+                for (unsigned i = 0; i < cargo->size(); i++) {
+                    if ((*cargo)[i]->getIndex() == 209) {
+                        (*cargo)[i]->setUnsaleable(false);
+                        break;
+                    }
+                }
+            }
+            Globals::status->ship->removeCargo(209, 1);
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        }
+        case 122:
+            setCampaignMission(new Mission(4, 0, 121));
+            break;
+        case 123:
+            setCampaignMission(new Mission(11, 0, 121));
+            break;
+        case 124:
+            setCampaignMission(new Mission(4, 0, 55));
+            break;
+        case 125:
+            setCampaignMission(new Mission(170, 0, 120));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 126:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 127:
+            setCampaignMission(new Mission());
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 129:
+            setCampaignMission(new Mission());
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 130:
+            setCampaignMission(new Mission(4, 0, 112));
+            break;
+        case 131:
+            setCampaignMission(new Mission(11, 0, 112));
+            break;
+        case 132:
+            setCampaignMission(new Mission(170, 0, 120));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 133:
+            setCampaignMission(new Mission(11, 0, 22));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 134:
+            setCampaignMission(new Mission(174, 0, 103));
+            (*this->missions)[0]->setProductionGoods(155, 140);
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 135:
+            setCampaignMission(new Mission(11, 0, 112));
+            break;
+        case 136:
+            setCampaignMission(new Mission(4, 0, 58));
+            break;
+        case 137:
+            setCampaignMission(new Mission(11, 0, 58));
+            break;
+        case 138:
+            (*this->systemVisibilities)[31] = 1;
+            setCampaignMission(new Mission(168, 0, 131));
+            (*this->missions)[0]->setStatusValue(10);
+            this->field_178 = 0;
+            break;
+        case 139:
+            setCampaignMission(new Mission(11, 0, 112));
+            break;
+        case 140:
+            for (unsigned i = 0; i < this->bluePrints->size(); i++) {
+                if ((*this->bluePrints)[i]->getIndex() == 210) {
+                    (*this->bluePrints)[i]->unlock();
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[201]->makeItem(), 847, 112);
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[202]->makeItem(), 834, 112);
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[203]->makeItem(), 861, 112);
+                    (*this->bluePrints)[i]->addItem((*Globals::items)[204]->makeItem(), 892, 112);
+                    break;
+                }
+            }
+            setCampaignMission(new Mission(11, 0, 78));
+            break;
+        case 141:
+            Globals::status->ship->addCargo((*Globals::items)[197]->makeItem(15));
+            Globals::status->ship->addCargo((*Globals::items)[196]->makeItem(1));
+            Globals::status->ship->addCargo((*Globals::items)[198]->makeItem(1));
+            setCampaignMission(new Mission(4, 0, 79));
+            break;
+        case 142:
+            setCampaignMission(new Mission(8, 0, 112));
+            (*this->missions)[0]->setProductionGoods(210, 1);
+            break;
+        case 143:
+            Globals::status->ship->removeCargo(210, 1);
+            setCampaignMission(new Mission(170, 0, 112));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 144:
+            setCampaignMission(new Mission(4, 0, 112));
+            break;
+        case 145:
+            setCampaignMission(new Mission(11, 0, 112));
+            break;
+        case 146:
+            setCampaignMission(new Mission(4, 0, -1));
+            break;
+        case 151:
+            setCampaignMission(new Mission(165, 0, -1));
+            break;
+        case 152:
+            setCampaignMission(new Mission(11, 0, 98));
+            break;
+        case 153:
+            setCampaignMission(new Mission(4, 0, -1));
+            break;
+        case 154:
+            setCampaignMission(new Mission(164, 0, 0));
+            break;
+        case 155:
+            setCampaignMission(new Mission(11, 0, 99));
+            break;
+        case 156:
+            setCampaignMission(new Mission(4, 0, 112));
+            break;
+        case 158:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 160:
+            setCampaignMission(new Mission(170, 0, 93));
+            (*this->missions)[0]->setStatusValue(0);
+            break;
+        case 161:
+            setCampaignMission(new Mission());
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 3:
+            this->ship->setCargo(0);
+            setCampaignMission(new Mission(154, 0, 78));
+            (*this->missions)[0]->setStatusValue(25);
+            break;
+        case 9: {
+            Item *engine = this->ship->getFirstEquipmentOfSort(19);
+            this->ship->removeEquipment(engine);
+            this->ship->addEquipment((*Globals::items)[86]->makeItem(1));
+            setCampaignMission(new Mission(11, 0, 79));
+            break;
+        }
+        case 35:
+            setCampaignMission(new Mission(12, 0, 27));
+            break;
+        case 40:
+            setCampaignMission(new Mission(4, 0, -1));
+            break;
+        case 43:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 4:
+            setCampaignMission(new Mission(11, 0, 78));
+            break;
+        case 27:
+            this->field_80 = 91;
+            this->field_7c = 18;
+            setCampaignMission(new Mission(4, 0, 91));
+            break;
+        case 46:
+            setCampaignMission(new Mission(11, 0, 74));
+            break;
+        case 17:
+            this->ship->setRace(0);
+            setCampaignMission(new Mission(156, 0, 56));
+            break;
+        case 36:
+            setCampaignMission(new Mission(160, 0, 27));
+            (*this->missions)[0]->setVisible(false);
+            break;
+        case 48: {
+                setShip((*Globals::ships)[41]->makeShip(-1));
+                this->ship->setRace(1);
+                for (int i = 0; i < 3; i++) {
+                    Item *item = (*Globals::items)[177]->makeItem();
+                    Globals::status->ship->setEquipment(item, i);
+                }
+                Item *item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                item = (*Globals::items)[52]->makeItem();
+                Globals::status->ship->setEquipment(item, 2);
+                setCampaignMission(new Mission(156, 0, 58));
+                break;
+            }
+        case 5:
+            this->ship->removeAllCargo();
+            setCampaignMission(new Mission(158, 0, 78));
+            break;
+        case 15:
+            setCampaignMission(new Mission(4, 0, 98));
+            break;
+        case 22:
+            (*this->systemVisibilities)[6] = 1;
+            setCampaignMission(new Mission(11, 20000, 10));
+            break;
+        case 10:
+            setCampaignMission(new Mission(11, 0, 76));
+            break;
+        case 19:
+            setCampaignMission(new Mission(189, 0, 55));
+            (*this->missions)[0]->setStatusValue(6);
+            break;
+        case 26:
+            setCampaignMission(new Mission(11, 0, 10));
+            break;
+        case 13:
+            setCampaignMission(new Mission(4, 0, 79));
+            break;
+        case 37:
+            setCampaignMission(new Mission(4, 0, 22));
+            break;
+        case 50:
+            setCampaignMission(new Mission(156, 0, 25));
+            break;
+        case 6:
+            setCampaignMission(new Mission(4, 0, 78));
+            break;
+        case 41:
+            this->field_7c = -10;
+            this->field_80 = -10;
+            setCampaignMission(new Mission(160, 0, -1));
+            break;
+        case 25:
+            this->field_7c = -1;
+            this->field_80 = -1;
+            setCampaignMission(new Mission(4, 0, 48));
+            break;
+        default:
+            break;
     }
 }
 
 void Status::setStation(Station *s) {
-    if (station == s) {
+    if (this->station == s) {
         return;
     }
-    station = s;
-    Galaxy *gal = Globals::galaxy;
-    system = gal->getSystem(s->getSystem());
-    if (system == 0) {
+    this->station = s;
+    this->system = Globals::galaxy->getSystem(s->getSystem());
+    if (this->system == 0) {
         return;
     }
-    (*field_b4)[station->getSystem()] = true;
-    FileRead fr;
-    Array<Station *> *list = (Array<Station *> *) (intptr_t) fr.loadStationsBinary();
-    if (planetNames != 0) {
-        Array<String *> *pn = (Array<String *> *) (intptr_t) planetNames;
-        ArrayReleaseClasses(*pn);
-        delete pn;
+    (*this->field_b4)[this->station->getSystem()] = true;
+
+    FileRead *fileRead = new FileRead();
+    Array<Station *> *stationList = fileRead->loadStationsBinary(asSystem(this->system));
+    delete fileRead;
+
+    Array<String *> *names = (Array<String *> *) (intptr_t) this->planetNames;
+    if (names != 0) {
+        ArrayReleaseClasses(*names);
+        if ((Array<String *> *) (intptr_t) this->planetNames != 0) {
+            delete (Array<String *> *) (intptr_t) this->planetNames;
+        }
     }
-    Array<String *> *names = new Array<String *>();
-    planetNames = (int32_t)(intptr_t)
-    names;
-    ArraySetLength(list->size(), *names);
-    if (planetTextures != 0) {
-        delete (Array<int> *) (intptr_t) planetTextures;
+    this->planetNames = 0;
+    names = new Array<String *>();
+    this->planetNames = (int32_t) (intptr_t) names;
+    ArraySetLength(stationList->size(), *names);
+
+    if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+        ArrayRelease(*(Array<int> *) (intptr_t) this->planetTextures);
+        if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+            delete (Array<int> *) (intptr_t) this->planetTextures;
+        }
     }
-    Array<int> *texs = new Array<int>();
-    planetTextures = (int32_t)(intptr_t)
-    texs;
-    ArraySetLength(list->size(), *texs);
-    Array<Station *> *stations = (Array<Station *> *) asSystem(system)->getStations();
-    for (unsigned i = 0; i < stations->size(); i = i + 1) {
-        Station *cur = 0;
-        bool found = false;
-        for (unsigned j = 0; j < list->size(); j = j + 1) {
-            cur = (*list)[j];
-            int target = (int) (intptr_t)(*stations)[i];
-            if (target == cur->getIndex()) {
-                found = true;
+    this->planetTextures = 0;
+    Array<int> *textures = new Array<int>();
+    this->planetTextures = (int32_t) (intptr_t) textures;
+    ArraySetLength(stationList->size(), *textures);
+
+    Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
+    for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
+        for (unsigned j = 0; j < stationList->size(); j++) {
+            Station *candidate = (*stationList)[j];
+            if ((*stationIndices)[i] == candidate->getIndex()) {
+                String *name;
+                if (this->currentCampaignMission != 0) {
+                    name = new String(candidate->getName());
+                } else {
+                    name = new String();
+                }
+                (*(Array<String *> *) (intptr_t) this->planetNames)[i] = name;
+                (*(Array<int> *) (intptr_t) this->planetTextures)[i] = candidate->getTextureIndex();
                 break;
             }
         }
-        if (!found) {
-            continue;
-        }
-        String *nm = new String();
-        if (currentCampaignMission != 0) {
-            *nm = cur->getName();
-        }
-        (*names)[i] = nm;
-        (*texs)[i] = cur->getTextureIndex();
     }
-    ArrayReleaseClasses(*list);
-    delete list;
+    ArrayReleaseClasses(*stationList);
+    delete stationList;
 }
 
 String Status::replaceHash(String text, String replacement, String hash) {
@@ -1625,92 +2279,90 @@ void Status::checkForLevelUp() {
     }
 }
 
-static Station **g_mwPrevStation = nullptr;
-
 void Status::moveWanted() {
-    Array<SolarSystem *> *systemsTable = 0;
-    SystemPathFinder *pf = 0;
-    Station **prevHolder = g_mwPrevStation;
-
-    for (unsigned i = 0; i < wanted->size(); i = i + 1) {
-        Wanted *w = (*wanted)[i];
-        if (w->isActive() == 0)
+    bool initialized = false;
+    Array<SolarSystem *> *systems = 0;
+    SystemPathFinder *pathFinder = 0;
+    for (unsigned i = 0; i < this->wanted->size(); i++) {
+        if (!(*this->wanted)[i]->isActive() || (*this->wanted)[i]->isTerminated() ||
+            Globals::status->inAlienOrbit() ||
+            (*this->wanted)[i]->getCurrentLocation() == Globals::status->station->getIndex()) {
             continue;
-        if (w->isTerminated() != 0)
-            continue;
-        if (inAlienOrbit())
-            continue;
-
-        if (w->getCurrentLocation() == station->getIndex())
-            continue;
-        if (*prevHolder != 0) {
-            if ((*prevHolder)->getIndex() == w->getCurrentLocation())
-                continue;
         }
-
-        if (pf == 0) {
-            FileRead fr;
-            systemsTable = fr.loadSystemsBinary();
-            pf = new SystemPathFinder();
+        if (Level::programmedStation != 0 &&
+            Level::programmedStation->getIndex() == (*this->wanted)[i]->getCurrentLocation()) {
+            continue;
         }
-
-        Station *fromSt = Globals::globals->getRandomStation();
-        int fromSys = fromSt->getSystem();
-        Station *toSt = Globals::globals->getRandomStation();
-        int toSys = toSt->getSystem();
-
-        Array<int> *path = 0;
-        if (fromSt->getIndex() == toSt->getIndex()) {
-            unsigned lo, hi;
+        if (!initialized) {
+            FileRead *fileRead = new FileRead();
+            systems = fileRead->loadSystemsBinary();
+            delete fileRead;
+            pathFinder = new SystemPathFinder();
+        }
+        // Station lookups do not touch the reader instance, so no FileRead object is created.
+        FileRead *reader = 0;
+        Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
+        int fromSystem = from->getSystem();
+        Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
+        int toSystem = to->getSystem();
+        Array<int> *path;
+        if (from->getIndex() == to->getIndex()) {
+            unsigned minJumps;
+            unsigned maxJumps;
             if (i < 2) {
-                hi = 4;
-                lo = 2;
+                maxJumps = 4;
+                minJumps = 2;
             } else {
-                int r = (i - 1) % 6;
-                lo = r / 3 + 2;
-                hi = r / 2 + 4;
+                int step = (int) (i - 1) % 6;
+                minJumps = step / 3 + 2;
+                maxJumps = 4 + step / 2;
             }
-            w->setLastSeen(w->getCurrentLocation());
-            if (toSt != 0) delete toSt;
-            toSt = Globals::globals->getRandomStation();
-            toSys = toSt->getSystem();
-            for (;;) {
-                path = pf->getSystemPath(systemsTable, fromSys, toSys);
-                int dsys = toSt->getSystem();
-                int routes = (int) (intptr_t)(*systemsTable)[dsys]->getRoutes();
-                bool ok = path != 0 && routes != 0 &&
-                          (unsigned) (*path)[0] >= lo && (unsigned) (*path)[0] <= hi &&
-                          (*systemVisibilities)[dsys] != 0 &&
-                          dsys != 0x1b && dsys != 0x1c && dsys != 0x19 && dsys != 0x1a && dsys != 6 &&
-                          dsys != fromSt->getSystem();
-                if (ok) {
-                    w->setTravelsTo(toSt->getIndex());
+            (*this->wanted)[i]->setLastSeen((*this->wanted)[i]->getCurrentLocation());
+            if (to != 0) {
+                delete to;
+            }
+            to = Globals::globals->getRandomStation();
+            toSystem = to->getSystem();
+            while (true) {
+                path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+                uint32_t *routes = (*systems)[to->getSystem()]->getRoutes();
+                if (path != 0 && routes != 0 && path->size() >= minJumps && path->size() <= maxJumps &&
+                    (*Globals::status->systemVisibilities)[to->getSystem()] && to->getSystem() != 27 &&
+                    to->getSystem() != 28 && to->getSystem() != 25 && to->getSystem() != 26 &&
+                    to->getSystem() != 6 && to->getSystem() != from->getSystem()) {
+                    (*this->wanted)[i]->setTravelsTo(to->getIndex());
                     break;
                 }
-                if (toSt != 0) delete toSt;
-                toSt = Globals::globals->getRandomStation();
-                toSys = toSt->getSystem();
+                if (to != 0) {
+                    delete to;
+                }
+                to = Globals::globals->getRandomStation();
+                toSystem = to->getSystem();
             }
-        } else if (fromSys == toSys) {
-            w->setCurrentLocation(w->getTravelsTo());
+        } else if (fromSystem == toSystem) {
+            (*this->wanted)[i]->setCurrentLocation((*this->wanted)[i]->getTravelsTo());
             path = 0;
         } else {
-            path = pf->getSystemPath(systemsTable, fromSys, toSys);
-            int wg = (*systemsTable)[(*path)[1]]->getWarpGateIndex();
-            w->setCurrentLocation(wg);
+            path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+            (*this->wanted)[i]->setCurrentLocation((*systems)[(*path)[1]]->getWarpGateIndex());
         }
-
-        if (toSt != 0) delete toSt;
-        if (fromSt != 0) delete fromSt;
-        if (path != 0) delete path;
+        if (to != 0) {
+            delete to;
+        }
+        if (from != 0) {
+            delete from;
+        }
+        if (path != 0) {
+            delete path;
+        }
+        initialized = true;
     }
-
-    if (systemsTable != 0) {
-        ArrayReleaseClasses(*systemsTable);
-        delete systemsTable;
+    if (systems != 0) {
+        ArrayReleaseClasses(*systems);
+        delete systems;
     }
-    if (pf != 0) {
-        delete pf;
+    if (pathFinder != 0) {
+        delete pathFinder;
     }
 }
 

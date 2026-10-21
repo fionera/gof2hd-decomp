@@ -44,7 +44,7 @@ public:
     int voiceSound;
     int autoAdvanceTimer;
     int pauseLength;
-    uint8_t mirrorFace;
+    bool mirrorFace;
 
     DialogueWindow();
 
@@ -66,7 +66,7 @@ public:
 
     bool hasLevel();
 
-    int init();
+    void init();
 
     bool isFirstPage();
 

@@ -347,88 +347,38 @@ void Hud::updateQueue(int dt) {
 
 
 
-static const char g_Hud_oiSep[1] = {0};
-static const unsigned char g_Hud_secColors[4 * 0xc] = {0};
+// Security-level text colours (r, g, b) indexed by SolarSystem::getSecurityLevel().
+static const int g_Hud_securityColors[4][3] = {
+    {255, 42, 0},
+    {255, 108, 0},
+    {237, 237, 0},
+    {0, 237, 0},
+};
 
 void Hud::drawOrbitInformation() {
-    if (Globals::status->inAlienOrbit() != 0) return;
-
-    int *layout = (int *) Globals::layout;
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int x = Globals::Canvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
-
-    if (((SolarSystem *) ((long) Globals::status->getSystem()))->hasNoOwner() == 0)
-        Globals::Canvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
-
-    String *font = (String *) Globals::font;
-
-    {
-        char name[12];
-        ((Station *) (name))->getName();
-        Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (name), (x), (char) layout[0x88], false);
-        {
-            String *_s = ((String *) (name));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-    Globals::Canvas->SetColor((unsigned) (-1));
-
-    if (Globals::status->getCurrentCampaignMission() <= 0xf) return;
-
-    SolarSystem *sys = (SolarSystem *) ((long) Globals::status->getSystem());
-    int sec = sys->getSecurityLevel();
-    int idx = ((SolarSystem *) ((long) Globals::status->getSystem()))->getIndex();
-    int *status = (int *) Globals::status;
-    if (idx == 0x1a && status[0x45] > 1) sec = 3;
-
-    {
-        char sysName[12], copy[12], sep[12], acc[12], full[12];
-        ((SolarSystem *) (sysName))->getName();
-        ((String *) (copy))->Set(((String *) (sysName))->data);
-        ((String *) (sep))->ctor_char(g_Hud_oiSep, false);
-        *(String *) acc = *(String *) copy + *(String *) sep;
-        String *txt = (Globals::gameText)->getText(0);
-        *(String *) full = *(String *) acc + *(String *) txt;
-        Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
-        {
-            String *_s = ((String *) (full));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (acc));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (sep));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (copy));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (sysName));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-    }
-
-    const unsigned char *row = g_Hud_secColors + sec * 0xc;
-    Globals::Canvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
-                              (unsigned char) (0xff));
-    String *secTxt = (Globals::gameText)->getText(sec);
-    Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
+    if (Globals::status->inAlienOrbit() != 0)
+        return;
+    Globals::Canvas->SetColor(0xffffffff);
+    int x = Globals::Canvas->GetImage2DWidth(this->factionLogoImage);
+    x += Globals::layout->orbitInfoTextX;
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner() == 0)
+        Globals::Canvas->DrawImage2D(this->factionLogoImage, 3, 3);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, Globals::status->getStation()->getName(), x,
+                                Globals::layout->orbitInfoStationY, false);
+    Globals::Canvas->SetColor(0x777777ff);
+    if (Globals::status->getCurrentCampaignMission() < 16)
+        return;
+    int security = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel();
+    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 26 && Globals::status->field_114 > 1)
+        security = 3;
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) + String(" ") +
+                                    *Globals::gameText->getText(137),
+                                x, Globals::layout->orbitInfoSystemY, false);
+    Globals::Canvas->SetColor(g_Hud_securityColors[security][0], g_Hud_securityColors[security][1],
+                              g_Hud_securityColors[security][2], 255);
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402), x,
+                                Globals::layout->orbitInfoSecurityY, false);
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -463,82 +413,109 @@ found:
 
 
 
-static inline bool span(unsigned short o, int w, unsigned int v) {
-    return o <= v && v <= (unsigned int) o + w;
-}
-
-static inline bool cspan(unsigned short o, int w, unsigned int v) {
-    return (unsigned int) o - w <= v && v <= (unsigned int) o + w;
-}
-
 unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
-    Array<TouchButton *> *menu = this->menuButtons;
-    if (this->quickMenuOpen != 0 && menu != 0) {
-        for (unsigned int i = 0; i < menu->size(); i++) {
-            if ((*menu)[i]->OnTouchBegin((int) x, (int) y) != 0)
-                return *(unsigned int *) (*this->menuButtons)[i];
-            menu = this->menuButtons;
+    if (this->quickMenuOpen != 0 && this->menuButtons != 0) {
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+            if ((*this->menuButtons)[i]->OnTouchBegin(x, y) != 0)
+                return (unsigned int) (*this->menuButtons)[i]->id;
         }
         return 0;
     }
-
-    int w = this->touchHalfExtent;
-    int w2 = this->touchHalfExtentSmall;
-
-    bool cinematic = *(char *) &Globals::iPad != 0;
-
-    if (cinematic) {
-        if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
-        if (this->hasBoostButton != 0 && span(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
-        if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
-        if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
-        if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
-        if (span(this->field_0x3f2, w, x) && span(this->field_0x3f4, w, y)) {
+    if (Globals::iPad) {
+        if (this->field_0x40c <= y && y <= this->field_0x40c + this->field_0x4d8 && this->field_0x40a <= x &&
+            x <= this->field_0x40a + this->field_0x4d8)
+            return 1;
+        if (this->hasBoostButton != 0 && this->field_0x412 <= y && y <= this->field_0x412 + this->field_0x4d8 &&
+            this->field_0x410 <= x && x <= this->field_0x410 + this->field_0x4d8)
+            return 2;
+        if (this->field_0x3fa <= y && y <= this->field_0x3fa + this->field_0x4d8 && this->field_0x3f8 <= x &&
+            x <= this->field_0x3f8 + this->field_0x4d8)
+            return 0x40;
+        if (this->field_0x406 <= y && y <= this->field_0x406 + this->field_0x4d8 && this->field_0x404 <= x &&
+            x <= this->field_0x404 + this->field_0x4d8)
+            return 0x100;
+        if (this->reticleX - this->field_0x4d8 <= x && x <= this->reticleX + this->field_0x4d8 &&
+            this->reticleY - this->field_0x4dc <= y && y <= this->reticleY + this->field_0x4dc)
+            return 0x20;
+        if (this->field_0x3f2 <= x && x <= this->field_0x3f2 + this->field_0x4d8 && this->field_0x3f4 <= y &&
+            y <= this->field_0x3f4 + this->field_0x4d8) {
             this->field_0x470 = 1000;
             return 0x80;
         }
-        if (cspan(this->field_0x3ec, w, x) && span(this->field_0x3ee, w, y)) return 8;
-        if (cspan(this->field_0x3e4, w2 >> 1, x) && cspan(this->field_0x3e6, w2 >> 1, y)) return 0x10;
-        if (this->quickMenuEmpty == 0 && span(this->field_0x416, this->field_0x41a, x) &&
-            span(this->field_0x418, this->field_0x41c, y))
+        if (this->field_0x3ec - (this->field_0x4d8 >> 1) <= x && x <= this->field_0x3ec + this->field_0x4d8 &&
+            this->field_0x3ee <= y && y <= this->field_0x3ee + this->field_0x4d8)
+            return 8;
+        if (this->field_0x3e4 - (this->field_0x4dc >> 1) <= x && x <= this->field_0x3e4 + (this->field_0x4dc >> 1) &&
+            this->field_0x3e6 - (this->field_0x4dc >> 1) <= y && y <= this->field_0x3e6 + (this->field_0x4dc >> 1))
+            return 0x10;
+        if (this->quickMenuEmpty == 0 && this->field_0x416 <= x && x <= this->field_0x416 + this->field_0x41a &&
+            this->field_0x418 <= y && y <= this->field_0x418 + this->field_0x41c)
             return 4;
-        if (span(this->field_0x3fe, w, x) && span(this->field_0x400, w, y)) return 0x20000000;
+        if (this->field_0x400 <= y && y <= this->field_0x400 + this->field_0x4d8 && this->field_0x3fe <= x &&
+            x <= this->field_0x3fe + this->field_0x4d8)
+            return 0x20000000;
         if (this->hackingGameActive != 0) {
-            if (span(this->field_0x454, w, x) && span(this->field_0x456, w, y)) return 0x200;
-            if (span(this->field_0x458, w, x) && span(this->field_0x45a, w, y)) return 0x400;
-            if (span(this->field_0x45e, w, x) && span(this->field_0x460, w, y)) return 0x800;
+            if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
+                x <= this->field_0x454 + this->field_0x4d8)
+                return 0x200;
+            if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
+                x <= this->field_0x458 + this->field_0x4d8)
+                return 0x400;
+            if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
+                x <= this->field_0x45e + this->field_0x4d8)
+                return 0x800;
         }
         return 0;
     }
-
     if (this->hackingGameActive != 0) {
-        if (span(this->field_0x454, w, x) && span(this->field_0x456, w, y)) return 0x200;
-        if (span(this->field_0x458, w, x) && span(this->field_0x45a, w, y)) return 0x400;
-        if (span(this->field_0x45e, w, x) && span(this->field_0x460, w, y)) return 0x800;
+        if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
+            x <= this->field_0x454 + this->field_0x4d8)
+            return 0x200;
+        if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
+            x <= this->field_0x458 + this->field_0x4d8)
+            return 0x400;
+        if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
+            x <= this->field_0x45e + this->field_0x4d8)
+            return 0x800;
     }
-
-    int screenW = *(int *) &Globals::w;
-    int screenH = *(int *) &Globals::h;
-
-    if (y < (unsigned int) (screenH >> 2)) {
-        if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
-    } else if (x < (unsigned int) (screenW >> 1)) {
-        if (this->hasBoostButton != 0 && cspan(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
-        if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
-        if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
-        if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
-    } else {
-        if (span(this->field_0x3f2, w, x) && span(this->field_0x3f4, w, y)) {
-            this->field_0x470 = 1000;
-            return 0x80;
-        }
-        if (cspan(this->field_0x3ec, w, x) && span(this->field_0x3ee, w, y)) return 8;
-        if (span(this->field_0x3e4, w2, x) && span(this->field_0x3e6, w2, y)) return 0x10;
-        if (this->quickMenuEmpty == 0 && span(this->field_0x416, this->field_0x41a, x) &&
-            span(this->field_0x418, this->field_0x41c, y))
-            return 4;
-        if (span(this->field_0x3fe, w, x) && span(this->field_0x400, w, y)) return 0x20000000;
+    if (y < (unsigned int) (Globals::h >> 2)) {
+        if (this->field_0x40c <= y && y <= this->field_0x40c + this->field_0x4d8 && this->field_0x40a <= x &&
+            x <= this->field_0x40a + this->field_0x4d8)
+            return 1;
+        return 0;
     }
+    if (x < (unsigned int) (Globals::w >> 1)) {
+        if (this->hasBoostButton != 0 && this->field_0x412 <= y && y <= this->field_0x412 + this->field_0x4d8 &&
+            this->field_0x410 - this->field_0x4d8 <= x && x <= this->field_0x410 + this->field_0x4d8)
+            return 2;
+        if (this->field_0x3fa <= y && y <= this->field_0x3fa + this->field_0x4d8 && this->field_0x3f8 <= x &&
+            x <= this->field_0x3f8 + this->field_0x4d8)
+            return 0x40;
+        if (this->field_0x406 <= y && y <= this->field_0x406 + this->field_0x4d8 && this->field_0x404 <= x &&
+            x <= this->field_0x404 + this->field_0x4d8)
+            return 0x100;
+        if (this->reticleX - this->field_0x4d8 <= x && x <= this->reticleX + this->field_0x4d8 &&
+            this->reticleY - this->field_0x4dc <= y && y <= this->reticleY + this->field_0x4dc)
+            return 0x20;
+        return 0;
+    }
+    if (this->field_0x3f2 <= x && x <= this->field_0x3f2 + this->field_0x4d8 && this->field_0x3f4 <= y &&
+        y <= this->field_0x3f4 + this->field_0x4d8) {
+        this->field_0x470 = 1000;
+        return 0x80;
+    }
+    if (x <= this->field_0x3ec + this->field_0x4d8 && this->field_0x3ec - (this->field_0x4d8 >> 1) <= x &&
+        this->field_0x3ee <= y && y <= this->field_0x3ee + this->field_0x4d8)
+        return 8;
+    if (this->field_0x3e4 <= x && x <= this->field_0x3e4 + this->field_0x4dc && this->field_0x3e6 <= y &&
+        y <= this->field_0x3e6 + this->field_0x4dc)
+        return 0x10;
+    if (this->quickMenuEmpty == 0 && this->field_0x416 <= x && x <= this->field_0x416 + this->field_0x41a &&
+        this->field_0x418 <= y && y <= this->field_0x418 + this->field_0x41c)
+        return 4;
+    if (this->field_0x400 <= y && y <= this->field_0x400 + this->field_0x4d8 && this->field_0x3fe <= x &&
+        x <= this->field_0x3fe + this->field_0x4d8)
+        return 0x20000000;
     return 0;
 }
 
@@ -816,31 +793,25 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 }
 
 void Hud::drawEventString(String text, bool rightAlign) {
-    String *font = (String *) Globals::font;
     PaintCanvas *canvas = Globals::Canvas;
-    int x;
-    if (this->letterbox == 0) {
-        int base = this->eventLineMargin;
-        int yBase = this->eventLineX;
-        if (rightAlign == 0) {
-            int w = Globals::Canvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
-            x = (base + 3) - w;
-        } else {
-            x = -3 - base;
-        }
-        x = x + yBase;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    if (this->letterbox != 0) {
+        int x;
+        if (rightAlign)
+            x = this->field_0x4f0 + 1;
+        else
+            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
     } else {
-        if (rightAlign == 0) {
-            int margin = this->eventLineMarginAlt;
-            int screenW = *(int *) &Globals::w;
-            int w = Globals::Canvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
-            x = ((screenW - 1) - margin) - w;
-        } else {
-            x = this->eventLineMarginAlt + 1;
-        }
+        int baseX = this->field_0x160;
+        int margin = this->field_0x4e8;
+        int x;
+        if (rightAlign)
+            x = -3 - margin;
+        else
+            x = margin + 3 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
     }
-    char y = (char) (this->eventLineY - 1);
-    Globals::Canvas->DrawString((unsigned) (long) (font), text, (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
@@ -849,16 +820,12 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String str) {
-    Array<ListItem *> *q = this->eventQueue;
-    int i = (int) q->size();
-    ListItem *e;
-    do {
-        i = i + -1;
-        if (i < 1)
-            return -1;
-        e = (*q)[i];
-    } while (e == 0 || ((String *) e->name)->Compare(str) != 0);
-    return i;
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
+        ListItem *e = (*this->eventQueue)[i];
+        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
+            return (int) i;
+    }
+    return -1;
 }
 
 
@@ -950,12 +917,10 @@ done:
 }
 
 unsigned int Hud::sameHudEventAsBefore(String str) {
-    int i = (int) this->eventQueue->size() - 1;
-    while (i >= 1) {
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
         ListItem *e = (*this->eventQueue)[i];
         if (e != 0 && ((String *) e->name)->Compare(str) == 0)
             return 1;
-        i--;
     }
     return 0;
 }
@@ -1238,12 +1203,10 @@ void Hud::drawPauseButton() {
         Globals::Canvas->DrawImage2D(this->pauseButtonImage, this->field_0x40a, this->field_0x40c);
 }
 
-Hud *Hud::checkIfQuickMenuIsEmpty() {
-    Ship *ship = Globals::status->getShip();
-    Array<Item *> *equip = ship->getEquipment(1);
+void Hud::checkIfQuickMenuIsEmpty() {
+    Array<Item *> *equip = Globals::status->getShip()->getEquipment(1);
     this->equipmentArray = equip;
 
-    unsigned char empty;
     bool hasSecondary = false;
     if (equip != 0) {
         for (unsigned int i = 0; i < equip->size(); i++) {
@@ -1253,120 +1216,50 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
             }
         }
     }
-    if (hasSecondary) {
-        empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
-        empty = (unsigned char) ship->hasCloak();
-    } else {
-        empty = 0;
-    }
-    this->quickMenuEmpty = empty;
-
+    if (!hasSecondary && Globals::status->getShip()->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0)
+        this->quickMenuEmpty = !Globals::status->getShip()->hasCloak();
+    else
+        this->quickMenuEmpty = 0;
     updateSecondaryWeaponString();
-    {
-        Ship *ship2 = Globals::status->getShip();
-        Array<Item *> *equip2 = ship2->getEquipment(1);
-        this->equipmentArray = equip2;
-
-        bool hasSecondary2 = false;
-        if (equip2 != 0) {
-            for (unsigned int i = 0; i < equip2->size(); i++) {
-                if ((*equip2)[i] != 0) {
-                    hasSecondary2 = true;
-                    break;
-                }
-            }
-        }
-        unsigned char empty2;
-        if (hasSecondary2) {
-            empty2 = 0;
-        } else if (ship2->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
-            empty2 = (unsigned char) (ship2->hasCloak() == 0);
-        } else {
-            empty2 = 0;
-        }
-        this->quickMenuEmpty = empty2;
-    }
-    return this;
 }
 
 
-static const char g_Hud_dmPrefix[1] = {0};
-
 void Hud::drawMenu(int unused) {
     (void) unused;
-    int *layout = (int *) Globals::layout;
-    ((Layout *) (layout))->drawMask();
-
-    Globals::Canvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
-
-    int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
-    char hy = (char) ((char) this->menuOriginYBase + (char) this->menuOriginY + (char) (this->menuRowHeight / 2)
-                      - (char) layout[0x8b]);
-    Globals::Canvas->DrawImage2D((unsigned) this->pauseButtonImage, hx, hy, (unsigned char) 0x11);
-
-    int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
-
+    Globals::layout->drawMask();
+    Globals::Canvas->DrawImage2D(this->quickMenuTopImage, this->field_0x3c4 + this->field_0x4cc,
+                                 this->field_0x4d0 + this->menuOriginY);
+    Globals::Canvas->DrawImage2D(this->image_0x35c, this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2,
+                                 this->menuOriginY + this->field_0x4d0 + this->menuRowHeight / 2 -
+                                     Globals::layout->quickMenuHeaderLift,
+                                 0x11, 0x44);
+    int y = this->menuOriginY + this->field_0x4d0 + this->menuRowHeight;
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        unsigned int count = (unsigned int) this->menuButtons->size();
-        for (unsigned int i = 0; i < count - 1; i++) {
-            Globals::Canvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX,
-                                         0);
+        for (unsigned int i = 0; i < this->menuButtons->size() - 1; i++) {
+            Globals::Canvas->DrawImage2D(this->quickMenuMiddleImage, this->field_0x3c4 + this->field_0x4cc, y);
             y += this->field_0x3d0;
-            count = (unsigned int) this->menuButtons->size();
         }
     }
-
-    Globals::Canvas->DrawImage2D((unsigned) this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
-
+    Globals::Canvas->DrawImage2D(this->quickMenuBottomImage, this->field_0x3c4 + this->field_0x4cc, y);
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        unsigned int n = (unsigned int) this->menuButtons->size();
-        for (unsigned int i = 0; i < n; i++) {
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++)
             (*this->menuButtons)[i]->draw();
-            n = (unsigned int) this->menuButtons->size();
-        }
     }
-
-    if (this->menuType != 0) return;
-
-    Ship *ship = Globals::status->getShip();
-    if (!ship->hasCloak() && ship->hasJumpDrive() == 0) return;
-
-    char prefix[12], num[12], label[12];
-    ((String *) (prefix))->ctor_char(g_Hud_dmPrefix, false);
-    ((String *) (num))->Set((long long) (this->fuelGaugeValue));
-    *(String *) label = *(String *) prefix + *(String *) num;
-    {
-        String *_s = ((String *) (num));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (prefix));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
-    unsigned char gy = (unsigned char) ((char) y + (char) (layout[0xc] / 2)
-                                        + (char) layout[0xa2]);
-    Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeBarImage, gx, gy, (unsigned char) 0x11);
-    Globals::Canvas->DrawImage2D((unsigned) this->fuelGaugeIconImage, gx - layout[0x8c],
-                                 (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
-
-    int barW = layout[0x8c];
-    String *font = (String *) Globals::font;
-    int ih = Globals::Canvas->GetImage2DHeight((unsigned) (0));
-    int th = Globals::Canvas->GetTextHeight(0);
-    char ty = (char) (((gy + (char) (ih / 2)) - (char) (th / 2)) + (char) layout[0x8d]);
-    Globals::Canvas->DrawString((unsigned) (long) (font), *(String *) (label), (barW + gx), (ty), false);
-    {
-        String *_s = ((String *) (label));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
+    if (this->menuType != 0)
+        return;
+    if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
+        String label = String("X ") + String(this->fuelGaugeValue);
+        int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+        int gy = y + Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x288;
+        Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
+        Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
+                                     Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
+                                     0x12);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, label, Globals::layout->quickMenuIconGap + gx,
+                                    gy + Globals::Canvas->GetImage2DHeight(this->image_0x374) / 2 -
+                                        Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                        Globals::layout->field_0x234,
+                                    false);
     }
 }
 
@@ -1414,21 +1307,21 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(308);
             break;
         case 28:
-            this->field_0x464 = 0;
             this->field_0x276 = 1;
+            this->field_0x464 = 0;
             return;
         case 34:
             this->field_0x1e0 = *Globals::gameText->getText(3199);
             break;
         case 35:
-            this->field_0x468 = 0;
             this->field_0x27a = 1;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 0;
             return;
         case 39:
-            this->field_0x468 = 0;
             this->field_0x27a = 0;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 0;
             return;
@@ -1501,8 +1394,8 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(544);
             break;
         case 25:
-            this->field_0x464 = 0;
             this->field_0x277 = 1;
+            this->field_0x464 = 0;
             return;
         case 26:
             this->field_0x277 = 0;
@@ -1527,14 +1420,14 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(39);
             break;
         case 37:
-            this->field_0x468 = 0;
             this->field_0x27a = 1;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 1;
             return;
         case 41:
-            this->field_0x468 = 0;
             this->field_0x27a = 0;
+            this->field_0x468 = 0;
             this->weaponSelectState = 1;
             this->field_0x279 = 1;
             break;
@@ -1560,232 +1453,92 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     else
         item = new ListItem(new String(this->field_0x1e0));
     this->addToEventQueue(item);
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
     this->eventScrolls = 0;
     this->field_0x1dc[2] = 1;
-    this->letterbox = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
-                      Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->letterbox = wide;
 }
 
 
-
-static const char g_Hud_csZero[1] = {0};
 
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
-    int *layout = (int *) Globals::layout;
-    int *status = (int *) Globals::status;
-    int screenW = *(int *) &Globals::w;
-    Sprite *sprite = this->digitSprite;
-
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int fw = ((Sprite *) (sprite))->getFrameWidth();
-    int pad = layout[0xb];
-    int fh = ((Sprite *) (sprite))->getFrameHeight();
-    int y = layout[0xb];
-
-    char score[12];
-    ((String *) (score))->Set((long long) (status[0x61]));
-    int slen = (int) ((String *) score)->size();
-    if (slen < 7) {
-        for (int k = 0; k < 7 - slen; k++) {
-            char z[12], acc[12];
-            ((String *) (z))->ctor_char(g_Hud_csZero, false);
-            *(String *) acc = *(String *) z + *(String *) score;
-            *((String *) (score)) = *((String *) (acc));
-            {
-                String *_s = ((String *) (acc));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (z));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-        }
+    Globals::Canvas->SetColor(0xffffffff);
+    int digitW = this->digitSprite->getFrameWidth();
+    int overlap = Globals::layout->field_0x2c_rowHeight;
+    int digitH = this->digitSprite->getFrameHeight();
+    int y = Globals::layout->field_0x2c_rowHeight;
+    int screenW = Globals::w;
+    String score(Globals::status->field_0x184);
+    if (score.size() < 7) {
+        int pad = 7 - score.size();
+        for (int i = 0; i < pad; i++)
+            score = String("0") + score;
     }
-
-    Globals::Canvas->SetColor((unsigned) (-1));
-    int dw = fw - pad;
+    Globals::Canvas->SetColor(0x77ccffff);
+    int step = digitW - overlap;
     int half = screenW / 2;
-    int span = (dw * 7) / 2;
-    int startX = half - span;
-    {
-        int len = (int) ((String *) score)->size();
-        int x = startX;
-        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-            char ch[12];
-            *((String *) (ch)) = ((String *) score)->SubString(i - 1, i);
-            int frame = ((String *) (ch))->ValueOf();
-            {
-                String *_s = ((String *) (ch));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            ((Sprite *) (sprite))->setFrame(frame);
-            ((Sprite *) (sprite))->setPosition(x, y);
-            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-            x += dw;
-        }
+    int span = step * 7 / 2;
+    int left = half - span;
+    int x = left;
+    for (unsigned int i = 0; i < score.size(); i++) {
+        int frame = score.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+        this->digitSprite->setPosition(x, y);
+        this->digitSprite->draw(1.0f, 1.0f);
+        x += step;
     }
-
-    if (status[0x60] > 0 && status[0x63] > 1) {
-        Globals::Canvas->SetColor((unsigned) (-1));
-        int yRow = y + fh + pad;
-        int scoreVal = status[0x60];
-        if (scoreVal < 0xbb9) {
-            if (scoreVal % 100 >= 0x32) {
-                int mult = status[0x63];
-                float bonus = (float) mult;
-                float base = (float) (mult * 1000);
-                char bonusStr[12];
-                ((String *) (bonusStr))->Set((long long) (int) ((bonus * 0.0f + 1.0f) * base));
-                int bl = (int) ((String *) bonusStr)->size();
-                int bx = (screenW / 2 - ((bl * dw) >> 1));
-                int bonusY = fh + yRow + pad;
-                int len = (int) ((String *) bonusStr)->size();
-                int x = bx;
-                for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-                    char ch[12];
-                    *((String *) (ch)) = ((String *) bonusStr)->SubString(i - 1, i);
-                    int frame = ((String *) (ch))->ValueOf();
-                    {
-                        String *_s = ((String *) (ch));
-                        if (_s->data) delete[] _s->data;
-                        _s->data = nullptr;
-                        _s->length = 0;
-                    }
-                    ((Sprite *) (sprite))->setFrame(frame);
-                    ((Sprite *) (sprite))->setPosition(x, bonusY);
-                    ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-                    x += dw;
-                }
-                {
-                    String *_s = ((String *) (bonusStr));
-                    if (_s->data) delete[] _s->data;
-                    _s->data = nullptr;
-                    _s->length = 0;
-                }
+    if (Globals::status->field_0x180 > 0 && Globals::status->field_0x18c >= 2) {
+        Globals::Canvas->SetColor(0xffffffff);
+        int rowGap = Globals::layout->field_0x2c_rowHeight;
+        y = y + digitH + rowGap;
+        if (Globals::status->field_0x180 <= 3000) {
+            if (Globals::status->field_0x180 % 100 < 50)
+                return;
+            int multiplier = Globals::status->field_0x18c;
+            String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
+            int bonusY = digitH + y;
+            int offset = 0;
+            for (unsigned int i = 0; i < bonus.size(); i++) {
+                int frame = bonus.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+                this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
+                                               bonusY + Globals::layout->field_0x2c_rowHeight);
+                offset += step;
+                this->digitSprite->draw(1.0f, 1.0f);
             }
         }
-        Globals::Canvas->DrawImage2D((unsigned) this->multiplierIconImage, pad + startX, 0);
-
-        char timeStr[12];
-        ((String *) (timeStr))->Set((long long) (status[0x63]));
-        int tx = (half + pad) - span + Globals::Canvas->GetImage2DWidth((unsigned) (0));
-        int len = (int) ((String *) timeStr)->size();
-        int x = tx;
-        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-            char ch[12];
-            *((String *) (ch)) = ((String *) timeStr)->SubString(i - 1, i);
-            int frame = ((String *) (ch))->ValueOf();
-            {
-                String *_s = ((String *) (ch));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            ((Sprite *) (sprite))->setFrame(frame);
-            ((Sprite *) (sprite))->setPosition(x, yRow);
-            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-            x += dw;
-        }
-        {
-            String *_s = ((String *) (timeStr));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
+        Globals::Canvas->DrawImage2D(this->multiplierIconImage, rowGap + left, y);
+        float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
+        float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
+        String multiplier(Globals::status->field_0x18c);
+        int mx = half + rowGap - span;
+        for (unsigned int i = 0; i < multiplier.size(); i++) {
+            int frame = multiplier.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
+            mx += step;
+            this->digitSprite->draw(scale, scale);
         }
     }
-    Globals::Canvas->SetColor((unsigned) (-1));
-    {
-        String *_s = ((String *) (score));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
 
 
-static const char g_Hud_meSep[1] = {0};
-static const char g_Hud_meEnd[1] = {0};
-
 void Hud::hudEventMedal(int medalId, int percent) {
-    GameText *gt = Globals::gameText;
-    String *name = gt->getText(medalId + 0x5e3);
-
-    char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
-    ((String *) (sep))->ctor_char(g_Hud_meSep, false);
-    *(String *) acc1 = *(String *) name + *(String *) sep;
-    if (percent >= 100) percent = 100;
-    ((String *) (num))->Set((long long) (percent));
-    *(String *) acc2 = *(String *) acc1 + *(String *) num;
-    ((String *) (end))->ctor_char(g_Hud_meEnd, false);
-    *(String *) acc3 = *(String *) acc2 + *(String *) end;
-
-    String *dst = &this->field_0x1e0;
-    *((String *) (dst)) = *((String *) (acc3));
-    {
-        String *_s = ((String *) (acc3));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (end));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc2));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (num));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (acc1));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (sep));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    char probe[12];
-    ((String *) (probe))->Set(((String *) (dst))->data);
-    int same = sameHudEventAsBefore(*(String *) probe);
-    {
-        String *_s = ((String *) (probe));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    if (same != 0) return;
-
-    String *str = new String(*(String *) dst);
-    ListItem *item = new ListItem(str, 3);
-    addToEventQueue(item);
-
-    int w = Globals::Canvas->GetTextWidth((unsigned) (long) (Globals::Canvas), *(String *) ((String *) Globals::font));
-    int screenW = *(int *) &Globals::w;
-    this->eventScrollTick = 0;
-    this->eventScrolls = 1;
-    this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
+    if (percent >= 100)
+        percent = 100;
+    this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
+    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)) != 0)
+        return;
+    this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->eventScrolls = 0;
+    this->field_0x1dc[2] = 1;
+    this->letterbox = wide;
 }
 
 

@@ -17,15 +17,15 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BumpMapping : public ShaderBaseStruct {
     public:
-        int a0Loc;
-        int a1Loc;
-        int a2Loc;
-        int a3Loc;
-        int a4Loc;
-        int u0Loc;
-        int u1Loc;
-        int u2Loc;
-        int u3Loc;
+        int aPositionLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
+        int aTexCoordLoc;
+        int uWorldMatrixLoc;
+        int uLightposmodelLoc;
+        int sTextureBaseLoc;
+        int sTextureNormalLoc;
 
         static int ShaderIndex;
 

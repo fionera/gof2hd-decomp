@@ -17,13 +17,13 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class MaskShader : public ShaderBaseStruct {
     public:
-        int a_position;
-        int a_texCoord;
-        int a_color;
-        int u_mvpMatrix;
-        int u_texture0;
-        int u_texture1;
-        int u_color;
+        int aPositionLoc;
+        int aTexCoord0Loc;
+        int aTexCoord1Loc;
+        int uWorldMatrixLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uGlColorLoc;
 
         static int ShaderIndex;
 

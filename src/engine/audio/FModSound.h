@@ -94,13 +94,13 @@ public:
 
     void disableReverb();
 
-    int init();
+    void init();
 
     unsigned isChannelActive(int p1);
 
     void playMusicFadeOutCurrent(int p1);
 
-    void getParam(const char *name, int idx);
+    FMOD::EventParameter *getParam(const char *name, int idx);
 
     void updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up);
 
