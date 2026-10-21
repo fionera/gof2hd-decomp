@@ -1877,71 +1877,48 @@ namespace AbyssEngine {
         if (sys == 0)
             return;
 
-        Mesh *mesh = sys->mesh;
-        float *vbuf = (float *) mesh->positions;
+        float *vertices = (float *) sys->mesh->positions;
+        Matrix combined = view * world;  // computed by the original as well; the quads use `world`
 
-        Matrix mv;
-        AE_AEMath_matMul(&mv, &view);
+        unsigned short sizeIndex = 0;
+        unsigned short positionIndex = 0;
+        for (unsigned short q = 0; q < sys->count * 12; q += 12) {
+            const float *p = sys->posCpu + positionIndex;
+            positionIndex += 3;
+            float half = (float) (sys->sizeCpu[sizeIndex] >> 1);
+            sizeIndex += sys->sharedSize ^ 1;
 
-        unsigned short count = sys->count;
-        unsigned char sharedSize = sys->sharedSize;
-        float *posCpu = sys->posCpu;
-        short *sizeCpu = sys->sizeCpu;
-        const float *W = world;
+            float x = world.m[0] * p[0] + world.m[1] * p[1] + world.m[2] * p[2] + world.m[3];
+            float y = p[0] * world.m[4] + p[1] * world.m[5] + p[2] * world.m[6] + world.m[7];
+            float z = p[0] * world.m[8] + p[1] * world.m[9] + p[2] * world.m[10] + world.m[11];
 
-        unsigned short sizeIdx = 0;
-        unsigned short posIdx = 0;
-        for (unsigned short q = 0; q < count * 0xc; q += 0xc) {
-            float *p = posCpu + (unsigned int) posIdx;
-            posIdx = posIdx + 3;
-            float px = p[0], py = p[1], pz = p[2];
-
-            unsigned int si = sizeIdx;
-            sizeIdx = (unsigned short) (((sharedSize ^ 1) & 0xff) + sizeIdx);
-            float half = (float) ((int) sizeCpu[si] >> 1);
-
-            float cx = W[0xc / 4 + 0] + W[4 / 4] * py + W[0] * px + W[8 / 4] * pz;
-            float cy = W[0x1c / 4] + py * W[0x14 / 4] + px * W[0x10 / 4] + pz * W[0x18 / 4];
-            float cz = W[0x2c / 4] + py * W[0x24 / 4] + px * W[0x20 / 4] + pz * W[0x28 / 4];
-
-            float left = cx - half, right = cx + half;
-            float bottom = cy - half, top = cy + half;
-
-            float *out = vbuf + q;
-            out[0] = left;
-            out[1] = bottom;
-            out[2] = cz;
-            out[3] = right;
-            out[4] = bottom;
-            out[5] = cz;
-            out[6] = right;
-            out[7] = top;
-            out[8] = cz;
-            out[9] = left;
-            out[10] = top;
-            out[11] = cz;
+            float *quad = vertices + q;
+            quad[0] = x - half;
+            quad[1] = y - half;
+            quad[2] = z;
+            quad[3] = x + half;
+            quad[4] = y - half;
+            quad[5] = z;
+            quad[6] = x + half;
+            quad[7] = y + half;
+            quad[8] = z;
+            quad[9] = x - half;
+            quad[10] = y + half;
+            quad[11] = z;
         }
 
+        Mesh *mesh = sys->mesh;
         if (mesh->material == 0) {
             MeshDraw(engine, mesh);
-        } else {
-            Material *batch = (Material *) mesh->material;
-            ArrayAddCachedRaw<Mesh *>(mesh, (EngineArrayHeader *) &batch->meshes);
-
-            const float *v = view;
-            AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
-                                       f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
-                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) & batch->arr_2c);
-            unsigned int one = 0x3f800000;
-            unsigned int negOne = 0xbf800000;
-            AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
-                                       one, one, one, (int) (intptr_t) & batch->arr_38);
-            const float *w = world;
-            AE_SpriteSystem_pushMatrix(f2u(w[0]), f2u(w[1]), f2u(w[2]), f2u(w[3]), f2u(w[4]), f2u(w[5]),
-                                       f2u(w[6]), f2u(w[7]), f2u(w[8]), f2u(w[9]), f2u(w[10]), f2u(w[11]),
-                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) & batch->arr_5c);
-            ArrayAddCachedRaw<unsigned int>(0xffffffff, (EngineArrayHeader *) &batch->arr_50);
+            return;
         }
+        ArrayAddCached(mesh, mesh->material->meshes);
+        ArrayAddCached(view, sys->mesh->material->arr_2c);
+        Matrix flipY;
+        flipY.m[5] = -1.0f;
+        ArrayAddCached(flipY, sys->mesh->material->arr_38);
+        ArrayAddCached(world, sys->mesh->material->arr_5c);
+        ArrayAddCached(0xffffffffu, sys->mesh->material->arr_50);
     }
 }
 
