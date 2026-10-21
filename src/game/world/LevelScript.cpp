@@ -307,7 +307,7 @@ int LevelScript::process(int delta) {
                 m_nState = 4;
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
-                m_pRadar->field_0x58 = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
                 m_pLevel->getPlayer()->setCollide(true);
                 m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
@@ -332,7 +332,7 @@ int LevelScript::process(int delta) {
                 player->hideShipForFirstPersonCameraView(false);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pLevel->getPlayer()->setCollide(false);
-                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
+                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 player->player->removeAllGuns();
                 m_pCamera->setLookAtCam(true);
@@ -832,7 +832,7 @@ int LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     m_pCamera->setLookAtCam(false);
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nScriptTimerA = 0;
@@ -1194,7 +1194,7 @@ int LevelScript::process(int delta) {
                         player->setFreeze(false);
                         player->setVisible(true);
                         m_pHud->visible = 1;      // m_pHud byte @0x1 = 1
-                        m_pRadar->field_0x58 = 1; // m_pRadar byte @0x48 = 1
+                        m_pRadar->enabled = 1; // m_pRadar byte @0x48 = 1
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pRadar->lockedEnemy = nullptr; // 0x13f8f2 strd zeroes m_pRadar+4/+8
@@ -1280,7 +1280,7 @@ int LevelScript::process(int delta) {
                 player->setFreeze(true);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the siblings exit zero)
+                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings exit zero)
                 m_pCamera->setLookAtCam(true);
                 m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                 Vector *camPos = &m_tempVec; // LevelScript tempVec @0x28
@@ -1319,7 +1319,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48
+                    m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48
                     player->setComputerControlled(false);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1349,7 +1349,7 @@ int LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ byte @0x11
@@ -1412,7 +1412,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1438,7 +1438,7 @@ int LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     (*enemies)[10]->setPosition(500000.0f, 500000.0f, 500000.0f); // vtable+0x48 [slot 18]
@@ -1501,7 +1501,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1530,7 +1530,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1553,7 +1553,7 @@ int LevelScript::process(int delta) {
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         m_pHud->visible = 1;
-                        m_pRadar->field_0x58 = 1;
+                        m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
@@ -1579,7 +1579,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1606,7 +1606,7 @@ int LevelScript::process(int delta) {
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
@@ -1754,7 +1754,7 @@ int LevelScript::process(int delta) {
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     player->stopShooting(0);
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     m_pLevel->flashScreen(3);
                     player->setComputerControlled(true);
                     player->setSpeed(0.0f);
@@ -1787,7 +1787,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_pHud->visible = 0;
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -1832,7 +1832,7 @@ int LevelScript::process(int delta) {
                     // pre-position the exit wormhole ahead of the player, then clear everyone's enemy list.
                     player->stopShooting(0);
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(false);
                     player->player->setVulnerable(false);
                     player->geometry->setRotation(0.0f, 1.5707964f, 0.0f); // yaw = pi/2 @0x13ed8c
@@ -1899,7 +1899,7 @@ int LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->player->setVulnerable(false);
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pCamera->setLookAtCam(true);
@@ -1937,7 +1937,7 @@ int LevelScript::process(int delta) {
                     m_nState = 2;
                     m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                     m_pCamera->setLookAtCam(false);
                     player->setComputerControlled(false);
@@ -1973,7 +1973,7 @@ int LevelScript::process(int delta) {
                         }
                         m_pCamera->setTarget(player->geometry); // 0x13e6f8
                         m_pHud->visible = 1;      // [m_pHud+1] = 1  (0x13e702)
-                        m_pRadar->field_0x58 = 1; // [m_pRadar+0x48] = 1 (0x13e708)
+                        m_pRadar->enabled = 1; // [m_pRadar+0x48] = 1 (0x13e708)
                         m_nFlags = m_nFlags & 0xFF; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                         m_pCamera->setLookAtCam(false);          // 0x13e712
                         player->setComputerControlled(false);    // 0x13e71a
@@ -2059,7 +2059,7 @@ int LevelScript::process(int delta) {
                 player->hideShipForFirstPersonCameraView(false);
                 player->player->setVulnerable(false);
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
+                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
                 player->stopShooting(0);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pCamera->setLookAtCam(true);
@@ -2085,7 +2085,7 @@ int LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);    // 0x13e42c
                     player->stopShooting(0);                            // 0x13e434
                     m_pHud->visible = 0;                                // [m_pHud+1] = 0  (0x13e444)
-                    m_pRadar->field_0x58 = 0;                           // [m_pRadar+0x48] = 0 (0x13e44c)
+                    m_pRadar->enabled = 0;                           // [m_pRadar+0x48] = 0 (0x13e44c)
                     m_nFlags = (m_nFlags & 0xFF) | 0x100;               // strb 1 -> this+0x11 cinematicBreak (0x13e452)
                     m_pCamera->setLookAtCam(true);                      // 0x13e454
                     player->setComputerControlled(true);               // 0x13e45c
@@ -2278,7 +2278,7 @@ int LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);           // 0x13c25e
                     player->hideShipForFirstPersonCameraView(false);  // 0x13c266
                     m_pHud->visible = 0;                              // strb 0 @[sl+0xd0]+1
-                    m_pRadar->field_0x58 = 0;                         // strb 0 @[sl+0xd4]+0x48
+                    m_pRadar->enabled = 0;                         // strb 0 @[sl+0xd4]+0x48
                     m_nFlags = (m_nFlags & 0xFF) | 0x100;             // field_0x11 (cinematic break) = 1
                     m_pCamera->setLookAtCam(true);                    // 0x13c284
                     player->setComputerControlled(true);              // 0x13c28c
@@ -2406,7 +2406,7 @@ int LevelScript::process(int delta) {
                     player->setComputerControlled(false);
                     player->freeze = 0;
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;
+                    m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nFlags = (uint16_t) (m_nFlags & 0x00ff); // field_0x11 (cinematic break) = 0
@@ -2557,7 +2557,7 @@ int LevelScript::process(int delta) {
                         player->setComputerControlled(false); // 0x141420
                         player->freeze = 0;                   // 0x141428 (player+0x24)
                         m_pHud->visible = 1;                  // 0x14142c ([this+0xd0]+1)
-                        m_pRadar->field_0x58 = 1;             // 0x141434 ([this+0xd4]+0x48)
+                        m_pRadar->enabled = 1;             // 0x141434 ([this+0xd4]+0x48)
                         resetCamera(m_pLevel);                // 0x14143c
                         m_pLevel->lodManager->forceUpdate(delta, false); // 0x141444
                         m_pGeometry0->setVisible(false);      // 0x141450 (this+0xb8)
@@ -2583,7 +2583,7 @@ int LevelScript::process(int delta) {
                         player->stopShooting(0);              // 0x141824
                         m_nFlags = (m_nFlags & 0xFF) | 0x100; // 0x141832 (cinematic break = 1)
                         m_pHud->visible = 0;                  // 0x141836 ([this+0xd0]+1)
-                        m_pRadar->field_0x58 = 0;             // 0x14183e ([this+0xd4]+0x48)
+                        m_pRadar->enabled = 0;             // 0x14183e ([this+0xd4]+0x48)
                         player->setComputerControlled(true);  // 0x141842
                         player->freeze = 1;                   // 0x141848 (player+0x24)
                         m_pCamera->setLookAtCam(true);        // 0x14184e
@@ -2613,7 +2613,7 @@ int LevelScript::process(int delta) {
                 player->stopShooting(0);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0;
+                m_pRadar->enabled = 0;
                 player->setComputerControlled(true);
                 player->freeze = 1; // PlayerEgo+0x24 (byte flag): freeze the ship for the cutscene
                 m_pCamera->setLookAtCam(true);
@@ -2735,7 +2735,7 @@ int LevelScript::process(int delta) {
                         player->stopShooting(0);
                         m_pHud->visible = 0;                             // strb 0 -> m_pHud+1
                         m_nFlags = (uint16_t) ((m_nFlags & 0xFF) | 0x100); // cinematicBreak_ = 1 (@0x11)
-                        m_pRadar->field_0x58 = 0;                       // strb 0 -> m_pRadar+0x48
+                        m_pRadar->enabled = 0;                       // strb 0 -> m_pRadar+0x48
                         player->setComputerControlled(true);
                         player->setCollide(false);
                         m_pCamera->setLookAtCam(true);
@@ -2861,7 +2861,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
 
                     AEGeometry *geo = (*enemies)[0]->geometry;
                     m_pCamera->setTarget(geo);
@@ -3034,7 +3034,7 @@ int LevelScript::process(int delta) {
                     // shared look-behind tail (0x144fe2): re-show HUD/radar, force a LOD update,
                     // clear the cinematic-break flag, reset timer-A and advance the state.
                     m_pHud->visible = 1;
-                    m_pRadar->field_0x58 = 1;   // radar+0x48
+                    m_pRadar->enabled = 1;   // radar+0x48
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nFlags &= 0xFF;           // clear cinematicBreak_ (m_nFlags high byte @0x11)
                     m_nScriptTimerA = 0;
@@ -3074,7 +3074,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;             // radar+0x48
+                    m_pRadar->enabled = 0;             // radar+0x48
                     player->player->setVulnerable(false);
                     player->setComputerControlled(true);
                     player->setCollide(false);
@@ -3142,7 +3142,7 @@ int LevelScript::process(int delta) {
                     Vector reframe = camPos - dir * 2400.0f; // pool 0x143960 = 0x45160000 (0x1437e2..0x1437f0)
                     m_pCamera->setPosition(reframe); // 0x1437f8
                     m_pHud->visible = 1;             // [r5+0xd0]+1 (0x143802)
-                    m_pRadar->field_0x58 = 1;        // [r5+0xd4]+0x48 (0x143808)
+                    m_pRadar->enabled = 1;        // [r5+0xd4]+0x48 (0x143808)
                     resetCamera(m_pLevel);           // 0x14380e
                     m_pLevel->lodManager->forceUpdate(delta, false); // 0x14381c
                     player->setComputerControlled(false); // 0x143824
@@ -3198,7 +3198,7 @@ int LevelScript::process(int delta) {
                     // shared teardown (0x143cd8): restore HUD/radar, refresh LOD, clear the
                     // cinematic-break flag, reset the script timer, stop the music, advance state.
                     m_pHud->visible = 1;                             // [r6+0xd0]+1 = 1, 0x143ce2
-                    m_pRadar->field_0x58 = 1;                        // [r6+0xd4]+0x48 = 1, 0x143ce8
+                    m_pRadar->enabled = 1;                        // [r6+0xd4]+0x48 = 1, 0x143ce8
                     m_pLevel->lodManager->forceUpdate(delta, false); // 0x143cf2
                     m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x143cf8
                     m_nScriptTimerA = 0;                             // strd 0,0 [r8], 0x143cfc
@@ -3262,7 +3262,7 @@ int LevelScript::process(int delta) {
                 player->stopShooting(0);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
+                m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the sibling exits zero)
                 m_pCamera->setLookAtCam(true);
                 AEGeometry *geo94 = (*enemies)[0]->geometry;
                 m_pCamera->setTarget(geo94);
@@ -3313,7 +3313,7 @@ int LevelScript::process(int delta) {
                             m_pCamera->setPosition(player->getPosition()
                                                    - player->GetDirVector() * 2400.0f); // 0x143b7a..0x143ba4
                             m_pHud->visible = 1;                                      // [fp+0xd0]+1 = 1, 0x143bae
-                            m_pRadar->field_0x58 = 1;                                 // [fp+0xd4]+0x48 = 1, 0x143bb4
+                            m_pRadar->enabled = 1;                                 // [fp+0xd4]+0x48 = 1, 0x143bb4
                             resetCamera(m_pLevel);                                    // 0x143bbe
                             m_pLevel->lodManager->forceUpdate(delta, false);          // 0x143bcc
                             m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x143bd2
@@ -3413,7 +3413,7 @@ int LevelScript::process(int delta) {
                         player->stopShooting(0);                                 // 0x140dce
                         m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ = 1 (byte @0x11), 0x140dd6
                         m_pHud->visible = 0;                                     // [fp+0xd0]+1 = 0, 0x140dda
-                        m_pRadar->field_0x58 = 0;                                // [fp+0xd4]+0x48 = 0, 0x140de0
+                        m_pRadar->enabled = 0;                                // [fp+0xd4]+0x48 = 0, 0x140de0
                         AEGeometry *leadGeo = (*enemies)[firstIdx]->parentGeometry; // [elem+8], 0x140dee
                         m_pCamera->setTarget(leadGeo);                           // 0x140df2
                         *acc = leadGeo->getPosition();                           // op= 0x140e0e
@@ -3508,7 +3508,7 @@ int LevelScript::process(int delta) {
                         m_pCamera->setPosition(player->getPosition()
                                                - player->GetDirVector() * 2400.0f); // 0x140884..0x1408ae
                         m_pHud->visible = 1;                 // [fp+0xd0]+1 = 1, 0x1408b6
-                        m_pRadar->field_0x58 = 1;            // [fp+0xd4]+0x48 = 1, 0x1408be
+                        m_pRadar->enabled = 1;            // [fp+0xd4]+0x48 = 1, 0x1408be
                         resetCamera(m_pLevel);               // 0x1408c6
                         m_pLevel->lodManager->forceUpdate(delta, false); // 0x1408d2
                         m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x1408d8
@@ -3596,7 +3596,7 @@ int LevelScript::process(int delta) {
                         player->player->setVulnerable(false); // [player+0]=player->player, 0x143a78
                         m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ = 1 (byte @0x11), 0x143a82
                         m_pHud->visible = 0;                // [fp+0xd0]+1 = 0, 0x143a86
-                        m_pRadar->field_0x58 = 0;           // [fp+0xd4]+0x48 = 0, 0x143a8e
+                        m_pRadar->enabled = 0;           // [fp+0xd4]+0x48 = 0, 0x143a8e
                         m_pCamera->setLookAtCam(false);     // 0x143a94
                         // Reframe the camera on the lead escort (enemies[0]): its parentGeometry becomes
                         // the target, and the camera is seated at enemies[0]->getPosition() + {-7000, 9000,
@@ -3681,7 +3681,7 @@ int LevelScript::process(int delta) {
                         m_pCamera->setPosition(player->getPosition()
                                                - player->GetDirVector() * 100.0f); // 0x140f98..0x140fce
                         m_pHud->visible = 1;                     // [r5+0xd0]+1 = 1, 0x140fd2/d8
-                        m_pRadar->field_0x58 = 1;                // [r5+0xd4]+0x48 = 1, 0x140fda/de
+                        m_pRadar->enabled = 1;                // [r5+0xd4]+0x48 = 1, 0x140fda/de
                         resetCamera(m_pLevel);                   // [r5+0x18]=m_pLevel, 0x140fe6
                         m_pLevel->lodManager->forceUpdate(delta, false); // 0x140ff2
                         m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x140ff6
@@ -3715,7 +3715,7 @@ int LevelScript::process(int delta) {
                 player->player->setVulnerable(false);
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0;
+                m_pRadar->enabled = 0;
                 m_pCamera->setLookAtCam(true);
                 m_pCamera->setTarget((*enemies)[0]->geometry);
                 Vector camPos = (*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f};
@@ -3926,7 +3926,7 @@ int LevelScript::process(int delta) {
                         player->setComputerControlled(false);
                         m_pCamera->setLookAtCam(false);
                         m_pHud->visible = 1;
-                        m_pRadar->field_0x58 = 1; // radar restore flag @0x48
+                        m_pRadar->enabled = 1; // radar restore flag @0x48
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (m_nFlags high byte @0x11)
@@ -4007,7 +4007,7 @@ int LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ high byte @0x11 = 1
                     m_pHud->visible = 0;
-                    m_pRadar->field_0x58 = 0;
+                    m_pRadar->enabled = 0;
                     m_pCamera->setTarget((*enemies)[2]->geometry);
                     // Reframe (0x142618): camPos = escort2 pos + dir*6800 + right*1200 + up*400.
                     AEGeometry *ref2 = (*enemies)[2]->geometry;
@@ -4070,7 +4070,7 @@ int LevelScript::process(int delta) {
                         Vector playerDir = player->GetDirVector();
                         m_pCamera->setPosition(playerPos - playerDir * 2400.0f);
                         m_pHud->visible = 1;
-                        m_pRadar->field_0x58 = 1;
+                        m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (byte @0x11 = 0)
@@ -4142,7 +4142,7 @@ int LevelScript::process(int delta) {
                         player->hideShipForFirstPersonCameraView(false);
                         player->player->setVulnerable(false);
                         m_pHud->visible = 0;
-                        m_pRadar->field_0x58 = 0;   // radar+0x48
+                        m_pRadar->enabled = 0;   // radar+0x48
                         player->stopShooting(0);
                         m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                         m_pCamera->setLookAtCam(true);
@@ -4538,7 +4538,7 @@ int LevelScript::process(int delta) {
                                 player->player->setVulnerable(true); // 0x1449ba
                                 player->setPosition(0.0f, 0.0f, 90000.0f); // 0x1449c6 z=0x47afc800
                                 m_pHud->visible = 1;                 // 0x1449ce strb 1 -> [m_pHud+1]
-                                m_pRadar->field_0x58 = 1;            // 0x1449d6 strb 1 -> [m_pRadar+0x48]
+                                m_pRadar->enabled = 1;            // 0x1449d6 strb 1 -> [m_pRadar+0x48]
                                 resetCamera(m_pLevel);               // 0x1449e0
                                 m_pLevel->lodManager->forceUpdate(delta, false); // 0x1449ee
                                 m_nFlags = m_nFlags & 0xFF; // clear cinematicBreak_ (high byte @0x11), 0x1449f6
@@ -4615,7 +4615,7 @@ int LevelScript::process(int delta) {
                 }
                 m_nFlags = (m_nFlags & 0xFF) | 0x100; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pHud->visible = 0;
-                m_pRadar->field_0x58 = 0;
+                m_pRadar->enabled = 0;
                 m_pCamera->setLookAtCam(true);
                 m_pCamera->setTarget((*m_pLevel->getEnemies())[2]->geometry);
                 Vector *camPos = &m_tempVec; // LevelScript tempVec @0x28
@@ -4770,7 +4770,7 @@ int LevelScript::process(int delta) {
                         player->setVisible(true);
                         player->setSpeed(2.0f);          // 0x40000000
                         m_pHud->visible = 1;             // m_pHud byte @0x1 = 1
-                        m_pRadar->field_0x58 = 1;        // m_pRadar byte @0x48 = 1
+                        m_pRadar->enabled = 1;        // m_pRadar byte @0x48 = 1
                         player->player->setVulnerable(true);
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
