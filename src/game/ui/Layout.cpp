@@ -561,134 +561,110 @@ uint8_t Layout::drawFade() {
 
 
 void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags) {
-    PaintCanvas *pc = Globals::Canvas;
-    unsigned saved = pc->GetColor();
+    unsigned int savedColor = Globals::Canvas->GetColor();
     Globals::Canvas->SetColor(this->drawColor);
-
     switch (style) {
-        case 0: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x348);
-            pc->DrawImage2D(this->field_0x348, x, y);
-            this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char) (0x01));
-            if (text.size() == 0) break;
-            int *mt = (int *) Globals::layout;
-            int tx = mt[0x44 / 4];
-            if ((flags & 2) == 0) {
-                if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                    tx = w / 2 - tw / 2;
-                }
-            } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                tx = (w - tx) - tw;
-            }
-            int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
-            break;
-        }
-        case 1: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x350);
-            pc->DrawImage2D(this->field_0x350, x, y);
-            this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char) (0x01));
-            if (text.size() == 0) break;
-            int *mt = (int *) Globals::layout;
-            int tx = mt[0x44 / 4];
-            if ((flags & 2) == 0) {
-                if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                    tx = w / 2 - tw / 2;
-                }
-            } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                tx = (w - tx) - tw;
-            }
-            int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
-            break;
-        }
-        case 2:
-            this->drawBGPattern(this->bgPatternImage, x, y, w, h);
-            break;
-        case 3: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x358);
-            pc->DrawImage2D(this->field_0x358, x, y);
-            this->drawBGPattern(this->field_0x35c, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x358, (w + x) - iw, y, (unsigned char) (0x01));
-            break;
-        }
-        case 4: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x36c);
-            pc->DrawImage2D(this->field_0x36c, x, y);
-            this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char) (0x01));
-            break;
-        }
-        case 5: {
-            int ch = Globals::Canvas->GetImage2DHeight(this->field_0x380);
-            this->drawBGBorder(this->field_0x380, this->field_0x384, x, y, w, ch, 0, 0);
-            break;
-        }
-        case 6: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x388);
-            pc->DrawImage2D(this->field_0x388, x, y);
-            this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char) (0x01));
-            if (text.size() == 0) break;
-            int *mt = (int *) Globals::layout;
-            int tx = mt[0x44 / 4];
-            if ((flags & 2) == 0) {
-                if ((int) (flags << 0x1d) < 0) {
-                    int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                    tx = w / 2 - tw / 2;
-                }
-            } else {
-                int tw = pc->GetTextWidth((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text);
-                tx = (w - tx) - tw;
-            }
-            int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text, tx + x, ty, false);
-            break;
-        }
-        case 7: {
-            int *mt = (int *) Globals::layout;
-            int hdr = mt[8 / 4];
-            this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
-            int ih = Globals::Canvas->GetImage2DHeight(this->field_0x394);
-            this->drawBGBorder(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
-            if (text.size() == 0) break;
-            Globals::Canvas->SetColor(0xffffffff);
-            pc->DrawImage2D(this->headerIconImage, x, y);
-            int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
-            pc->DrawString((unsigned) (unsigned long) ((unsigned int) (unsigned long) Globals::font), text,
-                           mt[0x28 / 4] + x, ty, false);
-            break;
-        }
-        case 8: {
-            int ch = Globals::Canvas->GetImage2DHeight(this->field_0x39c);
-            this->drawBGBorder(this->field_0x39c, this->field_0x3a0, x, y, w, ch, 0, 0);
-            break;
-        }
-        case 9: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x360);
-            pc->DrawImage2D(this->field_0x360, x, y);
-            this->drawBGPattern(this->field_0x364, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x360, (w + x) - iw, y, (unsigned char) (0x01));
-            break;
-        }
-        case 10: {
-            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x368);
-            pc->DrawImage2D(this->field_0x368, x, y);
-            this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
-            pc->DrawImage2D(this->field_0x368, (w + x) - iw, y, (unsigned char) (0x01));
-            break;
-        }
-        default:
+    case 0: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x348);
+            Globals::Canvas->DrawImage2D(this->field_0x348, x, y);
+            this->drawBGPattern(this->field_0x34c, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x348, w + x - capW, y, 1);
+            if (text.size() == 0)
+                break;
+            int textX = Globals::layout->field_0x44;
+            if (flags & 2)
+                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            else if (flags & 4)
+                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x1c >> 1) + 1 - this->textBaselineAdjust,
+                                        false);
             break;
     }
-
-    pc->SetColor(saved);
+    case 1: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x350);
+            Globals::Canvas->DrawImage2D(this->field_0x350, x, y);
+            this->drawBGPattern(this->field_0x354, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x350, w + x - capW, y, 1);
+            if (text.size() == 0)
+                break;
+            int textX = Globals::layout->field_0x44;
+            if (flags & 2)
+                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            else if (flags & 4)
+                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (Globals::layout->field_0x5c >> 1) + 1 - this->textBaselineAdjust,
+                                        false);
+            break;
+    }
+    case 2:
+        this->drawBGPattern(this->bgPatternImage, x, y, w, h);
+        break;
+    case 3: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x358);
+            Globals::Canvas->DrawImage2D(this->field_0x358, x, y);
+            this->drawBGPattern(this->field_0x35c, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x358, w + x - capW, y, 1);
+            break;
+    }
+    case 4: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x36c);
+            Globals::Canvas->DrawImage2D(this->field_0x36c, x, y);
+            this->drawBGPattern(this->field_0x370, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x36c, w + x - capW, y, 1);
+            break;
+    }
+    case 5:
+        this->drawBGBorder(this->field_0x380, this->field_0x384, x, y, w, h);
+        break;
+    case 6: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x388);
+            Globals::Canvas->DrawImage2D(this->field_0x388, x, y);
+            this->drawBGPattern(this->field_0x38c, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x388, w + x - capW, y, 1);
+            if (text.size() == 0)
+                break;
+            int textX = Globals::layout->field_0x44;
+            if (flags & 2)
+                textX = w - textX - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            else if (flags & 4)
+                textX = w / 2 - Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) / 2;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, textX + x, y + (h >> 1) + 1 - this->textBaselineAdjust,
+                                        false);
+            break;
+    }
+    case 7: {
+        this->drawBGPattern(this->bgPatternImage, x, Globals::layout->windowTopInset + y, w,
+                            h - Globals::layout->windowTopInset);
+        int inset = -Globals::Canvas->GetImage2DHeight(this->field_0x394);
+        this->drawBGBorder(this->field_0x390, this->field_0x394, x, Globals::layout->windowTopInset + y, w,
+                           h - Globals::layout->windowTopInset, inset, inset);
+        if (text.size() == 0)
+            break;
+        Globals::Canvas->SetColor(0xffffffff);
+        Globals::Canvas->DrawImage2D(this->headerIconImage, x, y);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, Globals::layout->buttonInsetX + x,
+                                    y + Globals::layout->windowTopInset / 2 + 1 - this->textBaselineAdjust, false);
+        break;
+    }
+    case 8:
+        this->drawBGBorder(this->field_0x39c, this->field_0x3a0, x, y, w, h);
+        break;
+    case 9: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x360);
+            Globals::Canvas->DrawImage2D(this->field_0x360, x, y);
+            this->drawBGPattern(this->field_0x364, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x360, w + x - capW, y, 1);
+            break;
+    }
+    case 10: {
+            int capW = Globals::Canvas->GetImage2DWidth(this->field_0x368);
+            Globals::Canvas->DrawImage2D(this->field_0x368, x, y);
+            this->drawBGPattern(this->field_0x370, capW + x, y, w - capW * 2, h);
+            Globals::Canvas->DrawImage2D(this->field_0x368, w + x - capW, y, 1);
+            break;
+    }
+    }
+    Globals::Canvas->SetColor(savedColor);
 }
 
 
