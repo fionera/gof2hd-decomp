@@ -31,8 +31,7 @@ static inline void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector
 void MatrixSetScaling(Matrix *matrix, float x, float y, float z);
 
 void StarSystem::switchSunForSupernovaExpansion() {
-    Vector scaling = {1.373291015625f, 1.373291015625f, 1.373291015625f};
-    (*this->planetsArray)[0]->setScaling(scaling);
+    (*this->planetsArray)[0]->setScaling(Vector{1.373291015625f, 1.373291015625f, 1.373291015625f});
 }
 
 void StarSystem::renderSunStreak() {
@@ -295,15 +294,15 @@ void StarSystem::render2D() {
     if (this->lensFlare == nullptr)
         return;
 
-    unsigned current = Globals::Canvas->CameraGetCurrent();
-    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(current);
+    Matrix *local = (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
     Vector pos;
     pos.x = local->m[3] + this->lightDirection.x * 65536.0f;
     pos.y = local->m[7] + this->lightDirection.y * 65536.0f;
     pos.z = local->m[11] + this->lightDirection.z * 65536.0f;
     this->lensFlare->update(0);
-    Globals::Canvas->GetScreenPosition(pos, pos);
-    this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
+    if (Globals::Canvas->GetScreenPosition(pos, pos)) {
+        this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
+    }
 }
 
 StarSystem::StarSystem(int mode) {
@@ -549,8 +548,7 @@ void StarSystem::switchPlanetForIntro() {
 void StarSystem::switchSunForSupernovaReversal() {
     Globals::Canvas->TextureCreate((uint16_t) 0x2734,
                                    (*this->texturesArray)[0], false);
-    Vector scaling = {0.2288818359375f, 0.2288818359375f, 0.2288818359375f};
-    (*this->planetsArray)[0]->setScaling(scaling);
+    (*this->planetsArray)[0]->setScaling(Vector{0.2288818359375f, 0.2288818359375f, 0.2288818359375f});
 }
 
 void StarSystem::switchSunForSupernovaIntro() {
