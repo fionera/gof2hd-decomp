@@ -63,7 +63,7 @@ public:
     uint8_t _pad_0x222[6];
     String field_0x228;
     unsigned char field_0x234;
-    unsigned char cargoFullFlag;
+    bool cargoFullFlag;
     unsigned char field_0x236;
     uint8_t _pad_0x237[1];
     int menuType;
@@ -78,7 +78,7 @@ public:
     unsigned char eventQueueDirty;
     uint8_t _pad_0x26d[3];
     int eventQueuePaused;
-    unsigned char jumpMapSelectedFlag;
+    bool jumpMapSelectedFlag;
     unsigned char field_0x275;
     unsigned char field_0x276;
     unsigned char field_0x277;
@@ -292,7 +292,7 @@ public:
     int secondaryLabelTimerSeed;
     int secondaryLabelTimer;
     String field_0x51c;
-    unsigned char hackingGameActive;
+    bool hackingGameActive;
     uint8_t _pad_0x529[3];
     int cargoAggregateCount;
     Array<unsigned int> * uintArray;
@@ -305,7 +305,7 @@ public:
 
     void addToEventQueue(ListItem *item);
 
-    uint8_t cargoFull();
+    bool cargoFull();
 
     void catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender, bool slotMode,
                     bool aggregate);
@@ -352,9 +352,9 @@ public:
 
     void initHudMenu(int menuType, Level *lvl);
 
-    uint8_t isHackingGameActive();
+    bool isHackingGameActive();
 
-    uint8_t jumpMapSelected();
+    bool jumpMapSelected();
 
     void playerHit();
 

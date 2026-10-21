@@ -109,7 +109,7 @@ float Hud::getAnalogY() {
     return num / den;
 }
 
-uint8_t Hud::cargoFull() {
+bool Hud::cargoFull() {
     return this->cargoFullFlag;
 }
 
@@ -170,7 +170,7 @@ void Hud::setAutofireEnabled(bool value) {
     this->autofireEnabled = value;
 }
 
-uint8_t Hud::isHackingGameActive() {
+bool Hud::isHackingGameActive() {
     return this->hackingGameActive;
 }
 
@@ -182,7 +182,7 @@ void Hud::setJumpMapSelected(bool value) {
     this->jumpMapSelectedFlag = value;
 }
 
-uint8_t Hud::jumpMapSelected() {
+bool Hud::jumpMapSelected() {
     return this->jumpMapSelectedFlag;
 }
 
