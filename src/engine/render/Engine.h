@@ -152,7 +152,7 @@ namespace AbyssEngine {
         unsigned char *addData;
         int addDataSize;
 
-        int autoPilotEngaged;
+        float autoPilotEngaged;
 
         uint8_t _pad0x364[4];
 
