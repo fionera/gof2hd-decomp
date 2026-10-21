@@ -104,8 +104,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     using AbyssEngine::Engine;
 
     GameData *data = new GameData();
-    data->field_0x04 = 0;
     data->field_0x0c = 0;
+    data->field_0x04 = 0;
     data->field_0x0e = 0;
     data->field_0x14 = 0;
     data->field_0x10 = -1;
@@ -150,8 +150,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0xa8 = AbyssEngine::String("", false);
     data->field_0xa5 = 0;
     data->field_0xb8 = AbyssEngine::String("", false);
-    data->field_0xc4 = 0;
     data->field_0xb4 = 0;
+    data->field_0xc4 = 0;
     data->field_0x78 = 0;
     data->field_0x7a = 0;
     data->field_0x7c = AbyssEngine::String("", false);
@@ -176,8 +176,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     BuildResourceList(engine);
 
-    Globals::appManager = engine->appManager;
     Globals::Canvas = engine->appManager->paintCanvas;
+    Globals::appManager = engine->appManager;
     Globals::w = Globals::Canvas->GetWidth();
     Globals::h = Globals::Canvas->GetHeight();
 
@@ -188,7 +188,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->globals->init(engine->appManager, engine);
 
     engine->appManager->SetApplicationData(data);
-    engine->appManager->SetLoadingCallback(&loadingScreen, Globals::font);
+    // The callback receives the font storage address, then reads the resource handle from it.
+    engine->appManager->SetLoadingCallback(&loadingScreen, &Globals::font);
 
     MGame *game = new MGame();
     engine->appManager->RegisterApplicationModule(2, game);
@@ -211,11 +212,11 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->paintCanvas->TextureCreateGlobal(
         AbyssEngine::String("data/textures/pow_texture.aei", false), 2);
 
+    AbyssEngine::Engine::lodBiasNormal = -0.5f;
     AbyssEngine::Engine::vboSupported = true;
+    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
     AbyssEngine::Engine::clampTextures = false;
     engine->field_0x74 = false;
-    AbyssEngine::Engine::lodBiasNormal = -0.5f;
-    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
 }
 
 // Cheat callback registered with the MGame module as its context. File-local in the Android build
