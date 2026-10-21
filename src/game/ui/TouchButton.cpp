@@ -697,35 +697,25 @@ void TouchButton::setYPosition(int y) {
 
 bool TouchButton::touchedInside(int px, int py) {
     int x = this->x;
-    int xm1 = x - 1;
-    int h;
-    int top;
+    int left = x - 1;
     if (this->kind == 3) {
-        // Reads the raw bits of projMatrix3d.m[0] as an int x-inset; in landscape the
-        // perspective matrix leaves m[0] at 0, so the inset is 0 at runtime.
-        int v;
-        memcpy(&v, &Globals::Canvas->projMatrix3d.m[0], sizeof(v));
-        if (xm1 + v > px)
+        int inset = Globals::layout->field_0x38;
+        if (left + inset > px)
             return false;
-        if (this->width + ((x + 1) - v) <= px)
+        if (this->width + (x + 1 - inset) <= px)
             return false;
-        top = this->y;
-        if (top - 1 > py)
+        if (this->y - 1 > py)
             return false;
-        h = this->layoutHeight;
-    } else {
-        int m = this->touchMargin;
-        if (xm1 - m > px)
-            return false;
-        if (this->width + (x + m) + 1 <= px)
-            return false;
-        top = this->y + ~m;
-        if (top > py)
-            return false;
-        h = this->layoutHeight;
-        top = this->y + m;
+        return this->layoutHeight + this->y + 1 >= py;
     }
-    return h + top + 1 >= py;
+    int m = this->touchMargin;
+    if (left - m > px)
+        return false;
+    if (this->width + (x + 1 + m) <= px)
+        return false;
+    if (this->y + ~m > py)
+        return false;
+    return this->layoutHeight + (this->y + m) + 1 >= py;
 }
 
 TouchButton::TouchButton(unsigned int kind, unsigned int image,
