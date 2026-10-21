@@ -2261,7 +2261,6 @@ AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in, bool r
 void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
                                      unsigned short matResId, unsigned int &out) {
     AbyssEngine::SpriteSystem *ss = 0;
-    unsigned int result;
     int ok = AbyssEngine::SpriteSystemCreate(this->engine, resId, flag, &ss);
     if (ok == 1) {
         unsigned int mat = 0xffffffff;
@@ -2271,27 +2270,21 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
             node->spriteMaterial =
                     (unsigned int) (uintptr_t) this->materials.data_[mat];
         }
-        unsigned int i = 0;
-        for (; i < this->spriteSystems.count; i++) {
-            AbyssEngine::SpriteSystem **slot = &this->spriteSystems.data_[i];
-            if (*slot == nullptr) {
-                *slot = ss;
+        for (unsigned int i = 0; i < this->spriteSystems.count; i++) {
+            if (this->spriteSystems.data_[i] == nullptr) {
+                this->spriteSystems.data_[i] = ss;
                 ss = 0;
+                out = i;
                 break;
             }
         }
         if (ss != 0) {
-            ArrayAdd<AbyssEngine::SpriteSystem *>(
-                ss,
-                *reinterpret_cast<Array<AbyssEngine::SpriteSystem *> *>(
-                    &this->spriteSystems));
-            i = this->spriteSystems.count - 1;
+            ArrayAdd<AbyssEngine::SpriteSystem *>(ss, this->spriteSystems);
+            out = this->spriteSystems.count - 1;
         }
-        result = i;
     } else {
-        result = 0xffffffff;
+        out = 0xffffffff;
     }
-    out = result;
 }
 
 void PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix,
@@ -4141,13 +4134,10 @@ void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub
             }
             const float *mm = (const float *) &m;
             float *p = (float *) (s->positions + sub * 12);
-            float p0 = p[0];
-            float p1 = p[1];
-            float p2 = p[2];
-            float half = (float) (s->count >> 1);
-            float x = mm[0] * p0 + mm[1] * p1 + mm[2] * p2 + mm[3];
-            float y = mm[4] * p0 + mm[5] * p1 + mm[6] * p2 + mm[7];
-            float z = mm[8] * p0 + mm[9] * p1 + mm[10] * p2 + mm[11];
+            float half = (float) (*(const short *) s->sizes >> 1);
+            float x = mm[0] * p[0] + mm[1] * p[1] + mm[2] * p[2] + mm[3];
+            float y = mm[4] * p[0] + mm[5] * p[1] + mm[6] * p[2] + mm[7];
+            float z = mm[8] * p[0] + mm[9] * p[1] + mm[10] * p[2] + mm[11];
             out.x = x - half;
             out.y = y + half;
             out.z = z;
