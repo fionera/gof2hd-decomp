@@ -54,21 +54,12 @@ namespace AbyssEngine {
 namespace {
 
     static const float g_PE_shakeDiv = 40000.0f;
-    static const float g_PE_mtp_strafeEps = 0.0f;
-    static const float g_PE_mtp_strafeReset = 0.0f;
-    static const float g_PE_mtp_strafeK = 0.0f;
     static const float g_PE_strafeLoadK = 0.4f;
     static const float g_PE_strafeLoadB = 0.6f;
     static const float g_PE_strafeAccelK = 0.002f;
-    static float *g_PE_dr_posLock = nullptr;
-    static float *g_PE_dr_posNoLock = nullptr;
-    static float *g_PE_dr_posBlink = nullptr;
-    static float *g_PE_dr_posNormal = nullptr;
     // Pitch ramp delta constants (down/up non-turret paths)
     // Yaw ramp delta constants (right/left non-turret paths)
 }
-
-
 
 struct PE_AsteroidMineTarget {
     char pad0[0x44];
@@ -79,17 +70,6 @@ static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "mi
 #endif
 
 
-void *TransformGetLocal(void *, int); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void MatrixSetRotation(void *, void *, float, float, float); // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-static inline void Mat_assign(void *dst, const void *src) { for (int _i=0;_i<15;_i++) ((float*)dst)[_i]=((const float*)src)[_i]; } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
-
-void PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
-
-
-
-static inline void MatrixGetPosition(void *out, void *m) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; param/return types mangling-load-bearing)
 
 void PlayerEgo::setVisible(bool v) {
     this->visible = v;
@@ -816,7 +796,6 @@ void PlayerEgo::initManeuver(int type) {
 void PlayerEgo::refillGunDelay() {
     ((Player *) this->player)->refillGunDelay(0);
 }
-
 
 void PlayerEgo::checkForTurret() {
     if (this->turretMode)
