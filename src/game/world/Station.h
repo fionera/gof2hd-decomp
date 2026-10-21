@@ -18,7 +18,7 @@ public:
     int textureIndex;
     uint8_t visited;
     int techLevel;
-    uint8_t attackedFriends;
+    bool attackedFriends;
     Array<Item *> *items;
     Array<Ship *> *ships;
     Array<Agent *> *agents;
@@ -71,7 +71,7 @@ public:
 
     void setAttackedFriends(bool v);
 
-    uint8_t hasAttackedFriends();
+    bool hasAttackedFriends();
 
     bool isAttackedByAliens();
 
