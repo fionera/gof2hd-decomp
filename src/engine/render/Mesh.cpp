@@ -1043,26 +1043,35 @@ namespace AbyssEngine {
                 continue;
 
             // The point must lie on the inner side of all three edges.
-            float ez = bz - az, ex = bx - ax;
-            float len = sqrtf(ez * ez + ex * ex);
-            float nx = ex / len, nz = -ez / len;
-            if (nx * qz + nz * qx - (az * nx + ax * nz) > 0.0f)
+            // Edge normal (ex, -ez), normalised.
+            float ez, ex, px, pz, len, nx, nz;
+            ez = bz - az;
+            ex = bx - ax;
+            px = ex;
+            pz = -ez;
+            len = sqrtf(ez * ez + ex * ex);
+            nx = px / len;
+            nz = pz / len;
+            if (nz * qx + nx * qz - (ax * nz + az * nx) > 0.0f)
                 continue;
             ez = cz - bz;
             ex = cx - bx;
+            px = ex;
+            pz = -ez;
             len = sqrtf(ez * ez + ex * ex);
-            nx = ex / len;
-            nz = -ez / len;
-            if (nx * qz + nz * qx - (bz * nx + bx * nz) > 0.0f)
+            nx = px / len;
+            nz = pz / len;
+            if (nz * qx + nx * qz - (bx * nz + bz * nx) > 0.0f)
                 continue;
             ez = az - cz;
             ex = ax - cx;
+            px = ex;
+            pz = -ez;
             len = sqrtf(ez * ez + ex * ex);
-            nx = ex / len;
-            nz = -ez / len;
-            if (nx * qz + nz * qx - (cz * nx + cx * nz) > 0.0f)
+            nx = px / len;
+            nz = pz / len;
+            if (nz * qx + nx * qz - (cx * nz + cz * nx) > 0.0f)
                 continue;
-
             // Hit: return the averaged texture coordinate of the triangle.
             float *uv = (float *) mesh->texCoords;
             unsigned short *hit = (unsigned short *) mesh->indices + i;
