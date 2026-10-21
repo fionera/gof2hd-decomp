@@ -28,7 +28,11 @@ Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the ori
 order), the system `-l` libs up to libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
 (hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
 undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
-NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions).
+NEEDED identical. .dynsym ORDER is not yet identical (314/5578 positions): gold (same r18b
+binary as the original's) emits dynamic symbols by iterating its symbol hash table, so the order
+is a function of the complete symbol-insertion sequence (every object, every referenced symbol,
+in input order) and is expected to converge only as object contents/membership converge — not a
+knob to tune directly.
 
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
@@ -202,7 +206,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1328, linked_exact 4198, avg 98.15%**
+Current numbers (of **4523** compared): **byte_exact 1330, linked_exact 4246, avg 98.51%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

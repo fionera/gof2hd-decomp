@@ -66,6 +66,12 @@ Orchestrator session log. One entry per session; newest first. Resume from git l
   GameInit.cpp (w14b TU move); w5c's 94.9% body is saved in
   _work/reconstructions/loadingScreen_w5c_94pct.cpp — port it into GameInit.cpp.
 
+- Rejected A/B: `-mllvm -pre-RA-sched=source` globally (w20b saw it reproduce ResetLightParam's
+  store order): linked 4246 -> 2567 (-1679). The default scheduler is right; per-function store
+  order comes from source order.
+- Master ed9b03fe+: link order from original strong-function addresses (gen_link_order.py);
+  imports/exports/NEEDED identical; byte 1330 / linked 4246 / avg 98.51 / data 843/843.
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:
