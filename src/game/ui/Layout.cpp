@@ -113,147 +113,11 @@ static const char g_dfTail[] = "t";
 
 
 void Layout::drawFooterNoBackButton() {
-    int stationMode = 0;
-    int showBack = 0;
-    PaintCanvas *pc = Globals::Canvas;
-    Globals::Canvas->SetColor(this->drawColor);
-    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
-
-    pc->DrawImage2D(this->footerImageLeft, this->windowX,
-                    this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = (int *) Globals::layout;
-    int footerH = m[0x10 / 4];
-    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
-                    (this->windowY + this->windowHeight) - footerH);
-    int both = wLeft + wRight;
-    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
-                        this->windowWidth + both * -2, footerH);
-    pc->DrawImage2D(this->footerImageRight,
-                    (this->windowX - both) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-    pc->DrawImage2D(this->footerImageLeft,
-                    (this->windowX - wRight) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-
-    int backVis = (!stationMode) && showBack;
-    this->backButton->setVisible(backVis);
-    if (!backVis)
-        this->secondaryButton->draw();
-    else if (showBack)
-        this->backButton->draw();
-
-    Status *status = Globals::status;
-    int load = status->getShip()->getCurrentLoad();
-    int maxLoad = status->getShip()->getMaxLoad();
-    if (maxLoad < load)
-        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
-
-    String sLoad;
-    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
-    String sMax;
-    sMax.Set((long long) (status->getShip())->getMaxLoad());
-    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
-        pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
-                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
-    }
-    Globals::Canvas->SetColor(this->drawColor);
-
-    String credStr = Layout::formatCredits(status->getCredits());
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        if (stationMode) {
-            int rightInset = m[0x74 / 4];
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, ((w + x) - rightInset) - tw / 2,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        } else {
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, (w + x - 10) - tw,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        }
-    }
+    this->drawFooter(false, false);
 }
 
 void Layout::drawFooter() {
-    int stationMode = 0;
-    int showBack = 1;
-    PaintCanvas *pc = Globals::Canvas;
-    Globals::Canvas->SetColor(this->drawColor);
-    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
-
-    pc->DrawImage2D(this->footerImageLeft, this->windowX,
-                    this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = (int *) Globals::layout;
-    int footerH = m[0x10 / 4];
-    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
-                    (this->windowY + this->windowHeight) - footerH);
-    int both = wLeft + wRight;
-    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
-                        this->windowWidth + both * -2, footerH);
-    pc->DrawImage2D(this->footerImageRight,
-                    (this->windowX - both) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-    pc->DrawImage2D(this->footerImageLeft,
-                    (this->windowX - wRight) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-
-    int backVis = (!stationMode) && showBack;
-    this->backButton->setVisible(backVis);
-    if (!backVis)
-        this->secondaryButton->draw();
-    else if (showBack)
-        this->backButton->draw();
-
-    Status *status = Globals::status;
-    int load = status->getShip()->getCurrentLoad();
-    int maxLoad = status->getShip()->getMaxLoad();
-    if (maxLoad < load)
-        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
-
-    String sLoad;
-    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
-    String sMax;
-    sMax.Set((long long) (status->getShip())->getMaxLoad());
-    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
-        pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
-                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
-    }
-    Globals::Canvas->SetColor(this->drawColor);
-
-    String credStr = Layout::formatCredits(status->getCredits());
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        if (stationMode) {
-            int rightInset = m[0x74 / 4];
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, ((w + x) - rightInset) - tw / 2,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        } else {
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, (w + x - 10) - tw,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        }
-    }
+    this->drawFooter(false, true);
 }
 
 int Layout::OnTouchMove(int x, int y) {
@@ -475,11 +339,6 @@ Layout::Layout() {
     }
 }
 
-String Layout::formatCredits(int n) {
-    String num = Layout::formatNumber(n);
-    String suffix("$");
-    return num + suffix;
-}
 
 
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
@@ -531,42 +390,32 @@ static const char g_fnSepB[] = "";
 static const char g_fnOverflow[] = "";
 
 String Layout::formatNumber(int value) {
-    unsigned mag = (value < 0) ? (unsigned) (-value) : (unsigned) value;
-
-    String digits;
-    digits.Set((long long) (int) mag);
-    int len = (int) digits.size();
-
-    String out(g_fnEmpty);
-
-    String sep;
+    String digits(value < 0 ? -value : value);
+    int len = digits.length;
+    String result("");
     unsigned short lang = GameText::getLanguage();
-    if (lang < 0xc && ((1u << (lang & 0xff)) & 0xc01u) != 0)
-        sep = String(g_fnSepA);
-    else
-        sep = String(g_fnSepB);
-
-    if (len < 4) {
-        out = digits;
-    } else {
+    String sep = (lang == 0 || lang == 10 || lang == 11) ? String(",") : String(".");
+    if (len >= 4) {
         int i = len;
-        while (i > 2) {
+        while (i >= 3) {
+            result = digits.SubString(i - 3, i) + (result.size() >= 2 ? String(sep) : String()) + result;
             i -= 3;
-            String grp;
-            grp = digits.SubString(i, len);
-            String prefix = (out.size() < 2) ? String() : sep;
-            out = prefix + grp + out;
         }
-        String head;
-        head = digits.SubString(0, i);
-        if (head.size() != 0)
-            out = head + sep + out;
+        String head = digits.SubString(0, i);
+        if (head.length != 0)
+            result = head + sep + result;
+    } else {
+        result = digits;
     }
+    if (value < 0)
+        result = String("-") + result;
+    return result;
+}
 
-    if ((unsigned) value > 0x7fffffff)
-        out = String(g_fnOverflow) + out;
-
-    return out;
+String Layout::formatCredits(int n) {
+    String num = this->formatNumber(n);
+    String suffix("$");
+    return num + suffix;
 }
 
 
@@ -892,29 +741,18 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
 
 
 
-static const char g_dtBoxLit[] = "";
 
 
 
 void Layout::drawTip() {
     if (this->tipLines != nullptr) {
-        Globals::Canvas->SetColor(0xFFFFFFFF);
-        int *mA = (int *) Globals::layout;
-        int dimW = Globals::h;
-        int dimH = Globals::w;
-        int boxW = mA[0x78 / 4];
-
-        String box(g_dtBoxLit);
-        this->drawBox(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box, 0u);
-
-        Globals::Canvas->DrawImage2D(this->tipBoxImage,
-                                     dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char) (0x11));
-
-        int lineCount = (int) this->tipLines->size();
-        int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        reinterpret_cast<Globals *>((int) (intptr_t) Globals::globals)->drawLines((unsigned) (uintptr_t) (unsigned int) (unsigned long) Globals::font,
-                                                            this->tipLines,
-                                                            dimH >> 1, y);
+        Globals::Canvas->SetColor(0xffffffff);
+        Globals::layout->drawBox(5, (Globals::w >> 1) - (Globals::layout->field_0x78 >> 1), (Globals::h >> 1) + 13,
+                                 Globals::layout->field_0x78, 100, String(""));
+        Globals::Canvas->DrawImage2D(this->tipBoxImage, Globals::w >> 1, (Globals::h >> 1) + 63, 0x11, 0x44);
+        Globals::globals->drawLines((unsigned int) (uintptr_t) Globals::font, this->tipLines, Globals::w >> 1,
+                                    (Globals::h >> 1) + 63 - this->tipLines->size() * Globals::layout->field_0x4 / 2,
+                                    true);
     }
 }
 
@@ -1070,75 +908,7 @@ void Layout::drawHeader() {
 }
 
 void Layout::drawFooterStation() {
-    int stationMode = 1;
-    int showBack = 0;
-    PaintCanvas *pc = Globals::Canvas;
-    Globals::Canvas->SetColor(this->drawColor);
-    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
-
-    pc->DrawImage2D(this->footerImageLeft, this->windowX,
-                    this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = (int *) Globals::layout;
-    int footerH = m[0x10 / 4];
-    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
-                    (this->windowY + this->windowHeight) - footerH);
-    int both = wLeft + wRight;
-    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
-                        this->windowWidth + both * -2, footerH);
-    pc->DrawImage2D(this->footerImageRight,
-                    (this->windowX - both) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-    pc->DrawImage2D(this->footerImageLeft,
-                    (this->windowX - wRight) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-
-    int backVis = (!stationMode) && showBack;
-    this->backButton->setVisible(backVis);
-    if (!backVis)
-        this->secondaryButton->draw();
-    else if (showBack)
-        this->backButton->draw();
-
-    Status *status = Globals::status;
-    int load = status->getShip()->getCurrentLoad();
-    int maxLoad = status->getShip()->getMaxLoad();
-    if (maxLoad < load)
-        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
-
-    String sLoad;
-    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
-    String sMax;
-    sMax.Set((long long) (status->getShip())->getMaxLoad());
-    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
-        pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
-                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
-    }
-    Globals::Canvas->SetColor(this->drawColor);
-
-    String credStr = Layout::formatCredits(status->getCredits());
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        if (stationMode) {
-            int rightInset = m[0x74 / 4];
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, ((w + x) - rightInset) - tw / 2,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        } else {
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, (w + x - 10) - tw,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        }
-    }
+    this->drawFooter(true, false);
 }
 
 
@@ -1224,7 +994,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
         String suffix(g_mrLit2);
-        String credits = Layout::formatCredits(this->rewardCredits);
+        String credits = this->formatCredits(this->rewardCredits);
         line = suffix + credits;
 
         sh = Globals::w;
@@ -1252,75 +1022,49 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text) {
     this->drawBox(style, x, y, w, h, text, 1);
 }
 
-void Layout::drawFooter(bool stationMode_, bool showBack_) {
-    int stationMode = stationMode_;
-    int showBack = showBack_;
-    PaintCanvas *pc = Globals::Canvas;
+void Layout::drawFooter(bool stationMode, bool showBack) {
     Globals::Canvas->SetColor(this->drawColor);
-    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
+    int rightW = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
+    int leftW = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
+    Globals::Canvas->DrawImage2D(this->footerImageLeft, this->windowX, this->windowY + this->windowHeight, 0x11, 0x21);
+    Globals::Canvas->DrawImage2D(this->footerImageRight, this->windowX + leftW,
+                                 this->windowY + this->windowHeight - Globals::layout->field_0x10_rightMargin);
+    int edgeW = leftW + rightW;
+    this->drawBGPattern(this->footerFillImage, this->windowX + leftW + rightW,
+                        this->windowY + this->windowHeight - Globals::layout->field_0x10_rightMargin,
+                        this->windowWidth - 2 * edgeW, Globals::layout->field_0x10_rightMargin);
+    Globals::Canvas->DrawImage2D(this->footerImageRight, this->windowX - edgeW + this->windowWidth,
+                                 this->windowY + this->windowHeight - Globals::layout->field_0x10_rightMargin, 1);
+    Globals::Canvas->DrawImage2D(this->footerImageLeft, this->windowX - leftW + this->windowWidth,
+                                 this->windowHeight + this->windowY - Globals::layout->field_0x10_rightMargin, 1);
 
-    pc->DrawImage2D(this->footerImageLeft, this->windowX,
-                    this->windowY + this->windowHeight, (unsigned char) (0x11));
-    int *m = (int *) Globals::layout;
-    int footerH = m[0x10 / 4];
-    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
-                    (this->windowY + this->windowHeight) - footerH);
-    int both = wLeft + wRight;
-    this->drawBGPattern(this->footerFillImage, both + this->windowX, (this->windowY + this->windowHeight) - footerH,
-                        this->windowWidth + both * -2, footerH);
-    pc->DrawImage2D(this->footerImageRight,
-                    (this->windowX - both) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-    pc->DrawImage2D(this->footerImageLeft,
-                    (this->windowX - wRight) + this->windowWidth,
-                    (this->windowHeight + this->windowY) - footerH, (unsigned char) (0x01));
-
-    int backVis = (!stationMode) && showBack;
-    this->backButton->setVisible(backVis);
-    if (!backVis)
+    this->backButton->setVisible(!stationMode && showBack);
+    if (stationMode)
         this->secondaryButton->draw();
     else if (showBack)
         this->backButton->draw();
 
-    Status *status = Globals::status;
-    int load = status->getShip()->getCurrentLoad();
-    int maxLoad = status->getShip()->getMaxLoad();
-    if (maxLoad < load)
-        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
-
-    String sLoad;
-    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
-    String sMax;
-    sMax.Set((long long) (status->getShip())->getMaxLoad());
-    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), loadStr);
-        pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
-                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
-    }
+    if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad())
+        Globals::Canvas->SetColor(0xff2a00ff);
+    String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                  String(Globals::status->getShip()->getMaxLoad()) + String("t");
+    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
+                                this->windowX + this->windowWidth / 2 -
+                                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, load) / 2,
+                                this->windowY + this->windowHeight - this->footerTextInset, false);
     Globals::Canvas->SetColor(this->drawColor);
 
-    String credStr = Layout::formatCredits(status->getCredits());
-
-    {
-        int x = this->windowX;
-        int w = this->windowWidth;
-        unsigned font = (unsigned int) (unsigned long) Globals::font;
-        if (stationMode) {
-            int rightInset = m[0x74 / 4];
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, ((w + x) - rightInset) - tw / 2,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        } else {
-            int tw = pc->GetTextWidth((unsigned) (unsigned long) (font), credStr);
-            pc->DrawString((unsigned) (unsigned long) (font), credStr, (w + x - 10) - tw,
-                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
-        }
+    String credits = this->formatCredits(Globals::status->getCredits());
+    if (stationMode) {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, credits,
+                                    this->windowX + this->windowWidth - Globals::layout->field_0x74 -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, credits) / 2,
+                                    this->windowY + this->windowHeight - this->footerTextInset, false);
+    } else {
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, credits,
+                                    this->windowX + this->windowWidth - 10 -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, credits),
+                                    this->windowY + this->windowHeight - this->footerTextInset, false);
     }
 }
 
