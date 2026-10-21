@@ -3108,13 +3108,12 @@ void PaintCanvas::EnableClip(int x, int y, int w, int h) {
             break;
         }
         case 1: {
-            int nx = this->GetHeight() - (y + h);
-            int ny = this->GetWidth() - (x + w);
-            int t = h;
+            int t = x;
+            x = this->GetHeight() - (y + h);
+            y = this->GetWidth() - (t + w);
+            t = h;
             h = w;
             w = t;
-            x = nx;
-            y = ny;
             break;
         }
         case 2:
