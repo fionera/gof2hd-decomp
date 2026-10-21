@@ -1117,11 +1117,11 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     }
     this->SetTexture(img->textureId, -1);
 
-    float fx = (float) x;
-    float fy = (float) y;
     AbyssEngine::AEMath::Matrix m;
-    m.m[7] = fy;
-    m.m[3] = fx;
+    m.m[3] = (float) x;
+    m.m[7] = (float) y;
+    m.m[0] = 1.0f;
+    m.m[5] = 1.0f;
     if (flipFlags & 1) {
         m.m[0] = -1.0f;
         m.m[3] = (float) this->GetImage2DWidth(index) + m.m[3];
@@ -2590,8 +2590,10 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y) {
         this->SetTexture(img->textureId, -1);
 
         AbyssEngine::AEMath::Matrix m;
-        m.m[7] = (float) y;
         m.m[3] = (float) x;
+        m.m[7] = (float) y;
+        m.m[0] = 1.0f;
+        m.m[5] = 1.0f;
         this->SetWorldViewMatrix(m);
         glDisable(0xb44);
         AbyssEngine::MeshDraw(this->engine,
@@ -3361,6 +3363,8 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     AbyssEngine::AEMath::Matrix m;
     m.m[3] = (float) (anchorX + x + pivotX);
     m.m[7] = (float) (anchorY + y + pivotY);
+    m.m[0] = 1.0f;
+    m.m[5] = 1.0f;
     this->SetWorldViewMatrix(m);
     AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) ((PCImage2DView *) this->images.data_[index])->mesh);
 }
