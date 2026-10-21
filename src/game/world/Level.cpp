@@ -7066,11 +7066,9 @@ void Level::createScene() {
                 for (int i = 0; i < 7; i++)
                     seatUsed[i] = 0;
                 for (int i = 0; i < agentCount; i++) {
-                    int look;
-                    if ((*agents)[i]->getRace() == 3)
+                    int look = (*agents)[i]->getRace();
+                    if (look == 3)
                         look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
-                    else
-                        look = (*agents)[i]->getRace();
                     int mesh = kAgentMeshes[look];
                     if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
                         mesh = 14724;
