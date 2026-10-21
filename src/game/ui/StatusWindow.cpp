@@ -208,105 +208,42 @@ void StatusWindow::update(int frameTime) {
 
 
 String StatusWindow::getMedalHintText(int medalIndex) {
-    int *medals = Globals::achievements->getMedals();
-    int state = medals[medalIndex];
-
+    int stage = Globals::achievements->getMedals()[medalIndex];
     String out;
-    {
-        if (out.data) delete[] out.data;
-        out.data = nullptr;
-        out.length = 0;
-    }
-
-    if (state != 0) {
-        String tmpA;
-        String tmpB;
-
-        if (medalIndex == 2 && state == 2) {
-            tmpA.ctor_char("\n", false);
-            String *hdr = (Globals::gameText)->getText(0x114);
-            tmpB = tmpA + *hdr;
-            out += tmpB;
-
-            Status *base = Globals::status;
-            Array<bool> *list = base->field_94;
-            for (unsigned int i = 0; i < list->size(); i++) {
-                if ((*list)[i] == 0) {
-                    tmpA.ctor_char("\n", false);
-                    String *t = (Globals::gameText)->getText(0x594 + (int) i);
-                    tmpB = tmpA + *t;
-                    out += tmpB;
-                }
-            }
-        } else if (medalIndex == 3 && state == 2) {
-            tmpA.ctor_char("\n", false);
-            String *hdr = (Globals::gameText)->getText(0x114);
-            tmpB = tmpA + *hdr;
-            out += tmpB;
-
-            Status *base = Globals::status;
-            Array<bool> *list = base->field_98;
-            for (unsigned int i = 0; i < list->size(); i++) {
-                if ((*list)[i] == 0) {
-                    tmpA.ctor_char("\n", false);
-                    String *t = (Globals::gameText)->getText(0x59f + (int) i);
-                    tmpB = tmpA + *t;
-                    out += tmpB;
-                }
-            }
-        } else if (medalIndex == 9 && state == 2) {
-            tmpA.ctor_char("\n", false);
-            String *hdr = (Globals::gameText)->getText(0x114);
-            tmpB = tmpA + *hdr;
-            out += tmpB;
-
-            Status *base = Globals::status;
-            Array<bool> *list = base->field_ac;
-            for (unsigned int i = 0; i < list->size(); i++) {
-                if ((*list)[i] == 0) {
-                    tmpA.ctor_char("\n", false);
-                    String *t = (Globals::gameText)->getText(0x57e + (int) i);
-                    tmpB = tmpA + *t;
-                    out += tmpB;
-                }
-            }
-        } else if (medalIndex == 0xd && state == 2) {
-            tmpA.ctor_char("\n", false);
-            String *hdr = (Globals::gameText)->getText(0x114);
-            tmpB = tmpA + *hdr;
-            out += tmpB;
-
-            Status *root = Globals::status;
-            for (unsigned int i = 0; i < 0xd; i++) {
-                BluePrint *bp = (*root->bluePrints)[i];
-                if (bp->locked == 0) {
-                    tmpA.ctor_char("\n", false);
-                    int idx = bp->getIndex();
-                    String *t = (Globals::gameText)->getText(idx + 0x4fa);
-                    tmpB = tmpA + *t;
-                    out += tmpB;
-                }
-            }
-        } else if (medalIndex == 0xe && state == 2) {
-            tmpA.ctor_char("\n", false);
-            String *hdr = (Globals::gameText)->getText(0x114);
-            tmpB = tmpA + *hdr;
-            out += tmpB;
-
-            Status *root = Globals::status;
-            for (unsigned int i = 0; i < 0xd; i++) {
-                BluePrint *bp = (*root->bluePrints)[i];
-                if (bp->productionCount == 0) {
-                    tmpA.ctor_char("\n", false);
-                    int idx = bp->getIndex();
-                    String *t = (Globals::gameText)->getText(idx + 0x4fa);
-                    tmpB = tmpA + *t;
-                    out += tmpB;
-                }
-            }
+    if (stage == 0)
+        return out;
+    // Silver medals list what is still missing for gold.
+    if (medalIndex == 2 && stage == 2) {
+        out += String("\n\n") + *Globals::gameText->getText(276);
+        for (unsigned int i = 0; i < Globals::status->field_94->size(); i++) {
+            if (!(*Globals::status->field_94)[i])
+                out += String("\n- ") + *Globals::gameText->getText(1428 + i);
+        }
+    } else if (medalIndex == 3 && stage == 2) {
+        out += String("\n\n") + *Globals::gameText->getText(276);
+        for (unsigned int i = 0; i < Globals::status->field_98->size(); i++) {
+            if (!(*Globals::status->field_98)[i])
+                out += String("\n- ") + *Globals::gameText->getText(1439 + i);
+        }
+    } else if (medalIndex == 9 && stage == 2) {
+        out += String("\n\n") + *Globals::gameText->getText(276);
+        for (unsigned int i = 0; i < Globals::status->field_ac->size(); i++) {
+            if (!(*Globals::status->field_ac)[i])
+                out += String("\n- ") + *Globals::gameText->getText(1406 + i);
+        }
+    } else if (medalIndex == 13 && stage == 2) {
+        out += String("\n\n") + *Globals::gameText->getText(276);
+        for (unsigned int i = 0; i < 13; i++) {
+            if (!(*Globals::status->bluePrints)[i]->locked)
+                out += String("\n- ") + *Globals::gameText->getText((*Globals::status->bluePrints)[i]->getIndex() + 1274);
+        }
+    } else if (medalIndex == 14 && stage == 2) {
+        out += String("\n\n") + *Globals::gameText->getText(276);
+        for (unsigned int i = 0; i < 13; i++) {
+            if ((*Globals::status->bluePrints)[i]->productionCount == 0)
+                out += String("\n- ") + *Globals::gameText->getText((*Globals::status->bluePrints)[i]->getIndex() + 1274);
         }
     }
-
     return out;
 }
 
