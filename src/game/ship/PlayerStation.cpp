@@ -35,10 +35,9 @@ PlayerStation::~PlayerStation() {
     }
     this->secondGeometry = nullptr;
 
-    BoundingVolumeList *volumes = (BoundingVolumeList *) this->boundingVolumes;
-    if (volumes != nullptr) {
-        ArrayReleaseClasses<BoundingVolume *>(*volumes);
-        delete volumes;
+    if (this->boundingVolumes != nullptr) {
+        ArrayReleaseClasses(*(BoundingVolumeList *) this->boundingVolumes);
+        delete (BoundingVolumeList *) this->boundingVolumes;
     }
     this->boundingVolumes = nullptr;
 }
