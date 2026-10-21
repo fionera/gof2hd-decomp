@@ -2,6 +2,23 @@
 
 Orchestrator session log. One entry per session; newest first. Resume from git log + this file.
 
+## Session 2026-10-21 (Linux host; -g experiment landed — linked 2779->2857)
+
+- Host moved to Linux x86_64: NDK r18b linux prebuilts added to `.cache/ndk` and
+  `DownloadNDK.cmake` selects the host (877b94a8). The Linux build reproduced the
+  committed baseline bit-for-bit (byte 1185 / linked 2779 / avg 79.01).
+- Exclusive PostRA experiment run first, as queued. `-g` (ndk-build default):
+  byte 1185->1194, linked 2779->2857 (+79 gains, 2 losses). The narrower
+  `-mllvm -disable-postra-machine-sink`: linked 2850 with 8 losses — rejected.
+  `-g` landed in e4e4fbcb. Losses: `ParticleSystemManager::update` re-fixed by
+  declaring its local after the early return (with -g, declaration placement is
+  visible in the schedule); `AutoPilotList::touch` stays lost (3 reshapes tried).
+- Wave 1: six workers in `../wt/w1..w6` (branches `wave1-w*`) on disjoint TUs
+  (PaintCanvas/Engine; PlayerEgo/Player/PlayerFixedObject; MGame/ModStation/
+  Globals; Hud/Layout/StatusWindow/ListItemWindow/DialogueWindow/TouchButton;
+  Status/RecordHandler/Explosion/HangarList; AbyssEngine/Transform/AEMath/
+  FileRead/AEFile/String). Orchestrator merges and gates on master.
+
 ## Session 2026-07-28 (Fable wave — linked 2751->2779; PostRA experiment queued)
 
 Net from the prior checkpoint at `b56b79d7` through HEAD `5b7d1ee5`:

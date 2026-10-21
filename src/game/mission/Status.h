@@ -139,15 +139,20 @@ public:
     uint8_t _pad_0x121[3];
 
     int32_t field_124;
-    int32_t field_128;
+    uint8_t field_128;
+    uint8_t _pad_0x129[3];
     int32_t field_12c;
-    int32_t field_130;
+    uint8_t field_130;
+    uint8_t _pad_0x131[3];
     int32_t field_134;
-    int32_t field_138;
+    uint8_t field_138;
+    uint8_t _pad_0x139[3];
     int32_t field_13c;
-    int32_t field_140;
+    uint8_t field_140;
+    uint8_t _pad_0x141[3];
     int32_t field_144;
-    int32_t field_148;
+    uint8_t field_148;
+    uint8_t _pad_0x149[3];
 
     // former union: Station* voidStation overlaid with int32 handle field_14c.
     // int view: reinterpret_cast<int32_t &>(voidStation)

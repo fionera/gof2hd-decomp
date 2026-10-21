@@ -20,9 +20,9 @@ public:
 
     void OnRelease();
 
-    long long OnKeyPress(long long key, long long mod);
+    void OnKeyPress(long long key, long long mod);
 
-    long long OnKeyRelease(long long key, long long mod);
+    void OnKeyRelease(long long key, long long mod);
 
     void OnTouchBegin(int x, int y);
 
