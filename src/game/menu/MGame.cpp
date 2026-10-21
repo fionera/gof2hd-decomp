@@ -413,126 +413,86 @@ void MGame::useCloak() {
     ((MGame *) (this))->pauseSounds();
 }
 
-static int **g_goWormText;
 
-static int **g_goDeathText;
 
 static DialogueWindow **g_goDlgA;
 
-static int **g_goStatusA;
 
-static int **g_goStatusB;
 
-static int **g_goStatusC;
 
-static int **g_goStatusD;
 
-static int **g_goRecHandler;
 
-static int **g_goRecId;
 
-static int **g_goSnd;
 
 void MGame::gameOverCheck() {
     if (this->player->getHitpoints() <= 0) {
-        if (this->player->tryToStartEmergencySystem() != 0)
-            return;
-        if (this->player->isInWormhole() == 0) {
-            this->player->setTurretMode(0);
+        if (this->player->tryToStartEmergencySystem()) return;
+        if (this->player->isInWormhole()) {
+            this->gameOverActive = 1;
+            this->gameOverTitle = *Globals::gameText->getText(319);
+            this->needsRedraw = 1;
+        } else {
+            this->player->setTurretMode(false);
             this->levelScript->resetCamera(this->level);
-            this->player->setFreeLookMode(0);
+            this->player->setFreeLookMode(false);
             this->camera->enableFirstPersonCam(false);
-            this->player->hideShipForFirstPersonCameraView(0);
+            this->player->hideShipForFirstPersonCameraView(false);
             this->needsRedraw = 1;
             this->player->explode();
-            if (this->player->explosionEnded() != 0) {
+            if (this->player->explosionEnded()) {
                 this->gameOverActive = 1;
-                String *t = (String *) ((GameText *) (**g_goDeathText))->getText(0);
-                this->gameOverTitle = *(t);
+                this->gameOverTitle = *Globals::gameText->getText(319);
             }
-        } else {
-            this->gameOverActive = 1;
-            String *t = (String *) ((GameText *) (**g_goWormText))->getText(0);
-            this->gameOverTitle = *(t);
-            this->needsRedraw = 1;
         }
-
-        if (this->gameOverActive != 0) {
-            if (Globals::status->getMission() != 0 &&
-                ((Mission *) (Globals::status->getMission()))->isCampaignMission() != 0) {
-                int cm = Globals::status->getCurrentCampaignMission();
-                int *sa = *g_goStatusA;
-                int v;
-                if (cm == *sa) {
-                    v = **g_goStatusB + 1;
-                } else {
-                    **g_goStatusC = 0;
-                    v = 1;
-                }
-                *sa = cm;
-                **g_goStatusD = v;
+        if (this->gameOverActive) {
+            if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()) {
+                int mission = Globals::status->getCurrentCampaignMission();
+                if (mission != Globals::lastCampaignMissionFailed)
+                    Globals::lastCampaignMissionFailCount = 0;
+                Globals::lastCampaignMissionFailed = mission;
+                Globals::lastCampaignMissionFailCount++;
             }
-            int rec = (int) (intptr_t)((RecordHandler *) ((RecordHandler *) **g_goRecHandler))->recordStoreRead(
-                **g_goRecId);
-            this->gameRecord = rec;
+            this->gameRecord = (int) (intptr_t) Globals::recordHandler->recordStoreRead(Globals::lastRecordWritten);
         }
     }
 
-    if (this->level->checkGameOver(0) != 0) {
-        if (this->dialogueWindow == 0) {
-            DialogueWindow *w = new DialogueWindow();
-            Level *lvl = this->level;
-            this->dialogueWindow = w;
-            if (lvl != 0) w->setLevel(lvl);
-        } else if (this->dialogueWindow->hasLevel() == 0) {
-            Level *lvl = this->level;
-            if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+    if (this->level->checkGameOver(this->levelScript->field_0x8)) {
+        if (this->dialogueWindow == nullptr) {
+            this->dialogueWindow = new DialogueWindow();
+            if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
+        } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+            this->dialogueWindow->setLevel(this->level);
         }
         this->dialogueWindow->set(Globals::status->getMission(), 2, -1);
         this->cutsceneActive = 1;
-        ((MGame *) (this))->pauseSounds();
+        pauseSounds();
         this->pauseOpen = 1;
     }
 
-    unsigned lo = this->elapsedTime;
-    int hi = this->elapsedTimeHigh;
-    bool ready = !(hi < (int) (lo < 0x1389));
-    if (ready) {
+    if (this->elapsedTime >= 5001) {
         this->elapsedTime = 0;
-        this->elapsedTimeHigh = 0;
-        int *sc = (int *) this->levelScript;
-        if (sc[0] >= 1) {
-            bool done = !((long long) (unsigned) sc[0] - ((long long) sc[3] << 32 | (unsigned) sc[2]) < 0);
-            bool survival = false;
-            if (!done) {
-                int cm = Globals::status->getCurrentCampaignMission();
-                if (cm != 0x2a) {
-                    Objective *obj = this->level->objectivesA;
-                    survival = (obj == 0) || (((Objective *) (obj))->isSurvivalObjective() != 0);
-                }
-                if (!survival) {
-                    if (this->dialogueWindow == 0) {
-                        DialogueWindow *w = new DialogueWindow();
-                        Level *lvl = this->level;
-                        this->dialogueWindow = w;
-                        if (lvl != 0) w->setLevel(lvl);
-                    } else if (this->dialogueWindow->hasLevel() == 0) {
-                        Level *lvl = this->level;
-                        if (lvl != 0) this->dialogueWindow->setLevel(lvl);
-                    }
-                    this->dialogueWindow->set(Globals::status->getMission(), 2, -1);
-                    this->pauseOpen = 0x101;
-                    ((MGame *) (this))->pauseSounds();
-                }
+        LevelScript *script = this->levelScript;
+        if (script->m_nTimeLimit >= 1 &&
+            script->m_nTimeLimit < reinterpret_cast<long long &>(script->field_0x8) &&
+            (Globals::status->getCurrentCampaignMission() == 0x2a ||
+             (this->level->objectivesA != nullptr && !this->level->objectivesA->isSurvivalObjective()))) {
+            if (this->dialogueWindow == nullptr) {
+                this->dialogueWindow = new DialogueWindow();
+                if (this->level != nullptr) this->dialogueWindow->setLevel(this->level);
+            } else if (!this->dialogueWindow->hasLevel() && this->level != nullptr) {
+                this->dialogueWindow->setLevel(this->level);
             }
+            this->dialogueWindow->set(Globals::status->getMission(), 2, -1);
+            this->pauseOpen = 1;
+            this->cutsceneActive = 1;
+            pauseSounds();
         }
     }
 
-    if (this->gameOverActive != 0) {
+    if (this->gameOverActive) {
         this->elapsedTime = 0;
-        this->elapsedTimeHigh = 0;
         this->loadingTime = 0;
-        ((FModSound *) (**g_goSnd))->play(0x25, 0, 0 /* vel: arg lost in decomp */, 0.0f);
+        Globals::sound->play(0x25, nullptr, nullptr, 0.0f);
     }
 }
 
@@ -895,96 +855,77 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) { // lint: void_ptr -- 
     }
 }
 
-static int **g_kdJumpDst;
 
-static int **g_kdVolText;
 
-static int **g_kdAlienDst;
 
-static int g_kdPostEffect;
 
 void MGame::UseKhadorDrive() {
-    if (this->player->isChargingDrive() != 0) return;
+    if (this->player->isChargingDrive()) return;
 
     Mission *m = Globals::status->getMission();
-    bool special =
-            ((Mission *) (m))->isEmpty() != 0 ||
-            Globals::status->getCurrentCampaignMission() == 0x4e ||
-            ((Mission *) (m))->getType() == 0xb ||
-            ((Mission *) (m))->getType() == 0 ||
-            ((Mission *) (m))->getType() == 0xbd ||
-            ((Mission *) (m))->getType() == 0xd ||
-            ((Mission *) (m))->getType() == 0xab ||
-            ((Mission *) (m))->getType() == 0xac;
-
-    if (!special) {
-        if (Globals::status->getCurrentCampaignMission() == 0x41 && Globals::status->inAlienOrbit() == 0) {
-            int idx = Station_getIndex(Globals::status->getStation());
-            Globals::status->getCampaignMission();
-            if (idx == ((Mission *) ((Mission *) Globals::status->getCampaignMission()))->getTargetStation())
-                special = true;
+    if (m->isEmpty() || Globals::status->getCurrentCampaignMission() == 0x4e || m->getType() == 0xb ||
+        m->getType() == 0 || m->getType() == 0xbd || m->getType() == 0xd || m->getType() == 0xab ||
+        m->getType() == 0xac) {
+        if (Globals::status->getCurrentCampaignMission() != 0x41 || Globals::status->inAlienOrbit() ||
+            Globals::status->getStation()->getIndex() !=
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            goto jump;
         }
     }
+    this->hud->hudEvent(0x15, this->level->getPlayer(), 0);
+    return;
 
-    if (special) {
-        PlayerEgo *player = (PlayerEgo *) (intptr_t)((Level *) (this))->getPlayer();
-        return this->hud->hudEvent(0x15, player, 0);
-    }
-
+jump:
     this->player->resetGunDelay();
     if (Globals::status->getCurrentCampaignMission() == 0x4e) {
-        **g_kdJumpDst = (int) (intptr_t) Globals::status->playerStation;
+        Level::programmedStation = Globals::status->playerStation;
         this->usingJumpDrive = 1;
-        ((MGame *) (this))->startChargingJumpDrive();
+        startChargingJumpDrive();
         this->pauseOpen = 0;
-        ((MGame *) (this))->resumeSounds();
+        resumeSounds();
         this->hudMenuOpen = 0;
         this->hud->closeHudMenu();
-        return Globals::status->nextCampaignMission(true);
+        Globals::status->nextCampaignMission(true);
+        return;
     }
 
-    if (Globals::status->inAlienOrbit() == 0) {
-        if (this->player->hasVolatileGoods() != 0) {
-            String *txt = ((GameText *) (**g_kdVolText))->getText(0);
-            this->choiceWindow->set(*(String *) txt);
-            this->pauseOpen = 1;
-            this->choiceWindowOpen = 1;
-            this->needsRedraw = 1;
-            this->hudMenuOpen = 0;
-            this->hud->closeHudMenu();
-            ((MGame *) (this))->pauseSounds();
-            this->maneuverActive = 0;
-            return;
-        }
-        if (this->starMap == 0) {
-            StarMap *sm = new StarMap(false, nullptr, false, -1);
-            this->starMap = sm;
-        }
-        Engine *eng = (Engine *) this->applicationManager->GetEngine();
-        ((Engine *) (eng))->SetPostEffect(g_kdPostEffect, 0);
-        this->starMap->initLights();
+    if (Globals::status->inAlienOrbit()) {
+        if (Globals::status->getCurrentCampaignMission() == 0x50)
+            Globals::status->field_84 = 100;
+        Level::programmedStation = (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84);
         this->usingJumpDrive = 1;
-        this->starMap->setJumpMapMode(1, 1);
-        if (Globals::status->inAlienOrbit() == 0)
-            this->starMap->askForJumpIntoAlienWorld();
-        this->pauseOpen = 1;
-        this->starMapOpen = 1;
-        ((MGame *) (this))->pauseSounds();
+        startChargingJumpDrive();
+        this->pauseOpen = 0;
+        resumeSounds();
         this->hudMenuOpen = 0;
-        return this->hud->closeHudMenu();
+        this->hud->closeHudMenu();
+        return;
     }
 
-    if (Globals::status->getCurrentCampaignMission() == 0x50)
-        Globals::status->field_84 = 100;
-    int station = ((Galaxy *) (*(int *) Globals::galaxy))->getStation(
-        Globals::status->getCurrentCampaignMission() /* index: arg lost in decomp */);
-    **g_kdAlienDst = station;
+    if (this->player->hasVolatileGoods()) {
+        this->choiceWindow->set(*Globals::gameText->getText(0x264));
+        this->choiceWindowOpen = 1;
+        this->pauseOpen = 1;
+        this->needsRedraw = 1;
+        this->hudMenuOpen = 0;
+        this->hud->closeHudMenu();
+        pauseSounds();
+        this->maneuverActive = 0;
+        return;
+    }
+    if (this->starMap == nullptr)
+        this->starMap = new StarMap(false, nullptr, false, -1);
+    static_cast<Engine *>(this->applicationManager->GetEngine())->SetPostEffect(0x01400002, false);
+    this->starMap->initLights();
     this->usingJumpDrive = 1;
-    ((MGame *) (this))->startChargingJumpDrive();
-    this->pauseOpen = 0;
-    ((MGame *) (this))->resumeSounds();
+    this->starMap->setJumpMapMode(true, true);
+    if (!Globals::status->inAlienOrbit())
+        this->starMap->askForJumpIntoAlienWorld();
+    this->starMapOpen = 1;
+    this->pauseOpen = 1;
+    pauseSounds();
     this->hudMenuOpen = 0;
-    return this->hud->closeHudMenu();
+    this->hud->closeHudMenu();
 }
 
 static int g_initParticleFlag;
@@ -1429,7 +1370,7 @@ static int g_scFollowTextKey;
 static int g_scFollowHashLit;
 
 void MGame::successCheck() {
-    bool timed = !(this->elapsedTimeHigh < (int) (this->elapsedTime < 0x1389));
+    bool timed = this->elapsedTime >= 5001;
     if (timed || this->jumpDriveActive != 0) {
         if (((Mission *) ((Mission *) Globals::status->getCampaignMission()))->getType() != 0xaa) goto done;
     }
@@ -1802,7 +1743,6 @@ void MGame::reset() {
     this->choiceWindow = cw;
 
     this->elapsedTime = 0;
-    this->elapsedTimeHigh = 0;
     this->cameraMode = 0;
     this->field_0x18 = 0;
     reinterpret_cast<int &>(this->_b5c) = 0;
@@ -2246,7 +2186,6 @@ MGame::MGame() {
     this->field_0x198 = 0;
 
     this->elapsedTime = z;
-    this->elapsedTimeHigh = z;
     reinterpret_cast<int &>(this->egoJumpPos.x) = z;
     reinterpret_cast<int &>(this->egoJumpPos.y) = z;
     reinterpret_cast<int &>(this->egoJumpPos.z) = z;
@@ -2346,7 +2285,6 @@ void MGame::OnRelease() {
     delete this->level;
 
     this->elapsedTime = 0;
-    this->elapsedTimeHigh = 0;
     this->cameraMode = 0;
     this->level = 0;
     this->active = 0;
@@ -2566,7 +2504,7 @@ void MGame::OnRender2D() {
                     self->choiceWindow->draw();
                 if (reinterpret_cast<int &>(self->_bca) != 0)
                     self->hud->drawMenu(0);
-            } else if (!(self->elapsedTimeHigh < (int) (self->elapsedTime < 0xbb9))) {
+            } else if (self->elapsedTime >= 3001) {
                 Globals::Canvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
                 Globals::Canvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
             }

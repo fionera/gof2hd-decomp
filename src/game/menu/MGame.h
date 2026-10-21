@@ -44,8 +44,7 @@ public:
     int field_0x3c;
     int deltaTime;
     int field_0x44;
-    unsigned elapsedTime;
-    int elapsedTimeHigh;
+    long long elapsedTime;
     int loadingTime;
     uint8_t active;
     uint8_t _pad_0x55[3];
