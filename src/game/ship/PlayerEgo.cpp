@@ -1358,38 +1358,6 @@ float PlayerEgo::getCloakingPercentage() {
 }
 
 int PlayerEgo::updateManeuver() {
-    if (this->maneuverType == 1 || this->maneuverType == 2) {
-        this->maneuverTimer += this->shakeIntensity;
-        Vector side = this->geometry->getRightVector() * (float) this->shakeIntensity * 4.0f
-                      * ((float) this->maneuverTimer / -1200.0f + 1.0f);
-        side *= this->handling * 0.05f;
-        if (this->maneuverType == 2)
-            side *= -1.0f;
-        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * this->speed);
-        this->geometry->translate(side.x, side.y, side.z);
-        Matrix spin;
-        AbyssEngine::AEMath::MatrixSetRotation(
-            spin, 0.0f, (this->maneuverType == 1 ? -1.0f : 1.0f)
-                            * ((1.0f - (float) this->maneuverTimer / 1200.0f) * 0.0062831859f), 0.0f);
-        this->geometry->setMatrix(this->geometry->getMatrix() * spin);
-        float bank = this->handling * 0.05f * 750.0f * 0.4f;
-        this->yawAccumF = AbyssEngine::AEMath::Sinf((float) this->maneuverTimer / 1200.0f * 3.1415927f) * bank
-                          * (this->maneuverType == 1 ? -1.0f : 1.0f);
-        TargetFollowCamera *camera = (TargetFollowCamera *) (intptr_t) this->targetFollowCamera;
-        Vector offset = *camera->getTargetOffset();
-        offset.x = this->yawAccumF * -3.0f;
-        this->targetFollowCamera->setTargetOffset(offset);
-        reinterpret_cast<Matrix &>(this->player->transform[0]) =
-            *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
-            * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-        this->targetFollowCamera
-            ->translateNoUpdate(side.x * -0.9f, side.y * -0.9f, side.z * -0.9f);
-        if (this->maneuverTimer >= 1200) {
-            this->maneuverType = 0;
-            this->levelScript->resetCamera(this->level);
-        }
-        return 1;
-    }
     if (this->maneuverType == 3) {
         this->maneuverTimer += this->shakeIntensity;
         Vector direction = this->geometry->getDirection();
@@ -1412,11 +1380,42 @@ int PlayerEgo::updateManeuver() {
         Vector shift = this->facingVec * 7.0f * (float) this->shakeIntensity
                        * (1.0f - (float) this->maneuverTimer / 3000.0f);
         this->targetFollowCamera->translate(shift.x, shift.y, shift.z);
-        this->geometry->moveForward(this->thrust * (float) this->shakeIntensity * this->speed);
+        this->geometry->moveForward((float) this->shakeIntensity * this->thrust * this->speed);
         if (this->maneuverTimer >= 3000) {
             this->maneuverType = 0;
             this->targetFollowCamera->setLookAtCam(false);
             this->targetFollowCamera->useTargetsUpVector(true);
+        }
+        return 1;
+    }
+    if (this->maneuverType == 1 || this->maneuverType == 2) {
+        this->maneuverTimer += this->shakeIntensity;
+        Vector side = this->geometry->getRightVector() * (float) this->shakeIntensity * 4.0f
+                      * ((float) this->maneuverTimer / -1200.0f + 1.0f);
+        side *= this->handling * 0.05f;
+        if (this->maneuverType == 2)
+            side *= -1.0f;
+        this->geometry->moveForward((float) this->shakeIntensity * this->thrust * this->speed);
+        this->geometry->translate(side.x, side.y, side.z);
+        Matrix spin;
+        AbyssEngine::AEMath::MatrixSetRotation(
+            spin, 0.0f, (this->maneuverType == 1 ? -1.0f : 1.0f)
+                            * ((1.0f - (float) this->maneuverTimer / 1200.0f) * 0.0062831859f), 0.0f);
+        this->geometry->setMatrix(this->geometry->getMatrix() * spin);
+        float bank = this->handling * 0.05f * 750.0f * 0.4f;
+        this->yawAccumF = AbyssEngine::AEMath::Sinf((float) this->maneuverTimer / 1200.0f * 3.1415927f) * bank
+                          * (this->maneuverType == 1 ? -1.0f : 1.0f);
+        Vector offset = *((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->getTargetOffset();
+        offset.x = this->yawAccumF * -3.0f;
+        this->targetFollowCamera->setTargetOffset(offset);
+        reinterpret_cast<Matrix &>(this->player->transform[0]) =
+            *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+            * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+        this->targetFollowCamera
+            ->translateNoUpdate(side.x * -0.9f, side.y * -0.9f, side.z * -0.9f);
+        if (this->maneuverTimer >= 1200) {
+            this->maneuverType = 0;
+            this->levelScript->resetCamera(this->level);
         }
         return 1;
     }
@@ -2567,7 +2566,7 @@ int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
             }
             return 0;
         }
-        if (!((MiningGame *) (intptr_t) this->miningGame)->gameLost()
+        if (((MiningGame *) (intptr_t) this->miningGame)->gameLost() != 1
             && ((MiningGame *) (intptr_t) this->miningGame)->getOreAmount() >= 1) {
             this->stopMining();
             return 1;
@@ -2660,7 +2659,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                                        ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
             if (approach == nullptr)
                 return false;
-            if (approach != (SpacePoint *) (intptr_t) this->spacePoint) {
+            if (this->spacePoint != (int) (intptr_t) approach) {
                 if (this->spacePoint != 0)
                     ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
                 this->spacePoint = (int) (intptr_t) approach;
