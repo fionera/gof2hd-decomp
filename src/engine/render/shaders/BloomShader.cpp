@@ -70,7 +70,7 @@ namespace AbyssEngine {
 
     BloomShader::BloomShader() {
         BloomShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = u"BloomShader";
+        this->name = String("BloomShader");
     }
 
     BloomShader::~BloomShader() {

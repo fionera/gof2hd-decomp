@@ -7,40 +7,53 @@ ParticleSettings::ParticleSettings() {
 ParticleSettings::~ParticleSettings() {
 }
 
-static const char ParticleSettings_str[401401] = {0};
-
 static inline float &asFloat(uint32_t &slot) {
     return reinterpret_cast<float &>(slot);
 }
 
 int ParticleSettings::init() {
-    String buf;
-
-    for (uint32_t i = 0; i < 0x30; i = i + 1) {
-        buf.ctor_char(ParticleSettings_str, false);
+    for (int i = 0; i < 48; i++) {
+        this->sets[i].name = String("not initialized");
+        this->sets[i].flags = 0x10;
+        this->sets[i].count = 1;
+        asFloat(this->sets[i].lifeBase) = 100.0f;
         this->sets[i].lifeRandom = 0;
         asFloat(this->sets[i].startSize) = 0.0f;
         asFloat(this->sets[i].endSize) = 0.0f;
         asFloat(this->sets[i].velocityFromSlot) = 0.0f;
+        this->sets[i].lifetime = 100;
+        asFloat(this->sets[i].flLifetime) = 500.0f;
         this->sets[i].oneShot = 0;
         this->sets[i].color0 = 0x00ff00ff;
         this->sets[i].color1 = 0x00ff00ff;
         this->sets[i].fadeFrames = 0;
-        this->sets[i].flags = 0x10;
-        this->sets[i].count = 1;
-        asFloat(this->sets[i].lifeBase) = 100.0f;
-        this->sets[i].lifetime = 100;
-        asFloat(this->sets[i].flLifetime) = 500.0f;
         asFloat(this->sets[i].colorFlag) = 0.0f;
         this->sets[i].posBase = 500;
-        memset(&this->sets[i].posSpread, 0, 0x48);
+        this->sets[i].posSpread = 0;
+        this->sets[i].ySpread = 0;
+        this->sets[i].velSpread = 0;
+        this->sets[i].field_0x54 = 0;
+        this->sets[i].velBaseX = 0;
+        this->sets[i].velBaseY = 0;
+        this->sets[i].velBaseZ = 0;
+        this->sets[i].drag = 0;
+        this->sets[i].velRight = 0;
+        this->sets[i].velUp = 0;
+        this->sets[i].velDir = 0;
+        this->sets[i].field_0x74 = 0;
+        this->sets[i].posRight = 0;
+        this->sets[i].posUp = 0;
+        this->sets[i].posDir = 0;
+        this->sets[i].posDirRandom = 0;
+        this->sets[i].uvU0 = 0;
+        this->sets[i].uvV0 = 0;
         asFloat(this->sets[i].uvU1) = 63.0f;
         asFloat(this->sets[i].uvV1) = 63.0f;
         this->sets[i].speedThreshold = 0;
         this->sets[i].frames = 0;
     }
 
-    buf.ctor_char(ParticleSettings_str + 401400, false);
+    this->sets[0].name = String("SET_BASIC");
     this->sets[0].oneShot = 1;
     this->sets[0].color0 = 0xffffffff;
     this->sets[0].color1 = 0x000000ff;
@@ -75,7 +88,7 @@ int ParticleSettings::init() {
     this->sets[37] = this->sets[0];
     this->sets[38] = this->sets[0];
 
-    buf.ctor_char(ParticleSettings_str + 401182, false);
+    this->sets[4].name = String("SET_STARS");
     asFloat(this->sets[4].flLifetime) = 200.0f;
     this->sets[4].lifetime = 2000;
     this->sets[4].color0 = 0xffffffff;
@@ -103,7 +116,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[4].posDir) = 2000.0f;
     this->sets[4].speedThreshold = 1;
 
-    buf.ctor_char(ParticleSettings_str + 401012, false);
+    this->sets[5].name = String("SET_MESH_STARS");
     this->sets[5].oneShot = 0;
     this->sets[5].color0 = 0xffffffff;
     this->sets[5].color1 = 0;
@@ -132,12 +145,12 @@ int ParticleSettings::init() {
     asFloat(this->sets[5].uvV1) = 0.189453f;
     this->sets[5].speedThreshold = 1;
 
-    buf.ctor_char(ParticleSettings_str + 400875, false);
+    this->sets[6].name = String("SET_MESH_STARS_BOOST");
     asFloat(this->sets[6].lifeBase) = 50.0f;
     this->sets[6].lifetime = 500;
     asFloat(this->sets[6].endSize) = asFloat(this->sets[5].endSize) * 5.0f;
 
-    buf.ctor_char(ParticleSettings_str + 400742, false);
+    this->sets[2].name = String("SET_MESH_TRAIL");
     SetDefinition *muzzleFlash = &this->sets[2];
     this->sets[2].posBase = 0;
     this->sets[2].posSpread = 0;
@@ -168,7 +181,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[3].posRight) = 160.0f;
     asFloat(this->sets[3].posUp) = 90.0f;
 
-    buf.ctor_char(ParticleSettings_str, false);
+    this->sets[13].name = String("SET_FIRE");
     this->sets[13].oneShot = 0;
     this->sets[13].color0 = 0xffffffff;
     this->sets[13].color1 = 0x000000ff;
@@ -190,7 +203,7 @@ int ParticleSettings::init() {
     this->sets[13].uvV1 = 0x3f800000;
     this->sets[13].speedThreshold = 1;
 
-    buf.ctor_char(ParticleSettings_str + 400482, false);
+    this->sets[8].name = String("SET_FOG_STATIC");
     this->sets[8].posBase = 0;
     this->sets[8].posSpread = 40000;
     this->sets[8].ySpread = 40000;
@@ -212,7 +225,7 @@ int ParticleSettings::init() {
     this->sets[8].posUp = 0;
     this->sets[8].posDir = 0;
 
-    buf.ctor_char(ParticleSettings_str, false);
+    this->sets[7].name = String("SET_FOG");
     this->sets[7].posBase = 0;
     this->sets[7].posSpread = 0;
     this->sets[7].ySpread = 0;
@@ -234,7 +247,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[7].posUp) = 5000.0f;
     asFloat(this->sets[7].posDir) = 1000.0f;
 
-    buf.ctor_char(ParticleSettings_str + 400195, false);
+    this->sets[9].name = String("SET_EXPLOSION");
     SetDefinition *spark = &this->sets[9];
     this->sets[9].lifetime = 700;
     this->sets[9].flLifetime = 0x41000000;
@@ -265,7 +278,7 @@ int ParticleSettings::init() {
     this->sets[9].frames = 0x10;
     *dustCloud = *spark;
 
-    buf.ctor_char(ParticleSettings_str + 399927, false);
+    this->sets[16].name = String("SET_EMP");
     asFloat(this->sets[16].posDir) = -300.0f;
     asFloat(this->sets[16].posDirRandom) = 800.0f;
     asFloat(this->sets[16].uvU0) = 0.876953125f;
@@ -285,7 +298,7 @@ int ParticleSettings::init() {
     this->sets[17] = *dustCloud;
     this->sets[17].lifetime = 400;
 
-    buf.ctor_char(ParticleSettings_str, false);
+    this->sets[17].name = String("SET_EMP_1");
     asFloat(this->sets[17].uvU0) = 0.876953125f;
     asFloat(this->sets[17].uvV0) = 0.251953125f;
     asFloat(this->sets[17].uvU1) = 0.9970703125f;
@@ -293,13 +306,13 @@ int ParticleSettings::init() {
     this->sets[18] = *dustCloud;
     this->sets[18].lifetime = 200;
 
-    buf.ctor_char(ParticleSettings_str, false);
+    this->sets[18].name = String("SET_EMP_2");
     asFloat(this->sets[18].uvU0) = 0.751953125f;
     asFloat(this->sets[18].uvV0) = 0.501953125f;
     asFloat(this->sets[18].uvU1) = 0.9970703125f;
     asFloat(this->sets[18].uvV1) = 0.7470703125f;
 
-    buf.ctor_char(ParticleSettings_str, false);
+    this->sets[12].name = String("SET_MISSILE_TRAIL");
     this->sets[12].lifetime = 0x4e2;
     asFloat(this->sets[12].flLifetime) = 60.0f;
     this->sets[12].flags = 0x02000021;
@@ -327,7 +340,7 @@ int ParticleSettings::init() {
     this->sets[12].uvV1 = 0x3e800000;
     this->sets[12].frames = 0x10;
 
-    buf.ctor_char(ParticleSettings_str + 399539, false);
+    this->sets[13].name = String("SET_FIRE");
     this->sets[13].lifetime = 1000;
     asFloat(this->sets[13].flLifetime) = 300.0f;
     this->sets[13].flags = (uint32_t)(33554465 - 0x10);
@@ -355,7 +368,7 @@ int ParticleSettings::init() {
     this->sets[13].uvV1 = 0x3e800000;
     this->sets[13].frames = 0x10;
 
-    buf.ctor_char(ParticleSettings_str + 399421, false);
+    this->sets[10].name = String("SET_EXPLOSION_MANUALLY");
     this->sets[10].posSpread = 0;
     this->sets[10].ySpread = 0;
     this->sets[10].velSpread = 0;
@@ -381,7 +394,7 @@ int ParticleSettings::init() {
     this->sets[10].uvV1 = 0x3e800000;
     this->sets[10].frames = 0x10;
 
-    buf.ctor_char(ParticleSettings_str + 399242, false);
+    this->sets[11].name = String("SET_EXPLOSION_MANUALLY_BIG");
     this->sets[11].posSpread = 0;
     this->sets[11].ySpread = 0;
     this->sets[11].velSpread = 0;
@@ -406,7 +419,7 @@ int ParticleSettings::init() {
     this->sets[11].uvV1 = 0x3e800000;
     this->sets[11].frames = 0x10;
 
-    buf.ctor_char(ParticleSettings_str + 399109, false);
+    this->sets[15].name = String("SET_SMOKE_ENEMY");
     SetDefinition *ember = &this->sets[15];
     this->sets[15].lifetime = 0x5dc;
     asFloat(this->sets[15].flLifetime) = 20.0f;
@@ -433,7 +446,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[15].uvV1) = 0.25f;
     this->sets[15].frames = 0x10;
 
-    buf.ctor_char(ParticleSettings_str + 398969, false);
+    this->sets[42].name = String("SET_SMOKE_FIRE_ENEMY");
     this->sets[42].lifetime = 600;
     this->sets[42].flags = 0x02000021;
     asFloat(this->sets[42].flLifetime) = 20.0f;
@@ -460,7 +473,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[42].uvV1) = 0.25f;
 
     this->sets[19] = *ember;
-    buf.ctor_char(ParticleSettings_str + 398596, false);
+    this->sets[19].name = String("SET_EXPLOSION_SMOKE_MANUALLY");
     this->sets[19].posSpread = 0;
     this->sets[19].ySpread = 0;
     this->sets[19].velSpread = 0;
@@ -481,11 +494,11 @@ int ParticleSettings::init() {
     this->sets[19].drag = 0;
 
     this->sets[14] = *ember;
-    buf.ctor_char(ParticleSettings_str + 398477, false);
+    this->sets[14].name = String("SET_SMOKE_PLAYER");
     asFloat(this->sets[14].posDir) = 100.0f;
 
     this->sets[40] = *ember;
-    buf.ctor_char(ParticleSettings_str + 398438, false);
+    this->sets[40].name = String("SET_SMOKE_VOSSK_FREIGHTER");
     this->sets[40].field_0x54 = 5000;
     SetDefinition *streak2 = &this->sets[20];
     asFloat(this->sets[40].posDir) = 500.0f;
@@ -493,20 +506,20 @@ int ParticleSettings::init() {
     this->sets[40].lifeRandom = 300;
 
     *streak2 = this->sets[11];
-    buf.ctor_char(ParticleSettings_str + 398366, false);
+    this->sets[20].name = String("SET_EXPLOSION_MANUALLY_ASTEROID");
     this->sets[20].lifetime = 1000;
     asFloat(this->sets[20].lifeBase) = 10000.0f;
     this->sets[20].lifeRandom = 1000;
 
     this->sets[21] = *streak2;
-    buf.ctor_char(ParticleSettings_str + 398324, false);
+    this->sets[21].name = String("SET_EXPLOSION_MANUALLY_JUNK");
     SetDefinition *jet = &this->sets[22];
     this->sets[21].lifetime = 1000;
     asFloat(this->sets[21].lifeBase) = 1600.0f;
     this->sets[21].lifeRandom = 200;
 
     *jet = *spark;
-    buf.ctor_char(ParticleSettings_str + 398286, false);
+    this->sets[22].name = String("SET_EXPLOSION_CARGO");
     this->sets[22].lifetime = 1000;
     asFloat(this->sets[22].flLifetime) = 9.0f;
     asFloat(this->sets[22].posDirRandom) = 500.0f;
@@ -517,13 +530,13 @@ int ParticleSettings::init() {
     this->sets[22].lifeRandom = 2000;
 
     this->sets[41] = *jet;
-    buf.ctor_char(ParticleSettings_str + 398148, false);
+    this->sets[41].name = String("SET_EXPLOSION_VOSSK_CARGO");
     asFloat(this->sets[41].posDir) = -4000.0f;
     this->sets[41].posSpread = 1000;
     asFloat(this->sets[41].posDirRandom) = 8000.0f;
 
     this->sets[23] = *spark;
-    buf.ctor_char(ParticleSettings_str + 398106, false);
+    this->sets[23].name = String("SET_EXPLOSION_BATTLESHIP");
     this->sets[23].lifetime = 1000;
     asFloat(this->sets[23].flLifetime) = 9.0f;
     asFloat(this->sets[23].lifeBase) = 4000.0f;
@@ -533,7 +546,7 @@ int ParticleSettings::init() {
     this->sets[23].ySpread = 0x5dc;
 
     this->sets[24] = *spark;
-    buf.ctor_char(ParticleSettings_str + 398045, false);
+    this->sets[24].name = String("SET_EXPLOSION_DEEP_SCIENCE_STATION");
     SetDefinition *ringEmitter = &this->sets[25];
     this->sets[24].lifetime = 1000;
     asFloat(this->sets[24].flLifetime) = 5.0f;
@@ -637,7 +650,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[46].uvV1) = 0.999f;
 
     this->sets[47] = this->sets[12];
-    buf.ctor_char(ParticleSettings_str + 397416, false);
+    this->sets[47].name = String("SET_EXPLOSION_SPARKS");
     this->sets[47].frames = 0x10;
     asFloat(this->sets[47].uvU0) = 0.0f;
     asFloat(this->sets[47].uvV0) = 0.0f;
