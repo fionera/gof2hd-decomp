@@ -1309,15 +1309,8 @@ uint32_t Engine::ShaderInit() {
     return 1;
 }
 
-uint64_t Engine::SetEyePosition(float x, float y, float z) {
-    this->eyePosition.x = x;
-    this->eyePosition.y = y;
-    this->eyePosition.z = z;
-    uint32_t cx;
-    uint32_t cy;
-    memcpy(&cx, &x, sizeof(cx));
-    memcpy(&cy, &y, sizeof(cy));
-    return (uint64_t) cx | ((uint64_t) cy << 32);
+void Engine::SetEyePosition(float x, float y, float z) {
+    this->eyePosition = Vector{x, y, z};
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {

@@ -328,7 +328,7 @@ namespace AbyssEngine {
 
         void SetColor(float red, float green, float blue, float alpha);
 
-        uint64_t SetEyePosition(float x, float y, float z);
+        void SetEyePosition(float x, float y, float z);
 
         void SetFrameBufferTexture(int slot0, int slot1);
 
