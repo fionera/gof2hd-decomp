@@ -72,14 +72,11 @@ bool AbyssEngine::PostEffectFlag;
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
-                   unsigned int vertexFormat,
-                   void **out); // lint: void_ptr (exported MeshCreate symbol; void** baked into mangled name)
+                   signed char vertexFormat, Mesh **out);
     void MeshRelease(Engine *engine, Mesh **slot);
     void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b);
 }
 
-static String *g_Engine_vendorString = nullptr;
-static String *g_Engine_rendererString = nullptr;
 
 namespace {
 
@@ -492,21 +489,14 @@ void Engine::SetPerspMatrix(float *matrix) {
 }
 
 void Engine::SetFrameBufferTexture(int slot0, int slot1) {
-    int firstValue = this->frameBufferTextures[slot0];
-    if (firstValue != -1) {
+    if (this->frameBufferTextures[slot0] != -1) {
         glActiveTexture(0x84c0);
-        glBindTexture(0xde1, firstValue);
+        glBindTexture(0xde1, this->frameBufferTextures[slot0]);
     }
-
-    if (slot1 == -1) {
-        return;
+    if (slot1 != -1 && this->frameBufferTextures[slot1] != -1) {
+        glActiveTexture(0x84c1);
+        glBindTexture(0xde1, this->frameBufferTextures[slot1]);
     }
-    int secondValue = this->frameBufferTextures[slot1];
-    if (secondValue == -1) {
-        return;
-    }
-    glActiveTexture(0x84c1);
-    return glBindTexture(0xde1, secondValue);
 }
 
 void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
@@ -675,17 +665,18 @@ void Engine::ReleaseGL() {
 
 void Engine::AfterGLInit() {
     this->ResetLightParam();
-    AbyssEngine::MeshCreate(this, 4, 2, 0x13, (void **) &this->quadMesh); // lint: void_ptr (void** baked into exported MeshCreate)
+    AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
 
-    uint32_t *indices = (uint32_t *) this->quadMesh->indices;
-    indices[0] = 0x20000;
-    indices[1] = 1;
-    indices[2] = 0x30002;
+    unsigned short *indices = (unsigned short *) this->quadMesh->indices;
+    indices[0] = 0;
+    indices[1] = 2;
+    indices[2] = 1;
+    indices[3] = 0;
+    indices[4] = 3;
+    indices[5] = 2;
 
-    String vendor((const char *) glGetString(0x1f00));
-    *g_Engine_vendorString = vendor;
-    String renderer((const char *) glGetString(0x1f01));
-    *g_Engine_rendererString = renderer;
+    Engine::vendor = String((const char *) glGetString(0x1f00));
+    Engine::renderer = String((const char *) glGetString(0x1f01));
 }
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
@@ -1578,13 +1569,13 @@ unsigned char AbyssEngine::Engine::UseAdvancedShader;
 unsigned char AbyssEngine::Engine::enableReverseFlag;
 int AbyssEngine::Engine::tv_h;
 int AbyssEngine::Engine::tv_w;
-AbyssEngine::AEMath::Vector AbyssEngine::Engine::vendor;
+AbyssEngine::String AbyssEngine::Engine::vendor;
 unsigned char AbyssEngine::Engine::DrawFBO;
 int AbyssEngine::Engine::vboSize;
 unsigned char AbyssEngine::Engine::DEBUGKEY;
 unsigned char AbyssEngine::Engine::TVEnable;
 float AbyssEngine::Engine::farPlane;
-AbyssEngine::AEMath::Vector AbyssEngine::Engine::renderer;
+AbyssEngine::String AbyssEngine::Engine::renderer;
 AbyssEngine::AEMath::Vector AbyssEngine::Engine::tv_modes;
 unsigned char AbyssEngine::Engine::WireFrame;
 float AbyssEngine::Engine::nearPlane;

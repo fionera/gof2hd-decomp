@@ -381,9 +381,7 @@ void paintcanvas_ext_get_grav(void *); // lint: void_ptr (external symbol; mangl
 
 void paintcanvas_ext_set_reslist(AbyssEngine::Resource * const *, unsigned int, void *); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void tcg_glActiveTexture(unsigned unit) { glActiveTexture(unit); }
 
-static inline void tcg_glBindTexture(unsigned target, unsigned tex) { glBindTexture(target, tex); }
 
 namespace AbyssEngine {
     int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, SpriteSystem **out);
@@ -1155,22 +1153,20 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     return this->GetScreenPosition(*(AbyssEngine::AEMath::Matrix *) buf, a, b);
 }
 
-static char *paintcanvas_g_fog_flag = (char*)&AbyssEngine::Engine::fogEnabled;
-static char *paintcanvas_g_fog_ptr = (char*)&AbyssEngine::Engine::fogEnabled;
 
-void PaintCanvas::FogEnable(bool mode, AbyssEngine::FogMode enable) {
-    this->fogEnableFlag = enable;
-    if (enable == 0) {
-        if (*paintcanvas_g_fog_flag != 0) {
-            *paintcanvas_g_fog_ptr = (char) mode;
-        } else if (mode == 0) {
-            glDisable(0xb60);
-        } else {
+void PaintCanvas::FogEnable(bool enable, AbyssEngine::FogMode mode) {
+    this->fogEnableFlag = mode;
+    if (mode == 0) {
+        if (Engine::enableShader != 0) {
+            Engine::fogEnabled = enable;
+        } else if (enable) {
             glEnable(0xb60);
+        } else {
+            glDisable(0xb60);
         }
-        mode = 0;
+        enable = false;
     }
-    this->fogMode = (char) mode;
+    this->fogMode = enable;
 }
 
 void PaintCanvas::MeshSetColor(unsigned int index, unsigned short sub,
@@ -2199,23 +2195,18 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
     }
 }
 
-static int *g_tcg_canary_storage = 0;
-static int **g_tcg_canary = &g_tcg_canary_storage;
 
 void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int unit) {
-    int *canary = *g_tcg_canary;
-    int saved = *canary;
-
+    unsigned int outId = 0;
     char *path = name.GetAEChar();
-    unsigned outId;
     int rc = AbyssEngine::TextureCreateFromFile(this->engine, path, nullptr, nullptr,
                                                 &outId, false, 0.0f);
     if (rc == 1) {
-        tcg_glActiveTexture(unit + 0x84c0);
-        tcg_glBindTexture(0xde1, 0);
-        tcg_glActiveTexture(0x84c0);
+        glActiveTexture(unit + 0x84c0);
+        glBindTexture(0xde1, outId);
+        glActiveTexture(0x84c0);
     }
-    ::operator delete[](path);
+    delete[] path;
 }
 
 void PaintCanvas::Begin3d() {
