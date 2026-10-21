@@ -6,7 +6,7 @@ stores into `this`), the field-name dump of Layout.h (offset name lines) and the
 of the default (all flags 0) path, which follows source order.  Every 4-byte field becomes one
 assignment whose right-hand side is the shortest if/else-if chain over the five device flags
 that reproduces the original value for all 32 flag combinations (chain.py)."""
-import json, sys, struct, itertools
+import json, sys, struct, itertools, os
 d = json.load(open(sys.argv[1]))
 names = {}
 for l in open(sys.argv[2]):
@@ -139,8 +139,27 @@ elif style.startswith('hdblock'):
                 out.append(ind(s, 2))
     out.append('    } else {')
     order2 = [int(x, 16) for x in open(sys.argv[6]).read().split()] if len(sys.argv) > 6 else order
+    n9set = set()
+    if 'n9g1' in style:
+        n9set = set(int(x, 16) for x in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'n9_region.txt')).read().split())
+        n9c = [c for c in combos if c[0] == '0' and c[1] == '1']
+        out.append('        if (Globals::n9) {')
+        for w in order2:
+            if w in hdset and w in n9set:
+                n = 1 if w in BYTES else 4
+                vs = {val(c, w, n) for c in n9c}
+                if len(vs) == 1:
+                    out.append('            this->%s = %s;' % (fname(w), lit(w, vs.pop())))
+                else:
+                    out.append(ind(stmt(w, drop=('iPadHD',)), 3))
+        out.append('        } else {')
+        for w in order2:
+            if w in hdset and w in n9set:
+                s = stmt(w, drop=('iPadHD', 'n9'))
+                if s: out.append(ind(s, 3))
+        out.append('        }')
     for w in (sorted(order2) if 'sortall' in style else order2):
-        if w in hdset:
+        if w in hdset and w not in n9set:
             s = stmt(w, drop=('iPadHD',))
             if s: out.append(ind(s, 2))
     out.append('    }')

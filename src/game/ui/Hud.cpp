@@ -1831,7 +1831,7 @@ void Hud::initHudMenu(int menuType, Level *level) {
     this->updateSecondaryWeaponString();
     this->field_0x4cc = 0;
     int rowGap = Globals::layout->field_0x1dc;
-    int y;
+    int y = this->menuBaseY;
     if (Globals::iPad != 0) {
         float top = (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
                                          : (float) *(int *) &Globals::options[88] -
@@ -1843,8 +1843,6 @@ void Hud::initHudMenu(int menuType, Level *level) {
         this->menuOriginY = (int) top;
         y = (int) top + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + 1;
         this->menuBaseY = y;
-    } else {
-        y = this->menuBaseY;
     }
 
     switch (menuType) {
