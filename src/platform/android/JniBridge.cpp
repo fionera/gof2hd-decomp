@@ -38,12 +38,6 @@ jobject g_pActivity;
 char *ndk_APK_Path;
 char *ndk_ZIP_Path;
 
-static bool g_slowMotion;
-static bool g_speedUp;
-
-static float g_gamepadAxisX;
-static float g_gamepadAxisY;
-
 extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits(); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
@@ -504,19 +498,6 @@ extern "C" void ndk23_ndkDone() { // lint: extern_c (native ABI boundary; origin
         delete gEngine;
         gEngine = nullptr;
     }
-}
-
-bool SlowMotion() {
-    return g_slowMotion;
-}
-
-bool SpeedUp() {
-    return g_speedUp;
-}
-
-void setValuesForGamepad(float x, float y) {
-    g_gamepadAxisX = x;
-    g_gamepadAxisY = y;
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
