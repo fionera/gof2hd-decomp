@@ -138,12 +138,13 @@ elif style.startswith('hdblock'):
                 s = stmt(w)
                 out.append(ind(s, 2))
     out.append('    } else {')
-    for w in (sorted(order) if 'sortall' in style else order):
+    order2 = [int(x, 16) for x in open(sys.argv[6]).read().split()] if len(sys.argv) > 6 else order
+    for w in (sorted(order2) if 'sortall' in style else order2):
         if w in hdset:
             s = stmt(w, drop=('iPadHD',))
             if s: out.append(ind(s, 2))
     out.append('    }')
-    for w in order:
+    for w in order2:
         if w not in hdset:
             s = stmt(w)
             if s: out.append(ind(s, 1))

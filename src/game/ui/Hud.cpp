@@ -1176,7 +1176,7 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
                 (*this->keyArray)[j] = key;
                 this->elementBits[j] = e;
                 this->touchFlags = e | this->touchFlags;
-                break;
+                return this->touchFlags;
             }
         }
     }
