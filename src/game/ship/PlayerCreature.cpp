@@ -19,13 +19,10 @@ static const int kCreatureTypeFactor[4] = {1, 1, 1, 0};
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
     : KIPlayer(kind, -1, player, geometry, x, y, z, false) {
-    this->itemIndex = itemIndex;
     this->caught = false;
-    this->endurance = this->maxEndurance;
     this->rageScale = 1.0f;
-    this->rageTimer = 0;
-    this->raging = false;
-    this->hooked = false;
+    this->itemIndex = itemIndex;
+    calmDown();
     this->lastHitpoints = this->player->getHitpoints();
     this->maxEndurance = this->endurance =
             (int) ((float) kCreatureTypeFactor[kind] / 10.0f * 8000.0f) + 8000;
@@ -118,9 +115,8 @@ void PlayerCreature::update(int elapsed) {
         this->player->setActive(false);
         if (this->level->getPlayer()->field_0x14->field_0x1c == this)
             this->level->getPlayer()->field_0x14->field_0x1c = nullptr;
-        Vector position = {this->posX, this->posY, this->posZ};
-        Vector velocity = {0.0f, 0.0f, 0.0f};
-        this->level->field_74->emitManual(this->level->field_34, position, 0, velocity, -1.0f);
+        this->level->field_74->emitManual(this->level->field_34, Vector{this->posX, this->posY, this->posZ}, 0,
+                                          Vector{0.0f, 0.0f, 0.0f}, -1.0f);
     }
 
     if (this->state != 3) {
