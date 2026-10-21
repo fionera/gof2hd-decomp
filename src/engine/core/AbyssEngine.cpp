@@ -1079,9 +1079,10 @@ namespace AbyssEngine {
         int rc = MeshCreate(engine, (unsigned short) ((n & 0x3fff) << 2), (unsigned short) triCount,
                             0x1f, (void **) &sys->mesh); // lint: void_ptr (cast to exported MeshCreate void** param)
         SpriteSystem *s = *out;
+        Mesh *mesh = s->mesh;
         if (rc != 1) {
             MeshRelease(engine, &s->mesh);
-            if (s->posCpu != 0)
+            if ((*out)->posCpu != 0)
                 operator delete[]((*out)->posCpu);
             (*out)->posCpu = 0;
             if ((*out)->sizeCpu != 0)
@@ -1093,29 +1094,26 @@ namespace AbyssEngine {
             return -1;
         }
 
-        Mesh *mesh = s->mesh;
-        int *indexArr = (int *) mesh->indices;
+        unsigned short *indices = (unsigned short *) mesh->indices;
 
-        unsigned char *posCpu = (unsigned char *) operator new[](n * 0xc);
-        s->posCpu = (float *) posCpu;
+        s->posCpu = (float *) operator new[](n * 0xc);
         memset((*out)->posCpu, 0, n * 0xc);
 
         s = *out;
-        s->sharedSize = sharedSize ? 1 : 0;
+        s->sharedSize = sharedSize;
         if (sharedSize) {
-            unsigned char *sz = (unsigned char *) operator new[](2);
-            s->sizeCpu = (int16_t *) sz;
-            *(unsigned short *) (*out)->sizeCpu = 0;
+            s->sizeCpu = (int16_t *) operator new[](2);
+            (*out)->sizeCpu[0] = 0;
         } else {
-            unsigned char *sz = (unsigned char *) operator new[]((n << 1));
-            s->sizeCpu = (int16_t *) sz;
-            memset((*out)->sizeCpu, 0, (n << 1));
+            s->sizeCpu = (int16_t *) operator new[](n << 1);
+            memset((*out)->sizeCpu, 0, n << 1);
         }
 
+        // Two triangles per sprite quad.
+        unsigned short off = 0;
         unsigned short base = 0;
-        unsigned short *idx = (unsigned short *) indexArr;
-        for (unsigned short off = 0; off < n * 6; off += 6) {
-            unsigned short *p = idx + off;
+        for (; off < n * 6; off += 6) {
+            unsigned short *p = indices + off;
             p[0] = base;
             p[1] = base | 1;
             p[2] = base | 2;
@@ -1126,33 +1124,26 @@ namespace AbyssEngine {
         }
 
         Mesh *m = (*out)->mesh;
-        unsigned int vcount = (unsigned int) (unsigned short) m->vertexCount;
+        unsigned int vcount = m->vertexCount;
+        for (unsigned short i = 0; i < vcount * 4; ++i)
+            ((float *) m->colors)[i] = 1.0f;
 
-        float *colors = (float *) m->colors;
-        for (unsigned int i = 0; i <= vcount * 4 && vcount * 4 - i != 0; ++i)
-            colors[i] = 1.0f;
-
-        char tangent = Engine::enableShader;
-        float *normals = (float *) m->normals;
-        float *tangents = (float *) m->tangents;
-        float *binormals = (float *) m->binormals;
-        unsigned int vi = 0;
-        for (unsigned int k = vcount; k != 0; --k) {
-            float *nrm = normals + vi;
+        unsigned char shader = Engine::enableShader;
+        for (unsigned int v = 0; v < vcount; ++v) {
+            float *nrm = (float *) m->normals + v * 3;
             nrm[0] = 0.0f;
             nrm[1] = 0.0f;
             nrm[2] = 1.0f;
-            if (tangent != 0) {
-                float *tan = tangents + vi;
+            if (shader) {
+                float *tan = (float *) m->tangents + v * 3;
                 tan[0] = 1.0f;
                 tan[1] = 0.0f;
                 tan[2] = 0.0f;
-                float *bin = binormals + vi;
+                float *bin = (float *) m->binormals + v * 3;
                 bin[0] = 0.0f;
                 bin[1] = 1.0f;
                 bin[2] = 0.0f;
             }
-            vi += 3;
         }
 
         return 1;
