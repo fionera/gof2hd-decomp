@@ -1,12 +1,12 @@
 {
  "verify": {
   "byte_exact": 1300,
-  "linked_exact": 3799,
+  "linked_exact": 3811,
   "stub_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "extra": 19,
-  "avg_match": 92.45,
+  "avg_match": 92.75,
   "compared": 4523
  },
  "imports": [
@@ -64,7 +64,6 @@
   "_Z18EaseInOut_GetValuePv",
   "_Z18Item_getAmount_otev",
   "_Z18MatrixRotateVectorPN11AbyssEngine6AEMath6VectorEPKNS0_6MatrixEPKS1_",
-  "_Z18MatrixRotateVectorPvPKvS1_",
   "_Z18MatrixRotateVectorRN11AbyssEngine6AEMath6VectorERKNS0_6MatrixERKS1_",
   "_Z18Mission_getType_oiv",
   "_Z18Mission_getType_ouv",
@@ -117,7 +116,6 @@
   "_Z21Ship_removeCargo1_oteP4Item",
   "_Z21Station_removeShip_oiP4Ship",
   "_Z21Status_setMission_otei",
-  "_Z21TransformGetTransformPvj",
   "_Z21_mtw_draw_optionsTabsPv",
   "_Z21_mtw_steerFromTouchIdPviiS_",
   "_Z22CutScene_initialize_oiP8CutScene",
