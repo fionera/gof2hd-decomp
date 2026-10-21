@@ -1139,16 +1139,19 @@ void Status::nextCampaignMission(bool advance) {
         case 11:
             setCampaignMission(new Mission(11, 0, 79));
             break;
-        case 47:
-            this->field_8c = (int32_t)(intptr_t)this->ship;
-            this->ship = 0;
-            setShip((*Globals::ships)[9]->makeShip(-1));
-            this->ship->setRace(1);
-            Globals::status->ship->setEquipment((*Globals::items)[58]->makeItem(), 0);
-            Globals::status->ship->setEquipment((*Globals::items)[83]->makeItem(), 1);
-            Globals::status->fadeValue = 0;
-            setCampaignMission(new Mission(11, 0, 58));
-            break;
+        case 47: {
+                this->field_8c = (int32_t)(intptr_t)this->ship;
+                this->ship = 0;
+                setShip((*Globals::ships)[9]->makeShip(-1));
+                this->ship->setRace(1);
+                Item *item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                Globals::status->fadeValue = 0;
+                setCampaignMission(new Mission(11, 0, 58));
+                break;
+            }
         case 16:
             setCampaignMission(new Mission(11, 0, 98));
             break;
@@ -1218,8 +1221,8 @@ void Status::nextCampaignMission(bool advance) {
             setCampaignMission(new Mission(4, 0, 55));
             break;
         case 23:
-            this->field_7c = 9;
             this->field_80 = 48;
+            this->field_7c = 9;
             setCampaignMission(new Mission(4, 0, 48));
             break;
         case 34:
@@ -1320,17 +1323,22 @@ void Status::nextCampaignMission(bool advance) {
             setShip((Ship *)(intptr_t)this->field_8c);
             this->field_8c = 0;
             break;
-        case 55:
-            this->field_8c = (int32_t)(intptr_t)this->ship;
-            this->ship = 0;
-            setShip((*Globals::ships)[39]->makeShip(-1));
-            this->ship->setRace(1);
-            Globals::status->ship->setEquipment((*Globals::items)[181]->makeItem(), 0);
-            Globals::status->ship->setEquipment((*Globals::items)[52]->makeItem(), 0);
-            Globals::status->ship->setEquipment((*Globals::items)[58]->makeItem(), 1);
-            Globals::status->ship->setEquipment((*Globals::items)[83]->makeItem(), 2);
-            setCampaignMission(new Mission(4, 0, 102));
-            break;
+        case 55: {
+                this->field_8c = (int32_t)(intptr_t)this->ship;
+                this->ship = 0;
+                setShip((*Globals::ships)[39]->makeShip(-1));
+                this->ship->setRace(1);
+                Item *item = (*Globals::items)[181]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[52]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 2);
+                setCampaignMission(new Mission(4, 0, 102));
+                break;
+            }
         case 56:
             setCampaignMission(new Mission(11, 150000, 101));
             break;
@@ -1477,13 +1485,15 @@ void Status::nextCampaignMission(bool advance) {
         case 92:
             setCampaignMission(new Mission(11, 0, 114));
             break;
-        case 93:
-            Globals::status->ship->addCargo((*Globals::items)[205]->makeItem(1));
-            setCampaignMission(new Mission(184, 0, 111));
-            (*this->missions)[0]->setProductionGoods(0, 83);
-            (*this->missions)[0]->setStatusValue(83);
-            this->field_178 = 0;
-            break;
+        case 93: {
+                Item *item = (*Globals::items)[205]->makeItem(1);
+                Globals::status->ship->addCargo(item);
+                setCampaignMission(new Mission(184, 0, 111));
+                (*this->missions)[0]->setProductionGoods(0, 83);
+                (*this->missions)[0]->setStatusValue(83);
+                this->field_178 = 0;
+                break;
+            }
         case 94:
             setCampaignMission(new Mission(170, 0, 10));
             (*this->missions)[0]->setStatusValue(0);
@@ -1505,12 +1515,14 @@ void Status::nextCampaignMission(bool advance) {
         case 100:
             setCampaignMission(new Mission(11, 0, 98));
             break;
-        case 101:
-            Globals::status->ship->addCargo((*Globals::items)[207]->makeItem(1));
-            setCampaignMission(new Mission(184, 0, 113));
-            (*this->missions)[0]->setProductionGoods(0, 1700);
-            (*this->missions)[0]->setStatusValue(1700);
-            break;
+        case 101: {
+                Item *item = (*Globals::items)[207]->makeItem(1);
+                Globals::status->ship->addCargo(item);
+                setCampaignMission(new Mission(184, 0, 113));
+                (*this->missions)[0]->setProductionGoods(0, 1700);
+                (*this->missions)[0]->setStatusValue(1700);
+                break;
+            }
         case 102:
             setCampaignMission(new Mission(11, 0, 10));
             break;
@@ -1731,11 +1743,13 @@ void Status::nextCampaignMission(bool advance) {
             setCampaignMission(new Mission(154, 0, 78));
             (*this->missions)[0]->setStatusValue(25);
             break;
-        case 9:
-            this->ship->removeEquipment(this->ship->getFirstEquipmentOfSort(19));
+        case 9: {
+            Item *engine = this->ship->getFirstEquipmentOfSort(19);
+            this->ship->removeEquipment(engine);
             this->ship->addEquipment((*Globals::items)[86]->makeItem(1));
             setCampaignMission(new Mission(11, 0, 79));
             break;
+        }
         case 35:
             setCampaignMission(new Mission(12, 0, 27));
             break;
@@ -1749,8 +1763,8 @@ void Status::nextCampaignMission(bool advance) {
             setCampaignMission(new Mission(11, 0, 78));
             break;
         case 27:
-            this->field_7c = 18;
             this->field_80 = 91;
+            this->field_7c = 18;
             setCampaignMission(new Mission(4, 0, 91));
             break;
         case 46:
@@ -1764,17 +1778,22 @@ void Status::nextCampaignMission(bool advance) {
             setCampaignMission(new Mission(160, 0, 27));
             (*this->missions)[0]->setVisible(false);
             break;
-        case 48:
-            setShip((*Globals::ships)[41]->makeShip(-1));
-            this->ship->setRace(1);
-            for (int i = 0; i < 3; i++) {
-                Globals::status->ship->setEquipment((*Globals::items)[177]->makeItem(), i);
+        case 48: {
+                setShip((*Globals::ships)[41]->makeShip(-1));
+                this->ship->setRace(1);
+                for (int i = 0; i < 3; i++) {
+                    Item *item = (*Globals::items)[177]->makeItem();
+                    Globals::status->ship->setEquipment(item, i);
+                }
+                Item *item = (*Globals::items)[58]->makeItem();
+                Globals::status->ship->setEquipment(item, 0);
+                item = (*Globals::items)[83]->makeItem();
+                Globals::status->ship->setEquipment(item, 1);
+                item = (*Globals::items)[52]->makeItem();
+                Globals::status->ship->setEquipment(item, 2);
+                setCampaignMission(new Mission(156, 0, 58));
+                break;
             }
-            Globals::status->ship->setEquipment((*Globals::items)[58]->makeItem(), 0);
-            Globals::status->ship->setEquipment((*Globals::items)[83]->makeItem(), 1);
-            Globals::status->ship->setEquipment((*Globals::items)[52]->makeItem(), 2);
-            setCampaignMission(new Mission(156, 0, 58));
-            break;
         case 5:
             this->ship->removeAllCargo();
             setCampaignMission(new Mission(158, 0, 78));
