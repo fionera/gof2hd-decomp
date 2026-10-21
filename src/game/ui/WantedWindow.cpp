@@ -177,12 +177,7 @@ bool WantedWindow::OnTouchEnd(int x, int y) {
             // Back from the star map: restore the window frame.
             int width;
             int height;
-            if (!Globals::iPad) {
-                this->windowX = 0;
-                this->windowY = 0;
-                height = Globals::h;
-                width = Globals::w;
-            } else {
+            if (Globals::iPad) {
                 int halfWidth;
                 if (Globals::iPadHD) {
                     height = 703;
@@ -197,10 +192,13 @@ bool WantedWindow::OnTouchEnd(int x, int y) {
                     }
                     halfWidth = (unsigned int) width >> 1;
                 }
-                int x = (Globals::w >> 1) - halfWidth;
-                int y = (Globals::h >> 1) - ((unsigned int) height >> 1);
-                this->windowX = x;
-                this->windowY = y;
+                this->windowX = (Globals::w >> 1) - halfWidth;
+                this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
+            } else {
+                width = Globals::w;
+                height = Globals::h;
+                this->windowX = 0;
+                this->windowY = 0;
             }
             this->windowWidth = width;
             this->windowHeight = height;

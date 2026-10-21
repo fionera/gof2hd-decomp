@@ -80,7 +80,7 @@ ListItem *HangarList::getCurrentItemAt(int index) {
     if (tabs != nullptr) {
         Array<ListItem *> *items = (*tabs)[this->currentTab];
         if (items != nullptr) {
-            if (index >= 0 && static_cast<int>(items->size()) > index) {
+            if (static_cast<int>(items->size()) > index && index >= 0) {
                 return (*items)[index];
             }
         }

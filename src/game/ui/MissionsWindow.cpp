@@ -461,12 +461,7 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
         if (this->m_pStarMap->OnTouchEnd(x, y)) {
             int width;
             int height;
-            if (!Globals::iPad) {
-                height = Globals::h;
-                width = Globals::w;
-                this->m_x = 0;
-                this->m_y = 0;
-            } else {
+            if (Globals::iPad) {
                 int halfWidth;
                 if (Globals::iPadHD) {
                     height = 703;
@@ -481,10 +476,13 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
                     }
                     halfWidth = (unsigned int) width >> 1;
                 }
-                int left = (Globals::w >> 1) - halfWidth;
-                int top = (Globals::h >> 1) - ((unsigned int) height >> 1);
-                this->m_x = left;
-                this->m_y = top;
+                this->m_x = (Globals::w >> 1) - halfWidth;
+                this->m_y = (Globals::h >> 1) - ((unsigned int) height >> 1);
+            } else {
+                width = Globals::w;
+                height = Globals::h;
+                this->m_x = 0;
+                this->m_y = 0;
             }
             this->m_width = width;
             this->m_height = height;

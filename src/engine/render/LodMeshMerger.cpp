@@ -196,13 +196,12 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     float ax = extent.x > 0.0f ? extent.x : -extent.x;
     float ay = extent.y > 0.0f ? extent.y : -extent.y;
     float az = extent.z > 0.0f ? extent.z : -extent.z;
-    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center);
     float radius = az;
     if (ay > radius)
         radius = ay;
     if (ax > radius)
         radius = ax;
-    AbyssEngine::AEMath::BSphere bounds = {center, radius, 1.0f};
+    AbyssEngine::AEMath::BSphere bounds = {AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center), radius, 1.0f};
     out->bounds = bounds;
     return out;
 }

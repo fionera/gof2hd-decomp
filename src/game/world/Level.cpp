@@ -1488,7 +1488,7 @@ void Level::createFighterTurrets() {
         if (ship == nullptr) {
             continue;
         }
-        PlayerTurret *turret;
+        PlayerTurret *turret = nullptr;
         switch (ship->shipGroupFlag) {
             case 0x33: {
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
@@ -1508,11 +1508,11 @@ void Level::createFighterTurrets() {
                 ship->field_0x10 = (int) (intptr_t) turret;
                 turret->shipGroup = 8;
                 break;
-            default:
-                continue;
         }
-        turret->field_0x74 = 1;
-        ArrayAdd((KIPlayer *) turret, *enemies);
+        if (turret != nullptr) {
+            turret->field_0x74 = 1;
+            ArrayAdd((KIPlayer *) turret, *enemies);
+        }
     }
 }
 
@@ -4676,11 +4676,10 @@ void Level::enemyDied(int /*index*/, bool killedByFriend) {
     // medal 40: kills without a scanner
     if (!static_cast<Radar *>(player->field_0x14)->hasScanner()
         && !Globals::achievements->hasMedal(0x28, 1)) {
-        int count = Globals::status->field_11c;
         if (!Globals::status->field_120) {
-            Globals::status->field_11c = ++count;
+            Globals::status->field_11c++;
         }
-        if ((int) ((float) count / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
+        if ((int) ((float) Globals::status->field_11c / (float) Globals::achievements->getValue(0x28, 1) * 100.0f) % 10 == 0) {
             ((Hud *) player->getHUD())->hudEventMedal(0x28,
                     (int) ((float) Globals::status->field_11c
                            / (float) Globals::achievements->getValue(0x28, 1) * 100.0f));
