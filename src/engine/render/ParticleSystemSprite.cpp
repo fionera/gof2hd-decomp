@@ -149,26 +149,21 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
 }
 
 void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha) {
-    float c0 = (float) (color & 0xff);
-    float c1 = (float) ((color >> 8) & 0xff);
-    float c2 = (float) ((color >> 16) & 0xff);
-    float c3 = (float) (color >> 24);
-
-    c0 = c0 * (1.0f / 255.0f);
-    c1 = c1 * (1.0f / 255.0f);
-    c2 = c2 * (1.0f / 255.0f);
-    c3 = c3 * (1.0f / 255.0f);
+    float a = (float) (color & 0xff) * 0.003921569f;
+    float b = (float) ((color >> 8) & 0xff) * 0.003921569f;
+    float g = (float) ((color >> 16) & 0xff) * 0.003921569f;
+    float r = (float) (color >> 24) * 0.003921569f;
 
     if (this->alphaFade == 0) {
-        c0 = c0 * alpha;
+        a *= alpha;
     } else {
-        c1 = c1 * alpha;
-        c2 = c2 * alpha;
-        c3 = c3 * alpha;
+        b *= alpha;
+        g *= alpha;
+        r *= alpha;
     }
 
     this->canvas->SpriteSystemSetRGBA(this->resource,
-                                      (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
+                                      (uint16_t)(this->idOffset + index), r, g, b, a);
 }
 
 void ParticleSystemSprite::enable(bool enabled) {
