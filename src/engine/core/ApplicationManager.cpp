@@ -513,9 +513,9 @@ void ApplicationManager::OnUpdate(long long now) {
                         this->loadingCallback(this->paintCanvas, loading, this->loadingCallbackData);
                     }
                     if (loading == 0) {
-                        this->actionState = 0;
-                        this->state = 5;
                         this->previousFrameTimeMs = now - 1;
+                        this->state = 5;
+                        this->actionState = 0;
                         this->currentTimeMs = 0;
                         this->frameTimeMs = now;
                         this->keyState = 0;
