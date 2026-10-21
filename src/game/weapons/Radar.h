@@ -155,7 +155,7 @@ public:
 
     void drawCurrentLock(Hud *hud);
 
-    void calcDistance(float p0, float a, float b, float c, float d, float e);
+    AbyssEngine::String calcDistance(float x1, float y1, float z1, float x2, float y2, float z2);
 
     static unsigned char drawTarget;
 };

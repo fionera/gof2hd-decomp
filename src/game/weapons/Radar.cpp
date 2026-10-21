@@ -250,34 +250,26 @@ void Radar::drawCurrentLock(Hud *) {
     }
 }
 
-void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
-    long long dx = static_cast<long long>(a * 0.5f - d * 0.5f);
-    long long dy = static_cast<long long>(c * 0.5f - e * 0.5f);
-    long long dz = static_cast<long long>(b * 0.5f - e * 0.5f);
-    long long total = dy * dy + dx * dx + dz * dz;
-    int distance = static_cast<int>(std::sqrt(static_cast<float>(total) * 0.001f));
+String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    long long dx = static_cast<long long>(x1 * 0.5f - x2 * 0.5f);
+    long long dz = static_cast<long long>(z1 * 0.5f - z2 * 0.5f);
+    long long dy = static_cast<long long>(y1 * 0.5f - y2 * 0.5f);
+    long long squared = dy * dy + dx * dx + dz * dz;
+    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
     int meters = distance << 3;
 
-    String text;
-    text.Set_longlong(meters);
-
+    String text = String(meters) + String("m", false);
     if (distance >= 125) {
         int remainder = meters % 1000;
-        if (remainder < 100) {
-            text.Set_char("");
+        if (remainder >= 100) {
+            text = String(remainder);
         } else {
-            text.Set_longlong(remainder);
+            text = String("0", false);
         }
-
-        String head;
-        head = text.SubString(0, 1);
-        text = head;
-
-        unsigned kilometers = static_cast<unsigned>(distance) / 125u;
-        String km;
-        km.Set_longlong(static_cast<long long>(kilometers));
-        text = km + text;
+        text = text.SubString(0, 1);
+        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
     }
+    return text;
 }
 
 unsigned char Radar::drawTarget;
