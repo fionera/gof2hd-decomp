@@ -6023,7 +6023,7 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
         Vector size = {0.0f, 0.0f, 0.0f};
         volumes = new Array<BoundingVolume *>();
         ArraySetLength(count, *volumes);
-        for (int i = 0, cursor = 1; i < count; i++) {
+        for (int cursor = 1, i = 0; i < count; i++) {
             switch ((*collision)[cursor++]) {
                 case 0: {
                     Vector pos = {(float) -(*collision)[cursor], (float) (*collision)[cursor + 1],
