@@ -96,6 +96,10 @@ namespace {
 
 const char *g_android_origami_super_club = nullptr;
 
+struct Sha256Context {
+    unsigned char state[0x70];
+};
+
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub( // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     JNIEnv *env, jobject /*thiz*/, jstring value) {
     jboolean isCopy;
@@ -286,37 +290,31 @@ void RecordHandler::convertSDVersionSaves() {
     return;
 }
 
-static const unsigned char RH_ah_salt[0x19] = {};
-
-static unsigned char **RH_ah_key = nullptr;
-
 void RecordHandler::addHash(int slot) {
     signed char *data = 0;
-    int len = this->readRecordAsByteArray(&data, slot, false);
-    if (-1 < len) {
-        unsigned char *md = new unsigned char[0x20];
-        unsigned char *c = new unsigned char[0x70];
-        SHA256_Init(c);
-        SHA256_Update(c, data, len);
-        SHA256_Update(c, RH_ah_salt, 0x19);
-        SHA256_Update(c, *RH_ah_key, 0x10);
-        SHA256_Final(md, c);
-
-        signed char *out = new signed char[len + 0x20];
-        memcpy(out, data, len);
-        unsigned long long *dst = (unsigned long long *) (out + len);
-        unsigned long long *src = (unsigned long long *) md;
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst[3] = src[3];
-        this->writeByteArrayAsRecord(out, len + 0x20, slot, false);
-
-        delete[] data;
-        delete[] out;
-        delete[] md;
-        delete[] c;
+    int length = this->readRecordAsByteArray(&data, slot, false);
+    if (length < 0) {
+        return;
     }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
+
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsRecord(hashed, length + 32, slot, false);
+
+    delete[] data;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
 }
 
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
@@ -2389,71 +2387,63 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-static const unsigned char RH_ch_salt[0x19] = {};
-
-static unsigned char **RH_ch_key = nullptr;
-
 bool RecordHandler::checkHash(unsigned int fd) {
-    int result = 0;
+    bool valid = false;
+    int size = AEFile::GetFileSize(fd);
+    if (size >= 0) {
+        unsigned char *buffer = new unsigned char[size];
+        AEFile::Read(size, buffer, fd);
+        Array<unsigned char> *bytes = new Array<unsigned char>();
+        ArrayAdd(buffer, size, *bytes);
+        delete[] buffer;
 
-    int sz = AEFile::GetFileSize(fd);
-    if (-1 < sz) {
-        unsigned char *buf = new unsigned char[(unsigned) sz];
-        AEFile::Read((unsigned) sz, (signed char *) buf, fd);
-        Array<unsigned char> *arr = new Array<unsigned char>();
-        ArrayAdd(buf, (unsigned) sz, *arr);
-        delete[] buf;
+        if (bytes->size() >= 34) {
+            unsigned char *digest = new unsigned char[32];
+            Sha256Context *context = new Sha256Context;
+            SHA256_Init(context);
+            SHA256_Update(context, bytes->data(), bytes->size() - 32);
+            char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+            SHA256_Update(context, salt, 25);
+            SHA256_Update(context, g_android_origami_super_club, 16);
+            SHA256_Final(digest, context);
 
-        unsigned len = arr->size();
-        if (0x21 < len) {
-            unsigned char *md = new unsigned char[0x20];
-            unsigned char *c = new unsigned char[0x70];
-            SHA256_Init(c);
-            unsigned char *data = arr->data();
-            SHA256_Update(c, data, (int) len - 0x20);
-            SHA256_Update(c, RH_ch_salt, 0x19);
-            SHA256_Update(c, *RH_ch_key, 0x10);
-            SHA256_Final(md, c);
-
-            result = (CRYPTO_memcmp(md, &data[(int) len - 0x20], 0x20) == 0) ? 1 : 0;
-            delete[] md;
-            delete[] c;
+            valid = true;
+            for (unsigned int i = 0; i < 32; i++) {
+                if (digest[i] != (*bytes)[bytes->size() - 32 + i]) {
+                    valid = false;
+                    break;
+                }
+            }
+            delete[] digest;
+            delete context;
         }
     }
-
-    return result;
+    return valid;
 }
-
-static const unsigned char RH_aho_salt[0x19] = {};
-
-static unsigned char **RH_aho_key = nullptr;
 
 void RecordHandler::addHashToOptions() {
     signed char *data = 0;
-    int len = this->readOptionsFileAsByteArray(&data);
-    if (len < 0)
+    int length = this->readOptionsFileAsByteArray(&data);
+    if (length < 0) {
         return;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
 
-    unsigned char *md = new unsigned char[0x20];
-    unsigned char *c = new unsigned char[0x70];
-    SHA256_Init(c);
-    SHA256_Update(c, data, len);
-    SHA256_Update(c, RH_aho_salt, 0x19);
-    SHA256_Update(c, *RH_aho_key, 0x10);
-    SHA256_Final(md, c);
-
-    signed char *out = new signed char[len + 0x20];
-    memcpy(out, data, len);
-    unsigned long long *dst = (unsigned long long *) (out + len);
-    unsigned long long *src = (unsigned long long *) md;
-    dst[0] = src[0];
-    dst[1] = src[1];
-    dst[2] = src[2];
-    dst[3] = src[3];
-    this->writeByteArrayAsOptionsFile(out, len + 0x20);
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsOptionsFile(hashed, length + 32);
 
     delete[] data;
-    delete[] out;
-    delete[] md;
-    delete[] c;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
 }
