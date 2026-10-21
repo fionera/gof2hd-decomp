@@ -441,30 +441,28 @@ namespace {
 // Returns 1 when the mouse cursor was just hidden, -1 when it was just shown, 0 otherwise.
 int ActualizeMouseVisibilty(int force) {
     if (Globals::mouseCursorActivated != 0) {
-        bool arrows = ArrowKeyPressed();
+        const bool arrows = ArrowKeyPressed();
         if ((g_mousePointerLatch != -1 || Globals::isCinematicModeActive != 0) &&
             Globals::appManager->GetCurrentApplicationModule() == 2) {
-            bool steering;
-            bool keep = false;
+            // In flight the cursor stays while a cinematic steers or no menu is up.
+            int steering;
             if (IsInGameSubMenuNotActive(2)) {
-                if ((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
-                     Globals::is_hacking_visible) == 0) {
-                    steering = Globals::isCinematicModeActive != 0;
-                    keep = true;
-                }
-            } else if (Globals::isCinematicModeActive != 0 &&
-                       (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
-                        Globals::is_hacking_visible) == 0) {
-                steering = true;
-                keep = true;
+                if (!noBlockingOverlay())
+                    goto hide;
+                steering = Globals::isCinematicModeActive != 0;
+            } else {
+                if (Globals::isCinematicModeActive == 0 || !noBlockingOverlay())
+                    goto hide;
+                steering = 1;
             }
-            if (keep && (steering | (Globals::is_menu_visible == 0)) == 1 && !Globals::isStarMapVisible &&
+            if ((steering | (Globals::is_menu_visible == 0)) == 1 && !Globals::isStarMapVisible &&
                 force == 0 && Globals::showMouseDuringGameOver == 0) {
                 if (!arrows || Globals::appManager->GetCurrentApplicationModule() != 2)
                     goto stillVisible;
             }
         }
 
+hide:
         Globals::mouseCursorActivated = 0;
         if (force == 0)
             g_mousePointerLatch = Globals::is_hacking_visible == 0 && g_mousePointerLatch != -1;
