@@ -6,7 +6,7 @@
   "missing": 0,
   "wrong_type": 0,
   "extra": 16,
-  "avg_match": 95.04,
+  "avg_match": 95.12,
   "compared": 4523
  },
  "data": {
@@ -27,7 +27,6 @@
   "_Z13FileRead_ctorPv",
   "_Z13FileRead_dtorPv",
   "_Z14CameraGetLocalPvj",
-  "_Z14_mtw_buildMenuPvi",
   "_Z15Ship_setRace_oii",
   "_Z15_mtw_draw_storePv",
   "_Z16BoundingAAB_ctorPvffffff",
@@ -46,7 +45,6 @@
   "_Z17AERandom_nextIntBii",
   "_Z17Item_getAmount_oiv",
   "_Z17MatrixSetRotationPN11AbyssEngine6AEMath6MatrixEfff",
-  "_Z17MatrixSetRotationPvfff",
   "_Z17Ship_addCargo_oteP4Item",
   "_Z17Ship_getCargo_otev",
   "_Z17Ship_getIndex_otev",
@@ -86,7 +84,6 @@
   "_Z20DlcMenu_build_oiImplP10ModStation",
   "_Z20Item_makeItemDesc_oii",
   "_Z20MatrixSetTranslationPN11AbyssEngine6AEMath6MatrixEfff",
-  "_Z20MatrixSetTranslationPvfff",
   "_Z20Mission_getBonus_otev",
   "_Z20Radio_addMessage_oteP5Radioi",
   "_Z20Ship_hasEquipment_oiii",
