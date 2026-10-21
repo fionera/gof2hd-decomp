@@ -1379,14 +1379,12 @@ int Level::init() {
                 } else {
                     // leaving a station: start in front of its planet, facing away from it
                     Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
-                    int planet;
-                    for (planet = 0; (unsigned int) planet < stations->size(); planet++) {
-                        if ((*stations)[planet] == (*stationStack)[1]->getIndex()) {
+                    int planet = -1;
+                    for (unsigned int k = 0; k < stations->size(); k++) {
+                        if ((*stations)[k] == (*stationStack)[1]->getIndex()) {
+                            planet = k;
                             break;
                         }
-                    }
-                    if ((unsigned int) planet >= stations->size()) {
-                        planet = -1;
                     }
                     Vector position = {0.0f, 0.0f, 25000.0f};
                     if (planet >= 0) {
@@ -1422,19 +1420,21 @@ int Level::init() {
     if (mission == nullptr) {
         Globals::status->setMission(Mission::empty);
     }
-    int mode = missionPtr;
-    if (mode != 3) {
-        createScene();
-        missionPtr = mode;
-    } else if (mission->isEmpty() || !mission->isCampaignMission()
-               || (Globals::status->gameWon() && !(Globals::options[0x35] | Globals::options[0x37]))) {
+    if ((missionPtr == 3 && (mission->isEmpty() || !mission->isCampaignMission()))
+        || (missionPtr == 3 && Globals::status->gameWon() && !(Globals::options[0x35] || Globals::options[0x37]))) {
         createMission();
         bool blackMarket = Globals::status->inBlackMarketSystem();
         if (initStreamOutPosition && blackMarket) {
             player->setPosition(player->getPosition() + Vector{0.0f, 0.0f, 40000.0f});
         }
-    } else if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->isCampaignMission()) {
-        createCampaignMission();
+    } else if (missionPtr == 3) {
+        if (!Globals::status->getMission()->isEmpty() && Globals::status->getMission()->isCampaignMission()) {
+            createCampaignMission();
+        }
+    } else {
+        int mode = missionPtr;
+        createScene();
+        missionPtr = mode;
     }
 
     createStaticObjects();
@@ -1463,12 +1463,12 @@ int Level::init() {
             }
         }
     }
-    asteroidsLeft = 0;
     enemiesLeft = enemies != nullptr ? count - field_120 : 0;
+    asteroidsLeft = 0;
+    asteroidsLeft = asteroids != nullptr ? (int) asteroids->size() : 0;
     field_184 = 0;
     field_188 = 0;
     field_1c = 0;
-    asteroidsLeft = asteroids != nullptr ? (int) asteroids->size() : 0;
     kills = 0;
     friendCargoStolen = 0;
     field_70 = 1;
@@ -6520,8 +6520,8 @@ void Level::createGasClouds() {
     gasClouds = new Array<KIPlayer *>();
     bool bossOrbit = Globals::status->getCurrentCampaignMission() == 0x8e
                      && Globals::status->getStation()->getIndex() == 0x4f;
-    ArraySetLength((unsigned int) ((bossOrbit ? 3.0f : 0.0f)
-                                   + (float) plasma[1] / 100.0f * (float) (Globals::rnd->nextInt(4) + 4)),
+    int count = Globals::rnd->nextInt(4) + 4;
+    ArraySetLength((unsigned int) ((float) plasma[1] / 100.0f * (float) count + (bossOrbit ? 3.0f : 0.0f)),
                    *gasClouds);
     for (unsigned int i = 0; i < gasClouds->size(); i++) {
         int kind = plasma[0];
@@ -6529,11 +6529,11 @@ void Level::createGasClouds() {
             position.x = (float) (Globals::rnd->nextInt(160000) - 80000);
             position.y = (float) (Globals::rnd->nextInt(160000) - 80000);
             position.z = (float) (Globals::rnd->nextInt(160000) - 80000);
-        } while (AbyssEngine::AEMath::VectorLength(position) <= 25000.0f
-                 || AbyssEngine::AEMath::VectorLength(position - reinterpret_cast<Vector &>(stationPosition.x)) <= 30000.0f);
-        if (i == 0 && bossOrbit) {
-            position.y = 0.0f;
+        } while (!(AbyssEngine::AEMath::VectorLength(position) > 25000.0f
+                   && AbyssEngine::AEMath::VectorLength(position - reinterpret_cast<Vector &>(stationPosition.x)) > 30000.0f));
+        if (bossOrbit && i == 0) {
             position.x = 92000.0f;
+            position.y = 0.0f;
             position.z = 36000.0f;
         }
         AEGeometry *geometry = new AEGeometry(0x37d1, Globals::Canvas, false);
