@@ -57,7 +57,7 @@ bool TouchButton::OnTouchMove(int px, int py) {
     return false;
 }
 
-uint8_t TouchButton::isVisible() {
+bool TouchButton::isVisible() {
     return this->visible;
 }
 

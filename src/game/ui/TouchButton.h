@@ -41,9 +41,9 @@ public:
     int textOffsetY;
     int textColor;
     bool touched;
-    unsigned char alwaysPressed;
-    unsigned char visible;
-    unsigned char halfTransparent;
+    bool alwaysPressed;
+    bool visible;
+    bool halfTransparent;
     uint32_t iconTexId;
     unsigned char progressHighlight;
     float pressProgress;
@@ -88,7 +88,7 @@ public:
 
     bool isTouched();
 
-    uint8_t isVisible();
+    bool isVisible();
 
     void replaceTextKeepSize(String const &text);
 
