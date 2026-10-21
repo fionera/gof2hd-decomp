@@ -514,7 +514,7 @@ void Explosion::render() {
         AbyssEngine::AEMath::MatrixSetScaling(cameraLocal, scale, scale, scale);
 
         if ((uint32_t) this->type - 8 < 3) {
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) &cameraLocal, *(const Matrix *) &this->rotation);
+            *(Matrix *) &cameraLocal *= *(const Matrix *) &this->rotation;
         }
 
         this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &cameraLocal);

@@ -130,8 +130,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
         geom->setPosition(x, y, z);
         *(Matrix *) this->player->transform = geom->getMatrix();
         if (this->parentGeometry != 0)
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) this->player->transform,
-                                                this->parentGeometry->getMatrix());
+            *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
     }
 
     this->posX = x;
@@ -583,7 +582,7 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
     *(Matrix *) this->player->transform = this->geometry->getMatrix();
     if (this->parentGeometry != 0) {
         Matrix &pm = this->parentGeometry->getMatrix();
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) this->player->transform, pm);
+        *(Matrix *) this->player->transform *= pm;
     }
 }
 
@@ -592,8 +591,7 @@ void KIPlayer::setPosition(const Vector &v) {
         this->geometry->setPosition(v);
         *(Matrix *) this->player->transform = this->geometry->getMatrix();
         if (this->parentGeometry != 0)
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) this->player->transform,
-                                                this->parentGeometry->getMatrix());
+            *(Matrix *) this->player->transform *= this->parentGeometry->getMatrix();
     }
 }
 
