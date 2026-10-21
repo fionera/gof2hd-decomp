@@ -156,13 +156,12 @@ extern "C" void ndk23_handleAcceleration(float x, float y, float z) { // lint: e
         tiltA = ay;
         tiltB = ax;
     }
-    if (gEngine == nullptr)
-        return;
-
     double az = z;
     double accelX = -tiltB;
     double accelY = -tiltA;
     double accelZ = -az;
+    if (gEngine == nullptr)
+        return;
     if (gEngine->appManager->paintCanvas->initialized) {
         gGravity[0] = gGravity[0] * 0.95 + tiltB * 0.05;
         gGravity[1] = gGravity[1] * 0.95 + tiltA * 0.05;
