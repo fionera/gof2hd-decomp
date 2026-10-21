@@ -84,23 +84,23 @@ namespace AbyssEngine {
             {
                 Mesh *mesh = region->mesh;
                 float *pos = (float *) mesh->positions;
-                float w = (float) region->sizeX;
-                float h = (float) region->sizeY;
                 pos[0] = 0;
                 pos[1] = 0;
                 pos[2] = 0;
+                float w = (float) region->sizeX;
                 pos[3] = w;
                 pos[4] = 0;
                 pos[5] = 0;
                 pos[6] = w;
+                float h = (float) region->sizeY;
                 pos[7] = h;
                 pos[8] = 0;
                 pos[9] = 0;
                 pos[10] = h;
                 pos[11] = 0;
 
-                float invH = (float) (1.0 / (double) region->atlasH);
                 float invW = (float) (1.0 / (double) region->atlasW);
+                float invH = (float) (1.0 / (double) region->atlasH);
                 float u0 = (float) region->offX * invW;
                 float v0 = (float) region->offY * invH;
                 float u1 = (w + (float) (short) region->offX) * invW;
