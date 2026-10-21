@@ -457,8 +457,8 @@ Agent *Generator::createAgent(Station *station) {
         race = Globals::rnd->nextInt(8);
     }
 
-    int offer = -1;
     bool valid = false;
+    int offer = -1;
     while (!valid) {
         offer = Globals::rnd->nextInt(7);
         valid = false;
@@ -508,10 +508,10 @@ Agent *Generator::createAgent(Station *station) {
                  (*items)[selected]->getOccurence() == 0);
         Item *item = (*items)[selected];
         int amount = Globals::rnd->nextInt(15);
-        if (item->getType() != 3 && item->getType() != 0 && item->getType() != 2) {
-            amount += 5;
-        } else {
+        if (item->getType() == 3 || item->getType() == 0 || item->getType() == 2) {
             amount = 1;
+        } else {
+            amount += 5;
         }
         float factor = (float) (Globals::rnd->nextInt(120) + 40) / 100.0f;
         agent->setSellItemData(selected, amount,
@@ -913,7 +913,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         bool found = false;
         int selected = 0;
         uint32_t tries = 0;
-        while (!found && tries < 100) {
+        while (tries < 100 && !found) {
             selected = Globals::rnd->nextInt(items->size());
             type = (*allItems)[selected]->getType();
             found = false;

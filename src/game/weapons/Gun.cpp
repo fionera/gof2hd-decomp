@@ -244,11 +244,9 @@ void Gun::ignite() {
                     reinterpret_cast<Vector *>(this->hitPositions)[i] = this->basePos;
                     float range = (float) this->magnitude;
                     float remaining = (float) (this->magnitude - distance);
-                    float falloff;
+                    float falloff = remaining / range;
                     if (this->weaponType == ITEM_SORT_MINE) {
                         falloff = (float) (10000 - distance) / 10000.0f;
-                    } else {
-                        falloff = remaining / range;
                     }
                     if (falloff > 1.0f) {
                         falloff = 1.0f;

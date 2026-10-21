@@ -1300,15 +1300,9 @@ music:
 }
 
 Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
-    int centerY = this->centerY;
-    float dy = static_cast<float>(centerY - y);
-    float dy2 = dy * dy;
-    int centerX = this->centerX;
-    float dx = static_cast<float>(centerX - x);
-    float dx2 = dx * dx;
-    float weightY = this->weightY;
-    float weightX = this->weightX;
-    float distance = weightY * dy2 + weightX * dx2;
+    float dx = static_cast<float>(this->centerX - x);
+    float dy = static_cast<float>(this->centerY - y);
+    float distance = this->weightX * (dx * dx) + this->weightY * (dy * dy);
 
     if (distance >= 0.0f) {
         float scale = (distance - Globals::globals->sqrt(distance)) / distance;
