@@ -511,7 +511,7 @@ namespace AbyssEngine {
                 float span = (float) (next->timestamp - prevTime);
                 Quaternion toRotation(this->keyFrames[this->currentKeyFrameIndex]->rotation);
                 float t = elapsed / span;
-                this->rotation.Lerp(fromRotation, toRotation, t);
+                this->rotation = Quaternion::Lerp(fromRotation, toRotation, t);
 
                 this->translation = AEMath::VectorLerp(this->keyFrames[this->currentKeyFrameIndex - 1]->translation,
                                                        this->keyFrames[this->currentKeyFrameIndex]->translation, t);
@@ -523,7 +523,7 @@ namespace AbyssEngine {
 
                 Quaternion fromLocal(from->localRotation);
                 Quaternion toLocal(this->keyFrames[this->currentKeyFrameIndex]->localRotation);
-                this->localRotation.Lerp(fromLocal, toLocal, t);
+                this->localRotation = Quaternion::Lerp(fromLocal, toLocal, t);
 
                 this->localTranslation = AEMath::VectorLerp(
                     this->keyFrames[this->currentKeyFrameIndex - 1]->localTranslation,

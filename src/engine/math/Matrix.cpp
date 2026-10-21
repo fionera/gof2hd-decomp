@@ -10,13 +10,3 @@ namespace AbyssEngine {
         Matrix::operator const float *() const { return m; }
     }
 }
-
-namespace AbyssEngine {
-    Quaternion::~Quaternion() {
-    }
-
-    Quaternion::operator float *() { return &x; }
-    Quaternion::operator const float *() const { return &x; }
-    float &Quaternion::operator[](int i) { return (&x)[i]; }
-    float Quaternion::operator[](int i) const { return (&x)[i]; }
-}
