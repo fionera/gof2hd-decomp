@@ -6,6 +6,8 @@
 #include "engine/render/Sprite.h"
 #include "engine/core/GameText.h"
 #include "game/core/Globals.h"
+#include "game/core/Radio.h"
+#include "game/world/LevelScript.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
@@ -79,7 +81,7 @@ void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
 
 void Hud::playerHit() {
     this->shieldHitFlash = 1;
-    this->hitFlashTimer = 0;
+    this->field_0x46c = 0;
 }
 
 void Hud::addToEventQueue(ListItem *item) {
@@ -186,144 +188,630 @@ uint8_t Hud::jumpMapSelected() {
 
 static Level **g_Hud_level = nullptr;
 
-void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y) {
-    (void) t0;
-    (void) t1;
-    (void) x;
-    (void) y;
+void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool letterbox, unsigned int secondaryKind,
+               unsigned int fireImageIndex) {
+    (void) letterbox;
+    int dt = (int) frameTime;
+    bool mining = ego->isMining();
+    if (!mining && this->eventQueueDirty && !this->hackingGameActive) {
+        this->updateQueue(dt);
+        this->drawEventQueue();
+    }
+    if (Globals::iPad && (this->steerOption != *reinterpret_cast<int *>(&Globals::options[84]) ||
+                          this->fireOption != *reinterpret_cast<int *>(&Globals::options[88]))) {
+        Globals::globals->setCoordsSteer(*reinterpret_cast<int *>(&Globals::options[84]),
+                                         Globals::Canvas->GetImage2DWidth(this->image_0x31c),
+                                         Globals::Canvas->GetImage2DWidth(this->image_0x310),
+                                         Globals::Canvas->GetImage2DWidth(this->fuelGaugeBarImage), this->field_0x3f8,
+                                         this->field_0x3fa, this->field_0x42c, this->field_0x42e, this->reticleX,
+                                         this->reticleY, this->field_0x410, this->field_0x412, this->field_0x404,
+                                         this->field_0x406);
+        this->lockBracketX = this->reticleX;
+        this->lockBracketY = this->reticleY;
+        Globals::globals->setCoordsFire(*reinterpret_cast<int *>(&Globals::options[88]),
+                                        Globals::Canvas->GetImage2DWidth(this->image_0x4), this->image_0x4,
+                                        this->image_0x8, this->image_0x348, this->field_0xc, this->field_0xe,
+                                        this->field_0x3e4, this->field_0x3e6, this->field_0x416, this->field_0x418,
+                                        this->field_0x3f2, this->field_0x3f4, this->field_0x3ec, this->field_0x3ee,
+                                        this->field_0x3fe, this->field_0x400);
+        this->steerOption = *reinterpret_cast<int *>(&Globals::options[84]);
+        this->fireOption = *reinterpret_cast<int *>(&Globals::options[88]);
+    }
 
-    this->letterbox = (unsigned char) letterbox;
+    unsigned int savedColor = Globals::Canvas->GetColor();
+    if (this->shieldHitFlash) {
+        this->field_0x46c += dt;
+        if (this->field_0x46c > 500) {
+            this->field_0x46c = 0;
+            this->shieldHitFlash = 0;
+        }
+    }
+    if (this->field_0x470 >= 1)
+        this->field_0x470 -= dt;
 
-    PaintCanvas *canvas = Globals::Canvas;
-
-    canvas->DrawImage2D((unsigned) this->reticleImage, this->field_0x42c, 0);
-    {
-        unsigned char flags = this->touchFlags;
-        unsigned short bx, by;
-        int img;
-        if ((flags & 0x40) != 0) {
-            bx = this->reticleX;
-            by = this->reticleY;
-            img = this->lockBracketLockedImage;
-            this->lockBracketX = bx;
-            this->lockBracketY = by;
+    // Boost / cloak ready flashes.
+    if (ego->getBoostRate() == 1.0f && !this->field_0x474) {
+        this->field_0x474 = 1;
+        this->field_0x484 = 2000;
+        this->field_0x488 = 80;
+        if (this->field_0x48c >= 0)
+            this->field_0x47c = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) + this->field_0x4d4;
+        else
+            this->field_0x47c = this->field_0x4d4;
+    } else {
+        this->field_0x474 = ego->getBoostRate() == 1.0f;
+    }
+    if (this->hasCloak) {
+        if (!this->field_0x476 && !ego->isCloaked() && !ego->isRechargingCloak()) {
+            this->field_0x476 = 1;
+            this->field_0x498 = 2000;
+            this->field_0x49c = 80;
         } else {
-            bx = this->lockBracketX;
-            by = this->lockBracketY;
-            img = this->lockBracketImage;
-        }
-        canvas->DrawImage2D((unsigned) img, bx, by, '\x11');
-    }
-
-    {
-        Status *st = Globals::status;
-        bool show = false;
-        if (st->inAlienOrbit() == 0) {
-            show = true;
-        } else if (st->getCurrentCampaignMission() == 0x9a) {
-            Level *lvl = *g_Hud_level;
-            if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
-        }
-        if (show && st->getCurrentCampaignMission() > 1) {
-            int img = ((this->touchFlags & 0x80) != 0)
-                          ? this->orbitMarkerActiveImage
-                          : this->orbitMarkerIdleImage;
-            canvas->DrawImage2D((unsigned) img, this->field_0x3f8, 0);
+            this->field_0x476 = !ego->isCloaked() && !ego->isRechargingCloak();
         }
     }
 
-    {
-        PlayerEgo *e = ego;
-        Player *player = *(Player **) ego;
-        float scale = (float) this->field_0x446;
-        canvas->SetColor((unsigned) 0xffffffffu);
-
-        unsigned short barX = this->field_0x442;
-        unsigned short barY = this->field_0x44a;
-        if (this->hasShieldBar != 0) {
-            int shp = player->getShieldHP();
-            int frame = (shp < 2 || this->shieldHitFlash == 0) ? this->shieldFrameImage : this->shieldFrameHitImage;
-            canvas->DrawImage2D((unsigned) frame, this->field_0x43c, this->field_0x442);
-            canvas->DrawImage2D((unsigned) this->barDividerImage, this->field_0x43e, this->field_0x442);
-            canvas->DrawImage2D((unsigned) this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
-            int rate = player->getShieldDamageRate();
-            int w = (int) ((float) rate * scale);
-            canvas->DrawRegion2D((unsigned) this->shieldBarFillImage, 0, 0, w, this->field_0x44c,
-                                 (float) w, 0, 0, 0, this->field_0x440);
-            barX = this->field_0x444;
-            barY = this->field_0x448;
-        }
-
-        int ahp = player->getArmorHP();
-        int aframe = (ahp < 1) ? this->armorFrameLowImage : this->armorFrameImage;
-        canvas->DrawImage2D((unsigned) aframe, this->field_0x43c, barX);
-        canvas->DrawImage2D((unsigned) this->barDividerImage, this->field_0x43e, barX);
-        canvas->DrawImage2D((unsigned) this->armorBarBgImage, this->field_0x440, barY);
-        int hrate = e->getHullDamageRate();
-        int hw = (int) ((float) hrate * scale);
-        canvas->DrawRegion2D((unsigned) this->armorBarFillImage, 0, 0, hw, this->field_0x44c,
-                             (float) hw, 0, 0, 0, this->field_0x440);
-
-        if (this->hasArmorRegen != 0) {
-            int arate = player->getArmorDamageRate();
-            int aw = (int) ((float) arate * scale);
-            canvas->DrawRegion2D((unsigned) this->armorRegenFillImage, 0, 0, aw, this->field_0x44c,
-                                 (float) aw, 0, 0, 0, this->field_0x440);
-        }
+    // Shield / armour / gamma bars.
+    int dividerOffset = Globals::layout->field_0x1e8;
+    Globals::Canvas->SetColor(0xffffffff);
+    int armorY;
+    int armorBarY;
+    if (this->hasShieldBar) {
+        Globals::Canvas->DrawImage2D(ego->player->getShieldHP() >= 2 && this->shieldHitFlash ? this->shieldFrameHitImage
+                                                                                               : this->shieldFrameImage,
+                                     this->field_0x43c, this->field_0x442);
+        Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, this->field_0x442 + dividerOffset);
+        Globals::Canvas->DrawImage2D(this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
+        int shieldW = (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->shieldBarFillImage, 0, 0, shieldW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, this->field_0x44a);
+        armorY = this->field_0x444;
+        armorBarY = this->field_0x448;
+    } else {
+        armorY = this->field_0x442;
+        armorBarY = this->field_0x44a;
+    }
+    Globals::Canvas->DrawImage2D(ego->player->getArmorHP() < 1 ? this->armorFrameLowImage : this->armorFrameImage,
+                                 this->field_0x43c, armorY);
+    Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, dividerOffset + armorY);
+    Globals::Canvas->DrawImage2D(this->armorBarBgImage, this->field_0x440, armorBarY);
+    int hullW = (int) ((float) ego->getHullDamageRate() * 0.01f * (float) this->field_0x446);
+    Globals::Canvas->DrawRegion2D(this->armorBarFillImage, 0, 0, hullW, this->field_0x44c, 0.0f, 0, 0,
+                                  this->field_0x440, armorBarY);
+    if (this->hasArmorRegen) {
+        int regenW = (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, armorBarY);
+    }
+    if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                    Globals::status->getCurrentCampaignMission()) > 0.0f) {
+        int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
+        Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
+        Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
+        int gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
+        Globals::Canvas->DrawImage2D(this->image_0x2cc, this->field_0x440, gammaBarY);
+        int gammaW = (int) ((float) ego->player->getGammaHP() / 100.0f * (float) this->field_0x446);
+        Globals::Canvas->DrawRegion2D(this->barDividerImage, 0, 0, gammaW, this->field_0x44c, 0.0f, 0, 0,
+                                      this->field_0x440, gammaBarY);
     }
 
-    {
-        Level *lvl = *g_Hud_level;
-        PlayerEgo *player = lvl ? lvl->getPlayer() : nullptr;
-
-        if (player != 0 && player->hasAutoTurret() != 0) {
-            bool on = player->autoTurretIsEnabled() != 0 || ((this->autoTurretFlags & 0x20) != 0);
-            int img = on ? this->autoTurretOnImage : this->autoTurretOffImage;
-            canvas->DrawImage2D((unsigned) img, this->field_0x3fe, 0);
+    if (ego->isInRocketControl()) {
+        if ((this->touchFlags & 8) || (this->field_0x48c >= 1 && this->field_0x490 <= 0)) {
+            Globals::Canvas->DrawImage2D(this->reticleImage, this->field_0x3ec, this->field_0x3ee);
+            if (this->field_0x48c >= 1)
+                this->field_0x490 = 80;
         } else {
-            if (this->secondaryLabelTimer > 0) {
-                String *font = (String *) Globals::font;
-                int screenW = *(int *) &Globals::w;
-                unsigned short iconW = this->field_0x3ec;
-                canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-                canvas->DrawImage2D((unsigned) this->pauseButtonPressedImage, this->field_0x3ec, 0);
-                int textW = Globals::Canvas->GetTextWidth(
-                    (unsigned) (long) canvas, *(String *) (font));
-                int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
-                Globals::Canvas->DrawString((unsigned) (long) canvas,
-                                            this->field_0x51c, tx, 0, false);
-                canvas->SetColor((unsigned) 0xffffffffu);
-                int t = this->secondaryLabelTimer;
-                if (t > 4000) t = 0;
-                this->secondaryLabelTimer = t;
+            Globals::Canvas->DrawImage2D(this->missionBannerImage, this->field_0x3ec, this->field_0x3ee);
+        }
+        if ((Globals::options[17] && !ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
+             !ego->isDockingToDockingPoint() && !this->hackingGameActive &&
+             (!ego->isDockedToDockingPoint() || ego->isInTurretMode())) ||
+            (Globals::options[17] && ego->isInTurretMode()))
+            Globals::Canvas->SetColor(0xffffffff);
+        else
+            Globals::Canvas->SetColor(255, 255, 255, 50);
+        Globals::Canvas->DrawImage2D(this->image_0x31c, this->field_0x42c, this->field_0x42e);
+        if (Globals::options[17] && (this->touchFlags & 0x20)) {
+            Globals::Canvas->DrawImage2D(this->image_0x304, this->lockBracketX, this->lockBracketY, 0x11, 0x44);
+        } else {
+            this->lockBracketX = this->reticleX;
+            this->lockBracketY = this->reticleY;
+            Globals::Canvas->DrawImage2D(this->image_0x308, this->reticleX, this->reticleY, 0x11, 0x44);
+        }
+        Globals::Canvas->SetColor(savedColor);
+        return;
+    }
+
+    // Damage direction indicators.
+    unsigned int sideImage = ego->getShieldDamageRate() < 1 ? this->image_0x364 : this->image_0x36c;
+    unsigned int frontImage = ego->getShieldDamageRate() < 1 ? this->image_0x360 : this->image_0x368;
+    int hitFlags = ego->field_0x20;
+    if (hitFlags & 1)
+        this->field_0x4ac = 300;
+    if (hitFlags & 2)
+        this->field_0x4b0 = 300;
+    if (hitFlags & 0x24)
+        this->field_0x4b8 = 300;
+    if (hitFlags & 0x18)
+        this->field_0x4b4 = 300;
+    if (this->field_0x4ac >= 1) {
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4ac * 255 / 300));
+        Globals::Canvas->DrawImage2D(sideImage, (Globals::w >> 1) - ego->field_0x14->imageWidth, Globals::h >> 1,
+                                     Globals::Canvas->GetImage2DWidth(sideImage),
+                                     Globals::Canvas->GetImage2DHeight(sideImage), 0x11, 0x41, 1);
+        this->field_0x4ac -= dt;
+    }
+    if (this->field_0x4b0 >= 1) {
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b0 * 255 / 300));
+        Globals::Canvas->DrawImage2D(sideImage, (Globals::w >> 1) - ego->field_0x14->imageWidth, Globals::h >> 1, 0x12,
+                                     0x42);
+        this->field_0x4b0 -= dt;
+    }
+    if (this->field_0x4b4 >= 1) {
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b4 * 255 / 300));
+        Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
+                                     0x11, 0x14);
+        this->field_0x4b4 -= dt;
+    }
+    if (this->field_0x4b8 >= 1) {
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
+        Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
+                                     Globals::Canvas->GetImage2DWidth(frontImage),
+                                     Globals::Canvas->GetImage2DHeight(frontImage), 0x21, 0x24, 2);
+        this->field_0x4b8 -= dt;
+    }
+
+    if ((Globals::options[17] && !ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
+         !ego->isDockingToDockingPoint() && !this->hackingGameActive &&
+             (!ego->isDockedToDockingPoint() || ego->isInTurretMode())) ||
+        (Globals::options[17] && ego->isInTurretMode()))
+        Globals::Canvas->SetColor(0xffffffff);
+    else
+        Globals::Canvas->SetColor(255, 255, 255, 50);
+    Globals::Canvas->DrawImage2D(this->image_0x31c, this->field_0x42c, this->field_0x42e);
+    if (Globals::options[17] && (this->touchFlags & 0x20)) {
+        Globals::Canvas->DrawImage2D(this->image_0x304, this->lockBracketX, this->lockBracketY, 0x11, 0x44);
+    } else {
+        this->lockBracketX = this->reticleX;
+        this->lockBracketY = this->reticleY;
+        Globals::Canvas->DrawImage2D(this->image_0x308, this->reticleX, this->reticleY, 0x11, 0x44);
+    }
+    Globals::Canvas->SetColor(0xffffffff);
+
+    // Mission status panel (top right).
+    if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 12) {
+        String kills = String(ego->level->killCountB) + String(" : ") + String(ego->level->killCountA);
+        Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        if (ego->hasVolatileGoods()) {
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x340);
+            Globals::Canvas->DrawRegion2D(
+                this->image_0x340, 0, 0,
+                (int) ((ego->getVolatileForce() > 1.0f ? 1.0f : ego->getVolatileForce()) * (float) barW), barH, 0.0f,
+                0, 0, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        }
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, kills,
+                                    this->field_0x438 + Globals::layout->field_0x1fc, this->field_0x43a + 5, false);
+    } else if (timeLeft > 0 && Globals::status->getCurrentCampaignMission() != 42) {
+        String time;
+        Globals::globals->longToTimeString(timeLeft, time);
+        Globals::Canvas->DrawImage2D(this->image_0x320, this->field_0x438, this->field_0x43a);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, time,
+                                    this->field_0x438 + Globals::layout->field_0x204, this->field_0x43a + 5, false);
+    } else if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 184) {
+        bool passengers;
+        if (Globals::status->getCurrentCampaignMission() == 102 && !Globals::status->inAlienOrbit() &&
+            Globals::status->getStation()->getIndex() == 113)
+            passengers = false;
+        else if (Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit())
+            passengers = Globals::status->getStation()->getIndex() != 131;
+        else
+            passengers = true;
+        String count = String(Globals::status->field_178) + String(" / ") +
+                       String(Globals::status->getShip()->getMaxPassengers());
+        if (passengers)
+            Globals::Canvas->DrawImage2D(this->image_0x334, this->field_0x438 - Globals::layout->field_0x1f0,
+                                         this->field_0x43a);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec,
+                                         this->field_0x43a);
+        if (ego->hasVolatileGoods()) {
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x340);
+            Globals::Canvas->DrawRegion2D(
+                this->image_0x340, 0, 0,
+                (int) ((ego->getVolatileForce() > 1.0f ? 1.0f : ego->getVolatileForce()) * (float) barW), barH, 0.0f,
+                0, 0, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        }
+        if (passengers) {
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, count,
+                                        this->field_0x438 + Globals::layout->field_0x200, this->field_0x43a + 5, false);
+        } else {
+            String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                          String(Globals::status->getShip()->getMaxLoad()) + String("t");
+            int shift = 0;
+            if (Globals::status->getShip()->getCurrentLoad() >= 101)
+                shift = -2 * Globals::layout->field_0x2c_rowHeight;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
+                                        shift + this->field_0x438 - Globals::layout->field_0x208,
+                                        this->field_0x43a + 5, false);
+        }
+        String status(Globals::status->getMission()->getStatusValue());
+        Globals::Canvas->DrawImage2D(this->image_0x344, this->field_0x438 - Globals::layout->field_0x1f0,
+                                     Globals::layout->field_0x1f4 + this->field_0x43a +
+                                         Globals::Canvas->GetImage2DHeight(this->image_0x334));
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, status,
+                                    Globals::layout->field_0x200 + this->field_0x438,
+                                    this->field_0x43a + Globals::layout->field_0x1f4 + Globals::layout->field_0x1f8 * 2 +
+                                        Globals::Canvas->GetImage2DHeight(this->image_0x334),
+                                    false);
+    } else if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174) {
+        int amount = Globals::status->getShip()->getCargo(Globals::status->getMission()->getProductionGoodIndex()) != 0
+                         ? Globals::status->getShip()
+                               ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
+                               ->getAmount()
+                         : 0;
+        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
+        Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
+        if (ego->hasVolatileGoods()) {
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x340);
+            Globals::Canvas->DrawRegion2D(
+                this->image_0x340, 0, 0,
+                (int) ((ego->getVolatileForce() > 1.0f ? 1.0f : ego->getVolatileForce()) * (float) barW), barH, 0.0f,
+                0, 0, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        }
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, cargo,
+                                    this->field_0x438 + Globals::layout->field_0x200, this->field_0x43a + 4, false);
+        String remaining(Globals::status->getMission()->getProductionGoodAmount() -
+                         Globals::status->getMission()->getStatusValue());
+        Globals::Canvas->DrawImage2D(this->image_0x33c, this->field_0x438 - Globals::layout->field_0x1f0,
+                                     Globals::layout->field_0x1f4 + this->field_0x43a +
+                                         Globals::Canvas->GetImage2DHeight(this->image_0x334));
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, remaining,
+                                    Globals::layout->field_0x200 + this->field_0x438,
+                                    this->field_0x43a + Globals::layout->field_0x1f8 + Globals::layout->field_0x1f4 +
+                                        Globals::Canvas->GetImage2DHeight(this->image_0x334),
+                                    false);
+    } else {
+        String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                      String(Globals::status->getShip()->getMaxLoad()) + String("t");
+        int shift = 0;
+        if (Globals::status->getShip()->getCurrentLoad() >= 101)
+            shift = -2 * Globals::layout->field_0x2c_rowHeight;
+        Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        if (ego->hasVolatileGoods()) {
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x340);
+            Globals::Canvas->DrawRegion2D(
+                this->image_0x340, 0, 0,
+                (int) ((ego->getVolatileForce() > 1.0f ? 1.0f : ego->getVolatileForce()) * (float) barW), barH, 0.0f,
+                0, 0, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
+        }
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
+                                    this->field_0x438 + shift - Globals::layout->field_0x208, this->field_0x43a + 5,
+                                    false);
+    }
+
+    // Pause / map buttons.
+    if (Globals::mouseCursorActivated || this->quickMenuOpen)
+        Globals::Canvas->SetColor(0xffffff00);
+    if (Globals::iPad)
+        Globals::Canvas->DrawImage2D(this->image_0x348, this->field_0xc, this->field_0xe);
+    else
+        Globals::Canvas->DrawImage2D(this->image_0x348, Globals::w, Globals::h, 0x11, 0x22);
+    if (this->hackingGameActive && !ego->isInTurretMode()) {
+        if (this->touchFlags & 0x200)
+            Globals::Canvas->DrawImage2D(this->image_0x3a4, this->field_0x454, this->field_0x456);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x3a8, this->field_0x454, this->field_0x456);
+        if (this->touchFlags & 0x400)
+            Globals::Canvas->DrawImage2D(this->image_0x3a4, this->field_0x458, this->field_0x45a);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x3a8, this->field_0x458, this->field_0x45a);
+    }
+    if (mining || this->hackingGameActive || ego->isDockedToDockingPoint() || ego->isLandingOrTakingOff())
+        Globals::Canvas->SetColor(0xffffff2f);
+    if (!Globals::status->inAlienOrbit() ||
+        (Globals::status->inAlienOrbit() && Globals::status->getCurrentCampaignMission() == 154 &&
+         ego->level->getNumDockingTargets() >= 1)) {
+        if (Globals::status->getCurrentCampaignMission() >= 2 &&
+            !(Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 183))
+        {
+            if (this->touchFlags & 0x40)
+                Globals::Canvas->DrawImage2D(this->image_0x30c, this->field_0x3f8, this->field_0x3fa);
+            else
+                Globals::Canvas->DrawImage2D(this->image_0x310, this->field_0x3f8, this->field_0x3fa);
+        }
+    }
+
+    // Autopilot button.
+    if (!ego->radioRef->isShowingMessage()) {
+        if ((!ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
+             (!ego->isDockingToDockingPoint() || ego->isLandingOrTakingOff()) && !this->hackingGameActive) ||
+            ego->field_0x14->field_0x54 || ego->aboutToReachAutoTarget()) {
+            if (this->field_0x0) {
+                if (this->timeExtenderDuration >= 0) {
+                    this->timeExtenderTimer -= dt;
+                    this->timeExtenderDuration -= dt;
+                }
+                unsigned int color = Globals::Canvas->GetColor();
+                if (!this->field_0x280)
+                    Globals::Canvas->SetColor(255, 255, 255, 55);
+                Globals::Canvas->DrawImage2D(this->image_0x398, this->field_0x404 + this->field_0x450, this->field_0x406);
+                if ((this->touchFlags & 0x100) ||
+                    (this->timeExtenderDuration >= 1 && this->timeExtenderTimer < 1) || this->field_0x281) {
+                    if (this->timeExtenderDuration >= 1)
+                        this->timeExtenderTimer = 80;
+                    Globals::Canvas->DrawImage2D(this->image_0x39c, this->field_0x404, this->field_0x406);
+                } else {
+                    Globals::Canvas->DrawImage2D(this->image_0x3a0, this->field_0x404, this->field_0x406);
+                }
+                Globals::Canvas->SetColor(color);
             }
+        } else {
+            Globals::Canvas->DrawImage2D(this->image_0x398, this->field_0x404 + this->field_0x450, this->field_0x406);
+            if (Globals::mouseCursorActivated)
+                Globals::Canvas->SetColor(0xffffffff);
+            if (this->touchFlags & 0x100)
+                Globals::Canvas->DrawImage2D(this->image_0x390, this->field_0x404, this->field_0x406);
+            else
+                Globals::Canvas->DrawImage2D(this->image_0x394, this->field_0x404, this->field_0x406);
+            if (Globals::mouseCursorActivated || this->quickMenuOpen)
+                Globals::Canvas->SetColor(0xffffff00);
+        }
+    }
+    if ((ego->isAutoPilot() || ego->isInDockingProcedure()) && !ego->isDockedToDockingPoint() &&
+        !ego->isLandingOrTakingOff()) {
+        Globals::Canvas->SetColor(0xffffffff);
+        Globals::Canvas->DrawImage2D(this->image_0x30c, this->field_0x3f8, this->field_0x3fa);
+    }
+    Globals::Canvas->SetColor(0xffffffff);
+    if (Globals::mouseCursorActivated || this->quickMenuOpen)
+        Globals::Canvas->SetColor(0xffffff00);
+
+    // Fire button and secondary-weapon selector.
+    if (this->touchFlags & 0x80)
+        Globals::Canvas->DrawImage2D(this->fireButtonPressedImages[fireImageIndex], this->field_0x3f2, this->field_0x3f4);
+    else
+        Globals::Canvas->DrawImage2D(this->fireButtonImages[fireImageIndex], this->field_0x3f2, this->field_0x3f4);
+    if (this->secondaryLabelTimerSeed == -1) {
+        this->secondaryLabelTimerSeed = secondaryKind;
+    } else if (this->secondaryLabelTimerSeed != (int) secondaryKind) {
+        this->secondaryLabelTimerSeed = secondaryKind;
+        this->secondaryLabelTimer = dt;
+        switch (secondaryKind) {
+        case 0:
+            this->field_0x51c = *Globals::gameText->getText(217);
+            break;
+        case 1:
+            this->field_0x51c = *Globals::gameText->getText(218);
+            break;
+        case 2:
+            this->field_0x51c = *Globals::gameText->getText(219);
+            break;
+        case 3:
+            this->field_0x51c = *Globals::gameText->getText(220);
+            break;
+        }
+    }
+    if (ego->hasAutoTurret()) {
+        if (ego->autoTurretIsEnabled() || (this->touchFlags & 0x20000000))
+            Globals::Canvas->DrawImage2D(this->image_0x314, this->field_0x3fe, this->field_0x400);
+        else
+            Globals::Canvas->DrawImage2D(this->image_0x318, this->field_0x3fe, this->field_0x400);
+    } else if (this->secondaryLabelTimer >= 1) {
+        int labelH = Globals::Canvas->GetImage2DHeight(this->image_0x354);
+        int labelGap = Globals::layout->field_0x20c;
+        int textGap = Globals::layout->field_0x210;
+        int canvasW = Globals::Canvas->GetWidth();
+        int alpha = (int) ((float) this->secondaryLabelTimer / 2000.0f * 255.0f);
+        if (alpha > 255)
+            alpha = 254 - alpha;
+        unsigned int color = Globals::Canvas->GetColor();
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
+        int labelY = this->field_0x418 - labelH - labelGap;
+        Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3ec, labelY);
+        Globals::Canvas->DrawString(
+            (unsigned int) (uintptr_t) Globals::font, this->field_0x51c,
+            this->field_0x3ec +
+                (canvasW - this->field_0x3ec -
+                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x51c)) /
+                    2,
+            labelY + textGap, false);
+        Globals::Canvas->SetColor(color);
+        this->secondaryLabelTimer += dt;
+        if (this->secondaryLabelTimer > 4000)
+            this->secondaryLabelTimer = 0;
+    }
+    if (Globals::mouseCursorActivated || this->quickMenuOpen)
+        Globals::Canvas->SetColor(0xffffff00);
+
+    // Quick-menu button.
+    if (!this->quickMenuEmpty) {
+        if ((this->touchFlags & 4) || (this->field_0x498 >= 1 && this->field_0x49c <= 0)) {
+            Globals::Canvas->DrawImage2D(this->image_0x34c, this->field_0x416, this->field_0x418);
+            if (this->field_0x498 >= 1)
+                this->field_0x49c = 80;
+        } else {
+            Globals::Canvas->DrawImage2D(this->image_0x350, this->field_0x416, this->field_0x418);
         }
     }
 
-    drawOrbitInformation();
-
-    canvas->SetColor((unsigned) 0xffffffffu);
-    canvas->DrawImage2D((unsigned) this->missionBannerImage, this->field_0x438, 0);
-
-    drawEventQueue();
-
-    if (this->quickMenuOpen != 0)
-        drawMenu(0);
-
-    if (Globals::status != nullptr && Globals::status->inSupernovaSystem() != 0)
-        drawChallengeModeScore(0);
-
-    drawPauseButton();
-
-    if (this->messageActive != 0) {
-        canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-        String *font = (String *) Globals::font;
-        int screenW = *(int *) &Globals::w;
-        int w = Globals::Canvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
-        Globals::Canvas->DrawString((unsigned) (long) canvas,
-                                    this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
-        canvas->SetColor((unsigned) 0xffffffffu);
+    // Secondary weapon button and ammo label.
+    if ((this->currentSecondaryWeapon != 0 && !ego->isInTurretMode() && this->currentSecondaryWeapon->getAmount() > 0) ||
+        ego->level->field_69) {
+        if ((this->touchFlags & 8) || (this->field_0x48c >= 1 && this->field_0x490 <= 0)) {
+            Globals::Canvas->DrawImage2D(this->reticleImage, this->field_0x3ec, this->field_0x3ee);
+            if (this->field_0x48c >= 1)
+                this->field_0x490 = 80;
+        } else {
+            Globals::Canvas->DrawImage2D(this->missionBannerImage, this->field_0x3ec, this->field_0x3ee);
+        }
+        if (Globals::mouseCursorActivated)
+            Globals::Canvas->SetColor(0xffffffff);
+        Globals::Canvas->DrawImage2D(this->image_0x358, Globals::w >> 1, Globals::h, 0x11, 0x24);
+        String label = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 1274) +
+                       String(String(" (") + String(this->currentSecondaryWeapon->getAmount()) + String(")"), false);
+        Globals::Canvas->DrawString(
+            (unsigned int) (uintptr_t) Globals::font, label,
+            (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, label) >> 1),
+            Globals::h - Globals::layout->field_0x4 + Globals::layout->field_0x214, false);
+        if (Globals::mouseCursorActivated || this->quickMenuOpen)
+            Globals::Canvas->SetColor(0xffffff00);
     }
+    if (this->hasCloak && this->field_0x498 >= 0) {
+        this->field_0x498 -= dt;
+        this->field_0x49c -= dt;
+    }
+
+    // Boost button.
+    if (this->hasBoostButton) {
+        if (this->field_0x484 >= 0) {
+            this->field_0x484 -= dt;
+            this->field_0x488 -= dt;
+        }
+        Globals::Canvas->SetColor(255, 255, 255,
+                                  (unsigned char) ((ego->boosting() ? 0
+                                                                    : (ego->getBoostRate() < 1.0f
+                                                                           ? (int) (ego->getBoostRate() * 75.0f)
+                                                                           : 200)) +
+                                                   55));
+        if (Globals::mouseCursorActivated || mining || this->hackingGameActive || ego->isDockedToDockingPoint())
+            Globals::Canvas->SetColor(ego->getBoostRate() < 1.0f ? 0xffffff2f : 0xffffff00);
+        if ((this->touchFlags & 2) || (this->field_0x484 >= 1 && this->field_0x488 < 1)) {
+            if (this->field_0x484 >= 1) {
+                this->field_0x488 = 80;
+                if (Globals::mouseCursorActivated)
+                    Globals::Canvas->SetColor(0xffffffff);
+            }
+            Globals::Canvas->DrawImage2D(this->fuelGaugeIconImage, this->field_0x410, this->field_0x412);
+        } else {
+            Globals::Canvas->DrawImage2D(this->fuelGaugeBarImage, this->field_0x410, this->field_0x412);
+        }
+    }
+    Globals::Canvas->SetColor(0xffffffff);
+    if (Globals::mouseCursorActivated || this->quickMenuOpen)
+        Globals::Canvas->SetColor(0xffffff00);
+
+    // Primary fire button and lock marker.
+    {
+        unsigned int fireImage =
+            (this->touchFlags & 0x10) || this->fireForTutorial ? this->orbitMarkerIdleImage : this->autoTurretOnImage;
+        if (Globals::iPad)
+            Globals::Canvas->DrawImage2D(fireImage, this->field_0x3e4, this->field_0x3e6, 0x11, 0x44);
+        else
+            Globals::Canvas->DrawImage2D(fireImage, this->field_0x3e4, this->field_0x3e6);
+    }
+    if (!ego->isDockingToAsteroid() && !ego->isMining() && !ego->isDockingToStream() && !ego->isInDockingProcedure() &&
+        !ego->isDockingToDockingPoint() && !ego->isInTurretMode()) {
+        Radar *radar = ego->field_0x14;
+        if (radar->field_0x14 || radar->lockedAsteroid || radar->lockedStation ||
+            (radar->lockedEnemy != 0 && radar->lockedEnemy->field_0x70 && radar->lockedEnemy->field_0x75)) {
+            if (Globals::iPad)
+                Globals::Canvas->DrawImage2D(this->autoTurretOffImage, this->field_0x3e4 + this->field_0x3ea,
+                                             this->field_0x3e6 + this->field_0x3ea, 0x11, 0x44);
+            else
+                Globals::Canvas->DrawImage2D(this->autoTurretOffImage, this->field_0x3e4 + this->field_0x3ea,
+                                             this->field_0x3e6 + this->field_0x3ea);
+        }
+    }
+
+    // Jump drive / cloak / docking transfer progress bars.
+    if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
+        int barOffset = 0;
+        if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
+            int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
+            int transferred = ego->getDockTransferedAmount();
+            int total = ego->getDockTotalAmount();
+            float progress = (float) transferred / (float) total;
+            if (this->field_0x279)
+                progress = 1.0f - progress;
+            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            this->field_0x468 += dt;
+            float fadeIn = (float) this->field_0x468 / 1000.0f;
+            float fade = 1.0f;
+            if (fadeIn < 1.0f)
+                fade = fadeIn;
+            int top = this->field_0x3e2 * 2;
+            int barYOffset = Globals::layout->field_0x218;
+            Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
+            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top, 0x11, 0x14);
+            Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
+                                          (Globals::w >> 1) - barW / 2, barYOffset + top);
+            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            float textY = (float) top + (float) barH * 2.5f;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
+                                        (int) textY, false);
+            if (this->field_0x27a && Globals::status->getMission() != 0 &&
+                Globals::status->getMission()->getType() != 168)
+                Globals::Canvas->DrawImage2D(
+                    this->image_0x380,
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
+                        (Globals::w >> 1),
+                    (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                    0x11, 0x41);
+            if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174)
+                Globals::Canvas->DrawImage2D(
+                    this->image_0x384,
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
+                        (Globals::w >> 1),
+                    (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                    0x11, 0x41);
+        }
+        float rate;
+        bool show = true;
+        if (this->field_0x277)
+            rate = ego->getDriveChargeRate();
+        else if (this->field_0x276)
+            rate = ego->getCloakRate();
+        else
+            show = false;
+        if (show) {
+            float progress = 1.0f;
+            if (rate * 1.05f < 1.0f)
+                progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
+            String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
+            int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            this->field_0x464 += dt;
+            float fade = (float) this->field_0x464 / 1000.0f;
+            int top = this->field_0x3e2;
+            int barYOffset = Globals::layout->field_0x218;
+            Globals::Canvas->SetColor(fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff);
+            int y = barOffset + top * 2;
+            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
+            float filled = progress * (float) halfW;
+            Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
+                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
+            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
+                                        (int) ((float) y + (float) barH * 2.5f), false);
+        }
+    }
+
+    // First-flight steering hint.
+    if (!ego->isMining() && !Globals::hints[17] && Globals::status->getCurrentCampaignMission() == 2 &&
+        ego->levelScript->m_nScriptTime > 12000 && !ego->isDockingToAsteroid() && !ego->isDockedToAsteroid()) {
+        this->field_0x4c4 += dt;
+        if (this->field_0x4c4 > 2000)
+            this->field_0x4c4 = 0;
+        int alpha = (int) ((float) this->field_0x4c4 / 1000.0f * 255.0f);
+        if (alpha > 255)
+            alpha = 255 - alpha;
+        Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
+        String hint(*Globals::gameText->getText(618), false);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, hint,
+                                    Globals::w / 2 -
+                                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, hint) / 2,
+                                    Globals::layout->field_0x2c_rowHeight + this->field_0x3e2, false);
+        Globals::Canvas->SetColor(0xffffffff);
+    }
+    Globals::Canvas->SetColor(savedColor);
 }
 
 void Hud::updateQueue(int dt) {
@@ -529,267 +1017,50 @@ static const char g_Hud_ccHashN[1] = {0};
 static const char g_Hud_ccUnit[1] = {0};
 static const char g_Hud_ccUnit2[1] = {0};
 
-void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender,
+void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender,
                      bool slotMode, bool aggregate) {
+    this->cargoFullFlag = cargoFull;
     this->field_0x1d0 = 0;
-    this->cargoFullFlag = single ? 1 : 0;
-
+    ListItem *item;
     if (missionDelivery) {
-        GameText *gt = Globals::gameText;
-        String *base = gt->getText(0x219);
-        String *dst = &this->field_0x1f4;
-        *((String *) (dst)) = *((String *) (base));
-
-        Status *tmpl = Globals::status;
-        char a40[12];
-        ((String *) (a40))->Set(((String *) (dst))->data);
-        int type = Globals::status->getMission()->getType();
-        String *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
-        char a4c[12];
-        ((String *) (a4c))->Set(((String *) (typeTxt))->data);
-        char a58[12];
-        ((String *) (a58))->ctor_char(g_Hud_ccHashX, false);
-        char out1[12];
-        Status_replaceHash(out1, tmpl, a40, a4c, a58);
-        *((String *) (dst)) = *((String *) (out1));
-        {
-            String *_s = ((String *) (out1));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a58));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a4c));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a40));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        tmpl = Globals::status;
-        char a64[12];
-        ((String *) (a64))->Set(((String *) (dst))->data);
-        char a70[12];
-        ((String *) (a70))->Set((long long) (1));
-        char a7c[12];
-        ((String *) (a7c))->ctor_char(g_Hud_ccHashN, false);
-        char out2[12];
-        Status_replaceHash(out2, tmpl, a64, a70, a7c);
-        *((String *) (dst)) = *((String *) (out2));
-        {
-            String *_s = ((String *) (out2));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a7c));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a70));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a64));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        String *str = new String(*(String *) dst);
-        ListItem *item = new ListItem(str);
+        this->field_0x1f4 = *Globals::gameText->getText(537);
+        this->field_0x1f4 = Globals::status->replaceHash(
+            String(this->field_0x1f4, false),
+            String(*Globals::gameText->getText(Globals::status->getMission()->getType() == 3 ? 1390 : 1391), false),
+            String("#N"));
+        this->field_0x1f4 = Globals::status->replaceHash(String(this->field_0x1f4, false), String(1), String("#Q"));
+        item = new ListItem(new String(this->field_0x1f4, false));
         item->itemId = itemId;
-        addToEventQueue(item);
-        return;
-    }
-
-    if (single) {
-        GameText *gt = Globals::gameText;
-        String *txt = gt->getText(0x142);
-        *((String *) (&this->field_0x1f4)) = *((String *) (txt));
-        String *str = new String(this->field_0x1f4);
-        ListItem *item = new ListItem(str, 1);
-        addToEventQueue(item);
-        return;
-    }
-
-    if (count < 1) return;
-
-    GameText *gt = Globals::gameText;
-
-    if (aggregate && this->eventQueueDirty != 0) {
-        char a0[12];
-        ((String *) (a0))->Set((long long) (this->cargoAggregateCount));
-        char ac[12];
-        ((String *) (ac))->ctor_char(g_Hud_ccUnit, false);
-        char a94[12];
-        *(String *) a94 = *(String *) a0 + *(String *) ac;
-        char a88[12];
-        ((String *) (a88))->Set(((String *) (a94))->data);
-        String *unit = gt->getText(itemId + 0x4fa);
-        char k34[12];
-        *(String *) k34 = *(String *) a88 + *(String *) unit;
-        {
-            String *_s = ((String *) (a88));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a94));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (ac));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        {
-            String *_s = ((String *) (a0));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-
-        char b8[12];
-        ((String *) (b8))->Set(((String *) (k34))->data);
-        int idx = sameHudEventAsBeforeAggregate(*(String *) b8);
-        {
-            String *_s = ((String *) (b8));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
-        }
-        if (idx >= 0) {
-            this->eventQueueTimer = 2000;
-            this->cargoAggregateCount += count;
-            char nAc[12];
-            ((String *) (nAc))->Set((long long) (this->cargoAggregateCount));
-            char nC4[12];
-            ((String *) (nC4))->ctor_char(g_Hud_ccUnit2, false);
-            char nA0[12];
-            *(String *) nA0 = *(String *) nAc + *(String *) nC4;
-            char n94[12];
-            ((String *) (n94))->Set(((String *) (nA0))->data);
-            String *u2 = gt->getText(itemId + 0x4fa);
-            char n88[12];
-            *(String *) n88 = *(String *) n94 + *(String *) u2;
-            *((String *) ((*this->eventQueue)[idx]->name)) = *((String *) (n88));
-            {
-                String *_s = ((String *) (n88));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (n94));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nA0));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nC4));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (nAc));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
-            {
-                String *_s = ((String *) (k34));
-                if (_s->data) delete[] _s->data;
-                _s->data = nullptr;
-                _s->length = 0;
-            }
+    } else {
+        if (cargoFull) {
+            this->field_0x1f4 = *Globals::gameText->getText(322);
+            this->addToEventQueue(new ListItem(new String(this->field_0x1f4, false), 1));
             return;
         }
-        {
-            String *_s = ((String *) (k34));
-            if (_s->data) delete[] _s->data;
-            _s->data = nullptr;
-            _s->length = 0;
+        if (count < 1)
+            return;
+        if (aggregate && this->eventQueueDirty) {
+            String text = String(String(this->cargoAggregateCount) + String("t "), false) +
+                          *Globals::gameText->getText(itemId + 1274);
+            int index = this->sameHudEventAsBeforeAggregate(String(text, false));
+            if (index >= 0) {
+                this->eventQueueTimer = 2000;
+                this->cargoAggregateCount += count;
+                *(*this->eventQueue)[index]->name = String(String(this->cargoAggregateCount) + String("t "), false) +
+                                                    *Globals::gameText->getText(itemId + 1274);
+                return;
+            }
         }
+        this->cargoAggregateCount = count;
+        this->field_0x1f4 = String(String(count) + String("t "), false) + *Globals::gameText->getText(itemId + 1274);
+        item = new ListItem(new String(this->field_0x1f4, false));
+        item->itemId = itemId;
+        if (!slotMode || extender)
+            item->buttonKind = 2;
+        if (slotMode)
+            item->selectable = 1;
     }
-
-    this->cargoAggregateCount = count;
-    char a0[12];
-    ((String *) (a0))->Set((long long) (this->cargoAggregateCount));
-    char ac[12];
-    ((String *) (ac))->ctor_char(g_Hud_ccUnit, false);
-    char a94[12];
-    *(String *) a94 = *(String *) a0 + *(String *) ac;
-    char a88[12];
-    ((String *) (a88))->Set(((String *) (a94))->data);
-    String *unit = gt->getText(itemId + 0x4fa);
-    char k34[12];
-    *(String *) k34 = *(String *) a88 + *(String *) unit;
-    *((String *) (&this->field_0x1f4)) = *((String *) (k34));
-    {
-        String *_s = ((String *) (k34));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a88));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a94));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (ac));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-    {
-        String *_s = ((String *) (a0));
-        if (_s->data) delete[] _s->data;
-        _s->data = nullptr;
-        _s->length = 0;
-    }
-
-    String *str = new String(this->field_0x1f4);
-    ListItem *item = new ListItem(str);
-    item->itemId = itemId;
-    if (!slotMode || extender) item->buttonKind = 2;
-    if (slotMode) item->selectable = 1;
-    addToEventQueue(item);
+    this->addToEventQueue(item);
 }
 
 void Hud::drawEventString(String text, bool rightAlign) {
@@ -890,20 +1161,19 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
             }
         }
     } else {
-        unsigned int j;
-        for (j = 0; j < 0x19; j = j + 1) {
+        for (int j = 0; j < 25; j++) {
             if ((*this->keyArray)[j] == key) {
                 unsigned int v = (unsigned int) this->elementBits[j];
                 if (e == v)
                     v = this->touchFlags;
                 else
-                    v = this->touchFlags & ~v;
+                    v = ~v & this->touchFlags;
                 this->touchFlags = v | e;
                 this->elementBits[j] = e;
-                goto done;
+                return this->touchFlags;
             }
         }
-        for (j = 0; j < 0x19; j = j + 1) {
+        for (int j = 0; j < 25; j++) {
             if ((*this->keyArray)[j] == 0) {
                 (*this->keyArray)[j] = key;
                 this->elementBits[j] = e;
@@ -912,7 +1182,6 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
             }
         }
     }
-done:
     return this->touchFlags;
 }
 
@@ -988,14 +1257,14 @@ int Hud::init() {
     Globals::Canvas->Image2DCreate(1318, this->image_0x364);
     Globals::Canvas->Image2DCreate(1323, this->image_0x368);
     Globals::Canvas->Image2DCreate(1324, this->image_0x36c);
-    Globals::Canvas->Image2DCreate(1320, this->image_0x4f4);
-    Globals::Canvas->Image2DCreate(1319, this->image_0x504);
-    Globals::Canvas->Image2DCreate(1257, this->image_0x4f8);
-    Globals::Canvas->Image2DCreate(1258, this->image_0x508);
-    Globals::Canvas->Image2DCreate(1214, this->image_0x4fc);
-    Globals::Canvas->Image2DCreate(1215, this->image_0x50c);
-    Globals::Canvas->Image2DCreate(1322, this->image_0x500);
-    Globals::Canvas->Image2DCreate(1321, this->image_0x510);
+    Globals::Canvas->Image2DCreate(1320, this->fireButtonImages[0]);
+    Globals::Canvas->Image2DCreate(1319, this->fireButtonPressedImages[0]);
+    Globals::Canvas->Image2DCreate(1257, this->fireButtonImages[1]);
+    Globals::Canvas->Image2DCreate(1258, this->fireButtonPressedImages[1]);
+    Globals::Canvas->Image2DCreate(1214, this->fireButtonImages[2]);
+    Globals::Canvas->Image2DCreate(1215, this->fireButtonPressedImages[2]);
+    Globals::Canvas->Image2DCreate(1322, this->fireButtonImages[3]);
+    Globals::Canvas->Image2DCreate(1321, this->fireButtonPressedImages[3]);
     Globals::Canvas->Image2DCreate(1344, this->image_0x390);
     Globals::Canvas->Image2DCreate(1345, this->image_0x394);
     Globals::Canvas->Image2DCreate(1343, this->image_0x398);
@@ -1041,9 +1310,9 @@ int Hud::init() {
     this->field_0x3ea = Globals::layout->field_0x164;
     this->field_0x3e0 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0x354) / 2;
     this->field_0x3e2 = Globals::layout->field_0x168;
-    this->field_0x3f6 = Globals::Canvas->GetImage2DWidth(this->image_0x4f4);
+    this->field_0x3f6 = Globals::Canvas->GetImage2DWidth(this->fireButtonImages[0]);
     this->field_0x3f2 = Globals::w - this->field_0x3f6 - Globals::layout->field_0x16c;
-    this->field_0x3f4 = Globals::h - Globals::layout->field_0x170 - Globals::Canvas->GetImage2DHeight(this->image_0x4f4);
+    this->field_0x3f4 = Globals::h - Globals::layout->field_0x170 - Globals::Canvas->GetImage2DHeight(this->fireButtonImages[0]);
     this->field_0x41a = Globals::Canvas->GetImage2DWidth(this->image_0x34c);
     this->field_0x41c = Globals::layout->field_0x174;
     this->field_0x416 = Globals::w - Globals::layout->field_0x178 - this->field_0x41a;
@@ -1117,15 +1386,15 @@ int Hud::init() {
     this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
     this->field_0x440 = this->field_0x43e;
     this->field_0x44c = Globals::Canvas->GetImage2DHeight(this->shieldBarFillImage);
-    this->menuOriginX = 0;
-    this->menuOriginYBase = 0;
-    this->touchHalfExtent = 0;
-    this->touchHalfExtentSmall = 0;
+    this->field_0x484 = 0;
+    this->field_0x488 = 0;
+    this->field_0x48c = 0;
+    this->field_0x490 = 0;
     this->autofireEnabled = 0;
     this->field_0x476 = 1;
     this->field_0x474 = 1;
-    this->eventLineMargin = 0;
-    this->eventLineMarginAlt = 0;
+    this->field_0x498 = 0;
+    this->field_0x49c = 0;
     this->timeExtenderTimer = 0;
     this->field_0x4c4 = 0;
     this->fireForTutorial = 0;
@@ -1154,7 +1423,7 @@ int Hud::init() {
     this->eventQueueTimer = 0;
     this->eventQueuePaused = 0;
     this->shieldHitFlash = 0;
-    this->hitFlashTimer = 0;
+    this->field_0x46c = 0;
     this->currentSecondaryWeapon = 0;
     this->menuButtons = 0;
     this->field_0x4cc = 0;

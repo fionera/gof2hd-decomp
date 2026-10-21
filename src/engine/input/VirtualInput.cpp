@@ -295,9 +295,9 @@ done:
             break;
         case 7: Globals::bankZ = 0.01f;
             break;
-        case 8: engine->autoPilotEngaged = 1.0f;
+        case 8: engine->wheelDelta = 1.0f;
             break;
-        case 9: engine->autoPilotEngaged = -1.0f;
+        case 9: engine->wheelDelta = -1.0f;
             break;
         case 19: Globals::showWingmanMenu = 1;
             break;
@@ -526,9 +526,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     }
 
     if (keyHeld(8))
-        engine->autoPilotEngaged = -1.0f;
+        engine->wheelDelta = -1.0f;
     if (keyHeld(9))
-        engine->autoPilotEngaged = 1.0f;
+        engine->wheelDelta = 1.0f;
 
     if (keyHeld(11))
         Globals::rotateShipInStation = keyHeld(14) ? -40.0f : -20.0f;

@@ -384,7 +384,7 @@ unsigned FModSound::isChannelActive(int p1) {
     return 0;
 }
 
-uint8_t FModSound::IsCategoryEnabled(int p1) {
+bool FModSound::IsCategoryEnabled(int p1) {
     return p1 <= 3 && this->system != 0 && this->categoryEnabled[p1] != 0;
 }
 

@@ -118,7 +118,7 @@ public:
     uint8_t field_0x146;
     AbyssEngine::AEMath::Vector dockOffsetVec;
     float handling;
-    uint8_t autoPilot;
+    bool autoPilot;
     int autoPilotTarget;
     uint8_t goingToWaypointFlag;
     AbyssEngine::AEMath::Vector headingVec;
@@ -232,7 +232,7 @@ public:
     // ASM: setAutoTurret writes autoTurretEnabled at [this,#853]=0x355, dockedFlag readers load @0x356.
     // The @0x354 slot is a distinct field; autoTurretEnabled is @0x355 and dockedFlag @0x356.
     uint8_t field_0x354;
-    uint8_t autoTurretEnabled;
+    bool autoTurretEnabled;
     uint8_t dockedFlag;
     AbyssEngine::EaseInOutMatrix *easeMatrix;
     int field_0x35c;
@@ -287,7 +287,7 @@ public:
 
     int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
 
-    unsigned char autoTurretIsEnabled();
+    bool autoTurretIsEnabled();
 
     void boost();
 
@@ -377,7 +377,7 @@ public:
 
     Vec3 getTurretPosition();
 
-    int getThrust();
+    float getThrust();
 
     float getVolatileForce();
 
@@ -417,7 +417,7 @@ public:
 
     void initManeuver(int type);
 
-    unsigned char isAutoPilot();
+    bool isAutoPilot();
 
     int isBoostRefreshed();
 
