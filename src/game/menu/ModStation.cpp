@@ -529,12 +529,10 @@ void ModStation::leaveStation() {
         this->flag_0x63 = 1;
         return;
     }
-    int firePower;
     if (Globals::status->getCurrentCampaignMission() == 6 ||
         (Globals::status->getCurrentCampaignMission() == 7 &&
-         ((firePower = Globals::status->getShip()->getFirePower(), reinterpret_cast<float &>(firePower) == 0.0f) ||
+         (Globals::status->getShip()->getFirePower() == 0.0f ||
           Globals::status->getShip()->getCombinedHP() == Globals::status->getShip()->getBaseHP()))) {
-        // Ship::firePower holds a float; Ship::getFirePower() is declared int in our headers.
         if (Globals::status->getShip()->hasCargoType(0) || Globals::status->getShip()->hasCargoType(3))
             this->choiceWindow->set(*Globals::gameText->getText(530));
         else
