@@ -27,18 +27,18 @@ namespace AbyssEngine {
     int NoTexVtxColorShader::ShaderIndex;
 
     void NoTexVtxColorShader::SetInActive() {
-        glDisableVertexAttribArray(aPosition);
-        glDisableVertexAttribArray(aColor);
+        glDisableVertexAttribArray(aPositionLoc);
+        glDisableVertexAttribArray(aVertexColorLoc);
     }
 
     void NoTexVtxColorShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kNoTexVtxColorShaderVertexSource, kNoTexVtxColorShaderFragmentSource);
 
-        aPosition = glGetAttribLocation(this->program, "a_position");
-        aColor = glGetAttribLocation(this->program, "a_VertexColor");
+        aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        aVertexColorLoc = glGetAttribLocation(this->program, "a_VertexColor");
 
-        uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        uColor = glGetUniformLocation(this->program, "glColor");
+        uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        uGlColorLoc = glGetUniformLocation(this->program, "glColor");
 
         glUseProgram(this->program);
     }
@@ -49,19 +49,19 @@ namespace AbyssEngine {
     }
 
     void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->dirty != 0) {
-            glUniform4fv(uColor, 1, engine->glColor);
+            glUniform4fv(uGlColorLoc, 1, engine->glColor);
             this->dirty = 0;
         }
-        glEnableVertexAttribArray(aPosition);
-        glEnableVertexAttribArray(aColor);
+        glEnableVertexAttribArray(aPositionLoc);
+        glEnableVertexAttribArray(aVertexColorLoc);
 
         if (mesh != 0) {
-            glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(aColor, 4, 0x1406, 0, 0, mesh->colors);
+            glVertexAttribPointer(aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(aVertexColorLoc, 4, 0x1406, 0, 0, mesh->colors);
         } else {
-            glVertexAttribPointer(aPosition, 2, 0x1406, 0, 0, *(unsigned char **) &engine->lineVertexBase);
+            glVertexAttribPointer(aPositionLoc, 2, 0x1406, 0, 0, *(unsigned char **) &engine->lineVertexBase);
         }
     }
 }

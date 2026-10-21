@@ -65,101 +65,101 @@ namespace AbyssEngine {
     void BumpShaderV2::Init(Engine *) {
         this->program = this->ES2LoadProgram(kBumpShaderV2VertexSource, kBumpShaderV2FragmentSource);
 
-        this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aNormal = glGetAttribLocation(this->program, "a_texCoord");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_normal");
-        this->aTangent = glGetAttribLocation(this->program, "a_tangent");
-        this->aBinormal = glGetAttribLocation(this->program, "a_bitangent");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->uNormalMatrix = glGetUniformLocation(this->program, "u_ModelMatrix");
-        this->uLightDir = glGetUniformLocation(this->program, "u_lightdirmodel");
-        this->uEyePos = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->uTexture0 = glGetUniformLocation(this->program, "s_texture[0]");
-        this->uTexture1 = glGetUniformLocation(this->program, "s_texture[1]");
-        this->uAmbient = glGetUniformLocation(this->program, "glColor");
-        this->uDiffuse = glGetUniformLocation(this->program, "u_AmbientColor");
-        this->uSpecular = glGetUniformLocation(this->program, "u_DiffuseColor");
-        this->uEmissive = glGetUniformLocation(this->program, "u_SpecularColor");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uLightdirmodelLoc = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        this->sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uAmbientColorLoc = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->uDiffuseColorLoc = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->uSpecularColorLoc = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
         for (int i = 0; i != 2; i++) {
-            int loc = (&this->uTexture0)[i];
+            int loc = (&this->sTexture0Loc)[i];
             if (loc >= 0)
                 glUniform1i(loc, i);
         }
     }
 
     void BumpShaderV2::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        if (this->uMvpMatrix >= 0)
-            glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
-        if (this->uNormalMatrix >= 0)
-            glUniformMatrix3fv(this->uNormalMatrix, 1, 0, engine->normalMatrix);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uModelMatrixLoc >= 0)
+            glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, engine->normalMatrix);
 
         if (this->dirty) {
-            if (this->uLightDir >= 0)
-                glUniform3f(this->uLightDir, engine->lightDir.x,
+            if (this->uLightdirmodelLoc >= 0)
+                glUniform3f(this->uLightdirmodelLoc, engine->lightDir.x,
                             engine->lightDir.y, engine->lightDir.z);
-            if (this->uEyePos >= 0)
-                glUniform3f(this->uEyePos, engine->lightColor.x,
+            if (this->uEyeposmodelLoc >= 0)
+                glUniform3f(this->uEyeposmodelLoc, engine->lightColor.x,
                             engine->lightColor.y, engine->lightColor.z);
-            if (this->uAmbient >= 0)
-                glUniform4fv(this->uAmbient, 1, engine->glColor);
-            if (this->uDiffuse >= 0)
-                glUniform4fv(this->uDiffuse, 1, engine->materialAmbient);
-            if (this->uSpecular >= 0)
-                glUniform4fv(this->uSpecular, 1, engine->materialDiffuse);
-            if (this->uEmissive >= 0)
-                glUniform4fv(this->uEmissive, 1, engine->materialSpecular);
+            if (this->uGlColorLoc >= 0)
+                glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
+            if (this->uAmbientColorLoc >= 0)
+                glUniform4fv(this->uAmbientColorLoc, 1, engine->materialAmbient);
+            if (this->uDiffuseColorLoc >= 0)
+                glUniform4fv(this->uDiffuseColorLoc, 1, engine->materialDiffuse);
+            if (this->uSpecularColorLoc >= 0)
+                glUniform4fv(this->uSpecularColorLoc, 1, engine->materialSpecular);
             this->dirty = 0;
         }
 
-        if (this->aPosition >= 0)
-            glEnableVertexAttribArray(this->aPosition);
-        if (this->aNormal >= 0)
-            glEnableVertexAttribArray(this->aNormal);
-        if (this->aTexCoord >= 0)
-            glEnableVertexAttribArray(this->aTexCoord);
-        if (this->aTangent >= 0)
-            glEnableVertexAttribArray(this->aTangent);
-        if (this->aBinormal >= 0)
-            glEnableVertexAttribArray(this->aBinormal);
+        if (this->aPositionLoc >= 0)
+            glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glEnableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0)
+            glEnableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0)
+            glEnableVertexAttribArray(this->aBitangentLoc);
 
         if (mesh->uploaded == 0) {
-            if (this->aPosition >= 0)
-                glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
-            if (this->aNormal >= 0)
-                glVertexAttribPointer(this->aNormal, 2, 0x1406, 0, 0, mesh->texCoords);
-            if (this->aTexCoord >= 0)
-                glVertexAttribPointer(this->aTexCoord, 3, 0x1406, 0, 0, mesh->normals);
-            if (this->aTangent >= 0)
-                glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, mesh->tangents);
-            if (this->aBinormal >= 0)
-                glVertexAttribPointer(this->aBinormal, 3, 0x1406, 0, 0, mesh->binormals);
+            if (this->aPositionLoc >= 0)
+                glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            if (this->aTexCoordLoc >= 0)
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (this->aNormalLoc >= 0)
+                glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
+            if (this->aTangentLoc >= 0)
+                glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->tangents);
+            if (this->aBitangentLoc >= 0)
+                glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aNormal, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->normalVBO);
-            glVertexAttribPointer(this->aTexCoord, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->tangentVBO);
-            glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->binormalVBO);
-            glVertexAttribPointer(this->aBinormal, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, 0);
         }
     }
 
     void BumpShaderV2::SetInActive() {
-        if (this->aPosition >= 0)
-            glDisableVertexAttribArray(this->aPosition);
-        if (this->aNormal >= 0)
-            glDisableVertexAttribArray(this->aNormal);
-        if (this->aTexCoord >= 0)
-            glDisableVertexAttribArray(this->aTexCoord);
-        if (this->aTangent >= 0)
-            glDisableVertexAttribArray(this->aTangent);
-        if (this->aBinormal >= 0)
-            glDisableVertexAttribArray(this->aBinormal);
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0)
+            glDisableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0)
+            glDisableVertexAttribArray(this->aBitangentLoc);
     }
 }

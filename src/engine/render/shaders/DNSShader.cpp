@@ -39,11 +39,11 @@ namespace AbyssEngine {
         this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
         this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->uMvpMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
         this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
         this->uModelMatrixFullLoc = glGetUniformLocation(this->program, "u_ModelMatrixFull");
-        this->uLightDirModelLoc = glGetUniformLocation(this->program, "u_lightdirmodel");
-        this->uEyePosModelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->uLightdirmodelLoc = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
         this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
         this->uAmbientColorLoc = glGetUniformLocation(this->program, "u_AmbientColor");
         this->uDiffuseColorLoc = glGetUniformLocation(this->program, "u_DiffuseColor");
@@ -69,8 +69,8 @@ namespace AbyssEngine {
     }
 
     void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        if (this->uMvpMatrixLoc >= 0)
-            glUniformMatrix4fv(this->uMvpMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->uModelMatrixLoc >= 0)
             glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, engine->normalMatrix);
         if (this->uModelMatrixFullLoc >= 0)
@@ -81,10 +81,10 @@ namespace AbyssEngine {
             glUniform1f(this->uTexBiasNormalLoc, Engine::lodBiasNormal);
 
         if (this->dirty != 0) {
-            glUniform3f(this->uLightDirModelLoc, engine->lightDir.x, engine->lightDir.y,
+            glUniform3f(this->uLightdirmodelLoc, engine->lightDir.x, engine->lightDir.y,
                         engine->lightDir.z);
-            if (this->uEyePosModelLoc >= 0)
-                glUniform3f(this->uEyePosModelLoc, engine->lightColor.x, engine->lightColor.y,
+            if (this->uEyeposmodelLoc >= 0)
+                glUniform3f(this->uEyeposmodelLoc, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);
             if (this->uGlColorLoc >= 0)
                 glUniform4fv(this->uGlColorLoc, 1, engine->glColor);

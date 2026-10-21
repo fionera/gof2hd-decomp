@@ -19,31 +19,31 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int a0Loc;
-        int a1Loc;
-        int a2Loc;
-        int u0Loc;
-        int u1Loc;
-        int u2Loc;
-        int u3Loc;
-        int u4Loc;
-        int u5Loc;
-        int u6Loc;
-        int u7Loc;
-        int u8Loc;
-        int u11Loc;
-        int u9Loc;
-        int u12Loc;
-        int u10Loc;
-        int u13Loc;
-        int u14Loc;
-        int u15Loc;
-        int u16Loc;
-        int u17Loc;
-        int u18Loc;
-        int u19Loc;
-        int u20Loc;
-        int u21Loc;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodel0Loc;
+        int uLightdirmodel1Loc;
+        int uEyeposmodelLoc;
+        int sTextureLoc;
+        int uTextureCubemapLoc;
+        int uGlColorLoc;
+        int uAmbientColor0Loc;
+        int uAmbientColor1Loc;
+        int uDiffuseColor0Loc;
+        int uDiffuseColor1Loc;
+        int uSpecularColor0Loc;
+        int uSpecularColor1Loc;
+        int uSpecularPowerLoc;
+        int uRimColorLoc;
+        int uTexBiasDiffuseLoc;
+        int uTexBiasNormalLoc;
+        int uFogColorLoc;
+        int uFogMaxDistLoc;
+        int uFogMinDistLoc;
+        int uEnableFogLoc;
 
         BumpShader();
 

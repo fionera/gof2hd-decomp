@@ -45,52 +45,52 @@ namespace AbyssEngine {
         int program = this->ES2LoadProgram(kColorMixAddVertexSource, kColorMixAddFragmentSource);
         this->program = program;
 
-        this->u0Loc = glGetUniformLocation(program, "s_texture");
-        this->a0Loc = glGetAttribLocation(this->program, "a_position");
-        this->a1Loc = glGetAttribLocation(this->program, "a_texCoord");
-        this->u1Loc = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->u2Loc = glGetUniformLocation(this->program, "glColor");
-        this->u3Loc = glGetUniformLocation(this->program, "u_DarkenValue");
-        this->u4Loc = glGetUniformLocation(this->program, "u_UvMatrix");
-        this->u5Loc = glGetUniformLocation(this->program, "u_UVAnimation");
+        this->sTextureLoc = glGetUniformLocation(program, "s_texture");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uDarkenValueLoc = glGetUniformLocation(this->program, "u_DarkenValue");
+        this->uUvMatrixLoc = glGetUniformLocation(this->program, "u_UvMatrix");
+        this->uUVAnimationLoc = glGetUniformLocation(this->program, "u_UVAnimation");
 
         glUseProgram(this->program);
-        glUniform1i(this->u0Loc, 0);
+        glUniform1i(this->sTextureLoc, 0);
     }
 
     void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->u1Loc, 1, 0, engine->worldViewProjMatrix);
-        if (this->u4Loc >= 0)
-            glUniformMatrix4fv(this->u4Loc, 1, 0, engine->uvMatrix);
-        if (this->u5Loc >= 0)
-            glUniform1i(this->u5Loc, mesh->hasAnimation);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uUvMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uUvMatrixLoc, 1, 0, engine->uvMatrix);
+        if (this->uUVAnimationLoc >= 0)
+            glUniform1i(this->uUVAnimationLoc, mesh->hasAnimation);
 
         if (this->dirty != 0) {
-            glUniform4fv(this->u2Loc, 1, engine->glColor);
-            if (this->u3Loc >= 0)
-                glUniform1f(this->u3Loc, 1.0f - *(float *) &mesh->materialId);
+            glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
+            if (this->uDarkenValueLoc >= 0)
+                glUniform1f(this->uDarkenValueLoc, 1.0f - *(float *) &mesh->materialId);
             this->dirty = 0;
         }
 
         if ((mesh->vertexFormat & 2) != 0) {
-            glEnableVertexAttribArray(this->a0Loc);
-            glEnableVertexAttribArray(this->a1Loc);
+            glEnableVertexAttribArray(this->aPositionLoc);
+            glEnableVertexAttribArray(this->aTexCoordLoc);
             if (mesh->uploaded == 0) {
-                glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
-                glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->texCoords);
+                glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
             } else {
                 glBindBuffer(0x8892, mesh->positionVBO);
-                glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
                 glBindBuffer(0x8892, mesh->texCoordVBO);
-                glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             }
         }
     }
 
     void ColorMixAdd::SetInActive() {
         for (int i = 0; i != 2; i++) {
-            glDisableVertexAttribArray(this->a0Loc);
-            glDisableVertexAttribArray(this->a1Loc);
+            glDisableVertexAttribArray(this->aPositionLoc);
+            glDisableVertexAttribArray(this->aTexCoordLoc);
         }
     }
 }

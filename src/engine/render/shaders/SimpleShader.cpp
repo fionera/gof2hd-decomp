@@ -19,28 +19,28 @@ namespace AbyssEngine {
 
     void SimpleShader::Init(Engine *) {
         this->program = (int) this->ES2LoadProgram(kSimpleShaderVertexSource, kSimpleShaderFragmentSource);
-        this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->uColor = glGetUniformLocation(this->program, "glColor");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
         glUseProgram(this->program);
     }
 
     void SimpleShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPosition);
+        glDisableVertexAttribArray(this->aPositionLoc);
     }
 
     void SimpleShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->uWorldMatrix, 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->dirty != 0) {
-            glUniform4fv(this->uColor, 1, engine->glColor);
+            glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
             this->dirty = 0;
         }
-        glEnableVertexAttribArray(this->aPosition);
+        glEnableVertexAttribArray(this->aPositionLoc);
         if (mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             return;
         }
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
     }
 }

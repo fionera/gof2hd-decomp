@@ -24,11 +24,11 @@ namespace AbyssEngine {
         int aNormalLoc;
         int aTangentLoc;
         int aBitangentLoc;
-        int uMvpMatrixLoc;
+        int uModelViewProjectionMatrixLoc;
         int uModelMatrixLoc;
         int uModelMatrixFullLoc;
-        int uLightDirModelLoc;
-        int uEyePosModelLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
         int uGlColorLoc;
         int uAmbientColorLoc;
         int uDiffuseColorLoc;

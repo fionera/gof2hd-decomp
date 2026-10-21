@@ -48,12 +48,12 @@ namespace AbyssEngine {
     int BumpShaderRefract::ShaderIndex;
 
     void BumpShaderRefract::SetInActive() {
-        if (aPosition >= 0)
-            glDisableVertexAttribArray(aPosition);
-        if (aTexCoord >= 0)
-            glDisableVertexAttribArray(aTexCoord);
-        if (aVertexColor >= 0)
-            glDisableVertexAttribArray(aVertexColor);
+        if (aPositionLoc >= 0)
+            glDisableVertexAttribArray(aPositionLoc);
+        if (aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(aTexCoordLoc);
+        if (aVertexColorLoc >= 0)
+            glDisableVertexAttribArray(aVertexColorLoc);
     }
 
     BumpShaderRefract::BumpShaderRefract() {
@@ -65,44 +65,44 @@ namespace AbyssEngine {
         int program = this->ES2LoadProgram(kBumpShaderRefractVertexSource, kBumpShaderRefractFragmentSource);
         this->program = program;
 
-        aPosition = glGetAttribLocation(program, "a_position");
-        aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        aPositionLoc = glGetAttribLocation(program, "a_position");
+        aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
 
-        aVertexColor = glGetAttribLocation(this->program, "a_VertexColor");
-        uMvpMatrix = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        sTexture0 = glGetUniformLocation(this->program, "s_texture[0]");
-        sTexture1 = glGetUniformLocation(this->program, "s_texture[1]");
-        uTexelSize = glGetUniformLocation(this->program, "u_texelSize");
-        uUvMatrix = glGetUniformLocation(this->program, "u_UvMatrix");
-        uUVAnimation = glGetUniformLocation(this->program, "u_UVAnimation");
-        uGlColor = glGetUniformLocation(this->program, "glColor");
+        aVertexColorLoc = glGetAttribLocation(this->program, "a_VertexColor");
+        uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        uTexelSizeLoc = glGetUniformLocation(this->program, "u_texelSize");
+        uUvMatrixLoc = glGetUniformLocation(this->program, "u_UvMatrix");
+        uUVAnimationLoc = glGetUniformLocation(this->program, "u_UVAnimation");
+        uGlColorLoc = glGetUniformLocation(this->program, "glColor");
 
         glActiveTexture(0x84c7);
         engine->ActivateRefractFBO();
-        sTextureBase = glGetUniformLocation(this->program, "s_texture_base");
+        sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
 
-        int *samplers = &sTexture0;
+        int *samplers = &sTexture0Loc;
         for (int i = 0; i != 2; i++) {
             int loc = samplers[i];
             if (loc >= 0)
                 glUniform1i(loc, i);
         }
-        glUniform1i(sTextureBase, 7);
+        glUniform1i(sTextureBaseLoc, 7);
     }
 
     void BumpShaderRefract::UpdateMeshData(Mesh *mesh, ::Engine *engine) {
-        if (uMvpMatrix >= 0)
-            glUniformMatrix4fv(uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
-        if (uUvMatrix >= 0)
-            glUniformMatrix4fv(uUvMatrix, 1, 0, engine->uvMatrix);
+        if (uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (uUvMatrixLoc >= 0)
+            glUniformMatrix4fv(uUvMatrixLoc, 1, 0, engine->uvMatrix);
 
         if (this->dirty != 0) {
-            if (uUVAnimation >= 0)
-                glUniform1i(uUVAnimation, mesh->hasAnimation);
-            glUniform4fv(uGlColor, 1, engine->glColor);
-            int loc = uTexelSize;
+            if (uUVAnimationLoc >= 0)
+                glUniform1i(uUVAnimationLoc, mesh->hasAnimation);
+            glUniform4fv(uGlColorLoc, 1, engine->glColor);
+            int loc = uTexelSizeLoc;
             if (loc >= 0) {
                 float w = (float) (int) engine->GetDisplayWidth();
                 float h = (float) (int) engine->GetDisplayHeight();
@@ -113,33 +113,33 @@ namespace AbyssEngine {
             this->dirty = 0;
         }
 
-        if (aPosition >= 0)
-            glEnableVertexAttribArray(aPosition);
-        if (aTexCoord >= 0)
-            glEnableVertexAttribArray(aTexCoord);
-        if (aVertexColor >= 0)
-            glEnableVertexAttribArray(aVertexColor);
+        if (aPositionLoc >= 0)
+            glEnableVertexAttribArray(aPositionLoc);
+        if (aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(aTexCoordLoc);
+        if (aVertexColorLoc >= 0)
+            glEnableVertexAttribArray(aVertexColorLoc);
 
         if (mesh->uploaded != 0) {
-            if (aPosition >= 0) {
+            if (aPositionLoc >= 0) {
                 glBindBuffer(0x8892, mesh->positionVBO);
-                glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(aPositionLoc, 3, 0x1406, 0, 0, 0);
             }
-            if (aTexCoord >= 0) {
+            if (aTexCoordLoc >= 0) {
                 glBindBuffer(0x8892, mesh->texCoordVBO);
-                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             }
-            if (aVertexColor >= 0) {
+            if (aVertexColorLoc >= 0) {
                 glBindBuffer(0x8892, mesh->colorVBO);
-                glVertexAttribPointer(aVertexColor, 4, 0x1406, 0, 0, 0);
+                glVertexAttribPointer(aVertexColorLoc, 4, 0x1406, 0, 0, 0);
             }
         } else {
-            if (aPosition >= 0)
-                glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, mesh->positions);
-            if (aTexCoord >= 0)
-                glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-            if (aVertexColor >= 0)
-                glVertexAttribPointer(aVertexColor, 4, 0x1406, 0, 0, mesh->colors);
+            if (aPositionLoc >= 0)
+                glVertexAttribPointer(aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            if (aTexCoordLoc >= 0)
+                glVertexAttribPointer(aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (aVertexColorLoc >= 0)
+                glVertexAttribPointer(aVertexColorLoc, 4, 0x1406, 0, 0, mesh->colors);
         }
     }
 }

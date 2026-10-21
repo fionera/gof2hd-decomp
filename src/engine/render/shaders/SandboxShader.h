@@ -19,19 +19,19 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int attrPosition;
-        int attrNormal;
-        int attrTangent;
-        int attrBinormal;
-        int attrTexCoord;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
 
-        int uniformA;
-        int uniformB;
-        int uniformC;
-        int uniformF;
-        int uniformD;
-        int uniformE;
-        int uniformG;
+        int uWorldMatrixLoc;
+        int uLightDirLoc;
+        int uEyePosLoc;
+        int uGlColorLoc;
+        int sTextureBaseLoc;
+        int sTextureNormLoc;
+        int uAmbientColorLoc;
 
         SandboxShader();
 

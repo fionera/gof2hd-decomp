@@ -17,17 +17,17 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BumpShaderRefract : public ShaderBaseStruct {
     public:
-        int aPosition;
-        int aTexCoord;
-        int aVertexColor;
-        int uMvpMatrix;
-        int sTexture0;
-        int sTexture1;
-        int uTexelSize;
-        int sTextureBase;
-        int uUvMatrix;
-        int uUVAnimation;
-        int uGlColor;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aVertexColorLoc;
+        int uModelViewProjectionMatrixLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uTexelSizeLoc;
+        int sTextureBaseLoc;
+        int uUvMatrixLoc;
+        int uUVAnimationLoc;
+        int uGlColorLoc;
 
         static int ShaderIndex;
 

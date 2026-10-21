@@ -21,12 +21,12 @@ namespace AbyssEngine {
         static int ShaderIndex;
 
         // ASM (Init/UpdateMeshData, r4=this): locs read @0x48+ but ours @0x20 (+40). 40 bytes of FBO state
-        // precede positionLoc (modeled as opaque pad; exact fields unknown).
+        // precede aPositionLoc (modeled as opaque pad; exact fields unknown).
         uint8_t _pad_fbo_state[40];
-        int positionLoc;
-        int worldViewMatrixLoc;
-        int texCoordLoc;
-        int textureLoc;
+        int aPositionLoc;
+        int uWorldMatrixLoc;
+        int aTexCoordLoc;
+        int sTextureBaseLoc;
 
         DrawFBOShader();
 

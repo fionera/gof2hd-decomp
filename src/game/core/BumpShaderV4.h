@@ -17,21 +17,21 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BumpShaderV4 : public ShaderBaseStruct {
     public:
-        int aPosition;
-        int aTexCoord;
-        int aNormal;
-        int aTangent;
-        int aBitangent;
-        int uMvpMatrix;
-        int uModelMatrix;
-        int uLightDirModel;
-        int uEyePosModel;
-        int uTexture0;
-        int uTexture1;
-        int uColor;
-        int uAmbientColor;
-        int uDiffuseColor;
-        int uSpecularColor;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int aTangentLoc;
+        int aBitangentLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelMatrixLoc;
+        int uLightdirmodelLoc;
+        int uEyeposmodelLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
+        int uGlColorLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
 
         static int ShaderIndex;
 

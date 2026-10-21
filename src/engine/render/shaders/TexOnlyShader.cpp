@@ -34,35 +34,35 @@ namespace AbyssEngine {
 
     void TexOnlyShader::Init(Engine *) {
         this->program = (int) this->ES2LoadProgram(kTexOnlyShaderVertexSource, kTexOnlyShaderFragmentSource);
-        this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
-        this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->sTexture = glGetUniformLocation(this->program, "s_texture_base");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
         glUseProgram(this->program);
-        glUniform1i(this->sTexture, 0);
+        glUniform1i(this->sTextureBaseLoc, 0);
     }
 
     void TexOnlyShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPosition);
-        glDisableVertexAttribArray(this->aTexCoord);
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 
     void TexOnlyShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->uWorldMatrix, 1, 0, engine->worldViewProjMatrix);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->dirty != 0) {
             this->dirty = 0;
         }
-        glEnableVertexAttribArray(this->aPosition);
-        glEnableVertexAttribArray(this->aTexCoord);
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
 
         if (mesh->uploaded == 0) {
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
         }
     }
 }

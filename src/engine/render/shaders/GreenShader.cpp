@@ -33,61 +33,61 @@ namespace AbyssEngine {
     void GreenShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kGreenShaderVertexSource, kGreenShaderFragmentSource);
 
-        this->a0Loc = glGetAttribLocation(this->program, "a_position");
-        this->a1Loc = glGetAttribLocation(this->program, "a_texCoord");
-        this->a2Loc = glGetAttribLocation(this->program, "a_normal");
-        this->a3Loc = glGetAttribLocation(this->program, "a_tangent");
-        this->a4Loc = glGetAttribLocation(this->program, "a_bitangent");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
 
-        this->u0Loc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->u1Loc = glGetUniformLocation(this->program, "u_ModelMatrix");
-        this->u2Loc = glGetUniformLocation(this->program, "u_lightdirmodel");
-        this->u3Loc = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->u4Loc = glGetUniformLocation(this->program, "s_texture");
-        this->u5Loc = glGetUniformLocation(this->program, "glColor");
-        this->u6Loc = glGetUniformLocation(this->program, "u_AmbientColor");
-        this->u7Loc = glGetUniformLocation(this->program, "u_DiffuseColor");
-        this->u8Loc = glGetUniformLocation(this->program, "u_SpecularColor");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uLightdirmodelLoc = glGetUniformLocation(this->program, "u_lightdirmodel");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTextureLoc = glGetUniformLocation(this->program, "s_texture");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uAmbientColorLoc = glGetUniformLocation(this->program, "u_AmbientColor");
+        this->uDiffuseColorLoc = glGetUniformLocation(this->program, "u_DiffuseColor");
+        this->uSpecularColorLoc = glGetUniformLocation(this->program, "u_SpecularColor");
 
         glUseProgram(this->program);
-        glUniform1i(this->u4Loc, 0);
+        glUniform1i(this->sTextureLoc, 0);
     }
 
     void GreenShader::SetInActive() {
-        if (this->a0Loc >= 0)
-            glDisableVertexAttribArray(this->a0Loc);
-        if (this->a1Loc >= 0)
-            glDisableVertexAttribArray(this->a1Loc);
-        if (this->a2Loc >= 0)
-            glDisableVertexAttribArray(this->a2Loc);
-        if (this->a3Loc >= 0)
-            glDisableVertexAttribArray(this->a3Loc);
-        if (this->a4Loc >= 0)
-            glDisableVertexAttribArray(this->a4Loc);
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0)
+            glDisableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0)
+            glDisableVertexAttribArray(this->aBitangentLoc);
     }
 
     void GreenShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        if (this->u0Loc >= 0)
-            glUniformMatrix4fv(this->u0Loc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
-        if (this->a0Loc >= 0)
-            glEnableVertexAttribArray(this->a0Loc);
-        if (this->a1Loc >= 0)
-            glEnableVertexAttribArray(this->a1Loc);
-        if (this->a2Loc >= 0)
-            glEnableVertexAttribArray(this->a2Loc);
-        if (this->a3Loc >= 0)
-            glEnableVertexAttribArray(this->a3Loc);
-        if (this->a4Loc >= 0)
-            glEnableVertexAttribArray(this->a4Loc);
+        if (this->aPositionLoc >= 0)
+            glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glEnableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0)
+            glEnableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0)
+            glEnableVertexAttribArray(this->aBitangentLoc);
 
         if (mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
         } else {
-            if (this->a0Loc < 0)
+            if (this->aPositionLoc < 0)
                 return;
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
         }
     }
 }

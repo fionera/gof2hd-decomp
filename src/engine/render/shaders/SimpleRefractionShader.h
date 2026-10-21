@@ -24,12 +24,12 @@ namespace AbyssEngine {
         int aNormalLoc;
         int aTangentLoc;
         int aBitangentLoc;
-        int uMvpMatrixLoc;
+        int uModelViewProjectionMatrixLoc;
         int sTexture0Loc;
         int sTexture1Loc;
         int uTexBiasLoc;
         int uGlColorLoc;
-        int uEyePosModelLoc;
+        int uEyeposmodelLoc;
         int uCloakRateLoc;
         int uTexelSizeLoc;
         int sTextureBaseLoc;

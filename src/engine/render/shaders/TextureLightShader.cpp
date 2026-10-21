@@ -98,95 +98,95 @@ namespace AbyssEngine {
     void TextureLightShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kTextureLightShaderVertexSource, kTextureLightShaderFragmentSource);
 
-        this->uModelMatrix = glGetUniformLocation(this->program, "u_UvMatrix");
-        this->uHasScaleAnimation = glGetUniformLocation(this->program, "u_UVAnimation");
+        this->uUvMatrixLoc = glGetUniformLocation(this->program, "u_UvMatrix");
+        this->uUVAnimationLoc = glGetUniformLocation(this->program, "u_UVAnimation");
 
-        this->aPosition = glGetAttribLocation(this->program, "a_position");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
 
-        this->aNormal = glGetAttribLocation(this->program, "a_normal");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->uModelViewMatrix = glGetUniformLocation(this->program, "u_FullModelMatrix");
-        this->uNormalMatrix = glGetUniformLocation(this->program, "u_ModelMatrix");
-        this->uColor0 = glGetUniformLocation(this->program, "u_LightDirection[0]");
-        this->uColor1 = glGetUniformLocation(this->program, "u_LightDirection[1]");
-        this->uSpecularColor = glGetUniformLocation(this->program, "u_EyePosModel");
-        this->uTexture = glGetUniformLocation(this->program, "s_texture");
-        this->uAmbientColor = glGetUniformLocation(this->program, "glColor");
-        this->uLight0Direction = glGetUniformLocation(this->program, "u_AmbientColor[0]");
-        this->uLight1Direction = glGetUniformLocation(this->program, "u_DiffuseColor[0]");
-        this->uLight2Direction = glGetUniformLocation(this->program, "u_SpecularColor[0]");
-        this->uShininess = glGetUniformLocation(this->program, "u_SpecularPower");
-        this->uLight0Color = glGetUniformLocation(this->program, "u_AmbientColor[1]");
-        this->uLight1Color = glGetUniformLocation(this->program, "u_DiffuseColor[1]");
-        this->uLight2Color = glGetUniformLocation(this->program, "u_SpecularColor[1]");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uFullModelMatrixLoc = glGetUniformLocation(this->program, "u_FullModelMatrix");
+        this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uLightDirection0Loc = glGetUniformLocation(this->program, "u_LightDirection[0]");
+        this->uLightDirection1Loc = glGetUniformLocation(this->program, "u_LightDirection[1]");
+        this->uEyePosModelLoc = glGetUniformLocation(this->program, "u_EyePosModel");
+        this->sTextureLoc = glGetUniformLocation(this->program, "s_texture");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uAmbientColor0Loc = glGetUniformLocation(this->program, "u_AmbientColor[0]");
+        this->uDiffuseColor0Loc = glGetUniformLocation(this->program, "u_DiffuseColor[0]");
+        this->uSpecularColor0Loc = glGetUniformLocation(this->program, "u_SpecularColor[0]");
+        this->uSpecularPowerLoc = glGetUniformLocation(this->program, "u_SpecularPower");
+        this->uAmbientColor1Loc = glGetUniformLocation(this->program, "u_AmbientColor[1]");
+        this->uDiffuseColor1Loc = glGetUniformLocation(this->program, "u_DiffuseColor[1]");
+        this->uSpecularColor1Loc = glGetUniformLocation(this->program, "u_SpecularColor[1]");
 
         glUseProgram(this->program);
-        glUniform1i(this->uTexture, 0);
+        glUniform1i(this->sTextureLoc, 0);
     }
 
     void TextureLightShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
-        if (this->uModelMatrix >= 0)
-            glUniformMatrix4fv(this->uModelMatrix, 1, 0, engine->uvMatrix);
-        glUniformMatrix3fv(this->uNormalMatrix, 1, 0, engine->normalMatrix);
-        if (this->uModelViewMatrix >= 0)
-            glUniformMatrix4fv(this->uModelViewMatrix, 1, 0, engine->modelMatrixGL);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uUvMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uUvMatrixLoc, 1, 0, engine->uvMatrix);
+        glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, engine->normalMatrix);
+        if (this->uFullModelMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uFullModelMatrixLoc, 1, 0, engine->modelMatrixGL);
 
         if (this->dirty != 0) {
-            if (this->uHasScaleAnimation >= 0)
-                glUniform1i(this->uHasScaleAnimation, mesh->hasAnimation);
-            glUniform4fv(this->uAmbientColor, 1, engine->glColor);
+            if (this->uUVAnimationLoc >= 0)
+                glUniform1i(this->uUVAnimationLoc, mesh->hasAnimation);
+            glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
 
-            glUniform3fv(this->uLight0Direction, 1, (float *) &engine->lightAmbientShaded);
-            glUniform3fv(this->uLight1Direction, 1, (float *) &engine->field_0x2fc);
-            glUniform3fv(this->uLight2Direction, 1, (float *) &engine->lightDiffuseShaded);
+            glUniform3fv(this->uAmbientColor0Loc, 1, (float *) &engine->lightAmbientShaded);
+            glUniform3fv(this->uDiffuseColor0Loc, 1, (float *) &engine->field_0x2fc);
+            glUniform3fv(this->uSpecularColor0Loc, 1, (float *) &engine->lightDiffuseShaded);
 
-            glUniform4f(this->uColor0, engine->lightDir.x, engine->lightDir.y,
+            glUniform4f(this->uLightDirection0Loc, engine->lightDir.x, engine->lightDir.y,
                         engine->lightDir.z, engine->lightDirty[0]);
 
             if (engine->lightCount >= 2) {
-                glUniform3fv(this->uLight0Color, 1, (float *) &engine->lightSpecularShaded);
-                glUniform3fv(this->uLight1Color, 1, (float *) &engine->field_0x308);
-                glUniform3fv(this->uLight2Color, 1, (float *) &engine->particleAmbient);
-                glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
+                glUniform3fv(this->uAmbientColor1Loc, 1, (float *) &engine->lightSpecularShaded);
+                glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) &engine->field_0x308);
+                glUniform3fv(this->uSpecularColor1Loc, 1, (float *) &engine->particleAmbient);
+                glUniform4f(this->uLightDirection1Loc, engine->field_0x33c.x, engine->field_0x33c.y,
                             engine->field_0x33c.z, engine->lightDirty[1]);
             } else {
-                glUniform3f(this->uLight0Color, 0, 0, 0);
-                glUniform3f(this->uLight1Color, 0, 0, 0);
-                glUniform3f(this->uLight2Color, 0, 0, 0);
-                glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
+                glUniform3f(this->uAmbientColor1Loc, 0, 0, 0);
+                glUniform3f(this->uDiffuseColor1Loc, 0, 0, 0);
+                glUniform3f(this->uSpecularColor1Loc, 0, 0, 0);
+                glUniform4f(this->uLightDirection1Loc, engine->field_0x33c.x, engine->field_0x33c.y,
                             engine->field_0x33c.z, engine->lightDirty[1]);
             }
-            glUniform1f(this->uShininess, engine->materialShininess);
-            if (this->uSpecularColor >= 0)
-                glUniform3f(this->uSpecularColor, engine->lightColor.x, engine->lightColor.y,
+            glUniform1f(this->uSpecularPowerLoc, engine->materialShininess);
+            if (this->uEyePosModelLoc >= 0)
+                glUniform3f(this->uEyePosModelLoc, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);
             this->dirty = 0;
         }
 
-        glEnableVertexAttribArray(this->aPosition);
-        glEnableVertexAttribArray(this->aTexCoord);
-        glEnableVertexAttribArray(this->aNormal);
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
+        glEnableVertexAttribArray(this->aNormalLoc);
 
         if (mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->normalVBO);
-            glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
             return;
         }
 
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
-        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-        glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, mesh->normals);
+        glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+        glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
     }
 
     void TextureLightShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPosition);
-        glDisableVertexAttribArray(this->aTexCoord);
-        glDisableVertexAttribArray(this->aNormal);
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
     }
 }

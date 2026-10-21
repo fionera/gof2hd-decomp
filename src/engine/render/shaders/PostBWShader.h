@@ -20,10 +20,10 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int uMvpMatrix;
-        int aTexCoord;
-        int sTexture;
+        int aPositionLoc;
+        int uWorldMatrixLoc;
+        int aTexCoordLoc;
+        int sTextureBaseLoc;
 
         PostBWShader();
 

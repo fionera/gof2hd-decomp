@@ -55,51 +55,51 @@ namespace AbyssEngine {
     void BumpMapping::Init(Engine *) {
         this->program = this->ES2LoadProgram(kBumpMappingVertexSource, kBumpMappingFragmentSource);
 
-        this->a0Loc = glGetAttribLocation(this->program, "a_position");
-        this->a1Loc = glGetAttribLocation(this->program, "a_normal");
-        this->a2Loc = glGetAttribLocation(this->program, "a_tangent");
-        this->a3Loc = glGetAttribLocation(this->program, "a_bitangent");
-        this->a4Loc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
 
-        this->u0Loc = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->u1Loc = glGetUniformLocation(this->program, "u_lightposmodel");
-        this->u2Loc = glGetUniformLocation(this->program, "s_texture_base");
-        this->u3Loc = glGetUniformLocation(this->program, "s_texture_normal");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uLightposmodelLoc = glGetUniformLocation(this->program, "u_lightposmodel");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
+        this->sTextureNormalLoc = glGetUniformLocation(this->program, "s_texture_normal");
 
         glUseProgram(this->program);
-        glUniform1i(this->u2Loc, 0);
-        glUniform1i(this->u3Loc, 1);
+        glUniform1i(this->sTextureBaseLoc, 0);
+        glUniform1i(this->sTextureNormalLoc, 1);
     }
 
     void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0)
             this->dirty = 0;
 
-        glUniformMatrix4fv(this->u0Loc, 1, 0, engine->worldViewProjMatrix);
-        glUniform3f(this->u1Loc, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        glUniform3f(this->uLightposmodelLoc, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
 
-        glEnableVertexAttribArray(this->a0Loc);
-        glEnableVertexAttribArray(this->a1Loc);
-        glEnableVertexAttribArray(this->a2Loc);
-        glEnableVertexAttribArray(this->a3Loc);
-        glEnableVertexAttribArray(this->a4Loc);
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aNormalLoc);
+        glEnableVertexAttribArray(this->aTangentLoc);
+        glEnableVertexAttribArray(this->aBitangentLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
 
-        glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
         if ((mesh->vertexFormat & 2) != 0) {
-            glVertexAttribPointer(this->a4Loc, 2, 0x1406, 0, 0, mesh->texCoords);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
         }
         if ((mesh->vertexFormat & 4) != 0) {
-            glVertexAttribPointer(this->a1Loc, 3, 0x1406, 0, 0, mesh->normals);
-            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->tangents);
-            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, mesh->binormals);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
+            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->tangents);
+            glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
         }
     }
 
     void BumpMapping::SetInActive() {
-        glDisableVertexAttribArray(this->a0Loc);
-        glDisableVertexAttribArray(this->a1Loc);
-        glDisableVertexAttribArray(this->a2Loc);
-        glDisableVertexAttribArray(this->a3Loc);
-        glDisableVertexAttribArray(this->a4Loc);
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+        glDisableVertexAttribArray(this->aTangentLoc);
+        glDisableVertexAttribArray(this->aBitangentLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 }

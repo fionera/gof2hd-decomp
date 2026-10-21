@@ -113,121 +113,121 @@ namespace AbyssEngine {
     }
 
     void BumpShader::SetInActive() {
-        if (this->a0Loc >= 0)
-            glDisableVertexAttribArray(this->a0Loc);
-        if (this->a1Loc >= 0)
-            glDisableVertexAttribArray(this->a1Loc);
-        if (this->a2Loc >= 0)
-            glDisableVertexAttribArray(this->a2Loc);
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
     }
 
     void BumpShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kBumpShaderVertexSource, kBumpShaderFragmentSource);
 
-        this->a0Loc = glGetAttribLocation(this->program, "a_position");
-        this->a1Loc = glGetAttribLocation(this->program, "a_texCoord");
-        this->a2Loc = glGetAttribLocation(this->program, "a_normal");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
 
-        this->u0Loc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->u1Loc = glGetUniformLocation(this->program, "u_ModelMatrix");
-        this->u2Loc = glGetUniformLocation(this->program, "u_lightdirmodel[0]");
-        this->u3Loc = glGetUniformLocation(this->program, "u_lightdirmodel[1]");
-        this->u4Loc = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->u5Loc = glGetUniformLocation(this->program, "s_texture");
-        this->u6Loc = glGetUniformLocation(this->program, "u_texture_cubemap");
-        this->u7Loc = glGetUniformLocation(this->program, "glColor");
-        this->u8Loc = glGetUniformLocation(this->program, "u_AmbientColor[0]");
-        this->u9Loc = glGetUniformLocation(this->program, "u_DiffuseColor[0]");
-        this->u10Loc = glGetUniformLocation(this->program, "u_SpecularColor[0]");
-        this->u11Loc = glGetUniformLocation(this->program, "u_AmbientColor[1]");
-        this->u12Loc = glGetUniformLocation(this->program, "u_DiffuseColor[1]");
-        this->u13Loc = glGetUniformLocation(this->program, "u_SpecularColor[1]");
-        this->u14Loc = glGetUniformLocation(this->program, "u_SpecularPower");
-        this->u15Loc = glGetUniformLocation(this->program, "u_RimColor");
-        this->u16Loc = glGetUniformLocation(this->program, "u_TexBiasDiffuse");
-        this->u17Loc = glGetUniformLocation(this->program, "u_TexBiasNormal");
-        this->u18Loc = glGetUniformLocation(this->program, "u_fogColor");
-        this->u19Loc = glGetUniformLocation(this->program, "u_fogMaxDist");
-        this->u20Loc = glGetUniformLocation(this->program, "u_fogMinDist");
-        this->u21Loc = glGetUniformLocation(this->program, "u_EnableFog");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->uLightdirmodel0Loc = glGetUniformLocation(this->program, "u_lightdirmodel[0]");
+        this->uLightdirmodel1Loc = glGetUniformLocation(this->program, "u_lightdirmodel[1]");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTextureLoc = glGetUniformLocation(this->program, "s_texture");
+        this->uTextureCubemapLoc = glGetUniformLocation(this->program, "u_texture_cubemap");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uAmbientColor0Loc = glGetUniformLocation(this->program, "u_AmbientColor[0]");
+        this->uDiffuseColor0Loc = glGetUniformLocation(this->program, "u_DiffuseColor[0]");
+        this->uSpecularColor0Loc = glGetUniformLocation(this->program, "u_SpecularColor[0]");
+        this->uAmbientColor1Loc = glGetUniformLocation(this->program, "u_AmbientColor[1]");
+        this->uDiffuseColor1Loc = glGetUniformLocation(this->program, "u_DiffuseColor[1]");
+        this->uSpecularColor1Loc = glGetUniformLocation(this->program, "u_SpecularColor[1]");
+        this->uSpecularPowerLoc = glGetUniformLocation(this->program, "u_SpecularPower");
+        this->uRimColorLoc = glGetUniformLocation(this->program, "u_RimColor");
+        this->uTexBiasDiffuseLoc = glGetUniformLocation(this->program, "u_TexBiasDiffuse");
+        this->uTexBiasNormalLoc = glGetUniformLocation(this->program, "u_TexBiasNormal");
+        this->uFogColorLoc = glGetUniformLocation(this->program, "u_fogColor");
+        this->uFogMaxDistLoc = glGetUniformLocation(this->program, "u_fogMaxDist");
+        this->uFogMinDistLoc = glGetUniformLocation(this->program, "u_fogMinDist");
+        this->uEnableFogLoc = glGetUniformLocation(this->program, "u_EnableFog");
 
         glUseProgram(this->program);
-        glUniform1i(this->u5Loc, 0);
-        glUniform1i(this->u6Loc, 7);
+        glUniform1i(this->sTextureLoc, 0);
+        glUniform1i(this->uTextureCubemapLoc, 7);
     }
 
     void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx) {
-        if (this->u0Loc >= 0)
-            glUniformMatrix4fv(this->u0Loc, 1, 0, ctx->worldViewProjMatrix);
-        if (this->u1Loc >= 0)
-            glUniformMatrix3fv(this->u1Loc, 1, 0, ctx->normalMatrix);
-        if (this->u16Loc >= 0)
-            glUniform1f(this->u16Loc, Engine::lodBiasDiffuse);
-        if (this->u17Loc >= 0)
-            glUniform1f(this->u17Loc, Engine::lodBiasNormal);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, ctx->worldViewProjMatrix);
+        if (this->uModelMatrixLoc >= 0)
+            glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, ctx->normalMatrix);
+        if (this->uTexBiasDiffuseLoc >= 0)
+            glUniform1f(this->uTexBiasDiffuseLoc, Engine::lodBiasDiffuse);
+        if (this->uTexBiasNormalLoc >= 0)
+            glUniform1f(this->uTexBiasNormalLoc, Engine::lodBiasNormal);
 
         if (this->dirty != 0) {
-            glUniform3f(this->u2Loc, ctx->lightDir.x, ctx->lightDir.y, ctx->lightDir.z);
-            if (this->u4Loc >= 0)
-                glUniform3f(this->u4Loc, ctx->lightColor.x, ctx->lightColor.y, ctx->lightColor.z);
-            if (this->u7Loc >= 0)
-                glUniform4fv(this->u7Loc, 1, ctx->glColor);
-            if (this->u8Loc >= 0)
-                glUniform3fv(this->u8Loc, 1, (const float *) &ctx->lightAmbientShaded);
-            if (this->u9Loc >= 0)
-                glUniform3fv(this->u9Loc, 1, (const float *) &ctx->field_0x2fc);
-            if (this->u10Loc >= 0)
-                glUniform3fv(this->u10Loc, 1, (const float *) &ctx->lightDiffuseShaded);
-            if (this->u14Loc >= 0)
-                glUniform1f(this->u14Loc, ctx->materialShininess);
-            if (this->u15Loc >= 0)
-                glUniform3fv(this->u15Loc, 1, (const float *) &ctx->rimColor);
-            if (this->u18Loc >= 0)
-                glUniform3fv(this->u18Loc, 1, ctx->fogColor);
-            if (this->u20Loc >= 0)
-                glUniform1f(this->u20Loc, ctx->fogMinDist);
-            if (this->u19Loc >= 0)
-                glUniform1f(this->u19Loc, ctx->fogMaxDist);
-            if (this->u21Loc >= 0)
-                glUniform1i(this->u21Loc, AbyssEngine::Engine::fogEnabled);
+            glUniform3f(this->uLightdirmodel0Loc, ctx->lightDir.x, ctx->lightDir.y, ctx->lightDir.z);
+            if (this->uEyeposmodelLoc >= 0)
+                glUniform3f(this->uEyeposmodelLoc, ctx->lightColor.x, ctx->lightColor.y, ctx->lightColor.z);
+            if (this->uGlColorLoc >= 0)
+                glUniform4fv(this->uGlColorLoc, 1, ctx->glColor);
+            if (this->uAmbientColor0Loc >= 0)
+                glUniform3fv(this->uAmbientColor0Loc, 1, (const float *) &ctx->lightAmbientShaded);
+            if (this->uDiffuseColor0Loc >= 0)
+                glUniform3fv(this->uDiffuseColor0Loc, 1, (const float *) &ctx->field_0x2fc);
+            if (this->uSpecularColor0Loc >= 0)
+                glUniform3fv(this->uSpecularColor0Loc, 1, (const float *) &ctx->lightDiffuseShaded);
+            if (this->uSpecularPowerLoc >= 0)
+                glUniform1f(this->uSpecularPowerLoc, ctx->materialShininess);
+            if (this->uRimColorLoc >= 0)
+                glUniform3fv(this->uRimColorLoc, 1, (const float *) &ctx->rimColor);
+            if (this->uFogColorLoc >= 0)
+                glUniform3fv(this->uFogColorLoc, 1, ctx->fogColor);
+            if (this->uFogMinDistLoc >= 0)
+                glUniform1f(this->uFogMinDistLoc, ctx->fogMinDist);
+            if (this->uFogMaxDistLoc >= 0)
+                glUniform1f(this->uFogMaxDistLoc, ctx->fogMaxDist);
+            if (this->uEnableFogLoc >= 0)
+                glUniform1i(this->uEnableFogLoc, AbyssEngine::Engine::fogEnabled);
 
             if (ctx->lightCount >= 2) {
-                glUniform3fv(this->u11Loc, 1, (const float *) &ctx->lightSpecularShaded);
-                glUniform3fv(this->u12Loc, 1, (const float *) &ctx->field_0x308);
-                glUniform3fv(this->u13Loc, 1, (const float *) &ctx->particleAmbient);
-                glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
+                glUniform3fv(this->uAmbientColor1Loc, 1, (const float *) &ctx->lightSpecularShaded);
+                glUniform3fv(this->uDiffuseColor1Loc, 1, (const float *) &ctx->field_0x308);
+                glUniform3fv(this->uSpecularColor1Loc, 1, (const float *) &ctx->particleAmbient);
+                glUniform3f(this->uLightdirmodel1Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
                             ctx->field_0x33c.z);
             } else {
-                glUniform3f(this->u11Loc, 0, 0, 0);
-                glUniform3f(this->u12Loc, 0, 0, 0);
-                glUniform3f(this->u13Loc, 0, 0, 0);
-                glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
+                glUniform3f(this->uAmbientColor1Loc, 0, 0, 0);
+                glUniform3f(this->uDiffuseColor1Loc, 0, 0, 0);
+                glUniform3f(this->uSpecularColor1Loc, 0, 0, 0);
+                glUniform3f(this->uLightdirmodel1Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
                             ctx->field_0x33c.z);
             }
             this->dirty = 0;
         }
 
-        if (this->a0Loc >= 0)
-            glEnableVertexAttribArray(this->a0Loc);
-        if (this->a1Loc >= 0)
-            glEnableVertexAttribArray(this->a1Loc);
-        if (this->a2Loc >= 0)
-            glEnableVertexAttribArray(this->a2Loc);
+        if (this->aPositionLoc >= 0)
+            glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glEnableVertexAttribArray(this->aNormalLoc);
 
         if (mesh->uploaded == 0) {
-            if (this->a0Loc >= 0)
-                glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
-            if (this->a1Loc >= 0)
-                glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->texCoords);
-            if (this->a2Loc >= 0)
-                glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->normals);
+            if (this->aPositionLoc >= 0)
+                glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            if (this->aTexCoordLoc >= 0)
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (this->aNormalLoc >= 0)
+                glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->normalVBO);
-            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
         }
     }
 }

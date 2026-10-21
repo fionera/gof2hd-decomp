@@ -50,20 +50,20 @@ namespace AbyssEngine {
 
     void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine) {
         ::Engine *host = (::Engine *) engine;
-        if (this->uMvpMatrix >= 0)
-            glUniformMatrix4fv(this->uMvpMatrix, 1, 0, host->worldViewProjMatrix);
-        if (this->uModelViewMatrix >= 0)
-            glUniformMatrix4fv(this->uModelViewMatrix, 1, 0, host->worldViewMatrixGL);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, host->worldViewProjMatrix);
+        if (this->uModelViewMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewMatrixLoc, 1, 0, host->worldViewMatrixGL);
 
         if (this->dirty != 0) {
-            if (this->uEyePosModel >= 0)
-                glUniform3f(this->uEyePosModel, host->lightColor.x, host->lightColor.y,
+            if (this->uEyeposmodelLoc >= 0)
+                glUniform3f(this->uEyeposmodelLoc, host->lightColor.x, host->lightColor.y,
                             host->lightColor.z);
-            if (this->uGlColor >= 0)
-                glUniform4fv(this->uGlColor, 1, host->glColor);
-            if (this->uRimColor >= 0)
-                glUniform3fv(this->uRimColor, 1, (float *) &host->rimColor);
-            int loc = this->uTexelSize;
+            if (this->uGlColorLoc >= 0)
+                glUniform4fv(this->uGlColorLoc, 1, host->glColor);
+            if (this->uRimColorLoc >= 0)
+                glUniform3fv(this->uRimColorLoc, 1, (float *) &host->rimColor);
+            int loc = this->uTexelSizeLoc;
             if (loc >= 0) {
                 float w = (float) (int) ((::Engine *) engine)->GetDisplayWidth();
                 float h = (float) (int) ((::Engine *) engine)->GetDisplayHeight();
@@ -71,75 +71,75 @@ namespace AbyssEngine {
             }
             glActiveTexture(0x84c7);
             ((::Engine *) engine)->ActivateRefractFBO();
-            glUniform1f(this->uTime, mesh->shaderAnimValue1);
-            glUniform1f(this->uVertTime, mesh->shaderAnimValue1 / 3.0f);
+            glUniform1f(this->uTimeLoc, mesh->shaderAnimValue1);
+            glUniform1f(this->uVertTimeLoc, mesh->shaderAnimValue1 / 3.0f);
             this->dirty = 0;
         }
 
-        if (this->aPosition >= 0)
-            glEnableVertexAttribArray(this->aPosition);
-        if (this->aTexCoord >= 0)
-            glEnableVertexAttribArray(this->aTexCoord);
-        if (this->aNormal >= 0)
-            glEnableVertexAttribArray(this->aNormal);
+        if (this->aPositionLoc >= 0)
+            glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glEnableVertexAttribArray(this->aNormalLoc);
 
         if (mesh->uploaded == 0) {
-            if (this->aPosition >= 0)
-                glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
-            if (this->aTexCoord >= 0)
-                glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-            if (this->aNormal >= 0)
-                glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, mesh->normals);
+            if (this->aPositionLoc >= 0)
+                glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            if (this->aTexCoordLoc >= 0)
+                glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+            if (this->aNormalLoc >= 0)
+                glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
         } else {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->normalVBO);
-            glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
         }
     }
 
     void EnergyShield::SetInActive() {
-        if (this->aPosition >= 0)
-            glDisableVertexAttribArray(this->aPosition);
-        if (this->aTexCoord >= 0)
-            glDisableVertexAttribArray(this->aTexCoord);
-        if (this->aNormal >= 0)
-            glDisableVertexAttribArray(this->aNormal);
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
     }
 
     void EnergyShield::Init(Engine *engine) {
         int program = this->ES2LoadProgram(kEnergyShieldVertexSource, kEnergyShieldFragmentSource);
         this->program = program;
 
-        this->aPosition = glGetAttribLocation(program, "a_position");
-        this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+        this->aPositionLoc = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
 
-        this->aNormal = glGetAttribLocation(this->program, "a_normal");
-        this->uMvpMatrix = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->uModelViewMatrix = glGetUniformLocation(this->program, "u_ModelViewMatrix");
-        this->uEyePosModel = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->sTexture0 = glGetUniformLocation(this->program, "s_texture[0]");
-        this->sTexture1 = glGetUniformLocation(this->program, "s_texture[1]");
-        this->uGlColor = glGetUniformLocation(this->program, "glColor");
-        this->uRimColor = glGetUniformLocation(this->program, "u_RimColor");
-        this->uTexelSize = glGetUniformLocation(this->program, "u_texelSize");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelViewMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewMatrix");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        this->sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uRimColorLoc = glGetUniformLocation(this->program, "u_RimColor");
+        this->uTexelSizeLoc = glGetUniformLocation(this->program, "u_texelSize");
 
         glActiveTexture(0x84c7);
         ((::Engine *) engine)->ActivateRefractFBO();
 
-        this->uVertTime = glGetUniformLocation(this->program, "u_vertTime");
-        this->uTime = glGetUniformLocation(this->program, "u_time");
-        this->sTextureBase = glGetUniformLocation(this->program, "s_texture_base");
+        this->uVertTimeLoc = glGetUniformLocation(this->program, "u_vertTime");
+        this->uTimeLoc = glGetUniformLocation(this->program, "u_time");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
 
         glUseProgram(this->program);
 
         for (int i = 0; i != 2; i = i + 1) {
-            if ((&this->sTexture0)[i] >= 0)
-                glUniform1i((&this->sTexture0)[i], i);
+            if ((&this->sTexture0Loc)[i] >= 0)
+                glUniform1i((&this->sTexture0Loc)[i], i);
         }
-        glUniform1i(this->sTextureBase, 7);
+        glUniform1i(this->sTextureBaseLoc, 7);
     }
 
     EnergyShield::EnergyShield() {

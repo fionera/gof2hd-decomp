@@ -17,22 +17,22 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class EnergyShield : public ShaderBaseStruct {
     public:
-        int aPosition;
-        int aTexCoord;
-        int aNormal;
-        int uMvpMatrix;
-        int uModelViewMatrix;
-        int uEyePosModel;
-        int sTexture0;
-        int sTexture1;
+        int aPositionLoc;
+        int aTexCoordLoc;
+        int aNormalLoc;
+        int uModelViewProjectionMatrixLoc;
+        int uModelViewMatrixLoc;
+        int uEyeposmodelLoc;
+        int sTexture0Loc;
+        int sTexture1Loc;
         int field_0x40;
-        int uGlColor;
-        int uRimColor;
+        int uGlColorLoc;
+        int uRimColorLoc;
         int field_0x4c;
-        int uTime;
-        int uVertTime;
-        int uTexelSize;
-        int sTextureBase;
+        int uTimeLoc;
+        int uVertTimeLoc;
+        int uTexelSizeLoc;
+        int sTextureBaseLoc;
 
         static int ShaderIndex;
 

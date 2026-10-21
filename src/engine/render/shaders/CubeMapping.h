@@ -19,21 +19,21 @@ namespace AbyssEngine {
     public:
         static int ShaderIndex;
 
-        int aPosition;
-        int aNormal;
-        int aTexCoord;
-        int uMvp;
-        int uNormalMatrix;
-        int uniform2;
-        int uniform3;
-        int uniform5;
-        int uniform4;
-        int uniform6;
-        int uniform7;
-        int uniform8;
-        int uniform9;
-        int uniform10;
-        int uniform11;
+        int aPositionLoc;
+        int aNormalLoc;
+        int aTexCoordLoc;
+        int uWorldMatrixLoc;
+        int uModelMatrixLoc;
+        int uEyeposmodelLoc;
+        int uLightposmodelLoc;
+        int uTextureCubemapLoc;
+        int uTextureBaseLoc;
+        int uEnvValueLoc;
+        int uAmbientColorLoc;
+        int uDiffuseColorLoc;
+        int uSpecularColorLoc;
+        int uSpecularPowerLoc;
+        int uGlColorLoc;
 
         CubeMapping();
 

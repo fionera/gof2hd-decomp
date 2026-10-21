@@ -34,46 +34,46 @@ namespace AbyssEngine {
     void GlowShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kGlowShaderVertexSource, kGlowShaderFragmentSource);
 
-        this->a_positionLoc = glGetAttribLocation(this->program, "a_position");
-        this->a_texCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
 
-        this->u_mvpLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->u_colorLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
-        this->u_textureLoc = glGetUniformLocation(this->program, "s_texture");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelMatrixLoc = glGetUniformLocation(this->program, "u_ModelMatrix");
+        this->sTextureLoc = glGetUniformLocation(this->program, "s_texture");
 
         glUseProgram(this->program);
-        glUniform1i(this->u_textureLoc, 0);
+        glUniform1i(this->sTextureLoc, 0);
     }
 
     void GlowShader::SetInActive() {
-        if (this->a_positionLoc >= 0)
-            glDisableVertexAttribArray(this->a_positionLoc);
-        if (this->a_texCoordLoc >= 0)
-            glDisableVertexAttribArray(this->a_texCoordLoc);
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 
     void GlowShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        if (this->u_mvpLoc >= 0)
-            glUniformMatrix4fv(this->u_mvpLoc, 1, 0, engine->worldViewProjMatrix);
-        if (this->u_colorLoc >= 0)
-            glUniformMatrix3fv(this->u_colorLoc, 1, 0, engine->normalMatrix);
+        if (this->uModelViewProjectionMatrixLoc >= 0)
+            glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->uModelMatrixLoc >= 0)
+            glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, engine->normalMatrix);
 
-        if (this->a_positionLoc >= 0)
-            glEnableVertexAttribArray(this->a_positionLoc);
-        if (this->a_texCoordLoc >= 0)
-            glEnableVertexAttribArray(this->a_texCoordLoc);
+        if (this->aPositionLoc >= 0)
+            glEnableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glEnableVertexAttribArray(this->aTexCoordLoc);
 
         if (mesh->uploaded != 0) {
             glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->a_positionLoc, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->a_texCoordLoc, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
             return;
         }
 
-        if (this->a_positionLoc >= 0)
-            glVertexAttribPointer(this->a_positionLoc, 3, 0x1406, 0, 0, mesh->positions);
-        if (this->a_texCoordLoc >= 0)
-            glVertexAttribPointer(this->a_texCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+        if (this->aPositionLoc >= 0)
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+        if (this->aTexCoordLoc >= 0)
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
     }
 }
