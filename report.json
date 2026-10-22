@@ -536,14 +536,6 @@
    "usize": 2912
   },
   {
-   "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 360,
-   "usize": 344
-  },
-  {
    "name": "_ZN5MGame8OnUpdateEv",
    "pct": 77.5,
    "byte": false,
@@ -598,6 +590,14 @@
    "linked": false,
    "osize": 3132,
    "usize": 3160
+  },
+  {
+   "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
+   "pct": 79.9,
+   "byte": false,
+   "linked": false,
+   "osize": 360,
+   "usize": 356
   },
   {
    "name": "_ZN9PlayerEgo10stopMiningEv",
