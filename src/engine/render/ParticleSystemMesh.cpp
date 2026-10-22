@@ -118,7 +118,6 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
                                        bool a, bool b)
     : IParticleSystem(canvas, matrix, sets, a, b) {
     uint32_t flags = this->flags;
-    int particleCount = this->maxParticles;
     this->field_0x80 = 0;
     this->field_0x84 = 0;
     this->field_0x88 = 0;
@@ -130,6 +129,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         this->edgeCount++;
     if ((flags & 0x4000) != 0)
         this->edgeCount++;
+    int particleCount = this->maxParticles;
     this->wide = (flags >> 16) & 1;
     this->stride = this->edgeCount << this->wide;
     uint32_t edgeCount = this->edgeCount;
