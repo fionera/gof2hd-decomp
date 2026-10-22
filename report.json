@@ -576,14 +576,6 @@
    "usize": 2912
   },
   {
-   "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1832,
-   "usize": 1808
-  },
-  {
    "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
    "pct": 76.9,
    "byte": false,
@@ -622,6 +614,14 @@
    "linked": false,
    "osize": 900,
    "usize": 864
+  },
+  {
+   "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
+   "pct": 78.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1832,
+   "usize": 1824
   },
   {
    "name": "_ZN7StarMap4drawEv",

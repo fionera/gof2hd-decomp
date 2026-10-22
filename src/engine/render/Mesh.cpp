@@ -144,7 +144,7 @@ namespace AbyssEngine {
                 for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) goto fail;
                     trackFrameStep(scalar);
-                    if (AEFile::Read(12, vec, file) == 0) goto fail;
+                    if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
                     anim->InsertKeyFrame(vec, 7, (int) scalar);
                 }
                     break;
