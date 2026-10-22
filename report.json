@@ -600,14 +600,6 @@
    "usize": 356
   },
   {
-   "name": "_ZN9PlayerEgo10stopMiningEv",
-   "pct": 80.1,
-   "byte": false,
-   "linked": false,
-   "osize": 524,
-   "usize": 524
-  },
-  {
    "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
    "pct": 80.9,
    "byte": false,
@@ -640,20 +632,28 @@
    "usize": 14406
   },
   {
-   "name": "_ZN9PlayerEgo14checkForTurretEv",
-   "pct": 84.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1080,
-   "usize": 1084
-  },
-  {
    "name": "_ZN3Hud10touchBeginEjjPv",
    "pct": 84.6,
    "byte": false,
    "linked": false,
    "osize": 186,
    "usize": 182
+  },
+  {
+   "name": "_ZN9PlayerEgo10stopMiningEv",
+   "pct": 86.0,
+   "byte": false,
+   "linked": false,
+   "osize": 524,
+   "usize": 512
+  },
+  {
+   "name": "_ZN9PlayerEgo14checkForTurretEv",
+   "pct": 86.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1080,
+   "usize": 1080
   },
   {
    "name": "_ZN10ModStation8OnUpdateEv",
