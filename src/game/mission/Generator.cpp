@@ -580,7 +580,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         count += (existing->data()[i]->getStation() == station->getIndex()) & keep;
     }
     if (station->getIndex() != 108) {
-        if ((int) (Globals::rnd->nextInt(2) + count + 3) <= 4) {
+        if (__builtin_expect((int) (Globals::rnd->nextInt(2) + count + 3) <= 4, 0)) { // lint: arm_builtin (branch-probability hint reproduces the original cold-path layout)
             count += 3 + Globals::rnd->nextInt(2);
         } else {
             count = 5;
