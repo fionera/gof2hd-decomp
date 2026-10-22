@@ -240,14 +240,6 @@
    "usize": 1872
   },
   {
-   "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
-   "pct": 57.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1920,
-   "usize": 1940
-  },
-  {
    "name": "_ZN9Generator14getShipBuyListEP7Station",
    "pct": 58.0,
    "byte": false,
@@ -264,20 +256,12 @@
    "usize": 1420
   },
   {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 58.5,
+   "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
+   "pct": 59.0,
    "byte": false,
    "linked": false,
-   "osize": 9600,
-   "usize": 9624
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 58.5,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9624
+   "osize": 1920,
+   "usize": 1936
   },
   {
    "name": "_ZN5Level13createMissionEv",
@@ -326,6 +310,22 @@
    "linked": false,
    "osize": 1816,
    "usize": 1824
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 63.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9632
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 63.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9632
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
