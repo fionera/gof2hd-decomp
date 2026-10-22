@@ -1134,9 +1134,9 @@ int SpaceLounge::onKeyPress(int key) {
                 if (agent->getOffer() != 8)
                     agent->setOfferAccepted(true);
                 this->scrollWindow->setText(agent->getName(), message);
-                this->chatActive = 0;
-                this->mode = 3;
                 this->chatScroll = 0;
+                this->mode = 3;
+                this->chatActive = 0;
             }
             break;
         }
@@ -1649,8 +1649,8 @@ void SpaceLounge::drawLounge() {
                                    Globals::layout->field_0x6c);
     Globals::Canvas->SetColor(0xffffffffu);
     Globals::imageFactory->drawChar((*this->silhouetteGrid)[this->selectedAgent],
-                                    Globals::layout->field_0x4c + this->panelX,
-                                    Globals::layout->field_0x4c + this->panelY, false);
+                                    this->panelX + Globals::layout->field_0x4c,
+                                    this->panelY + Globals::layout->field_0x4c, false);
     this->scrollWindow->draw();
     if ((this->mode & ~1) != 2) {
         return;
@@ -1693,8 +1693,8 @@ void SpaceLounge::drawLounge() {
     int inset = layout->field_0x4c * 2;
     int boxHeight = layout->field_0x2d8;
     if (this->visibleButtonCount > 2) {
-        int stacked = layout->field_0x30_rowHeight * (this->visibleButtonCount - 1) +
-                      layout->field_0x34 * (this->visibleButtonCount - 2);
+        int stacked = layout->field_0x34 * (this->visibleButtonCount - 2) +
+                      layout->field_0x30_rowHeight * (this->visibleButtonCount - 1);
         boxHeight = boxHeight > stacked ? boxHeight : stacked;
     }
     layout->drawBox(2, this->panelX, this->buttonPanelY, layout->field_0x68, inset + boxHeight, String(""));
@@ -2314,9 +2314,9 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
                 this->scrollWindow->setText(
                     agent->getName(),
                     *Globals::gameText->getText(808 + (int) ((float) difficulty / 10.0f * 5.0f)));
-                this->chatScroll = 0;
                 this->mode = 2;
                 this->singleOffer = 1;
+                this->chatScroll = 0;
                 agent->getRace();
                 break;
             }
