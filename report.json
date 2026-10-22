@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4523,
   "avg_match": 99.32,
-  "byte_exact": 1339,
-  "linked_exact": 4410,
-  "fuzzy_perfect": 4410,
+  "byte_exact": 1340,
+  "linked_exact": 4411,
+  "fuzzy_perfect": 4411,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -382,14 +382,6 @@
    "linked": false,
    "osize": 2948,
    "usize": 2956
-  },
-  {
-   "name": "_ZN11AbyssEngine11PaintCanvas15MeshSetTriangleEjtttt",
-   "pct": 70.0,
-   "byte": false,
-   "linked": false,
-   "osize": 60,
-   "usize": 60
   },
   {
    "name": "_ZN17PlayerFixedObject7collideEfff",
@@ -6078,6 +6070,14 @@
    "linked": true,
    "osize": 38,
    "usize": 38
+  },
+  {
+   "name": "_ZN11AbyssEngine11PaintCanvas15MeshSetTriangleEjtttt",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 60,
+   "usize": 60
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15ResetPersMatrixEv",
