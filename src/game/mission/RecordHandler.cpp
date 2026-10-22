@@ -652,6 +652,7 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     if (type == -1) {
         return Mission::empty;
     }
+    int *imageParts = 0;
     String clientName;
     AEFile::Read(clientName, fd, true);
     String targetName;
@@ -660,13 +661,10 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     AEFile::Read(targetStationName, fd, true);
     String targetSystemName;
     AEFile::Read(targetSystemName, fd, true);
-    bool isEmpty;
-    int imageCount;
-    isEmpty = false;
+    bool isEmpty = false;
     AEFile::Read(isEmpty, fd);
-    imageCount = 0;
+    int imageCount = 0;
     AEFile::Read(imageCount, fd);
-    int *imageParts = 0;
     if (imageCount >= 1) {
         imageParts = new int[imageCount];
         for (int i = 0; i < imageCount; i++) {
@@ -695,16 +693,11 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     AEFile::Read(statusValue, fd);
     AEFile::Read(visible, fd);
 
-    Agent *agent;
     int hasAgent = 0;
     AEFile::Read(hasAgent, fd);
-    Mission *mission;
-    if (hasAgent >= 1) {
-        agent = (Agent *) this->readAgent(fd);
-    } else {
-        agent = 0;
-    }
+    Agent *agent = hasAgent >= 1 ? (Agent *) this->readAgent(fd) : 0;
 
+    Mission *mission;
     if (isEmpty) {
         mission = new Mission(type, reward, targetStation);
     } else {

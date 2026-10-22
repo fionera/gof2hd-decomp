@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.3,
   "byte_exact": 1339,
-  "linked_exact": 4408,
-  "fuzzy_perfect": 4408,
+  "linked_exact": 4409,
+  "fuzzy_perfect": 4409,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -758,14 +758,6 @@
    "linked": false,
    "osize": 564,
    "usize": 564
-  },
-  {
-   "name": "_ZN13RecordHandler11readMissionEj",
-   "pct": 91.2,
-   "byte": false,
-   "linked": false,
-   "osize": 668,
-   "usize": 668
   },
   {
    "name": "_ZN16ParticleSettings4initEv",
@@ -16198,6 +16190,14 @@
    "linked": true,
    "osize": 864,
    "usize": 864
+  },
+  {
+   "name": "_ZN13RecordHandler11readMissionEj",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 668,
+   "usize": 668
   },
   {
    "name": "_ZN13RecordHandler11saveOptionsEv",
