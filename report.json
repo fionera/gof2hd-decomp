@@ -976,14 +976,6 @@
    "usize": 1208
   },
   {
-   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
-   "pct": 94.9,
-   "byte": false,
-   "linked": false,
-   "osize": 736,
-   "usize": 736
-  },
-  {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
    "pct": 97.3,
    "byte": false,
@@ -1017,11 +1009,19 @@
   },
   {
    "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
-   "pct": 97.9,
+   "pct": 98.2,
    "byte": false,
    "linked": false,
    "osize": 1332,
    "usize": 1332
+  },
+  {
+   "name": "_Z13loadingScreenPN11AbyssEngine11PaintCanvasEiPv",
+   "pct": 98.8,
+   "byte": false,
+   "linked": false,
+   "osize": 736,
+   "usize": 736
   },
   {
    "name": "_ZN15MenuTouchWindow6updateEi",

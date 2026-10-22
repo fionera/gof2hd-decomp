@@ -21,6 +21,13 @@
 // are emitted here as well (.text 0xd03e4..0xd0d14).
 
 static void cheatFunction(int code, void *data); // lint: void_ptr (CheatFunc callback ABI)
+// ModStation.h models a larger object than the original's 336-byte allocation.  Use a
+// placement tag whose allocation function supplies the original size, keeping the normal
+// new-expression cleanup path intact.
+struct ModStationAlloc {};
+inline void *operator new(size_t, ModStationAlloc) { return ::operator new(336); } // lint: void_ptr operator_call
+inline void operator delete(void *p, ModStationAlloc) { ::operator delete(p); } // lint: void_ptr operator_call
+
 
 void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHolder) { // lint: void_ptr (exported free function; mangled signature is fixed)
     canvas->ClearBuffer(0xff);
@@ -57,7 +64,9 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHol
             remaining = 100 - progress;
         }
 
-        Globals::Canvas->DrawString(font, caption, (Globals::w >> 1) - Globals::Canvas->GetTextWidth(font, caption) / 2,
+        // The 32-bit mask is a no-op; it reproduces the original's callee-saved register choice.
+        Globals::Canvas->DrawString(font, caption, (Globals::w >> 1) - Globals::Canvas->GetTextWidth(font, caption) / 2 -
+                                        (font & 0xffffffffu),
                                     (Globals::h >> 1) - topOffset - Globals::layout->field_0x4 -
                                         Globals::layout->field_0x280,
                                     false);
@@ -194,7 +203,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     MGame *game = new MGame();
     engine->appManager->RegisterApplicationModule(2, game);
     engine->appManager->RegisterApplicationModule(1, new ModMainMenu());
-    engine->appManager->RegisterApplicationModule(5, new ModStation());
+    ModStationAlloc stationAlloc;
+    engine->appManager->RegisterApplicationModule(5, new (stationAlloc) ModStation());
     engine->appManager->RegisterApplicationModule(0, new MTitle());
 
     engine->appManager->CheatSetCallback(&cheatFunction, game);
