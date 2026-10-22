@@ -5,7 +5,8 @@ ParticleSettings::ParticleSettings() {
 }
 
 int ParticleSettings::init() {
-    for (int i = 0; i < 48; i++) {
+    int i = 0;
+    while (i <= 47) {
         this->sets[i].name = String("not initialized");
         this->sets[i].flags = 0x10;
         this->sets[i].count = 1;
@@ -44,6 +45,7 @@ int ParticleSettings::init() {
         this->sets[i].uvV1 = 63.0f;
         this->sets[i].speedThreshold = 0;
         this->sets[i].frames = 0;
+        i++;
     }
 
     this->sets[0].name = String("SET_BASIC");
@@ -82,32 +84,33 @@ int ParticleSettings::init() {
     this->sets[38] = this->sets[0];
 
     this->sets[4].name = String("SET_STARS");
-    this->sets[4].flLifetime = 200.0f;
-    this->sets[4].lifetime = 2000;
-    this->sets[4].velDir = -30000.0f;
-    this->sets[4].uvU1 = 1.0f;
     this->sets[4].flags = 0x81;
-    this->sets[4].count = 500;
+    this->sets[4].lifetime = 2000;
     this->sets[4].lifeBase = 20.0f;
-    this->sets[4].velSpread = 5;
     this->sets[4].uvV1 = 0.0f;
-    this->sets[4].velocityFromSlot = 0.0f;
-    this->sets[4].oneShot = 0;
-    this->sets[4].field_0x54 = 0;
-    this->sets[4].color1 = 0;
-    this->sets[4].velBaseY = 0.0f;
-    this->sets[4].ySpread = 10000;
     this->sets[4].uvU0 = 0.0f;
-    this->sets[4].posRight = 10000.0f;
-    this->sets[4].color0 = 0xffffffff;
-    this->sets[4].posSpread = 10000;
-    this->sets[4].posUp = 5000.0f;
-    this->sets[4].posBase = 0;
-    this->sets[4].lifeRandom = 0x28;
-    this->sets[4].uvV0 = 1.0f;
-    this->sets[4].posDir = 2000.0f;
     this->sets[4].fadeFrames = 500;
+    this->sets[4].color0 = 0xffffffff;
+    this->sets[4].uvV0 = 1.0f;
+    this->sets[4].velBaseY = 0.0f;
+    this->sets[4].posBase = 0;
+    this->sets[4].count = 500;
+    this->sets[4].velSpread = 5;
+    this->sets[4].velDir = -30000.0f;
+    this->sets[4].posDir = 2000.0f;
+    this->sets[4].uvU1 = 1.0f;
+    this->sets[4].posSpread = 10000;
+    this->sets[4].posRight = 10000.0f;
+    this->sets[4].ySpread = 10000;
+    this->sets[4].field_0x54 = 0;
+    this->sets[4].lifeRandom = 0x28;
+    this->sets[4].flLifetime = 200.0f;
+    this->sets[4].oneShot = 0;
     this->sets[4].speedThreshold = 1;
+    this->sets[4].posUp = 5000.0f;
+    this->sets[4].velocityFromSlot = 0.0f;
+    this->sets[4].color1 = 0;
+
 
     this->sets[5].name = String("SET_MESH_STARS");
     this->sets[5].oneShot = 0;
@@ -306,60 +309,63 @@ int ParticleSettings::init() {
     this->sets[18].uvV1 = 0.7470703125f;
 
     this->sets[12].name = String("SET_MISSILE_TRAIL");
-    this->sets[12].lifetime = 0x4e2;
-    this->sets[12].uvU1 = 0.25f;
-    this->sets[12].flags = 0x02000021;
     this->sets[12].flLifetime = 60.0f;
-    this->sets[12].lifeBase = 250.0f;
+    this->sets[12].lifetime = 0x4e2;
     this->sets[12].count = 0x4c;
+    this->sets[12].lifeBase = 250.0f;
     this->sets[12].lifeRandom = 0x32;
+    this->sets[12].flags = 0x02000021;
+    this->sets[12].velSpread = 0;
     this->sets[12].color0 = 0xffffffff;
-    this->sets[12].posDirRandom = 0.0f;
     this->sets[12].color1 = 0xffffff00;
     this->sets[12].fadeFrames = 0x96;
-    this->sets[12].field_0x54 = 0;
-    this->sets[12].ySpread = 0;
     this->sets[12].posBase = 0xfa;
     this->sets[12].velDir = -6000.0f;
+    this->sets[12].ySpread = 0;
+    this->sets[12].posDir = -700.0f;
+    this->sets[12].field_0x54 = 0;
     this->sets[12].posRight = 0.0f;
     this->sets[12].posUp = 0.0f;
-    this->sets[12].posDir = -700.0f;
-    this->sets[12].posSpread = 0;
-    this->sets[12].velSpread = 0;
-    this->sets[12].uvU0 = 0.0f;
-    this->sets[12].drag = 0.0f;
-    this->sets[12].uvV0 = 0.0f;
-    this->sets[12].oneShot = 0;
     this->sets[12].frames = 0x10;
+    this->sets[12].uvU1 = 0.25f;
+    this->sets[12].posSpread = 0;
+    this->sets[12].drag = 0.0f;
+    this->sets[12].oneShot = 0;
+    this->sets[12].uvV0 = 0.0f;
+    this->sets[12].posDirRandom = 0.0f;
+    this->sets[12].uvU0 = 0.0f;
     this->sets[12].uvV1 = 0.25f;
+
+
 
     this->sets[13].name = String("SET_FIRE");
     this->sets[13].lifetime = 1000;
     this->sets[13].flLifetime = 300.0f;
+    this->sets[13].posDirRandom = 0.0f;
+    this->sets[13].count = 0x137;
     this->sets[13].flags = (uint32_t)(33554465 - 0x10);
-    this->sets[13].field_0x54 = 0;
-    this->sets[13].uvU0 = 0.0f;
     this->sets[13].lifeBase = 800.0f;
-    this->sets[13].color1 = 0xffffff00;
-    this->sets[13].velSpread = 0;
     this->sets[13].uvV0 = 0.0f;
     this->sets[13].color0 = 0xffffffff;
     this->sets[13].velDir = 0.0f;
-    this->sets[13].lifeRandom = 0;
-    this->sets[13].fadeFrames = 0x96;
-    this->sets[13].uvU1 = 0.25f;
-    this->sets[13].posBase = 0x5dc;
-    this->sets[13].posDirRandom = 0.0f;
     this->sets[13].ySpread = 0;
+    this->sets[13].uvU1 = 0.25f;
+    this->sets[13].uvU0 = 0.0f;
+    this->sets[13].color1 = 0xffffff00;
+    this->sets[13].fadeFrames = 0x96;
     this->sets[13].posRight = 0.0f;
+    this->sets[13].velSpread = 0;
+    this->sets[13].posBase = 0x5dc;
+    this->sets[13].field_0x54 = 0;
     this->sets[13].posUp = 100.0f;
-    this->sets[13].posDir = 200.0f;
-    this->sets[13].count = 0x137;
     this->sets[13].posSpread = 0;
+    this->sets[13].posDir = 200.0f;
     this->sets[13].drag = 0.0f;
     this->sets[13].oneShot = 0;
+    this->sets[13].lifeRandom = 0;
     this->sets[13].uvV1 = 0.25f;
     this->sets[13].frames = 0x10;
+
 
     this->sets[10].name = String("SET_EXPLOSION_MANUALLY");
     this->sets[10].posSpread = 0;
@@ -588,41 +594,41 @@ int ParticleSettings::init() {
 
     this->sets[39] = *ringEmitter;
     SetDefinition *plume = &this->sets[43];
+    this->sets[39].uvU1 = 0.998046875f;
     this->sets[39].flags = (uint32_t)(176146 + 0x100000);
     this->sets[39].lifeBase = 100.0f;
+    this->sets[39].uvU0 = 0.751953125f;
     this->sets[39].posDir = 0.0f;
-    this->sets[39].uvV0 = 0.498046875f;
     this->sets[39].posUp = 0.0f;
     this->sets[39].posRight = 0.0f;
-    this->sets[39].uvU1 = 0.998046875f;
-    this->sets[39].uvU0 = 0.751953125f;
+    this->sets[39].uvV0 = 0.498046875f;
     this->sets[39].lifetime = 3000;
-    this->sets[39].uvV1 = 0.001953125f;
-    this->sets[39].color1 = 0;
     this->sets[39].flLifetime = 125.0f;
     this->sets[39].count = 0x1d;
+    this->sets[39].uvV1 = 0.001953125f;
+    this->sets[39].color1 = 0;
     this->sets[39].color0 = 0xffffffff;
 
     *plume = *dustCloud;
     this->sets[43].posDir = 0.0f;
     this->sets[43].posUp = 0.0f;
+    this->sets[43].color1 = 0;
+    this->sets[43].uvU0 = 0.001f;
     this->sets[43].posRight = 0.0f;
+    this->sets[43].uvU1 = 0.499f;
+    this->sets[43].color0 = 0xffffffff;
     this->sets[43].flLifetime = 0.5f;
+    this->sets[43].fadeFrames = 2500;
     this->sets[43].count = 10;
     this->sets[43].lifeBase = 8000.0f;
+    this->sets[43].uvV1 = 0.499f;
+    this->sets[43].uvV0 = 0.001f;
     this->sets[43].posBase = 1000;
     this->sets[43].lifeRandom = 6000;
     this->sets[43].lifetime = 5000;
     this->sets[43].posSpread = 0x5dc;
     this->sets[43].ySpread = 0x5dc;
     this->sets[43].oneShot = 1;
-    this->sets[43].color0 = 0xffffffff;
-    this->sets[43].color1 = 0;
-    this->sets[43].fadeFrames = 2500;
-    this->sets[43].uvU0 = 0.001f;
-    this->sets[43].uvV0 = 0.001f;
-    this->sets[43].uvU1 = 0.499f;
-    this->sets[43].uvV1 = 0.499f;
 
     this->sets[44] = *plume;
     this->sets[44].uvU0 = 0.501f;
@@ -643,6 +649,8 @@ int ParticleSettings::init() {
     this->sets[46].uvV1 = 0.999f;
 
     this->sets[47] = this->sets[12];
+
+
     this->sets[47].name = String("SET_EXPLOSION_SPARKS");
     this->sets[47].frames = 0x10;
     this->sets[47].uvU0 = 0.0f;
