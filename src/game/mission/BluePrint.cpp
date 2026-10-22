@@ -147,20 +147,23 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         if ((*il)[i] == item->getIndex()) {
             (*ingredientCounters)[i] -= amount;
             spentValue += item->getSinglePrice() * amount;
-            if (stationIndex < 0 && station >= 0) {
-                stationIndex = station;
-                if (Globals::status->getStation()->getIndex() == station) {
-                    stationName = Globals::status->getStation()->getName();
-                } else {
-                    Station *st = (Station *) (intptr_t) Globals::galaxy->getStation(station);
-                    stationName = st->getName();
-                    if (st != nullptr)
-                        delete st;
-                }
-            }
+            if (stationIndex < 0 && station >= 0)
+                goto set_station;
             return;
         }
     }
+    return;
+set_station:
+    stationIndex = station;
+    if (Globals::status->getStation()->getIndex() == station) {
+        stationName = Globals::status->getStation()->getName();
+    } else {
+        Station *st = (Station *) (intptr_t) Globals::galaxy->getStation(station);
+        stationName = st->getName();
+        if (st != nullptr)
+            delete st;
+    }
+    return;
 }
 
 float BluePrint::getCompletionRate() {
