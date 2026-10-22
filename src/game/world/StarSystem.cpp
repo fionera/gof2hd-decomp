@@ -395,8 +395,13 @@ void StarSystem::initLight() {
                 ambientScale = Globals::status->getCurrentCampaignMission() < 158 ? 0.7f : 0.15f;
             }
         }
-        stationIndex = this->abstractSystem ? 23 : Globals::status->getStation()->getTextureIndex() * 3;
-        abstractStation = this->abstractSystem;
+        if (this->abstractSystem) {
+            stationIndex = 23;
+            abstractStation = this->abstractSystem;
+        } else {
+            stationIndex = Globals::status->getStation()->getTextureIndex() * 3;
+            abstractStation = this->abstractSystem;
+        }
     } else {
         stationIndex = 23;
         abstractStation = 1;
