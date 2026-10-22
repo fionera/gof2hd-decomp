@@ -456,8 +456,8 @@ void DialogueWindow::loadContent() {
     }
     this->faceParts = 0;
 
-    int textId;
     int speaker = -1;
+    int textId;
     if (this->mission->isCampaignMission() || (this->kind == 2 && this->campaignMission == 42)) {
         int pageBase;
         const int *script;
@@ -480,14 +480,22 @@ void DialogueWindow::loadContent() {
             int entry = this->briefingOffsets[this->campaignMission] + (this->page * 2 | 1);
             textId = g_dw_briefingScript[entry];
             this->bodyText = *Globals::gameText->getText(textId);
-            if (((unsigned int) entry <= 23 && ((1 << entry) & 0xa0200a)) || entry == 35)
+            switch (entry) {
+            case 1:
+            case 3:
+            case 13:
+            case 21:
+            case 23:
+            case 35:
                 this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
+                break;
+            }
         } else if (this->kind == 1) {
             textId = g_dw_successScript[this->successOffsets[this->campaignMission] + (this->page * 2 | 1)];
             this->bodyText = *Globals::gameText->getText(textId);
-            if (textId == 1718 || textId == 1730) {
-                this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
-            } else if (textId == 1833) {
+            if (textId == 1718 || textId == 1730)
+                goto keytext;
+            if (textId == 1833) {
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
                 Globals::sound->play(136, 0, 0, 0.0f);
                 Globals::sound->play(162, 0, 0, 0.0f);
@@ -499,6 +507,10 @@ void DialogueWindow::loadContent() {
                 textId -= 2;
                 this->bodyText = *Globals::gameText->getText(textId);
             }
+            goto keytext_done;
+        keytext:
+            this->bodyText = Globals::globals->replaceKeyBindingTokens(this->bodyText);
+        keytext_done:;
         } else {
             String extra = this->campaignMission == 38 || this->campaignMission == 40 || this->campaignMission == 41
                                ? String(*Globals::gameText->getText(527), false)
