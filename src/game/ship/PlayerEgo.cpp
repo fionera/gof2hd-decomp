@@ -1262,12 +1262,15 @@ void PlayerEgo::roll(int amount) {
         step = 0.00035f;
     } else if (rx < 0.0f && ry < 0.0f) {
         step = 0.00075f;
+    } else if (rx < 0.0f && ry >= 0.0f) {
+        step = rx > -0.3f ? 0.00025f : 0.00035f;
     } else if (rx >= 0.0f && ry < 0.0f) {
         step = -0.00075f;
     } else if (rx > 0.0f && ry > 0.0f) {
-        step = rx > 0.3f ? -0.00035f : -0.00025f;
-    } else if (rx < 0.0f && ry >= 0.0f) {
-        step = rx > -0.3f ? 0.00025f : 0.00035f;
+        if (rx <= 0.3f)
+            step = -0.00025f;
+        else
+            step = -0.00035f;
     }
 
     if (rx < 0.0f || rx > 0.0f)
@@ -1809,12 +1812,10 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
         Level *level = this->level;
         float engineColor = 221.0f + this->getCloakingPercentage() * -201.0f * 0.01f;
-        if (engineColor < 221.0f) {
-            if (engineColor < 0.0f)
-                engineColor = 0.0f;
-        } else {
+        if (engineColor < 221.0f)
+            engineColor = engineColor < 0.0f ? 0.0f : engineColor;
+        else
             engineColor = 221.0f;
-        }
         level->setPlayerEngineColor((short) engineColor);
     } else if (this->chargingCloak) {
         this->cloakCharge += this->shakeIntensity;
