@@ -164,6 +164,7 @@ static int gStoryFaces[62][5] = {
     {0, 10, 2, 9, 4},
     {2, 0, 0, 0, 0},
     {4, 2, 0, 2, 2}};
+static int *const gPirateFace = gStoryFaces[60];
 static int gPirateGreetingFaceB[5];
 // Face of the story character speaking a given story dialogue.
 static int *const gStoryFaceTable[63] = {
@@ -503,7 +504,7 @@ int ModStation::OnInitialize() {
                     if (this->dialogueWindow == nullptr) {
                         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(434),
                                                                   Globals::gameText->getText(1609),
-                                                                  gStoryFaces[60]);
+                                                                  gPirateFace);
                         Agent *agent = new Agent(0, String(""), 0, 0, 2, true, 0, 0, 0, 0);
                         Globals::sound->play(Globals::globals->getDialogueSoundId(434, agent), nullptr, nullptr, 0.0f);
                         delete agent;
@@ -1875,7 +1876,7 @@ void ModStation::OnKeyPress(long long key, long long) {
                             if (this->dialogueWindow == nullptr) {
                                 this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
                                                                           Globals::gameText->getText(1609),
-                                                                          gStoryFaces[60]);
+                                                                          gPirateFace);
                                 this->flag_0x69 = 1;
                                 Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
                                 Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
@@ -1902,15 +1903,15 @@ void ModStation::OnKeyPress(long long key, long long) {
                             this->hangarWindow->initialize();
                             ((MissionsWindow *) this->m_pDialogueWindow)->setHangarUpdate(false);
                         }
-                        for (unsigned i = 0; i < this->hangarWindow->buttons->size(); i++) {
+                        for (unsigned i = 0; i < this->hangarWindow->tabButtons->size(); i++) {
                             if (i < 10) {
                                 Globals::sub_menu_buttons_x[i] =
-                                    (int) (*this->hangarWindow->buttons)[i]->getPosition().x;
+                                    (int) (*this->hangarWindow->tabButtons)[i]->getPosition().x;
                                 Globals::sub_menu_buttons_y[i] =
-                                    (int) (*this->hangarWindow->buttons)[i]->getPosition().y;
+                                    (int) (*this->hangarWindow->tabButtons)[i]->getPosition().y;
                             }
                         }
-                        Globals::sub_menu_button_count = this->hangarWindow->buttons->size();
+                        Globals::sub_menu_button_count = this->hangarWindow->tabButtons->size();
                         this->field_0xd0 = 0;
                         {
                             Array<Item *> *cargo = Globals::status->getShip()->getCargo();
@@ -2549,8 +2550,8 @@ void ModStation::checkHints() {
         !Globals::layout->rewardMessageActive) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
-        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(313), (*Globals::status->wingmen)[0],
-                                                  reinterpret_cast<int *&>(Globals::status->_byte_0x28));
+        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(313), (*status->wingmen)[0],
+                                                  reinterpret_cast<int *&>(status->_byte_0x28));
         Agent *agent = new Agent(0, String("", false), 0, 0, Globals::status->field_0x2c, true, 0, 0, 0, 0);
         Globals::sound->play(Globals::globals->getDialogueSoundId(313, agent), nullptr, nullptr, 0.0f);
         delete agent;
@@ -2564,7 +2565,7 @@ void ModStation::checkHints() {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
-                                                  gStoryFaces[60]);
+                                                  gPirateFace);
         Globals::sound->play(589, nullptr, nullptr, 0.0f);
         this->flag_0x69 = 1;
         reinterpret_cast<uint8_t *>(&status->field_f8)[1] = 0;
@@ -2618,11 +2619,10 @@ void ModStation::OnRender2D() {
     } else {
         Globals::layout->drawFooterStation();
         {
-            String stationName = Globals::status->getStation()->getName();
-            String title(stationName, false);
-            Globals::layout->drawHeader(title + (Globals::status->getStation()->getIndex() == 101
-                                                     ? String("", false)
-                                                     : String(" ", false) + *Globals::gameText->getText(136)));
+            Globals::layout->drawHeader(Globals::status->getStation()->getName() +
+                                        (Globals::status->getStation()->getIndex() == 101
+                                             ? String("", false)
+                                             : String(" ", false) + *Globals::gameText->getText(136)));
         }
         if (this->flag_0x61) {
             Globals::layout->drawBox(2, this->infoBoxX, this->infoBoxY, this->infoBoxW, this->infoBoxH, String("", false));
