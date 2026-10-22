@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.31,
+  "avg_match": 99.32,
   "byte_exact": 1339,
   "linked_exact": 4410,
   "fuzzy_perfect": 4410,
@@ -544,14 +544,6 @@
    "usize": 720
   },
   {
-   "name": "_ZN7StarMap11OnTouchMoveEii",
-   "pct": 78.2,
-   "byte": false,
-   "linked": false,
-   "osize": 900,
-   "usize": 864
-  },
-  {
    "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
    "pct": 78.5,
    "byte": false,
@@ -742,6 +734,14 @@
    "linked": false,
    "osize": 564,
    "usize": 564
+  },
+  {
+   "name": "_ZN7StarMap11OnTouchMoveEii",
+   "pct": 90.6,
+   "byte": false,
+   "linked": false,
+   "osize": 900,
+   "usize": 900
   },
   {
    "name": "_ZN10StarSystem9initLightEv",
