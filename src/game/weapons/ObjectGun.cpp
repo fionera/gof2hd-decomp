@@ -204,13 +204,22 @@ void ObjectGun::update(int dt) {
                 Gun *gun = this->gun;
                 int item = gun->itemIndex;
                 // Muzzle offset along the barrel per turret model.
-                Vector muzzle = item != 0x30
-                        ? Vector{0.0f, 0.0f, item == 0x2f ? 260.0f
-                                           : item == 0x31 ? 200.0f
-                                           : item == 0xb4 ? 172.0f
-                                           : item == 0xb5 ? 190.0f
-                                           : item == 0xb6 ? 115.0f : 205.0f}
-                        : Vector{0.0f, 0.0f, 170.0f};
+                bool isB5 = false;
+                float muzzleZ = 0.0f;
+                if (item == 0x2f)
+                    muzzleZ = 260.0f;
+                else if (item == 0x30)
+                    muzzleZ = 170.0f;
+                else if (item == 0x31)
+                    muzzleZ = 200.0f;
+                else if (item == 0xb4)
+                    muzzleZ = 172.0f;
+                else if (item == 0xb5)
+                    isB5 = true;
+                else
+                    muzzleZ = item == 0xb6 ? 115.0f : 205.0f;
+                Vector muzzle = isB5 ? Vector{0.0f, 0.0f, 190.0f}
+                                     : Vector{0.0f, 0.0f, muzzleZ};
                 if (item == 0xb6)
                     muzzle.z = 150.0f;
                 else if (item == 0xe0)
