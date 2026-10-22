@@ -776,14 +776,6 @@
    "usize": 860
   },
   {
-   "name": "_ZN9Generator12createAgentsEP7Station",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1464,
-   "usize": 1476
-  },
-  {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
    "pct": 83.9,
    "byte": false,
@@ -854,6 +846,14 @@
    "linked": false,
    "osize": 8852,
    "usize": 8852
+  },
+  {
+   "name": "_ZN9Generator12createAgentsEP7Station",
+   "pct": 88.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1464,
+   "usize": 1476
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
