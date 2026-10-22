@@ -418,7 +418,9 @@ void FModSound::enableCategory(int index, bool enable) {
 void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
     if (this->initialized == 0)
         return;
-    if (static_cast<unsigned int>(idx) >= 0x8f5 || this->system == nullptr)
+    if (static_cast<unsigned int>(idx) >= 0x8f5 && this->system != nullptr)
+        return;
+    if (this->system == nullptr)
         return;
 
     FMOD::Event *event = this->events[idx];
