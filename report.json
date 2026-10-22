@@ -392,20 +392,20 @@
    "usize": 736
   },
   {
-   "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 72.4,
-   "byte": false,
-   "linked": false,
-   "osize": 8080,
-   "usize": 8112
-  },
-  {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
    "pct": 72.8,
    "byte": false,
    "linked": false,
    "osize": 1948,
    "usize": 1948
+  },
+  {
+   "name": "_ZN5MGame10OnTouchEndEiiPv",
+   "pct": 72.8,
+   "byte": false,
+   "linked": false,
+   "osize": 8080,
+   "usize": 8068
   },
   {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
