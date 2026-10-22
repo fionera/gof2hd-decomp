@@ -3235,15 +3235,13 @@ void MGame::OnUpdate() {
             this->player->getBoostSpeed());
     }
 
-    if (this->gameOverActive) {
-        if (this->elapsedTime > 3000) {
-            this->loadingTime += this->deltaTime;
-        }
-    } else {
+    if (!this->gameOverActive) {
         if (!this->player->isDead() && !Globals::status->getMission()->hasFailed() && successCheck()) {
             return;
         }
         gameOverCheck();
+    } else if (this->elapsedTime > 3000) {
+        this->loadingTime += this->deltaTime;
     }
 
     bool wasCinematic = this->jumpActive;
