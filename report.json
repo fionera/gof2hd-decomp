@@ -744,14 +744,6 @@
    "usize": 604
   },
   {
-   "name": "_ZN10StarSystem9initLightEv",
-   "pct": 82.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1476,
-   "usize": 1488
-  },
-  {
    "name": "_ZN6Status13departStationEP7Station",
    "pct": 82.8,
    "byte": false,
@@ -854,6 +846,14 @@
    "linked": false,
    "osize": 1464,
    "usize": 1476
+  },
+  {
+   "name": "_ZN10StarSystem9initLightEv",
+   "pct": 88.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1476,
+   "usize": 1472
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
