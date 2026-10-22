@@ -558,8 +558,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowB->setText(String(""), *Globals::gameText->getText(87 + this->field_0x1e0));
 
     int storeX = (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3));
-    Vector first = (*this->buttons)[0]->getPosition();
-    int storeY = (int) (first.y - (float) (Globals::layout->field_0x2c_rowHeight * 3));
+    anchor = (*this->buttons)[0]->getPosition();
+    int storeY = (int) (anchor.y - (float) (Globals::layout->field_0x2c_rowHeight * 3));
     TouchButton *store = new TouchButton(*Globals::gameText->getText(97), 17, storeX, storeY, 20);
     store->id = 53;
     ArrayAdd(store, *this->scrollEntries);
@@ -2491,8 +2491,11 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
         this->choiceWindow->OnTouchMove(x, y);
         return false;
     }
-    if (!Globals::layout->choiceWindowOpen) {
-        switch (this->menuState) {
+    if (Globals::layout->choiceWindowOpen) {
+        Globals::layout->OnTouchMove(x, y);
+        return false;
+    }
+    switch (this->menuState) {
         case 1:
         case 2:
             // Load / save list.
@@ -2664,15 +2667,14 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
                     (*this->scrollEntries)[i]->OnTouchMove(x, y);
             }
             break;
-        }
     }
     Globals::layout->OnTouchMove(x, y);
     return false;
 }
 
 int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    this->dragging = 0;
     this->pendingActivate = 0;
+    this->dragging = 0;
 
     if (Globals::layout->choiceWindowOpen) {
         if (Globals::layout->OnTouchEnd(x, y))
