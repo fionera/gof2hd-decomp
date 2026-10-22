@@ -6965,7 +6965,7 @@ void Level::createScene() {
             int shipCount = Globals::rnd->nextInt(capacity + 1);
             if (ownHangar) {
                 Array<Ship *> *ships = Globals::status->voidStation->getShips();
-                shipCount = ships != nullptr ? (capacity <= (int) ships->size() ? capacity : ships->size()) : 0;
+                shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
             for (int i = 0; i < capacity; i++)
