@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.21,
+  "avg_match": 99.22,
   "byte_exact": 1339,
-  "linked_exact": 4395,
-  "fuzzy_perfect": 4395,
+  "linked_exact": 4397,
+  "fuzzy_perfect": 4397,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -686,22 +686,6 @@
    "linked": false,
    "osize": 480,
    "usize": 480
-  },
-  {
-   "name": "_ZN18ParticleSystemMeshC1EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
-   "pct": 80.8,
-   "byte": false,
-   "linked": false,
-   "osize": 308,
-   "usize": 304
-  },
-  {
-   "name": "_ZN18ParticleSystemMeshC2EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
-   "pct": 80.8,
-   "byte": false,
-   "linked": false,
-   "osize": 308,
-   "usize": 304
   },
   {
    "name": "_ZN7StarMap4initEbP7Missionbi",
@@ -18950,6 +18934,22 @@
    "linked": true,
    "osize": 8,
    "usize": 8
+  },
+  {
+   "name": "_ZN18ParticleSystemMeshC1EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 308,
+   "usize": 308
+  },
+  {
+   "name": "_ZN18ParticleSystemMeshC2EPN11AbyssEngine11PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayIN16ParticleSettings11ParticleSetEEbb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 308,
+   "usize": 308
   },
   {
    "name": "_ZN18ParticleSystemMeshD1Ev",
