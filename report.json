@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.34,
   "byte_exact": 1342,
-  "linked_exact": 4413,
-  "fuzzy_perfect": 4413,
+  "linked_exact": 4414,
+  "fuzzy_perfect": 4414,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -334,14 +334,6 @@
    "linked": false,
    "osize": 1788,
    "usize": 1788
-  },
-  {
-   "name": "_ZN12RadioMessage9triggeredExP9PlayerEgoP11LevelScript",
-   "pct": 66.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1684,
-   "usize": 1632
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
@@ -15270,6 +15262,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN12RadioMessage9triggeredExP9PlayerEgoP11LevelScript",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1684,
+   "usize": 1684
   },
   {
    "name": "_ZN12RadioMessageC1EiiP9Objective",
