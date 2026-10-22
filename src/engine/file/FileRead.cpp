@@ -229,6 +229,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
 
+            SolarSystem *system;
             AEFile::ReadSwitched((int32_t &) count, handle);
             int32_t *routes = new int32_t[count];
             for (int32_t j = 0; j < (int32_t) count; j++) {
@@ -269,8 +270,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            SolarSystem *system = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
-                                                  routes, stations, wrecks, statics);
+            system = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
+                                     routes, stations, wrecks, statics);
             systems->data()[i] = system;
             delete[] routes;
         }
