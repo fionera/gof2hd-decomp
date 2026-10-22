@@ -128,7 +128,11 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
     Array<SpacePoint *> *points = 0;
-    if (AEFile::FileExist(String("data/bin/docks_hd.bin")) != 0) {
+    int32_t exists = AEFile::FileExist(String("data/bin/docks_hd.bin"));
+    if (exists != 1) {
+        return points;
+    }
+    {
         uint32_t handle;
         AEFile::OpenRead("data/bin/docks_hd.bin", &handle);
 
@@ -167,11 +171,12 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
             float py = position.y;
             position.y = position.z;
             position.z = -py;
-            float ry = rotation.y;
-            float rz = rotation.z;
-            rotation.z = ry * toRad;
-            rotation.x = rotation.x * toRadNeg;
-            rotation.y = rz * toRadNeg;
+            float rx = rotation.x * toRadNeg;
+            float ry2 = rotation.z * toRadNeg;
+            float rz2 = rotation.y * toRad;
+            rotation.x = rx;
+            rotation.y = ry2;
+            rotation.z = rz2;
 
             Matrix matrix;
             matrix = MatrixSetRotation(matrix, rotation.x, rotation.y, rotation.z,
