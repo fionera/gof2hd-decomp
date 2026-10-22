@@ -1183,8 +1183,8 @@ void StarMap::update(int dt) {
                 delete this->usedFlags;
                 this->usedFlags = 0;
                 delete this->starSystemRoot;
-                this->mode = 0;
                 this->starSystemRoot = 0;
+                this->mode = 0;
                 (*this->systemGeoms)[this->selectedSystem]->setVisible(true);
             }
             this->transitionIn = 0;
@@ -1268,18 +1268,26 @@ void StarMap::update(int dt) {
             int pitch = (int) this->pitch;
             int yaw = (int) this->yaw;
             int pitchDiff = -3096 - pitch;
-            int yawDiff = STARMAP_ABS(yaw - target);
-            if (target > yaw)
-                this->yaw += (float) (target - yaw) * 0.25f;
+            if (pitchDiff < 0)
+                pitchDiff = -pitchDiff;
+            int yawDiff = yaw - target;
+            if (yawDiff < 0)
+                yawDiff = -yawDiff;
+            float yawStep;
+            if (target <= yaw)
+                yawStep = (float) (yaw - target) * -0.25f;
             else
-                this->yaw += (float) (yaw - target) * -0.25f;
+                yawStep = (float) (target - yaw) * 0.25f;
+            this->yaw += yawStep;
             if (yawDiff <= 10)
                 this->stationCenterAnim = 0;
-            if (-3096 > pitch)
-                this->pitch += (float) (-3096 - pitch) * 0.25f;
+            float pitchStep;
+            if (pitch <= -3096)
+                pitchStep = (float) (-3096 - pitch) * 0.25f;
             else
-                this->pitch += (float) (pitch + 3096) * -0.25f;
-            if (yawDiff <= dt * 4 && STARMAP_ABS(pitchDiff) <= dt * 4) {
+                pitchStep = (float) (pitch + 3096) * -0.25f;
+            this->pitch += pitchStep;
+            if (yawDiff <= dt * 4 && pitchDiff <= dt * 4) {
                 this->lastSelectedStation = this->selectedStation;
                 this->stationCenterAnim = 0;
             }
