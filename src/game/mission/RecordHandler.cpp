@@ -1033,20 +1033,21 @@ int RecordHandler::recordStoreWrite(int slot) {
     } else {
         AEFile::Write((int32_t) 0, fd);
     }
-    items = Globals::status->getShip()->getCargo();
-    if (items != 0) {
-        AEFile::Write((int32_t) items->size(), fd);
-        for (unsigned i = 0; i < items->size(); i++) {
-            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
-            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
-            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
-            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+    Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+    if (cargo != 0) {
+        AEFile::Write((int32_t) cargo->size(), fd);
+        for (unsigned i = 0; i < cargo->size(); i++) {
+            AEFile::Write((int32_t) (*cargo)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*cargo)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*cargo)[i]->getSinglePrice(), fd);
+            AEFile::Write((*cargo)[i]->isUnsaleable(), fd);
         }
     } else {
         AEFile::Write((int32_t) 0, fd);
     }
 
     Array<Station *> *stack = Globals::status->getStationStack();
+    Array<Item *> *stationItems;
     AEFile::Write((int32_t) 3, fd);
     for (unsigned i = 0; i < stack->size() + 1; i++) {
         Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
@@ -1055,7 +1056,7 @@ int RecordHandler::recordStoreWrite(int slot) {
             continue;
         }
         AEFile::Write((int32_t) station->getIndex(), fd);
-        Array<Item *> *stationItems = station->getItems();
+        stationItems = station->getItems();
         if (stationItems != 0) {
             AEFile::Write((int32_t) stationItems->size(), fd);
             for (unsigned j = 0; j < stationItems->size(); j++) {
@@ -1223,14 +1224,14 @@ int RecordHandler::recordStoreWrite(int slot) {
         AEFile::Write((int32_t) 1, fd);
         AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getIndex(), fd);
         AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getRace(), fd);
-        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getEquipment();
-        if (items != 0) {
-            AEFile::Write((int32_t) items->size(), fd);
-            for (unsigned i = 0; i < items->size(); i++) {
-                if ((*items)[i] != 0) {
-                    AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
-                    AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
-                    AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        Array<Item *> *wingEquipment = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getEquipment();
+        if (wingEquipment != 0) {
+            AEFile::Write((int32_t) wingEquipment->size(), fd);
+            for (unsigned i = 0; i < wingEquipment->size(); i++) {
+                if ((*wingEquipment)[i] != 0) {
+                    AEFile::Write((int32_t) (*wingEquipment)[i]->getIndex(), fd);
+                    AEFile::Write((int32_t) (*wingEquipment)[i]->getAmount(), fd);
+                    AEFile::Write((*wingEquipment)[i]->isUnsaleable(), fd);
                 } else {
                     AEFile::Write((int32_t) -1, fd);
                 }
