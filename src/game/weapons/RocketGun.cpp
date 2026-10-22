@@ -75,14 +75,24 @@ void RocketGun::setRadar(Radar *radar) {
     this->particleManager = radar->level->field_80;
 
     int item = this->gun->itemIndex;
-    if ((unsigned int) (item - 0x1c) < 3 || item == 0xc1 || this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
-        int trailMode; // 0..2: the three missile tiers
+    bool special;
+    switch (item) {
+        case 0x1c:
+        case 0x1d:
+        case 0x1e:
+        case 0xc1:
+            special = true;
+            break;
+        default:
+            special = this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE;
+            break;
+    }
+    if (special) {
+        int trailMode = item - 0x1c; // 0..2: the three missile tiers
         if (this->gun->weaponType == ITEM_SORT_CLUSTER_MISSILE)
             trailMode = 0;
         else if (item == 0xc1)
             trailMode = 3;
-        else
-            trailMode = item - 0x1c;
 
         this->trailMatrices = new Array<Matrix>();
         this->trailSystems = new Array<int>();
@@ -102,13 +112,11 @@ void RocketGun::setRadar(Radar *radar) {
                 manager = this->particleManager;
             }
             Matrix *trail = &(*this->trailMatrices)[i];
-            ParticleSettings::ParticleSet set;
-            if (trailMode == 0)
-                set = ParticleSettings::ParticleSet_0x19;
-            else if (trailMode == 1)
-                set = ParticleSettings::ParticleSet_0x1a;
-            else
-                set = defaultSet;
+            ParticleSettings::ParticleSet set = defaultSet;
+            switch (trailMode) {
+                case 1: set = ParticleSettings::ParticleSet_0x1a; break;
+                case 0: set = ParticleSettings::ParticleSet_0x19; break;
+            }
             (*this->trailSystems)[i] = manager->addSystem(trail, set, false);
             this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
             (*this->trailTimers)[i] = 0;
