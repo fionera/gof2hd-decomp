@@ -1,5 +1,26 @@
 # Byte-matching campaign log
 
+## Session 2026-10-22 (wave 14 — linked 4400->4410, byte 1339 unchanged)
+
+- Started from wave 13: byte 1339, linked 4400, avg 99.24.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w211..w242`
+  (branches `wave14-w211..w242`), all launched with the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed exactness gains: Player::shoot overloads (+2), ScrollTouchWindow ctor (+2),
+  VirtualInput::keyPressed, BSphere::Merge, Globals::setCoordsSteer, RocketGun::setRadar,
+  RecordHandler::readMission, and MeshIntersect.
+- Pct-only gains: PlayerFighter::update, MenuTouchWindow update/touch paths,
+  TouchButton::init 87.9->98.9, StarMap update/OnTouchMove, Status missionCompleted/moveWanted,
+  Generator getShipBuyList/createAgents, Level createGun/createMission/createShip/assignGuns,
+  SpaceLounge::init (now `void`, 92.5->93.2), StarSystem initLight/ctor, computeFloatString,
+  Radar::drawCurrentLock, MGame::OnUpdate, PlayerEgo calcCollision/update, Hud challenge score,
+  ParticleSettings::init, FileInterfaceAndroid::Read, FileRead loadSystemsBinary,
+  ModStation face/tab/header paths, and StatusWindow::draw.
+- Rejected: w217 Engine::ResetLightParam trial regressed 80.9->41.8; w242
+  GameText::convertStringFromArabic trial regressed 70.4->41.3. Both were committed for
+  evidence but reverted from master. w213/w215 produced no source change after 502s.
+- End: byte 1339, linked 4410, avg 99.32, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-22 (wave 13 — linked 4385->4400, byte 1339 unchanged)
 
 - Started from wave 12: byte 1339, linked 4385, avg 99.16.
