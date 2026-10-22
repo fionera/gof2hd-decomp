@@ -1160,8 +1160,8 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
                     v = this->touchFlags;
                 else
                     v = ~v & this->touchFlags;
-                this->touchFlags = v | e;
                 this->elementBits[j] = e;
+                this->touchFlags = v | e;
                 return this->touchFlags;
             }
         }
@@ -1731,11 +1731,11 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
     Globals::Canvas->SetColor(0xffffffff);
-    int overlap = Globals::layout->field_0x2c_rowHeight;
     int digitW = this->digitSprite->getFrameWidth();
-    int screenW = Globals::w;
-    int digitH = this->digitSprite->getFrameHeight();
+    int overlap = Globals::layout->field_0x2c_rowHeight;
     int y = Globals::layout->field_0x2c_rowHeight;
+    int digitH = this->digitSprite->getFrameHeight();
+    int screenW = Globals::w;
     String score(Globals::status->field_0x184);
     if (score.size() < 7) {
         int pad = 7 - score.size();
