@@ -200,20 +200,20 @@
    "usize": 2452
   },
   {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 55.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1880
-  },
-  {
    "name": "_ZN12HangarWindow6renderEv",
    "pct": 55.3,
    "byte": false,
    "linked": false,
    "osize": 9700,
    "usize": 9648
+  },
+  {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 55.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1848
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
