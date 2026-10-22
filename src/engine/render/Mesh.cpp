@@ -1076,15 +1076,36 @@ namespace AbyssEngine {
             float cx = c[0], cz = c[2];
 
             // Reject by the triangle's XZ bounding box.
-            float maxZ = az > bz ? az : bz;
-            float minZ = az > bz ? bz : az;
-            float maxX = ax > bx ? ax : bx;
-            float minX = ax > bx ? bx : ax;
-            maxZ = maxZ > cz ? maxZ : cz;
-            minZ = minZ > cz ? cz : minZ;
-            maxX = maxX > cx ? maxX : cx;
-            minX = minX > cx ? cx : minX;
-            if (maxZ < qz || minX > qx || maxX < qx || minZ > qz)
+            float minX = ax;
+            float minZ = az;
+            float maxZ = bz;
+            float maxX = bx;
+            if (az > bz) {
+                maxZ = az;
+                minZ = bz;
+            }
+            if (ax > bx) {
+                maxX = ax;
+                minX = bx;
+            }
+            // Keep the original select shape; a ternary is folded differently at -Oz.
+            if (maxZ > cz) {
+            } else
+                maxZ = cz;
+            if (minZ > cz)
+                minZ = cz;
+            if (maxX > cx) {
+            } else
+                maxX = cx;
+            if (minX > cx)
+                minX = cx;
+            if (minZ > qz)
+                continue;
+            if (maxX < qx)
+                continue;
+            if (minX > qx)
+                continue;
+            if (maxZ < qz)
                 continue;
 
             // The point must lie on the inner side of all three edges.
