@@ -808,14 +808,6 @@
    "usize": 1896
   },
   {
-   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
-   "pct": 96.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1820
-  },
-  {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
    "pct": 97.3,
    "byte": false,
@@ -862,6 +854,14 @@
    "linked": false,
    "osize": 736,
    "usize": 736
+  },
+  {
+   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
+   "pct": 98.9,
+   "byte": false,
+   "linked": false,
+   "osize": 1816,
+   "usize": 1816
   },
   {
    "name": "_ZN15MenuTouchWindow6updateEi",
