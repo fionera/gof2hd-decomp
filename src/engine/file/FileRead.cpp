@@ -211,14 +211,13 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         int32_t e;
         int32_t f;
         int32_t flag;
-        uint32_t count;
         bool visible;
         Array<int32_t> *stations;
         Array<int32_t> *statics;
         for (uint32_t i = 0; i < 0x22; i++) {
-
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
+            uint32_t count;
             AEFile::ReadSwitched(faction, handle);
             AEFile::ReadSwitched(flag, handle);
             visible = flag == 1;

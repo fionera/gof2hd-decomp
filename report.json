@@ -536,6 +536,14 @@
    "usize": 440
   },
   {
+   "name": "_ZN8FileRead17loadSystemsBinaryEv",
+   "pct": 78.0,
+   "byte": false,
+   "linked": false,
+   "osize": 716,
+   "usize": 720
+  },
+  {
    "name": "_ZN7StarMap11OnTouchMoveEii",
    "pct": 78.2,
    "byte": false,
@@ -606,14 +614,6 @@
    "linked": false,
    "osize": 2220,
    "usize": 2228
-  },
-  {
-   "name": "_ZN8FileRead17loadSystemsBinaryEv",
-   "pct": 81.6,
-   "byte": false,
-   "linked": false,
-   "osize": 716,
-   "usize": 716
   },
   {
    "name": "_ZN11SpaceLounge9startChatEv",
