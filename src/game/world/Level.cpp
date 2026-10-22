@@ -1488,15 +1488,18 @@ int Level::init() {
 }
 
 void Level::createFighterTurrets() {
-    if (enemies == nullptr) {
+    Array<KIPlayer *> *list = *(Array<KIPlayer *> *volatile *) &enemies;
+    if (list == nullptr) {
         return;
     }
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        KIPlayer *ship = (*enemies)[i];
+    // The original reloads the enemy list before each condition; keep that
+    // evaluation order so the loop tail matches the binary's register use.
+    for (unsigned int i = 0; i < list->size(); list = *(Array<KIPlayer *> *volatile *) &enemies, i++) {
+        KIPlayer *ship = (*list)[i];
         if (ship == nullptr) {
             continue;
         }
-        PlayerTurret *turret = nullptr;
+        PlayerTurret *turret;
         switch (ship->shipGroupFlag) {
             case 0x33: {
                 turret = (PlayerTurret *) createStaticObject(nullptr, 0x1a74, true);
@@ -1516,11 +1519,11 @@ void Level::createFighterTurrets() {
                 ship->field_0x10 = (int) (intptr_t) turret;
                 turret->shipGroup = 8;
                 break;
+            default:
+                continue;
         }
-        if (turret != nullptr) {
-            turret->field_0x74 = 1;
-            ArrayAdd((KIPlayer *) turret, *enemies);
-        }
+        turret->field_0x74 = 1;
+        ArrayAdd((KIPlayer *) turret, *enemies);
     }
 }
 
@@ -5777,6 +5780,65 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             fixed->setPosition(x, y, z);
             fixed->setBV(getBoundingVolume(2001, geometry));
             object = fixed;
+        } else if (type == 0x4299) {
+            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
+            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
+            float scaled = (float) hitpoints;
+            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
+            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4299, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x4299, Globals::Canvas, false);
+            unsigned int core = -1;
+            Globals::Canvas->TransformCreate(core);
+            Globals::Canvas->TransformAddMesh(core, 0x429f, false);
+            root->addChild(core);
+            unsigned int firstLights = -1;
+            unsigned int firstRing = -1;
+            for (int i = 0; i < 3; i++) {
+                unsigned int ring = -1;
+                unsigned int lights = -1;
+                Globals::Canvas->TransformCreate(ring);
+                Globals::Canvas->TransformCreate(lights);
+                Globals::Canvas->TransformAddMesh(ring, 0x429c, false);
+                Globals::Canvas->TransformAddMesh(lights, 0x429d, false);
+                float offset = i == 0 ? -2150.0f : (i == 1 ? 2150.0f : 4300.0f);
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                        *(Matrix *) Globals::Canvas->TransformGetLocal(ring), 0.0f, 0.0f, offset);
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                        *(Matrix *) Globals::Canvas->TransformGetLocal(lights), 0.0f, 0.0f, offset);
+                if (firstRing == (unsigned int) -1) {
+                    firstLights = lights;
+                    firstRing = ring;
+                } else {
+                    Globals::Canvas->TransformAddChild(firstRing, ring);
+                    Globals::Canvas->TransformAddChild(firstLights, lights);
+                }
+            }
+            root->addChild(firstRing);
+            unsigned int dock = -1;
+            Globals::Canvas->TransformCreate(dock);
+            Globals::Canvas->TransformAddMesh(dock, 0x429e, false);
+            root->addChild(dock);
+            unsigned short lodMeshes[1] = {0x429a};
+            int lodDistances[1] = {35000};
+            root->setLodMeshes(lodMeshes, lodDistances, 1);
+            root->setLodChildTransform(firstLights);
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
+            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+            ArraySetLength(2, *volumes);
+            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+            fixed->setBV(volumes);
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            fixed->shipGroup = 3;
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(4, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            object = fixed;
         } else if (type == 0x494e) {
             int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
             hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
@@ -5860,65 +5922,6 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
             fixed->setWreckedMeshId(0x477c);
             FileRead *fileRead = new FileRead();
             Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(2, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            object = fixed;
-        } else if (type == 0x4299) {
-            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
-            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
-            float scaled = (float) hitpoints;
-            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
-            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4299, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x4299, Globals::Canvas, false);
-            unsigned int core = -1;
-            Globals::Canvas->TransformCreate(core);
-            Globals::Canvas->TransformAddMesh(core, 0x429f, false);
-            root->addChild(core);
-            unsigned int firstLights = -1;
-            unsigned int firstRing = -1;
-            for (int i = 0; i < 3; i++) {
-                unsigned int ring = -1;
-                unsigned int lights = -1;
-                Globals::Canvas->TransformCreate(ring);
-                Globals::Canvas->TransformCreate(lights);
-                Globals::Canvas->TransformAddMesh(ring, 0x429c, false);
-                Globals::Canvas->TransformAddMesh(lights, 0x429d, false);
-                float offset = i == 0 ? -2150.0f : (i == 1 ? 2150.0f : 4300.0f);
-                AbyssEngine::AEMath::MatrixSetTranslation(
-                        *(Matrix *) Globals::Canvas->TransformGetLocal(ring), 0.0f, 0.0f, offset);
-                AbyssEngine::AEMath::MatrixSetTranslation(
-                        *(Matrix *) Globals::Canvas->TransformGetLocal(lights), 0.0f, 0.0f, offset);
-                if (firstRing == (unsigned int) -1) {
-                    firstLights = lights;
-                    firstRing = ring;
-                } else {
-                    Globals::Canvas->TransformAddChild(firstRing, ring);
-                    Globals::Canvas->TransformAddChild(firstLights, lights);
-                }
-            }
-            root->addChild(firstRing);
-            unsigned int dock = -1;
-            Globals::Canvas->TransformCreate(dock);
-            Globals::Canvas->TransformAddMesh(dock, 0x429e, false);
-            root->addChild(dock);
-            unsigned short lodMeshes[1] = {0x429a};
-            int lodDistances[1] = {35000};
-            root->setLodMeshes(lodMeshes, lodDistances, 1);
-            root->setLodChildTransform(firstLights);
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->field_0x40 = 1;
-            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
-            ArraySetLength(2, *volumes);
-            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
-            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
-            fixed->setBV(volumes);
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            fixed->shipGroup = 3;
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(4, -1);
             delete fileRead;
             fixed->setSpacePoints(spacePoints);
             object = fixed;
