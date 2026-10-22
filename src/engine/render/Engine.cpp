@@ -1442,11 +1442,11 @@ void Engine::ResetLightParam() {
     this->lightSpecular.g = 1.0f;
     this->materialSpecular[1] = 0.0f;
     this->specularShaded[0][1] = 0.0f;
-    this->materialSpecular[0] = 0.0f;
-    this->diffuseShaded[0][1] = 0.8f;
-    this->lightDiffuse1.b = 0.0f;
-    this->particleAmbientColor[1] = 0.0f;
     this->particleAmbientColor[2] = 0.0f;
+    this->diffuseShaded[0][1] = 0.8f;
+    this->particleAmbientColor[0] = 0.0f;
+    this->particleAmbientColor[1] = 0.0f;
+    this->materialSpecular[0] = 0.0f;
     this->lightDiffuse1.a = 1.0f;
     this->diffuseShaded[1][1] = 0.0f;
     this->diffuseShaded[0][2] = 0.8f;
@@ -1457,7 +1457,7 @@ void Engine::ResetLightParam() {
     this->sceneAmbient[2] = 0.0f;
     this->diffuseShaded[1][0] = 0.0f;
     this->lightDiffuse.g = 1.0f;
-    this->particleAmbientColor[0] = 0.0f;
+    this->lightDiffuse1.b = 0.0f;
     this->lightDiffuse.r = 1.0f;
     this->diffuseShaded[0][0] = 0.8f;
     if (Engine::enableShader == 0) {

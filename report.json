@@ -552,20 +552,20 @@
    "usize": 356
   },
   {
-   "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
-   "pct": 80.9,
-   "byte": false,
-   "linked": false,
-   "osize": 480,
-   "usize": 480
-  },
-  {
    "name": "_ZN7StarMap4initEbP7Missionbi",
    "pct": 81.4,
    "byte": false,
    "linked": false,
    "osize": 2220,
    "usize": 2228
+  },
+  {
+   "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
+   "pct": 82.3,
+   "byte": false,
+   "linked": false,
+   "osize": 480,
+   "usize": 480
   },
   {
    "name": "_ZN11SpaceLounge9startChatEv",
