@@ -774,11 +774,12 @@ namespace AbyssEngine {
             }
             unsigned short *src = p + 1;
             unsigned short *dst = buf;
-            // integral != 0 emitted at least one digit, so src < end here.
-            do {
+            // The original derives the output cursor from the byte span of the copied
+            // digits; the max guard keeps an empty span at buf.
+            unsigned short *last = src > end ? src : end;
+            out = (unsigned short *) ((char *) buf + (((char *) last - (char *) p - 1) & ~1));
+            while (src < end)
                 *dst++ = *src++;
-            } while (src < end);
-            out = dst;
         } else {
             if (fraction > 0.0f) {
                 // Scale the fraction up until its first digit is non-zero.
