@@ -497,14 +497,14 @@ int ActualizeMouseVisibilty(int force) {
             // In flight the cursor stays while a cinematic steers or no menu is up.
             const int submenuActive = IsInGameSubMenuNotActive(2);
             bool steering;
-            if (submenuActive) {
-                if (!noBlockingOverlay())
-                    goto hide;
-                steering = Globals::isCinematicModeActive != 0;
-            } else {
+            if (!submenuActive) {
                 if (Globals::isCinematicModeActive == 0 || !noBlockingOverlay())
                     goto hide;
                 steering = true;
+            } else {
+                if (!noBlockingOverlay())
+                    goto hide;
+                steering = Globals::isCinematicModeActive != 0;
             }
             const int menuHidden = Globals::is_menu_visible == 0;
             if ((steering | menuHidden) != 1)
@@ -538,14 +538,14 @@ stillVisible:
             goto check;
         if (!IsInGameSubMenuNotActive(2))
             goto check;
-        if ((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
-             Globals::is_menu_visible) != 0)
+        if (__builtin_expect((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible | // lint: arm_builtin
+                              Globals::is_menu_visible) != 0, 0))
             goto check;
         // The original reads this flag through a volatile access: the load is not
         // folded into the menu-window test above.
-        if (*(volatile int *)&Globals::is_hacking_visible != 0)
+        if (__builtin_expect(*(volatile int *)&Globals::is_hacking_visible != 0, 0)) // lint: arm_builtin
             goto check;
-        if ((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0)
+        if (__builtin_expect((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0, 0)) // lint: arm_builtin
             goto check;
 show:
         g_mousePointerLatch = -(g_mousePointerLatch != 1 && Globals::isCinematicModeActive != 0);

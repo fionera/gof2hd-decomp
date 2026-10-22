@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-21
 
-Current: **byte_exact 1339, linked_exact 4394, avg 99.21%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1339, linked_exact 4395, avg 99.21%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1339, linked_exact 4394, avg 99.21%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1339, linked_exact 4395, avg 99.21%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -73,8 +73,8 @@ is tracked by: byte_exact/linked_exact function counts (verify) and the section-
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1339 byte_exact,
-4394 linked_exact, 4425 size_match of 4523; pct buckets {100:4388, 90-99:18, 70-89:67, 50-69:35,
-<50:15}. 98 functions size-MISMATCH (need restructuring); 23 size-match >=80% not-linked
+4395 linked_exact, 4425 size_match of 4523; pct buckets {100:4388, 90-99:18, 70-89:67, 50-69:35,
+<50:15}. 98 functions size-MISMATCH (need restructuring); 22 size-match >=80% not-linked
 (13 of them >=90%, the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):

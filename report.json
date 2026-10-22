@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.21,
   "byte_exact": 1339,
-  "linked_exact": 4394,
-  "fuzzy_perfect": 4394,
+  "linked_exact": 4395,
+  "fuzzy_perfect": 4395,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -878,14 +878,6 @@
    "linked": false,
    "osize": 5204,
    "usize": 5220
-  },
-  {
-   "name": "_Z23ActualizeMouseVisibiltyi",
-   "pct": 89.8,
-   "byte": false,
-   "linked": false,
-   "osize": 592,
-   "usize": 592
   },
   {
    "name": "_ZN11SpaceLounge10onKeyPressEi",
@@ -2814,6 +2806,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_Z23ActualizeMouseVisibiltyi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 592,
+   "usize": 592
   },
   {
    "name": "_Z24IsInGameSubMenuNotActivei",
