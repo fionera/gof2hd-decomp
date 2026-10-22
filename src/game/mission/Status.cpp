@@ -1989,10 +1989,12 @@ void Status::departStation(Station *dest) {
         }
     }
 
-    if (currentCampaignMission > 44) {
-        field_7c = -10;
-        field_80 = -10;
-    } else if (currentCampaignMission >= 32) {
+    int newStation;
+    bool setStation = false;
+    if (currentCampaignMission >= 45) {
+        goto campaignWon;
+    }
+    if (currentCampaignMission >= 32) {
         if (dest->getIndex() != (*missions)[0]->getTargetStation() &&
             dest->getIndex() != field_80) {
             if (field_88++ >= 10) {
@@ -2008,13 +2010,22 @@ void Status::departStation(Station *dest) {
                 } while (this->mission->isCampaignMission() && this->mission->getTargetStation() == field_80);
                 SolarSystem *solarSystem = asSystem(Globals::galaxy->getSystem(field_7c));
                 Array<int> *stations = reinterpret_cast<Array<int> *>(solarSystem->getStations());
-                field_80 = (*stations)[Globals::rnd->nextInt(
+                newStation = (*stations)[Globals::rnd->nextInt(
                     reinterpret_cast<Array<int> *>(solarSystem->getStations())->size())];
+                setStation = true;
             }
-        } else if (currentCampaignMission > 44) {
-            field_7c = -10;
-            field_80 = -10;
+        } else if (currentCampaignMission >= 45) {
+            goto campaignWon;
         }
+    }
+    goto campaignDone;
+campaignWon:
+    field_7c = -10;
+    newStation = -10;
+    setStation = true;
+campaignDone:
+    if (setStation) {
+        field_80 = newStation;
     }
 
     if (moveWantedTargets) {
