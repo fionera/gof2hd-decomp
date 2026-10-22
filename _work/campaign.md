@@ -1,5 +1,29 @@
 # Byte-matching campaign log
 
+## Session 2026-10-22 (wave 13 — linked 4385->4400, byte 1339 unchanged)
+
+- Started from wave 12: byte 1339, linked 4385, avg 99.16.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w179..w210`
+  (branches `wave13-w179..w210`), all launched with the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed exactness gains: DialogueWindow::loadContent, Explosion::render,
+  Status::activateNewWanted, Status::departStation, GameRecord::load,
+  Achievements::checkForNewMedal, Level::connectPlayers/createScene,
+  FileInterfaceAndroid::OpenRead, ImageFontDrawString, PlayerEgo::roll,
+  VirtualInput::ActualizeMouseVisibilty, ParticleSystemMesh C1/C2 (+2), and
+  MenuTouchWindow::OnTouchBegin/createRecordButtons (+2).
+- Pct-only gains: StarMap update/init/drawOnScreenInfo, ModStation key/menu/hint/update paths,
+  SpaceLounge init/sound table, GameInit loadingScreen, FileRead loadNamesBinary/
+  loadSystemsBinary, Generator::createAgents, StarSystem::initLight,
+  Globals::setCoordsSteer, Status::calcCargoPrices, RecordHandler::readMission,
+  Hud::drawMenu, PlayerFighter::update, StatusWindow::draw, Mesh::ReadEnhancedDataFromFile,
+  MGame::OnUpdate, TouchButton draw/init, FModSound play/updateEvent3DAttributes,
+  ParticleSettings::init, and Level::createScene.
+- Rejected: w205 RocketGun::setRadar trial regressed 82.1->16.8 (size 604->568), so its
+  uncommitted change was committed for evidence but not merged. w180 hit repeated 502s and
+  produced no source change; w181/w182/w187/w190 were salvaged from 502-terminated sessions.
+- End: byte 1339, linked 4400, avg 99.24, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-21/22 (wave 12 — linked 4357->4385, byte 1338->1339)
 
 - Started from wave 11: byte 1338, linked 4357, avg 99.10.
