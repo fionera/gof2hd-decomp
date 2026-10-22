@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.22,
+  "avg_match": 99.23,
   "byte_exact": 1339,
-  "linked_exact": 4397,
-  "fuzzy_perfect": 4397,
+  "linked_exact": 4398,
+  "fuzzy_perfect": 4398,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -766,14 +766,6 @@
    "linked": false,
    "osize": 668,
    "usize": 668
-  },
-  {
-   "name": "_ZN6Status13departStationEP7Station",
-   "pct": 86.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 1004
   },
   {
    "name": "_ZN10ModStation8OnUpdateEv",
@@ -27126,6 +27118,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN6Status13departStationEP7Station",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1008,
+   "usize": 1008
   },
   {
    "name": "_ZN6Status13getBluePrintsEv",
