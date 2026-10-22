@@ -1115,7 +1115,7 @@ void StarMap::update(int dt) {
     this->lastDt = dt;
     if (this->mode == 0 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
-            int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
+            bool onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
                                                                *(*this->systemPositions)[i]);
             (*this->systemPositions)[i]->z = onScreen != 0 ? 1.0f : -1.0f;
         }
@@ -1124,7 +1124,7 @@ void StarMap::update(int dt) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
             this->scratchVector2 = MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
-            int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2, *(*this->stationPositions)[i]);
+            bool onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2, *(*this->stationPositions)[i]);
             (*this->stationPositions)[i]->z = onScreen != 0 ? 1.0f : -1.0f;
         }
     }
@@ -1468,6 +1468,9 @@ bool StarMap::OnTouchMove(int x, int y) {
     float rotX = dy * -50.0f;
     float pitch = rotX + this->pitch;
     pitch = pitch > 8192.0f ? 8192.0f : (pitch > -8192.0f ? pitch : -8192.0f);
+    pitch = pitch > -8192.0f ? pitch : -8192.0f;
+    pitch = pitch < 8192.0f ? pitch : 8192.0f;
+    pitch = pitch < 8192.0f ? -8192.0f : 8192.0f;
     float yaw = (float) ((int) (rotY + this->yaw) % 65536);
     this->touchDeltaX = rotY;
     this->touchDeltaY = rotX;
