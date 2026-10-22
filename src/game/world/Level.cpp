@@ -2136,7 +2136,7 @@ void Level::createMission() {
     unsigned blueprint = Globals::status->getStation()->stationHasHiddenBlueprint(true);
     if ((Level::comingFromAlienWorld || Globals::status->getStation()->isAttackedByAliens()) &&
         Globals::status->getCurrentCampaignMission() != 42) {
-        if (this->field_168 < 2)
+        if (this->field_168 <= 2)
             this->field_168 = 2;
         this->hostileCount = Globals::rnd->nextInt(4) + 2;
         if (this->landmarks != nullptr && (*this->landmarks)[3] != nullptr)
@@ -2170,7 +2170,7 @@ void Level::createMission() {
         nameLeader = Globals::status->field_0xf0 == 0;
     } else {
         if (Globals::status->getStation()->hasAttackedFriends()) {
-            if (this->friendCount < 7)
+            if (this->friendCount <= 7)
                 this->friendCount = 7;
             this->alarmRequested = 1;
             this->field_18a = 1;
