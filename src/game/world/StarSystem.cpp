@@ -232,7 +232,7 @@ StarSystem::StarSystem(int mode) {
     }
     int slot = 0;
     int sunSlot = 0;
-    for (uint32_t i = 0; i < this->planetsArray->size(); ++i) {
+    for (uint32_t i = 0; i <= this->planetsArray->size() - 1; ++i) {
         (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
         if (!this->abstractSystem &&
             ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 15 &&
@@ -468,7 +468,7 @@ void StarSystem::initLight() {
             Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 100000.0f, 1.0f, 0x82441fff);
             Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
             this->fogEnabled = 1;
-            for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
+            for (uint32_t i = 1; i <= this->planetsArray->size() - 1; ++i) {
                 ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))
                         ->color = (int) 0x82441fff;
             }
