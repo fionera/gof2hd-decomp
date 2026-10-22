@@ -1640,6 +1640,26 @@ void Level::createMission() {
                                 ? 8
                                 : ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(localRace);
         switch (mission->getType()) {
+            case 3:
+            case 5: {
+                int coords[3];
+                coords[0] = (Globals::rnd->nextInt(80000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1);
+                coords[1] = 0;
+                coords[2] = (Globals::rnd->nextInt(80000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1);
+                this->playerRoute = new Route(coords, 3);
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(mission->getProductionGoodAmount(), *this->enemies);
+                for (unsigned i = 0; i < this->enemies->size(); i++) {
+                    (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
+                                                           this->playerRoute->getWaypoint(0), true, false);
+                    (*this->enemies)[i]->setToSleep();
+                }
+                ((PlayerFighter *) (*this->enemies)[this->enemies->size() - 1])->setMissionCrate(true);
+                (*this->enemies)[this->enemies->size() - 1]->name = *Globals::gameText->getText(1611);
+                this->objectivesA = new Objective(11, this->enemies->size() - 1, this);
+                this->objectivesB = new Objective(12, this->enemies->size() - 1, this);
+                return;
+            }
             case 1: {
                 int coords[9] = {Globals::rnd->nextInt(100000) - 50000, 0, 50000,
                                  Globals::rnd->nextInt(100000) - 50000, 0, 75000,
@@ -1704,26 +1724,6 @@ void Level::createMission() {
                 }
                 this->objectivesA = new Objective(18, 0, convoyEnd, this);
                 this->objectivesB = new Objective(18, convoyEnd, total, this);
-                return;
-            }
-            case 3:
-            case 5: {
-                int coords[3];
-                coords[0] = (Globals::rnd->nextInt(80000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1);
-                coords[1] = 0;
-                coords[2] = (Globals::rnd->nextInt(80000) + 40000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1);
-                this->playerRoute = new Route(coords, 3);
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(mission->getProductionGoodAmount(), *this->enemies);
-                for (unsigned i = 0; i < this->enemies->size(); i++) {
-                    (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
-                                                           this->playerRoute->getWaypoint(0), true, false);
-                    (*this->enemies)[i]->setToSleep();
-                }
-                ((PlayerFighter *) (*this->enemies)[this->enemies->size() - 1])->setMissionCrate(true);
-                (*this->enemies)[this->enemies->size() - 1]->name = *Globals::gameText->getText(1611);
-                this->objectivesA = new Objective(11, this->enemies->size() - 1, this);
-                this->objectivesB = new Objective(12, this->enemies->size() - 1, this);
                 return;
             }
             case 4: {
@@ -6090,7 +6090,7 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wx, wy, wz;
+    int wy, wz, wx;
     if (waypoint != nullptr) {
         wx = waypoint->x;
         wy = waypoint->y;
@@ -6100,23 +6100,18 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         wx = 0;
         wz = 0;
     }
-    int jitterX = Globals::rnd->nextInt(40000);
-    int jitterY = Globals::rnd->nextInt(40000);
     int jitterZ = Globals::rnd->nextInt(40000);
+    int jitterY = Globals::rnd->nextInt(40000);
+    int jitterX = Globals::rnd->nextInt(40000);
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    switch (type) {
-        case 0x2c:
-            hitpoints = (int) ((float) hitpoints * 2.25f);
-            break;
-        case 0x33:
-            hitpoints = (int) ((float) hitpoints * 1.7f);
-            break;
-        case 0x31:
-            hitpoints = (int) ((float) hitpoints * 17.0f);
-            break;
-    }
+    if (type == 0x2c)
+        hitpoints = (int) ((float) hitpoints * 2.25f);
+    else if (type == 0x33)
+        hitpoints = (int) ((float) hitpoints * 1.7f);
+    else if (type == 0x31)
+        hitpoints = (int) ((float) hitpoints * 17.0f);
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
@@ -6269,8 +6264,8 @@ void Level::assignGuns() {
         return;
     }
 
-    unsigned int slots = 0;
-    for (unsigned int i = 0; i < enemies->size(); i++) {
+    unsigned int i, slots = 0;
+    for (i = 0; i < enemies->size(); i++) {
         if ((*enemies)[i] != nullptr && (*enemies)[i]->field_0x25) {
             slots += (*enemies)[i]->isWingMan() ? 2 : 1;
         }
@@ -6514,7 +6509,7 @@ void Level::assignGuns() {
             gunIndex++;
         }
 
-        if ((*enemies)[i] != nullptr && (*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x25) {
+        if ((*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x25) {
             Gun *gun = new Gun(18, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(true);
             gun->setLevel(this);

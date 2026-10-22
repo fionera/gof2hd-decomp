@@ -280,20 +280,20 @@
    "usize": 932
   },
   {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 61.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2792
-  },
-  {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
    "pct": 61.1,
    "byte": false,
    "linked": false,
    "osize": 968,
    "usize": 968
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 61.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2788
   },
   {
    "name": "_ZN3Hud14touchedElementEjj",
@@ -385,11 +385,11 @@
   },
   {
    "name": "_ZN5Level10assignGunsEv",
-   "pct": 69.4,
+   "pct": 69.6,
    "byte": false,
    "linked": false,
    "osize": 2948,
-   "usize": 2960
+   "usize": 2956
   },
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15MeshSetTriangleEjtttt",
