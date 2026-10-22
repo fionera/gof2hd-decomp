@@ -504,7 +504,7 @@ void Status::calcCargoPrices() {
                 (*systems)[(*items)[i]->getMinPriceSystem()]->getY(),
                 (*systems)[this->station->getSystem()]->getX(), (*systems)[this->station->getSystem()]->getY());
             float factor = 100.0f / (float) priceRange * (float) distance / 100.0f;
-            int minPrice = item->getMinPrice();
+            int minPrice = (*items)[i]->getMinPrice();
             int priceBonus = (int) ((factor < 1.0f ? factor : 1.0f) * (float) (item->getMaxPrice() - item->getMinPrice()));
             if (item->getSinglePrice() < 1) {
                 continue;
