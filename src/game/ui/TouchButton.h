@@ -16,9 +16,10 @@ public:
     uint32_t image;
     String numberText;
     int adornImage;
-    // 3x3 frame images: row 0 = highlighted/touched, 1 = normal, 2 = always-pressed;
-    // columns = left cap, middle pattern, right cap.
-    int frameImages[3][3];
+    // Frame images per state (left cap, middle pattern, right cap).
+    int touchedFrame[3];   // highlighted / touched
+    int normalFrame[3];
+    int pressedFrame[3];   // always-pressed
     uint32_t iconImage;
     int iconOverlay;
     int iconSmall;
