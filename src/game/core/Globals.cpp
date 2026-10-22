@@ -2567,8 +2567,8 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         } else {
             knobPos = (unsigned) ((float) knobPos - (top - (!Globals::iPadLarge ? 2.0f : 4.0f)));
             o12 = knobPos;
-            big = !Globals::iPadLarge ? 173 : 346;
             small = !Globals::iPadLarge ? 133 : 266;
+            big = !Globals::iPadLarge ? 173 : 346;
         }
         float t = (float) knobPos / 54.0f;
         o11 = (unsigned short) ((float) small + (t < 1.0f ? t : 1.0f) * (float) (big - small));
