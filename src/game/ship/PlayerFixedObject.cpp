@@ -512,23 +512,14 @@ void PlayerFixedObject::render() {
 }
 
 int PlayerFixedObject::collide(float x, float y, float z) {
-    PlayerFixedObject *self = this;
-    Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
-        if (a != 0 && self->state == 4) {
-            for (uint32_t i = 0; i < a->size(); i++) {
-                BoundingVolume *bv = (*a)[i];
-                if (bv->collide(x, y, z) != 0) return 1;
-                a = self->wreckCollision;
+    if ((this->wreckCollision != 0 || this->state != 4) && this->collisionEnabled() != 0) {
+        if (this->state == 4 && this->wreckCollision != 0) {
+            for (uint32_t i = 0; i < this->wreckCollision->size(); i++) {
+                if ((*this->wreckCollision)[i]->collide(x, y, z) != 0) return 1;
             }
-        } else {
-            Array<BoundingVolume *> *b = self->boundingVolumes;
-            if (b != 0) {
-                for (uint32_t i = 0; i < b->size(); i++) {
-                    BoundingVolume *bv = (*b)[i];
-                    if (bv->collide(x, y, z) != 0) return 1;
-                    b = self->boundingVolumes;
-                }
+        } else if (this->boundingVolumes != 0) {
+            for (uint32_t i = 0; i < this->boundingVolumes->size(); i++) {
+                if ((*this->boundingVolumes)[i]->collide(x, y, z) != 0) return 1;
             }
         }
     }
@@ -569,28 +560,19 @@ void PlayerFixedObject::outerCollide(Vector v) {
 }
 
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
-    PlayerFixedObject * self = this;
-    Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->collisionEnabled() != 0) {
-        if (a != 0 && self->state == 4) {
-            for (uint32_t i = 0; i < a->size(); i++) {
-                BoundingVolume *bv = (*a)[i];
-                if (bv->outerCollide(x, y, z) != 0) {
-                    self->collisionIndex = i;
+    if ((this->wreckCollision != 0 || this->state != 4) && this->collisionEnabled() != 0) {
+        if (this->state == 4 && this->wreckCollision != 0) {
+            for (uint32_t i = 0; i < this->wreckCollision->size(); i++) {
+                if ((*this->wreckCollision)[i]->outerCollide(x, y, z) != 0) {
+                    this->collisionIndex = i;
                     return 1;
                 }
-                a = self->wreckCollision;
             }
-        } else {
-            Array<BoundingVolume *> *b = self->boundingVolumes;
-            if (b != 0) {
-                for (uint32_t i = 0; i < b->size(); i++) {
-                    BoundingVolume *bv = (*b)[i];
-                    if (bv->outerCollide(x, y, z) != 0) {
-                        self->collisionIndex = i;
-                        return 1;
-                    }
-                    b = self->boundingVolumes;
+        } else if (this->boundingVolumes != 0) {
+            for (uint32_t i = 0; i < this->boundingVolumes->size(); i++) {
+                if ((*this->boundingVolumes)[i]->outerCollide(x, y, z) != 0) {
+                    this->collisionIndex = i;
+                    return 1;
                 }
             }
         }

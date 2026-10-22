@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.32,
-  "byte_exact": 1340,
-  "linked_exact": 4411,
-  "fuzzy_perfect": 4411,
+  "avg_match": 99.34,
+  "byte_exact": 1342,
+  "linked_exact": 4413,
+  "fuzzy_perfect": 4413,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -384,14 +384,6 @@
    "usize": 2956
   },
   {
-   "name": "_ZN17PlayerFixedObject7collideEfff",
-   "pct": 70.1,
-   "byte": false,
-   "linked": false,
-   "osize": 140,
-   "usize": 138
-  },
-  {
    "name": "_ZN12HangarWindow10OnTouchEndEii",
    "pct": 70.2,
    "byte": false,
@@ -406,14 +398,6 @@
    "linked": false,
    "osize": 728,
    "usize": 736
-  },
-  {
-   "name": "_ZN17PlayerFixedObject12outerCollideEfff",
-   "pct": 70.6,
-   "byte": false,
-   "linked": false,
-   "osize": 144,
-   "usize": 142
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -18416,6 +18400,14 @@
    "usize": 10
   },
   {
+   "name": "_ZN17PlayerFixedObject12outerCollideEfff",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 144,
+   "usize": 144
+  },
+  {
    "name": "_ZN17PlayerFixedObject14getDockingTypeEv",
    "pct": 100.0,
    "byte": true,
@@ -18526,6 +18518,14 @@
    "linked": true,
    "osize": 2768,
    "usize": 2768
+  },
+  {
+   "name": "_ZN17PlayerFixedObject7collideEfff",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 140,
+   "usize": 140
   },
   {
    "name": "_ZN17PlayerFixedObject7getNameEv",
