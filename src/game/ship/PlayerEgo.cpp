@@ -2381,9 +2381,9 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         return;
     if (this->dockedFlag && (unsigned int) (this->dockingPointIndex - 1) < 3)
         return;
-    Vector surface;
     for (unsigned int i = 0; i < objects->size(); i++) {
         KIPlayer *object = (*objects)[i];
+        Vector surface;
         if (object == nullptr)
             continue;
         if (i == 0 && !Globals::status->inAlienOrbit()
@@ -2438,7 +2438,8 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
                 this->player->damage(20);
                 if (this->volatileGoods)
                     this->player->flShake += 0.2f;
-                goto hitCameraLabel;
+                this->hitCamera();
+                continue;
             }
             continue;
         }
@@ -2453,7 +2454,6 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             if (i == 0 && object->field_0x71)
                 this->collidesWithStationFlag = 1;
         }
-hitCameraLabel:
         this->hitCamera();
     }
 }
@@ -2745,8 +2745,8 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                         int remaining = mission->getProductionGoodAmount() - this->level->getNumDeliveredOre();
                         if (this->dockTotalAmount > remaining)
                             this->dockTotalAmount = remaining;
-                        this->dockTransferedAmount = 0;
                         this->field_0x35c = 0;
+                        this->dockTransferedAmount = 0;
                         if (this->dockTotalAmount >= 1)
                             hud->hudEvent(41, this, 0);
                     }
@@ -2782,8 +2782,8 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                     int remaining = campaign->getProductionGoodAmount() - campaign->getStatusValue();
                     if (this->dockTotalAmount > remaining)
                         this->dockTotalAmount = remaining;
-                    this->dockTransferedAmount = 0;
                     this->field_0x35c = 0;
+                    this->dockTransferedAmount = 0;
                     if (this->dockTotalAmount >= 1)
                         hud->hudEvent(41, this, 0);
                 }
