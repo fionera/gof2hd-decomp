@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.2,
   "byte_exact": 1339,
-  "linked_exact": 4393,
-  "fuzzy_perfect": 4393,
+  "linked_exact": 4394,
+  "fuzzy_perfect": 4394,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -672,14 +672,6 @@
    "usize": 10368
   },
   {
-   "name": "_ZN9PlayerEgo4rollEi",
-   "pct": 79.2,
-   "byte": false,
-   "linked": false,
-   "osize": 500,
-   "usize": 504
-  },
-  {
    "name": "_ZN8FileRead15loadNamesBinaryEibb",
    "pct": 79.5,
    "byte": false,
@@ -833,11 +825,11 @@
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 87.9,
+   "pct": 88.1,
    "byte": false,
    "linked": false,
    "osize": 8852,
-   "usize": 8852
+   "usize": 8844
   },
   {
    "name": "_ZN9Generator12createAgentsEP7Station",
@@ -33302,6 +33294,14 @@
    "linked": true,
    "osize": 580,
    "usize": 580
+  },
+  {
+   "name": "_ZN9PlayerEgo4rollEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 500,
+   "usize": 500
   },
   {
    "name": "_ZN9PlayerEgo5boostEv",
