@@ -11,21 +11,31 @@ namespace AbyssEngine {
 
         Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
 
+        // Vector::operator= is defined in Vector.cpp in the original TU; inline its body here so
+        // the copy of the rotated radius vector is still emitted as a three-register store.
+        static inline Vector &CopyVector(Vector &dst, const Vector &src) {
+            dst.x = src.x;
+            dst.y = src.y;
+            dst.z = src.z;
+            return dst;
+        }
+
         void BSphere::Merge(const Transform &t) {
             // World-space bounds of the transform: moved centre, radius scaled by the largest axis.
             BSphere sphere;
             sphere.radius2 = 1.0f;
-            Vector v = MatrixTransformVector(t.worldMatrix, t.boundingSphere.center);
-            sphere.center.x = v.x;
-            sphere.center.y = v.y;
-            sphere.center.z = v.z;
+            {
+                Vector center = MatrixTransformVector(t.worldMatrix, t.boundingSphere.center);
+                sphere.center.x = center.x;
+                sphere.center.y = center.y;
+                sphere.center.z = center.z;
+            }
+            Vector v;
             v.x = t.boundingSphere.radius;
             v.y = t.boundingSphere.radius;
             v.z = t.boundingSphere.radius;
             Vector rotated = MatrixRotateVector(t.worldMatrix, v);
-            v.x = rotated.x;
-            v.y = rotated.y;
-            v.z = rotated.z;
+            CopyVector(v, rotated);
             float ax = v.x > 0.0f ? v.x : -v.x;
             float ay = v.y > 0.0f ? v.y : -v.y;
             float az = v.z > 0.0f ? v.z : -v.z;
