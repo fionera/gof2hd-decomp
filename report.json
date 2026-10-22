@@ -648,14 +648,6 @@
    "usize": 29616
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 79.2,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 10368
-  },
-  {
    "name": "_ZN7StarMap6updateEi",
    "pct": 79.3,
    "byte": false,
@@ -710,6 +702,14 @@
    "linked": false,
    "osize": 608,
    "usize": 604
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 83.6,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 10376
   },
   {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
