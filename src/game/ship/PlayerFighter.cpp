@@ -1028,10 +1028,11 @@ void PlayerFighter::update(int dt) {
                             this->currentRotate = this->rotate;
                         }
                         if (this->targetSpeed > 0.0f) {
-                            this->currentSpeed *= this->targetSpeed > this->currentSpeed ? 1.05f : 0.95f;
+                            float targetSpeed = this->targetSpeed;
+                            this->currentSpeed *= targetSpeed > this->currentSpeed ? 1.05f : 0.95f;
                             if (this->currentSpeed >= 5.5f || this->currentSpeed < this->speed) {
-                                this->currentSpeed = this->targetSpeed;
-                                if (this->targetSpeed == this->speed) {
+                                this->currentSpeed = targetSpeed;
+                                if (targetSpeed == this->speed) {
                                     this->boosting = false;
                                 }
                                 this->targetSpeed = 0.0f;
@@ -1321,7 +1322,7 @@ void PlayerFighter::update(int dt) {
                 this->geometry->updateReferenceMatrix();
                 this->explosion->update(dt, this->level->getPlayer() ? this->level->getPlayer()->getTargetFollowCamera() : nullptr);
                 this->deathTimer() += dt;
-                if (this->crateCaptured() && this->player->isActive() && dt > 0 && this->wreckGeometry()) {
+                if (this->crateCaptured() && this->player->isActive() && this->wreckGeometry() && dt > 0) {
                     // the cargo crate drifts away from the wreck
                     float bombForce = this->player->getBombForce();
                     if (bombForce > 0.0f) {
