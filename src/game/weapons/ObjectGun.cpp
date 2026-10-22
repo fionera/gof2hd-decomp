@@ -299,8 +299,7 @@ void ObjectGun::render() {
     if (gun->active != 0) {
         Matrix camera;
         if (gun->weaponType == ITEM_SORT_TURRET) {
-            PaintCanvas *canvas = Globals::Canvas;
-            camera = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
+            camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
             if (this->visible != 0) {
                 // Visible turrets are drawn turned around and spun about their own axis.
                 Matrix spin;
@@ -312,116 +311,108 @@ void ObjectGun::render() {
         int inactive = 0;
         for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             const Vector &position = this->gun->positions.data()[i];
-            if (position.x == 50000.0f) {
+            if (position.x != 50000.0f) {
+                MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
+                this->dir = VectorNormalize(this->gun->velocities.data()[i]);
+
+                if (this->visible != 0) {
+                    // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
+                    Vector facing = -this->dir;
+                    gun = this->gun;
+                    if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
+                        camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
+                        facing = MatrixGetDir(camera);
+                        gun = this->gun;
+                    }
+                    this->orientation.m[0] = camera.m[0];
+                    this->orientation.m[1] = camera.m[1];
+                    this->orientation.m[4] = camera.m[4];
+                    this->orientation.m[5] = camera.m[5];
+                    this->orientation.m[8] = camera.m[8];
+                    this->orientation.m[9] = camera.m[9];
+                    this->orientation.m[2] = -facing.x;
+                    this->orientation.m[6] = -facing.y;
+                    this->orientation.m[10] = -facing.z;
+
+                    const int lifetime = gun->lifetimes[i];
+                    if (lifetime < 1000) {
+                        const float grow = (float) lifetime / 1000.0f;
+                        MatrixSetScaling(this->orientation, grow, grow, grow);
+                    } else if (gun->hitSmall != 0) {
+                        MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
+                    }
+                } else if (this->useEgoOrientation != 0) {
+                    // Player-steered rocket: apply the pending pitch/yaw input to the ego rocket matrix.
+                    PlayerEgo *player = this->level->getPlayer();
+                    Matrix steer;
+                    MatrixSetRotation(steer, player->rocketPitch, player->rocketYaw, 0.0f);
+                    player->field_0x40 *= steer;
+                    this->orientation = player->field_0x40;
+                    const Vector &rocket = this->gun->positions.data()[i];
+                    MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
+                    const Vector heading = MatrixGetDir(this->orientation);
+                    const Vector unit = VectorNormalize(heading);
+                    this->gun->velocities.data()[i] = unit * this->gun->pitchRate;
+                    player->rocketPitch = 0.0f;
+                    player->rocketYaw = 0.0f;
+                    MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
+                    Globals::Canvas->TransformSetLocal(this->secondaryTransform, steer);
+                } else {
+                    // Free projectile: build an orthonormal frame around the flight direction.
+                    if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
+                        this->up = this->gun->upVectors.data()[i];
+                    } else {
+                        this->up = Vector(0.0f, 1.0f, 0.0f);
+                    }
+                    this->side = VectorCross(this->up, this->dir);
+                    this->side = VectorNormalize(this->side);
+                    this->up = VectorCross(this->dir, this->side);
+                    this->up = VectorNormalize(this->up);
+
+                    this->orientation.m[0] = this->side.x;
+                    this->orientation.m[1] = this->up.x;
+                    this->orientation.m[2] = this->dir.x;
+                    this->orientation.m[4] = this->side.y;
+                    this->orientation.m[5] = this->up.y;
+                    this->orientation.m[6] = this->dir.y;
+                    this->orientation.m[8] = this->side.z;
+                    this->orientation.m[9] = this->up.z;
+                    this->orientation.m[10] = this->dir.z;
+
+                    gun = this->gun;
+                    const int lifetime = gun->lifetimes[i];
+                    if (lifetime < 1000) {
+                        const float grow = (float) lifetime / 1000.0f;
+                        MatrixSetScaling(this->orientation, grow, grow, grow);
+                    } else if (gun->hitSmall != 0) {
+                        MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
+                        if (this->isRocketGun() == 0)
+                            this->gun->hitSmall = 0;
+                    }
+                }
+
+                if (Globals::iPad)
+                    MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
+
+                if (this->gun->weaponType == ITEM_SORT_MINE) {
+                    // Mines tumble: rotate by the per-mine spin and keep winding it up.
+                    Vector *spin = ((Array<Vector *> *) this->gun->wobbleOffsets)->data()[i];
+                    if (spin != nullptr && this->deltaTime > 0) {
+                        MatrixSetRotation(this->orientation, spin->x, spin->y, spin->z);
+                        const float step = (float) this->deltaTime * 0.0005f;
+                        spin->x += spin->x < 0.0f ? -step : step;
+                        spin->y += spin->y < 0.0f ? -step : step;
+                        spin->z += spin->z < 0.0f ? -step : step;
+                    }
+                    MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
+                }
+
+                Globals::Canvas->TransformSetLocal(this->transform, this->orientation);
+                Globals::Canvas->DrawTransform(this->transform, nullptr);
+            } else {
                 // Parked slot (no live projectile).
                 ++inactive;
-                continue;
             }
-            MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
-            this->dir = VectorNormalize(this->gun->velocities.data()[i]);
-
-            if (this->visible != 0) {
-                // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
-                Vector facing = -this->dir;
-                gun = this->gun;
-                if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
-                    PaintCanvas *canvas = Globals::Canvas;
-                    camera = *(const Matrix *) canvas->CameraGetLocal(canvas->CameraGetCurrent());
-                    facing = MatrixGetDir(camera);
-                    gun = this->gun;
-                }
-                this->orientation.m[0] = camera.m[0];
-                this->orientation.m[1] = camera.m[1];
-                this->orientation.m[4] = camera.m[4];
-                this->orientation.m[5] = camera.m[5];
-                this->orientation.m[8] = camera.m[8];
-                this->orientation.m[9] = camera.m[9];
-                this->orientation.m[2] = -facing.x;
-                this->orientation.m[6] = -facing.y;
-                this->orientation.m[10] = -facing.z;
-
-                const int lifetime = gun->lifetimes[i];
-                if (lifetime < 1000) {
-                    const float grow = (float) lifetime / 1000.0f;
-                    MatrixSetScaling(this->orientation, grow, grow, grow);
-                } else if (gun->hitSmall != 0) {
-                    MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
-                }
-            } else if (this->useEgoOrientation != 0) {
-                // Player-steered rocket: apply the pending pitch/yaw input to the ego rocket matrix.
-                PlayerEgo *player = this->level->getPlayer();
-                Matrix steer;
-                MatrixSetRotation(steer, player->rocketPitch, player->rocketYaw, 0.0f);
-                player->field_0x40 *= steer;
-                this->orientation = player->field_0x40;
-                const Vector &rocket = this->gun->positions.data()[i];
-                MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
-                const Vector heading = MatrixGetDir(this->orientation);
-                const Vector unit = VectorNormalize(heading);
-                this->gun->velocities.data()[i] = unit * this->gun->pitchRate;
-                player->rocketPitch = 0.0f;
-                player->rocketYaw = 0.0f;
-                MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
-                Globals::Canvas->TransformSetLocal(this->secondaryTransform, steer);
-            } else {
-                // Free projectile: build an orthonormal frame around the flight direction.
-                const Vector *upSource;
-                Vector worldUp;
-                if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
-                    upSource = &this->gun->upVectors.data()[i];
-                } else {
-                    worldUp.y = 1.0f;
-                    worldUp.x = 0.0f;
-                    worldUp.z = 0.0f;
-                    upSource = &worldUp;
-                }
-                this->up = *upSource;
-                this->side = VectorCross(this->up, this->dir);
-                this->side = VectorNormalize(this->side);
-                this->up = VectorCross(this->dir, this->side);
-                this->up = VectorNormalize(this->up);
-
-                this->orientation.m[0] = this->side.x;
-                this->orientation.m[1] = this->up.x;
-                this->orientation.m[2] = this->dir.x;
-                this->orientation.m[4] = this->side.y;
-                this->orientation.m[5] = this->up.y;
-                this->orientation.m[6] = this->dir.y;
-                this->orientation.m[8] = this->side.z;
-                this->orientation.m[9] = this->up.z;
-                this->orientation.m[10] = this->dir.z;
-
-                gun = this->gun;
-                const int lifetime = gun->lifetimes[i];
-                if (lifetime < 1000) {
-                    const float grow = (float) lifetime / 1000.0f;
-                    MatrixSetScaling(this->orientation, grow, grow, grow);
-                } else if (gun->hitSmall != 0) {
-                    MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
-                    if (this->isRocketGun() == 0)
-                        this->gun->hitSmall = 0;
-                }
-            }
-
-            if (Globals::iPad)
-                MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
-
-            if (this->gun->weaponType == ITEM_SORT_MINE) {
-                // Mines tumble: rotate by the per-mine spin and keep winding it up.
-                Vector *spin = ((Array<Vector *> *) this->gun->wobbleOffsets)->data()[i];
-                if (spin != nullptr && this->deltaTime > 0) {
-                    MatrixSetRotation(this->orientation, spin->x, spin->y, spin->z);
-                    const float step = (float) this->deltaTime * 0.0005f;
-                    spin->x += spin->x < 0.0f ? -step : step;
-                    spin->y += spin->y < 0.0f ? -step : step;
-                    spin->z += spin->z < 0.0f ? -step : step;
-                }
-                MatrixSetScaling(this->orientation, this->scaleX, this->scaleY, this->scaleZ);
-            }
-
-            PaintCanvas *canvas = Globals::Canvas;
-            canvas->TransformSetLocal(this->transform, this->orientation);
-            canvas->DrawTransform(this->transform, nullptr);
         }
 
         gun = this->gun;
