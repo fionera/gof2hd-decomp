@@ -4568,9 +4568,10 @@ void Level::connectPlayers() {
                     continue;
                 }
             } else if (campaignMission == 0x40) {
-                if (i == 0 || ship == nullptr || k == 0) {
+                if (i == 0)
                     continue;
-                }
+                if (k == 0 || ship == nullptr)
+                    continue;
             } else if (campaignMission == 0x9a) {
                 bool alienOrbit = Globals::status->inAlienOrbit();
                 if (k == 8 && alienOrbit && ship->shipGroup == 8) {
@@ -4615,9 +4616,10 @@ void Level::connectPlayers() {
                             continue;
                         }
                     } else if (campaignMission == 0x40) {
-                        if (i == 0 || ship == nullptr || k == 0) {
+                        if (i == 0)
                             continue;
-                        }
+                        if (k == 0 || ship == nullptr)
+                            continue;
                     }
                     (*targets)[slot++] = (*enemies)[k]->player;
                 }
@@ -4645,9 +4647,10 @@ void Level::connectPlayers() {
                         continue;
                     }
                 } else if (campaignMission == 0x40) {
-                    if (i == 0 || ship == nullptr || k == 0) {
+                    if (i == 0)
                         continue;
-                    }
+                    if (k == 0 || ship == nullptr)
+                        continue;
                 } else if (campaignMission == 0x9a) {
                     bool alienOrbit = Globals::status->inAlienOrbit();
                     if (k == 8 && alienOrbit && ship->shipGroup == 8) {
@@ -6962,7 +6965,7 @@ void Level::createScene() {
             int shipCount = Globals::rnd->nextInt(capacity + 1);
             if (ownHangar) {
                 Array<Ship *> *ships = Globals::status->voidStation->getShips();
-                shipCount = ships != nullptr ? (capacity <= (int) ships->size() ? capacity : ships->size()) : 0;
+                shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
             for (int i = 0; i < capacity; i++)

@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.18,
   "byte_exact": 1339,
-  "linked_exact": 4390,
-  "fuzzy_perfect": 4390,
+  "linked_exact": 4391,
+  "fuzzy_perfect": 4391,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -536,20 +536,20 @@
    "usize": 416
   },
   {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2228
-  },
-  {
    "name": "_ZN12StatusWindow4drawEv",
    "pct": 75.0,
    "byte": false,
    "linked": false,
    "osize": 6280,
    "usize": 6308
+  },
+  {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 75.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2228
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
@@ -598,14 +598,6 @@
    "linked": false,
    "osize": 1832,
    "usize": 1808
-  },
-  {
-   "name": "_ZN5Level14connectPlayersEv",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1160,
-   "usize": 1186
   },
   {
    "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
@@ -23558,6 +23550,14 @@
    "linked": true,
    "osize": 84,
    "usize": 84
+  },
+  {
+   "name": "_ZN5Level14connectPlayersEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1160,
+   "usize": 1160
   },
   {
    "name": "_ZN5Level14getEnemiesLeftEv",
