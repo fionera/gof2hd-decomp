@@ -696,14 +696,6 @@
    "usize": 564
   },
   {
-   "name": "_ZN7StarMap11OnTouchMoveEii",
-   "pct": 90.6,
-   "byte": false,
-   "linked": false,
-   "osize": 900,
-   "usize": 900
-  },
-  {
    "name": "_ZN10StarSystem9initLightEv",
    "pct": 91.0,
    "byte": false,
@@ -870,6 +862,14 @@
    "linked": false,
    "osize": 648,
    "usize": 648
+  },
+  {
+   "name": "_ZN7StarMap11OnTouchMoveEii",
+   "pct": 99.6,
+   "byte": false,
+   "linked": false,
+   "osize": 900,
+   "usize": 900
   },
   {
    "name": "_ZN8FileRead15loadNamesBinaryEibb",
