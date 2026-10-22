@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.18,
   "byte_exact": 1339,
-  "linked_exact": 4391,
-  "fuzzy_perfect": 4391,
+  "linked_exact": 4392,
+  "fuzzy_perfect": 4392,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -862,14 +862,6 @@
    "linked": false,
    "osize": 2532,
    "usize": 2532
-  },
-  {
-   "name": "_ZN20FileInterfaceAndroid8OpenReadEN11AbyssEngine6StringEibiij",
-   "pct": 87.5,
-   "byte": false,
-   "linked": false,
-   "osize": 552,
-   "usize": 548
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
@@ -19446,6 +19438,14 @@
    "linked": true,
    "osize": 2,
    "usize": 2
+  },
+  {
+   "name": "_ZN20FileInterfaceAndroid8OpenReadEN11AbyssEngine6StringEibiij",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 552,
+   "usize": 552
   },
   {
    "name": "_ZN20FileInterfaceAndroid9FileExistEN11AbyssEngine6StringE",
