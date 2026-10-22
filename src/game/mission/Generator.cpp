@@ -316,7 +316,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() : false;
+    bool allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : false;
     int stationIndex = station->getIndex();
     int stationId = station->getIndex();
     int count;
@@ -372,12 +372,13 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     bool terranExtras = false;
     bool vossExtras = false;
     switch (race) {
-        case 2:
-            if (Globals::rnd->nextInt(8) == 0) {
-                ArrayAdd((*Globals::ships)[61]->makeShip(-1), *list);
-                list->data()[list->size() - 1]->setRace(1);
+        case 0:
+            if (Globals::rnd->nextInt(7) == 0) {
+                ArrayAdd((*Globals::ships)[62]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(3);
                 list->data()[list->size() - 1]->adjustPrice();
             }
+            terranExtras = true;
             break;
         case 1:
             if (Globals::rnd->nextInt(5) == 0) {
@@ -387,13 +388,12 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             }
             vossExtras = true;
             break;
-        case 0:
-            if (Globals::rnd->nextInt(7) == 0) {
-                ArrayAdd((*Globals::ships)[62]->makeShip(-1), *list);
-                list->data()[list->size() - 1]->setRace(3);
+        case 2:
+            if (Globals::rnd->nextInt(8) == 0) {
+                ArrayAdd((*Globals::ships)[61]->makeShip(-1), *list);
+                list->data()[list->size() - 1]->setRace(1);
                 list->data()[list->size() - 1]->adjustPrice();
             }
-            terranExtras = true;
             break;
     }
     if (Globals::options[53] && (Globals::status->dlc1Won() & vossExtras)) {
@@ -587,10 +587,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
     }
 
+    uint32_t out = 0;
     result = new Array<Agent *>();
     ArraySetLength(count, *result);
-
-    uint32_t out = 0;
     for (uint32_t i = 0; i < existing->size(); ++i) {
         if (existing->data()[i]->getStation() != station->getIndex() || !keep) {
             continue;
