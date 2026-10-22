@@ -164,7 +164,7 @@ static int gStoryFaces[62][5] = {
     {0, 10, 2, 9, 4},
     {2, 0, 0, 0, 0},
     {4, 2, 0, 2, 2}};
-static int *const gPirateFace = gStoryFaces[60];
+static int gPirateFace[5] = {2, 0, 0, 0, 0};
 static int gPirateGreetingFaceB[5];
 // Face of the story character speaking a given story dialogue.
 static int *const gStoryFaceTable[63] = {
@@ -318,10 +318,9 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
-    // The camera angles are passed as raw 32-bit values; the original keeps
-    // them in core registers for the soft-float ABI.
     int pitchBits = *(const volatile int *) &gHangarCamPitch[race];
-    MatrixSetRotation(nearKey, *(const float *) &pitchBits, yawTable[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
+    MatrixSetRotation(nearKey, *(const float *) &pitchBits, yawTable[race], 0.0f,
+                      (AbyssEngine::AEMath::RotationOrder) 2);
     Matrix farKey;
     MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1],
@@ -2191,15 +2190,15 @@ void ModStation::OnUpdate() {
                     textY = scrolled;
                 }
             }
-            if (this->field_0xb8 > 0) {
-                this->field_0xb8 -= this->dt;
-            } else {
+            if (this->field_0xb8 <= 0) {
                 textY += (float) this->dt * -0.03f;
                 textPos.y = textY;
                 this->scrollBox->setPosition(
                     (int) textPos.x,
                     (int) (textY + (float) Globals::Canvas->GetImage2DHeight(this->field_0x5c) +
                            (float) (Globals::h / 2)));
+            } else {
+                this->field_0xb8 -= this->dt;
             }
         }
         if (this->field_0xb4 >= 136001) {
@@ -2267,19 +2266,14 @@ void ModStation::OnUpdate() {
             Globals::status->getCurrentCampaignMission() <= 151) {
             int stationIndex = Globals::status->getStation()->getIndex();
             int visitBit;
-            switch (stationIndex) {
-            case 66:
+            if (stationIndex == 66) {
                 visitBit = 2;
-                break;
-            case 9:
-                visitBit = 4;
-                break;
-            case 55:
+            } else if (stationIndex == 55) {
                 visitBit = 1;
-                break;
-            default:
+            } else if (stationIndex == 9) {
+                visitBit = 4;
+            } else {
                 visitBit = 0;
-                break;
             }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
@@ -2619,7 +2613,7 @@ void ModStation::OnRender2D() {
     } else {
         Globals::layout->drawFooterStation();
         {
-            Globals::layout->drawHeader(Globals::status->getStation()->getName() +
+            Globals::layout->drawHeader(String(Globals::status->getStation()->getName(), false) +
                                         (Globals::status->getStation()->getIndex() == 101
                                              ? String("", false)
                                              : String(" ", false) + *Globals::gameText->getText(136)));
@@ -2663,9 +2657,8 @@ void ModStation::OnRender2D() {
                     Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                     Globals::layout->field_0x4 * 2 + Globals::layout->field_0x2c_rowHeight * 6,
                     false);
-            Array<TouchButton *> *buttons = (Array<TouchButton *> *) (intptr_t) this->buttonRow;
             for (unsigned i = 0; i < 5; i++)
-                (*buttons)[i]->draw();
+                (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]->draw();
             this->buttonLaunch->draw();
             this->buttonCredits->draw();
             if (Globals::status->getStation()->getIndex() != 101 && Globals::status->getStation()->getIndex() != 108 &&
