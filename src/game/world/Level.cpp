@@ -762,28 +762,6 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             }
             break;
         }
-        case ITEM_SORT_AUTO_CANNON:
-        case ITEM_SORT_SCATTER_GUN:
-            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
-                          Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = kind;
-            gun->setPlayerGun(true);
-            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
-            gun->setErrorMagnitudePercentage(2);
-            break;
-        case ITEM_SORT_ROCKET:
-        case ITEM_SORT_MISSILE:
-        case ITEM_SORT_CLUSTER_MISSILE:
-            gun = new Gun(owner, dmg, kind == ITEM_SORT_CLUSTER_MISSILE ? idx - 211 : 5, hp, cool, rate, (float) color,
-                          Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = kind;
-            gun->setPlayerGun(true);
-            weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
-                                   kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
@@ -797,6 +775,28 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
         }
+        case ITEM_SORT_ROCKET:
+        case ITEM_SORT_MISSILE:
+        case ITEM_SORT_CLUSTER_MISSILE:
+            gun = new Gun(owner, dmg, kind == ITEM_SORT_CLUSTER_MISSILE ? idx - 211 : 5, hp, cool, rate, (float) color,
+                          Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
+                                   kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        case ITEM_SORT_AUTO_CANNON:
+        case ITEM_SORT_SCATTER_GUN:
+            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+                          Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            gun->setErrorMagnitudePercentage(2);
+            break;
         case ITEM_SORT_TURRET: {
             float z;
             float x;
@@ -826,6 +826,14 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             break;
         }
+        case ITEM_SORT_MINE:
+            gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 11;
+            gun->setPlayerGun(true);
+            weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
         case ITEM_SORT_PLASMA_COLLECTOR: {
             float z;
             float x;
@@ -850,14 +858,6 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             break;
         }
-        case ITEM_SORT_MINE:
-            gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 11;
-            gun->setPlayerGun(true);
-            weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
         case ITEM_SORT_SENTRY_GUN:
             gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
