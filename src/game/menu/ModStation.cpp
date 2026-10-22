@@ -1859,195 +1859,200 @@ void ModStation::OnKeyPress(long long key, long long) {
             checkMedals();
         return;
     }
-    unsigned char menuOpen = this->flag_0x61;
-    unsigned char dlcOpen = this->flag_0x62;
-    if (menuOpen && !dlcOpen) {
-        if (key == 0x4000) {
-            this->buttonState[this->selectedButton] = 0;
-            this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
-            this->buttonState[this->selectedButton] = 1;
-            return;
-        } else if (key == 0x8000) {
-            this->buttonState[this->selectedButton] = 0;
-            this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
-            this->buttonState[this->selectedButton] = 1;
-            return;
-        } else if (key == 0x20000) {
-            return;
-        } else if (key == 0x10000) {
-            switch (this->selectedButton) {
-                case 0:
-                    if (Globals::status->getCurrentCampaignMission() < 5 ||
-                        Globals::status->getCurrentCampaignMission() == 48 ||
-                        Globals::status->getCurrentCampaignMission() == 49 ||
-                        Globals::status->getCurrentCampaignMission() == 56)
-                        goto notAvailable;
-                    if (Globals::status->getStation()->getIndex() == 4 &&
-                        Globals::status->getStation()->stationHasPirateBase()) {
-                        if (this->dialogueWindow == nullptr) {
-                            this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
-                                                                      Globals::gameText->getText(1609),
-                                                                      gStoryFaces[60]);
-                            this->flag_0x69 = 1;
-                            Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
-                            Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
-                                                 0.0f);
-                            delete agent;
+    bool menuOpen = this->flag_0x61;
+    if (menuOpen) {
+        if (!this->flag_0x62) {
+            if (key == 0x10000) {
+                switch (this->selectedButton) {
+                    case 0:
+                        if (Globals::status->getCurrentCampaignMission() < 5 ||
+                            Globals::status->getCurrentCampaignMission() == 48 ||
+                            Globals::status->getCurrentCampaignMission() == 49 ||
+                            Globals::status->getCurrentCampaignMission() == 56)
+                            goto notAvailable;
+                        if (Globals::status->getStation()->getIndex() == 4 &&
+                            Globals::status->getStation()->stationHasPirateBase()) {
+                            if (this->dialogueWindow == nullptr) {
+                                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(432),
+                                                                          Globals::gameText->getText(1609),
+                                                                          gStoryFaces[60]);
+                                this->flag_0x69 = 1;
+                                Agent *agent = new Agent(0, String("", false), 0, 0, 2, true, 0, 0, 0, 0);
+                                Globals::sound->play(Globals::globals->getDialogueSoundId(432, agent), nullptr, nullptr,
+                                                     0.0f);
+                                delete agent;
+                            }
+                            return;
                         }
-                        return;
-                    }
-                    if (this->hangarWindow == nullptr) {
-                        this->hangarWindow = new HangarWindow();
-                        this->hangarWindow->initialize();
-                    }
-                    if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
-                        delete this->hangarWindow;
-                        this->hangarWindow = nullptr;
-                        this->hangarWindow = new HangarWindow();
-                        this->hangarWindow->initialize();
-                        this->spaceLounge->setHangarUpdate(false);
-                    } else if (this->m_pDialogueWindow != nullptr &&
-                               ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
-                        delete this->hangarWindow;
-                        this->hangarWindow = nullptr;
-                        this->hangarWindow = new HangarWindow();
-                        this->hangarWindow->initialize();
-                        ((MissionsWindow *) this->m_pDialogueWindow)->setHangarUpdate(false);
-                    }
-                    for (unsigned i = 0; i < this->hangarWindow->buttons->size(); i++) {
-                        if (i < 10) {
-                            Globals::sub_menu_buttons_x[i] =
-                                (int) (*this->hangarWindow->buttons)[i]->getPosition().x;
-                            Globals::sub_menu_buttons_y[i] =
-                                (int) (*this->hangarWindow->buttons)[i]->getPosition().y;
+                        if (this->hangarWindow == nullptr) {
+                            this->hangarWindow = new HangarWindow();
+                            this->hangarWindow->initialize();
                         }
-                    }
-                    Globals::sub_menu_button_count = this->hangarWindow->buttons->size();
-                    this->field_0xd0 = 0;
-                    {
-                        Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-                        if (cargo != nullptr) {
-                            for (unsigned i = 0; i < cargo->size(); i++) {
-                                if ((*cargo)[i]->getIndex() >= 132 && (*cargo)[i]->getIndex() <= 153)
-                                    this->field_0xd0 += (*cargo)[i]->getAmount();
+                        if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
+                            delete this->hangarWindow;
+                            this->hangarWindow = nullptr;
+                            this->hangarWindow = new HangarWindow();
+                            this->hangarWindow->initialize();
+                            this->spaceLounge->setHangarUpdate(false);
+                        } else if (this->m_pDialogueWindow != nullptr &&
+                                   ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
+                            delete this->hangarWindow;
+                            this->hangarWindow = nullptr;
+                            this->hangarWindow = new HangarWindow();
+                            this->hangarWindow->initialize();
+                            ((MissionsWindow *) this->m_pDialogueWindow)->setHangarUpdate(false);
+                        }
+                        for (unsigned i = 0; i < this->hangarWindow->buttons->size(); i++) {
+                            if (i < 10) {
+                                Globals::sub_menu_buttons_x[i] =
+                                    (int) (*this->hangarWindow->buttons)[i]->getPosition().x;
+                                Globals::sub_menu_buttons_y[i] =
+                                    (int) (*this->hangarWindow->buttons)[i]->getPosition().y;
                             }
                         }
-                    }
-                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 1.0f);
-                    Globals::sound->stop(122);
-                    Globals::sound->play(95, nullptr, nullptr, 0.0f);
-                    this->savedPostEffect =
-                        static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())->IsPostEffectActivated();
-                    this->flag_0x66 = 1;
-                    if (!Globals::hints[8]) {
-                        Globals::hints[8] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(622), false));
-                    }
-                    return;
-                case 1:
-                    if (Globals::status->getCurrentCampaignMission() < 13 ||
-                        Globals::status->getCurrentCampaignMission() == 49)
-                        goto notAvailable;
-                    if (Globals::status->getStation()->getIndex() == 88 &&
-                        Globals::status->getStation()->stationHasPirateBase()) {
-                        if (this->dialogueWindow == nullptr) {
-                            this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(433),
-                                                                      Globals::gameText->getText(1597),
-                                                                      gPirateGreetingFaceB);
-                            this->flag_0x69 = 1;
-                            Agent *agent = new Agent(0, String("", false), 0, 0, 0, true, 0, 0, 0, 0);
-                            Globals::sound->play(Globals::globals->getDialogueSoundId(433, agent), nullptr, nullptr,
-                                                 0.0f);
-                            delete agent;
+                        Globals::sub_menu_button_count = this->hangarWindow->buttons->size();
+                        this->field_0xd0 = 0;
+                        {
+                            Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                            if (cargo != nullptr) {
+                                for (unsigned i = 0; i < cargo->size(); i++) {
+                                    if ((*cargo)[i]->getIndex() >= 132 && (*cargo)[i]->getIndex() <= 153)
+                                        this->field_0xd0 += (*cargo)[i]->getAmount();
+                                }
+                            }
+                        }
+                        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 1.0f);
+                        Globals::sound->stop(122);
+                        Globals::sound->play(95, nullptr, nullptr, 0.0f);
+                        this->savedPostEffect =
+                            static_cast<AbyssEngine::Engine *>(Globals::appManager->GetEngine())->IsPostEffectActivated();
+                        this->flag_0x66 = 1;
+                        if (!Globals::hints[8]) {
+                            Globals::hints[8] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(622), false));
                         }
                         return;
-                    }
-                    if (this->spaceLounge != nullptr)
-                        this->spaceLounge->init();
-                    else
-                        this->spaceLounge = new SpaceLounge();
-                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 2.0f);
-                    Globals::sound->stop(122);
-                    Globals::sound->play(108, nullptr, nullptr, 0.0f);
-                    this->flag_0x65 = 1;
-                    if (!Globals::hints[13]) {
-                        Globals::hints[13] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(627), false));
-                    }
-                    return;
-                case 2:
-                    if (Globals::status->getCurrentCampaignMission() < 9 ||
-                        Globals::status->getCurrentCampaignMission() == 48 ||
-                        Globals::status->getCurrentCampaignMission() == 49)
-                        goto notAvailable;
-                    if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad()) {
-                        this->choiceWindow->set(*Globals::gameText->getText(204));
-                        this->flag_0x63 = 1;
+                    case 1:
+                        if (Globals::status->getCurrentCampaignMission() < 13 ||
+                            Globals::status->getCurrentCampaignMission() == 49)
+                            goto notAvailable;
+                        if (Globals::status->getStation()->getIndex() == 88 &&
+                            Globals::status->getStation()->stationHasPirateBase()) {
+                            if (this->dialogueWindow == nullptr) {
+                                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(433),
+                                                                          Globals::gameText->getText(1597),
+                                                                          gPirateGreetingFaceB);
+                                this->flag_0x69 = 1;
+                                Agent *agent = new Agent(0, String("", false), 0, 0, 0, true, 0, 0, 0, 0);
+                                Globals::sound->play(Globals::globals->getDialogueSoundId(433, agent), nullptr, nullptr,
+                                                     0.0f);
+                                delete agent;
+                            }
+                            return;
+                        }
+                        if (this->spaceLounge != nullptr)
+                            this->spaceLounge->init();
+                        else
+                            this->spaceLounge = new SpaceLounge();
+                        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 2.0f);
+                        Globals::sound->stop(122);
+                        Globals::sound->play(108, nullptr, nullptr, 0.0f);
+                        this->flag_0x65 = 1;
+                        if (!Globals::hints[13]) {
+                            Globals::hints[13] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(627), false));
+                        }
                         return;
-                    }
-                    if (Globals::status->getCurrentCampaignMission() == 77 &&
-                        Globals::status->getShip()->getIndex() != 37) {
-                        this->choiceWindow->set(*Globals::gameText->getText(326));
-                        this->flag_0x63 = 1;
+                    case 2:
+                        if (Globals::status->getCurrentCampaignMission() < 9 ||
+                            Globals::status->getCurrentCampaignMission() == 48 ||
+                            Globals::status->getCurrentCampaignMission() == 49)
+                            goto notAvailable;
+                        if (Globals::status->getShip()->getCurrentLoad() > Globals::status->getShip()->getMaxLoad()) {
+                            this->choiceWindow->set(*Globals::gameText->getText(204));
+                            this->flag_0x63 = 1;
+                            return;
+                        }
+                        if (Globals::status->getCurrentCampaignMission() == 77 &&
+                            Globals::status->getShip()->getIndex() != 37) {
+                            this->choiceWindow->set(*Globals::gameText->getText(326));
+                            this->flag_0x63 = 1;
+                            return;
+                        }
+                        if (this->starMap != nullptr)
+                            this->starMap->init(false, nullptr, false, -1);
+                        else
+                            this->starMap = new StarMap(false, nullptr, false, -1);
+                        if (Globals::status->getShip()->hasEquipment(85, 1) ||
+                            Globals::status->getShip()->hasJumpDriveIntegrated())
+                            this->starMap->setJumpMapMode(false, true);
+                        this->flag_0x67 = 1;
+                        Globals::sound->stop(122);
+                        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                        if (!Globals::hints[14] && Globals::status->getCurrentCampaignMission() >= 16) {
+                            Globals::hints[14] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(628), false));
+                        } else if (!Globals::hints[15] && Globals::status->getCurrentCampaignMission() <= 15) {
+                            Globals::hints[15] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(631), false));
+                        }
                         return;
-                    }
-                    if (this->starMap != nullptr)
-                        this->starMap->init(false, nullptr, false, -1);
-                    else
-                        this->starMap = new StarMap(false, nullptr, false, -1);
-                    if (Globals::status->getShip()->hasEquipment(85, 1) ||
-                        Globals::status->getShip()->hasJumpDriveIntegrated())
-                        this->starMap->setJumpMapMode(false, true);
-                    this->flag_0x67 = 1;
-                    Globals::sound->stop(122);
-                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
-                    if (!Globals::hints[14] && Globals::status->getCurrentCampaignMission() >= 16) {
-                        Globals::hints[14] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(628), false));
-                    } else if (!Globals::hints[15] && Globals::status->getCurrentCampaignMission() <= 15) {
-                        Globals::hints[15] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(631), false));
-                    }
-                    return;
-                case 3:
-                    if (Globals::status->getCurrentCampaignMission() <= 8)
-                        goto notAvailable;
-                    if (this->m_pDialogueWindow != nullptr)
-                        ((MissionsWindow *) this->m_pDialogueWindow)->init();
-                    else
-                        this->m_pDialogueWindow = (DialogueWindow *) new MissionsWindow();
-                    this->flag_0x64 = 1;
-                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
-                    if (!Globals::hints[19]) {
-                        Globals::hints[19] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
-                    }
-                    return;
-                case 4:
-                    if (this->statusWindow == nullptr)
-                        this->statusWindow = new StatusWindow();
-                    this->statusWindow->reInit();
-                    this->flag_0x68 = 1;
-                    Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
-                    if (!(Globals::iPad | Globals::hints[24])) {
-                        Globals::hints[24] = 1;
-                        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(640), false));
-                    }
-                    return;
-                default:
-                    return;
+                    case 3:
+                        if (Globals::status->getCurrentCampaignMission() <= 8)
+                            goto notAvailable;
+                        if (this->m_pDialogueWindow != nullptr)
+                            ((MissionsWindow *) this->m_pDialogueWindow)->init();
+                        else
+                            this->m_pDialogueWindow = (DialogueWindow *) new MissionsWindow();
+                        this->flag_0x64 = 1;
+                        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                        if (!Globals::hints[19]) {
+                            Globals::hints[19] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
+                        }
+                        return;
+                    case 4:
+                        if (this->statusWindow == nullptr)
+                            this->statusWindow = new StatusWindow();
+                        this->statusWindow->reInit();
+                        this->flag_0x68 = 1;
+                        Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.6f);
+                        if (!(Globals::iPad | Globals::hints[24])) {
+                            Globals::hints[24] = 1;
+                            Globals::layout->initHelpWindow(String(*Globals::gameText->getText(640), false));
+                        }
+                        return;
+                    default:
+                        return;
+                }
+            notAvailable:
+                this->choiceWindow->set(*Globals::gameText->getText(528));
+                this->flag_0x63 = 1;
+                return;
             }
-        notAvailable:
-            this->choiceWindow->set(*Globals::gameText->getText(528));
-            this->flag_0x63 = 1;
-            return;
+            if (key == 0x20000) {
+                return;
+            }
+            if (key == 0x8000) {
+                this->buttonState[this->selectedButton] = 0;
+                this->selectedButton = this->selectedButton < 4 ? this->selectedButton + 1 : 0;
+                this->buttonState[this->selectedButton] = 1;
+                return;
+            }
+            if (key == 0x4000) {
+                this->buttonState[this->selectedButton] = 0;
+                this->selectedButton = this->selectedButton > 0 ? this->selectedButton - 1 : 4;
+                this->buttonState[this->selectedButton] = 1;
+                return;
+            }
         }
     }
-    if (key == 0x40000 && !dlcOpen) {
+    int dlcClosed = !this->flag_0x62;
+    if (key == 0x40000 && dlcClosed) {
         leaveStation();
         return;
     }
-    if (key == 0x20000 && !dlcOpen)
+    if (key == 0x20000 && dlcClosed)
         this->flag_0x61 = menuOpen ^ 1;
 }
 
@@ -2351,7 +2356,7 @@ afterMissions:
     if (!this->flag_0x100) {
         // Hangar rotation inertia.
         float factor = (float) this->dt * 0.05f;
-        factor = factor < 1.0f ? factor : 1.0f;
+        factor = factor > 1.0f ? 1.0f : factor;
         float &spin = reinterpret_cast<float &>(this->field_0xf8);
         spin = spin * (reinterpret_cast<float &>(this->field_0xf4) * factor);
         if ((spin > 0.0f ? spin : -spin) > 1.0f) {
@@ -2539,7 +2544,8 @@ void ModStation::checkHints() {
 
     if (this->flag_0x69 || this->flag_0x6a || this->flag_0x63)
         return;
-    if (Globals::status->wingmen != nullptr && !this->flag_0xdb && (int) Globals::status->fadeValue <= 0 &&
+    Status *status = Globals::status;
+    if (status->wingmen != nullptr && !this->flag_0xdb && (int) status->fadeValue <= 0 &&
         !Globals::layout->rewardMessageActive) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
@@ -2550,19 +2556,19 @@ void ModStation::checkHints() {
         delete agent;
         this->flag_0xdb = 1;
         this->flag_0x69 = 1;
-        Globals::status->setWingmen(nullptr);
+        status->setWingmen(nullptr);
         return;
     }
     // Pending pirate reward (the freighter rescue pays 20000 credits).
-    if (reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] && !Globals::layout->rewardMessageActive) {
+    if (reinterpret_cast<uint8_t *>(&status->field_f8)[1] && !Globals::layout->rewardMessageActive) {
         delete this->dialogueWindow;
         this->dialogueWindow = nullptr;
         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
                                                   gStoryFaces[60]);
         Globals::sound->play(589, nullptr, nullptr, 0.0f);
         this->flag_0x69 = 1;
-        reinterpret_cast<uint8_t *>(&Globals::status->field_f8)[1] = 0;
-        Globals::status->changeCredits(20000);
+        reinterpret_cast<uint8_t *>(&status->field_f8)[1] = 0;
+        status->changeCredits(20000);
     }
 }
 
