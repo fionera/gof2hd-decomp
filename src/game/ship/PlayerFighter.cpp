@@ -838,9 +838,9 @@ void PlayerFighter::update(int dt) {
         if (this->jumperFlag && this->field_0x12c) {
             this->field_0xf0 += dt;
             if (this->field_0xf0 >= 20000) {
-                this->field_0x12c = false;
                 this->field_0xf0 = 0;
                 this->state = 6;
+                this->field_0x12c = false;
             }
         } else {
             this->field_0xf0 = 0;
@@ -1401,7 +1401,7 @@ void PlayerFighter::update(int dt) {
                         MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
                 this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
                                       MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
-                if (kShipDockRadius[this->type] > (int) VectorLength(this->auxVector - this->getPosition())) {
+                if ((int) VectorLength(this->auxVector - this->getPosition()) < kShipDockRadius[this->type]) {
                     this->setExhaustVisible(false);
                     this->dockTimer = 0;
                     this->passengersMoved = 0;
