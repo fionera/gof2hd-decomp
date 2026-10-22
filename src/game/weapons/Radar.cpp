@@ -76,6 +76,13 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->lockedEnemy = nullptr;
     this->dockNavPtr = nullptr;
     this->field_0x14 = 0;
+    this->field_0x1c = nullptr;
+    this->field_0x20 = 0;
+    this->lockedStation = nullptr;
+    this->field_0x28 = 0;
+    this->field_0x2c = 0;
+    this->field_0x30 = 0;
+    this->players = nullptr;
     this->enabled = 1;
     this->asteroidSlots = nullptr;
     this->labelStrings = nullptr;
@@ -89,13 +96,6 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->field_0x1b4 = 0;
     this->field_0x1b8 = 0;
     this->field_0x1bc = 0;
-    this->field_0x28 = 0;
-    this->field_0x2c = 0;
-    this->field_0x30 = 0;
-    this->players = nullptr;
-    this->field_0x1c = nullptr;
-    this->field_0x20 = 0;
-    this->lockedStation = nullptr;
     this->gasClouds = nullptr;
     this->gasLockTimer = 0;
     this->field_0x14c = 0;
@@ -108,8 +108,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->asteroidLockTimer = 0;
     this->planetLockTimer = 0;
     this->stationLockTimer = 0;
-    this->field_0x54 = 0;
     this->plasmaInRange = 0;
+    this->field_0x54 = 0;
     this->field_0x120 = 0;
     this->onScreen = 0;
     this->field_0x11d = 0;
@@ -128,10 +128,10 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     Globals::Canvas->Image2DCreate(1223, this->field_0x1c4);
     this->imageWidth = Globals::Canvas->GetImage2DWidth(this->field_0x1c4);
     this->imageHeight = Globals::Canvas->GetImage2DHeight(this->field_0x1c4);
-    this->imageWidthSq = this->imageWidth * this->imageWidth;
-    this->imageHeightSq = this->imageHeight * this->imageHeight;
     this->centerX = Globals::w / 2;
     this->centerY = Globals::h / 2;
+    this->imageWidthSq = this->imageWidth * this->imageWidth;
+    this->imageHeightSq = this->imageHeight * this->imageHeight;
     this->weightX = 1.0f / (float) this->imageWidthSq;
     this->weightY = 1.0f / (float) this->imageHeightSq;
 
@@ -236,6 +236,7 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     this->qualitySprite = new Sprite(qualityImage, Globals::layout->field_0xb8,
                                     Globals::layout->field_0xb4);
 
+    int tractorMode = 0;
     Item *scanner = Globals::status->getShip()->getFirstEquipmentOfSort(19);
     Item *radarItem = Globals::status->getShip()->getFirstEquipmentOfSort(17);
     Item *tractor = Globals::status->getShip()->getFirstEquipmentOfSort(13);
@@ -255,21 +256,20 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
         this->hasTractor13 = 1;
         this->tractorAuto = tractor->getAttribute(23) == 1;
         this->field_0x1b4 = tractor->getAttribute(24);
-        this->tractorMode2 = tractor->getAttribute(23) == 2;
+        tractorMode = tractor->getAttribute(23) == 2;
     } else {
         this->field_0x1b4 = 0;
         this->hasTractor13 = 0;
         this->tractorAuto = 0;
-        this->tractorMode2 = 0;
     }
     this->field_0x1bc = 0;
+    this->tractorMode2 = tractorMode;
     this->field_0x1b0 = 1;
     this->enabled = 1;
 
-    int *lockSlots = new int[5];
-    this->asteroidSlots = lockSlots;
+    this->asteroidSlots = new int[5];
     for (int i = 0; i != 5; ++i) {
-        lockSlots[i] = -1;
+        this->asteroidSlots[i] = -1;
     }
     this->field_0x124 = Globals::w / 16;
     this->field_0x128 = Globals::w / 6;
@@ -283,6 +283,8 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
     Item *autoTurret = Globals::status->getShip()->getFirstEquipmentOfSort(37);
     if (autoTurret != nullptr) {
         this->players = new Array<KIPlayer *>();
+        Array<KIPlayer *> *players = this->players;
+        (void) players;
         ArraySetLength(autoTurret->getAttribute(55), *this->players);
     }
 }
