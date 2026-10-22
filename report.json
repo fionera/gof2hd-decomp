@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.34,
+  "avg_match": 99.35,
   "byte_exact": 1342,
-  "linked_exact": 4414,
-  "fuzzy_perfect": 4414,
+  "linked_exact": 4415,
+  "fuzzy_perfect": 4415,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -494,14 +494,6 @@
    "linked": false,
    "osize": 11440,
    "usize": 11484
-  },
-  {
-   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
-   "pct": 77.7,
-   "byte": false,
-   "linked": false,
-   "osize": 440,
-   "usize": 440
   },
   {
    "name": "_ZN8FileRead17loadSystemsBinaryEv",
@@ -9574,6 +9566,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 440,
+   "usize": 440
   },
   {
    "name": "_ZN11AbyssEngine19ImageCreateFromFileEPNS_6EngineEPKcPPNS_5ImageE",
