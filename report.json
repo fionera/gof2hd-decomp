@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.17,
   "byte_exact": 1339,
-  "linked_exact": 4388,
-  "fuzzy_perfect": 4388,
+  "linked_exact": 4389,
+  "fuzzy_perfect": 4389,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -846,14 +846,6 @@
    "linked": false,
    "osize": 186,
    "usize": 182
-  },
-  {
-   "name": "_ZN10GameRecord4loadEv",
-   "pct": 85.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2696,
-   "usize": 2692
   },
   {
    "name": "_ZN3Hud8drawMenuEi",
@@ -3774,6 +3766,14 @@
    "linked": true,
    "osize": 66,
    "usize": 66
+  },
+  {
+   "name": "_ZN10GameRecord4loadEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2696,
+   "usize": 2696
   },
   {
    "name": "_ZN10GameRecordC1Ev",
