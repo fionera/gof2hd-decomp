@@ -1466,11 +1466,12 @@ bool StarMap::OnTouchMove(int x, int y) {
     }
     float rotY = dx * 50.0f;
     float rotX = dy * -50.0f;
-    float pitch = rotX + this->pitch;
-    pitch = pitch > 8192.0f ? 8192.0f : (pitch > -8192.0f ? pitch : -8192.0f);
-    pitch = pitch > -8192.0f ? pitch : -8192.0f;
-    pitch = pitch < 8192.0f ? pitch : 8192.0f;
-    pitch = pitch < 8192.0f ? -8192.0f : 8192.0f;
+    float p = rotX + this->pitch;
+    // Clamp to [-8192, 8192]; this four-select shape is what the original -Oz build emitted.
+    float clamped = p > -8192.0f ? 8192.0f : -8192.0f;
+    clamped = p > 8192.0f ? 8192.0f : clamped;
+    float pitch = p > -8192.0f ? p : clamped;
+    pitch = p > 8192.0f ? clamped : pitch;
     float yaw = (float) ((int) (rotY + this->yaw) % 65536);
     this->touchDeltaX = rotY;
     this->touchDeltaY = rotX;
