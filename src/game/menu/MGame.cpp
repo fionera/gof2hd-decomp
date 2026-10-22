@@ -1797,22 +1797,14 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->pauseOpen = 0;
                     this->pauseSnapshot = 0;
                     resumeSounds();
-                    if (Globals::sound->IsCategoryEnabled(2)) {
-                        if (soundsMuted) {
-                            this->player->PlayEngineSound();
-                            Array<KIPlayer *> *enemies = this->level->getEnemies();
-                            if (enemies != nullptr) {
-                                for (unsigned i = 0; i < enemies->size(); i++) {
-                                    (*enemies)[i]->PlayEngineSound();
-                                }
-                            }
-                        } else {
-                            this->player->ResumeEngineSound();
-                            Array<KIPlayer *> *enemies = this->level->getEnemies();
-                            if (enemies != nullptr) {
-                                for (unsigned i = 0; i < enemies->size(); i++) {
-                                    (*enemies)[i]->ResumeEngineSound();
-                                }
+                    if (!Globals::sound->IsCategoryEnabled(2) && !soundsMuted) {
+                        if (this->player != nullptr) {
+                            this->player->StopEngineSound();
+                        }
+                        Array<KIPlayer *> *enemies = this->level->getEnemies();
+                        if (enemies != nullptr) {
+                            for (unsigned i = 0; i < enemies->size(); i++) {
+                                (*enemies)[i]->StopEngineSound();
                             }
                         }
                     } else if (soundsMuted) {
@@ -1824,13 +1816,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             }
                         }
                     } else {
-                        if (this->player != nullptr) {
-                            this->player->StopEngineSound();
-                        }
+                        this->player->ResumeEngineSound();
                         Array<KIPlayer *> *enemies = this->level->getEnemies();
                         if (enemies != nullptr) {
                             for (unsigned i = 0; i < enemies->size(); i++) {
-                                (*enemies)[i]->StopEngineSound();
+                                (*enemies)[i]->ResumeEngineSound();
                             }
                         }
                     }
@@ -2087,7 +2077,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             wingmanCommand = 2;
         } else if (this->hudTouchFlags & 0x100000) {
             uint8_t &wingmenFollow = reinterpret_cast<uint8_t &>(Globals::status->field_f8);
-            wingmenFollow = !wingmenFollow;
+            wingmenFollow ^= 1;
             wingmanCommand = 0;
         } else if (this->hudTouchFlags & 0x1000) {
             UseKhadorDrive();
