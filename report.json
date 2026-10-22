@@ -720,14 +720,6 @@
    "usize": 704
   },
   {
-   "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
-   "pct": 83.0,
-   "byte": false,
-   "linked": false,
-   "osize": 864,
-   "usize": 860
-  },
-  {
    "name": "_ZN6Status13departStationEP7Station",
    "pct": 83.8,
    "byte": false,
@@ -766,6 +758,14 @@
    "linked": false,
    "osize": 186,
    "usize": 182
+  },
+  {
+   "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
+   "pct": 84.7,
+   "byte": false,
+   "linked": false,
+   "osize": 864,
+   "usize": 860
   },
   {
    "name": "_ZN3Hud8drawMenuEi",
