@@ -534,7 +534,7 @@ void PlayerFighter::update(int dt) {
     }
 
     // bounty targets switch between their primary and secondary weapons every 20 s
-    if (this->field_0x42) {
+    if (__builtin_expect(this->field_0x42, 1)) { // lint: arm_builtin
         this->gunSwitchTimer += dt;
         if (this->gunSwitchTimer > 20000) {
             this->gunSwitchTimer = 0;
@@ -631,7 +631,7 @@ void PlayerFighter::update(int dt) {
             if (!this->targetIsActive) {
                 this->field_0x38 = -1;
             } else if (this->field_0x38 >= 0 && !(*enemies)[this->field_0x38]->isActive()) {
-                this->targetIsActive = false;
+                this->targetIsActive = 0;
             }
 
             this->targetPlayer = nullptr;
@@ -640,7 +640,7 @@ void PlayerFighter::update(int dt) {
                 this->behaviourChangeTick = 0;
                 // occasionally pick a random enemy in sight
                 if (Globals::rnd->nextInt(100) < 30 && enemies->size() > 1) {
-                    this->targetIsActive = false;
+                    this->targetIsActive = 0;
                     for (int i = 0; i < 5 && !this->targetIsActive; ++i) {
                         this->field_0x38 = Globals::rnd->nextInt(enemies->size());
                         if (!(*enemies)[this->field_0x38]->isActive()) {
@@ -654,7 +654,7 @@ void PlayerFighter::update(int dt) {
                              this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
                              this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
                              this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                            this->targetIsActive = true;
+                            this->targetIsActive = 1;
                             break;
                         }
                     }
@@ -676,19 +676,24 @@ void PlayerFighter::update(int dt) {
                         }
                     }
                 }
-                if ((*enemies)[this->field_0x38]->isActive() && !(*enemies)[this->field_0x38]->isDead()) {
-                    this->tempVector = (*enemies)[this->field_0x38]->getPosition();
-                    if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
-                          this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
-                          this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
-                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
-                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
-                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                        this->targetIsActive = false;
+                if ((*enemies)[this->field_0x38]->isActive()) {
+                    if (__builtin_expect(!(*enemies)[this->field_0x38]->isDead(), 0)) { // lint: arm_builtin
+                        this->tempVector = (*enemies)[this->field_0x38]->getPosition();
+                        if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                              this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                              this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                              this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                              this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                              this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
+                            this->targetIsActive = 0;
+                            this->field_0x38 = -1;
+                        }
+                    } else {
+                        this->targetIsActive = 0;
                         this->field_0x38 = -1;
                     }
                 } else {
-                    this->targetIsActive = false;
+                    this->targetIsActive = 0;
                     this->field_0x38 = -1;
                 }
             } else if (!this->targetIsActive) {
@@ -705,7 +710,7 @@ void PlayerFighter::update(int dt) {
                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                        this->targetIsActive = true;
+                        this->targetIsActive = 1;
                         this->field_0x38 = i;
                         break;
                     }
@@ -714,7 +719,7 @@ void PlayerFighter::update(int dt) {
 
             // a friendly fighter never targets the ego ship (enemy 0)
             if (!this->player->enemyFlagsLo && this->field_0x38 == 0) {
-                this->targetIsActive = false;
+                this->targetIsActive = 0;
                 this->field_0x38 = 1;
             }
             if (!(this->wingmanFlag && this->field_0xe4 == 3) && this->field_0x38 > 0) {
@@ -740,7 +745,7 @@ void PlayerFighter::update(int dt) {
                                   (otherRace == 10 && race != 10) || (otherRace != 10 && race == 10);
                     }
                     if (hostile) {
-                        this->targetIsActive = true;
+                        this->targetIsActive = 1;
                         this->field_0x38 = i;
                         break;
                     }
@@ -1059,7 +1064,7 @@ void PlayerFighter::update(int dt) {
                     if (this->targetIsActive && !this->field_0x12c && this->targetPlayer &&
                         !this->player->doesNeverAttack()) {
                         if (this->targetPlayer->field_5e) {
-                            this->targetIsActive = false;
+                            this->targetIsActive = 0;
                             if (this->isShooting) {
                                 this->player->stopShooting(this->field_0x140);
                                 this->isShooting = false;
@@ -1081,7 +1086,7 @@ void PlayerFighter::update(int dt) {
                                 this->player->shoot(this->field_0x140, (long long) dt, false);
                                 this->isShooting = true;
                             } else {
-                                this->targetIsActive = false;
+                                this->targetIsActive = 0;
                             }
                         }
                     }
