@@ -616,14 +616,6 @@
    "usize": 11484
   },
   {
-   "name": "_ZN7StarMap6updateEi",
-   "pct": 77.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3132,
-   "usize": 3128
-  },
-  {
    "name": "_ZN7StarMap11OnTouchMoveEii",
    "pct": 78.2,
    "byte": false,
@@ -664,6 +656,14 @@
    "usize": 10368
   },
   {
+   "name": "_ZN7StarMap6updateEi",
+   "pct": 79.3,
+   "byte": false,
+   "linked": false,
+   "osize": 3132,
+   "usize": 3160
+  },
+  {
    "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
    "pct": 79.7,
    "byte": false,
@@ -689,7 +689,7 @@
   },
   {
    "name": "_ZN7StarMap4initEbP7Missionbi",
-   "pct": 81.0,
+   "pct": 81.4,
    "byte": false,
    "linked": false,
    "osize": 2220,
@@ -817,7 +817,7 @@
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 88.6,
+   "pct": 88.7,
    "byte": false,
    "linked": false,
    "osize": 3488,

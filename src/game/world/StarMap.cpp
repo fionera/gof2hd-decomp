@@ -306,8 +306,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         delete reader;
     }
     if (param3) {
-        this->lastSelectedSystem = -1;
         this->selectedSystem = -1;
+        this->lastSelectedSystem = -1;
     }
 
     this->showKey = 0;
@@ -322,8 +322,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->pathFinder = new SystemPathFinder();
 
     if (jumpMapMode && this->mode == 0) {
-        this->targetSystem = -1;
         this->selectedSystem = -1;
+        this->targetSystem = -1;
         if (!mission->isEmpty() && (mission->isVisible() || mission->getType() == 14) &&
             (this->mode == 3 || ((SolarSystem *) Globals::status->getSystem())->getRoutes() != 0)) {
             for (uint32_t i = 0; i < this->systems->size(); i++) {
@@ -333,8 +333,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
                     if (mission->getTargetStation() == (*(Array<int> *) (*this->systems)[i]->getStations())[j]) {
                         this->targetSystem = i;
                         if (this->mode == 3) {
-                            this->lastSelectedStation = j;
                             this->selectedStation = j;
+                            this->lastSelectedStation = j;
                             this->stationCenterAnim = 1;
                         }
                         break;
@@ -783,9 +783,9 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
             !(Globals::status->getCurrentCampaignMission() >= 148 && Globals::status->getCurrentCampaignMission() < 152) &&
             !(Globals::status->getCurrentCampaignMission() == 59 &&
               (stationMode ? (*this->stations)[index]->getIndex() == 101 : (*this->systems)[index]->getIndex() == 23))) {
-            if ((stationMode ? (*this->stations)[index]->getIndex() == campaign->getTargetStation()
-                             : (int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1) ||
-                targeted) {
+            bool target = stationMode ? (*this->stations)[index]->getIndex() == campaign->getTargetStation()
+                                      : (int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1;
+            if (targeted || target) {
                 this->iconBuffer[1] = this->keyImageWanted;
             } else if (Globals::status->getCurrentCampaignMission() >= 33 &&
                        (stationMode ? (*this->stations)[index]->getIndex() == Globals::status->field_80
@@ -1267,16 +1267,12 @@ void StarMap::update(int dt) {
             int target = 0x8000 - this->stationAngles[this->selectedStation];
             int pitch = (int) this->pitch;
             int yaw = (int) this->yaw;
-            int pitchDiff = -3096 - pitch;
-            if (pitchDiff < 0)
-                pitchDiff = -pitchDiff;
+            int pitchDiff = STARMAP_ABS(pitch + 3096);
             int yawDiff = yaw - target;
             if (yawDiff < 0)
                 yawDiff = -yawDiff;
-            float yawStep;
-            if (target <= yaw)
-                yawStep = (float) (yaw - target) * -0.25f;
-            else
+            float yawStep = (float) (yaw - target) * -0.25f;
+            if (target > yaw)
                 yawStep = (float) (target - yaw) * 0.25f;
             this->yaw += yawStep;
             if (yawDiff <= 10)
