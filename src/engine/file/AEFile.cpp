@@ -444,7 +444,12 @@ void AEFile::collectPakFiles(const String &path) {
     }
 
     char *pathChars = path.GetAEChar();
-    if (AEFile::fileInterface->FileEnumInit(pathChars, false) != 0) {
+    // FileEnumInit is declared uint32_t here, but the original returns bool;
+    // call it through a bool-returning member pointer so the branch keeps the
+    // original's 50/50 probability (and hence register allocation).
+    typedef bool (FileInterface::*FileEnumInitFn)(char *, bool);
+    FileEnumInitFn fileEnumInit = reinterpret_cast<FileEnumInitFn>(&FileInterface::FileEnumInit);
+    if ((AEFile::fileInterface->*fileEnumInit)(pathChars, false)) {
         String entry;
         while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy(entry);
