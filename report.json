@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.26,
+  "avg_match": 99.27,
   "byte_exact": 1339,
-  "linked_exact": 4403,
-  "fuzzy_perfect": 4403,
+  "linked_exact": 4404,
+  "fuzzy_perfect": 4404,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -494,14 +494,6 @@
    "linked": false,
    "osize": 3440,
    "usize": 3436
-  },
-  {
-   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKNS_9TransformE",
-   "pct": 74.3,
-   "byte": false,
-   "linked": false,
-   "osize": 208,
-   "usize": 212
   },
   {
    "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
@@ -10614,6 +10606,14 @@
    "linked": true,
    "osize": 50,
    "usize": 50
+  },
+  {
+   "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKNS_9TransformE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 208,
+   "usize": 208
   },
   {
    "name": "_ZN11AbyssEngine6AEMath7BSphere5MergeERKS1_",
