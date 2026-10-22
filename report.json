@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.3,
+  "avg_match": 99.31,
   "byte_exact": 1339,
-  "linked_exact": 4409,
-  "fuzzy_perfect": 4409,
+  "linked_exact": 4410,
+  "fuzzy_perfect": 4410,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -382,14 +382,6 @@
    "linked": false,
    "osize": 608,
    "usize": 616
-  },
-  {
-   "name": "_ZN11AbyssEngine13MeshIntersectEffPNS_4MeshE",
-   "pct": 68.6,
-   "byte": false,
-   "linked": false,
-   "osize": 680,
-   "usize": 688
   },
   {
    "name": "_ZN5Level10assignGunsEv",
@@ -7678,6 +7670,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN11AbyssEngine13MeshIntersectEffPNS_4MeshE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 680,
+   "usize": 680
   },
   {
    "name": "_ZN11AbyssEngine13SandboxShader11SetInActiveEv",
