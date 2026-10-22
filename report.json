@@ -440,14 +440,6 @@
    "usize": 1780
   },
   {
-   "name": "_ZN12StatusWindow4drawEv",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 6280,
-   "usize": 6308
-  },
-  {
    "name": "_ZN13PlayerStationC1EP7Station",
    "pct": 74.9,
    "byte": false,
@@ -470,6 +462,14 @@
    "linked": false,
    "osize": 2252,
    "usize": 2228
+  },
+  {
+   "name": "_ZN12StatusWindow4drawEv",
+   "pct": 75.6,
+   "byte": false,
+   "linked": false,
+   "osize": 6280,
+   "usize": 6316
   },
   {
    "name": "_ZN10StarSystemC1Ei",

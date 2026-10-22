@@ -405,7 +405,7 @@ void StatusWindow::draw() {
         int emblemY = textY - (this->charImageHeight >> 1) - (this->standingBarHeight >> 1);
         Globals::Canvas->DrawImage2D(this->standingEmblemImage, emblemX, emblemY, 0x11, 0x14);
         float rate = ((Standing *) (intptr_t) Globals::status->getStanding())->getStandingRate(0);
-        Globals::Canvas->DrawRegion2D(this->standingBarImage, 0, 0, (int) -(rate * (float) this->standingBarWidth),
+        Globals::Canvas->DrawRegion2D(this->standingBarImage, 0, 0, (int) (-rate * (float) this->standingBarWidth),
                                       this->standingBarHeight, 0.0f, 0, 0, emblemX, emblemY);
         Globals::Canvas->DrawImage2D(this->standingFrameImage,
                                      (int) ((float) emblemX + -rate * (float) this->standingBarWidth),
@@ -414,7 +414,7 @@ void StatusWindow::draw() {
                   Globals::layout->field_0x2c_rowHeight * 2;
         Globals::Canvas->DrawImage2D(this->standingEmblemImage, emblemX, emblemY, 0x11, 0x14);
         rate = ((Standing *) (intptr_t) Globals::status->getStanding())->getStandingRate(1);
-        Globals::Canvas->DrawRegion2D(this->standingBarImage, 0, 0, (int) -(rate * (float) this->standingBarWidth),
+        Globals::Canvas->DrawRegion2D(this->standingBarImage, 0, 0, (int) (-rate * (float) this->standingBarWidth),
                                       this->standingBarHeight, 0.0f, 0, 0, emblemX, emblemY);
         Globals::Canvas->DrawImage2D(this->standingFrameImage,
                                      (int) ((float) emblemX + -rate * (float) this->standingBarWidth),
