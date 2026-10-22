@@ -317,12 +317,15 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
-    MatrixSetRotation(nearKey, gHangarCamPitch[race], yawTable[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
+    // The camera angles are passed as raw 32-bit values; the original keeps
+    // them in core registers for the soft-float ABI.
+    int pitchBits = *(const volatile int *) &gHangarCamPitch[race];
+    MatrixSetRotation(nearKey, *(const float *) &pitchBits, yawTable[race], 0.0f, (AbyssEngine::AEMath::RotationOrder) 2);
     Matrix farKey;
     MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2]);
-    MatrixSetRotation(farKey, gHangarCamPitch[race], (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
+    MatrixSetRotation(farKey, *(const float *) &pitchBits, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     this->cameraTween = new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
     Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), nearKey);
