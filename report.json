@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.26,
   "byte_exact": 1339,
-  "linked_exact": 4402,
-  "fuzzy_perfect": 4402,
+  "linked_exact": 4403,
+  "fuzzy_perfect": 4403,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -462,14 +462,6 @@
    "linked": false,
    "osize": 1680,
    "usize": 1648
-  },
-  {
-   "name": "_Z10keyPressedPN11AbyssEngine6EngineEi",
-   "pct": 72.8,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 704
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
@@ -1606,6 +1598,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_Z10keyPressedPN11AbyssEngine6EngineEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 708,
+   "usize": 708
   },
   {
    "name": "_Z11ArrayRemoveIP10AEGeometryEvT_R5ArrayIS2_E",

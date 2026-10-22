@@ -254,15 +254,16 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
     const int progress = g_input.comboProgress;
     if (key == 14) {
         switch (progress) {
+            default:
+                g_input.comboProgress = 1; // restart the sequence
+                break;
             case 4:
                 g_input.comboProgress = 5;
                 break;
             case 6:
                 g_input.comboProgress = 7;
                 break;
-            default:
-                if (progress != 9)
-                    g_input.comboProgress = 1; // restart the sequence
+            case 9:
                 break;
         }
     } else if (key == 0x40000000 && progress == 1) {
@@ -275,7 +276,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
         g_input.comboProgress = 6;
     } else if (key == 5 && progress == 7) {
         g_input.comboProgress = 8;
-    } else if (progress == 8 && key == 5) {
+    } else if (progress == 8 && __builtin_expect(key == 5, 1)) { // lint: arm_builtin (keeps progress compare first)
         g_input.comboProgress = 9;
     } else if (progress != 9) {
         g_input.comboProgress = 0;
