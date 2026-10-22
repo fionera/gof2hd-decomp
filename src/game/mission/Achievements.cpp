@@ -119,8 +119,9 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
 
     for (int m = 0; m < 45; ++m) {
         int got = 0;
+        int *pgot = &got;
         if (this->medals[m] == 1) {
-            this->newMedals[m] = got;
+            this->newMedals[m] = *pgot;
             continue;
         }
         for (int tier = 0; tier <= 2; ++tier) {
@@ -141,13 +142,25 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                     // Number of different ores / cores / ... collected.
                     Array<bool> *found = m == 2 ? Globals::status->field_94
                                                 : m == 3 ? Globals::status->field_98 : Globals::status->field_ac;
-                    unsigned k = 0;
                     int cnt = 0;
-                    for (; k < found->size(); ++k)
+                    for (unsigned k = 0; k < found->size(); ++k)
                         cnt += (int) (*found)[k];
                     reached = cnt >= req;
                     break;
                 }
+                case 12: {
+                    // 22 visited-system flags.
+                    bool *visited = Globals::status->field_b4->data_;
+                    int k = 0;
+                    int cnt = 0;
+                    for (; k < 22; k++)
+                        cnt += (int) visited[k];
+                    reached = cnt >= req;
+                    break;
+                }
+                case 10:
+                    reached = Globals::status->field_b0 > req;
+                    break;
                 case 4:
                     reached = Globals::status->getKills() >= req;
                     break;
@@ -163,22 +176,9 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                 case 8:
                     reached = Globals::status->field_a8 > req;
                     break;
-                case 10:
-                    reached = Globals::status->field_b0 > req;
-                    break;
                 case 11:
                     reached = Globals::status->getStationsVisited() >= req;
                     break;
-                case 12: {
-                    // 22 visited-system flags.
-                    bool *visited = Globals::status->field_b4->data_;
-                    int k = 0;
-                    int cnt = 0;
-                    for (; k < 22; k++)
-                        cnt += (int) visited[k];
-                    reached = cnt >= req;
-                    break;
-                }
                 case 13: {
                     unsigned k = 0;
                     int cnt = 0;

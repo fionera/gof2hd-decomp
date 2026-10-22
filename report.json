@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.17,
+  "avg_match": 99.18,
   "byte_exact": 1339,
-  "linked_exact": 4389,
-  "fuzzy_perfect": 4389,
+  "linked_exact": 4390,
+  "fuzzy_perfect": 4390,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -774,14 +774,6 @@
    "linked": false,
    "osize": 1476,
    "usize": 1488
-  },
-  {
-   "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
-   "pct": 82.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1168,
-   "usize": 1172
   },
   {
    "name": "_ZN6Status15calcCargoPricesEv",
@@ -14342,6 +14334,14 @@
    "linked": true,
    "osize": 34,
    "usize": 34
+  },
+  {
+   "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1168,
+   "usize": 1168
   },
   {
    "name": "_ZN12Achievements16gotAllGoldMedalsEv",
