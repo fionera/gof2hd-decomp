@@ -152,31 +152,28 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { //
 bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->zipFile != 0)
         return zip_fread(this->zipFile, buf, n) == n;
-    if (this->file != 0)
-        return fread(buf, 1, n, this->file) == n;
-    if (this->jniStream == 0)
-        return false;
 
-    jbyteArray array = env->NewByteArray(n);
-    unsigned int got = env->CallIntMethod(this->jniStream, methodRead, array);
-    bool ok;
-    if (env->ExceptionOccurred() != 0) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        ok = false;
-    } else if (got != n) {
-        ok = false;
-    } else {
-        env->GetByteArrayRegion(array, 0, n, static_cast<jbyte *>(buf));
-        // Leftover hex-dump builder from a debug log; the text is never used.
-        String dump;
-        for (uint32_t i = 0; i < n; ++i) {
-            dump += String(" ");
-            dump += String(static_cast<char>(static_cast<unsigned char *>(buf)[i]));
+    uint32_t ok = 0;
+    if (this->file != 0) {
+        ok = fread(buf, 1, n, this->file) == n;
+    } else if (this->jniStream != 0) {
+        jbyteArray array = env->NewByteArray(n);
+        unsigned int got = env->CallIntMethod(this->jniStream, methodRead, array);
+        if (env->ExceptionOccurred() != 0) {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        } else if (got == n) {
+            env->GetByteArrayRegion(array, 0, n, static_cast<jbyte *>(buf));
+            // Leftover hex-dump builder from a debug log; the text is never used.
+            String dump;
+            for (uint32_t i = 0; i < n; ++i) {
+                dump += String(" ");
+                dump += String(static_cast<char>(static_cast<unsigned char *>(buf)[i]));
+            }
+            ok = 1;
         }
-        ok = true;
+        env->DeleteLocalRef(array);
     }
-    env->DeleteLocalRef(array);
     return ok;
 }
 
