@@ -658,10 +658,12 @@ void PlayerFighter::update(int dt) {
                             break;
                         }
                     }
+                    if (this->targetIsActive) {
+                        goto targetSelected;
+                    }
                 }
-                if (!this->targetIsActive) {
-                    this->field_0x38 = 0;
-                }
+                this->field_0x38 = 0;
+            targetSelected:
                 // wingman ordered to attack a specific ship
                 if (this->wingmanFlag && this->field_0xe4 == 3 && this->wingmanTarget) {
                     if (this->wingmanTarget->isDead()) {
