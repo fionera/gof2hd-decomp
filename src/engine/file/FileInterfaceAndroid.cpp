@@ -117,16 +117,20 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
 
     FileInterfaceAndroid *opened = 0;
     if (apkFile != 0) {
-        opened = new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
+        FileInterfaceAndroid *p = new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
+        opened = p;
     } else if (zipFile != 0) {
-        opened = new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
+        FileInterfaceAndroid *q = new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
+        opened = q;
     } else if (this->appRootDir != 0) {
         // Not packaged: fall back to the unpacked data directory.
         String dir(this->appRootDir);
         String full = dir + String(relative, false);
         FILE *f = fopen(full.GetAEChar(), "rb");
-        if (f != 0)
-            opened = new FileInterfaceAndroid(f, false);
+        if (f != 0) {
+            FileInterfaceAndroid *p = new FileInterfaceAndroid(f, false);
+            opened = p;
+        }
     }
     return opened;
 }
