@@ -200,14 +200,6 @@
    "usize": 2452
   },
   {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 54.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8244
-  },
-  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 55.0,
    "byte": false,
@@ -222,6 +214,14 @@
    "linked": false,
    "osize": 9700,
    "usize": 9648
+  },
+  {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 55.8,
+   "byte": false,
+   "linked": false,
+   "osize": 8132,
+   "usize": 8244
   },
   {
    "name": "_ZN10ModStation10OnTouchEndEiiPv",

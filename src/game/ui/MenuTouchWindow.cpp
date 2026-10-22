@@ -3233,19 +3233,22 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 if (this->field_0x1da)
                     return 0;
-                if (this->saveDialogShowing) {
-                    int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 0) {
+                bool saveDlg = this->saveDialogShowing;
+                int r = this->choiceWindow->OnTouchEnd(x, y);
+                if (saveDlg) {
+                    if (r == 1) {
+                        this->saveDialogShowing = 0;
+                    } else if (r == 0) {
                         this->saveGame(this->selectedRow);
                         this->saveDialogShowing = 0;
-                    } else if (r == 1) {
-                        this->saveDialogShowing = 0;
-                        this->messageShowing = 0;
+                        return 0;
+                    } else {
+                        return 0;
                     }
+                } else if (r != 0) {
                     return 0;
                 }
-                if (this->choiceWindow->OnTouchEnd(x, y) == 0)
-                    this->messageShowing = 0;
+                this->messageShowing = 0;
                 return 0;
             }
             if (this->okButton->OnTouchEnd(x, y)) {
@@ -3272,11 +3275,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 if (this->field_0x1da)
                     return 0;
-                if (this->choiceWindow->OnTouchEnd(x, y) != 0 || !this->choiceWindow->hasChoice() ||
-                    this->loadGame(this->selectedRow) != 0)
-                    this->messageShowing = 0;
-                else
+                if (this->field_0x1da ||
+                    (this->choiceWindow->OnTouchEnd(x, y) == 0 && this->choiceWindow->hasChoice() &&
+                     this->loadGame(this->selectedRow) == 0))
                     return 0;
+                this->messageShowing = 0;
             }
             if (this->okButton->OnTouchEnd(x, y)) {
                 if ((*this->previewRecords)[this->selectedRow] == 0)
@@ -3336,8 +3339,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     int r = this->choiceWindow->OnTouchEnd(x, y);
                     if (r == 1 || r == 0)
                         Globals::globals->reportLeaderboards();
-                    this->leaderboardDialogShowing = 0;
                     this->messageShowing = 0;
+                    this->leaderboardDialogShowing = 0;
                 }
                 if (this->dlcMessageShowing) {
                     if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
