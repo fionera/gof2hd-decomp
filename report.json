@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.16,
+  "avg_match": 99.17,
   "byte_exact": 1339,
-  "linked_exact": 4387,
-  "fuzzy_perfect": 4387,
+  "linked_exact": 4388,
+  "fuzzy_perfect": 4388,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -758,14 +758,6 @@
    "linked": false,
    "osize": 2220,
    "usize": 2228
-  },
-  {
-   "name": "_ZN6Status17activateNewWantedEv",
-   "pct": 81.2,
-   "byte": false,
-   "linked": false,
-   "osize": 960,
-   "usize": 956
   },
   {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
@@ -27366,6 +27358,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN6Status17activateNewWantedEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 960,
+   "usize": 960
   },
   {
    "name": "_ZN6Status17addPendingProductEP9BluePrint",

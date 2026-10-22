@@ -809,18 +809,17 @@ int Status::activateNewWanted() {
     if (wanted == 0) {
         return 0;
     }
-    SystemPathFinder *pathFinder = 0;
-    Array<SolarSystem *> *systems = 0;
     int activated = 0;
+    Array<SolarSystem *> *systems = 0;
+    SystemPathFinder *pathFinder = 0;
     for (unsigned i = 0; i < wanted->size(); i++) {
         Wanted *cur = (*wanted)[i];
         if (cur == 0) {
             continue;
         }
+        unsigned maxJumps = 4;
         unsigned minJumps;
-        unsigned maxJumps;
         if (i < 2) {
-            maxJumps = 4;
             minJumps = 2;
         } else {
             int step = (int) (i - 1) % 6;
@@ -864,10 +863,8 @@ int Status::activateNewWanted() {
             Station *from = Globals::globals->getRandomStation();
             unsigned fromSystem = from->getSystem();
             Array<bool> *visibilities = Globals::status->systemVisibilities;
-            bool visible = false;
-            if (visibilities != 0 && visibilities->size() > fromSystem) {
-                visible = (*visibilities)[fromSystem];
-            }
+            bool visible = visibilities != 0 && visibilities->size() > fromSystem &&
+                           (*visibilities)[fromSystem];
             while ((*systems)[fromSystem]->getRoutes() == 0 || !visible || fromSystem == 27 || fromSystem == 28 ||
                    fromSystem == 25 || fromSystem == 26 || fromSystem == 6) {
                 if (from != 0) {
@@ -875,17 +872,13 @@ int Status::activateNewWanted() {
                 }
                 from = Globals::globals->getRandomStation();
                 fromSystem = from->getSystem();
-                visible = false;
-                if (visibilities != 0 && visibilities->size() > fromSystem) {
-                    visible = (*visibilities)[fromSystem];
-                }
+                visible = visibilities != 0 && visibilities->size() > fromSystem &&
+                          (*visibilities)[fromSystem];
             }
             Station *to = Globals::globals->getRandomStation();
             unsigned toSystem = to->getSystem();
-            visible = false;
-            if (visibilities != 0 && visibilities->size() > toSystem) {
-                visible = (*visibilities)[toSystem];
-            }
+            visible = visibilities != 0 && visibilities->size() > toSystem &&
+                      (*visibilities)[toSystem];
             while ((*systems)[toSystem]->getRoutes() == 0 || !visible || toSystem == 27 || toSystem == 28 ||
                    toSystem == 25 || toSystem == 26 || toSystem == 6 || fromSystem == toSystem) {
                 if (to != 0) {
@@ -893,10 +886,8 @@ int Status::activateNewWanted() {
                 }
                 to = Globals::globals->getRandomStation();
                 toSystem = to->getSystem();
-                visible = false;
-                if (visibilities != 0 && visibilities->size() > toSystem) {
-                    visible = (*visibilities)[toSystem];
-                }
+                visible = visibilities != 0 && visibilities->size() > toSystem &&
+                          (*visibilities)[toSystem];
             }
             cur->setLastSeen(from->getIndex());
             cur->setTravelsTo(to->getIndex());
