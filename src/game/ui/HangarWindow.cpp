@@ -555,7 +555,7 @@ void HangarWindow::render() {
                     }
 
                     Globals::Canvas->SetColor(0xffffffffu);
-                    String name;
+                    String name("");
                     int buttonOffset = 0;
                     if (item->isItem()) {
                         name = *Globals::gameText->getText(item->item->getIndex() + 1274);
@@ -625,7 +625,8 @@ void HangarWindow::render() {
                                         item->item->getBlueprintAmount();
                             }
                             String leftText = String(left) + String("t");
-                            String rightText = (tab == 1
+                            String rightText;
+                            rightText = (tab == 1
                                                     ? String(right)
                                                     : String(right) + String("/") +
                                                       String(this->bluePrint->getTotalAmount(item->item->getIndex()))) +
@@ -744,7 +745,8 @@ void HangarWindow::render() {
                                                      (int) (rate * (float) (this->progressBarWidth - 4))),
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
                             Globals::Canvas->SetColor(0x777777ffu);
-                            String progress = String((int) (rate * 100.0f)) + String("%  (") +
+                            String progress;
+                            progress = String((int) (rate * 100.0f)) + String("%  (") +
                                               item->bluePrint->stationName + String(")");
                             Globals::Canvas->DrawString(
                                 hangarFont(), progress,
@@ -890,7 +892,7 @@ void HangarWindow::render() {
         if (this->listModeFlag) {
             for (count = 0; count <= 4; count++) {
                 String description("");
-                String price("");
+                String price;
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
