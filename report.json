@@ -513,7 +513,7 @@
   },
   {
    "name": "_ZN10StarSystemC1Ei",
-   "pct": 76.5,
+   "pct": 76.8,
    "byte": false,
    "linked": false,
    "osize": 2900,
@@ -521,7 +521,7 @@
   },
   {
    "name": "_ZN10StarSystemC2Ei",
-   "pct": 76.5,
+   "pct": 76.8,
    "byte": false,
    "linked": false,
    "osize": 2900,
@@ -680,14 +680,6 @@
    "usize": 1476
   },
   {
-   "name": "_ZN10StarSystem9initLightEv",
-   "pct": 88.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1476,
-   "usize": 1472
-  },
-  {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
    "pct": 88.7,
    "byte": false,
@@ -742,6 +734,14 @@
    "linked": false,
    "osize": 564,
    "usize": 564
+  },
+  {
+   "name": "_ZN10StarSystem9initLightEv",
+   "pct": 91.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1476,
+   "usize": 1476
   },
   {
    "name": "_ZN16ParticleSettings4initEv",
