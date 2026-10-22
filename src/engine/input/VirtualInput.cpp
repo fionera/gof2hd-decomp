@@ -491,24 +491,31 @@ namespace {
 // Returns 1 when the mouse cursor was just hidden, -1 when it was just shown, 0 otherwise.
 int ActualizeMouseVisibilty(int force) {
     if (Globals::mouseCursorActivated != 0) {
-        const bool arrows = ArrowKeyPressed();
+        const int arrows = ArrowKeyPressed();
         if ((g_mousePointerLatch != -1 || Globals::isCinematicModeActive != 0) &&
             Globals::appManager->GetCurrentApplicationModule() == 2) {
             // In flight the cursor stays while a cinematic steers or no menu is up.
-            int steering;
-            if (IsInGameSubMenuNotActive(2)) {
+            const int submenuActive = IsInGameSubMenuNotActive(2);
+            bool steering;
+            if (submenuActive) {
                 if (!noBlockingOverlay())
                     goto hide;
                 steering = Globals::isCinematicModeActive != 0;
             } else {
                 if (Globals::isCinematicModeActive == 0 || !noBlockingOverlay())
                     goto hide;
-                steering = 1;
+                steering = true;
             }
-            if ((steering | (Globals::is_menu_visible == 0)) == 1 && !Globals::isStarMapVisible &&
-                force == 0 && Globals::showMouseDuringGameOver == 0) {
-                if (!arrows || Globals::appManager->GetCurrentApplicationModule() != 2)
-                    goto stillVisible;
+            const int menuHidden = Globals::is_menu_visible == 0;
+            if ((steering | menuHidden) != 1)
+                goto hide;
+            if (Globals::isStarMapVisible)
+                goto hide;
+            if (force == 0) {
+                if (Globals::showMouseDuringGameOver == 0) {
+                    if (!arrows || Globals::appManager->GetCurrentApplicationModule() != 2)
+                        goto stillVisible;
+                }
             }
         }
 
@@ -516,24 +523,36 @@ hide:
         Globals::mouseCursorActivated = 0;
         if (force == 0)
             g_mousePointerLatch = Globals::is_hacking_visible == 0 && g_mousePointerLatch != -1;
-        if (arrows || Globals::showMouseDuringGameOver != 0)
+        if (arrows)
+            g_mousePointerLatch = 0;
+        else if (Globals::showMouseDuringGameOver != 0)
             g_mousePointerLatch = 0;
         return 1;
     }
 stillVisible:
 
     if (Globals::mouseCursorActivated == 0 && (g_mousePointerLatch == 1 || Globals::isCinematicModeActive != 0)) {
-        if (Globals::isCinematicModeActive != 0 ||
-            (Globals::appManager->GetCurrentApplicationModule() == 2 && IsInGameSubMenuNotActive(2) &&
-             (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
-              Globals::is_menu_visible) == 0 &&
-             Globals::is_hacking_visible == 0 && (Globals::isStarMapVisible | Globals::isCinematicModeActive) == 0)) {
-            g_mousePointerLatch = -(g_mousePointerLatch != 1 && Globals::isCinematicModeActive != 0);
-            Globals::mouseCursorActivated = 1;
-            return -1;
-        }
+        if (Globals::isCinematicModeActive != 0)
+            goto show;
+        if (Globals::appManager->GetCurrentApplicationModule() != 2)
+            goto check;
+        if (!IsInGameSubMenuNotActive(2))
+            goto check;
+        if ((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+             Globals::is_menu_visible) != 0)
+            goto check;
+        // The original reads this flag through a volatile access: the load is not
+        // folded into the menu-window test above.
+        if (*(volatile int *)&Globals::is_hacking_visible != 0)
+            goto check;
+        if ((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0)
+            goto check;
+show:
+        g_mousePointerLatch = -(g_mousePointerLatch != 1 && Globals::isCinematicModeActive != 0);
+        Globals::mouseCursorActivated = 1;
+        return -1;
     }
-
+check:
     if (g_mousePointerLatch != 0 && Globals::appManager->GetCurrentApplicationModule() == 5 &&
         Globals::keyBindings[4] != 0)
         g_mousePointerLatch = 0;
@@ -581,19 +600,24 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     if (keyHeld(9))
         engine->wheelDelta = 1.0f;
 
-    if (keyHeld(11))
-        Globals::rotateShipInStation = keyHeld(14) ? -40.0f : -20.0f;
-    else if (keyHeld(12))
-        Globals::rotateShipInStation = keyHeld(13) ? 40.0f : 20.0f;
-    else if (keyHeld(13))
-        Globals::rotateShipInStation = 20.0f;
-    else if (keyHeld(14))
+    if (keyHeld(11)) {
         Globals::rotateShipInStation = -20.0f;
+        if (keyHeld(14))
+            Globals::rotateShipInStation = -40.0f;
+    } else if (keyHeld(12)) {
+        Globals::rotateShipInStation = 20.0f;
+        if (keyHeld(13))
+            Globals::rotateShipInStation = 40.0f;
+    } else if (keyHeld(13)) {
+        Globals::rotateShipInStation = 20.0f;
+    } else if (keyHeld(14)) {
+        Globals::rotateShipInStation = -20.0f;
+    }
 
-    if ((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible) != 0 ||
-        Globals::is_menu_visible != 0) {
+    const bool menuOpen = (Globals::is_dialogue_window_visible || Globals::is_choice_window_visible) |
+        Globals::is_menu_visible;
+    if (menuOpen) {
         wheelStack = 0;
-        Globals::rotateShipInStation = 0.0f;
     } else {
         // The mouse wheel spins the ship in the hangar and decays.
         const float wheel = static_cast<float>(wheelStack);
@@ -603,6 +627,9 @@ void simulateTouch(AbyssEngine::Engine *engine) {
             Globals::rotateShipInStation = 40.0f;
         else if (Globals::rotateShipInStation < -40.0f)
             Globals::rotateShipInStation = -40.0f;
+    }
+    if (menuOpen) {
+        Globals::rotateShipInStation = 0.0f;
     }
 
     if ((keys[11].pressed | keys[15].pressed) != 0)
@@ -622,20 +649,26 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     const int captured = g_input.mouseCaptured;
     if (captured != 0) {
         // Push the stick to the side the mouse moved and bleed the accumulated motion off by one.
-        if (stackX < 0) {
+        bool posX = false;
+        bool posY = false;
+        if (stackX < 0)
             g_mouse.easedX = 0.0f;
-            ++stackX;
-        } else if (stackX != 0) {
+        else if (stackX != 0) {
             g_mouse.easedX = 1.0f;
-            --stackX;
+            posX = true;
         }
-        if (stackY < 0) {
+        if (stackY < 0)
             g_mouse.easedY = 0.0f;
-            ++stackY;
-        } else if (stackY != 0) {
+        else if (stackY != 0) {
             g_mouse.easedY = 1.0f;
-            --stackY;
+            posY = true;
         }
+        const int nextX = stackX - posX;
+        if (posX || nextX < 0)
+            stackX = nextX + (nextX < 0);
+        const int nextY = stackY - posY;
+        if (posY || nextY < 0)
+            stackY = nextY + (nextY < 0);
 
         if (g_mouse.easedX > 1.0f)
             g_mouse.easedX = 1.0f;
@@ -656,9 +689,10 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         if (g_mouse.easedX > 0.4 && g_mouse.easedX < 0.6)
             g_mouse.easedX = 0.5f;
     } else {
-        const float v = std::min(g_mouse.inputX + g_mouse.easedX, 1.0f);
-        g_mouse.easedX = v;
-        if (v < 0.0f)
+        g_mouse.easedX += g_mouse.inputX;
+        if (g_mouse.easedX > 1.0f)
+            g_mouse.easedX = 1.0f;
+        if (g_mouse.easedX < 0.0f)
             g_mouse.easedX = 0.0f;
     }
 
@@ -670,9 +704,10 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         if (g_mouse.easedY > 0.4 && g_mouse.easedY < 0.6)
             g_mouse.easedY = 0.5f;
     } else {
-        const float v = std::min(g_mouse.inputY + g_mouse.easedY, 1.0f);
-        g_mouse.easedY = v;
-        if (v < 0.0f)
+        g_mouse.easedY += g_mouse.inputY;
+        if (g_mouse.easedY > 1.0f)
+            g_mouse.easedY = 1.0f;
+        if (g_mouse.easedY < 0.0f)
             g_mouse.easedY = 0.0f;
     }
 
@@ -684,8 +719,18 @@ void simulateTouch(AbyssEngine::Engine *engine) {
             range = static_cast<int>(magY);
         const float nx = std::max(std::min(static_cast<float>(stackX) / static_cast<float>(range), 1.0f), -1.0f);
         const float ny = std::max(std::min(static_cast<float>(stackY) / (static_cast<float>(range) * 0.5f), 1.0f), -1.0f);
-        g_mouse.easedX = easeAxis(nx);
-        g_mouse.easedY = easeAxis(ny);
+        float easedX;
+        if (nx > 0.0f)
+            easedX = 1.0f - (nx - 1.0f) * (nx - 1.0f);
+        else
+            easedX = -(1.0f - (nx + 1.0f) * (nx + 1.0f));
+        float easedY;
+        if (ny > 0.0f)
+            easedY = 1.0f - (ny - 1.0f) * (ny - 1.0f);
+        else
+            easedY = -(1.0f - (ny + 1.0f) * (ny + 1.0f));
+        g_mouse.easedX = easedX + 0.5f;
+        g_mouse.easedY = easedY + 0.5f;
         if (g_mouse.easedX < 0.0f)
             g_mouse.easedX = 0.0f;
         if (g_mouse.easedY < 0.0f)
@@ -708,27 +753,35 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         const float ex = g_mouse.easedX;
         const float ey = g_mouse.easedY;
 
-        const int down = keyIsPressed();
+        // The original keyIsPressed returns an int (0/1); the header declares bool.
+        // Calling it through an int-returning pointer keeps the original's
+        // normalisation of arbitrary non-zero values without changing the symbol.
+        int (*keyPressed)() = reinterpret_cast<int (*)()>(keyIsPressed);
+        const int down = keyPressed();
         const int active = g_simTouchActive;
-        const bool inactive = (active ^ 1) != 0;
+        const int inactive = (active ^ 1) != 0;
+        const float touchXf = (cx - dim) + (dim + dim) * ex;
+        const float touchYf = (cy - dim) + (dim + dim) * ey;
 
         if (down != 0 || !inactive) {
-            const int touchX = static_cast<int>((cx - dim) + (dim + dim) * ex);
-            const int touchY = static_cast<int>((cy - dim) + (dim + dim) * ey);
-            AbyssEngine::ApplicationManager *mgr = engine->appManager;
-
-            if (down == 0 && !inactive) {
+            if (down == 0 && active != 0) {
+                const int touchX = static_cast<int>(touchXf);
+                const int touchY = static_cast<int>(touchYf);
                 if (ex == 0.5f && ey == 0.5f) {
-                    mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
+                engine->appManager->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchEnd ABI)
                     g_simTouchActive = 0;
                 } else {
-                    mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
+                engine->appManager->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 }
-            } else if (down == 1 && !inactive) {
-                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
-            } else if (active == 0 && down == 1) {
-                mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
-                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
+            } else if (down == 1 && active != 0) {
+                const int touchX = static_cast<int>(touchXf);
+                const int touchY = static_cast<int>(touchYf);
+                engine->appManager->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
+            } else if (down == 1 && active == 0) {
+                const int touchX = static_cast<int>(touchXf);
+                const int touchY = static_cast<int>(touchYf);
+                engine->appManager->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchBegin ABI)
+                engine->appManager->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b)); // lint: void_ptr (synthetic touch handle for OnTouchMove ABI)
                 g_simTouchActive = 1;
             }
         }
