@@ -2545,20 +2545,17 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
     o9 = o7 + p2 / 2;
     o10 = o8 + p2 / 2;
     float knob = (float) o6;
-    float edge;
     if (Globals::iPadHD) {
         knob = knob + 313.59375f;
-        edge = 2.8125f;
     } else {
         knob = (!Globals::iPadLarge ? 223.0f : 446.0f) + knob;
-        edge = !Globals::iPadLarge ? 2.0f : 4.0f;
     }
     unsigned knobPos = (unsigned) knob;
     o12 = knobPos;
     float top = (float) (Globals::h - p4);
-    if (top - edge < (float) knobPos) {
-        int big;
+    if (top - (Globals::iPadHD ? 2.8125f : (!Globals::iPadLarge ? 2.0f : 4.0f)) < (float) knobPos) {
         int small;
+        int big;
         if (Globals::iPadHD) {
             big = 243;
             small = 187;
