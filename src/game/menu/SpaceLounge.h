@@ -118,7 +118,7 @@ public:
 
     unsigned char hangarNeedsUpdate();
 
-    int init();
+    void init();
 
     bool introFinished();
 

@@ -262,7 +262,7 @@ SpaceLounge::SpaceLounge()
     this->initialized = 1;
 }
 
-int SpaceLounge::init() {
+void SpaceLounge::init() {
     this->initialized = 0;
     this->touchDown = 0;
     this->cameraAnimating = 0;
@@ -294,7 +294,8 @@ int SpaceLounge::init() {
     this->field_0x18 = 0;
     char *visited = new char[21];
     this->agentVisited = visited;
-    for (int i = 0; i != 21; ++i) {
+    int i = 0;
+    for (; i != 21; ++i) {
         visited[i] = 0;
     }
 
@@ -419,7 +420,6 @@ int SpaceLounge::init() {
         }
     }
     this->initialized = 1;
-    return 1;
 }
 
 bool SpaceLounge::introFinished() {
