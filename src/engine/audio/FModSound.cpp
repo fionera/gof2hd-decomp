@@ -424,8 +424,10 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
         return;
 
     FMOD::Event *event = this->events[idx];
-    bool loaded = true;
-    if (event == nullptr) {
+    bool loaded;
+    if (event != nullptr) {
+        loaded = true;
+    } else {
         this->system->getEventBySystemID(idx, FMOD_EVENT_INFOONLY, &event);
         loaded = false;
     }
@@ -633,10 +635,11 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
                                reinterpret_cast<const FMOD_VECTOR *>(hasVel ? this->eventVel : nullptr),
                                nullptr) != FMOD_OK)
         return nullptr;
-    if (this->system->getEventBySystemID(idx, FMOD_EVENT_DEFAULT, &found) != FMOD_OK)
-        return nullptr;
-    found->start();
-    return found;
+    if (this->system->getEventBySystemID(idx, FMOD_EVENT_DEFAULT, &found) == FMOD_OK) {
+        found->start();
+        return found;
+    }
+    return nullptr;
 }
 
 int FModSound::pause(FMOD::Event *e) {
