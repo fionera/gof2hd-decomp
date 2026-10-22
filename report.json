@@ -760,20 +760,20 @@
    "usize": 1372
   },
   {
-   "name": "_ZN11SpaceLounge4initEv",
-   "pct": 92.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2256,
-   "usize": 2264
-  },
-  {
    "name": "_ZN10ModStation10checkHintsEv",
    "pct": 93.2,
    "byte": false,
    "linked": false,
    "osize": 2748,
    "usize": 2748
+  },
+  {
+   "name": "_ZN11SpaceLounge4initEv",
+   "pct": 93.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2256,
+   "usize": 2264
   },
   {
    "name": "_ZN13PlayerFighter6updateEi",
