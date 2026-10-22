@@ -4568,9 +4568,10 @@ void Level::connectPlayers() {
                     continue;
                 }
             } else if (campaignMission == 0x40) {
-                if (i == 0 || ship == nullptr || k == 0) {
+                if (i == 0)
                     continue;
-                }
+                if (k == 0 || ship == nullptr)
+                    continue;
             } else if (campaignMission == 0x9a) {
                 bool alienOrbit = Globals::status->inAlienOrbit();
                 if (k == 8 && alienOrbit && ship->shipGroup == 8) {
@@ -4615,9 +4616,10 @@ void Level::connectPlayers() {
                             continue;
                         }
                     } else if (campaignMission == 0x40) {
-                        if (i == 0 || ship == nullptr || k == 0) {
+                        if (i == 0)
                             continue;
-                        }
+                        if (k == 0 || ship == nullptr)
+                            continue;
                     }
                     (*targets)[slot++] = (*enemies)[k]->player;
                 }
@@ -4645,9 +4647,10 @@ void Level::connectPlayers() {
                         continue;
                     }
                 } else if (campaignMission == 0x40) {
-                    if (i == 0 || ship == nullptr || k == 0) {
+                    if (i == 0)
                         continue;
-                    }
+                    if (k == 0 || ship == nullptr)
+                        continue;
                 } else if (campaignMission == 0x9a) {
                     bool alienOrbit = Globals::status->inAlienOrbit();
                     if (k == 8 && alienOrbit && ship->shipGroup == 8) {
