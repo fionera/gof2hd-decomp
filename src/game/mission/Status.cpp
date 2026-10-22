@@ -504,7 +504,7 @@ void Status::calcCargoPrices() {
                 (*systems)[(*items)[i]->getMinPriceSystem()]->getY(),
                 (*systems)[this->station->getSystem()]->getX(), (*systems)[this->station->getSystem()]->getY());
             float factor = 100.0f / (float) priceRange * (float) distance / 100.0f;
-            int minPrice = item->getMinPrice();
+            int minPrice = (*items)[i]->getMinPrice();
             int priceBonus = (int) ((factor < 1.0f ? factor : 1.0f) * (float) (item->getMaxPrice() - item->getMinPrice()));
             if (item->getSinglePrice() < 1) {
                 continue;
@@ -1960,11 +1960,6 @@ void Status::departStation(Station *dest) {
             this->mission = (*missions)[i];
             break;
         }
-        if (Globals::status->currentCampaignMission < 45 && (*missions)[i]->isCampaignMission() && type == 0xa1 &&
-            dest->getIndex() == field_80 && !Globals::status->inAlienOrbit()) {
-            this->mission = (*missions)[i];
-            break;
-        }
         if (!(*missions)[i]->isEmpty() && (*missions)[i]->getTargetStation() == dest->getIndex()) {
             bool deliveryType = type != 0x96 && type != 0x97 && type != 0x99 && type != 0x9b && type != 0xa1 &&
                                 type != 0xa2 && type != 0xa3 && type != 0xa4 && type != 0xa6 && type != 0xa7 &&
@@ -1983,6 +1978,13 @@ void Status::departStation(Station *dest) {
         }
         if (!(*missions)[i]->isEmpty() && (*missions)[i]->isCampaignMission()) {
             if ((*missions)[i]->getTargetStation() != dest->getIndex() && type == 0xa0) {
+                this->mission = (*missions)[i];
+                break;
+            }
+        }
+        if (Globals::status->currentCampaignMission < 45) {
+            if ((*missions)[i]->isCampaignMission() && type == 0xa1 &&
+                dest->getIndex() == field_80 && !Globals::status->inAlienOrbit()) {
                 this->mission = (*missions)[i];
                 break;
             }

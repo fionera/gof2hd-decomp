@@ -712,22 +712,6 @@
    "usize": 604
   },
   {
-   "name": "_ZN6Status15calcCargoPricesEv",
-   "pct": 83.0,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 704
-  },
-  {
-   "name": "_ZN6Status13departStationEP7Station",
-   "pct": 83.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 1004
-  },
-  {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
    "pct": 83.9,
    "byte": false,
@@ -784,6 +768,14 @@
    "usize": 668
   },
   {
+   "name": "_ZN6Status13departStationEP7Station",
+   "pct": 86.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1008,
+   "usize": 1004
+  },
+  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 87.4,
    "byte": false,
@@ -830,6 +822,14 @@
    "linked": false,
    "osize": 3488,
    "usize": 3476
+  },
+  {
+   "name": "_ZN6Status15calcCargoPricesEv",
+   "pct": 88.8,
+   "byte": false,
+   "linked": false,
+   "osize": 708,
+   "usize": 712
   },
   {
    "name": "_ZN10ModStation10OnKeyPressExx",
