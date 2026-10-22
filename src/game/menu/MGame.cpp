@@ -2805,7 +2805,8 @@ void MGame::OnUpdate() {
                     this->dialogueWindow = nullptr;
                 }
                 int variant = Globals::rnd->nextInt(2);
-                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 535 : 536),
+                int textId = variant == 0 ? 535 : 536;
+                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
                                                           Globals::gameText->getText(1603), gMGameFaces + 10);
                 Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
                 this->cutsceneActive = 1;
