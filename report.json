@@ -536,20 +536,20 @@
    "usize": 416
   },
   {
-   "name": "_ZN12StatusWindow4drawEv",
-   "pct": 75.0,
-   "byte": false,
-   "linked": false,
-   "osize": 6280,
-   "usize": 6308
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 75.0,
    "byte": false,
    "linked": false,
    "osize": 2252,
    "usize": 2228
+  },
+  {
+   "name": "_ZN12StatusWindow4drawEv",
+   "pct": 75.1,
+   "byte": false,
+   "linked": false,
+   "osize": 6280,
+   "usize": 6304
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",

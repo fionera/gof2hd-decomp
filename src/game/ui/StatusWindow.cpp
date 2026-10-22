@@ -544,8 +544,8 @@ void StatusWindow::draw() {
         } else {
             gridX = Globals::layout->buttonInsetX + (columnW >> 1);
         }
-        int gridY = Globals::layout->field_0xc_leftMargin + (this->medalRowHeight >> 1) +
-                    Globals::layout->field_0x2c_rowHeight;
+        int gridY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
+                    (this->medalRowHeight >> 1);
         if (Globals::iPad) {
             Globals::layout->drawBox(0, this->boxWidth + Globals::layout->buttonInsetX * 2, top,
                                      Globals::layout->buttonInsetX + this->boxWidth, Globals::layout->field_0x1c,
