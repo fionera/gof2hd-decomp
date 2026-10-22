@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.19,
+  "avg_match": 99.2,
   "byte_exact": 1339,
   "linked_exact": 4393,
   "fuzzy_perfect": 4393,
@@ -16,20 +16,20 @@
  },
  "rows": [
   {
-   "name": "_ZN11SpaceLounge23getSpecificSoundForRaceEiib",
-   "pct": 6.7,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 106
-  },
-  {
    "name": "_ZN15MenuTouchWindow4drawEv",
    "pct": 21.7,
    "byte": false,
    "linked": false,
    "osize": 13052,
    "usize": 12664
+  },
+  {
+   "name": "_ZN11SpaceLounge23getSpecificSoundForRaceEiib",
+   "pct": 28.6,
+   "byte": false,
+   "linked": false,
+   "osize": 116,
+   "usize": 128
   },
   {
    "name": "_ZN11AbyssEngine9Transform18InsertKeyFrame_oldEPKfxi",
@@ -929,7 +929,7 @@
   },
   {
    "name": "_ZN11SpaceLounge4initEv",
-   "pct": 91.2,
+   "pct": 92.5,
    "byte": false,
    "linked": false,
    "osize": 2256,

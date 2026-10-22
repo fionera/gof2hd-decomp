@@ -335,9 +335,9 @@ int SpaceLounge::init() {
     (*this->buttons)[4] = new TouchButton(*Globals::gameText->getText(807), 0, this->buttonX,
                                           y2 + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34,
                                           this->panelWidth, 17, 4);
-    this->hoverAgent = -1;
     this->buttonY1 = y + Globals::layout->field_0x2d8 / 2 - Globals::layout->field_0x30_rowHeight / 2;
     this->buttonY0 = y;
+    this->hoverAgent = -1;
 
     // Camera at the lounge's resting view.
     int race = ((SolarSystem *) Globals::status->getSystem())->getRace();
@@ -351,8 +351,8 @@ int SpaceLounge::init() {
     if (this->cameraEase != 0) {
         this->cameraEase->SetRange(rest, rest);
     }
-    this->introDone = 1;
     this->headBobPhase = 0.0f;
+    this->introDone = 1;
     if (this->cutScene != 0) {
         this->cutScene->level->getStarSystem()->initLight();
     }
@@ -1825,6 +1825,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
     // Generic chat sounds 759..806 map onto a per-race bank.
+    int result;
     switch (race) {
         case 0:
         case 5:
@@ -1835,32 +1836,41 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
             } else if (soundId >= 759 && soundId < 807) {
                 return soundId + 192;
             }
-            break;
-        case 1:
-            if (soundId >= 759 && soundId < 807) {
-                return soundId + 288;
-            }
+            result = -1;
             break;
         case 2:
         case 3:
             if (soundId >= 759 && soundId < 807) {
                 return soundId + 144;
             }
+            result = -1;
+            break;
+        case 1:
+            if (soundId >= 759 && soundId < 807) {
+                return soundId + 288;
+            }
+            result = -1;
             break;
         case 4:
             if (soundId >= 759 && soundId < 807) {
                 return soundId + 96;
             }
+            result = -1;
             break;
         case 6:
-            return soundId;
+            result = soundId;
+            break;
         case 7:
             if (soundId >= 759 && soundId < 807) {
                 return soundId + 48;
             }
+            result = -1;
+            break;
+        default:
+            result = -1;
             break;
     }
-    return -1;
+    return result;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
