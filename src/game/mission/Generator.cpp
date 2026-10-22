@@ -336,15 +336,14 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     ArraySetLength(count, *list);
     int goldShip = allGold ? 8 : 10;
     bool kaamoStation = stationId == 78;
-    int slot;
-    for (slot = 0; slot < count; ++slot) {
+    for (int slot = 0; slot < count; ++slot) {
         bool first = slot == 0;
         bool fixedShip = allGold || (first && stationIndex == 41);
         bool forced = fixedShip || (kaamoStation && first);
-        int fixed = fixedShip ? goldShip : 0;
+        int fixed = forced ? goldShip : 0;
         int ship;
-        bool duplicate;
-        do {
+        bool unique = false;
+        while (!unique) {
             ship = fixed;
             if (!forced) {
                 ship = Globals::globals->getRandomEnemyFighter(race);
@@ -356,14 +355,14 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                     ship = Globals::globals->getRandomEnemyFighter(otherRace == race || otherRace == 4 ? 8 : otherRace);
                 }
             }
-            duplicate = false;
+            unique = true;
             for (int j = 0; j < count; ++j) {
                 if (list->data()[j] != nullptr && list->data()[j]->getIndex() == ship) {
-                    duplicate = true;
+                    unique = false;
                     break;
                 }
             }
-        } while (duplicate);
+        }
         list->data()[slot] = (*Globals::ships)[ship]->makeShip(-1);
         list->data()[slot]->setRace(kShipRaces[ship]);
         list->data()[slot]->adjustPrice();
