@@ -2765,6 +2765,8 @@ void Level::createCampaignMission() {
         {0.0f, -29726.7f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
     };
     Vector playerPos = this->player->geometry->getPosition();
+    // Matches the original's 8-byte frame slot below playerPos (frame 0x1d0 vs 0x1c8).
+    volatile long long framePad = 0;
 
     switch (Globals::status->getCurrentCampaignMission()) {
         case 0:
