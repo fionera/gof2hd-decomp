@@ -685,16 +685,16 @@ void PlayerFighter::update(int dt) {
                               this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
                               this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
                               this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                            this->targetIsActive = 0;
                             this->field_0x38 = -1;
+                            this->targetIsActive = 0;
                         }
                     } else {
-                        this->targetIsActive = 0;
                         this->field_0x38 = -1;
+                        this->targetIsActive = 0;
                     }
                 } else {
-                    this->targetIsActive = 0;
                     this->field_0x38 = -1;
+                    this->targetIsActive = 0;
                 }
             } else if (!this->targetIsActive) {
                 // first enemy in sight
@@ -710,8 +710,8 @@ void PlayerFighter::update(int dt) {
                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                        this->targetIsActive = 1;
                         this->field_0x38 = i;
+                        this->targetIsActive = 1;
                         break;
                     }
                 }
@@ -719,8 +719,8 @@ void PlayerFighter::update(int dt) {
 
             // a friendly fighter never targets the ego ship (enemy 0)
             if (!this->player->enemyFlagsLo && this->field_0x38 == 0) {
-                this->targetIsActive = 0;
                 this->field_0x38 = 1;
+                this->targetIsActive = 0;
             }
             if (!(this->wingmanFlag && this->field_0xe4 == 3) && this->field_0x38 > 0) {
                 this->field_0x38 = -1;
@@ -745,8 +745,8 @@ void PlayerFighter::update(int dt) {
                                   (otherRace == 10 && race != 10) || (otherRace != 10 && race == 10);
                     }
                     if (hostile) {
-                        this->targetIsActive = 1;
                         this->field_0x38 = i;
+                        this->targetIsActive = 1;
                         break;
                     }
                 }
@@ -844,9 +844,9 @@ void PlayerFighter::update(int dt) {
         if (this->jumperFlag && this->field_0x12c) {
             this->field_0xf0 += dt;
             if (this->field_0xf0 >= 20000) {
-                this->state = 6;
-                this->field_0xf0 = 0;
                 this->field_0x12c = false;
+                this->field_0xf0 = 0;
+                this->state = 6;
             }
         } else {
             this->field_0xf0 = 0;
@@ -908,9 +908,10 @@ void PlayerFighter::update(int dt) {
 
     {
         int hp = this->player->getHitpoints();
+        float hpFloat = (float) hp;
 
         // smoke trail below a third of the hull
-        if (!this->smoking && (float) this->player->getMaxHitpoints() * 0.33f > (float) hp) {
+        if (!this->smoking && (float) this->player->getMaxHitpoints() * 0.33f > hpFloat) {
             if (reinterpret_cast<const float &>(Globals::options[40]) > 0.0f) {
                 if (this->isDocked()) {
                     this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
@@ -921,7 +922,7 @@ void PlayerFighter::update(int dt) {
                 }
             }
             this->smoking = true;
-        } else if (this->smoking && (float) this->player->getMaxHitpoints() * 0.33f <= (float) hp) {
+        } else if (this->smoking && (float) this->player->getMaxHitpoints() * 0.33f <= hpFloat) {
             this->smoking = false;
             this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
             this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
@@ -973,8 +974,8 @@ void PlayerFighter::update(int dt) {
                     this->level->wingmanDied(this->name);
                 }
             }
-            this->state = 3;
             this->field_0x73 = 0;
+            this->state = 3;
             this->dyingTimer = Globals::rnd->nextInt(1500) + 1500;
             this->dyingDirection = this->geometry->getDirection();
             this->level->field_74->emitManual(this->level->field_3c, this->shipPosition, 0, Vector(), -1.0f);
@@ -1011,8 +1012,8 @@ void PlayerFighter::update(int dt) {
                         this->damageAccumulator += this->hitpoints - hp;
                         this->hitpoints = hp;
                         if ((float) this->damageAccumulator / (float) this->player->getMaxHitpoints() * 100.0f > 40.0f) {
-                            this->boostTick = 10000;
                             this->damageAccumulator = 0;
+                            this->boostTick = 10000;
                             this->damageEscape = true;
                         }
                     }
@@ -1027,8 +1028,8 @@ void PlayerFighter::update(int dt) {
                     }
                     if (this->boosting) {
                         if (this->boostTick > this->boostTimeLimit) {
-                            this->damageEscape = false;
                             this->boostTick = 0;
+                            this->damageEscape = false;
                             this->targetSpeed = this->speed;
                             this->currentRotate = this->rotate;
                         }
@@ -1093,8 +1094,8 @@ void PlayerFighter::update(int dt) {
 
                     Matrix matrix = this->geometry->getMatrix();
                     if (this->field_0x12d) {
-                        this->rollSampleIndex = 0;
                         this->targetRoll = 0.0f;
+                        this->rollSampleIndex = 0;
                         this->rollBufferFilled = false;
                     } else {
                         // turn towards the target by at most dt * 48 / 65536 per frame
@@ -1120,8 +1121,9 @@ void PlayerFighter::update(int dt) {
                         }
                         float turn = angle > 0.0f ? angle : -angle;
                         if (turn != 0.0f) {
+                            float negTurn = -turn;
                             if (ACosf(VectorDot(MatrixGetRight(matrix), Vector(this->distanceToTarget))) < 1.57079637f) {
-                                turn = -turn;
+                                turn = negTurn;
                             }
                         }
                         this->rollSamples[this->rollSampleIndex] = turn;
@@ -1269,8 +1271,8 @@ void PlayerFighter::update(int dt) {
                 return;
             case 3: {
                 // tumbling before the final explosion
-                this->field_0x101 = 0;
                 this->field_0x13e = 0;
+                this->field_0x101 = 0;
                 Matrix spin;
                 MatrixSetRotation(spin, this->dyingSpin.x, this->dyingSpin.y, this->dyingSpin.z);
                 if (dt > 0) {
@@ -1293,16 +1295,16 @@ void PlayerFighter::update(int dt) {
                 float y = (float) (Globals::rnd->nextInt(200) - 100);
                 float z = (float) (Globals::rnd->nextInt(200) - 100);
                 this->field_0x17c = VectorNormalize(Vector{x, y, z});
-                this->dyingTimer = 0;
                 this->state = 4;
+                this->dyingTimer = 0;
                 if (this->spacePoint && !this->spacePoint->isFree()) {
                     this->spacePoint->giveFree();
                     this->spacePoint = nullptr;
                 }
                 if (this->crateCaptured()) {
                     if (this->carriesMissionCrate && !this->missionCrateCaptured()) {
-                        this->crateCaptured() = 0;
                         this->missionCrateLost() = 1;
+                        this->crateCaptured() = 0;
                     } else {
                         this->createCrate(this->shipGroup == 9 ? 4 : 0);
                     }
@@ -1352,8 +1354,8 @@ void PlayerFighter::update(int dt) {
                         this->missionCrateLost() = 1;
                     }
                     delete this->wreckGeometry();
-                    this->deathTimer() = 0;
                     this->wreckGeometry() = nullptr;
+                    this->deathTimer() = 0;
                 } else {
                     if (this->explosion->isPlaying()) {
                         return;
@@ -1361,10 +1363,11 @@ void PlayerFighter::update(int dt) {
                     if (this->carriesMissionCrate && !this->missionCrateCaptured()) {
                         this->missionCrateLost() = 1;
                     }
-                    if (this->deathTimer() <= 60000) {
-                        this->field_0x101 = 1;
-                        return;
+                    if (this->deathTimer() > 60000) {
+                        this->setActive(false);
                     }
+                    this->field_0x101 = 1;
+                    return;
                 }
                 this->setActive(false);
                 this->field_0x101 = 1;

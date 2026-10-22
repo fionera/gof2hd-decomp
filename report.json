@@ -656,14 +656,6 @@
    "usize": 604
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 83.6,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 10376
-  },
-  {
    "name": "_ZN11SpaceLounge9startChatEv",
    "pct": 84.2,
    "byte": false,
@@ -694,6 +686,14 @@
    "linked": false,
    "osize": 864,
    "usize": 860
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 84.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 10376
   },
   {
    "name": "_ZN10ModStation8OnUpdateEv",
