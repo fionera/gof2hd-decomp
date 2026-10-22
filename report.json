@@ -344,14 +344,6 @@
    "usize": 9236
   },
   {
-   "name": "_ZN9ObjectGun6renderEv",
-   "pct": 67.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1456,
-   "usize": 1464
-  },
-  {
    "name": "_ZN11SpaceLounge10getSoundIdEP5Agent",
    "pct": 67.8,
    "byte": false,
@@ -390,6 +382,14 @@
    "linked": false,
    "osize": 728,
    "usize": 736
+  },
+  {
+   "name": "_ZN9ObjectGun6renderEv",
+   "pct": 72.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1456,
+   "usize": 1480
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
