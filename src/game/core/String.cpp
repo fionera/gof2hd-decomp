@@ -217,6 +217,8 @@ unsigned int String::Compare(const char *s) {
     int d = a[i] - (unsigned char) s[i];
     if (reachedEnd)
         d = -1;
+    // When reachedEnd is set, d is -1; keep the sign extension after the select.
+    __builtin_assume(!reachedEnd || d == -1); // lint: arm_builtin
     return (signed char) d;
 }
 
