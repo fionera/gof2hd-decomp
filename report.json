@@ -760,14 +760,6 @@
    "usize": 652
   },
   {
-   "name": "_ZN13RecordHandler11readMissionEj",
-   "pct": 86.2,
-   "byte": false,
-   "linked": false,
-   "osize": 668,
-   "usize": 668
-  },
-  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 87.4,
    "byte": false,
@@ -878,6 +870,14 @@
    "linked": false,
    "osize": 1376,
    "usize": 1372
+  },
+  {
+   "name": "_ZN13RecordHandler11readMissionEj",
+   "pct": 91.2,
+   "byte": false,
+   "linked": false,
+   "osize": 668,
+   "usize": 668
   },
   {
    "name": "_ZN11SpaceLounge4initEv",
