@@ -440,20 +440,20 @@
    "usize": 8116
   },
   {
-   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
-   "pct": 72.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1680,
-   "usize": 1648
-  },
-  {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
    "pct": 72.8,
    "byte": false,
    "linked": false,
    "osize": 1948,
    "usize": 1948
+  },
+  {
+   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
+   "pct": 73.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1680,
+   "usize": 1680
   },
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
