@@ -1119,11 +1119,14 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             (*(*this->recordRows)[i])[4] =
                 new String(*Globals::gameText->getText(321) + String(": ") +
                            String((int) (*this->previewRecords)[i]->killsText));
-            float rank = (*this->previewRecords)[i]->rank;
-            (*(*this->recordRows)[i])[5] = new String(rank <= 0.0f   ? *Globals::gameText->getText(519)
-                                                      : rank <= 0.5f ? *Globals::gameText->getText(519)
-                                                      : rank <= 1.0f ? *Globals::gameText->getText(519)
-                                                                     : *Globals::gameText->getText(25));
+            (*(*this->recordRows)[i])[5] =
+                new String((*this->previewRecords)[i]->rank <= 0.0f
+                               ? *Globals::gameText->getText(519)
+                               : (*this->previewRecords)[i]->rank <= 0.5f
+                                     ? *Globals::gameText->getText(519)
+                                     : (*this->previewRecords)[i]->rank <= 1.0f
+                                           ? *Globals::gameText->getText(519)
+                                           : *Globals::gameText->getText(25));
         } else {
             String time;
             Globals::globals->longToTimeStringNoSeconds(0, time);
@@ -1152,9 +1155,9 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
                                          Globals::layout->field_0x2a4_metricA, 18, 4);
     }
     this->okButton->setPosition(Globals::w - this->listX - Globals::layout->buttonInsetX,
-                                (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow +
                                 (Globals::layout->field_0xc_leftMargin + y + Globals::layout->field_0x20_top +
-                                 this->scrollOffset));
+                                 this->scrollOffset) +
+                                    (Globals::layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow);
     if (this->backButton != 0) {
         delete this->backButton;
         this->backButton = 0;
@@ -2288,8 +2291,8 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
     case 1:
     case 2: {
         // Load / save list.
-        this->dragStartX = y;
         this->dragLastX = y;
+        this->dragStartX = y;
         this->dragVelocity = 0;
         this->dragging = 1;
         int previous = this->selectedRow;
@@ -2316,14 +2319,14 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
             this->scrollUpButton->OnTouchBegin(x, y);
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
-                if (x > Globals::layout->buttonInsetX + this->listTopY &&
+                if (x > this->listTopY + Globals::layout->buttonInsetX &&
                     x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                     y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                     y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
                     this->upButtonPressed = 1;
                     Globals::sound->play(124, 0, 0, 0.0f);
                 }
-                if (x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                     x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                     y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                     y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
@@ -2361,21 +2364,22 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         this->optBtnD8->OnTouchBegin(x, y);
         this->optBtnDC->OnTouchBegin(x, y);
         for (unsigned int i = 1; i < this->sliders->size(); i++) {
-            if (i != 5 || Globals::layout->field_0x284_sliderSlot5Enabled)
+            if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
                 (*this->sliders)[i]->OnTouchBegin(x, y);
+            }
         }
         break;
     case 8:
             this->upButtonPressed = 0;
             this->downButtonPressed = 0;
-            if (x > Globals::layout->buttonInsetX + this->listTopY &&
+            if (x > this->listTopY + Globals::layout->buttonInsetX &&
                 x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                 y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                 y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
                 Globals::sound->play(124, 0, 0, 0.0f);
             }
-            if (x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+            if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                 x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                 y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                 y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
@@ -2394,17 +2398,22 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
             this->cinematicBtnA->OnTouchBegin(x, y);
             this->cinematicBtnB->OnTouchBegin(x, y);
-            if (touchId != 0 && this->cinematicTouchIdA == 0 && x <= 209 && this->cinematicTouchIdB != touchId &&
+            auto touchA = this->cinematicTouchIdA;
+            auto touchB = this->cinematicTouchIdB;
+            if (touchA == 0 && touchId != 0 && touchB != touchId && x <= 209 &&
                 y > *(int *) &Globals::options[84] - 20 && y < *(int *) &Globals::options[84] + 300) {
-                this->cinematicTouchIdA = touchId;
                 this->cinematicTouchState = 1;
+                this->cinematicTouchIdA = touchId;
                 this->cinematicAnchorA = y;
-            } else if (this->cinematicTouchIdA != touchId && touchId != 0 && this->cinematicTouchIdB == 0 &&
-                       x > Globals::w - 220 && y > *(int *) &Globals::options[88] - 20 &&
-                       y < *(int *) &Globals::options[88] + 230) {
-                this->cinematicTouchIdB = touchId;
-                this->cinematicTouchState = 0x100;
-                this->cinematicAnchorB = y;
+            } else if (touchId != 0 && this->cinematicTouchIdA != touchId) {
+                if (touchB == 0 && x > Globals::w - 220 &&
+                    y > *(int *) &Globals::options[88] - 20 && y < *(int *) &Globals::options[88] + 230) {
+                    this->cinematicTouchIdB = touchId;
+                    this->cinematicTouchState = 0x100;
+                    this->cinematicAnchorB = y;
+                } else {
+                    this->cinematicTouchState = 0;
+                }
             } else {
                 this->cinematicTouchState = 0;
             }
@@ -2429,19 +2438,22 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         this->scrollWindowB->OnTouchBegin(x, y);
         for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
             long long id = (*this->scrollEntries)[i]->id;
-            if (id == 52 || id == 60)
+            if (id - 52 == 0 || id - 60 == 0)
                 (*this->scrollEntries)[i]->OnTouchBegin(x, y);
         }
         for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
             (*this->scrollSlots)[i]->OnTouchBegin(x, y);
-        this->scrollbarHit =
-            x > Globals::w - Globals::layout->buttonInsetX -
+        if (x > Globals::w - Globals::layout->buttonInsetX -
                     Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
-            y < Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]) +
-                    (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin);
+            y < ((*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0x20_top +
+                  (*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0xc_leftMargin) +
+                    Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
+            this->scrollbarHit = 1;
+        else
+            this->scrollbarHit = 0;
         if (x < Globals::layout->buttonInsetX + Globals::Canvas->GetImage2DWidth(this->heapBufA[0])) {
-            this->dragStartX = y;
             this->dragLastX = y;
+            this->dragStartX = y;
             this->dragVelocity = 0;
             this->dragging = 1;
         }
@@ -2499,12 +2511,12 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
                 this->scrollUpButton->OnTouchMove(x, y);
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
-                if (x > Globals::layout->buttonInsetX + this->listTopY &&
+                if (x > this->listTopY + Globals::layout->buttonInsetX &&
                     x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                     y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                     y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth)
                     this->upButtonPressed = 1;
-                if (x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                     x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                     y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                     y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth)
@@ -2555,12 +2567,12 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
         case 8:
             this->upButtonPressed = 0;
             this->downButtonPressed = 0;
-            if (x > Globals::layout->buttonInsetX + this->listTopY &&
+            if (x > this->listTopY + Globals::layout->buttonInsetX &&
                 x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                 y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                 y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth)
                 this->upButtonPressed = 1;
-            if (x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+            if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                 x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                 y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
                 y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth)
@@ -2956,7 +2968,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 optionFloat(20) = (*this->sliders)[0]->getValue();
             else
                 optionFloat(24) = (*this->sliders)[0]->getValue();
-            if (this->upButtonPressed && x > Globals::layout->buttonInsetX + this->listTopY &&
+            if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
                 x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                 y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                 y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
@@ -2966,7 +2978,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 Globals::sound->play(123, 0, 0, 0.0f);
             }
             if (this->downButtonPressed &&
-                x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                 x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                 y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                 y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
@@ -3093,7 +3105,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     optionFloat(20) = (*this->sliders)[0]->getValue();
                 else
                     optionFloat(24) = (*this->sliders)[0]->getValue();
-                if (this->upButtonPressed && x > Globals::layout->buttonInsetX + this->listTopY &&
+                if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
                     x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                     y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                     y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
@@ -3103,7 +3115,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     Globals::sound->play(123, 0, 0, 0.0f);
                 }
                 if (this->downButtonPressed &&
-                    x > Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                    x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
                     x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                     y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                     y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
@@ -3658,7 +3670,8 @@ void MenuTouchWindow::startSupernova() {
 
     (*statusHolder)->field_84 = 0x1a0a;
     unsigned char *hints = Globals::hints;
-    Globals::options[52] = 1;
+    hints[8] = 1;
+    hints[9] = 1;
     hints[32] = 1;
     hints[33] = 1;
     hints[34] = 1;
@@ -3669,8 +3682,6 @@ void MenuTouchWindow::startSupernova() {
     hints[51] = 0;
     hints[52] = 0;
     hints[53] = 0;
-    hints[8] = 1;
-    hints[9] = 1;
     hints[10] = 1;
     hints[21] = 1;
     hints[19] = 1;
@@ -3685,6 +3696,7 @@ void MenuTouchWindow::startSupernova() {
     hints[30] = 1;
     hints[56] = 1;
     hints[57] = 1;
+    Globals::options[52] = 1;
 
     Globals::achievements->setMedal(0x17, 3);
     Globals::achievements->setMedal(0x1e, 1);

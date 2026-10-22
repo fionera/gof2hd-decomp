@@ -633,7 +633,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 77.2,
+   "pct": 77.5,
    "byte": false,
    "linked": false,
    "osize": 1896,
@@ -710,14 +710,6 @@
    "linked": false,
    "osize": 884,
    "usize": 880
-  },
-  {
-   "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
-   "pct": 79.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1564,
-   "usize": 1552
   },
   {
    "name": "_ZN9PlayerEgo10stopMiningEv",
@@ -1070,6 +1062,14 @@
    "linked": false,
    "osize": 1332,
    "usize": 1332
+  },
+  {
+   "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
+   "pct": 98.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1564,
+   "usize": 1564
   },
   {
    "name": "_ZN15MenuTouchWindow6updateEi",
