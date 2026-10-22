@@ -268,7 +268,7 @@ int SpaceLounge::init() {
     this->cameraAnimating = 0;
     this->agents = Globals::status->getStation()->getAgents();
 
-    if (this->silhouetteGrid == 0 && this->agents != 0 && this->agentRects == 0) {
+    if (this->silhouetteGrid == 0 && this->agentRects == 0 && this->agents != 0) {
         this->silhouetteGrid = new Array<Array<ImagePart *> *>();
         ArraySetLength(this->agents->size(), *this->silhouetteGrid);
         this->agentRects = new Array<Vector *>();
