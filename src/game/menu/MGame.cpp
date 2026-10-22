@@ -1392,7 +1392,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             amount--;
                             refinedAny = true;
                         }
-                        if (amount < 0) {
+                        if (amount <= -1) {
                             report += String("\n") + String(-amount) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
