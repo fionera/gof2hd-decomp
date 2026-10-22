@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.16,
   "byte_exact": 1339,
-  "linked_exact": 4386,
-  "fuzzy_perfect": 4386,
+  "linked_exact": 4387,
+  "fuzzy_perfect": 4387,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -846,14 +846,6 @@
    "linked": false,
    "osize": 1392,
    "usize": 1408
-  },
-  {
-   "name": "_ZN9Explosion6renderEv",
-   "pct": 84.5,
-   "byte": false,
-   "linked": false,
-   "osize": 388,
-   "usize": 392
   },
   {
    "name": "_ZN3Hud10touchBeginEjjPv",
@@ -31502,6 +31494,14 @@
    "linked": true,
    "osize": 396,
    "usize": 396
+  },
+  {
+   "name": "_ZN9Explosion6renderEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 388,
+   "usize": 388
   },
   {
    "name": "_ZN9Explosion6updateEiP18TargetFollowCamera",

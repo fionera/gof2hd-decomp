@@ -451,12 +451,18 @@ void Explosion::render() {
     Matrix matrix = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
     Vector position = this->primaryMesh->getPosition();
 
-    if ((uint32_t) this->type <= 12 && ((1u << this->type) & 0x1804u) != 0) {
-        AbyssEngine::AEMath::MatrixSetTranslation(matrix, position.x, position.y, position.z);
-    } else {
-        Vector cameraPosition = AbyssEngine::AEMath::MatrixGetPosition(matrix);
-        Vector up = AbyssEngine::AEMath::MatrixGetUp(matrix);
-        matrix = AbyssEngine::AEMath::MatrixGetLookAt(cameraPosition, position, up);
+    switch (this->type) {
+        case 2:
+        case 11:
+        case 12:
+            AbyssEngine::AEMath::MatrixSetTranslation(matrix, position.x, position.y, position.z);
+            break;
+        default: {
+            Vector cameraPosition = AbyssEngine::AEMath::MatrixGetPosition(matrix);
+            Vector up = AbyssEngine::AEMath::MatrixGetUp(matrix);
+            matrix = AbyssEngine::AEMath::MatrixGetLookAt(cameraPosition, position, up);
+            break;
+        }
     }
 
     AbyssEngine::AEMath::MatrixSetScaling(matrix, this->scale, this->scale, this->scale);
