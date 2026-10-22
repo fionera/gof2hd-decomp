@@ -480,8 +480,16 @@
    "usize": 2036
   },
   {
+   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
+   "pct": 74.7,
+   "byte": false,
+   "linked": false,
+   "osize": 440,
+   "usize": 416
+  },
+  {
    "name": "_ZN13PlayerStationC1EP7Station",
-   "pct": 73.9,
+   "pct": 74.9,
    "byte": false,
    "linked": false,
    "osize": 3440,
@@ -489,19 +497,11 @@
   },
   {
    "name": "_ZN13PlayerStationC2EP7Station",
-   "pct": 73.9,
+   "pct": 74.9,
    "byte": false,
    "linked": false,
    "osize": 3440,
    "usize": 3436
-  },
-  {
-   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
-   "pct": 74.7,
-   "byte": false,
-   "linked": false,
-   "osize": 440,
-   "usize": 416
   },
   {
    "name": "_ZN5Level11createSceneEv",

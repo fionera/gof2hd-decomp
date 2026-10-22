@@ -248,8 +248,8 @@ PlayerStation::PlayerStation(Station *station)
             BoundingVolume *volume;
             if (type == 0) {
                 float x = (float) -data[cursor];
-                float y = (float) data[cursor + 2];
                 float z = (float) data[cursor + 1];
+                float y = (float) data[cursor + 2];
                 extent.x = (float) data[cursor + 3];
                 if (alienOrbit) {
                     extent *= 0.4f;
@@ -262,10 +262,10 @@ PlayerStation::PlayerStation(Station *station)
                 volume = new BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, extent.x);
                 cursor += 4;
             } else if (type == 1) {
-                extent.x = (float) data[cursor + 3];
-                float x = (float) -data[cursor];
-                float y = (float) data[cursor + 2];
                 float z = (float) data[cursor + 1];
+                float y = (float) data[cursor + 2];
+                float x = (float) -data[cursor];
+                extent.x = (float) data[cursor + 3];
                 extent.z = (float) data[cursor + 4];
                 extent.y = (float) data[cursor + 5];
                 if (alienOrbit) {
