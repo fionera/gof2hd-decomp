@@ -660,9 +660,11 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     AEFile::Read(targetStationName, fd, true);
     String targetSystemName;
     AEFile::Read(targetSystemName, fd, true);
-    bool isEmpty = false;
+    bool isEmpty;
+    int imageCount;
+    isEmpty = false;
     AEFile::Read(isEmpty, fd);
-    int imageCount = 0;
+    imageCount = 0;
     AEFile::Read(imageCount, fd);
     int *imageParts = 0;
     if (imageCount >= 1) {
@@ -696,13 +698,13 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
     Agent *agent;
     int hasAgent = 0;
     AEFile::Read(hasAgent, fd);
+    Mission *mission;
     if (hasAgent >= 1) {
         agent = (Agent *) this->readAgent(fd);
     } else {
         agent = 0;
     }
 
-    Mission *mission;
     if (isEmpty) {
         mission = new Mission(type, reward, targetStation);
     } else {
