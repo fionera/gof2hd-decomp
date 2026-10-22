@@ -45,7 +45,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     while (attempts < 100 && added < wanted) {
         NewsItem *item = (*allItems)[Globals::rnd->nextInt(allItems->size())];
         SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-        if (system->getIndex() > 21 && item->id == 13) {
+        if (__predict_true(system->getIndex() > 21) && item->id == 13) {
             continue;
         }
         if (item->maxLevel > 160 && item->minLevel <= level && Globals::rnd->nextInt(100) < 50 &&
