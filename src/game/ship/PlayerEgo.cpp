@@ -1814,10 +1814,12 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
         Level *level = this->level;
         float engineColor = 221.0f + this->getCloakingPercentage() * -201.0f * 0.01f;
-        if (engineColor < 221.0f)
-            engineColor = engineColor < 0.0f ? 0.0f : engineColor;
-        else
+        if (engineColor < 221.0f) {
+            if (engineColor < 0.0f)
+                engineColor = 0.0f;
+        } else {
             engineColor = 221.0f;
+        }
         level->setPlayerEngineColor((short) engineColor);
     } else if (this->chargingCloak) {
         this->cloakCharge += this->shakeIntensity;
@@ -2379,6 +2381,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         return;
     if (this->dockedFlag && (unsigned int) (this->dockingPointIndex - 1) < 3)
         return;
+    Vector surface;
     for (unsigned int i = 0; i < objects->size(); i++) {
         KIPlayer *object = (*objects)[i];
         if (object == nullptr)
@@ -2435,13 +2438,13 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
                 this->player->damage(20);
                 if (this->volatileGoods)
                     this->player->flShake += 0.2f;
-                this->hitCamera();
+                goto hitCameraLabel;
             }
             continue;
         }
         if (!object->isVisible())
             continue;
-        Vector surface = object->projectCollisionOnSurface(this->geometry->getPosition());
+        surface = object->projectCollisionOnSurface(this->geometry->getPosition());
         if (surface != Vector{0.0f, 0.0f, 0.0f}) {
             this->geometry->setPosition(surface);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
@@ -2450,6 +2453,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             if (i == 0 && object->field_0x71)
                 this->collidesWithStationFlag = 1;
         }
+hitCameraLabel:
         this->hitCamera();
     }
 }

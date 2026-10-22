@@ -272,14 +272,6 @@
    "usize": 17328
   },
   {
-   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
-   "pct": 59.8,
-   "byte": false,
-   "linked": false,
-   "osize": 968,
-   "usize": 996
-  },
-  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 60.9,
    "byte": false,
@@ -294,6 +286,14 @@
    "linked": false,
    "osize": 2764,
    "usize": 2792
+  },
+  {
+   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
+   "pct": 61.1,
+   "byte": false,
+   "linked": false,
+   "osize": 968,
+   "usize": 968
   },
   {
    "name": "_ZN3Hud14touchedElementEjj",
@@ -665,11 +665,11 @@
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 88.1,
+   "pct": 87.9,
    "byte": false,
    "linked": false,
    "osize": 8852,
-   "usize": 8844
+   "usize": 8852
   },
   {
    "name": "_ZN9Generator12createAgentsEP7Station",
