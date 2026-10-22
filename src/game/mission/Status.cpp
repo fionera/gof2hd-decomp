@@ -2046,6 +2046,10 @@ campaignDone:
 }
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
+    bool notAtStation = !atStation;
+    bool shortMission = notAtStation && extra > 2000;
+    bool dockedAtStation = atStation && docked;
+    bool longMission = notAtStation && extra > 10000;
     for (unsigned i = 0; i < missions->size(); i++) {
         Mission *m = (*missions)[i];
         if (m->hasWon()) {
@@ -2144,9 +2148,10 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 0x9e: {
                 Array<Item *> *equipment = ship->getEquipment();
+                unsigned j = 0;
                 bool hasSpecial = false;
                 bool hasGood = false;
-                for (unsigned j = 0; j < equipment->size(); j++) {
+                for (; j < equipment->size(); j++) {
                     if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == 0) {
                         hasGood = true;
                     } else if ((*equipment)[j] != 0 && (*equipment)[j]->getSort() == 10) {
@@ -2230,7 +2235,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 if (atStation) {
                     return m;
                 }
-                if (extra > 10000 && station->getIndex() != m->getTargetStation()) {
+                if (station->getIndex() != m->getTargetStation() && extra > 10000) {
                     return m;
                 }
                 break;
@@ -2248,12 +2253,15 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             }
             case 0xa4:
-                if (!atStation && extra > 10000) {
+                if (longMission) {
                     return m;
                 }
                 break;
             case 0xa5:
-                return m;
+                if (notAtStation && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
             case 0xa8:
                 if (Globals::status->field_178 >= m->getStatusValue()) {
                     m->setWon(true);
@@ -2262,17 +2270,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 0xa9:
-                if (!atStation && extra > 2000) {
+                if (shortMission) {
                     return m;
                 }
                 break;
             case 0xab:
-                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
             case 0xac:
-                if (atStation && docked && station->getIndex() == m->getTargetStation()) {
+                if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
                     if (Item::isInList(index, amount, ship->getCargo())) {
@@ -2308,10 +2316,11 @@ void Status::checkForLevelUp() {
 }
 
 void Status::moveWanted() {
-    bool initialized = false;
     SystemPathFinder *pathFinder = 0;
+    unsigned i = 0;
+    bool initialized = false;
     Array<SolarSystem *> *systems = 0;
-    for (unsigned i = 0; i < this->wanted->size(); i++) {
+    for (; i < this->wanted->size(); i++) {
         if (!(*this->wanted)[i]->isActive() || (*this->wanted)[i]->isTerminated() ||
             Globals::status->inAlienOrbit() ||
             (*this->wanted)[i]->getCurrentLocation() == Globals::status->station->getIndex()) {
