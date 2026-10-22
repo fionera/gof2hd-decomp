@@ -244,9 +244,9 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->leftWidth = w;
         this->textOffsetY = this->height + 5;
         int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
-        this->iconOverlay = -1;
-        this->textOffsetX = w / 2 - textW / 2;
         this->iconSmall = -1;
+        this->textOffsetX = w / 2 - textW / 2;
+        this->iconOverlay = -1;
         Globals::Canvas->Image2DCreate(g_TB_medalIcons[medalIndex], (unsigned int &) this->iconSmall);
         if (medalStage != 0 || Globals::achievements->isEliteMedal(medalIndex))
             Globals::Canvas->Image2DCreate(2412, (unsigned int &) this->iconOverlay);
@@ -389,10 +389,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         if (kind == 0 || kind == 5 || kind == 6) {
             this->rightWidth -= 2;
         } else if (kind >= 7 && kind <= 9 && Globals::iPad) {
-            if (Globals::iPadHD)
-                this->layoutHeight = 70;
-            else
-                this->layoutHeight = Globals::iPadLarge ? 100 : 50;
+            this->layoutHeight = Globals::iPadHD ? 70 : (Globals::iPadLarge ? 100 : 50);
         }
         this->setText(text);
         break;
@@ -476,7 +473,7 @@ void TouchButton::draw() {
                 middle = (this->alwaysPressed ? this->frameImages[2][1] : this->frameImages[1][1]);
                 rightCap = (this->alwaysPressed ? this->frameImages[2][2] : this->frameImages[1][2]);
             }
-            Globals::layout->drawBGPattern(middle, this->leftWidth + this->x, this->y, this->midStretch, this->height);
+            Globals::layout->drawBGPattern(middle, this->x + this->leftWidth, this->y, this->midStretch, this->height);
             Globals::Canvas->DrawImage2D(rightCap, this->x + this->leftWidth + this->midStretch, this->y);
             break;
         }
@@ -501,7 +498,7 @@ void TouchButton::draw() {
                 int right = filled - this->leftWidth - this->midStretch;
                 Globals::Canvas->DrawRegion2D((this->progressHighlight ? this->frameImages[0][2] : this->frameImages[1][2]), 0, 0,
                                               this->rightWidth > right ? right : this->rightWidth, this->height,
-                                              0.0f, 0, 0, this->midStretch + this->leftWidth + this->x, this->y);
+                                              0.0f, 0, 0, this->x + this->leftWidth + this->midStretch, this->y);
             }
             Globals::layout->setDrawColor(0xffffffff);
         }
@@ -513,29 +510,31 @@ void TouchButton::draw() {
         if (this->subId != -1) {
             if (this->kind != 19) {
                 imageToDraw = this->subId;
-                imageX = this->x + this->textOffsetX;
                 imageY = this->y + this->textOffsetY;
+                imageX = this->x + this->textOffsetX;
                 goto drawSingleImage;
             }
         } else {
-            Globals::Canvas->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
-                                        this->y + this->textOffsetY, false);
+            Globals::Canvas->DrawString(this->fontId, this->text, this->textOffsetX + this->x,
+                                        this->textOffsetY + this->y, false);
             if (this->splitText.size() != 0) {
+                int x = this->x;
+                int w = this->width;
                 if (this->kind == 10)
                     Globals::Canvas->DrawString(
                         this->fontId, this->splitText,
-                        this->x + this->width / 2 - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
-                        this->height + this->y - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) * 2, false);
+                        x + w / 2 - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
+                        this->y + this->height - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) * 2, false);
                 else
                     Globals::Canvas->DrawString(this->fontId, this->splitText,
-                                                this->x + this->width - this->textOffsetX -
+                                                x + w - this->textOffsetX -
                                                     Globals::Canvas->GetTextWidth(this->fontId, this->splitText),
                                                 this->y + this->textOffsetY, false);
             }
             if (this->numberText.size() != 0) {
                 Globals::Canvas->SetColor(0x777777ff);
                 Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, this->numberText,
-                                            this->leftWidth + this->x -
+                                            this->x + this->leftWidth -
                                                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->numberText),
                                             this->y + this->textOffsetY, false);
                 Globals::Canvas->SetColor(this->textColor);
