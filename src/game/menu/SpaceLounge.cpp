@@ -1701,7 +1701,7 @@ void SpaceLounge::drawLounge() {
     Globals::Canvas->SetColor(0x193043ffu);
     Globals::Canvas->DrawRectangle(this->panelX, this->buttonPanelY, Globals::layout->field_0x68, inset + boxHeight);
     Globals::Canvas->SetColor(0xffffffffu);
-    Globals::imageFactory->drawChar(this->agentImageParts, Globals::layout->field_0x4c + this->panelX,
+    Globals::imageFactory->drawChar(this->agentImageParts, this->panelX + Globals::layout->field_0x4c,
                                     this->buttonPanelY + Globals::layout->field_0x4c, true);
 
     if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
