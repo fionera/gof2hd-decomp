@@ -472,14 +472,6 @@
    "usize": 864
   },
   {
-   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
-   "pct": 74.7,
-   "byte": false,
-   "linked": false,
-   "osize": 440,
-   "usize": 416
-  },
-  {
    "name": "_ZN13PlayerStationC1EP7Station",
    "pct": 74.9,
    "byte": false,
@@ -534,6 +526,14 @@
    "linked": false,
    "osize": 11440,
    "usize": 11484
+  },
+  {
+   "name": "_ZN11AbyssEngine18computeFloatStringEfiPiS0_i",
+   "pct": 77.7,
+   "byte": false,
+   "linked": false,
+   "osize": 440,
+   "usize": 440
   },
   {
    "name": "_ZN7StarMap11OnTouchMoveEii",
