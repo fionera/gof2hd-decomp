@@ -773,9 +773,12 @@ namespace AbyssEngine {
                 *p-- = (unsigned short) ((int) ((digit + 0.03) * 10.0) + '0');
             }
             unsigned short *src = p + 1;
-            out = buf;
-            while (src < end)
-                *out++ = *src++;
+            unsigned short *dst = buf;
+            // integral != 0 emitted at least one digit, so src < end here.
+            do {
+                *dst++ = *src++;
+            } while (src < end);
+            out = dst;
         } else {
             if (fraction > 0.0f) {
                 // Scale the fraction up until its first digit is non-zero.
