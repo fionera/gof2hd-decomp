@@ -1516,7 +1516,7 @@ void Hud::drawMenu(int unused) {
     if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
         String label = String("X ") + String(this->fuelGaugeValue);
         int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
-        int gy = y + Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x288;
+        int gy = Globals::layout->field_0x30_rowHeight / 2 + (Globals::layout->field_0x288 + y);
         Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
         Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
                                      Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,

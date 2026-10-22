@@ -752,14 +752,6 @@
    "usize": 860
   },
   {
-   "name": "_ZN3Hud8drawMenuEi",
-   "pct": 85.3,
-   "byte": false,
-   "linked": false,
-   "osize": 660,
-   "usize": 652
-  },
-  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 87.4,
    "byte": false,
@@ -838,6 +830,14 @@
    "linked": false,
    "osize": 672,
    "usize": 672
+  },
+  {
+   "name": "_ZN3Hud8drawMenuEi",
+   "pct": 89.3,
+   "byte": false,
+   "linked": false,
+   "osize": 660,
+   "usize": 660
   },
   {
    "name": "_ZN16ParticleSettings4initEv",
