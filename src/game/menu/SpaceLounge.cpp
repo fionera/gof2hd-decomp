@@ -1759,6 +1759,16 @@ int SpaceLounge::getSoundId(Agent *agent) {
     bool canBeSpecial = true;
     int soundId;
     switch (offer) {
+        case 2:
+        case 3:
+        case 8:
+        case 9:
+        case 10:
+            soundId = Globals::rnd->nextInt(2) + 759;
+            break;
+        case 1:
+            soundId = Globals::rnd->nextInt(2) + 781;
+            break;
         case 0:
             if (missionType == 0 || missionType == 11) {
                 soundId = Globals::rnd->nextInt(4) + 769;
@@ -1769,16 +1779,6 @@ int SpaceLounge::getSoundId(Agent *agent) {
             } else {
                 soundId = Globals::rnd->nextInt(4) + 799;
             }
-            break;
-        case 1:
-            soundId = Globals::rnd->nextInt(2) + 781;
-            break;
-        case 2:
-        case 3:
-        case 8:
-        case 9:
-        case 10:
-            soundId = Globals::rnd->nextInt(2) + 759;
             break;
         case 4:
             soundId = Globals::rnd->nextInt(2) + 766;
