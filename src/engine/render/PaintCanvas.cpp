@@ -2819,10 +2819,10 @@ void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
     if (meshIndex >= this->meshes.count)
         return;
     Mesh *mesh = this->meshes.data_[meshIndex];
+    unsigned short *indices = (unsigned short *) mesh->indices;
     int first = tri * 3;
     if (first >= mesh->indexCount)
         return;
-    unsigned short *indices = (unsigned short *) mesh->indices;
     indices[first] = v0;
     indices[first + 1] = v1;
     indices[first + 2] = v2;
