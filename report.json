@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.27,
   "byte_exact": 1339,
-  "linked_exact": 4404,
-  "fuzzy_perfect": 4404,
+  "linked_exact": 4405,
+  "fuzzy_perfect": 4405,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -678,14 +678,6 @@
    "linked": false,
    "osize": 186,
    "usize": 182
-  },
-  {
-   "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
-   "pct": 84.7,
-   "byte": false,
-   "linked": false,
-   "osize": 864,
-   "usize": 860
   },
   {
    "name": "_ZN13PlayerFighter6updateEi",
@@ -28286,6 +28278,14 @@
    "linked": true,
    "osize": 1208,
    "usize": 1208
+  },
+  {
+   "name": "_ZN7Globals14setCoordsSteerEiiiiRtS0_S0_S0_S0_S0_S0_S0_S0_S0_",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 864,
+   "usize": 864
   },
   {
    "name": "_ZN7Globals15createBillBoardEiiffffi",
