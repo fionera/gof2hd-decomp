@@ -728,14 +728,6 @@
    "usize": 604
   },
   {
-   "name": "_ZN6Status13departStationEP7Station",
-   "pct": 82.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 1012
-  },
-  {
    "name": "_ZN6Status15calcCargoPricesEv",
    "pct": 83.0,
    "byte": false,
@@ -750,6 +742,14 @@
    "linked": false,
    "osize": 864,
    "usize": 860
+  },
+  {
+   "name": "_ZN6Status13departStationEP7Station",
+   "pct": 83.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1008,
+   "usize": 1004
   },
   {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
