@@ -376,14 +376,6 @@
    "usize": 5856
   },
   {
-   "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
-   "pct": 70.4,
-   "byte": false,
-   "linked": false,
-   "osize": 728,
-   "usize": 736
-  },
-  {
    "name": "_ZN9ObjectGun6renderEv",
    "pct": 72.1,
    "byte": false,
@@ -470,6 +462,14 @@
    "linked": false,
    "osize": 6280,
    "usize": 6316
+  },
+  {
+   "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
+   "pct": 76.7,
+   "byte": false,
+   "linked": false,
+   "osize": 728,
+   "usize": 744
   },
   {
    "name": "_ZN10StarSystemC1Ei",
