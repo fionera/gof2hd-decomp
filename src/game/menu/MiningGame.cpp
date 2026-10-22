@@ -252,11 +252,10 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->lossTimer = 0;
     this->oreAmount = 0.0f;
     this->oreRate = 0.0f;
-    this->gameWonFlag = 0;
     this->failThreshold = 2500;
-    this->currentLayer = 0;
+    *(long long *) &this->layerTimer = 0;
     this->targetLayer = layer;
-    this->layerTimer = 0;
+    this->gameWonFlag = 0;
     this->gotCoreFlag = 0;
     this->inputY = 0.0f;
     this->posX = (float) this->centerX;
