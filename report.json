@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.32,
   "byte_exact": 1339,
-  "linked_exact": 4410,
-  "fuzzy_perfect": 4410,
+  "linked_exact": 4411,
+  "fuzzy_perfect": 4411,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -505,7 +505,7 @@
   },
   {
    "name": "_ZN10StarSystemC1Ei",
-   "pct": 76.8,
+   "pct": 77.3,
    "byte": false,
    "linked": false,
    "osize": 2900,
@@ -513,7 +513,7 @@
   },
   {
    "name": "_ZN10StarSystemC2Ei",
-   "pct": 76.8,
+   "pct": 77.3,
    "byte": false,
    "linked": false,
    "osize": 2900,
@@ -742,14 +742,6 @@
    "linked": false,
    "osize": 900,
    "usize": 900
-  },
-  {
-   "name": "_ZN10StarSystem9initLightEv",
-   "pct": 91.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1476,
-   "usize": 1476
   },
   {
    "name": "_ZN11TouchButton4drawEv",
@@ -4702,6 +4694,14 @@
    "linked": true,
    "osize": 172,
    "usize": 172
+  },
+  {
+   "name": "_ZN10StarSystem9initLightEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1476,
+   "usize": 1476
   },
   {
    "name": "_ZN10StarSystemD1Ev",
