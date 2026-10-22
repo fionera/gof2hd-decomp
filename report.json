@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.28,
+  "avg_match": 99.29,
   "byte_exact": 1339,
-  "linked_exact": 4406,
-  "fuzzy_perfect": 4406,
+  "linked_exact": 4408,
+  "fuzzy_perfect": 4408,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -518,22 +518,6 @@
    "linked": false,
    "osize": 6280,
    "usize": 6304
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
-   "pct": 76.4,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 148
-  },
-  {
-   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
-   "pct": 76.4,
-   "byte": false,
-   "linked": false,
-   "osize": 152,
-   "usize": 148
   },
   {
    "name": "_ZN10StarSystemC1Ei",
@@ -18712,12 +18696,28 @@
    "usize": 132
   },
   {
+   "name": "_ZN17ScrollTouchWindowC1Eiiiib",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 152,
+   "usize": 152
+  },
+  {
    "name": "_ZN17ScrollTouchWindowC2Eiiii",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 132,
    "usize": 132
+  },
+  {
+   "name": "_ZN17ScrollTouchWindowC2Eiiiib",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 152,
+   "usize": 152
   },
   {
    "name": "_ZN17ScrollTouchWindowD1Ev",

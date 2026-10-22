@@ -13,7 +13,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) 
 
     this->scrollBox = new ScrollTouchBox(
         Globals::layout->field_0x4c + x,
-        Globals::layout->field_0x4c + y + (hasFrame ? Globals::layout->windowTopInset : 0),
+        y + (hasFrame ? Globals::layout->windowTopInset : 0) + Globals::layout->field_0x4c,
         w - Globals::layout->field_0x4c * 2,
         h - Globals::layout->field_0x4c * 2 - (hasFrame ? Globals::layout->windowTopInset : 0));
     this->touchActive = 0;
