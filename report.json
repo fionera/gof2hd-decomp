@@ -744,20 +744,20 @@
    "usize": 1896
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 94.5,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 10376
-  },
-  {
    "name": "_ZN10ModStation10checkHintsEv",
    "pct": 95.3,
    "byte": false,
    "linked": false,
    "osize": 2748,
    "usize": 2748
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 96.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 10376
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
