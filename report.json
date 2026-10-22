@@ -672,14 +672,6 @@
    "usize": 2532
   },
   {
-   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
-   "pct": 87.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1832
-  },
-  {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 88.1,
    "byte": false,
@@ -822,6 +814,14 @@
    "linked": false,
    "osize": 1896,
    "usize": 1896
+  },
+  {
+   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1816,
+   "usize": 1820
   },
   {
    "name": "_ZN11AbyssEngine6EngineC1Ev",
