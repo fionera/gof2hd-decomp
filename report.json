@@ -728,6 +728,14 @@
    "usize": 8580
   },
   {
+   "name": "_ZN16ParticleSettings4initEv",
+   "pct": 90.1,
+   "byte": false,
+   "linked": false,
+   "osize": 5204,
+   "usize": 5184
+  },
+  {
    "name": "_ZN5MGame19handleAccelerometerEv",
    "pct": 90.5,
    "byte": false,
@@ -742,14 +750,6 @@
    "linked": false,
    "osize": 1476,
    "usize": 1476
-  },
-  {
-   "name": "_ZN16ParticleSettings4initEv",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 5204,
-   "usize": 5224
   },
   {
    "name": "_ZN11TouchButton4drawEv",
