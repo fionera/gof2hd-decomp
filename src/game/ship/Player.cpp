@@ -1005,17 +1005,16 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
 }
 
 bool Player::shoot(int slot, long long target, bool flag, Matrix mat) {
-    Matrix transform = mat;
     if (this->guns != nullptr && this->shootingEnabled != 0 && (unsigned int) slot < this->guns->size()
         && slot >= 0 && (*this->guns)[slot] != nullptr) {
         for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
             Gun *gun = (*(*this->guns)[slot])[i];
-            if (gun->timer > gun->fireDelay && gun->shootAt(transform, (int) target, this, flag)) {
+            if (gun->timer > gun->fireDelay && gun->shootAt(mat, (int) target, this, flag)) {
                 this->flShake += 0.008f;
                 Gun *fired = (*(*this->guns)[slot])[i];
                 fired->timer = 0;
                 if (this->playShootSoundFlag && fired->field_0x89) {
-                    Vector position = AbyssEngine::AEMath::MatrixGetPosition(transform);
+                    Vector position = AbyssEngine::AEMath::MatrixGetPosition(mat);
                     Gun *sounding = (*(*this->guns)[slot])[i];
                     this->playShootSound(sounding->itemIndex, sounding->weaponType, &position,
                                          sounding->field_0xb0);
@@ -1045,12 +1044,11 @@ void Player::stopShooting(int slot, int channel) {
 }
 
 bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix mat) {
-    Matrix transform = mat;
     if (this->guns == nullptr || this->shootingEnabled == 0)
         return true;
     if (!((unsigned int) slot < this->guns->size() && slot >= 0 && (*this->guns)[slot] != nullptr))
         return true;
-    uint8_t ready = 1;
+    int ready = 1;
     for (unsigned int i = 0; i < (*this->guns)[slot]->size(); i++) {
         Gun *gun = (*(*this->guns)[slot])[i];
         if ((gun->weaponType == 6 || gun->weaponType == 7 || gun->weaponType == 34) && gun->lifetimes[0] >= 0) {
@@ -1061,7 +1059,7 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
             if (gun->shoot(mat, (int) target, flag)) {
                 this->flShake += 0.008f;
                 if (this->playShootSoundFlag) {
-                    Vector position = AbyssEngine::AEMath::MatrixGetPosition(transform);
+                    Vector position = AbyssEngine::AEMath::MatrixGetPosition(mat);
                     Gun *fired = (*(*this->guns)[slot])[i];
                     this->playShootSound(fired->itemIndex, fired->weaponType, &position, fired->field_0xb0);
                 }
@@ -1073,7 +1071,7 @@ bool Player::shoot(int slot, int itemIndex, long long target, bool flag, Matrix 
                 ready = 0;
         }
     }
-    return ready;
+    return ready & 1;
 }
 
 bool Player::shoot(int slot, long long target, bool flag) {

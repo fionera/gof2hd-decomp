@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.24,
+  "avg_match": 99.26,
   "byte_exact": 1339,
-  "linked_exact": 4400,
-  "fuzzy_perfect": 4400,
+  "linked_exact": 4402,
+  "fuzzy_perfect": 4402,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -238,14 +238,6 @@
    "linked": false,
    "osize": 1872,
    "usize": 1872
-  },
-  {
-   "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
-   "pct": 57.4,
-   "byte": false,
-   "linked": false,
-   "osize": 468,
-   "usize": 476
   },
   {
    "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
@@ -574,14 +566,6 @@
    "linked": false,
    "osize": 2900,
    "usize": 2912
-  },
-  {
-   "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 412,
-   "usize": 400
   },
   {
    "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
@@ -26536,12 +26520,28 @@
    "usize": 116
   },
   {
+   "name": "_ZN6Player5shootEiixbN11AbyssEngine6AEMath6MatrixE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 468,
+   "usize": 468
+  },
+  {
    "name": "_ZN6Player5shootEixb",
    "pct": 100.0,
    "byte": false,
    "linked": true,
    "osize": 110,
    "usize": 110
+  },
+  {
+   "name": "_ZN6Player5shootEixbN11AbyssEngine6AEMath6MatrixE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 412,
+   "usize": 412
   },
   {
    "name": "_ZN6Player6addGunEP3Guni",
