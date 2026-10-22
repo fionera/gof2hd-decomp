@@ -550,19 +550,17 @@ bool Status::inAlienOrbit() {
 
 void Status::resetGame() {
     GameSettings *settings = reinterpret_cast<GameSettings *>(Globals::options);
-
     this->boughtEquipment = 0;
     this->field_8c = 0;
     this->field_0x100 = 0;
     this->field_0x104 = 0;
     this->credits = 0;
     this->rating = 0;
-    this->playingTime = 0;
     this->kills = 0;
     this->missionCount = 0;
-    this->level = 1;
-    this->lastXP = 0;
     this->stationsVisited = 0;
+    reinterpret_cast<int64_t &>(this->level) = 1;
+    this->playingTime = 0;
     this->field_10c = 0;
     this->field_110 = 0;
     this->field_118 = 0;
@@ -573,6 +571,7 @@ void Status::resetGame() {
     this->pirateKills = 0;
     this->jumpgatesUsed = 0;
     this->capturedCrates = 0;
+    Station *oldStation = this->voidStation;
     this->field_13c = 0;
     this->field_134 = 0;
     this->field_144 = 0;
@@ -582,11 +581,11 @@ void Status::resetGame() {
     this->field_138 = 0;
     this->field_140 = 0;
     this->field_148 = 0;
-    this->field_0x111 = 0;
     this->field_114 = settings->hardCoreFlag != 0 ? 3 : 0;
+    this->field_0x111 = 0;
 
-    if (this->voidStation != nullptr) {
-        delete this->voidStation;
+    if (oldStation != nullptr) {
+        delete oldStation;
         this->voidStation = nullptr;
     }
     this->voidStation = new Station();
@@ -657,16 +656,19 @@ void Status::resetGame() {
     Level::energyCellsForNextJump = 0;
     Level::doInstantJump = 0;
     Level::programmedStation = 0;
-    this->field_160 = 0;
-    this->field_164 = 0;
+    reinterpret_cast<int64_t &>(this->field_160) = 0;
     this->field_0x108 = 0;
     this->field_174 = 0;
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     this->field_0xf0 = 0;
     this->field_0xf1 = 0;
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     this->field_f4 = -1;
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     this->field_f8 = 1;
-
-    Globals::achievements->init();
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    Achievements *ach = Globals::achievements;
+    ach->init();
 
     if (this->field_0x40 != 0) {
         delete this->field_0x40;
@@ -1872,6 +1874,7 @@ void Status::setStation(Station *s) {
     ArraySetLength(stationList->size(), *textures);
 
     Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
         for (unsigned j = 0; j < stationList->size(); j++) {
             Station *candidate = (*stationList)[j];
