@@ -794,9 +794,8 @@ void PlayerFighter::update(int dt) {
                                         Vector navPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
                                         Vector dockPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
                                         Vector up = VectorNormalize(navPos - dockPos);
-                                        Vector right = VectorNormalize(VectorCross(up, dockDir));
                                         Matrix dockMatrix;
-                                        MatrixSetRotation(dockMatrix, right, up, dockDir);
+                                        MatrixSetRotation(dockMatrix, VectorNormalize(VectorCross(up, dockDir)), up, dockDir);
                                         this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->player->transform, dockMatrix, 3000);
                                     }
                                 }
