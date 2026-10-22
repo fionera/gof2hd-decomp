@@ -240,14 +240,6 @@
    "usize": 1872
   },
   {
-   "name": "_ZN9Generator14getShipBuyListEP7Station",
-   "pct": 58.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2244,
-   "usize": 2248
-  },
-  {
    "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
    "pct": 59.0,
    "byte": false,
@@ -286,6 +278,14 @@
    "linked": false,
    "osize": 2764,
    "usize": 2788
+  },
+  {
+   "name": "_ZN9Generator14getShipBuyListEP7Station",
+   "pct": 61.5,
+   "byte": false,
+   "linked": false,
+   "osize": 2244,
+   "usize": 2192
   },
   {
    "name": "_ZN3Hud14touchedElementEjj",
