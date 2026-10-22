@@ -1989,8 +1989,11 @@ void Status::departStation(Station *dest) {
         }
     }
 
-    if (currentCampaignMission < 45) {
-        if (currentCampaignMission >= 32 && dest->getIndex() != (*missions)[0]->getTargetStation() &&
+    if (currentCampaignMission > 44) {
+        field_7c = -10;
+        field_80 = -10;
+    } else if (currentCampaignMission >= 32) {
+        if (dest->getIndex() != (*missions)[0]->getTargetStation() &&
             dest->getIndex() != field_80) {
             if (field_88++ >= 10) {
                 field_88 = 0;
@@ -2008,10 +2011,10 @@ void Status::departStation(Station *dest) {
                 field_80 = (*stations)[Globals::rnd->nextInt(
                     reinterpret_cast<Array<int> *>(solarSystem->getStations())->size())];
             }
+        } else if (currentCampaignMission > 44) {
+            field_7c = -10;
+            field_80 = -10;
         }
-    } else {
-        field_7c = -10;
-        field_80 = -10;
     }
 
     if (moveWantedTargets) {

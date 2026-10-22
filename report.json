@@ -624,14 +624,6 @@
    "usize": 1892
   },
   {
-   "name": "_ZN6Status13departStationEP7Station",
-   "pct": 77.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1008,
-   "usize": 996
-  },
-  {
    "name": "_ZN7StarMap6updateEi",
    "pct": 77.9,
    "byte": false,
@@ -758,6 +750,14 @@
    "linked": false,
    "osize": 1476,
    "usize": 1488
+  },
+  {
+   "name": "_ZN6Status13departStationEP7Station",
+   "pct": 82.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1008,
+   "usize": 1012
   },
   {
    "name": "_ZN6Status15calcCargoPricesEv",
