@@ -676,21 +676,15 @@ void PlayerFighter::update(int dt) {
                         }
                     }
                 }
-                if ((*enemies)[this->field_0x38]->isActive()) {
-                    if (__builtin_expect(!(*enemies)[this->field_0x38]->isDead(), 0)) { // lint: arm_builtin
-                        this->tempVector = (*enemies)[this->field_0x38]->getPosition();
-                        if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
-                              this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
-                              this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
-                              this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
-                              this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
-                              this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
-                            this->field_0x38 = -1;
-                            this->targetIsActive = 0;
-                        }
-                    } else {
+                if ((*enemies)[this->field_0x38]->isActive() && !(*enemies)[this->field_0x38]->isDead()) {
+                    this->tempVector = (*enemies)[this->field_0x38]->getPosition();
+                    if (!(this->shipPosition.x - this->tempVector.x < this->field_0x128 &&
+                          this->shipPosition.x - this->tempVector.x > -this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y < this->field_0x128 &&
+                          this->shipPosition.y - this->tempVector.y > -this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z < this->field_0x128 &&
+                          this->shipPosition.z - this->tempVector.z > -this->field_0x128)) {
                         this->field_0x38 = -1;
-                        this->targetIsActive = 0;
                     }
                 } else {
                     this->field_0x38 = -1;
