@@ -193,6 +193,9 @@ void GameRecord::load() {
     uint32_t i;
     uint32_t j;
     Status *st;
+    // The original reloads Globals::status for each wanted-list copy; the volatile
+    // view keeps that load in the loop instead of hoisting it.
+    Status *volatile *statusRef = &Globals::status;
 
     Globals::status->resetGame();
     Globals::galaxy->setVisited((bool *) this->data, this->field_0x04);
@@ -491,11 +494,11 @@ void GameRecord::load() {
         Globals::hints[58] = this->field_0x114;
         st->field_58 = (Array<bool> *) this->field_0x17c;
         srcVec = (Array<uint32_t> *) this->field_0x1b4;
-        if ((srcVec != (Array<uint32_t> *) 0x0) && (i = srcVec->count, i != 0)) {
-            for (j = 0; j < i; j = j + 1) {
-                ((Array<uint32_t> *) Globals::status->wanted)->data_[j] = srcVec->data_[j];
+        if (srcVec != nullptr && srcVec->count != 0) {
+            for (j = 0; j < srcVec->count; j = j + 1) {
+                Status *currentStatus = *statusRef;
+                ((Array<uint32_t> *) currentStatus->wanted)->data_[j] = srcVec->data_[j];
                 srcVec = (Array<uint32_t> *) this->field_0x1b4;
-                i = srcVec->count;
             }
         }
         st = Globals::status;
@@ -506,9 +509,8 @@ void GameRecord::load() {
             Station *stStation = Globals::status->getStation();
             Array<Ship *> *stationShips = (Array<Ship *> *) stStation->getShips();
             if (stationShips != (Array<Ship *> *) 0x0) {
-                Array<Ship *> *recShips = (Array<Ship *> *) this->field_0x184;
                 for (i = 0; i < stationShips->size(); i = i + 1) {
-                    Array<int> *mods = recShips->data_[i]->getMods();
+                    Array<int> *mods = ((Array<Ship *> *) this->field_0x184)->data_[i]->getMods();
                     if (mods != (Array<int> *) 0x0) {
                         for (j = 0; j < mods->size(); j = j + 1) {
                             (*stationShips)[i]->addMod((*mods)[j]);
