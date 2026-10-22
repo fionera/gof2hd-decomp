@@ -1,5 +1,6 @@
 #include "game/ship/PlayerEgo.h"
 #include <cstring>
+#include <sys/cdefs.h>
 #include "game/world/Station.h"
 #include "game/world/StarSystem.h"
 #include "engine/render/ParticleSettings.h"
@@ -1440,7 +1441,7 @@ float PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
         float angle = 0.0f;
         if (cosAngle < 1.0f && cosAngle > -1.0f)
             angle = AbyssEngine::AEMath::ACosf(cosAngle);
-        bank = angle > 0.0f ? angle : -angle;
+        bank = angle > 0.0f ? angle : angle * -1.0f;
         if (bank != 0.0f) {
             float side = AbyssEngine::AEMath::ACosf(
                 AbyssEngine::AEMath::VectorDot(this->geometry->getRightVector(), Vector(this->headingVec)));
@@ -2501,13 +2502,11 @@ int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
                 this->dockingPointIndex = 1;
             }
         } else {
-            Vector target = ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getPosition();
-            float speed = 4.0f;
-            if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
-                speed = Globals::status->getShip()->getHandling() + 2.7f;
-            this->moveToPosition(target, true, speed);
-            if ((int) AbyssEngine::AEMath::VectorLength(((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
-                                                        - this->getPosition()) <= 19999)
+            this->moveToPosition(((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getPosition(), true,
+                                 Globals::status->getShip()->getHandling() + 2.7f < 4.0f
+                                     ? Globals::status->getShip()->getHandling() + 2.7f : 4.0f);
+            Vector other = ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition();
+            if ((int) AbyssEngine::AEMath::VectorLength(other - this->getPosition()) <= 19999)
                 this->aboutToReachAutoTargetFlag = 1;
         }
         if (this->dockScaling + 2000 > distance) {
@@ -2556,28 +2555,28 @@ int PlayerEgo::approachAsteroid(Hud *hud, int /*unused*/, Radar * /*radar*/) {
             Globals::sound->pause(this->field_0x1c);
             return 0;
         }
-        if (((MiningGame *) (intptr_t) this->miningGame)->update(this->shakeIntensity)) {
-            if (((KIPlayer *) (intptr_t) this->asteroidTarget)->isDying()
-                || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
+        if (!((MiningGame *) (intptr_t) this->miningGame)->update(this->shakeIntensity)) {
+            if (__predict_true(!((MiningGame *) (intptr_t) this->miningGame)->gameLost())
+                && ((MiningGame *) (intptr_t) this->miningGame)->getOreAmount() >= 1) {
+                this->stopMining();
+                return 1;
+            }
+            if (((MiningGame *) (intptr_t) this->miningGame)->gameLost()) {
+                this->lostMiningGameFlag = 1;
                 Globals::status->field_124 = 0;
                 this->stopMining();
                 hud->hudEvent(8, this, 0);
-                return 1;
             }
-            return 0;
-        }
-        if (((MiningGame *) (intptr_t) this->miningGame)->gameLost() != 1
-            && ((MiningGame *) (intptr_t) this->miningGame)->getOreAmount() >= 1) {
-            this->stopMining();
             return 1;
         }
-        if (((MiningGame *) (intptr_t) this->miningGame)->gameLost()) {
-            this->lostMiningGameFlag = 1;
+        if (((KIPlayer *) (intptr_t) this->asteroidTarget)->isDying()
+            || ((KIPlayer *) (intptr_t) this->asteroidTarget)->isDead()) {
             Globals::status->field_124 = 0;
             this->stopMining();
             hud->hudEvent(8, this, 0);
+            return 1;
         }
-        return 1;
+        return 0;
     }
     return 0;
 }
