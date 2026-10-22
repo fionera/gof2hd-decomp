@@ -537,16 +537,21 @@ void DialogueWindow::loadContent() {
                 textId = 378;
                 this->bodyText = *Globals::gameText->getText(textId);
             } else if (this->mission != 0 && this->mission->getTargetStation() == 108) {
-                const int *script;
-                if (Globals::status->field_114 == 2)
-                    script = g_dw_station108ScriptLate;
-                else
-                    script = g_dw_station108Script;
-                textId = script[this->page * 2 | 1];
-                this->bodyText = *Globals::gameText->getText(textId);
-                int scriptSpeaker = script[this->page * 2];
-                this->clientImage = g_dw_speakerFaces[scriptSpeaker];
-                this->agentName = *Globals::gameText->getText(scriptSpeaker + 1597);
+                if (Globals::status->field_114 == 2) {
+                    const int *script = g_dw_station108ScriptLate;
+                    textId = script[this->page * 2 | 1];
+                    this->bodyText = *Globals::gameText->getText(textId);
+                    int scriptSpeaker = script[this->page * 2];
+                    this->clientImage = g_dw_speakerFaces[scriptSpeaker];
+                    this->agentName = *Globals::gameText->getText(scriptSpeaker + 1597);
+                } else {
+                    const int *script = g_dw_station108Script;
+                    textId = script[this->page * 2 | 1];
+                    this->bodyText = *Globals::gameText->getText(textId);
+                    int scriptSpeaker = script[this->page * 2];
+                    this->clientImage = g_dw_speakerFaces[scriptSpeaker];
+                    this->agentName = *Globals::gameText->getText(scriptSpeaker + 1597);
+                }
             } else {
                 if (GameText::getLanguage() == 1 && this->mission->getAgent() != 0)
                     textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(this->kind,

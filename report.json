@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.16,
   "byte_exact": 1339,
-  "linked_exact": 4385,
-  "fuzzy_perfect": 4385,
+  "linked_exact": 4386,
+  "fuzzy_perfect": 4386,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -926,14 +926,6 @@
    "linked": false,
    "osize": 3488,
    "usize": 3476
-  },
-  {
-   "name": "_ZN14DialogueWindow11loadContentEv",
-   "pct": 89.0,
-   "byte": false,
-   "linked": false,
-   "osize": 3484,
-   "usize": 3484
   },
   {
    "name": "_ZN20FileInterfaceAndroid5WriteEjPKv",
@@ -16734,6 +16726,14 @@
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN14DialogueWindow11loadContentEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 3484,
+   "usize": 3484
   },
   {
    "name": "_ZN14DialogueWindow12OnTouchBeginEii",
