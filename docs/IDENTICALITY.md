@@ -72,10 +72,10 @@ is tracked by: byte_exact/linked_exact function counts (verify) and the section-
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 870 byte_exact,
-1569 linked_exact, 2446 size_match of 4507; pct buckets {100:1569, 90-99:231, 70-89:630, 50-69:645,
-<50:1432}. 2061 functions size-MISMATCH (1980 game-ish -> need restructuring); 375 size-match >=80%
-not-linked (the highest-value near-misses).
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 1339 byte_exact,
+4385 linked_exact, 4415 size_match of 4523; pct buckets {100:4385, 90-99:18, 70-89:70, 50-69:35,
+<50:15}. 108 functions size-MISMATCH (need restructuring); 22 size-match >=80% not-linked
+(13 of them >=90%, the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):
 1. **Shader `UpdateMeshData` cluster** (~15 fns at 86-94%, GenericShader/VertexColorShader/BumpShaderV2/4/

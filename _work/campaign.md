@@ -1,5 +1,33 @@
 # Byte-matching campaign log
 
+## Session 2026-10-21/22 (wave 12 — linked 4357->4385, byte 1338->1339)
+
+- Started from wave 11: byte 1338, linked 4357, avg 99.10.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w147..w178`
+  (branches `wave12-w147..w178`), verified to use the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed exactness gains: NdkHooks::ndk23_handleAcceleration, Image::TextureCreateFromFileIntern,
+  WantedWindow::init (header `int`->`void`), BombGun::update, HackingGame::reInit
+  (header `solvableInNSteps` `int`->`bool`), StarMap::OnTouchEnd, StatusWindow::OnTouchEnd,
+  MissionsWindow::OnTouchEnd, TargetFollowCamera::update, BluePrint::addItem,
+  Globals::getRandomName/init (+2), String::Compare (byte + linked), PlayerEgo::updateManeuver
+  and approachAsteroid, RecordHandler::recordStoreWrite, Level::createStaticObject/
+  createFighterTurrets (+2), ObjectGun::update, VirtualInput::simulateTouch,
+  NewsTicker ctors (+2), Status::resetGame/setStation (+2), MiningGame ctor (+2),
+  and AEFile::collectPakFiles.
+- Pct-only gains: GameInit::OnCreateApplication 97.1->97.9, MenuTouchWindow::update 97.3->98.9
+  and startSupernova 88.9->89.3, SpaceLounge drawLounge/OnTouchEnd, MGame::handleAccelerometer
+  89.3->90.5, DialogueWindow::loadContent 80.5->89.0, FileRead::loadSpacePoints 87.9->99.2,
+  VirtualInput::ActualizeMouseVisibilty 71.3->89.8, Radar ctor 96.6->99.1,
+  ModStation ctor 86.7->97.8, and FModSound::play.
+- Blocked: Engine::ResetLightParam (w158) exhausted ordering/annealing searches; no landed
+  change (best trial regressed 80.4->79.7).
+- End: byte 1339, linked 4385, avg 99.16, stubs 0, missing/extra 0, imports 207, data 843/843.
+- Header cleanups landed with the workers' evidence: WantedWindow::init and
+  HackingGame::solvableInNSteps now use the original `void`/`bool` return types;
+  SolarSystem::systemIsInSystemRoutes is `bool`. A Layout::helpPressed `uint8_t`->`bool`
+  trial regressed byte_exact by 1, so the call-site bool cast remains for now.
+
 ## Session 2026-10-21 (wave 11 — linked 4348->4357, byte 1338)
 
 - Continued from wave 10: byte 1338, linked 4348, avg 99.09.
