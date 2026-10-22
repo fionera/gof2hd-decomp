@@ -616,14 +616,6 @@
    "usize": 400
   },
   {
-   "name": "_ZN7StarMap6updateEi",
-   "pct": 76.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3132,
-   "usize": 3124
-  },
-  {
    "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
    "pct": 77.0,
    "byte": false,
@@ -646,6 +638,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 996
+  },
+  {
+   "name": "_ZN7StarMap6updateEi",
+   "pct": 77.9,
+   "byte": false,
+   "linked": false,
+   "osize": 3132,
+   "usize": 3128
   },
   {
    "name": "_ZN7StarMap11OnTouchMoveEii",
