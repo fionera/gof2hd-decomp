@@ -558,8 +558,8 @@ void MGame::handleAccelerometer() {
                 roll = (1.0f - roll) + 1.0f;
             }
         }
-        dRoll = (roll - refRoll) * 3.0f;
-        dPitch = (pitch - tune->baseValue) * 3.0f;
+        dPitch = -(tune->baseValue - pitch) * 3.0f;
+        dRoll = -(refRoll - roll) * 3.0f;
     } else {
         if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
             if (roll > 1.0f) {
@@ -568,8 +568,8 @@ void MGame::handleAccelerometer() {
                 roll = (1.0f - roll) + 1.0f;
             }
         }
+        dPitch = -(pitch - tune->baseValue) * 3.0f;
         dRoll = (refRoll - roll) * 3.0f;
-        dPitch = (tune->baseValue - pitch) * 3.0f;
     }
     float rollScaled = dRoll;
     float pitchScaled = dPitch;
