@@ -348,6 +348,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
     (void) positions;
 
     bool fired = false;
+    bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
     for (unsigned i = 0; i < this->positions.count; ++i) {
         int lifetime = this->lifetimes[i];
         if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
@@ -432,15 +433,16 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             ((TargetFollowCamera *) ((Level *) this->level)->getPlayer()->getTargetFollowCamera())->hitSmall();
         }
         fired = true;
-        if (!keepAmmo && this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+        if (keepAmmo || cluster) {
+            if (!cluster) {
+                return true;
+            }
+        } else {
             this->ammoCount--;
             ammo->changeAmount(-1);
             if (this->ammoCount == 0) {
                 Globals::status->getShip()->freeSlot(ammo);
             }
-            return true;
-        }
-        if (this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
             return true;
         }
     }
