@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.35,
+  "avg_match": 99.36,
   "byte_exact": 1342,
   "linked_exact": 4415,
   "fuzzy_perfect": 4415,
@@ -329,11 +329,11 @@
   },
   {
    "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
-   "pct": 64.0,
+   "pct": 66.9,
    "byte": false,
    "linked": false,
    "osize": 1788,
-   "usize": 1788
+   "usize": 1828
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
