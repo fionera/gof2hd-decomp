@@ -141,20 +141,17 @@ String GameText::convertStringFromArabic(String in) {
                 if (length != 1 && IS_ARABIC_JOINING(buf[i + 1]))
                     form = 4;
             } else if (i < last) {
-                // Medial position: initial/medial/final/isolated from both neighbours.
-                if (IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1]))
-                    form = 4;
-                else if (!IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1]))
+                if (!IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1])) {
                     form = 1;
-                else if (IS_ARABIC_JOINING(buf[i - 1]) && !IS_ARABIC_JOINING(buf[i + 1]))
-                    form = 2;
-                else
-                    form = 3;
+                } else if (IS_ARABIC_JOINING(buf[i - 1])) {
+                    form = IS_ARABIC_JOINING(buf[i + 1]) ? 3 : 2;
+                } else {
+                    form = 4;
+                }
             } else {
+                form = 1;
                 if (IS_ARABIC_JOINING(buf[i - 1]))
                     form = 2;
-                else
-                    form = 1;
             }
             buf[i] = kArabicForms[r][form];
         }
