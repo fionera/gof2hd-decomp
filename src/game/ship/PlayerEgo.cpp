@@ -931,8 +931,8 @@ void PlayerEgo::checkForTurret() {
 
     int glowMesh = -1;
     int barrelExtraMesh2 = -1;
-    unsigned short baseMesh;
     int barrelExtraMesh = -1;
+    unsigned short baseMesh;
     unsigned short barrelMesh;
     int baseExtraMesh = -1;
     float offsetZ = 0.0f;
@@ -941,62 +941,64 @@ void PlayerEgo::checkForTurret() {
     int turretIndex = (*equipment)[0]->getIndex();
     if (turretIndex == 48) {
         baseMesh = 0x1a74;
-        barrelMesh = 0x1a75;
         offsetY = 55.0f;
+        barrelMesh = 0x1a75;
     } else if (turretIndex == 47) {
+        offsetY = 60.0f;
         baseMesh = 0x1a72;
         barrelMesh = 0x1a73;
-        offsetY = 60.0f;
     } else if (turretIndex == 49) {
         baseMesh = 0x1a76;
-        barrelMesh = 0x1a77;
         offsetY = 60.0f;
+        barrelMesh = 0x1a77;
     } else if (turretIndex == 180) {
         this->autoTurretEquipped = 1;
+        offsetY = 84.0f;
         baseMesh = 0x1a95;
         barrelMesh = 0x1a96;
-        offsetY = 84.0f;
     } else if (turretIndex == 181) {
         this->autoTurretEquipped = 1;
-        baseMesh = 0x1a97;
-        barrelMesh = 0x1a98;
         offsetY = 88.0f;
         offsetZ = -11.0f;
+        baseMesh = 0x1a97;
+        barrelMesh = 0x1a98;
     } else if (turretIndex == 182) {
         this->autoTurretEquipped = 1;
-        baseMesh = 0x1a99;
-        barrelMesh = 0x1a9a;
         offsetX = 34.0f;
         offsetY = 88.0f;
+        baseMesh = 0x1a99;
         offsetZ = 1.6f;
+        barrelMesh = 0x1a9a;
     } else if (turretIndex == 198) {
-        baseMesh = 0x4963;
-        barrelMesh = 0x4967;
-        baseExtraMesh = 0x4964;
-        barrelExtraMesh = 0x4966;
         glowMesh = 0x4a7f;
         offsetY = 80.0f;
+        barrelExtraMesh2 = -1;
+        baseMesh = 0x4963;
+        barrelExtraMesh = 0x4966;
+        baseExtraMesh = 0x4964;
+        barrelMesh = 0x4967;
     } else if (turretIndex == 199) {
-        baseMesh = 0x4968;
-        barrelMesh = 0x496b;
-        baseExtraMesh = 0x4969;
-        barrelExtraMesh = 0x496a;
         glowMesh = 0x4a7f;
         offsetY = 38.0f;
+        barrelExtraMesh2 = -1;
+        baseMesh = 0x4968;
+        barrelExtraMesh = 0x496a;
+        baseExtraMesh = 0x4969;
+        barrelMesh = 0x496b;
     } else if (turretIndex == 200) {
-        baseMesh = 0x496c;
-        barrelMesh = 0x496f;
-        baseExtraMesh = 0x496d;
-        barrelExtraMesh = 0x496e;
-        barrelExtraMesh2 = 0x4970;
         glowMesh = 0x4a7f;
         offsetY = 75.0f;
+        barrelExtraMesh2 = 0x4970;
+        baseMesh = 0x496c;
+        barrelExtraMesh = 0x496e;
+        baseExtraMesh = 0x496d;
+        barrelMesh = 0x496f;
     } else if (turretIndex == 224) {
-        baseMesh = 0x499a;
-        barrelMesh = 0x499b;
-        baseExtraMesh = 0x499c;
-        barrelExtraMesh = 0x499d;
         offsetY = 82.0f;
+        baseMesh = 0x499a;
+        barrelExtraMesh = 0x499d;
+        baseExtraMesh = 0x499c;
+        barrelMesh = 0x499b;
     } else {
         baseMesh = 0xffff;
         barrelMesh = 0xffff;
@@ -3391,7 +3393,11 @@ void PlayerEgo::stopMining() {
         amount = (int) ((float) amount * 0.5f);
     if (freeSpace <= amount)
         amount = freeSpace;
-    if (freeSpace >= 1) {
+    Hud *hud;
+    if (freeSpace < 1) {
+        amount = 0;
+        hud = this->hud;
+    } else {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
             Globals::status->getShip()->addCargo(core);
@@ -3411,11 +3417,12 @@ void PlayerEgo::stopMining() {
             if (oreIndex != 217)
                 (*Globals::status->field_94)[oreIndex - 154] = true;
         }
-        if (Globals::status->getShip()->getFreeSpace() <= 0)
-            this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
-    } else {
-        this->hud->catchCargo(oreIndex, 0, true, false, true, false, false);
+        if (Globals::status->getShip()->getFreeSpace() > 0)
+            goto cargoDone;
+        hud = this->hud;
     }
+    hud->catchCargo(oreIndex, amount, true, false, true, false, false);
+cargoDone:
     this->setExhaustVisible(true);
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->player->setHitpoints(-1);
