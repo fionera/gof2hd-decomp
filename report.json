@@ -672,14 +672,6 @@
    "usize": 182
   },
   {
-   "name": "_ZN13PlayerFighter6updateEi",
-   "pct": 84.8,
-   "byte": false,
-   "linked": false,
-   "osize": 10376,
-   "usize": 10376
-  },
-  {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 87.4,
    "byte": false,
@@ -822,6 +814,14 @@
    "linked": false,
    "osize": 2748,
    "usize": 2748
+  },
+  {
+   "name": "_ZN13PlayerFighter6updateEi",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 10376,
+   "usize": 10376
   },
   {
    "name": "_ZN11SpaceLoungeC1Ev",
