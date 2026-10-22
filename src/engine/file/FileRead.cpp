@@ -213,6 +213,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         int32_t flag;
         uint32_t count;
         bool visible;
+        Array<int32_t> *stations;
+        Array<int32_t> *statics;
         for (uint32_t i = 0; i < 0x22; i++) {
 
             AEFile::ReadSwitched(name, handle);
@@ -227,6 +229,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
 
+            SolarSystem *system;
             AEFile::ReadSwitched((int32_t &) count, handle);
             int32_t *routes = new int32_t[count];
             for (int32_t j = 0; j < (int32_t) count; j++) {
@@ -234,7 +237,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             }
 
             AEFile::ReadSwitched((int32_t &) count, handle);
-            Array<int32_t> *stations;
             if ((int32_t) count < 1) {
                 stations = 0;
             } else {
@@ -258,7 +260,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             }
 
             AEFile::ReadSwitched((int32_t &) count, handle);
-            Array<int32_t> *statics;
             if ((int32_t) count < 1) {
                 statics = 0;
             } else {
@@ -269,8 +270,9 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
-                                                 routes, stations, wrecks, statics);
+            system = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
+                                     routes, stations, wrecks, statics);
+            systems->data()[i] = system;
             delete[] routes;
         }
         AEFile::Close(handle);
@@ -469,8 +471,8 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
 
     if (AEFile::FileExist(path) != 0) {
         uint32_t handle;
-        uint32_t count;
         AEFile::OpenRead(path, &handle);
+        uint32_t count;
         AEFile::ReadSwitched((int32_t &) count, handle);
 
         names = new Array<String *>();
