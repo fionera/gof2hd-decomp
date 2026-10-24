@@ -1950,8 +1950,8 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             int shipCount = 0;
             AEFile::Read(shipCount, fd);
             if (shipCount >= 1) {
+                int count2 = 0;
                 for (int j = 0; j < shipCount; j++) {
-                    int count2 = 0;
                     AEFile::Read(count2, fd);
                     for (int m = 0; m < count2; m++) {
                         int mod;
