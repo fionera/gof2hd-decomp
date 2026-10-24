@@ -1815,6 +1815,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         if (engineColor < 221.0f) {
             if (engineColor < 0.0f)
                 engineColor = 0.0f;
+            else if (engineColor >= 0.0f)
+                engineColor = engineColor;
         } else {
             engineColor = 221.0f;
         }
