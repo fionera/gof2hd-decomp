@@ -110,10 +110,11 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                 if (!(AbyssEngine::AEMath::VectorLength(this->beamPosition) <= (float) range))
                     continue;
 
+                Array<int> *targets = this->targetIds;
                 bool placed = false;
-                for (unsigned slot = 0; !placed && slot < this->targetIds->size(); ++slot) {
-                    if ((*this->targetIds)[slot] == -1) {
-                        (*this->targetIds)[slot] = e;
+                for (unsigned slot = 0; !placed && slot < targets->size(); ++slot) {
+                    if ((*targets)[slot] == -1) {
+                        (*targets)[slot] = e;
                         placed = true;
                     } else {
                         placed = false;
@@ -181,6 +182,12 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                     Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))
                     ->Update(dt, false);
 
+            if (this->sort == 0x25) {
+                (*enemies)[(*this->targetIds)[i]]->player->heal(
+                        healStep *
+                        (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
+                        100.0f);
+            }
             if (this->sort == 0x29) {
                 if (level->getPlayer()->player->getShieldDamageRate() < 100) {
                     (*this->charges)[i] +=
@@ -196,11 +203,6 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                             (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
                             100.0f);
                 }
-            } else if (this->sort == 0x25) {
-                (*enemies)[(*this->targetIds)[i]]->player->heal(
-                        healStep *
-                        (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
-                        100.0f);
             }
 
             if (!Globals::sound->isPlaying(kWeaponSounds[this->itemIndex]))
