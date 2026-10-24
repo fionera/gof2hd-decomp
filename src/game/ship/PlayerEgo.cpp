@@ -930,7 +930,7 @@ void PlayerEgo::checkForTurret() {
     this->turretPitch = (int) ((double) (*equipment)[0]->getAttribute(17) * 1.5);
 
     int glowMesh = -1;
-    int barrelExtraMesh2 = -1;
+    int barrelExtraMesh2 = (int) 0xffffffff;
     int barrelExtraMesh = -1;
     unsigned short baseMesh;
     unsigned short barrelMesh;
@@ -972,7 +972,6 @@ void PlayerEgo::checkForTurret() {
     } else if (turretIndex == 198) {
         glowMesh = 0x4a7f;
         offsetY = 80.0f;
-        barrelExtraMesh2 = -1;
         baseMesh = 0x4963;
         barrelExtraMesh = 0x4966;
         baseExtraMesh = 0x4964;
@@ -980,7 +979,6 @@ void PlayerEgo::checkForTurret() {
     } else if (turretIndex == 199) {
         glowMesh = 0x4a7f;
         offsetY = 38.0f;
-        barrelExtraMesh2 = -1;
         baseMesh = 0x4968;
         barrelExtraMesh = 0x496a;
         baseExtraMesh = 0x4969;
@@ -1817,6 +1815,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         if (engineColor < 221.0f) {
             if (engineColor < 0.0f)
                 engineColor = 0.0f;
+            else if (engineColor >= 0.0f)
+                engineColor = engineColor;
         } else {
             engineColor = 221.0f;
         }
@@ -3397,11 +3397,7 @@ void PlayerEgo::stopMining() {
         amount = (int) ((float) amount * 0.5f);
     if (freeSpace <= amount)
         amount = freeSpace;
-    Hud *hud;
-    if (freeSpace < 1) {
-        amount = 0;
-        hud = this->hud;
-    } else {
+    if (freeSpace >= 1) {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
             Globals::status->getShip()->addCargo(core);
@@ -3423,9 +3419,8 @@ void PlayerEgo::stopMining() {
         }
         if (Globals::status->getShip()->getFreeSpace() > 0)
             goto cargoDone;
-        hud = this->hud;
     }
-    hud->catchCargo(oreIndex, amount, true, false, true, false, false);
+    this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
 cargoDone:
     this->setExhaustVisible(true);
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
