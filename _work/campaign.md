@@ -1,5 +1,28 @@
 # Byte-matching campaign log
 
+## Session 2026-10-24 (wave 16 — byte 1352 unchanged, linked 4416->4423, avg 99.36->99.41)
+
+- Started from wave 15: byte 1352, linked 4416, avg 99.36.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w275..w306`
+  (branches `wave16-w275..w306`), all launched with the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed linked-exact gains: FileRead::loadSpacePoints, StarMap::OnTouchMove,
+  FModSound::play, ModStation::OnRender2D, ModStation::checkHints,
+  SpaceLounge::getSoundId, and GameText::convertStringFromArabic (7 functions).
+- Landed pct-only gains: StarMap::update 79.3->80.1, Hud::drawChallengeModeScore 63.7->65.7,
+  StatusWindow::draw 75.6->76.6, RepairBeam::update 57.2->70.8, MissionsWindow::init 54.6->74.2,
+  MenuTouchWindow ctor/touch flow, PlayerFighter::update, PlayerEgo stopMining/update,
+  Level::createCampaignMission, ObjectGun::render 72.1->74.0, HangarWindow::OnTouchEnd 70.2->73.1,
+  Gun::shootAt 66.9->68.9 and calcCharacterCollision 55.7->56.9, RocketGun::update 53.2->57.3,
+  Generator createAgents 88.3->92.0 and getShipBuyList 61.5->64.2, PlayerStation ctor 75.8->75.9,
+  TouchButton::draw, Globals ctor 52.7->63.3 and IAP 53.5->76.0, and
+  Mesh::ReadEnhancedDataFromFile 78.5->79.1.
+- The ten libstdc++ exception constructors still pin byte_exact to the current archive layout.
+  w287 (ParticleSettings::init store order) was retried and still dropped byte_exact 1352->1342,
+  so it was reverted. w289/w290 ended blocked without a commit; w281/w283/w286/w295 were still
+  searching when the wave was stopped and left no commit.
+- End: byte 1352, linked 4423, avg 99.41, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-24 (wave 15 — byte 1339->1352, linked 4410->4416, avg 99.32->99.36)
 
 - Started from wave 14: byte 1339, linked 4410, avg 99.32.
