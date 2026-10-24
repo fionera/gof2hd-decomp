@@ -425,7 +425,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
 
     FMOD::Event *event = this->events[idx];
     bool loaded;
-    if (event != nullptr) {
+    if (this->events[idx] != nullptr) {
         loaded = true;
     } else {
         this->system->getEventBySystemID(idx, FMOD_EVENT_INFOONLY, &event);
