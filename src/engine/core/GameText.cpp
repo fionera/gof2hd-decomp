@@ -48,19 +48,20 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Row offset of an Arabic letter in kArabicForms.
-    unsigned int arabicFormRow(unsigned int code) {
-        return (code - 0x621) * 20;
-    }
-
-    // Letters that never join to the following letter. The trailing slot is a link-layout anchor:
-    // it keeps arabicFormRow's 16-byte body in .text so the original .text size (and the archive
-    // layout the libstdc++ exception constructors depend on) is preserved. The loop reads 0..9.
+    // Letters that never join to the following letter. The trailing slot is a data pointer that
+    // preserves the original .data.rel.ro size; the loop reads 0..9.
     const unsigned int kNonJoiningAfter[11] = {
         0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625,
-        reinterpret_cast<unsigned int>(&arabicFormRow)
+        reinterpret_cast<unsigned int>(&kArabicForms[0][0])
     };
 }
+
+#pragma GCC visibility push(hidden)
+// Row offset of an Arabic letter in kArabicForms.
+unsigned int arabicFormRow(unsigned int code) {
+    return (code - 0x621) * 20;
+}
+#pragma GCC visibility pop
 
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
 #define IS_ARABIC_JOINING(c) ((c) >= 0x600 && (c) != 0x61f && (c) != 0x60c)
