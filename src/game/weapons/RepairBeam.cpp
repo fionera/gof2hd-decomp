@@ -131,7 +131,7 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                     if ((*this->targetIds)[slot] == -1)
                         continue;
                     int other = (*enemies)[(*this->targetIds)[slot]]->player->getHitpoints();
-                    if (other < lowest && hitpoints < other) {
+                    if (hitpoints < other && other < lowest) {
                         lowest = other;
                         replace = slot;
                     }
@@ -141,9 +141,9 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
             }
         }
 
-        float shieldStep = (float) dt * 0.01f;
         float healStep = (float) dt * 0.03f;
-        bool idle = true;
+        float shieldStep = (float) dt * 0.01f;
+        int idle = 1;
         for (unsigned i = 0; i < this->targetIds->size(); ++i) {
             if ((*this->targetIds)[i] == -1)
                 continue;
@@ -207,7 +207,7 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
 
             if (!Globals::sound->isPlaying(kWeaponSounds[this->itemIndex]))
                 Globals::sound->play(kWeaponSounds[this->itemIndex], nullptr, nullptr, 0.0f);
-            idle = false;
+            idle = 0;
         }
         if (idle)
             Globals::sound->stop(kWeaponSounds[this->itemIndex]);
