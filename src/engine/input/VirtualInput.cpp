@@ -276,7 +276,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
         g_input.comboProgress = 6;
     } else if (key == 5 && progress == 7) {
         g_input.comboProgress = 8;
-    } else if (progress == 8 && __builtin_expect(key == 5, 1)) { // lint: arm_builtin (keeps progress compare first)
+    } else if (progress == 8 && (key == 5) != 0) {
         g_input.comboProgress = 9;
     } else if (progress != 9) {
         g_input.comboProgress = 0;
