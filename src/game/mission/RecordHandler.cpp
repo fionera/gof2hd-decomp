@@ -1572,6 +1572,8 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         AEFile::Read(stackCount, fd);
         ArraySetLength(stackCount, *stack);
         for (unsigned s = 0; s < stack->size() + 1; s++) {
+            volatile int dummy = 0;
+            (void)dummy;
             int stationIndex = 0;
             AEFile::Read(stationIndex, fd);
             Station *station = 0;
