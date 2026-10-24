@@ -1764,7 +1764,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     if (!mission->isCampaignMission() && mission->getType() == 183) {
                         // Escort job handed out right after the previous one.
                         this->field_0x1e0 = this->level->killCountB;
-                        Globals::status->getShip()->setEquipment((*Globals::items)[216]->makeItem(10), 0);
+                        Item *escortItem = (*Globals::items)[216]->makeItem(10);
+                        Globals::status->getShip()->setEquipment(escortItem, 0);
                         Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
                                                       0, Globals::status->getStation()->getIndex(), 1);
                         Globals::status->setMission(escort);
@@ -2741,8 +2742,8 @@ void MGame::OnUpdate() {
         }
         if (this->player->shouldSwitchToFreeLookCam()) {
             switchCamera(3);
-            this->flShakeX = -98.0f;
             this->flShakeY = 35.0f;
+            this->flShakeX = -98.0f;
             this->flCameraRoll = 3800.0f;
             this->camera->rotateAroundTarget(-0.175f, 0.48999998f, 0.0f);
             this->camera->zoomTarget(this->flCameraRoll);
