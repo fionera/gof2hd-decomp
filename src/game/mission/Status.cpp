@@ -2182,9 +2182,10 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 0xa6:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
+                    Ship *s = ship;
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
-                    if (Item::isInList(index, amount, ship->getCargo())) {
+                    if (Item::isInList(index, amount, s->getCargo())) {
                         return m;
                     }
                     if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
