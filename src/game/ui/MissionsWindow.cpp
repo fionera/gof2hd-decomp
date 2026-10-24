@@ -204,6 +204,7 @@ int MissionsWindow::init() {
     this->m_pRejectButton = nullptr;
     delete this->m_pMapButton;
     this->m_pMapButton = nullptr;
+    int inset = Globals::layout->buttonInsetX;
     this->m_pStarMap = nullptr;
     this->m_choiceActive = 0;
     this->m_field_0x21 = 0;
@@ -274,7 +275,7 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
     }
 
-    int buttonWidth = (this->m_width >> 1) / 2 - Globals::layout->buttonInsetX;
+    int buttonWidth = (this->m_width >> 1) / 2 - inset;
     if (!Globals::status->inAlienOrbit()) {
         if (!Globals::status->gameWon())
             this->m_pAcceptButton = new TouchButton(
