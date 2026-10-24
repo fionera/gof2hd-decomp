@@ -1747,18 +1747,18 @@ int SpaceLounge::getSoundId(Agent *agent) {
     int race = agent->getRace();
     bool male = agent->isMale();
     int offer = agent->getOffer();
-    int missionType;
-    if (agent->getMission() == 0 || agent->getMission()->isEmpty()) {
-        missionType = -1;
-    } else {
-        missionType = agent->getMission()->getType();
-    }
+    int missionType = (agent->getMission() != 0 && !agent->getMission()->isEmpty())
+                              ? agent->getMission()->getType()
+                              : -1;
     String missionText = Globals::globals->getAgentMissionText(agent);
 
     // Greeting by offer kind.
     bool canBeSpecial = true;
     int soundId;
     switch (offer) {
+        case 5:
+            soundId = Globals::rnd->nextInt(4) + 795;
+            break;
         case 2:
         case 3:
         case 8:
@@ -1766,41 +1766,39 @@ int SpaceLounge::getSoundId(Agent *agent) {
         case 10:
             soundId = Globals::rnd->nextInt(2) + 759;
             break;
-        case 1:
-            soundId = Globals::rnd->nextInt(2) + 781;
-            break;
-        case 0:
-            if (missionType == 0 || missionType == 11) {
-                soundId = Globals::rnd->nextInt(4) + 769;
-            } else if (missionType == 12) {
-                soundId = Globals::rnd->nextInt(4) + 762;
-            } else if (Globals::rnd->nextInt(2) != 0) {
-                soundId = Globals::rnd->nextInt(4) + 777;
-            } else {
-                soundId = Globals::rnd->nextInt(4) + 799;
-            }
+        case 7:
+            soundId = Globals::rnd->nextInt(4) + 773;
             break;
         case 4:
             soundId = Globals::rnd->nextInt(2) + 766;
             break;
-        case 5:
-            soundId = Globals::rnd->nextInt(4) + 795;
-            break;
         case 6:
             soundId = Globals::rnd->nextInt(4) + 803;
             break;
-        case 7:
-            soundId = Globals::rnd->nextInt(4) + 773;
+        case 0:
+            if (missionType != 0 && missionType != 11) {
+                if (missionType == 12) {
+                    soundId = (*(AbyssEngine::AERandom *volatile *) &Globals::rnd)->nextInt(4) + 762;
+                } else if (Globals::rnd->nextInt(2) != 0) {
+                    soundId = Globals::rnd->nextInt(4) + 777;
+                } else {
+                    soundId = Globals::rnd->nextInt(4) + 799;
+                }
+            } else {
+                soundId = Globals::rnd->nextInt(4) + 769;
+            }
+            break;
+        case 1:
             break;
         default:
             soundId = -1;
             break;
     }
+    if (offer == 1 || Globals::rnd->nextInt(100) < 30) {
+        soundId = Globals::rnd->nextInt(2) + 781;
+    }
     if (offer != 1) {
         canBeSpecial = false;
-        if (Globals::rnd->nextInt(100) < 30) {
-            soundId = Globals::rnd->nextInt(2) + 781;
-        }
     }
     if (agent->hasAcceptedOffer()) {
         soundId = Globals::rnd->nextInt(2) + 781;
@@ -1825,6 +1823,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
     // Generic chat sounds 759..806 map onto a per-race bank.
+    if (soundId < 759) return -1;
     int result;
     switch (race) {
         case 0:
