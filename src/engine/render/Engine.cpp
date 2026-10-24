@@ -1405,7 +1405,7 @@ void Engine::ResetLightParam() {
     this->lightSpecular.a = 1.0f;
     this->materialAmbient[0] = 0.2f;
     this->lightAmbient1.b = 0.0f;
-    this->materialSpecular[3] = 1.0f;
+    this->lightSpecular1.a = 1.0f;
     this->lightAmbient1.g = 0.0f;
     this->lightDiffuse.a = 1.0f;
     this->lightDiffuse.b = 1.0f;
@@ -1419,18 +1419,18 @@ void Engine::ResetLightParam() {
     this->materialAmbient[3] = 1.0f;
     this->specularShaded[1][2] = 0.0f;
     this->lightSpecular1.b = 0.0f;
-    this->materialSpecular[2] = 0.0f;
+    this->materialDiffuse[0] = 0.8f;
     this->ambientShaded[0][0] = 0.0f;
+    this->specularShaded[1][1] = 0.0f;
     this->ambientShaded[0][1] = 0.0f;
     this->ambientShaded[0][2] = 0.0f;
     this->lightAmbient.g = 0.0f;
     this->lightAmbient.r = 0.0f;
     this->materialDiffuse[3] = 1.0f;
     this->materialAmbient[1] = 0.2f;
-    this->materialDiffuse[0] = 0.8f;
+    this->materialSpecular[2] = 0.0f;
     this->ambientShaded[1][2] = 0.0f;
-    this->specularShaded[1][1] = 0.0f;
-    this->lightSpecular1.a = 1.0f;
+    this->materialSpecular[3] = 1.0f;
     this->ambientShaded[1][1] = 0.0f;
     this->specularShaded[0][0] = 0.0f;
     this->materialShininess = 0.0f;
@@ -1440,13 +1440,13 @@ void Engine::ResetLightParam() {
     this->lightSpecular.r = 1.0f;
     this->lightAmbient.b = 0.0f;
     this->lightSpecular.g = 1.0f;
-    this->materialSpecular[1] = 0.0f;
+    this->particleAmbientColor[1] = 0.0f;
     this->specularShaded[0][1] = 0.0f;
     this->particleAmbientColor[2] = 0.0f;
     this->diffuseShaded[0][1] = 0.8f;
     this->particleAmbientColor[0] = 0.0f;
-    this->particleAmbientColor[1] = 0.0f;
-    this->materialSpecular[0] = 0.0f;
+    this->materialSpecular[1] = 0.0f;
+    this->lightDiffuse.g = 1.0f;
     this->lightDiffuse1.a = 1.0f;
     this->diffuseShaded[1][1] = 0.0f;
     this->diffuseShaded[0][2] = 0.8f;
@@ -1455,11 +1455,12 @@ void Engine::ResetLightParam() {
     this->sceneAmbient[0] = 0.0f;
     this->sceneAmbient[1] = 0.0f;
     this->sceneAmbient[2] = 0.0f;
+    this->materialSpecular[0] = 0.0f;
     this->diffuseShaded[1][0] = 0.0f;
-    this->lightDiffuse.g = 1.0f;
     this->lightDiffuse1.b = 0.0f;
     this->lightDiffuse.r = 1.0f;
     this->diffuseShaded[0][0] = 0.8f;
+
     if (Engine::enableShader == 0) {
         glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
         glLightfv(0x4000, 0x1201, &this->lightDiffuse.r);
