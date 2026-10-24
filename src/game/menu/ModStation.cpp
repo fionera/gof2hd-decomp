@@ -2608,7 +2608,7 @@ void ModStation::OnRender2D() {
             this->paintCanvas->SetColor((int) (fade * 255.0f));
             Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         }
-        if (this->field_0xb4 > -6000)
+        if (*reinterpret_cast<volatile int *>(&this->field_0xb4) > -6000)
             this->cutScene->render2D();
     } else {
         Globals::layout->drawFooterStation();
@@ -2670,7 +2670,7 @@ void ModStation::OnRender2D() {
         if (this->accumTime < 3000) {
             this->paintCanvas->DrawString(reinterpret_cast<unsigned int &>(Globals::font),
                                           *Globals::gameText->getText(this->flag_0xb0 ? 54 : 50),
-                                          Globals::layout->buttonInsetX + this->infoBoxW,
+                                          this->infoBoxW + Globals::layout->buttonInsetX,
                                           Globals::layout->headerTitleY, false);
         } else {
             this->flag_0xb0 = 0;
