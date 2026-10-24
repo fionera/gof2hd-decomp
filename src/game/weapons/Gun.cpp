@@ -365,6 +365,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
         Vector direction = {0, 0, 0};
+        direction = Vector{0, 0, 0};
         if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
                 this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
@@ -388,7 +389,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                 }
             }
         }
-        direction = Vector{0, 0, 0};
         if (this->weaponType == ITEM_SORT_MINE) {
             direction = AbyssEngine::AEMath::MatrixGetDir(m) + AbyssEngine::AEMath::MatrixGetUp(m);
             Array<Vector *> *wobble = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
@@ -446,16 +446,17 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             return true;
         }
     }
-    if (this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+    if (this->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
+        return true;
+    }
+    if (!fired) {
         return false;
     }
-    if (fired) {
-        this->ammoCount--;
-        if (ammo != nullptr) {
-            ammo->changeAmount(-1);
-            if (this->ammoCount == 0) {
-                Globals::status->getShip()->freeSlot(ammo);
-            }
+    this->ammoCount--;
+    if (ammo != nullptr) {
+        ammo->changeAmount(-1);
+        if (this->ammoCount == 0) {
+            Globals::status->getShip()->freeSlot(ammo);
         }
     }
     return true;
@@ -463,6 +464,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
 bool Gun::shoot(Matrix m, int n, bool b) {
     return this->shootAt(m, n, nullptr, b);
 }
+
 void Gun::ignite() {
     switch (this->weaponType) {
         case ITEM_SORT_NUKE:
