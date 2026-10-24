@@ -127,14 +127,8 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 
 Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
-    // The original header declares AEFile::FileExist as returning bool; the
-    // reconstructed header returns uint32_t. Call it through the original
-    // signature so the compiler sees the same boolean result (ABI is r0).
-    typedef bool (*FileExistFn)(const String &);
-
     Array<SpacePoint *> *points = 0;
-    bool exists = ((FileExistFn) AEFile::FileExist)(String("data/bin/docks_hd.bin"));
-    if (!exists) {
+    if (!AEFile::FileExist(String("data/bin/docks_hd.bin"))) {
         return points;
     }
     {
@@ -216,8 +210,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         int32_t e;
         int32_t f;
         int32_t flag;
-        bool visible;
         Array<int32_t> *stations;
+        Array<int32_t> *wrecks;
         Array<int32_t> *statics;
         for (uint32_t i = 0; i < 0x22; i++) {
             AEFile::ReadSwitched(name, handle);
@@ -225,7 +219,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             uint32_t count;
             AEFile::ReadSwitched(faction, handle);
             AEFile::ReadSwitched(flag, handle);
-            visible = flag == 1;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
@@ -233,7 +226,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
 
-            SolarSystem *system;
             AEFile::ReadSwitched((int32_t &) count, handle);
             int32_t *routes = new int32_t[count];
             for (int32_t j = 0; j < (int32_t) count; j++) {
@@ -252,7 +244,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             }
 
             AEFile::ReadSwitched((int32_t &) count, handle);
-            Array<int32_t> *wrecks;
             if ((int32_t) count < 1) {
                 wrecks = 0;
             } else {
@@ -274,9 +265,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            system = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
-                                     routes, stations, wrecks, statics);
-            systems->data()[i] = system;
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+                                                 routes, stations, wrecks, statics);
             delete[] routes;
         }
         AEFile::Close(handle);

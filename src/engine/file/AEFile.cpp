@@ -570,7 +570,7 @@ AELowLevelFile *AEFile::findPakFile(const String &path) {
     return nullptr;
 }
 
-uint32_t AEFile::FileExist(const String &path) {
+bool AEFile::FileExist(const String &path) {
     FileInterface *fileInterface = AEFile::fileInterface;
     if (fileInterface == nullptr) {
         return 0;
