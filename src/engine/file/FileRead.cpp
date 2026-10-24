@@ -127,9 +127,14 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
 
 Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
 
+    // The original header declares AEFile::FileExist as returning bool; the
+    // reconstructed header returns uint32_t. Call it through the original
+    // signature so the compiler sees the same boolean result (ABI is r0).
+    typedef bool (*FileExistFn)(const String &);
+
     Array<SpacePoint *> *points = 0;
-    int32_t exists = AEFile::FileExist(String("data/bin/docks_hd.bin"));
-    if (exists != 1) {
+    bool exists = ((FileExistFn) AEFile::FileExist)(String("data/bin/docks_hd.bin"));
+    if (!exists) {
         return points;
     }
     {
