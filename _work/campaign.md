@@ -1,5 +1,24 @@
 # Byte-matching campaign log
 
+## Session 2026-10-24 (wave 15 — byte 1339->1352, linked 4410->4416, avg 99.32->99.36)
+
+- Started from wave 14: byte 1339, linked 4410, avg 99.32.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w243..w274`
+  (branches `wave15-w243..w274`), all launched with the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed exactness gains: PaintCanvas::MeshSetTriangle, PlayerFixedObject::collide and
+  outerCollide (+2), RadioMessage::triggered, computeFloatString, and StarSystem::initLight.
+  The ModStation pass (w249) also shifted the archive layout so ten libstdc++ exception
+  constructors (bad_cast/bad_alloc/bad_typeid/bad_array_length) became byte-exact again.
+- Landed pct-only gains: ModStation OnRender2D/OnKeyPress/OnUpdate, Level createMission and
+  createCampaignMission (78.8->82.9), PlayerStation ctor (74.9->75.8), and the StarSystem ctors.
+- Layout-sensitive rejections: several pct-improving trials (TouchButton::draw, Hud::draw,
+  ParticleSettings::init, PlayerEgo::calcCollision, HangarWindow, FileRead, Radar,
+  loadingScreen, Status::calcCargoPrices, Mesh, RepairBeam) shifted the archive layout and
+  dropped the ten libstdc++ byte matches, so they were committed for evidence but reverted.
+  w247 (MenuTouchWindow) kept byte parity but regressed OnTouchEnd 55.8->55.0.
+- End: byte 1352, linked 4416, avg 99.36, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-22 (wave 14 — linked 4400->4410, byte 1339 unchanged)
 
 - Started from wave 13: byte 1339, linked 4400, avg 99.24.
