@@ -211,7 +211,7 @@ SpaceLounge::SpaceLounge()
             Agent *agent = (*this->agents)[i];
             if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
                 agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
-                ArrayRemove((*this->agents)[i], *this->agents);
+                ArrayRemove(agent, *this->agents);
                 this->init();
                 break;
             }
@@ -387,7 +387,6 @@ void SpaceLounge::init() {
             }
             this->panelY = (int) bottom;
             delete this->scrollWindow;
-            layout = Globals::layout;
             this->scrollWindow = 0;
             this->scrollWindow = new ScrollTouchWindow(this->panelX + layout->field_0x4c * 2 + layout->field_0x2d4,
                                                        this->panelY, this->panelWidth, layout->field_0x6c, false);
@@ -490,6 +489,7 @@ void SpaceLounge::startChat() {
     if (Globals::iPad) {
         // iPad: move the chat panel next to the agent.
         int margin = (int) (Globals::iPadHD ? 14.0625f : (Globals::iPadLarge ? 20.0f : 10.0f));
+        Vector *rectTopLeft = (*this->agentRects)[this->selectedAgent * 2];
         float x;
         if ((*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68 <
             (float) Globals::layout->buttonInsetX) {
@@ -521,7 +521,7 @@ void SpaceLounge::startChat() {
         (*this->buttons)[3]->setPosition(this->buttonX, y1);
         (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
         {
-            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
+            Vector *rect = rectTopLeft;
             float x = rect->x;
             float y = rect->y;
             float z = rect->z;
@@ -1823,7 +1823,6 @@ int SpaceLounge::getSoundId(Agent *agent) {
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
     // Generic chat sounds 759..806 map onto a per-race bank.
-    if (soundId < 759) return -1;
     int result;
     switch (race) {
         case 0:
