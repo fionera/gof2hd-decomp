@@ -236,7 +236,7 @@ namespace AbyssEngine {
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
                 for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) goto fail;
                     trackFrameStep(scalar);
@@ -271,10 +271,7 @@ namespace AbyssEngine {
 
             // Alpha track.
             if ((flags & 0x18) != 0) {
-                if (AEFile::Read(2, &type, file) == 0) {
-                    delete anim;
-                    return -1;
-                }
+                if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
                     if (AEFile::Read(2, &count, file) == 0) {
                         delete anim;
