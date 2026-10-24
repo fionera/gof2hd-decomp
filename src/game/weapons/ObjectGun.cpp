@@ -309,15 +309,22 @@ void ObjectGun::render() {
         }
 
         int inactive = 0;
+        Vector &dir = this->dir;
+        Vector &up = this->up;
+        Vector &side = this->side;
+        const int useEgo = this->useEgoOrientation;
+        const bool hasGeometry = this->geometry != nullptr;
+        const bool hasExplosions = this->explosions != nullptr;
         for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             const Vector &position = this->gun->positions.data()[i];
             if (position.x != 50000.0f) {
                 MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
-                this->dir = VectorNormalize(this->gun->velocities.data()[i]);
+                dir = VectorNormalize(this->gun->velocities.data()[i]);
 
                 if (this->visible != 0) {
                     // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
-                    Vector facing = -this->dir;
+                    Vector facing;
+                    facing = -dir;
                     gun = this->gun;
                     if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
                         camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
@@ -341,7 +348,7 @@ void ObjectGun::render() {
                     } else if (gun->hitSmall != 0) {
                         MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
                     }
-                } else if (this->useEgoOrientation != 0) {
+                } else if (useEgo != 0) {
                     // Player-steered rocket: apply the pending pitch/yaw input to the ego rocket matrix.
                     PlayerEgo *player = this->level->getPlayer();
                     Matrix steer;
@@ -360,24 +367,24 @@ void ObjectGun::render() {
                 } else {
                     // Free projectile: build an orthonormal frame around the flight direction.
                     if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
-                        this->up = this->gun->upVectors.data()[i];
+                        up = this->gun->upVectors.data()[i];
                     } else {
-                        this->up = Vector(0.0f, 1.0f, 0.0f);
+                        up = Vector(0.0f, 1.0f, 0.0f);
                     }
-                    this->side = VectorCross(this->up, this->dir);
-                    this->side = VectorNormalize(this->side);
-                    this->up = VectorCross(this->dir, this->side);
-                    this->up = VectorNormalize(this->up);
+                    side = VectorCross(up, dir);
+                    side = VectorNormalize(side);
+                    up = VectorCross(dir, side);
+                    up = VectorNormalize(up);
 
-                    this->orientation.m[0] = this->side.x;
-                    this->orientation.m[1] = this->up.x;
-                    this->orientation.m[2] = this->dir.x;
-                    this->orientation.m[4] = this->side.y;
-                    this->orientation.m[5] = this->up.y;
-                    this->orientation.m[6] = this->dir.y;
-                    this->orientation.m[8] = this->side.z;
-                    this->orientation.m[9] = this->up.z;
-                    this->orientation.m[10] = this->dir.z;
+                    this->orientation.m[0] = side.x;
+                    this->orientation.m[1] = up.x;
+                    this->orientation.m[2] = dir.x;
+                    this->orientation.m[4] = side.y;
+                    this->orientation.m[5] = up.y;
+                    this->orientation.m[6] = dir.y;
+                    this->orientation.m[8] = side.z;
+                    this->orientation.m[9] = up.z;
+                    this->orientation.m[10] = dir.z;
 
                     gun = this->gun;
                     const int lifetime = gun->lifetimes[i];
@@ -420,7 +427,7 @@ void ObjectGun::render() {
             gun->active = 0;
     }
 
-    if (this->wasFiring != 0 && this->geometry != nullptr)
+    if (this->wasFiring != 0 && hasGeometry)
         this->geometry->render();
     this->deltaTime = 0;
 }
