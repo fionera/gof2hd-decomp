@@ -594,11 +594,11 @@ int ParticleSettings::init() {
 
     this->sets[39] = *ringEmitter;
     SetDefinition *plume = &this->sets[43];
+    this->sets[39].flags = (uint32_t)(176146 + 0x100000);
     this->sets[39].uvU1 = 0.998046875f;
     this->sets[39].color0 = 0xffffffff;
     this->sets[39].uvV0 = 0.498046875f;
     this->sets[39].uvU0 = 0.751953125f;
-    this->sets[39].flags = (uint32_t)(176146 + 0x100000);
     this->sets[39].lifeBase = 100.0f;
     this->sets[39].posUp = 0.0f;
     this->sets[39].posRight = 0.0f;
