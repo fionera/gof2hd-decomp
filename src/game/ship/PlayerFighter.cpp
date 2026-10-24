@@ -999,7 +999,7 @@ void PlayerFighter::update(int dt) {
                 this->state = 1;
                 return;
             case 1:
-            case 7:
+            case 7: {
                 this->handleCloaking();
                 if (this->field_0x13d) {
                     // heavy damage makes the fighter boost away
@@ -1052,7 +1052,6 @@ void PlayerFighter::update(int dt) {
                         this->distanceToTarget = this->geometry->getRightVector();
                     }
                 }
-                {
                     Vector toTarget = VectorNormalize(this->distanceToTarget);
                     this->distanceToTarget = MatrixRotateVector(MatrixGetInverse(this->player->transform), toTarget);
                     this->distanceToTarget.y = -this->distanceToTarget.y;
@@ -1218,7 +1217,6 @@ void PlayerFighter::update(int dt) {
                         this->level->field_8c->enableSystemEmit(this->field_0x138, false);
                     }
                     this->geometry->updateReferenceMatrix();
-                }
 
                 // steer around landmarks and other ships
                 if (this->field_0x13e) {
@@ -1263,6 +1261,7 @@ void PlayerFighter::update(int dt) {
                 }
                 this->push(dt);
                 return;
+            }
             case 2:
                 return;
             case 3: {
