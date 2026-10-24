@@ -380,7 +380,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             terranExtras = true;
             break;
         case 1:
-            if (Globals::rnd->nextInt(5) == 0) {
+            if (__builtin_expect(Globals::rnd->nextInt(5) == 0, 0)) { // lint: arm_builtin (cold path)
                 ArrayAdd((*Globals::ships)[63]->makeShip(-1), *list);
                 list->data()[list->size() - 1]->setRace(1);
                 list->data()[list->size() - 1]->adjustPrice();
