@@ -1427,11 +1427,12 @@ bool StarMap::OnTouchMove(int x, int y) {
     float fy = (float) y;
     float lastX = this->lastTouchX;
     float lastY = this->lastTouchY;
+    float scale = this->dragScale;
     this->momentumFactor = 1.0f;
     this->lastTouchX = fx;
     this->lastTouchY = fy;
-    float dx = (fx - lastX) * this->dragScale;
-    float dy = this->dragScale * (fy - lastY);
+    float dx = (fx - lastX) * scale;
+    float dy = scale * (fy - lastY);
     this->touchDeltaX = dx;
     this->touchDeltaY = dy;
 
