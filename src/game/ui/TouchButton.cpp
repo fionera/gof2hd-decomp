@@ -345,12 +345,11 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->pressedFrame[0] = this->touchedFrame[0];
         this->height = Globals::Canvas->GetImage2DHeight(this->normalFrame[0]);
         int w = Globals::Canvas->GetImage2DWidth(this->normalFrame[0]);
-        int h = this->height;
-        this->layoutHeight = h;
+        this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
         this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (h / 2) +
+        this->textOffsetY = (int) ((float) (this->height >> 1) +
                                    lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
         this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
@@ -481,9 +480,11 @@ void TouchButton::draw() {
                                           0, this->x, this->y);
             if (this->leftWidth < filled) {
                 int rest = filled - this->leftWidth;
+                int amount = rest;
+                if (this->midStretch > rest) amount = this->midStretch;
                 Globals::layout->drawBGPattern((this->progressHighlight ? this->touchedFrame[1] : this->normalFrame[1]),
                                                this->leftWidth + this->x, this->y,
-                                               this->midStretch < rest ? this->midStretch : rest, this->height);
+                                               amount, this->height);
             }
             if (this->leftWidth + this->midStretch < filled) {
                 int right = filled - this->leftWidth - this->midStretch;
