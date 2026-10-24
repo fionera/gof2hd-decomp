@@ -118,7 +118,7 @@ public:
 
     static uint32_t crc32_ccitt(const String &text);
 
-    static uint32_t FileExist(const String &path);
+    static bool FileExist(const String &path);
 
     static uint32_t FileDelete(const String &path);
 
