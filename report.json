@@ -424,22 +424,6 @@
    "usize": 864
   },
   {
-   "name": "_ZN13PlayerStationC1EP7Station",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3436
-  },
-  {
-   "name": "_ZN13PlayerStationC2EP7Station",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3436
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 75.0,
    "byte": false,
@@ -454,6 +438,22 @@
    "linked": false,
    "osize": 6280,
    "usize": 6316
+  },
+  {
+   "name": "_ZN13PlayerStationC1EP7Station",
+   "pct": 75.8,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3436
+  },
+  {
+   "name": "_ZN13PlayerStationC2EP7Station",
+   "pct": 75.8,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3436
   },
   {
    "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
