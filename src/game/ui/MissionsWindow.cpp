@@ -177,14 +177,16 @@ int MissionsWindow::init() {
 
     this->m_pTabButtons = new Array<TouchButton *>();
     ArraySetLength(2, *this->m_pTabButtons);
-    (*this->m_pTabButtons)[1] = new TouchButton(*Globals::gameText->getText(3219), 3,
-                                                this->m_x + this->m_width - Globals::layout->getHelpButtonOffset(),
-                                                this->m_y, 18);
-    (*this->m_pTabButtons)[0] = new TouchButton(*Globals::gameText->getText(129), 3,
-                                                this->m_x + this->m_width - Globals::layout->getHelpButtonOffset() -
-                                                (*this->m_pTabButtons)[1]->getWidth() + Globals::layout->field_0x38,
-                                                this->m_y, 18);
-    (*this->m_pTabButtons)[0]->setAlwaysPressed(true);
+    TouchButton *tab1 = new TouchButton(*Globals::gameText->getText(3219), 3,
+                                        this->m_x + this->m_width - Globals::layout->getHelpButtonOffset(),
+                                        this->m_y, 18);
+    (*this->m_pTabButtons)[1] = tab1;
+    TouchButton *tab0 = new TouchButton(*Globals::gameText->getText(129), 3,
+                                        this->m_x + this->m_width - Globals::layout->getHelpButtonOffset() -
+                                        (*this->m_pTabButtons)[1]->getWidth() + Globals::layout->field_0x38,
+                                        this->m_y, 18);
+    (*this->m_pTabButtons)[0] = tab0;
+    tab0->setAlwaysPressed(true);
     Globals::layout->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
 
     if (this->m_pAgentImageParts != nullptr) {
@@ -204,7 +206,7 @@ int MissionsWindow::init() {
     this->m_pRejectButton = nullptr;
     delete this->m_pMapButton;
     this->m_pMapButton = nullptr;
-    int inset = Globals::layout->buttonInsetX;
+    int w = this->m_width;
     this->m_pStarMap = nullptr;
     this->m_choiceActive = 0;
     this->m_field_0x21 = 0;
@@ -216,16 +218,16 @@ int MissionsWindow::init() {
               Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
     this->m_pCampaignWindow = new ScrollTouchWindow(
             Globals::layout->buttonInsetX + this->m_x, top,
-            (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
+            (this->m_width / 2) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
             this->m_y - top + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
             (Globals::status->gameWon() ? 0 : Globals::layout->field_0x30_rowHeight) -
             Globals::layout->field_0x2c_rowHeight * 2,
             false);
-    CampaignMissionFlags *flags = (CampaignMissionFlags *) Globals::options;
-    if (!Globals::status->gameWon() || flags->campaignVisibleFlagA || flags->campaignVisibleFlagB) {
-        String text("", false);
-        if (Globals::status->getCurrentCampaignMission() < 164)
-            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
+    if (!Globals::status->gameWon() || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagA || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagB) {
+        String text;
+        int cm = Globals::status->getCurrentCampaignMission();
+        if (cm < 164)
+            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[cm]);
         if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) {
             text = Globals::status->replaceHash(
@@ -275,7 +277,7 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
     }
 
-    int buttonWidth = (this->m_width >> 1) / 2 - inset;
+    int buttonWidth = (int)((unsigned)w >> 2) - Globals::layout->buttonInsetX;
     if (!Globals::status->inAlienOrbit()) {
         if (!Globals::status->gameWon())
             this->m_pAcceptButton = new TouchButton(
