@@ -380,7 +380,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             terranExtras = true;
             break;
         case 1:
-            if (Globals::rnd->nextInt(5) == 0) {
+            if (__builtin_expect(Globals::rnd->nextInt(5) == 0, 0)) { // lint: arm_builtin (cold path)
                 ArrayAdd((*Globals::ships)[63]->makeShip(-1), *list);
                 list->data()[list->size() - 1]->setRace(1);
                 list->data()[list->size() - 1]->adjustPrice();
@@ -594,6 +594,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             continue;
         }
         result->data()[out++] = existing->data()[i];
+        // Re-read the status pointer here so the allocator keeps it live across the offer
+        // checks and spills `out` instead, matching the original's register allocation.
+        (void) Globals::status->inSupernovaSystem();
         if (existing->data()[i]->getOffer() == 9) {
             int index = Globals::status->getCurrentCampaignMission() >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
             int itemId = kAgentOfferItems[index];
