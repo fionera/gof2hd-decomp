@@ -1572,6 +1572,9 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         AEFile::Read(stackCount, fd);
         ArraySetLength(stackCount, *stack);
         for (unsigned s = 0; s < stack->size() + 1; s++) {
+            // The original keeps one extra 4-byte stack object alive across this loop.
+            // It is what makes the frame 172 bytes and puts every local (String temp,
+            // fd, counters) in its original slot; volatile stops clang folding it away.
             volatile int dummy = 0;
             (void)dummy;
             int stationIndex = 0;
