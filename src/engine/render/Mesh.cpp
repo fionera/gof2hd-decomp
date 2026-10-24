@@ -273,10 +273,7 @@ namespace AbyssEngine {
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) {
-                        delete anim;
-                        return -1;
-                    }
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
                     for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
