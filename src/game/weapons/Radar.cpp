@@ -137,12 +137,14 @@ Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
 
     this->labelStrings = new Array<String *>();
     ArraySetLength(4, *this->labelStrings);
-    this->labelStrings->data()[0] = new String(
-            (Globals::status->inAlienOrbit() ? String(*Globals::gameText->getText(415), false)
-                                             : String(Globals::status->getStation()->getName(), false)) +
-            (Globals::status->getStation()->getIndex() == 101
-                     ? String("", false)
-                     : String(" ", false) + *Globals::gameText->getText(136)));
+    {
+        this->labelStrings->data()[0] = new String(
+                (Globals::status->inAlienOrbit() ? String(*Globals::gameText->getText(415), false)
+                                                 : String(Globals::status->getStation()->getName(), false)) +
+                (Globals::status->getStation()->getIndex() == 101
+                         ? String("", false)
+                         : String(" ", false) + *Globals::gameText->getText(136)));
+    }
     if (Globals::status->inAlienOrbit() && Globals::status->dlc1Won() && !Globals::status->inEmptyOrbit()) {
         this->labelStrings->data()[0]->Set((unsigned short *) (*level->getLandmarks())[0]->name);
     }
