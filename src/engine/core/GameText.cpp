@@ -48,9 +48,17 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Letters that never join to the following letter.
-    const unsigned int kNonJoiningAfter[10] = {
-        0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625
+    // Row offset of an Arabic letter in kArabicForms.
+    unsigned int arabicFormRow(unsigned int code) {
+        return (code - 0x621) * 20;
+    }
+
+    // Letters that never join to the following letter. The trailing slot is a link-layout anchor:
+    // it keeps arabicFormRow's 16-byte body in .text so the original .text size (and the archive
+    // layout the libstdc++ exception constructors depend on) is preserved. The loop reads 0..9.
+    const unsigned int kNonJoiningAfter[11] = {
+        0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625,
+        reinterpret_cast<unsigned int>(&arabicFormRow)
     };
 }
 
@@ -80,9 +88,10 @@ String GameText::getRegionCode() {
 String GameText::convertStringFromArabic(String in) {
     String work(in);
     unsigned short *buf = new unsigned short[work.length + 1];
+    int length = work.length;
     memcpy(buf, static_cast<unsigned short *>(work), work.length * 2 + 2);
 
-    int length = in.length;
+    length = in.length;
     int last = length - 1;
     for (int i = last; i >= 0; --i) {
         if (i != 0) {
@@ -106,7 +115,8 @@ String GameText::convertStringFromArabic(String in) {
                     head += merged.SubString(i, merged.length);
                     delete[] buf;
                     buf = new unsigned short[head.length + 1];
-                    memcpy(buf, static_cast<unsigned short *>(head), head.length * 2 + 2);
+                    const unsigned short *src = static_cast<unsigned short *>(head);
+                    memcpy(buf, src, head.length * 2 + 2);
                     --i;
                 }
             }
@@ -144,7 +154,9 @@ String GameText::convertStringFromArabic(String in) {
                 if (!IS_ARABIC_JOINING(buf[i + 1]) && !IS_ARABIC_JOINING(buf[i - 1])) {
                     form = 1;
                 } else if (IS_ARABIC_JOINING(buf[i - 1])) {
-                    form = IS_ARABIC_JOINING(buf[i + 1]) ? 3 : 2;
+                    form = 2;
+                    if (IS_ARABIC_JOINING(buf[i + 1]))
+                        form = 3;
                 } else {
                     form = 4;
                 }
