@@ -594,6 +594,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             continue;
         }
         result->data()[out++] = existing->data()[i];
+        // Re-read the status pointer here so the allocator keeps it live across the offer
+        // checks and spills `out` instead, matching the original's register allocation.
+        (void) Globals::status->inSupernovaSystem();
         if (existing->data()[i]->getOffer() == 9) {
             int index = Globals::status->getCurrentCampaignMission() >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
             int itemId = kAgentOfferItems[index];
