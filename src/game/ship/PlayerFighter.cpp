@@ -608,8 +608,10 @@ void PlayerFighter::update(int dt) {
             }
             if (this->KIPlayer::route->length() > 1) {
                 int coords[3] = {(int) this->tempVector.x, (int) this->tempVector.y, (int) this->tempVector.z};
-                delete this->KIPlayer::route;
-                this->KIPlayer::route = nullptr;
+                if (this->KIPlayer::route) {
+                    delete this->KIPlayer::route;
+                    this->KIPlayer::route = nullptr;
+                }
                 this->KIPlayer::route = new Route(coords, 3);
             } else {
                 this->KIPlayer::route->setNewCoords(this->tempVector);
