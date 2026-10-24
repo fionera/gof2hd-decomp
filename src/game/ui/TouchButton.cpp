@@ -460,15 +460,10 @@ void TouchButton::draw() {
             break;
         default: {
             // Three-part stretchable frame.
-            int middle;
-            int rightCap;
-            if (this->touched) {
-                middle = this->touchedFrame[1];
-                rightCap = this->touchedFrame[2];
-            } else {
-                middle = (this->alwaysPressed ? this->pressedFrame[1] : this->normalFrame[1]);
-                rightCap = (this->alwaysPressed ? this->pressedFrame[2] : this->normalFrame[2]);
-            }
+            int middle = this->touched ? this->touchedFrame[1]
+                                       : (this->alwaysPressed ? this->pressedFrame[1] : this->normalFrame[1]);
+            int rightCap = this->touched ? this->touchedFrame[2]
+                                         : (this->alwaysPressed ? this->pressedFrame[2] : this->normalFrame[2]);
             Globals::layout->drawBGPattern(middle, this->x + this->leftWidth, this->y, this->midStretch, this->height);
             Globals::Canvas->DrawImage2D(rightCap, this->x + this->leftWidth + this->midStretch, this->y);
             break;
@@ -488,7 +483,7 @@ void TouchButton::draw() {
                 int rest = filled - this->leftWidth;
                 Globals::layout->drawBGPattern((this->progressHighlight ? this->touchedFrame[1] : this->normalFrame[1]),
                                                this->leftWidth + this->x, this->y,
-                                               this->midStretch > rest ? rest : this->midStretch, this->height);
+                                               this->midStretch < rest ? this->midStretch : rest, this->height);
             }
             if (this->leftWidth + this->midStretch < filled) {
                 int right = filled - this->leftWidth - this->midStretch;
@@ -517,7 +512,7 @@ void TouchButton::draw() {
                 if (this->kind == 10)
                     Globals::Canvas->DrawString(
                         this->fontId, this->splitText,
-                        this->x + this->width / 2 - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
+                        this->x + (this->width >> 1) - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
                         this->y + this->height - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) * 2, false);
                 else
                     Globals::Canvas->DrawString(this->fontId, this->splitText,
