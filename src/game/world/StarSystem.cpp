@@ -302,15 +302,15 @@ StarSystem::StarSystem(int mode) {
                     size = 26000;
                 } else {
                     switch (texture) {
+                        case 9:
+                        case 16:
+                            size = Globals::rnd->nextInt(13000) + 32500;
+                            break;
                         case 6:
                         case 11:
                         case 12:
                         case 17:
                             size = Globals::rnd->nextInt(15000) + 35000;
-                            break;
-                        case 9:
-                        case 16:
-                            size = Globals::rnd->nextInt(13000) + 32500;
                             break;
                         default:
                             break;
@@ -344,9 +344,10 @@ StarSystem::StarSystem(int mode) {
         } else if (i > 0 && stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
             (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
         } else {
-            float tilt = (float) (Globals::rnd->nextInt(4096) - 2048) * (1.0f / 65536.0f) * kTwoPi;
-            (*this->planetsArray)[i]->setRotation(
-                    Vector{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
+            float tilt = (float) (Globals::rnd->nextInt(4096) - 2048);
+            tilt *= (1.0f / 65536.0f) * kTwoPi;
+            Vector rotation{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f};
+            (*this->planetsArray)[i]->setRotation(rotation);
         }
         (*this->planetsArray)[i]->moveForward(-20000.0f);
         if (i == 0) {
