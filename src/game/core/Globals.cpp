@@ -689,21 +689,36 @@ Globals::Globals() {
 
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
-    settings->flagAt4e = 0;
-    settings->shortAt4c = 0;
-    settings->intAt48 = 0;
+    // Zero intAt48, shortAt4c, flagAt4e (and the trailing pad) in one store.
+    *reinterpret_cast<uint64_t *>(reinterpret_cast<uint8_t *>(settings) + 0x48) = 0;
     secondary->slot0 = 0;
-
-    Globals::gameLoaded = 0;
-    Globals::gameSaving = 0;
-    *p11 = -1;
-    Globals::initMemoryWarning = 0;
-    *p7 = -1;
-    *p9 = 0;
-    *p12 = -1;
 
     int *p7b = (int *) &Globals::imageFactory;
     int *p5b = (int *) &Globals::achievements;
+    int *p11b = (int *) &Globals::galaxy;
+    int *p9b = (int *) &Globals::status;
+    int *p8b = (int *) &Globals::ships;
+
+    *p7b = 0;
+    self->soundResources = 0;
+    Globals::instantActionType = -1;
+    *p9b = 0;
+    settings->shortAt60 = 0x100;
+    Globals::items = 0;
+    *p5b = 0;
+    *p11b = 0;
+    Globals::instantActionScore = 0;
+    Globals::instantActionWave = 0;
+    Globals::instantActionPlayerName = 0;
+    *p8b = 0;
+
+    Globals::gameLoaded = 0;
+    Globals::gameSaving = 0;
+    *p12 = -1;
+    *p7 = -1;
+    Globals::initMemoryWarning = 0;
+    *p11 = -1;
+    *p9 = 0;
 
     float fv = settings->qualityLevel;
     int v54 = 0x247;
@@ -715,22 +730,6 @@ Globals::Globals() {
     if (1.0f <= fv) v58 = 0x2da;
     if (fv <= 0.0f) v58 = 0x16d;
     settings->resHeight = v58;
-
-    int *p11b = (int *) &Globals::galaxy;
-    Globals::instantActionScore = 0;
-    Globals::instantActionWave = 0;
-    int *p9b = (int *) &Globals::status;
-    Globals::instantActionType = -1;
-    Globals::instantActionPlayerName = 0;
-    Globals::items = 0;
-    *p9b = 0;
-    settings->shortAt60 = 0x100;
-    *p11b = 0;
-    int *p8b = (int *) &Globals::ships;
-    *p5b = 0;
-    *p7b = 0;
-    *p8b = 0;
-    self->soundResources = 0;
 }
 
 Globals::~Globals() {
@@ -2671,7 +2670,8 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
     int result = -1;
     if (list != nullptr) {
         bool searching = true;
-        for (unsigned i = 0; i < list->size() && searching; i++) {
+        unsigned i = 0;
+        while (i < list->size() && searching) {
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
@@ -2694,9 +2694,10 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                 }
                 if (differs == 0) {
                     result = (int) i;
-                    searching = false;
+                    break;
                 }
             }
+            i++;
         }
     }
     return result;
