@@ -291,7 +291,7 @@ StarSystem::StarSystem(int mode) {
                     slot = 0;
                     placed = true;
                 }
-                flip = sunSlot - slot < 12 ? 0 : 0x8000;
+                flip = sunSlot < 12 ? 0 : 0x8000;
                 StarSystem::orbitPlanetIndex = i - 1;
                 int size = Globals::rnd->nextInt(20000) + 20000;
                 if (Globals::status->getCurrentCampaignMission() == 0) {
@@ -433,9 +433,9 @@ void StarSystem::initLight() {
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(
             this->lightDirection.x, this->lightDirection.y, this->lightDirection.z, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
-    float diffuseR = STAR_MIN(STAR_MAX(sunScale * sunR, 0.0f), 2.0f);
-    float diffuseG = STAR_MIN(STAR_MAX(sunScale * sunG, 0.0f), 2.0f);
-    float diffuseB = STAR_MIN(STAR_MAX(sunScale * sunB, 0.0f), 2.0f);
+    float diffuseR = STAR_MIN(STAR_MAX(sunScale * sunR, 0.0), 2.0);
+    float diffuseG = STAR_MIN(STAR_MAX(sunScale * sunG, 0.0), 2.0);
+    float diffuseB = STAR_MIN(STAR_MAX(sunScale * sunB, 0.0), 2.0);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorDiffuse(diffuseR, diffuseG, diffuseB, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
     ((Engine *) Globals::appManager->GetEngine())->LightSetLightDirection(0.0f, 0.0f, -1.0f, 0x4001);
@@ -461,18 +461,6 @@ void StarSystem::initLight() {
         case 12:
             fogColor = 0x163e7cff;
             break;
-        case 15:
-            if (Globals::status->getCurrentCampaignMission() == 89) {
-                return;
-            }
-            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 100000.0f, 1.0f, 0x82441fff);
-            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
-            this->fogEnabled = 1;
-            for (uint32_t i = 1; i <= this->planetsArray->size() - 1; ++i) {
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))
-                        ->color = (int) 0x82441fff;
-            }
-            return;
         case 16:
             fogColor = 0x47665eff;
             break;
@@ -483,6 +471,18 @@ void StarSystem::initLight() {
             fogColor = 0xaba075ff;
             break;
         default:
+            return;
+        case 15:
+            if (Globals::status->getCurrentCampaignMission() == 89) {
+                return;
+            }
+            Globals::Canvas->FogSetParameter(AbyssEngine::FogMode_linear, 0.0f, 100000.0f, 1.0f, 0x82441fff);
+            Globals::Canvas->FogEnable(true, AbyssEngine::FogMode_1);
+            this->fogEnabled = 1;
+            for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
+                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*this->planetsArray)[i]->transform))
+                        ->color = (int) 0x82441fff;
+            }
             return;
     }
 
