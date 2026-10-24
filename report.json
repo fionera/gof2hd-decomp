@@ -368,14 +368,6 @@
    "usize": 2956
   },
   {
-   "name": "_ZN12HangarWindow10OnTouchEndEii",
-   "pct": 70.2,
-   "byte": false,
-   "linked": false,
-   "osize": 5828,
-   "usize": 5856
-  },
-  {
    "name": "_ZN9ObjectGun6renderEv",
    "pct": 72.1,
    "byte": false,
@@ -398,6 +390,14 @@
    "linked": false,
    "osize": 8080,
    "usize": 8068
+  },
+  {
+   "name": "_ZN12HangarWindow10OnTouchEndEii",
+   "pct": 73.1,
+   "byte": false,
+   "linked": false,
+   "osize": 5828,
+   "usize": 5856
   },
   {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
