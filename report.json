@@ -520,14 +520,6 @@
    "usize": 7448
   },
   {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 78.8,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 29616
-  },
-  {
    "name": "_ZN7StarMap6updateEi",
    "pct": 79.3,
    "byte": false,
@@ -558,6 +550,14 @@
    "linked": false,
    "osize": 480,
    "usize": 480
+  },
+  {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 82.9,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 29616
   },
   {
    "name": "_ZN11SpaceLounge9startChatEv",
