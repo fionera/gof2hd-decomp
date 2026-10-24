@@ -858,7 +858,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowA->setTextCentered(true);
 
     TouchButton *credits;
-    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+    if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
+        credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                  Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
+    } else {
         credits = new TouchButton(*Globals::gameText->getText(98), 7,
                                   (int) ((float) (this->slotListWidth + Globals::layout->buttonInsetX) +
                                          (float) this->slotTextWidth * 0.5f),
@@ -866,9 +869,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       Globals::layout->field_0x24 -
                                       Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c),
                                   36);
-    } else {
-        credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
-                                  Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     }
     credits->id = 52;
     ArrayAdd(credits, *this->scrollEntries);
@@ -897,16 +897,16 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->missionsWindow = 0;
     this->recordRows = 0;
     this->menuState = 0;
-    this->field_0x171 = 0;
-    this->field_0x172 = 0;
-    this->saveDialogShowing = 0;
-    this->returnToMenuSubFlag = 0;
-    this->field_0x175 = 0;
-    this->field_0x176 = 0;
     this->quitConfirmShowing = 0;
     this->returnToMenuShowing = 0;
     this->leaderboardDialogShowing = 0;
     this->dlcMessageShowing = 0;
+    this->saveDialogShowing = 0;
+    this->returnToMenuSubFlag = 0;
+    this->field_0x175 = 0;
+    this->field_0x176 = 0;
+    this->field_0x171 = 0;
+    this->field_0x172 = 0;
     this->field_0x17b = 0;
     this->dlcResultDialogShowing = 0;
     this->dlcErrorDialogShowing = 0;
@@ -922,11 +922,11 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->storeInitDialogShowing = 0;
     this->purchaseRestorePending = 0;
     this->scrollOffset = 0;
+    this->field_0x1de = 0;
     this->field_0x1da = 0;
     this->listStateSuppress = 0;
     this->field_0x1dc = 0;
     this->field_0x1dd = 0;
-    this->field_0x1de = 0;
     this->dragLastX = 0;
     this->field_0x210 = 0;
     this->dragVelocity = 0;
@@ -3235,18 +3235,18 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 bool saveDlg = this->saveDialogShowing;
                 int r = this->choiceWindow->OnTouchEnd(x, y);
-                if (saveDlg) {
-                    if (r == 1) {
-                        this->saveDialogShowing = 0;
-                    } else if (r == 0) {
-                        this->saveGame(this->selectedRow);
-                        this->saveDialogShowing = 0;
+                if (!saveDlg) {
+                    if (r != 0)
                         return 0;
-                    } else {
+                } else {
+                    if (r != 1) {
+                        if (r == 0) {
+                            this->saveGame(this->selectedRow);
+                            this->saveDialogShowing = 0;
+                        }
                         return 0;
                     }
-                } else if (r != 0) {
-                    return 0;
+                    this->saveDialogShowing = 0;
                 }
                 this->messageShowing = 0;
                 return 0;
@@ -3272,8 +3272,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             // Load game.
             if (this->messageShowing) {
                 if (this->listStateSuppress)
-                    return 0;
-                if (this->field_0x1da)
                     return 0;
                 if (this->field_0x1da ||
                     (this->choiceWindow->OnTouchEnd(x, y) == 0 && this->choiceWindow->hasChoice() &&
@@ -3339,8 +3337,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     int r = this->choiceWindow->OnTouchEnd(x, y);
                     if (r == 1 || r == 0)
                         Globals::globals->reportLeaderboards();
-                    this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
+                    this->messageShowing = 0;
                 }
                 if (this->dlcMessageShowing) {
                     if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
