@@ -570,6 +570,7 @@ void Gun::calcCharacterCollision() {
     if (this->enemies == nullptr) {
         return;
     }
+    this->lastHitKIPlayer = 0;
     bool scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
     bool mine = this->weaponType == ITEM_SORT_MINE;
     bool explosive = (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE ||
@@ -579,7 +580,6 @@ void Gun::calcCharacterCollision() {
                              this->weaponType == ITEM_SORT_IONIZING_MISSILE ||
                              this->weaponType == ITEM_SORT_SHOCK_BLAST) ||
                             mine;
-    this->lastHitKIPlayer = 0;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
@@ -675,18 +675,14 @@ void Gun::calcCharacterCollision() {
             if (this->empDamage != kNoAttribute) {
                 enemy->damageEmp(this->empDamage, this->friendGun);
             }
-            int amount;
+            int amount = this->damage;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     amount = (int) ((float) this->damage * 3.0f * 0.25f);
-                } else {
-                    amount = this->damage;
                 }
             } else if (enemy->egoFlag) {
                 amount = (int) ((float) this->damage * 0.2f);
-            } else {
-                amount = this->damage;
             }
             enemy->damage(amount, this->friendGun, this->itemIndex);
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
