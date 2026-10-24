@@ -326,13 +326,13 @@ int ParticleSettings::init() {
     this->sets[12].field_0x54 = 0;
     this->sets[12].posRight = 0.0f;
     this->sets[12].posUp = 0.0f;
-    this->sets[12].frames = 0x10;
     this->sets[12].uvU1 = 0.25f;
     this->sets[12].posSpread = 0;
     this->sets[12].drag = 0.0f;
     this->sets[12].oneShot = 0;
     this->sets[12].uvV0 = 0.0f;
     this->sets[12].posDirRandom = 0.0f;
+    this->sets[12].frames = 0x10;
     this->sets[12].uvU0 = 0.0f;
     this->sets[12].uvV1 = 0.25f;
 
@@ -535,10 +535,10 @@ int ParticleSettings::init() {
     this->sets[41].posDirRandom = 8000.0f;
 
     this->sets[23] = *spark;
+    this->sets[23].lifeBase = 4000.0f;
     this->sets[23].name = String("SET_EXPLOSION_BATTLESHIP");
     this->sets[23].lifetime = 1000;
     this->sets[23].flLifetime = 9.0f;
-    this->sets[23].lifeBase = 4000.0f;
     this->sets[23].lifeRandom = 1000;
     this->sets[23].posDirRandom = 500.0f;
     this->sets[23].posSpread = 5000;
@@ -562,7 +562,6 @@ int ParticleSettings::init() {
     this->sets[25].uvU1 = 0.125f;
     this->sets[25].uvV0 = 0.875f;
     this->sets[25].color0 = 0xffffffff;
-    this->sets[25].lifeBase = 50.0f;
     this->sets[25].color1 = 0;
     this->sets[25].uvV1 = 0.625f;
     this->sets[25].flLifetime = 50.0f;
@@ -570,6 +569,7 @@ int ParticleSettings::init() {
     this->sets[25].count = 0x19;
     this->sets[25].posDir = 0.0f;
     this->sets[25].fadeFrames = 0;
+    this->sets[25].lifeBase = 50.0f;
 
     this->sets[26] = *ringEmitter;
     this->sets[26].lifeBase = 100.0f;
