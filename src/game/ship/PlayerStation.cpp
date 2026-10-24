@@ -241,8 +241,9 @@ PlayerStation::PlayerStation(Station *station)
         Vector extent = {0.0f, 0.0f, 0.0f};
         this->boundingVolumes = new BoundingVolumeList();
         ArraySetLength(count, *(BoundingVolumeList *) this->boundingVolumes);
+        int i = 0;
         int cursor = 1;
-        for (int i = 0; i < count; ++i) {
+        for (; i < count; ++i) {
             int *data = collision->data();
             int type = data[cursor++];
             BoundingVolume *volume;

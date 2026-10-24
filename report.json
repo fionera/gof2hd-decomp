@@ -448,6 +448,22 @@
    "usize": 1680
   },
   {
+   "name": "_ZN13PlayerStationC1EP7Station",
+   "pct": 74.0,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3428
+  },
+  {
+   "name": "_ZN13PlayerStationC2EP7Station",
+   "pct": 74.0,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3428
+  },
+  {
    "name": "_ZN5Level9createGunEiiiiiiii",
    "pct": 74.0,
    "byte": false,
@@ -478,22 +494,6 @@
    "linked": false,
    "osize": 6280,
    "usize": 6308
-  },
-  {
-   "name": "_ZN13PlayerStationC1EP7Station",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3436
-  },
-  {
-   "name": "_ZN13PlayerStationC2EP7Station",
-   "pct": 74.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3436
   },
   {
    "name": "_ZN5Level11createSceneEv",
