@@ -1113,19 +1113,22 @@ void StarMap::askForJumpIntoAlienWorld() {
 
 void StarMap::update(int dt) {
     this->lastDt = dt;
+    bool (PaintCanvas::*getScreenPos)(const Vector &, Vector &) =
+            (bool (PaintCanvas::*)(const Vector &, Vector &)) (int (PaintCanvas::*)(const Vector &, Vector &))
+                    &PaintCanvas::GetScreenPosition;
     if (this->mode == 0 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
-            int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
-                                                               *(*this->systemPositions)[i]);
-            (*this->systemPositions)[i]->z = onScreen > 0 ? 1.0f : -1.0f;
+            bool onScreen = (Globals::Canvas->*getScreenPos)((*this->systemGeoms)[i]->getPosition(),
+                                                             *(*this->systemPositions)[i]);
+            (*this->systemPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
     if (this->mode == 3 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
             this->scratchVector2 = MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
-            int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2, *(*this->stationPositions)[i]);
-            (*this->stationPositions)[i]->z = onScreen > 0 ? 1.0f : -1.0f;
+            bool onScreen = (Globals::Canvas->*getScreenPos)(this->scratchVector2, *(*this->stationPositions)[i]);
+            (*this->stationPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
 
