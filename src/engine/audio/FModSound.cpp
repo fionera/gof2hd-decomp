@@ -599,45 +599,44 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
     }
 
     FMOD::Event *found;
-    if (this->system->getEventBySystemID(idx, FMOD_EVENT_INFOONLY, &found) != FMOD_OK)
-        return nullptr;
-    if (found->getCategory(&category) != FMOD_OK)
-        return nullptr;
-    char *categoryName;
-    int categoryIndex;
-    if (category->getInfo(&categoryIndex, &categoryName) != FMOD_OK)
-        return nullptr;
-    ++categoryIndex;
-    if (this->categoryEnabled[categoryIndex] == 0)
-        return nullptr;
-
-    bool hasPos = false;
-    if (pos != nullptr) {
-        if (this->eventPos == nullptr)
-            this->eventPos = new Vector();
-        this->eventPos->x = pos->x;
-        this->eventPos->y = pos->y;
-        this->eventPos->z = pos->z;
-        hasPos = true;
-    }
-    bool hasVel = false;
-    if (vel != nullptr) {
-        if (this->eventVel == nullptr)
-            this->eventVel = new Vector();
-        this->eventVel->x = vel->x;
-        this->eventVel->y = vel->y;
-        this->eventVel->z = vel->z;
-        hasVel = true;
-    }
-    if (!hasPos && !hasVel)
-        return nullptr;
-    if (found->set3DAttributes(reinterpret_cast<const FMOD_VECTOR *>(hasPos ? this->eventPos : nullptr),
-                               reinterpret_cast<const FMOD_VECTOR *>(hasVel ? this->eventVel : nullptr),
-                               nullptr) != FMOD_OK)
-        return nullptr;
-    if (this->system->getEventBySystemID(idx, FMOD_EVENT_DEFAULT, &found) == FMOD_OK) {
-        found->start();
-        return found;
+    if (this->system->getEventBySystemID(idx, FMOD_EVENT_INFOONLY, &found) == FMOD_OK) {
+        if (found->getCategory(&category) == FMOD_OK) {
+            char *categoryName;
+            int categoryIndex;
+            if (category->getInfo(&categoryIndex, &categoryName) == FMOD_OK) {
+                ++categoryIndex;
+                if (this->categoryEnabled[categoryIndex] != 0) {
+                    bool hasPos = false;
+                    if (pos != nullptr) {
+                        if (this->eventPos == nullptr)
+                            this->eventPos = new Vector();
+                        this->eventPos->x = pos->x;
+                        this->eventPos->y = pos->y;
+                        this->eventPos->z = pos->z;
+                        hasPos = true;
+                    }
+                    bool hasVel = false;
+                    if (vel != nullptr) {
+                        if (this->eventVel == nullptr)
+                            this->eventVel = new Vector();
+                        this->eventVel->x = vel->x;
+                        this->eventVel->y = vel->y;
+                        this->eventVel->z = vel->z;
+                        hasVel = true;
+                    }
+                    if (!hasPos && !hasVel)
+                        return nullptr;
+                    if (found->set3DAttributes(reinterpret_cast<const FMOD_VECTOR *>(hasPos ? this->eventPos : nullptr),
+                                               reinterpret_cast<const FMOD_VECTOR *>(hasVel ? this->eventVel : nullptr),
+                                               nullptr) != FMOD_OK)
+                        return nullptr;
+                    if (this->system->getEventBySystemID(idx, FMOD_EVENT_DEFAULT, &found) == FMOD_OK) {
+                        found->start();
+                        return found;
+                    }
+                }
+            }
+        }
     }
     return nullptr;
 }
