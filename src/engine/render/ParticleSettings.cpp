@@ -326,13 +326,13 @@ int ParticleSettings::init() {
     this->sets[12].field_0x54 = 0;
     this->sets[12].posRight = 0.0f;
     this->sets[12].posUp = 0.0f;
-    this->sets[12].frames = 0x10;
     this->sets[12].uvU1 = 0.25f;
     this->sets[12].posSpread = 0;
     this->sets[12].drag = 0.0f;
     this->sets[12].oneShot = 0;
     this->sets[12].uvV0 = 0.0f;
     this->sets[12].posDirRandom = 0.0f;
+    this->sets[12].frames = 0x10;
     this->sets[12].uvU0 = 0.0f;
     this->sets[12].uvV1 = 0.25f;
 
@@ -348,6 +348,7 @@ int ParticleSettings::init() {
     this->sets[13].uvV0 = 0.0f;
     this->sets[13].color0 = 0xffffffff;
     this->sets[13].velDir = 0.0f;
+    this->sets[13].lifeRandom = 0;
     this->sets[13].ySpread = 0;
     this->sets[13].uvU1 = 0.25f;
     this->sets[13].uvU0 = 0.0f;
@@ -362,7 +363,6 @@ int ParticleSettings::init() {
     this->sets[13].posDir = 200.0f;
     this->sets[13].drag = 0.0f;
     this->sets[13].oneShot = 0;
-    this->sets[13].lifeRandom = 0;
     this->sets[13].uvV1 = 0.25f;
     this->sets[13].frames = 0x10;
 
@@ -498,9 +498,9 @@ int ParticleSettings::init() {
 
     this->sets[40] = *ember;
     this->sets[40].name = String("SET_SMOKE_VOSSK_FREIGHTER");
-    this->sets[40].field_0x54 = 5000;
-    SetDefinition *streak2 = &this->sets[20];
     this->sets[40].posDir = 500.0f;
+    SetDefinition *streak2 = &this->sets[20];
+    this->sets[40].field_0x54 = 5000;
     this->sets[40].lifeBase = 1800.0f;
     this->sets[40].lifeRandom = 300;
 
@@ -535,10 +535,10 @@ int ParticleSettings::init() {
     this->sets[41].posDirRandom = 8000.0f;
 
     this->sets[23] = *spark;
+    this->sets[23].lifeBase = 4000.0f;
     this->sets[23].name = String("SET_EXPLOSION_BATTLESHIP");
     this->sets[23].lifetime = 1000;
     this->sets[23].flLifetime = 9.0f;
-    this->sets[23].lifeBase = 4000.0f;
     this->sets[23].lifeRandom = 1000;
     this->sets[23].posDirRandom = 500.0f;
     this->sets[23].posSpread = 5000;
@@ -562,7 +562,6 @@ int ParticleSettings::init() {
     this->sets[25].uvU1 = 0.125f;
     this->sets[25].uvV0 = 0.875f;
     this->sets[25].color0 = 0xffffffff;
-    this->sets[25].lifeBase = 50.0f;
     this->sets[25].color1 = 0;
     this->sets[25].uvV1 = 0.625f;
     this->sets[25].flLifetime = 50.0f;
@@ -570,6 +569,7 @@ int ParticleSettings::init() {
     this->sets[25].count = 0x19;
     this->sets[25].posDir = 0.0f;
     this->sets[25].fadeFrames = 0;
+    this->sets[25].lifeBase = 50.0f;
 
     this->sets[26] = *ringEmitter;
     this->sets[26].lifeBase = 100.0f;
@@ -594,20 +594,20 @@ int ParticleSettings::init() {
 
     this->sets[39] = *ringEmitter;
     SetDefinition *plume = &this->sets[43];
-    this->sets[39].uvU1 = 0.998046875f;
     this->sets[39].flags = (uint32_t)(176146 + 0x100000);
-    this->sets[39].lifeBase = 100.0f;
+    this->sets[39].uvU1 = 0.998046875f;
+    this->sets[39].color0 = 0xffffffff;
+    this->sets[39].uvV0 = 0.498046875f;
     this->sets[39].uvU0 = 0.751953125f;
-    this->sets[39].posDir = 0.0f;
+    this->sets[39].lifeBase = 100.0f;
     this->sets[39].posUp = 0.0f;
     this->sets[39].posRight = 0.0f;
-    this->sets[39].uvV0 = 0.498046875f;
-    this->sets[39].lifetime = 3000;
     this->sets[39].flLifetime = 125.0f;
     this->sets[39].count = 0x1d;
+    this->sets[39].lifetime = 3000;
     this->sets[39].uvV1 = 0.001953125f;
     this->sets[39].color1 = 0;
-    this->sets[39].color0 = 0xffffffff;
+    this->sets[39].posDir = 0.0f;
 
     *plume = *dustCloud;
     this->sets[43].posDir = 0.0f;
