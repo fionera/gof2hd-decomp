@@ -1493,8 +1493,6 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                                     (Globals::options[77] != 0) & (Globals::options[76] != 0) &
                                     (Globals::options[75] != 0));
                 uint8_t *appData = (uint8_t *) Globals::appManager->GetApplicationData();
-                if (appData == nullptr)
-                    return false;
                 if (offersLeft || !appData[21]) {
                     for (int i = 12; i != 17; i++)
                         (*this->buttons)[i]->setVisible(false);
