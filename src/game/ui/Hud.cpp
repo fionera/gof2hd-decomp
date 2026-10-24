@@ -1730,12 +1730,15 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
 
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
+    int digitW, overlap, y, digitH, screenW;
+    unsigned int step;
+    int half, span, left, x;
     Globals::Canvas->SetColor(0xffffffff);
-    int digitW = this->digitSprite->getFrameWidth();
-    int overlap = Globals::layout->field_0x2c_rowHeight;
-    int y = Globals::layout->field_0x2c_rowHeight;
-    int digitH = this->digitSprite->getFrameHeight();
-    int screenW = Globals::w;
+    digitW = this->digitSprite->getFrameWidth();
+    overlap = Globals::layout->field_0x2c_rowHeight;
+    y = Globals::layout->field_0x2c_rowHeight;
+    digitH = this->digitSprite->getFrameHeight();
+    screenW = Globals::w;
     String score(Globals::status->field_0x184);
     if (score.size() < 7) {
         int pad = 7 - score.size();
@@ -1743,11 +1746,11 @@ void Hud::drawChallengeModeScore(int unused) {
             score = String("0") + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
-    int step = digitW - overlap;
-    int half = screenW / 2;
-    int span = step * 7 / 2;
-    int left = half - span;
-    int x = left;
+    step = digitW - overlap;
+    half = screenW / 2;
+    span = step * 7 / 2;
+    left = half - span;
+    x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
         int frame = score.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
