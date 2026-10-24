@@ -549,7 +549,8 @@ void StatusWindow::draw() {
         int gridY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
                     (this->medalRowHeight >> 1);
         if (Globals::iPad) {
-            Globals::layout->drawBox(0, this->boxWidth + Globals::layout->buttonInsetX * 2, top,
+            int medalTop = top;
+            Globals::layout->drawBox(0, this->boxWidth + Globals::layout->buttonInsetX * 2, medalTop,
                                      Globals::layout->buttonInsetX + this->boxWidth, Globals::layout->field_0x1c,
                                      String(*Globals::gameText->getText(168), false));
             gridY = Globals::layout->field_0x1c + gridY + Globals::layout->field_0x2c_rowHeight;
