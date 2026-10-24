@@ -2133,9 +2133,10 @@ void ModStation::OnUpdate() {
                                                       : -(camX - this->easeX->GetMaxValue())) <= 5.0f) {
             bool back = flipAxis[1];
             flipAxis[1] = back ^ 1;
-            int offset;
-            this->easeX->SetRange(camX, this->camKeyX + (float) ((offset = Globals::rnd->nextInt(131)),
-                                                                 back ? offset + 18 : -18 - offset));
+            // Keeping the rnd result in a named local also keeps ModStation.o's .text the same
+            // size, which the libstdc++ exception ctors' byte-exactness depends on.
+            int offset = Globals::rnd->nextInt(131);
+            this->easeX->SetRange(camX, this->camKeyX + (float) (back ? offset + 18 : -18 - offset));
         }
         this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
         float camY = this->easeY->GetValue();
@@ -2539,31 +2540,40 @@ void ModStation::checkHints() {
 
     if (this->flag_0x69 || this->flag_0x6a || this->flag_0x63)
         return;
-    Status *status = Globals::status;
+    Status *volatile *statusPtr = &Globals::status;
+    Status *status = *statusPtr;
     if (status->wingmen != nullptr && !this->flag_0xdb && (int) status->fadeValue <= 0 &&
         !Globals::layout->rewardMessageActive) {
-        delete this->dialogueWindow;
-        this->dialogueWindow = nullptr;
-        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(313), (*status->wingmen)[0],
-                                                  reinterpret_cast<int *&>(status->_byte_0x28));
+        if (this->dialogueWindow != nullptr) {
+            delete this->dialogueWindow;
+            this->dialogueWindow = nullptr;
+        }
+        // The getText() call above can change Globals::status, so the original reloads it
+        // here and reads wingmen/_byte_0x28 with one 64-bit load.
+        Status *s;
+        this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(313), (*(s = *statusPtr)->wingmen)[0],
+                                                  reinterpret_cast<int *&>(s->_byte_0x28));
         Agent *agent = new Agent(0, String("", false), 0, 0, Globals::status->field_0x2c, true, 0, 0, 0, 0);
         Globals::sound->play(Globals::globals->getDialogueSoundId(313, agent), nullptr, nullptr, 0.0f);
         delete agent;
-        this->flag_0xdb = 1;
         this->flag_0x69 = 1;
-        status->setWingmen(nullptr);
+        this->flag_0xdb = 1;
+        (*statusPtr)->setWingmen(nullptr);
         return;
     }
     // Pending pirate reward (the freighter rescue pays 20000 credits).
-    if (reinterpret_cast<uint8_t *>(&status->field_f8)[1] && !Globals::layout->rewardMessageActive) {
-        delete this->dialogueWindow;
-        this->dialogueWindow = nullptr;
+    if (reinterpret_cast<uint8_t *>(&(*statusPtr)->field_f8)[1] && !Globals::layout->rewardMessageActive) {
+        if (this->dialogueWindow != nullptr) {
+            delete this->dialogueWindow;
+            this->dialogueWindow = nullptr;
+        }
         this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(442), Globals::gameText->getText(1662),
                                                   gPirateFace);
         Globals::sound->play(589, nullptr, nullptr, 0.0f);
         this->flag_0x69 = 1;
-        reinterpret_cast<uint8_t *>(&status->field_f8)[1] = 0;
-        status->changeCredits(20000);
+        Status *pirateStatus = *statusPtr;
+        reinterpret_cast<uint8_t *>(&pirateStatus->field_f8)[1] = 0;
+        pirateStatus->changeCredits(20000);
     }
 }
 
