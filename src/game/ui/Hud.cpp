@@ -944,12 +944,12 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
             if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
                 x <= this->field_0x454 + this->field_0x4d8)
                 return 0x200;
-            if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
-                x <= this->field_0x458 + this->field_0x4d8)
-                return 0x400;
             if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
                 x <= this->field_0x45e + this->field_0x4d8)
                 return 0x800;
+            if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
+                x <= this->field_0x458 + this->field_0x4d8)
+                return 0x400;
         }
         return 0;
     }
@@ -1516,7 +1516,7 @@ void Hud::drawMenu(int unused) {
     if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
         String label = String("X ") + String(this->fuelGaugeValue);
         int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
-        int gy = Globals::layout->field_0x30_rowHeight / 2 + (Globals::layout->field_0x288 + y);
+        int gy = Globals::layout->field_0x288 + (y + Globals::layout->field_0x30_rowHeight / 2);
         Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
         Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
                                      Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
@@ -1731,7 +1731,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
 void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
     int digitW, overlap, y, digitH, screenW;
-    unsigned int step;
+    int step;
     int half, span, left, x;
     Globals::Canvas->SetColor(0xffffffff);
     digitW = this->digitSprite->getFrameWidth();
@@ -1748,7 +1748,7 @@ void Hud::drawChallengeModeScore(int unused) {
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
-    span = step * 7 / 2;
+    span = step * 7 >> 1;
     left = half - span;
     x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
