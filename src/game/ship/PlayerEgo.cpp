@@ -1878,19 +1878,21 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     this->aboutToReachAutoTargetFlag = 0;
     this->field_0x145 = 0;
     bool moving = false;
+    bool timer = false;
     if (controlled) {
         this->field_0x145 = 1;
-        if (toPlanet)
-            this->planetDockTimer += this->shakeIntensity;
+        timer = toPlanet;
         moving = true;
     } else if (toPlanet) {
         this->field_0x145 = 1;
-        this->planetDockTimer += this->shakeIntensity;
+        timer = true;
         moving = true;
     } else if (this->dockedToStream) {
         this->field_0x145 = 1;
         moving = true;
     }
+    if (timer)
+        this->planetDockTimer += this->shakeIntensity;
     if (moving) {
         this->geometry->moveForward(this->speed * (float) dt);
         reinterpret_cast<Matrix &>(this->player->transform[0]) =
@@ -2042,13 +2044,14 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             if (target == nullptr || this->dockedToStream) {
                 this->setAutoPilot(nullptr);
             } else {
-                this->moveTarget = target->getPosition();
-                if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) <= 19999)
+                Vector position = target->getPosition();
+                this->moveTarget = position;
+                if ((int) AbyssEngine::AEMath::VectorLength(position - this->getPosition()) <= 19999)
                     this->aboutToReachAutoTargetFlag = 1;
                 float speed = 4.0f;
                 if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
                     speed = Globals::status->getShip()->getHandling() + 2.7f;
-                bank = this->moveToPosition(this->moveTarget, true, speed);
+                bank = this->moveToPosition(position, true, speed);
                 if (this->turretActive)
                     this->handleTurretView(dt);
             }
