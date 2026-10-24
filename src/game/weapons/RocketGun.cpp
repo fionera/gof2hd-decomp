@@ -159,13 +159,16 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
+    Gun *gun = this->gun;
+    Level *level = this->level;
+    Radar *radar = this->radar;
 
     Vector ahead = {0.0f, 0.0f, 0.0f};
-    this->gun->update(elapsed);
+    gun->update(elapsed);
 
-    if (this->hasGeometry != 0 && this->gun->delayActive != 0) {
+    if (this->hasGeometry != 0 && gun->delayActive != 0) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
-        PlayerEgo *player = this->level->getPlayer();
+        PlayerEgo *player = level->getPlayer();
         Vector muzzle = player->getPosition();
         Vector barrel = this->gun->offset;
         barrel.z += -100.0f;
@@ -175,14 +178,11 @@ void RocketGun::update(int elapsed) {
         const float scale = (float) (int) (((float) this->gun->delayTimer / -200.0f + 1.0f) * 255.0f) / 255.0f;
         this->geometry->setScaling(scale, scale, scale);
         const Vector forward = MatrixGetDir(reinterpret_cast<const Matrix &>(player->player->transform[0]));
-        Vector up;
-        up.y = 1.0f;
-        up.x = 0.0f;
-        up.z = 0.0f;
+        Vector up = {0.0f, 1.0f, 0.0f};
         this->geometry->setDirection(forward, up);
     }
 
-    Gun *gun = this->gun;
+    gun = this->gun;
     this->wasFiring = gun->delayActive;
 
     if (gun->hitSmall != 0) {
@@ -193,15 +193,12 @@ void RocketGun::update(int elapsed) {
 
         PaintCanvas *canvas = Globals::Canvas;
         Matrix &local = *(Matrix *) canvas->TransformGetLocal(this->transform);
-        const Vector &shot = this->gun->positions.data()[this->gun->fireIndex];
+        const Vector &shot = this->gun->positions.data()[this->gun->currentProjectile];
         MatrixSetTranslation(local, shot.x, shot.y, shot.z);
-        Vector heading = this->gun->velocities.data()[this->gun->fireIndex];
+        Vector heading = this->gun->velocities.data()[this->gun->currentProjectile];
 
         Matrix frame = *(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
-        Vector up;
-        up.x = 0.0f;
-        up.y = 1.0f;
-        up.z = 0.0f;
+        Vector up = {0.0f, 1.0f, 0.0f};
         Vector side = VectorCross(up, heading);
         side = VectorNormalize(side);
         up = VectorCross(heading, side);
@@ -220,32 +217,32 @@ void RocketGun::update(int elapsed) {
         if (this->trailMatrices == nullptr) {
             const int kind = this->rocketKind;
             if ((uint32_t) (kind - 4) < 2 || kind == 0x28) {
-                this->radar->level->field_80->enableSystemRender(this->particleSystem, true);
-                this->radar->level->field_80->enableSystemEmit(this->particleSystem, true);
+                radar->level->field_80->enableSystemRender(this->particleSystem, true);
+                radar->level->field_80->enableSystemEmit(this->particleSystem, true);
             } else {
-                Level *level = this->radar->level;
+                Level *level = radar->level;
                 if (this->gun->itemIndex == 0xe8)
                     level->field_9c->enableSystemEmit(this->particleSystem, true);
                 else
                     level->particleRenderBoolPtr->enableSystemEmit(this->particleSystem, this->gun->itemIndex != 0xb3);
             }
-        } else if (this->gun->positions.data()[this->gun->fireIndex].z == 50000.0f) {
-            this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->fireIndex], false);
-            this->particleManager->resetSystem((*this->trailSystems)[this->gun->fireIndex]);
-            (*this->trailTimers)[this->gun->fireIndex] = 0;
+        } else if (this->gun->positions.data()[this->gun->currentProjectile].z == 50000.0f) {
+            this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
+            this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
+            (*this->trailTimers)[this->gun->currentProjectile] = 0;
         } else {
-            (*this->trailMatrices)[this->gun->fireIndex] = frame;
-            this->particleManager->resetSystem((*this->trailSystems)[this->gun->fireIndex]);
-            this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->fireIndex], true);
-            this->particleManager->enableSystemRender((*this->trailSystems)[this->gun->fireIndex], true);
-            (*this->trailTimers)[this->gun->fireIndex] = 0;
+            (*this->trailMatrices)[this->gun->currentProjectile] = frame;
+            this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
+            this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], true);
+            this->particleManager->enableSystemRender((*this->trailSystems)[this->gun->currentProjectile], true);
+            (*this->trailTimers)[this->gun->currentProjectile] = 0;
         }
 
         gun = this->gun;
-        if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->fireIndex > 0) {
+        if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->currentProjectile > 0) {
             // Cluster salvo: launch the remaining rockets in the same frame.
             gun->hitSmall = 1;
-            gun->fireIndex = gun->fireIndex - 1;
+            gun->currentProjectile = gun->currentProjectile - 1;
             this->update(elapsed);
             this->gun->update(elapsed);
             gun = this->gun;
@@ -259,9 +256,9 @@ void RocketGun::update(int elapsed) {
         if ((uint32_t) (kind - 4) < 2 || kind == 0x28) {
             if (this->fadeTimer == 0)
                 this->fadeTimer = 2000;
-            this->radar->level->field_80->enableSystemEmit(this->particleSystem, false);
+            radar->level->field_80->enableSystemEmit(this->particleSystem, false);
         } else {
-            Level *level = this->radar->level;
+            Level *level = radar->level;
             (gun->itemIndex == 0xe8 ? level->field_9c : level->particleRenderBoolPtr)
                     ->enableSystemEmit(this->particleSystem, false);
         }
