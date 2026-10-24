@@ -689,8 +689,10 @@ Globals::Globals() {
 
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
-    // Zero intAt48, shortAt4c, flagAt4e (and the trailing pad) in one store.
-    *reinterpret_cast<uint64_t *>(reinterpret_cast<uint8_t *>(settings) + 0x48) = 0;
+    // intAt48 (0x48) and shortAt4c (0x4c) are adjacent aligned zero words; clang
+    // merges them into one 8-byte store, which also clears flagAt4e (0x4e).
+    settings->intAt48 = 0;
+    settings->shortAt4c = 0;
     secondary->slot0 = 0;
 
     int *p7b = (int *) &Globals::imageFactory;
