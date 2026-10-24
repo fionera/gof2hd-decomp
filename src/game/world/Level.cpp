@@ -1984,8 +1984,8 @@ void Level::createMission() {
                 (*stops)[2] = (*this->enemies)[8];
                 Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
                 convoyRoute->setLoop(true);
-                Vector offset;
                 for (int i = 10; i < 14; i++) {
+                    Vector offset;
                     (*this->enemies)[i] = this->createShip(0, 0, 51, convoyRoute->getWaypoint(0), true, false);
                     (*this->enemies)[i]->setRoute(convoyRoute->clone());
                     (*this->enemies)[i]->player->setAlwaysFriend(true);
