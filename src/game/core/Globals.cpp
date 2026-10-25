@@ -641,7 +641,6 @@ static const int gDialogueSoundPairs[3008] = {
 Globals::Globals() {
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
-
     Globals::recordHandler = 0;
     Globals::Canvas = 0;
     Globals::shipTemplate = 0;
@@ -684,12 +683,9 @@ Globals::Globals() {
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
     secondary->slot0 = 0;
-    // intAt48 (0x48), shortAt4c (0x4c) and flagAt4e (0x4e) are zeroed with
-    // separate stores, matching the original.
     settings->flagAt4e = 0;
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
-
 
     Globals::imageFactory = 0;
     this->soundResources = 0;
@@ -706,10 +702,10 @@ Globals::Globals() {
 
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
-    Globals::lastCampaignMissionFailed = -1;
-    Globals::lastStationMusicPlayed = -1;
-    Globals::initMemoryWarning = 0;
     Globals::lastSpaceMusicPlayed = -1;
+    Globals::initMemoryWarning = 0;
+    Globals::lastStationMusicPlayed = -1;
+    Globals::lastCampaignMissionFailed = -1;
     Globals::lastCampaignMissionFailCount = 0;
 
     float fv = settings->qualityLevel;
@@ -2661,9 +2657,11 @@ float Globals::sqrt(float x) {
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
     int result = -1;
     if (list != nullptr) {
-        bool searching = true;
         unsigned i = 0;
-        while (i < list->size() && searching) {
+        int searching = 1;
+        do {
+            if (i >= list->size())
+                break;
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
@@ -2686,11 +2684,11 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                 }
                 if (differs == 0) {
                     result = (int) i;
-                    break;
+                    searching = false;
                 }
             }
             i++;
-        }
+        } while (searching);
     }
     return result;
 }
