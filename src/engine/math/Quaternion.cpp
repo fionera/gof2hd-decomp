@@ -2,13 +2,6 @@
 #include <cmath>
 
 namespace AbyssEngine {
-    namespace {
-        // Byte offset of a quaternion component; kept local to this TU.
-        [[gnu::used]] int QuaternionComponentOffset(int index) {
-            return index * sizeof(float);
-        }
-    }
-
     Quaternion::Quaternion() {
     }
 
