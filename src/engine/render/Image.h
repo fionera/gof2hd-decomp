@@ -8,7 +8,6 @@ namespace AbyssEngine {
         uint16_t height;
         uint32_t format;
         uint8_t hasMipmaps;
-        uint8_t pad0x9[3];
         unsigned char *data;
         uint32_t dataLen;
 
