@@ -244,7 +244,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->leftWidth = w;
         this->textOffsetY = this->height + 5;
         int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
-        this->textOffsetX = (w >> 1) - textW / 2;
+        this->textOffsetX = w / 2 - textW / 2;
         this->iconSmall = -1;
         this->iconOverlay = -1;
         Globals::Canvas->Image2DCreate(g_TB_medalIcons[medalIndex], (unsigned int &) this->iconSmall);
@@ -345,11 +345,12 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->pressedFrame[0] = this->touchedFrame[0];
         this->height = Globals::Canvas->GetImage2DHeight(this->normalFrame[0]);
         int w = Globals::Canvas->GetImage2DWidth(this->normalFrame[0]);
-        this->layoutHeight = this->height;
+        int h = this->height;
+        this->layoutHeight = h;
         this->width = w;
         this->leftWidth = w;
         this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height >> 1) +
+        this->textOffsetY = (int) ((float) (h / 2) +
                                    lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
         this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
@@ -479,9 +480,10 @@ void TouchButton::draw() {
                                           this->leftWidth > filled ? filled : this->leftWidth, this->height, 0.0f, 0,
                                           0, this->x, this->y);
             if (this->leftWidth < filled) {
+                int amount = this->midStretch;
                 int rest = filled - this->leftWidth;
-                int amount = rest;
-                if (this->midStretch > rest) amount = this->midStretch;
+                if (amount > rest)
+                    amount = rest;
                 Globals::layout->drawBGPattern((this->progressHighlight ? this->touchedFrame[1] : this->normalFrame[1]),
                                                this->leftWidth + this->x, this->y,
                                                amount, this->height);
@@ -543,9 +545,10 @@ void TouchButton::draw() {
 drawSingleImage:
     Globals::Canvas->DrawImage2D(imageToDraw, imageX, imageY);
 restoreDrawState:
+    PaintCanvas *canvas = Globals::Canvas;
     Globals::layout->setDrawColor(0xffffffff);
-    Globals::Canvas->FontSetSpacing(this->fontId, savedSpacing);
-    Globals::Canvas->SetColor(savedColor);
+    canvas->FontSetSpacing(this->fontId, savedSpacing);
+    canvas->SetColor(savedColor);
 }
 
 
