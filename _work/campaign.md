@@ -1,5 +1,27 @@
 # Byte-matching campaign log
 
+## Session 2026-10-24 (wave 17 — byte 1352 unchanged, linked 4423->4426, avg 99.41->99.45)
+
+- Started from wave 16: byte 1352, linked 4423, avg 99.41.
+- Fleet: 32 `codex exec -p dsv41` workers in disjoint worktrees `../wt/w307..w338`
+  (branches `wave17-w307..w338`), all launched with the local DeepSeek/SGLang profile.
+  The orchestrator serialized every merge, build, ratchet check, baseline lock, and docs update.
+- Landed linked-exact gains: FModSound::updateEvent3DAttributes (99.1->100), AEFile::FileExist
+  restored to its original `bool` return, and FileRead names/stations paths (+2) after removing
+  the function-pointer cast in loadSpacePoints (3 functions total).
+- Landed pct-only gains: ObjectGun::render 74.0->91.1, Radar::drawCurrentLock 77.8->94.6 and
+  Radar::draw 53.3->56.1, ModStation OnUpdate 85.0->89.2 and OnTouchEnd 56.9->79.5,
+  HangarWindow::OnTouchEnd 73.2->77.5, RocketGun::update 57.3->65.8, StarSystem ctor 77.3->83.7,
+  ParticleSettings::init 90.1->91.5, plus PlayerFighter, Engine::ResetLightParam, SpaceLounge,
+  PlayerEgo, MGame, Status, StarMap, Level::createMission, RecordHandler, RepairBeam, Globals,
+  Mesh, GameText, VirtualInput, StatusWindow, Hud, TouchButton, and FileRead passes.
+- Reverted from master after gate regressions (evidence retained on branches): w330
+  Gun::calcCharacterCollision 56.9->57.9 dropped byte_exact 1352->1342; w332
+  MissionsWindow::init 74.2->77.4 likewise dropped byte_exact to 1342.
+- w318 (Generator createAgents/getShipBuyList) was still searching at wave close and left no
+  commit; its worktree/branch is retained for a later retry.
+- End: byte 1352, linked 4426, avg 99.45, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-24 (wave 16 — byte 1352 unchanged, linked 4416->4423, avg 99.36->99.41)
 
 - Started from wave 15: byte 1352, linked 4416, avg 99.36.
