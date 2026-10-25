@@ -1330,15 +1330,16 @@ void Radar::drawCurrentLock(Hud *) {
     }
 
     KIPlayer *target = this->lockedAsteroid;
+    KIPlayer *station = this->lockedStation;
     if (target == nullptr) {
         target = this->lockedGasCloud;
         if (target == nullptr) {
             target = this->lockedEnemy;
         }
     }
-    if (__builtin_expect(target == nullptr, 0)) {  // lint: arm_builtin
-        target = this->lockedStation;
-        if (target == nullptr) {
+    if (target == nullptr) {
+        target = station;
+        if (station == nullptr) {
             Radar::drawTarget = 0;
             return;
         }
@@ -1346,7 +1347,6 @@ void Radar::drawCurrentLock(Hud *) {
     Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
     Array<KIPlayer *> *landmarks = this->landmarks;
     KIPlayer *asteroid = this->lockedAsteroid;
-    KIPlayer *station = this->lockedStation;
     String *titleText;
     if (station == (*landmarks)[0]) {
         titleText = (*this->labelStrings)[0];
