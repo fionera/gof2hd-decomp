@@ -1,5 +1,22 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 27 — 20 cleanup workers launched)
+
+- Second fleet: 20 `codex exec -p dsv41` workers in `../wt/w547..w566`
+  (branches `wave27-w547..w566`), disjoint from wave26. Purpose: remove non-human
+  compiler/layout shortcuts (`__builtin_expect`, `[[gnu::used]]` anchors, volatile casts,
+  fake `*_ext_*`/`_psm_*` shims, unnecessary `void*`/wrapper functions) while preserving the
+  gate and every linked-exact function.
+- Coverage: VirtualInput, RecordHandler, ObjectGun, AEFile, Transform/KeyFrame, Quaternion,
+  GameText, ParticleSystemManager, LODManager, LodMeshMerger, PaintCanvas, ResourceTransform,
+  ShaderBaseStruct, FModSound, Image, Engine, SpriteSystem, ImageFactory, Material,
+  AEMath/IParticleSystem.
+- Start gate: **byte_exact 1352, linked_exact 4447, avg 99.67**. Workers were told to keep
+  each owned TU's total `.text` size stable and to leave a shortcut in place with evidence if
+  it is genuinely required for codegen.
+- Detached with `setsid -f`; prompts `/tmp/w547.prompt..w566.prompt`, logs
+  `/tmp/w547.log..w566.log`, reports `/tmp/w547.last..w566.last`.
+
 ## Session 2026-10-25 (wave 26 — 20 workers launched)
 
 - Fleet: 20 `codex exec -p dsv41` workers in `../wt/w527..w546`
