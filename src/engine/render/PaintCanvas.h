@@ -31,6 +31,9 @@ namespace AbyssEngine {
     class ImageFont;
     class AELoadedTexture;
 
+    typedef void *ImageUserData; // lint: void_ptr (ABI callback user-data pointer; mangling must match lib)
+    typedef void (*ImageCallback)(Image *, ImageUserData);
+
 #ifndef GOF2_ENUM_BlendMode
 #define GOF2_ENUM_BlendMode
 #endif
@@ -58,7 +61,7 @@ namespace AbyssEngine {
         // real offsets (meshCount 0x24, meshes 0x28, engine 0x34).
         ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;  // 0x10 (count/data/capacity)
         unsigned char field_0x1c;                              // 0x1c
-        int field_0x20;                                        // 0x20
+        Image2D *field_0x20;                                   // 0x20: active 2D mask
         ::Array<AbyssEngine::Mesh *> meshes;                   // 0x24 (count/data/capacity)
         int gameOrientation;                                   // 0x30 (orientation)
         Engine *engine;                                        // 0x34
@@ -273,13 +276,13 @@ namespace AbyssEngine {
 
         void TransformCreate(unsigned short resId, unsigned int &out);
 
-        void *TransformGetLocal(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
+        Matrix *TransformGetLocal(unsigned int index);
 
         void TransformSetLocal(unsigned int index, const Matrix &matrix);
 
         void TransformSetColor(unsigned int index, unsigned int color);
 
-        void *TransformGetTransform(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
+        Transform *TransformGetTransform(unsigned int index);
 
         int TransformGetTriCount(unsigned int index);
 
@@ -391,14 +394,13 @@ namespace AbyssEngine {
 
         void MaterialCreate(unsigned short resId, unsigned int &out);
 
-        void *MaterialGetMaterial(unsigned int index); // lint: void_ptr (ABI method return; mangling must match lib)
+        Material *MaterialGetMaterial(unsigned int index);
 
         void MaterialChange(unsigned int index, BlendMode param3, unsigned int param4);
 
         void MaterialResourceChangeTexture(unsigned int resId, unsigned int texture, int slot);
 
-        void TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), void *userData, // lint: void_ptr (ABI method params: callback userData; mangling must match lib)
-                           // lint: void_ptr (ABI method params: callback userData; mangling must match lib)
+        void TextureCreate(unsigned short resId, ImageCallback callback, ImageUserData userData,
                            unsigned int &out, bool useCallbackLoader);
 
         void TextureCreate(unsigned short id, unsigned int &out, bool flag);
@@ -411,7 +413,7 @@ namespace AbyssEngine {
 
         // Inline in the original's PaintCanvas.h (weak symbol in the binary): callers therefore
         // see no inferred readonly attribute and reload resource payload fields after the call.
-        void *FindResource(unsigned short id) { // lint: void_ptr (ABI method return; mangling must match lib)
+        Resource *FindResource(unsigned short id) {
             unsigned int count = this->resources.count;
             for (unsigned int i = 0; i < count; ++i) {
                 Resource *res = this->resources.data_[i];
