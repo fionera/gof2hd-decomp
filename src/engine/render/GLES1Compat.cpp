@@ -131,7 +131,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->field_0x468 = up;
+        this->lightPositions[0] = up;
     }
     this->lightDirty[0] = 0.0f;
     {
@@ -139,7 +139,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->field_0x474 = up;
+        this->lightPositions[1] = up;
     }
     this->lightDirty[1] = 0.0f;
 

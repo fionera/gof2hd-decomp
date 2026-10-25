@@ -76,7 +76,7 @@ namespace AbyssEngine {
             this->dirty = 0;
 
         glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
-        glUniform3f(this->uLightposmodelLoc, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
+        glUniform3f(this->uLightposmodelLoc, engine->lightDir[0].x, engine->lightDir[0].y, engine->lightDir[0].z);
 
         glEnableVertexAttribArray(this->aPositionLoc);
         glEnableVertexAttribArray(this->aNormalLoc);

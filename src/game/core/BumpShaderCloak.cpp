@@ -154,7 +154,7 @@ namespace AbyssEngine {
             glUniformMatrix3fv(this->uModelMatrix, 1, 0, eng->normalMatrix);
 
         if (this->dirty) {
-            glUniform3f(this->uLightDirModel[0], eng->lightDir.x, eng->lightDir.y, eng->lightDir.z);
+            glUniform3f(this->uLightDirModel[0], eng->lightDir[0].x, eng->lightDir[0].y, eng->lightDir[0].z);
             if (this->uEyePosModel >= 0)
                 glUniform3f(this->uEyePosModel, eng->lightColor.x, eng->lightColor.y, eng->lightColor.z);
             if (this->uGlColor >= 0)
@@ -193,12 +193,12 @@ namespace AbyssEngine {
                 glUniform3fv(this->uAmbientColor[1], 1, (const float *) eng->ambientShaded[1]);
                 glUniform3fv(this->uDiffuseColor[1], 1, (const float *) eng->diffuseShaded[1]);
                 glUniform3fv(this->uSpecularColor[1], 1, (const float *) eng->specularShaded[1]);
-                glUniform3f(this->uLightDirModel[1], eng->field_0x33c.x, eng->field_0x33c.y, eng->field_0x33c.z);
+                glUniform3f(this->uLightDirModel[1], eng->lightDir[1].x, eng->lightDir[1].y, eng->lightDir[1].z);
             } else {
                 glUniform3f(this->uAmbientColor[1], 0.0f, 0.0f, 0.0f);
                 glUniform3f(this->uDiffuseColor[1], 0.0f, 0.0f, 0.0f);
                 glUniform3f(this->uSpecularColor[1], 0.0f, 0.0f, 0.0f);
-                glUniform3f(this->uLightDirModel[1], eng->field_0x33c.x, eng->field_0x33c.y, eng->field_0x33c.z);
+                glUniform3f(this->uLightDirModel[1], eng->lightDir[1].x, eng->lightDir[1].y, eng->lightDir[1].z);
             }
             this->dirty = 0;
         }

@@ -185,8 +185,8 @@ namespace AbyssEngine {
             glUniform1f(this->uLodDistLoc, Engine::LodDistShader);
 
         if (this->dirty != 0) {
-            glUniform3f(this->uLightdirmodel0Loc, eng->lightDir.x,
-                        eng->lightDir.y, eng->lightDir.z);
+            glUniform3f(this->uLightdirmodel0Loc, eng->lightDir[0].x,
+                        eng->lightDir[0].y, eng->lightDir[0].z);
             if (this->uEyeposmodelLoc >= 0)
                 glUniform3f(this->uEyeposmodelLoc, eng->lightColor.x,
                             eng->lightColor.y, eng->lightColor.z);
@@ -235,14 +235,14 @@ namespace AbyssEngine {
                 }
                 glUniform3fv(this->uDiffuseColor1Loc, 1, (float *) eng->diffuseShaded[1]);
                 glUniform3fv(this->uSpecularColor1Loc, 1, (float *) eng->specularShaded[1]);
-                glUniform3f(this->uLightdirmodel1Loc, eng->field_0x33c.x,
-                            eng->field_0x33c.y, eng->field_0x33c.z);
+                glUniform3f(this->uLightdirmodel1Loc, eng->lightDir[1].x,
+                            eng->lightDir[1].y, eng->lightDir[1].z);
             } else {
                 glUniform3f(loc5c, 0, 0, 0);
                 glUniform3f(this->uDiffuseColor1Loc, 0, 0, 0);
                 glUniform3f(this->uSpecularColor1Loc, 0, 0, 0);
-                glUniform3f(this->uLightdirmodel1Loc, eng->field_0x33c.x,
-                            eng->field_0x33c.y, eng->field_0x33c.z);
+                glUniform3f(this->uLightdirmodel1Loc, eng->lightDir[1].x,
+                            eng->lightDir[1].y, eng->lightDir[1].z);
             }
             this->dirty = 0;
         }
