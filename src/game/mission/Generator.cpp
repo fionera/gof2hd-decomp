@@ -912,17 +912,15 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                      1200.0f +
              1.0f) *
             (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
-    if (type == 7) {
-        reward *= 0.7f;
-    } else if (type == 9) {
-        reward *= 1.2f;
+    if (type == 9 || type == 7) {
+        reward *= type == 9 ? 1.2f : 0.7f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
+    } else if (type == 3 || type == 5) {
+        reward *= 2.0f;
     } else if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
-    } else if (type == 5 || type == 3) {
-        reward *= 2.0f;
     }
 
     int level = Globals::status->getLevel();
