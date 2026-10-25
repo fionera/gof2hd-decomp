@@ -227,8 +227,8 @@ StarSystem::StarSystem(int mode) {
         for (int k = 0; k < 24; ++k) {
             usedSlots[k] = 0;
         }
-        int slot = 0;
         int sunSlot = 0;
+        int slot = 0;
         for (uint32_t i = 0; i < this->planetsArray->size() && (int) i >= 0; ++i) {
             (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
             if (!this->abstractSystem &&
