@@ -296,6 +296,9 @@ void StatusWindow::draw() {
     }
     if (barH >= 1)
         width = width - Globals::layout->field_0x48 - Globals::layout->field_0x2c_rowHeight;
+    // standingBarWidth immediately follows boxWidth; the [-1] accesses below
+    // preserve the original store/reload shape instead of folding the address
+    // into the assignment.
     this->boxWidth = width - Globals::layout->buttonInsetX * 2;
 
     String value;
@@ -303,50 +306,50 @@ void StatusWindow::draw() {
 
     if (this->activeTab == 0 || Globals::iPad) {
         // Pilot box.
-        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, this->boxWidth, Globals::layout->field_0x1c,
+        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, (&this->standingBarWidth)[-1], Globals::layout->field_0x1c,
                                  String(*Globals::gameText->getText(1597), false));
         top = Globals::layout->field_0x1c + top + Globals::layout->field_0x2c_rowHeight;
         Globals::layout->drawBox(5, Globals::layout->buttonInsetX, top,
-                                 (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  Globals::layout->field_0x2d8, String(""));
         Globals::imageFactory->drawChar(this->imageParts, Globals::layout->buttonInsetX + Globals::layout->field_0x4c,
                                         top, false);
         value = Globals::layout->formatCredits(Globals::status->getCredits());
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, value,
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, value),
                                     Globals::layout->field_0x2c_rowHeight + top, false);
         value = *Globals::gameText->getText(321) + String(" ") + Globals::status->getLevel();
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, value,
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, value),
                                     Globals::layout->field_0x2c_rowHeight + top + Globals::layout->field_0x4, false);
         Globals::globals->longToTimeStringNoSeconds(Globals::status->getPlayingTime(), value);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, value,
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, value),
                                     Globals::layout->field_0x2c_rowHeight + top + Globals::layout->field_0x4 * 2, false);
 
         // Ship box.
-        Globals::layout->drawBox(5, (this->boxWidth >> 1) + Globals::layout->buttonInsetX +
+        Globals::layout->drawBox(5, ((&this->standingBarWidth)[-1] >> 1) + Globals::layout->buttonInsetX +
                                         Globals::layout->field_0x2c_rowHeight,
-                                 top, (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 top, ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  Globals::layout->field_0x2d8, String(""));
         Globals::imageFactory->drawShip(Globals::status->getShip()->getIndex(),
-                                        Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                        Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                             Globals::layout->field_0x2c_rowHeight * 2,
                                         top);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                     *Globals::gameText->getText(Globals::status->getShip()->getIndex() + 913),
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight * 3 + Globals::layout->field_0x2cc,
                                     Globals::layout->field_0x2c_rowHeight + top, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                     *Globals::gameText->getText(569) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight * 3 + Globals::layout->field_0x2cc,
                                     Globals::layout->field_0x4 + Globals::layout->field_0x2c_rowHeight + top, false);
         String decimals = String((int) ((Globals::status->getShip()->getFirePower() -
@@ -355,52 +358,52 @@ void StatusWindow::draw() {
                               .SubString(0, 2);
         value = (int) Globals::status->getShip()->getFirePower() + String(".") + decimals;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, value,
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, value),
                                     Globals::layout->field_0x2c_rowHeight + top + Globals::layout->field_0x4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                     *Globals::gameText->getText(570) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight * 3 + Globals::layout->field_0x2cc,
                                     Globals::layout->field_0x2c_rowHeight + top + Globals::layout->field_0x4 * 2,
                                     false);
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, String(Globals::status->getShip()->getCombinedHP()),
-            Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+            Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
                                               String(Globals::status->getShip()->getCombinedHP())),
             Globals::layout->field_0x2c_rowHeight + top + Globals::layout->field_0x4 * 2, false);
 
         // Rank / standing box.
         top = Globals::layout->field_0x2d8 + top + Globals::layout->field_0x2c_rowHeight;
-        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, this->boxWidth, Globals::layout->field_0x1c,
+        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, (&this->standingBarWidth)[-1], Globals::layout->field_0x1c,
                                  String(*Globals::gameText->getText(576), false));
         top = Globals::layout->field_0x1c + top + Globals::layout->field_0x2c_rowHeight;
         Globals::layout->drawBox(5, Globals::layout->buttonInsetX, top,
-                                 (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  this->charImageHeight + Globals::layout->field_0x2c_rowHeight * 2 +
                                      Globals::layout->field_0x4,
                                  String(""));
-        Globals::layout->drawBox(5, (this->boxWidth >> 1) + Globals::layout->buttonInsetX +
+        Globals::layout->drawBox(5, ((&this->standingBarWidth)[-1] >> 1) + Globals::layout->buttonInsetX +
                                         Globals::layout->field_0x2c_rowHeight,
-                                 top, (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 top, ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  this->charImageHeight + Globals::layout->field_0x2c_rowHeight * 2 +
                                      Globals::layout->field_0x4,
                                  String(""));
         int rankY = Globals::layout->field_0x2c_rowHeight + top;
         Globals::Canvas->DrawImage2D(this->rankImage0, Globals::layout->buttonInsetX + Globals::layout->field_0x4c, rankY);
         Globals::Canvas->DrawImage2D(this->rankImage1,
-                                     Globals::layout->buttonInsetX + (this->boxWidth >> 1) -
+                                     Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) -
                                          Globals::layout->field_0x2c_rowHeight - Globals::layout->field_0x4c,
                                      rankY, 0x11, 0x12);
         Globals::Canvas->DrawImage2D(this->rankImage2,
-                                     Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                     Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                          Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                      rankY);
         Globals::Canvas->DrawImage2D(this->rankImage3,
-                                     Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c, rankY,
+                                     Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c, rankY,
                                      0x11, 0x12);
-        int emblemX = Globals::layout->buttonInsetX + (this->boxWidth >> 2);
+        int emblemX = Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 2);
         int textY = (this->charImageHeight + rankY) + Globals::layout->field_0x2c_rowHeight;
         int emblemY = textY - (this->charImageHeight >> 1) - (this->standingBarHeight >> 1);
         Globals::Canvas->DrawImage2D(this->standingEmblemImage, emblemX, emblemY, 0x11, 0x14);
@@ -411,7 +414,7 @@ void StatusWindow::draw() {
         Globals::Canvas->DrawImage2D(this->standingFrameImage,
                                      (int) ((float) emblemX + -rate * (float) this->standingBarWidth),
                                      textY - (this->charImageHeight >> 1), 0x11, 0x44);
-        emblemX = this->boxWidth - ((this->boxWidth - Globals::layout->field_0x2c_rowHeight * 2) >> 2) +
+        emblemX = (&this->standingBarWidth)[-1] - (((&this->standingBarWidth)[-1] - Globals::layout->field_0x2c_rowHeight * 2) >> 2) +
                   Globals::layout->field_0x2c_rowHeight * 2;
         Globals::Canvas->DrawImage2D(this->standingEmblemImage, emblemX, emblemY, 0x11, 0x14);
         rate = ((Standing *) (intptr_t) Globals::status->getStanding())->getStandingRate(1);
@@ -425,113 +428,113 @@ void StatusWindow::draw() {
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, textY, false);
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(407),
-            Globals::layout->buttonInsetX + (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+            Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                 Globals::layout->field_0x4c -
                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(407)),
             textY, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(408),
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     textY, false);
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(409),
-            Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+            Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(409)),
             textY, false);
 
         // Statistics box.
         top = textY + Globals::layout->field_0x4 + Globals::layout->field_0x2c_rowHeight;
-        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, this->boxWidth, Globals::layout->field_0x1c,
+        Globals::layout->drawBox(0, Globals::layout->buttonInsetX, top, (&this->standingBarWidth)[-1], Globals::layout->field_0x1c,
                                  String(*Globals::gameText->getText(577), false));
         top = Globals::layout->field_0x1c + top + Globals::layout->field_0x2c_rowHeight;
         Globals::layout->drawBox(5, Globals::layout->buttonInsetX, top,
-                                 (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4 * 6, String(""));
-        Globals::layout->drawBox(5, (this->boxWidth >> 1) + Globals::layout->buttonInsetX +
+        Globals::layout->drawBox(5, ((&this->standingBarWidth)[-1] >> 1) + Globals::layout->buttonInsetX +
                                         Globals::layout->field_0x2c_rowHeight,
-                                 top, (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight,
+                                 top, ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight,
                                  Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4 * 6, String(""));
         top = Globals::layout->field_0x2c_rowHeight + top;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(568) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getMissionCount()),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getMissionCount())),
                                     top, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(176) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top + Globals::layout->field_0x4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getKills()),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getKills())),
                                     top + Globals::layout->field_0x4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(552) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top + Globals::layout->field_0x4 * 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_d8),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_d8)),
                                     top + Globals::layout->field_0x4 * 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(559) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top + Globals::layout->field_0x4 * 3, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getCapturedCrates()),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getCapturedCrates())),
                                     top + Globals::layout->field_0x4 * 3, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(557) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top + Globals::layout->field_0x4 * 4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getStationsVisited()),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getStationsVisited())),
                                     top + Globals::layout->field_0x4 * 4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(3235) + separator,
                                     Globals::layout->buttonInsetX + Globals::layout->field_0x4c, top + Globals::layout->field_0x4 * 5, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_118),
-                                    (this->boxWidth >> 1) - Globals::layout->field_0x2c_rowHeight -
+                                    ((&this->standingBarWidth)[-1] >> 1) - Globals::layout->field_0x2c_rowHeight -
                                         Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_118)),
                                     top + Globals::layout->field_0x4 * 5, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(564) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     top, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getJumpgateUsed()),
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getJumpgateUsed())),
                                     top, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(558) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     top + Globals::layout->field_0x4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getGoodsProduced()),
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->getGoodsProduced())),
                                     top + Globals::layout->field_0x4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(560) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     top + Globals::layout->field_0x4 * 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_a0),
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_a0)),
                                     top + Globals::layout->field_0x4 * 2, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(561) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     top + Globals::layout->field_0x4 * 3, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_a4),
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_a4)),
                                     top + Globals::layout->field_0x4 * 3, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(567) + separator,
-                                    Globals::layout->buttonInsetX + (this->boxWidth >> 1) +
+                                    Globals::layout->buttonInsetX + ((&this->standingBarWidth)[-1] >> 1) +
                                         Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x4c,
                                     top + Globals::layout->field_0x4 * 4, false);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_d4),
-                                    Globals::layout->buttonInsetX + this->boxWidth - Globals::layout->field_0x4c -
+                                    Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1] - Globals::layout->field_0x4c -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String(Globals::status->field_d4)),
                                     top + Globals::layout->field_0x4 * 4, false);
     }
@@ -539,10 +542,10 @@ void StatusWindow::draw() {
     if (this->activeTab == 1 || Globals::iPad) {
         // Medal grid.
         int inset = Globals::layout->buttonInsetX;
-        int columnW = this->boxWidth / 3;
+        int columnW = (&this->standingBarWidth)[-1] / 3;
         int gridX;
         if (Globals::iPad) {
-            gridX = this->boxWidth + (columnW >> 1) + Globals::layout->buttonInsetX;
+            gridX = (&this->standingBarWidth)[-1] + (columnW >> 1) + Globals::layout->buttonInsetX;
             top = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->scrollOffset;
         } else {
             gridX = Globals::layout->buttonInsetX + (columnW >> 1);
@@ -552,8 +555,8 @@ void StatusWindow::draw() {
         int screenH = Globals::h;
         if (Globals::iPad) {
             int medalTop = top;
-            Globals::layout->drawBox(0, this->boxWidth + Globals::layout->buttonInsetX * 2, medalTop,
-                                     Globals::layout->buttonInsetX + this->boxWidth, Globals::layout->field_0x1c,
+            Globals::layout->drawBox(0, (&this->standingBarWidth)[-1] + Globals::layout->buttonInsetX * 2, medalTop,
+                                     Globals::layout->buttonInsetX + (&this->standingBarWidth)[-1], Globals::layout->field_0x1c,
                                      String(*Globals::gameText->getText(168), false));
             gridY = Globals::layout->field_0x1c + gridY + Globals::layout->field_0x2c_rowHeight;
         }
@@ -571,14 +574,14 @@ void StatusWindow::draw() {
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
                                          (Globals::layout->field_0x4 * this->detailLines->size() +
                                          Globals::layout->field_0x4c * 2),
-                                     this->boxWidth,
+                                     (&this->standingBarWidth)[-1],
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
                                      String(""));
             Globals::layout->drawBox(5, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
                                          (Globals::layout->field_0x4 * this->detailLines->size() +
                                          Globals::layout->field_0x4c * 2),
-                                     this->boxWidth,
+                                     (&this->standingBarWidth)[-1],
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
                                      String(""));
             Globals::globals->drawLines((unsigned int) (uintptr_t) Globals::font, this->detailLines,
@@ -597,7 +600,9 @@ void StatusWindow::draw() {
     if (Globals::h < 0)
         return;
     String unused;
-    if (this->selectedMedal < -1)
+    if (Globals::iPad > 1)
+        return;
+    if (Globals::h == 0x10000000)
         return;
     if (!Globals::iPad) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++)
