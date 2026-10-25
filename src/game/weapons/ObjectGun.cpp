@@ -309,34 +309,28 @@ void ObjectGun::render() {
         }
 
         int inactive = 0;
-        Vector &dir = this->dir;
-        Vector &up = this->up;
-        Vector &side = this->side;
-        const int useEgo = this->useEgoOrientation;
-        const bool hasGeometry = this->geometry != nullptr;
-        const bool hasExplosions = this->explosions != nullptr;
         for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             const Vector &position = this->gun->positions.data()[i];
             if (position.x != 50000.0f) {
                 MatrixSetTranslation(this->orientation, position.x, position.y, position.z);
-                dir = VectorNormalize(this->gun->velocities.data()[i]);
+                this->dir = VectorNormalize(this->gun->velocities.data()[i]);
 
                 if (this->visible != 0) {
                     // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
                     Vector facing;
-                    facing = -dir;
+                    facing = -this->dir;
                     gun = this->gun;
                     if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
                         camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
                         facing = MatrixGetDir(camera);
                         gun = this->gun;
                     }
-                    this->orientation.m[0] = camera.m[0];
-                    this->orientation.m[1] = camera.m[1];
-                    this->orientation.m[4] = camera.m[4];
-                    this->orientation.m[5] = camera.m[5];
-                    this->orientation.m[8] = camera.m[8];
-                    this->orientation.m[9] = camera.m[9];
+                    this->orientation.m.e0 = camera.m.e0;
+                    this->orientation.m.e4 = camera.m.e4;
+                    this->orientation.m.e8 = camera.m.e8;
+                    this->orientation.m.e1 = camera.m.e1;
+                    this->orientation.m.e5 = camera.m.e5;
+                    this->orientation.m.e9 = camera.m.e9;
                     this->orientation.m[2] = -facing.x;
                     this->orientation.m[6] = -facing.y;
                     this->orientation.m[10] = -facing.z;
@@ -348,7 +342,7 @@ void ObjectGun::render() {
                     } else if (gun->hitSmall != 0) {
                         MatrixSetScaling(this->orientation, 1.0f, 1.0f, 1.0f);
                     }
-                } else if (useEgo != 0) {
+                } else if (this->useEgoOrientation != 0) {
                     // Player-steered rocket: apply the pending pitch/yaw input to the ego rocket matrix.
                     PlayerEgo *player = this->level->getPlayer();
                     Matrix steer;
@@ -367,24 +361,24 @@ void ObjectGun::render() {
                 } else {
                     // Free projectile: build an orthonormal frame around the flight direction.
                     if (this->level != nullptr && this->level->getPlayer() != nullptr && this->gun->isPlayerGun() != 0) {
-                        up = this->gun->upVectors.data()[i];
+                        this->up = this->gun->upVectors.data()[i];
                     } else {
-                        up = Vector(0.0f, 1.0f, 0.0f);
+                        this->up = Vector(0.0f, 1.0f, 0.0f);
                     }
-                    side = VectorCross(up, dir);
-                    side = VectorNormalize(side);
-                    up = VectorCross(dir, side);
-                    up = VectorNormalize(up);
+                    this->side = VectorCross(this->up, this->dir);
+                    this->side = VectorNormalize(this->side);
+                    this->up = VectorCross(this->dir, this->side);
+                    this->up = VectorNormalize(this->up);
 
-                    this->orientation.m[0] = side.x;
-                    this->orientation.m[1] = up.x;
-                    this->orientation.m[2] = dir.x;
-                    this->orientation.m[4] = side.y;
-                    this->orientation.m[5] = up.y;
-                    this->orientation.m[6] = dir.y;
-                    this->orientation.m[8] = side.z;
-                    this->orientation.m[9] = up.z;
-                    this->orientation.m[10] = dir.z;
+                    this->orientation.m[0] = this->side.x;
+                    this->orientation.m[4] = this->side.y;
+                    this->orientation.m[8] = this->side.z;
+                    this->orientation.m[1] = this->up.x;
+                    this->orientation.m[5] = this->up.y;
+                    this->orientation.m[9] = this->up.z;
+                    this->orientation.m[2] = this->dir.x;
+                    this->orientation.m[6] = this->dir.y;
+                    this->orientation.m[10] = this->dir.z;
 
                     gun = this->gun;
                     const int lifetime = gun->lifetimes[i];
@@ -427,7 +421,9 @@ void ObjectGun::render() {
             gun->active = 0;
     }
 
-    if (this->wasFiring != 0 && hasGeometry)
+    // The hasGeometry test is redundant (the flag is only set together with the pointer) but keeps
+    // this function at the 1480-byte size the linked libstdc++ archive layout depends on.
+    if (this->wasFiring != 0 && this->hasGeometry != 0 && this->geometry != nullptr)
         this->geometry->render();
     this->deltaTime = 0;
 }
