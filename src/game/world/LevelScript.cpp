@@ -1115,8 +1115,7 @@ bool LevelScript::process(int delta) {
         // Dispatch on the campaign mission id (fresh call at 0x1387ca; -Oz has no CSE). The two
         // range prongs (0x1387ce/0x1387d8) are checked before the linear compare chain, matching
         // the original's jump order.
-        int cm = Globals::status->getCurrentCampaignMission();
-        switch (cm) {
+        switch (Globals::status->getCurrentCampaignMission()) {
             case 158: {
                 if (m_nState == 1) {
                     // Fly the marker ship in towards the station.
@@ -1415,7 +1414,8 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                if (m_nState == 0) {
+                switch (m_nState) {
+                case 0: {
                     for (int i = 0; i < 13; i++) {
                         (*enemies)[i]->setEnemies(nullptr);
                         (*enemies)[i]->player->setEnemy((*enemies)[14]->player);
@@ -1424,7 +1424,12 @@ bool LevelScript::process(int delta) {
                     m_pExplosion->addFireStreaks();
                     m_pExplosion->setScaling(12.0f);
                     m_nState = 1;
-                } else if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
+                    // fallthrough
+                }
+                case 1: {
+                    if (!((RadioMessage *) ((*messages)[0]))->isOver()) {
+                        break;
+                    }
                     player->setTurretMode(false);
                     if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
@@ -1452,21 +1457,25 @@ bool LevelScript::process(int delta) {
                     (*enemies)[0]->setActive(true);
                     m_nScriptTimerA = 0;
                     m_nState++;
-                } else if (m_nState == 2) {
+                    break;
+                }
+                case 2: {
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 1001) {
                         (*enemies)[0]->player->shoot(0, delta, false);
                         m_pGeometry4 = new AEGeometry(Globals::Canvas);
                         m_pGeometry4->setPosition((*enemies)[0]->getPosition());
                         Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0];
-                        m_tempVec = *reinterpret_cast<Vector *>(reinterpret_cast<char *>(leadGun) + 0x18);
+                        m_tempVec = leadGun->velocities[0];
                         m_pGeometry4->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                         m_pGeometry4->setVisible(false);
                         m_pCamera->setTarget(m_pGeometry4);
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 3) {
+                    break;
+                }
+                case 3: {
                     Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0];
                     m_pGeometry4->moveForward(leadGun->pitchRate * (float) delta);
                     m_nScriptTimerA += delta;
@@ -1478,7 +1487,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 4) {
+                    break;
+                }
+                case 4: {
                     m_nScriptTimerA += delta;
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
                     if (m_nScriptTimerA >= 324) {
@@ -1495,7 +1506,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 5) {
+                    break;
+                }
+                case 5: {
                     m_nScriptTimerA += delta;
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*enemies)[13]->geometry->transform))
                             ->Update((long long) ((float) delta * 0.3f), false);
@@ -1533,6 +1546,8 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 0;
                         m_nState++;
                     }
+                    break;
+                }
                 }
                 break;
             }
