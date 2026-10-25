@@ -1,5 +1,22 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 26 — 20 workers launched)
+
+- Fleet: 20 `codex exec -p dsv41` workers in `../wt/w527..w546`
+  (branches `wave26-w527..w546`), one disjoint TU family each. The `-p dsv41` profile is
+  confirmed in every worker log: `model: deepseek-v4.1-flash`, `provider: sglang`.
+- Start gate: **byte_exact 1352, linked_exact 4447, avg 99.67, stubs 0, missing/extra 0**.
+  Workers were told to preserve each owned TU's total `.text` size because the ten libstdc++
+  exception ctors remain archive-layout-sensitive.
+- Coverage of the remaining non-exact functions: ParticleSettings+TouchButton; Radar;
+  PlayerFighter; ModStation; SpaceLounge; Engine; MenuTouchWindow; StatusWindow+MissionsWindow;
+  PlayerStation+StarSystem; StarMap; PlayerEgo; Generator; Hud; FileInterfaceAndroid+Globals;
+  Level; Mesh; HangarWindow; MGame; HackingGame; LevelScript+Layout.
+- `w516` is still running on Gun/RocketGun/Status and owns those files; wave26 workers were
+  told not to touch them. The orchestrator will merge wave26 only after the workers finish.
+- Launch detail: detached with `setsid -f`; prompts in `/tmp/w527.prompt..w546.prompt`,
+  logs in `/tmp/w527.log..w546.log`, final reports in `/tmp/w527.last..w546.last`.
+
 ## Session 2026-10-25 (wave 24/25 — linked 4444->4447, avg 99.67)
 
 - Wave 24 (20 workers, `../wt/w497..w516`) and wave 25 (10 more workers, `../wt/w517..w526`)
