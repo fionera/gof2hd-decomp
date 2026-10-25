@@ -211,7 +211,7 @@ SpaceLounge::SpaceLounge()
             Agent *agent = (*this->agents)[i];
             if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
                 agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
-                ArrayRemove(agent, *this->agents);
+                ArrayRemove((*this->agents)[i], *this->agents);
                 this->init();
                 break;
             }
@@ -1877,8 +1877,7 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
     }
     result = -1;
 done:
-    if (result >= 0) return result;
-    return -1;
+    return result >= 0 ? result : -1;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
