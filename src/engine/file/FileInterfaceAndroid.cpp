@@ -3,7 +3,6 @@
 
 #include <jni.h>
 
-#include <atomic>
 #include <cstdio>
 #include <new>
 
@@ -88,8 +87,6 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool writing) {
         if (methodCloseRead == 0)
             methodCloseRead = env->GetMethodID(cls, "close", "()V");
     }
-    // Zero-cost compiler barrier: keeps the methodID loads in the original's order.
-    std::atomic_signal_fence(std::memory_order_seq_cst);
 }
 
 FileInterfaceAndroid::~FileInterfaceAndroid() {
@@ -98,47 +95,52 @@ FileInterfaceAndroid::~FileInterfaceAndroid() {
         --*&FileInterfaceAndroid::fileCounter;
     else
         this->enabled = 0;
-    // Zero-cost compiler barrier: keeps the counter update in the original's branch form.
-    std::atomic_signal_fence(std::memory_order_seq_cst);
 }
 
 void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) { // lint: void_ptr virtual override return type baked into vtable/symbol
     const unsigned short *wname = name.GetAEWChar();
+    if (this->enabled == 0)
+        return 0;
+
+    const unsigned short *relative = (*wname == '/') ? wname + 1 : wname;
+    String apkPath("assets/");
+    apkPath += String(relative, false);
+    String zipPath("47947_GOF2CONTENT_ETC/assets/");
+    zipPath += String(relative, false);
+
+    fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
+
+    zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
+    zip_file *zipFile = 0;
+    if (ZIPArchive != 0)
+        zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
+
     FileInterfaceAndroid *opened = 0;
-    if (this->enabled != 0) {
-        const unsigned short *relative = (*wname == '/') ? wname + 1 : wname;
-        String apkPath("assets/");
-        apkPath += String(relative, false);
-        String zipPath("47947_GOF2CONTENT_ETC/assets/");
-        zipPath += String(relative, false);
-
-        fprintf(stderr, "OpenRead('%s', %d, %d, %d, %d, %d)\n", apkPath.GetAEChar(), p2, p3, p4, p5, p6);
-
-        zip_file *apkFile = zip_fopen(APKArchive, apkPath.GetAEChar(), 0);
-        zip_file *zipFile = 0;
-        if (ZIPArchive != 0)
-            zipFile = zip_fopen(ZIPArchive, zipPath.GetAEChar(), 0);
-
-        if (apkFile != 0) {
-            opened = new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
-        } else if (zipFile != 0) {
-            opened = new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
-        } else if (this->appRootDir != 0) {
-            // Not packaged: fall back to the unpacked data directory.
-            String dir(this->appRootDir);
-            String full = dir + String(relative, false);
-            FILE *f = fopen(full.GetAEChar(), "rb");
-            if (f != 0)
-                opened = new FileInterfaceAndroid(f, false);
+    if (apkFile != 0) {
+        FileInterfaceAndroid *p = new FileInterfaceAndroid(apkFile, p3, p6, p4, p5);
+        opened = p;
+    } else if (zipFile != 0) {
+        FileInterfaceAndroid *q = new FileInterfaceAndroid(zipFile, p3, p6, p4, p5);
+        opened = q;
+    } else if (this->appRootDir != 0) {
+        // Not packaged: fall back to the unpacked data directory.
+        String dir(this->appRootDir);
+        String full = dir + String(relative, false);
+        FILE *f = fopen(full.GetAEChar(), "rb");
+        if (f != 0) {
+            FileInterfaceAndroid *p = new FileInterfaceAndroid(f, false);
+            opened = p;
         }
     }
-    if (opened == 0)
-        return 0;
     return opened;
 }
 
 void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { // lint: void_ptr virtual override return type baked into vtable/symbol
     const unsigned short *wname = name.GetAEWChar();
+    const unsigned short *end = wname;
+    while (*end++ != 0) {
+    }
+
     String dir(this->appRootDir);
     String full = dir + String(wname, false);
     FILE *f = fopen(full.GetAEChar(), "wb");
@@ -178,18 +180,20 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->file != 0)
         return fwrite(buf, 1, n, this->file) == n;
+    if (this->jniStream == 0)
+        return true;
 
-    bool ok = true;
-    if (this->jniStream != 0) {
-        jbyteArray array = env->NewByteArray(n);
-        env->SetByteArrayRegion(array, 0, n, static_cast<const jbyte *>(buf));
-        env->CallVoidMethod(this->jniStream, methodWrite, array);
-        if (env->ExceptionOccurred() != 0) {
-            env->ExceptionClear();
-            ok = false;
-        }
-        env->DeleteLocalRef(array);
+    jbyteArray array = env->NewByteArray(n);
+    env->SetByteArrayRegion(array, 0, n, static_cast<const jbyte *>(buf));
+    env->CallVoidMethod(this->jniStream, methodWrite, array);
+    bool ok;
+    if (env->ExceptionOccurred() != 0) {
+        env->ExceptionClear();
+        ok = false;
+    } else {
+        ok = true;
     }
+    env->DeleteLocalRef(array);
     return ok;
 }
 
