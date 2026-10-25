@@ -559,8 +559,8 @@ void StatusWindow::draw() {
         } else {
             gridX = Globals::layout->buttonInsetX + (columnW >> 1);
         }
-        int gridY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
-                    (this->medalRowHeight >> 1);
+        int gridY = Globals::layout->field_0xc_leftMargin + (this->medalRowHeight >> 1) +
+                    Globals::layout->field_0x2c_rowHeight;
         int screenH = Globals::h;
         if (Globals::iPad) {
             int medalTop = top;
