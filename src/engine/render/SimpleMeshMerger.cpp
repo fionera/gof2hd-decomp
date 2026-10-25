@@ -76,8 +76,8 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
             }
             indexOffset += 6;
         }
-        triangleBase += (uint32_t) mesh->indexCount / 3u;
         vertexBase += mesh->vertexCount;
+        triangleBase += (uint32_t) mesh->indexCount / 3u;
     }
 
     canvas->TransformCreate(this->transformId);
