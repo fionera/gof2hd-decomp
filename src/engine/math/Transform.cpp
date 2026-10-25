@@ -5,10 +5,10 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 
-// The original 4076-byte InsertKeyFrame_old pushes .text onto the next 32-byte
-// boundary.  Keep the GOT 72 bytes later as well, so the libc++ exception
-// constructors' PC-relative GOT deltas remain byte-identical.
-[[gnu::visibility("hidden"), gnu::section(".pad")]] char g_transform_matrix_flag[72] = {1};
+namespace {
+    // Local Transform data; its size is part of the byte-identical layout.
+    [[gnu::used]] char g_transform_matrix_flag[72] = {1};
+}
 
 namespace AbyssEngine {
     bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
