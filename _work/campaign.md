@@ -21,13 +21,14 @@
   to 1342 through the libstdc++ exception-ctor layout).
 - End: byte 1352, linked 4435, avg 99.59, stubs 0, missing/extra 0, imports 207, data 843/843.
 
-## Session 2026-10-25 (wave 21 — byte 1352 unchanged, linked 4435->4438, avg 99.59->99.60; partial)
+## Session 2026-10-25 (wave 21 — byte 1352 unchanged, linked 4435->4439, avg 99.59->99.61)
 
 - Fleet: 20 `codex exec -p dsv41` workers in `../wt/w437..w456` (branches `wave21-w437..w456`),
-  launched at the user's request for higher parallelism. At this checkpoint 18 workers had finished;
-  w441 and w455 were still running.
-- Landed linked-exact gains: Quaternion::Set(Matrix), ObjectGun::render, and
-  RecordHandler::recordStoreRead (99.5->100%) — net linked +3.
+  launched at the user's request for higher parallelism. All 20 workers finished; w441 landed
+  its final Status::calcCargoPrices commit after the first checkpoint.
+- Landed linked-exact gains: Quaternion::Set(Matrix), ObjectGun::render,
+  RecordHandler::recordStoreRead (99.5->100%), and Status::calcCargoPrices (88.8->100%) —
+  net linked +4.
 - Landed pct gains: SpaceLounge::startChat 81.2->87.2 (14430 B exact), MenuTouchWindow::OnTouchMove
   87.1->89.1 and OnTouchEnd 55.0->63.0, PlayerEgo::checkForTurret 86.3->86.6, ModStation
   OnInitialize 63.9->65.9, StarMap::update passes, Hud::draw, HangarWindow::OnTouchEnd,
@@ -36,7 +37,7 @@
   Open pad was replaced by real pak-extension storage.
 - Held/blocked: w421/w424/w447/w448/w449 documented source-only near-misses in their `.last`
   reports (register allocation, spill slots, and the 1342-byte exception-ctor layout trap).
-- End: byte 1352, linked 4438, avg 99.60, stubs 0, missing/extra 0, imports 207, data 843/843.
+- End: byte 1352, linked 4439, avg 99.61, stubs 0, missing/extra 0, imports 207, data 843/843.
 
 ## Session 2026-10-25 (wave 18 — byte 1352 unchanged, linked 4426->4427, avg 99.45->99.49)
 
