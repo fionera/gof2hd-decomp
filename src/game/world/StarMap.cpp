@@ -53,8 +53,6 @@ static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix
 }
 
 static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
-    if (canvas == 0)
-        return false;
     return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
 
@@ -755,7 +753,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         this->iconBuffer[1] = this->keyImageWanted;
     if (Globals::status->getCurrentCampaignMission() == 116 && stationMode &&
         (*this->stations)[index]->getIndex() >= 90 && (*this->stations)[index]->getIndex() <= 94 &&
-        !(((Mission *) Globals::status->getCampaignMission())->getStatusValue() &
+        !((Globals::status->getCampaignMission(), campaign)->getStatusValue() &
           (1 << ((*this->stations)[index]->getIndex() - 90)))) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 120 &&
@@ -938,7 +936,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
 
 void StarMap::draw() {
     this->alpha = this->mode == 0 ? 255 : 0;
-    if (this->transitionIn || this->transitionOut) {
+    if (this->transitionIn | this->transitionOut) {
         float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
                   (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
         this->alpha = (int) ((this->transitionIn ? 1.0f - t : t) * 255.0f);
