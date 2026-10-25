@@ -48,20 +48,16 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Letters that never join to the following letter. The trailing slot is a data pointer that
-    // preserves the original .data.rel.ro size; the loop reads 0..9.
-    const unsigned int kNonJoiningAfter[11] = {
-        0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625,
-        reinterpret_cast<unsigned int>(&kArabicForms[0][0])
+    // Byte offset of an Arabic letter's row in kArabicForms.
+    [[gnu::used]] unsigned int arabicFormRow(unsigned int code) {
+        return (code - 0x621) * 20;
+    }
+
+    // Letters that never join to the following letter.
+    const unsigned int kNonJoiningAfter[10] = {
+        0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625
     };
 }
-
-#pragma GCC visibility push(hidden)
-// Row offset of an Arabic letter in kArabicForms.
-unsigned int arabicFormRow(unsigned int code) {
-    return (code - 0x621) * 20;
-}
-#pragma GCC visibility pop
 
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
 #define IS_ARABIC_JOINING(c) ((c) >= 0x600 && (c) != 0x61f && (c) != 0x60c)
@@ -131,11 +127,13 @@ String GameText::convertStringFromArabic(String in) {
             }
             if (afterNonJoiner) {
                 for (int r = 0; r <= 40; ++r) {
-                    if (kArabicForms[r][0] == buf[i]) {
+                    const unsigned int *row = reinterpret_cast<const unsigned int *>(
+                        reinterpret_cast<const char *>(kArabicForms) + arabicFormRow(r + 0x621));
+                    if (row[0] == buf[i]) {
                         int form = 1;
                         if (i < last && IS_ARABIC_JOINING(buf[i + 1]))
                             form = 4;
-                        buf[i] = kArabicForms[r][form];
+                        buf[i] = row[form];
                         break;
                     }
                 }
@@ -144,7 +142,9 @@ String GameText::convertStringFromArabic(String in) {
         }
 
         for (int r = 0; r < 41; ++r) {
-            if (kArabicForms[r][0] != buf[i])
+            const unsigned int *row = reinterpret_cast<const unsigned int *>(
+                reinterpret_cast<const char *>(kArabicForms) + arabicFormRow(r + 0x621));
+            if (row[0] != buf[i])
                 continue;
             int form;
             if (i == 0) {
@@ -166,7 +166,7 @@ String GameText::convertStringFromArabic(String in) {
                 if (IS_ARABIC_JOINING(buf[i - 1]))
                     form = 2;
             }
-            buf[i] = kArabicForms[r][form];
+            buf[i] = row[form];
         }
     }
 
