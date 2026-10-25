@@ -2856,7 +2856,7 @@ void MGame::OnUpdate() {
                 Globals::hints[33] = 1;
                 return;
             }
-            if (!Globals::hints[34] && Globals::status->getShip()->hasCloak()) {
+            if (Globals::status->getShip()->hasCloak() && !Globals::hints[34]) {
                 if (this->choiceWindow == nullptr) {
                     this->choiceWindow = new ChoiceWindow();
                 }
