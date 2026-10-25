@@ -291,7 +291,7 @@ namespace AbyssEngine {
                 }
                 if (count != 0) {
                     for (unsigned int channel = 0; channel < 7; channel++) {
-                        short keys;
+                        int keys;
                         if (AEFile::Read(2, &keys, file) == 0) {
                             delete anim;
                             return -1;
