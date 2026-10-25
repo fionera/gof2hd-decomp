@@ -2663,9 +2663,7 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
     if (list != nullptr) {
         bool searching = true;
         unsigned i = 0;
-        do {
-            if (i >= list->size())
-                return result;
+        while (i < list->size() && searching) {
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
@@ -2688,14 +2686,11 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                 }
                 if (differs == 0) {
                     result = (int) i;
-                    searching = false;
-                }
-                else {
-                    searching = true;
+                    break;
                 }
             }
             i++;
-        } while (searching);
+        }
     }
     return result;
 }
