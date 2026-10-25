@@ -765,7 +765,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
-            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
                           Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
@@ -784,7 +784,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->weaponType = kind;
             gun->setPlayerGun(true);
             weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
-                                   kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE, this);
+                                   kind == ITEM_SORT_MISSILE || kind == ITEM_SORT_CLUSTER_MISSILE, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
         case ITEM_SORT_AUTO_CANNON:
@@ -798,20 +798,16 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->setErrorMagnitudePercentage(2);
             break;
         case ITEM_SORT_TURRET: {
-            float z;
-            float x;
+            float z = 300.0f;
+            float x = 0.0f;
             switch (idx) {
-                case 181:
-                    z = -300.0f;
-                    x = 0.0f;
-                    break;
                 case 48:
-                    z = 300.0f;
                     x = 80.0f;
                     break;
+                case 181:
+                    z = -300.0f;
+                    break;
                 default:
-                    z = 300.0f;
-                    x = 0.0f;
                     break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
@@ -835,20 +831,16 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
         case ITEM_SORT_PLASMA_COLLECTOR: {
-            float z;
-            float x;
+            float z = 300.0f;
+            float x = 0.0f;
             switch (idx) {
-                case 181:
-                    z = -300.0f;
-                    x = 0.0f;
-                    break;
                 case 48:
-                    z = 300.0f;
                     x = 80.0f;
                     break;
+                case 181:
+                    z = -300.0f;
+                    break;
                 default:
-                    z = 300.0f;
-                    x = 0.0f;
                     break;
             }
             gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
@@ -6107,7 +6099,7 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wy, wz, wx;
+    int wy, wx, wz;
     if (waypoint != nullptr) {
         wx = waypoint->x;
         wy = waypoint->y;
@@ -6117,9 +6109,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         wx = 0;
         wz = 0;
     }
-    int jitterZ = Globals::rnd->nextInt(40000);
-    int jitterY = Globals::rnd->nextInt(40000);
     int jitterX = Globals::rnd->nextInt(40000);
+    int jitterY = Globals::rnd->nextInt(40000);
+    int jitterZ = Globals::rnd->nextInt(40000);
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
@@ -6939,7 +6931,65 @@ void Level::createScene() {
         delete this->enemies;
     }
     this->enemies = nullptr;
-    if (this->missionPtr == 23) {
+    if (this->missionPtr == 2) {
+            this->createPlayer();
+            Globals::status->setMission(Mission::empty);
+            this->createMission();
+            if (Globals::status->getCurrentCampaignMission() == 43) {
+                AEGeometry *shield = new AEGeometry(14288, Globals::Canvas, false);
+                ArrayAdd((KIPlayer *) new PlayerStatic(-1, shield, 0.0f, 0.0f, 0.0f), *this->enemies);
+                AEGeometry *beam = new AEGeometry(14289, Globals::Canvas, false);
+                ArrayAdd((KIPlayer *) new PlayerStatic(-1, beam, 0.0f, 0.0f, 0.0f), *this->enemies);
+            }
+            return;
+    } else if (this->missionPtr == 4) {
+        {
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            int staticCount = race == 1 ? 2 : 3;
+            Array<Agent *> *agents = Globals::status->getStation()->getAgents();
+            unsigned char *seatUsed = new unsigned char[7];
+            if (agents != nullptr) {
+                int agentCount = agents->size();
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(agentCount * 3 + staticCount, *this->enemies);
+                for (int i = 0; i < 7; i++)
+                    seatUsed[i] = 0;
+                for (int i = 0; i < agentCount; i++) {
+                    int look = (*agents)[i]->getRace();
+                    if (look == 3)
+                        look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
+                    int mesh = kAgentMeshes[look];
+                    if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
+                        mesh = 14724;
+                    int seat;
+                    do {
+                        seat = Globals::rnd->nextInt(7);
+                    } while (seatUsed[seat] != 0);
+                    float x = (float) kBarSeats[race][seat][0];
+                    float y = (float) kBarSeats[race][seat][1];
+                    float z = (float) kBarSeats[race][seat][2];
+                    seatUsed[seat] = 1;
+                    AEGeometry *agentGeometry = new AEGeometry(mesh, Globals::Canvas, false);
+                    (*this->enemies)[i] = new PlayerStatic(-1, agentGeometry, x, y, z);
+                    AEGeometry *counterGeometry = new AEGeometry(kBarCounterMeshes[race], Globals::Canvas, false);
+                    (*this->enemies)[agentCount + i] = new PlayerStatic(-1, counterGeometry, x, y, z);
+                    AEGeometry *markerGeometry = new AEGeometry(14348, Globals::Canvas, false);
+                    y += 20.0f;
+                    (*this->enemies)[agentCount * 2 + i] = new PlayerStatic(-1, markerGeometry, x, y, z);
+                }
+            } else {
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(3, *this->enemies);
+            }
+            for (int k = 0; k < staticCount; k++) {
+                AEGeometry *g = new AEGeometry(kBarMeshes[race][k], Globals::Canvas, false);
+                (*this->enemies)[this->enemies->size() - staticCount + k] = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
+            }
+            delete[] seatUsed;
+            return;
+        }
+
+    } else if (this->missionPtr == 23) {
         {
             int sceneRace;
             if (Globals::status->getStation()->getIndex() == 101)
@@ -6975,7 +7025,9 @@ void Level::createScene() {
                 }
                 ArrayAdd((KIPlayer *) hangarPart, *this->enemies);
             }
-            bool ownHangar = Globals::status->getStation()->getIndex() == 108 && Globals::status->field_114 == 3;
+            bool ownHangar = Globals::status->getStation()->getIndex() == 108;
+            if (Globals::status->field_114 != 3)
+                ownHangar = false;
             int capacity = kHangarCapacity[sceneRace];
             int shipCount = Globals::rnd->nextInt(capacity + 1);
             if (ownHangar) {
@@ -7034,63 +7086,7 @@ void Level::createScene() {
             delete[] spotUsed;
             return;
         }
-    } else if (this->missionPtr == 4) {
-        {
-            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-            int staticCount = race == 1 ? 2 : 3;
-            Array<Agent *> *agents = Globals::status->getStation()->getAgents();
-            unsigned char *seatUsed = new unsigned char[7];
-            if (agents != nullptr) {
-                int agentCount = agents->size();
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(agentCount * 3 + staticCount, *this->enemies);
-                for (int i = 0; i < 7; i++)
-                    seatUsed[i] = 0;
-                for (int i = 0; i < agentCount; i++) {
-                    int look = (*agents)[i]->getRace();
-                    if (look == 3)
-                        look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
-                    int mesh = kAgentMeshes[look];
-                    if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
-                        mesh = 14724;
-                    int seat;
-                    do {
-                        seat = Globals::rnd->nextInt(7);
-                    } while (seatUsed[seat] != 0);
-                    float x = (float) kBarSeats[race][seat][0];
-                    float y = (float) kBarSeats[race][seat][1];
-                    float z = (float) kBarSeats[race][seat][2];
-                    seatUsed[seat] = 1;
-                    AEGeometry *agentGeometry = new AEGeometry(mesh, Globals::Canvas, false);
-                    (*this->enemies)[i] = new PlayerStatic(-1, agentGeometry, x, y, z);
-                    AEGeometry *counterGeometry = new AEGeometry(kBarCounterMeshes[race], Globals::Canvas, false);
-                    (*this->enemies)[agentCount + i] = new PlayerStatic(-1, counterGeometry, x, y, z);
-                    AEGeometry *markerGeometry = new AEGeometry(14348, Globals::Canvas, false);
-                    y += 20.0f;
-                    (*this->enemies)[agentCount * 2 + i] = new PlayerStatic(-1, markerGeometry, x, y, z);
-                }
-            } else {
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(3, *this->enemies);
-            }
-            for (int k = 0; k < staticCount; k++) {
-                AEGeometry *g = new AEGeometry(kBarMeshes[race][k], Globals::Canvas, false);
-                (*this->enemies)[this->enemies->size() - staticCount + k] = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
-            }
-            delete[] seatUsed;
-            return;
-        }
-    } else if (this->missionPtr == 2) {
-            this->createPlayer();
-            Globals::status->setMission(Mission::empty);
-            this->createMission();
-            if (Globals::status->getCurrentCampaignMission() == 43) {
-                AEGeometry *shield = new AEGeometry(14288, Globals::Canvas, false);
-                ArrayAdd((KIPlayer *) new PlayerStatic(-1, shield, 0.0f, 0.0f, 0.0f), *this->enemies);
-                AEGeometry *beam = new AEGeometry(14289, Globals::Canvas, false);
-                ArrayAdd((KIPlayer *) new PlayerStatic(-1, beam, 0.0f, 0.0f, 0.0f), *this->enemies);
-            }
-            return;
+
     }
 }
 void Level::renderBG(int dt) {
