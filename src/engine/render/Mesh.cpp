@@ -107,14 +107,6 @@ namespace AbyssEngine {
         this->enhancedData = src->enhancedData;
     }
 
-    namespace {
-        // The smallest positive keyframe time seen becomes the engine's frame step.
-        inline void trackFrameStep(float time) {
-            if (time > 0.0f && AbyssEngine::timeBetweenFrames > time)
-                AbyssEngine::timeBetweenFrames = time;
-        }
-    }
-
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
         const unsigned int materialFlags = flags & 0x10;
         Transform *anim = new Transform();
@@ -142,9 +134,9 @@ namespace AbyssEngine {
             switch (type) {
                 case 1: {
                 if (AEFile::Read(2, &count, file) == 0) goto fail;
-                for (unsigned int i = 0; i < count; i++) {
+                for (unsigned short i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) goto fail;
-                    trackFrameStep(scalar);
+                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
                     if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
                     anim->InsertKeyFrame(vec, 7, (int) scalar);
                 }
@@ -153,9 +145,9 @@ namespace AbyssEngine {
                 case 0: {
                 for (unsigned int axis = 0; axis < 3; axis++) {
                     if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned int i = 0; i < count; i++) {
+                    for (unsigned short i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) goto fail;
-                        trackFrameStep(vec[0]);
+                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) goto fail;
                         switch (axis) {
                             case 0:
@@ -186,12 +178,12 @@ namespace AbyssEngine {
                     delete anim;
                     return -1;
                 }
-                for (unsigned int i = 0; i < count; i++) {
+                for (unsigned short i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) {
                         delete anim;
                         return -1;
                     }
-                    trackFrameStep(scalar);
+                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
                     if (AEFile::Read(12, vec, file) == 0) {
                         delete anim;
                         return -1;
@@ -206,12 +198,12 @@ namespace AbyssEngine {
                         delete anim;
                         return -1;
                     }
-                    for (unsigned int i = 0; i < count; i++) {
+                    for (unsigned short i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
                             return -1;
                         }
-                        trackFrameStep(vec[0]);
+                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) {
                             delete anim;
                             return -1;
@@ -238,9 +230,9 @@ namespace AbyssEngine {
             switch (type) {
                 case 1: {
                 if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
-                for (unsigned int i = 0; i < count; i++) {
+                for (unsigned short i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) goto fail;
-                    trackFrameStep(scalar);
+                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
                     if (AEFile::Read(12, vec, file) == 0) goto fail;
                     anim->InsertKeyFrame(vec, 0x38, (int) scalar);
                 }
@@ -249,9 +241,9 @@ namespace AbyssEngine {
                 case 0: {
                 for (unsigned int axis = 0; axis < 3; axis++) {
                     if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned int i = 0; i < count; i++) {
+                    for (unsigned short i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) goto fail;
-                        trackFrameStep(vec[0]);
+                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) goto fail;
                         switch (axis) {
                             case 0:
@@ -275,12 +267,12 @@ namespace AbyssEngine {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
                     if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned int i = 0; i < count; i++) {
+                    for (unsigned short i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
                             return -1;
                         }
-                        trackFrameStep(vec[0]);
+                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) {
                             delete anim;
                             return -1;
@@ -303,12 +295,12 @@ namespace AbyssEngine {
                             delete anim;
                             return -1;
                         }
-                        for (int i = 0; i < keys; i++) {
+                        for (unsigned short i = 0; i < keys; i++) {
                             if (AEFile::Read(4, vec, file) == 0) {
                                 delete anim;
                                 return -1;
                             }
-                            trackFrameStep(vec[0]);
+                            if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                             if (AEFile::Read(4, &scalar, file) == 0) {
                                 delete anim;
                                 return -1;
@@ -545,11 +537,10 @@ namespace AbyssEngine {
         float maximum[3];
         maximum[0] = maximum[1] = maximum[2] = -10000000.0f;
         minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
-        bool packed = (flags & 4) != 0;
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
-        if (packed == 0) {
+        if ((flags & 4) == 0) {
             if ((flags & 3) != 0) {
                 Mesh *mesh = *slot;
                 int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
@@ -605,7 +596,7 @@ namespace AbyssEngine {
                                                       Vector(minimum[0], minimum[1], minimum[2]));
 
         if ((*slot)->vertexFormat & 2) {
-            if (packed != 0) {
+            if ((flags << 29) != 0) {
                 short *raw = (short *) new unsigned char[(*slot)->vertexCount * 4];
                 if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
                     delete[] (unsigned char *) raw;
@@ -637,7 +628,7 @@ namespace AbyssEngine {
         }
 
         if ((*slot)->vertexFormat & 4) {
-            if (packed != 0) {
+            if ((flags << 29) != 0) {
                 Mesh *mesh = *slot;
                 short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
                 if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
@@ -731,7 +722,7 @@ namespace AbyssEngine {
         }
 
         if ((*slot)->vertexFormat & 8) {
-            if (packed != 0) {
+            if ((flags << 29) != 0) {
                 Mesh *mesh = *slot;
                 unsigned char *raw = new unsigned char[mesh->vertexCount * 4];
                 if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
