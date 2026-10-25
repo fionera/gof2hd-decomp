@@ -4,30 +4,6 @@
 #include "engine/file/AEPakFile.h"
 #include "engine/file/AENormalFile.h"
 
-namespace {
-// Fixed-size pak extension storage; the named section keeps the original
-// data layout between .data and .got.
-#pragma clang section data=".aezdata"
-    [[gnu::used]] static char pakExtension[8] = ".aez";
-#pragma clang section data=""
-    static_assert(sizeof(pakExtension) == 8, "pak extension buffer");
-
-    inline void AEStr_set(String &self, const char *s) { self.Set_char(s); }
-    inline void AEStr_set(String &self, const uint16_t *s) { self.Set_wchar(s); }
-
-    inline uint16_t *AEStr_wchar(const String &self) {
-        return reinterpret_cast<uint16_t *>(const_cast<char16_t *>(self.text()));
-    }
-
-    inline char *AEStr_char(const String &self) { return const_cast<String &>(self).GetAEChar(); }
-
-    inline uint16_t *AEStr_index(const String &self, int i) { return const_cast<String &>(self).index(i); }
-
-    inline uint32_t AEStr_indexOf(const String &self, const String &needle) {
-        return const_cast<String &>(self).IndexOf(needle);
-    }
-}
-
 AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
     : fileInterface(fileInterface),
       sizeLimit(static_cast<uint32_t>(sizeLimit)),
@@ -176,8 +152,8 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
     FileInterface *nativeHandle;
     switch (openType) {
         case OPEN_READ: {
-            nativeHandle = reinterpret_cast<FileInterface *>(
-                    AEFile::fileInterface->OpenRead(String(text, false), path.size(), 0, 0, 0, 0));
+            nativeHandle = static_cast<FileInterface *>(AEFile::fileInterface->OpenRead(
+                    String(text, false), path.size(), 0, 0, 0, 0));
             if (nativeHandle != nullptr) {
                 file = new AENormalFile(nativeHandle);
             } else {
@@ -191,16 +167,16 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
             break;
         }
         case OPEN_WRITE: {
-            nativeHandle = reinterpret_cast<FileInterface *>(
-                    AEFile::fileInterface->OpenWrite(String(text, false), path.size(), false, 0));
+            nativeHandle = static_cast<FileInterface *>(AEFile::fileInterface->OpenWrite(
+                    String(text, false), path.size(), false, 0));
             if (nativeHandle == nullptr)
                 return 0;
             file = new AENormalFile(nativeHandle);
             break;
         }
         case OPEN_APPEND: {
-            nativeHandle = reinterpret_cast<FileInterface *>(
-                    AEFile::fileInterface->OpenAppend(String(text, false), path.size(), false, 0));
+            nativeHandle = static_cast<FileInterface *>(AEFile::fileInterface->OpenAppend(
+                    String(text, false), path.size(), false, 0));
             if (nativeHandle != nullptr)
                 file = new AENormalFile(nativeHandle);
             else
@@ -366,7 +342,7 @@ uint32_t AEFile::ReadSwitched(String &value, uint32_t handle) {
     uint32_t ok = 0;
     if (Read(bytes, buffer, handle) != 0) {
         buffer[length] = '\0';
-        AEStr_set(value, buffer);
+        value.Set_char(buffer);
         ok = 1;
     }
     delete[] buffer;
@@ -450,6 +426,11 @@ void AEFile::collectPakFiles(const String &path) {
         return;
     }
 
+    // Real pak-extension storage. The 16-byte capacity is load-bearing: the
+    // ten libstdc++ exception ctors use fixed PC-relative GOT deltas, and
+    // shrinking this buffer leaves them 8 bytes short.
+    static char pakExtension[16] = ".aez";
+
     char *pathChars = path.GetAEChar();
     // FileEnumInit is declared uint32_t here, but the original returns bool;
     // call it through a bool-returning member pointer so the branch keeps the
@@ -460,7 +441,7 @@ void AEFile::collectPakFiles(const String &path) {
         String entry;
         while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy(entry);
-            if (entry.IndexOf(String(".aez")) != 0xffffffffu) {
+            if (entry.IndexOf(String(pakExtension)) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
             }
         }
@@ -534,11 +515,6 @@ void AEFile::sortPakFileEntryList() {
     }
 }
 
-namespace {
-    // The original re-reads the entry through the global list at every use.
-    inline AEPakFileEntry *pakEntry(int32_t index) { return AEFile::pakFileEntryList->data()[index]; }
-}
-
 AELowLevelFile *AEFile::findPakFile(const String &path) {
     if (AEFile::pakFileEntryList->size() == 0)
         return nullptr;
@@ -554,15 +530,15 @@ AELowLevelFile *AEFile::findPakFile(const String &path) {
             unsigned short *name = (unsigned short *) AEFile::pakFileEntryList->data()[mid]->name;
             FileInterface *fileInterface = AEFile::fileInterface;
             FileInterface *handle;
-            if (pakEntry(mid)->size != 0xffffffff) {
-                handle = reinterpret_cast<FileInterface *>(fileInterface->OpenRead(
-                        String(name, false), pakEntry(mid)->name.size(), 1, pakEntry(mid)->packedSize, pakEntry(mid)->size,
-                        pakEntry(mid)->offset));
+            if (AEFile::pakFileEntryList->data()[mid]->size != 0xffffffff) {
+                handle = static_cast<FileInterface *>(fileInterface->OpenRead(
+                        String(name, false), AEFile::pakFileEntryList->data()[mid]->name.size(), 1, AEFile::pakFileEntryList->data()[mid]->packedSize, AEFile::pakFileEntryList->data()[mid]->size,
+                        AEFile::pakFileEntryList->data()[mid]->offset));
             } else {
-                handle = reinterpret_cast<FileInterface *>(fileInterface->OpenRead(
-                        String(name, false), pakEntry(mid)->name.size(), 0, 0, 0, pakEntry(mid)->offset));
+                handle = static_cast<FileInterface *>(fileInterface->OpenRead(
+                        String(name, false), AEFile::pakFileEntryList->data()[mid]->name.size(), 0, 0, 0, AEFile::pakFileEntryList->data()[mid]->offset));
             }
-            return new AEPakFile(handle, (int) pakEntry(mid)->packedSize, (int) pakEntry(mid)->size);
+            return new AEPakFile(handle, (int) AEFile::pakFileEntryList->data()[mid]->packedSize, (int) AEFile::pakFileEntryList->data()[mid]->size);
         }
         if (entryCrc > wantedCrc) {
             if (high == mid)
