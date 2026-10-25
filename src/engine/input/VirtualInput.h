@@ -51,7 +51,7 @@ int IsSubMenuActive(int player);
 
 bool ArrowKeyPressed();
 
-bool keyIsPressed();
+int keyIsPressed();
 
 void LowerMouseWheel();
 
