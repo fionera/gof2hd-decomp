@@ -504,8 +504,9 @@ void Status::calcCargoPrices() {
                 (*systems)[(*items)[i]->getMinPriceSystem()]->getY(),
                 (*systems)[this->station->getSystem()]->getX(), (*systems)[this->station->getSystem()]->getY());
             float factor = 100.0f / (float) priceRange * (float) distance / 100.0f;
-            int minPrice = (*items)[i]->getMinPrice();
+            int minPrice = item->getMinPrice();
             int priceBonus = (int) ((factor < 1.0f ? factor : 1.0f) * (float) (item->getMaxPrice() - item->getMinPrice()));
+            int base = minPrice + priceBonus;
             if (item->getSinglePrice() < 1) {
                 continue;
             }
@@ -513,12 +514,11 @@ void Status::calcCargoPrices() {
             if (ringWorld) {
                 price = item->getMaxPrice();
             } else {
-                int base = minPrice + priceBonus;
                 int jitter = (int) ((float) base * 0.02f);
                 if (jitter <= 1) {
                     jitter = 1;
                 }
-                price = base - jitter + Globals::rnd->nextInt(jitter << 1 | 1);
+                price = base + Globals::rnd->nextInt(jitter << 1 | 1) - jitter;
             }
             if (Globals::globalPriceRaise != 0) {
                 price = (int) ((float) price + (float) price * (float) Globals::globalPriceRaise * 0.01f);
