@@ -35,8 +35,8 @@ namespace AbyssEngine {
         *out = sys;
         sys->count = count;
 
-        unsigned int triCount = (n << 1) & 0xffff;
-        int rc = MeshCreate(engine, (unsigned short) ((n & 0x3fff) << 2), (unsigned short) triCount,
+        unsigned short triCount = (unsigned short) (n << 1);
+        int rc = MeshCreate(engine, (unsigned short) ((n & 0x3fff) << 2), triCount,
                             0x1f, &sys->mesh);
         SpriteSystem *s = *out;
         Mesh *mesh = s->mesh;
@@ -89,7 +89,7 @@ namespace AbyssEngine {
 
         unsigned char shader = Engine::enableShader;
         for (unsigned int v = 0; v < vcount; ++v) {
-            float *nrm = (float *) m->normals + v * 3;
+            float *nrm = m->normals + v * 3;
             nrm[0] = 0.0f;
             nrm[1] = 0.0f;
             nrm[2] = 1.0f;
@@ -133,10 +133,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     void SpriteSystemSetUv(unsigned short idx, float u0, float v0, float u1, float v1, SpriteSystem *sys) {
-        unsigned int count = 0;
-        if (sys != 0)
-            count = sys->count;
-        if (sys == 0 || idx >= count)
+        if (sys == 0 || idx >= sys->count)
             return;
 
         unsigned char shader = Engine::enableShader;
@@ -164,10 +161,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys) {
-        unsigned int count = 0;
-        if (sys != 0)
-            count = sys->count;
-        if (sys == 0 || idx >= count)
+        if (sys == 0 || idx >= sys->count)
             return;
 
         float *p = (float *) sys->mesh->colors + (unsigned int) idx * 16;
@@ -208,17 +202,11 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     int MeshDraw(Engine * engine, Mesh * mesh);
 
-    static inline unsigned int f2u(float f) {
-        unsigned int u;
-        memcpy(&u, &f, sizeof(u));
-        return u;
-    }
-
     void SpriteSystemDraw(Engine *engine, const Matrix &view, const Matrix &world, SpriteSystem *sys) {
         if (sys == 0)
             return;
 
-        float *vertices = (float *) sys->mesh->positions;
+        float *vertices = sys->mesh->positions;
         Matrix combined = view * world;  // computed by the original as well; the quads use `world`
 
         unsigned int floats = sys->count * 12;
@@ -274,14 +262,12 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        unsigned char *p = (unsigned char *) (*slot)->posCpu;
-        if (p != 0)
-            operator delete[](p); // lint: operator_call (a builtin delete[] lets -Oz drop the null test the original keeps)
+        if ((*slot)->posCpu != 0)
+            delete[] (*slot)->posCpu;
         (*slot)->posCpu = 0;
 
-        p = (unsigned char *) (*slot)->sizeCpu;
-        if (p != 0)
-            operator delete[](p); // lint: operator_call (a builtin delete[] lets -Oz drop the null test the original keeps)
+        if ((*slot)->sizeCpu != 0)
+            delete[] (*slot)->sizeCpu;
         (*slot)->sizeCpu = 0;
 
         MeshRelease(engine, &(*slot)->mesh);
