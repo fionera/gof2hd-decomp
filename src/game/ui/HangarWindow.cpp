@@ -1438,8 +1438,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     this->dialogActive = 0;
                 }
             } else if (choice == 1) {
-                this->dialogActive = 0;
                 this->replaceEquipPending = 0;
+                this->dialogActive = 0;
                 this->scrollOffset = this->savedScrollOffset;
             }
         } else if (this->notEnoughCredits) {
@@ -1556,8 +1556,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 this->setSellMode(false);
                 this->selectedItem = 0;
                 this->hangarList->setCurrentItemIndex(-1);
-                this->localBluePrint = 0;
                 this->bluePrintPurchasePending = 0;
+                this->localBluePrint = 0;
             } else if (choice == 1 || Globals::status->getCredits() < cost || (choice == 0 && this->localBluePrint)) {
                 // Undo the pending ingredient purchase.
                 this->bluePrintItem->item->setStationAmount(this->savedStationAmount);
@@ -1595,8 +1595,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
                 this->refreshCurrentContentHeight();
             } else if (choice == 1) {
-                this->sellShipPending = 0;
                 this->dialogActive = 0;
+                this->sellShipPending = 0;
             }
         } else if (this->shipSwapPending) {
             int choice = this->dialog->OnTouchEnd(x, y);
@@ -1661,9 +1661,9 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 if (choice == 0) {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
                     this->dialogActive = 0;
-                    this->dlcMenuPending = 0;
-                    this->shipSwapPending = 0;
                     this->swapChoicePending = 0;
+                    this->shipSwapPending = 0;
+                    this->dlcMenuPending = 0;
                     return false;
                 }
                 if (choice != 1)
@@ -1797,9 +1797,9 @@ common:
                     }
                     return false;
                 }
+                this->dialogActive = 0;
                 this->buyMode = 0;
                 this->routeWarningPending = 0;
-                this->dialogActive = 0;
             }
             this->selectedItem = 0;
             this->hangarList->setCurrentItemIndex(-1);
