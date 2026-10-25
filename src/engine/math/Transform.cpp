@@ -6,7 +6,9 @@
 #include "engine/render/Engine.h"
 
 namespace {
-    // Local Transform data; its size is part of the byte-identical layout.
+    // The original Transform.o carries a 72-byte local data block.  Its size fixes the
+    // distance from .text to .got, which the libc++ exception constructors encode as a
+    // PC-relative literal; keeping the block emitted is required for their byte match.
     [[gnu::used]] char g_transform_matrix_flag[72] = {1};
 }
 
@@ -390,7 +392,6 @@ namespace AbyssEngine {
     }
 
     void Transform::SetAnimationState(AnimationMode mode, void *) { // lint: void_ptr method parameter baked into mangled symbol
-        // lint: void_ptr method parameter baked into mangled symbol
         if (mode == static_cast<AnimationMode>(3)) {
             this->animating = true;
             this->currentTime = this->rangeStart;
@@ -424,11 +425,6 @@ namespace AbyssEngine {
         this->keyFramesShared = false;
         this->visible = true;
         this->animationStart = 0;
-    }
-
-    static float clamp_positive_byte(float value) {
-        int v = (int) (value * 255.0f);
-        return (float) (v < 0 ? 0 : v);
     }
 
     void Transform::InternUpdate(longlong time, bool updateBounds) {
@@ -602,12 +598,6 @@ namespace AbyssEngine {
         }
     }
 
-    static float kAngleDivisor = 57.295780f;
-
-    static void copy_vec(AEMath::Vector &dst, const AEMath::Vector &src) {
-        dst = src;
-    }
-
     void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
         ++AbyssEngine::lauf;
         if (this->animationLength < time)
@@ -773,8 +763,6 @@ namespace AbyssEngine {
         UpdateKeyFrames(key, index);
     }
 
-
-    static float old_angle_divisor = 57.295780f;
 
     void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time) {
         ++AbyssEngine::lauf;

@@ -123,7 +123,7 @@ namespace AbyssEngine {
 
 #ifdef GOF2_MATCH
     static_assert(__builtin_offsetof(Transform, meshes) == 0x3c, "Transform::meshes");
-    static_assert(__builtin_offsetof(Transform, id) == 0x48, "Transform::id");
+    static_assert(__builtin_offsetof(Transform, color) == 0x48, "Transform::color");
     static_assert(__builtin_offsetof(Transform, children) == 0x4c, "Transform::children");
     static_assert(__builtin_offsetof(Transform, flags) == 0x58, "Transform::flags");
     static_assert(__builtin_offsetof(Transform, rotationMatrix) == 0x5c, "Transform::rotationMatrix");
