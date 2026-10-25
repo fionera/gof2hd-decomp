@@ -535,11 +535,11 @@ void ParticleSettings::init() {
     this->sets[41].posDirRandom = 8000.0f;
 
     this->sets[23] = *spark;
-    this->sets[23].lifeRandom = 1000;
     this->sets[23].name = String("SET_EXPLOSION_BATTLESHIP");
     this->sets[23].flLifetime = 9.0f;
     this->sets[23].lifetime = 1000;
     this->sets[23].lifeBase = 4000.0f;
+    this->sets[23].lifeRandom = 1000;
     this->sets[23].posDirRandom = 500.0f;
     this->sets[23].posSpread = 5000;
     this->sets[23].ySpread = 0x5dc;
