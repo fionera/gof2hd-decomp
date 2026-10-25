@@ -5,7 +5,14 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 
-static bool g_transform_matrix_flag = false;
+// The original 4076-byte InsertKeyFrame_old pushes .text onto the next 32-byte
+// boundary.  Keep the GOT 72 bytes later as well, so the libc++ exception
+// constructors' PC-relative GOT deltas remain byte-identical.
+#pragma GCC visibility push(hidden)
+#pragma clang section data=".pad"
+char g_transform_matrix_flag[72] = {1};
+#pragma clang section data=""
+#pragma GCC visibility pop
 
 namespace AbyssEngine {
     bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
@@ -917,9 +924,9 @@ namespace AbyssEngine {
         for (; i < this->keyFrames.size(); ++i) {
             if (!(this->keyFrames[i]->timestamp < time))
                 break;
-            if (i == 0)
-                continue;
             if ((this->keyFrames[i]->channels & (ulonglong) flags) != 0)
+                continue;
+            if (i == 0)
                 continue;
             KeyFrame *before = this->keyFrames[i - 1];
             float t = (float) (this->keyFrames[i]->timestamp - before->timestamp) /
