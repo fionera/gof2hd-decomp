@@ -196,7 +196,7 @@ static const int StarMap_stationScales[28] = {320, 192, 256, 256, 192, 256, 192,
 static const int StarMap_raceImages[10] = {1190, 1187, 1189, 1188, -1, -1, -1, -1, -1, -1};
 static const int StarMap_securityColors[4][3] = {{255, 42, 0}, {255, 108, 0}, {237, 237, 0}, {0, 237, 0}};
 
-int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
+void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     using namespace AbyssEngine::AEMath;
     Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
     this->pad_0xa8_a = jumpMapMode;
@@ -389,7 +389,6 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->bgLayer2 = new AEGeometry((uint16_t) 0x41d4, Globals::Canvas, false);
     this->bgLayer2->setRotation(0.0f, 3.14159274f, 0.0f);
     this->bgLayer2->setPosition(-3000.0f, -2500.0f, 0.0f);
-    return 0;
 }
 
 StarMap::~StarMap() {
@@ -783,8 +782,8 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
             !(Globals::status->getCurrentCampaignMission() >= 148 && Globals::status->getCurrentCampaignMission() < 152) &&
             !(Globals::status->getCurrentCampaignMission() == 59 &&
               (stationMode ? (*this->stations)[index]->getIndex() == 101 : (*this->systems)[index]->getIndex() == 23))) {
-            bool target = stationMode ? (*this->stations)[index]->getIndex() == campaign->getTargetStation()
-                                      : (int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1;
+            bool const target = stationMode ? (*this->stations)[index]->getIndex() == campaign->getTargetStation()
+                                            : (int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1;
             if (targeted || target) {
                 this->iconBuffer[1] = this->keyImageWanted;
             } else if (Globals::status->getCurrentCampaignMission() >= 33 &&
@@ -1235,7 +1234,7 @@ void StarMap::update(int dt) {
         if (this->pathAnim) {
             // Scroll the selected system to the screen centre.
             Array<bool> *visible = Globals::status->getSystemVisibilities();
-            if (visible != 0 && this->selectedSystem < visible->size() && this->selectedSystem >= 0 &&
+            if (visible != 0 && this->selectedSystem >= 0 && this->selectedSystem < visible->size() &&
                 (*visible)[this->selectedSystem]) {
                 this->scratchVector = *(*this->systemPositions)[this->selectedSystem];
                 float centerY = (float) (Globals::h >> 1);
@@ -1274,9 +1273,11 @@ void StarMap::update(int dt) {
             int yawDiff = yaw - target;
             if (yawDiff < 0)
                 yawDiff = -yawDiff;
-            float yawStep = (float) (yaw - target) * -0.25f;
+            float yawStep;
             if (target > yaw)
                 yawStep = (float) (target - yaw) * 0.25f;
+            else
+                yawStep = (float) (yaw - target) * 0.25f * -1.0f;
             this->yaw += yawStep;
             if (yawDiff <= 10)
                 this->stationCenterAnim = 0;

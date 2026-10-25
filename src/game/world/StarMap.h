@@ -65,10 +65,10 @@ public:
     int *stationDistances;
     Array<int> *systemPath;
     AEGeometry *starSystemRoot;
-    uint8_t pad_0xa8_a;
-    uint8_t choiceVisible;
+    bool pad_0xa8_a;
+    bool choiceVisible;
     uint8_t jumpMapModeA;
-    uint8_t jumpMapModeB;
+    bool jumpMapModeB;
     // Three EaseInOut objects (default-constructed in place by the ctor at +0xac/+0xbc/+0xcc).
     AbyssEngine::EaseInOut field_0xac;
     AbyssEngine::EaseInOut field_0xbc;
@@ -95,10 +95,10 @@ public:
     uint32_t raceImageB;
     uint32_t raceImageDefault;
     uint32_t image_0x134;
-    uint8_t transitionIn;
-    uint8_t transitionOut;
-    uint8_t pathAnim;
-    uint8_t stationCenterAnim;
+    bool transitionIn;
+    bool transitionOut;
+    bool pathAnim;
+    bool stationCenterAnim;
     int32_t panX;
     int32_t panY;
     float touchStartX;
@@ -113,7 +113,7 @@ public:
     float momentumFactor;
     float velocityX;
     float velocityY;
-    uint8_t dragging;
+    bool dragging;
     uint32_t planetTexture;
     AbyssEngine::EaseInOut *easeX;
     AbyssEngine::EaseInOut *easeY;
@@ -147,7 +147,7 @@ public:
 
     ~StarMap();
 
-    int init(bool jumpMapMode, Mission *mission, bool param3, int param4);
+    void init(bool jumpMapMode, Mission *mission, bool param3, int param4);
 
     void initLights();
 
