@@ -765,7 +765,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
-            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
                           Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
