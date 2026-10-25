@@ -10,6 +10,11 @@
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {
+    Mesh *mesh;
+    uint32_t v;
+    int positionOffset = 0;
+    int uvOffset = 0;
+    int colorOffset = 0;
     this->canvas = canvas;
     this->matrices = nullptr;
     this->cols = 1;
@@ -17,9 +22,11 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     this->rows = (int) transforms.size();
     this->sourceMeshes = new Mesh *[meshIds.size()];
 
-    uint32_t vertexCount = 0;
     uint32_t triangleCount = 0;
-    for (uint32_t i = 0; i < meshIds.size(); i++) {
+    uint32_t i;
+    uint32_t vertexCount = 0;
+    i = 0;
+    for (; i < meshIds.size(); i++) {
         uint32_t meshId;
         canvas->MeshCreate(meshIds.data()[i], meshId, false);
         this->sourceMeshes[i] = canvas->MeshGetPointer(meshId);
@@ -32,37 +39,36 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
 
     uint32_t vertexBase = 0;
     uint32_t triangleBase = 0;
-    for (uint32_t i = 0; i < meshIds.size(); i++) {
-        Mesh *mesh;
-        int positionOffset = 0;
-        int uvOffset = 0;
-        int colorOffset = 0;
-        for (uint32_t v = 0; v < (mesh = this->sourceMeshes[i])->vertexCount; v++) {
+    for (uint32_t j = 0; j < meshIds.size(); j++) {
+        positionOffset = 0;
+        uvOffset = 0;
+        colorOffset = 0;
+        for (v = 0; v < (mesh = this->sourceMeshes[j])->vertexCount; v++) {
             if (mesh->vertexFormat & 1) {
                 Vector p = AbyssEngine::AEMath::MatrixTransformVector(
-                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->positions + positionOffset));
+                        transforms.data()[j], *(Vector *) ((unsigned char *) mesh->positions + positionOffset));
                 canvas->MeshSetPoint(this->mergedMeshId, (uint16_t) (vertexBase + v), p.x, p.y, p.z);
-                mesh = this->sourceMeshes[i];
+                mesh = this->sourceMeshes[j];
             }
             if (mesh->vertexFormat & 4) {
                 Vector n = AbyssEngine::AEMath::MatrixRotateVector(
-                        transforms.data()[i], *(Vector *) ((unsigned char *) mesh->normals + positionOffset));
+                        transforms.data()[j], *(Vector *) ((unsigned char *) mesh->normals + positionOffset));
                 canvas->MeshSetNormal(this->mergedMeshId, (uint16_t) (vertexBase + v), n);
-                mesh = this->sourceMeshes[i];
+                mesh = this->sourceMeshes[j];
             }
             if (mesh->vertexFormat & 2) {
                 float *uv = (float *) (mesh->texCoords + uvOffset);
                 canvas->MeshSetUv(this->mergedMeshId, (uint16_t) (vertexBase + v), uv[0], uv[1]);
-                mesh = this->sourceMeshes[i];
+                mesh = this->sourceMeshes[j];
             }
             if (mesh->vertexFormat & 8) {
                 float *color = (float *) (mesh->colors + colorOffset);
                 canvas->MeshSetColor(this->mergedMeshId, (uint16_t) (vertexBase + v),
                                      color[0], color[1], color[2], color[3]);
             }
-            positionOffset += 12;
-            uvOffset += 8;
-            colorOffset += 16;
+            positionOffset = (int) (v + 1) * 12;
+            uvOffset = (int) (v + 1) * 8;
+            colorOffset = (int) (v + 1) * 16;
         }
 
         uint32_t triangles = (uint32_t) mesh->indexCount / 3u;
@@ -73,19 +79,19 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                 canvas->MeshSetTriangle(this->mergedMeshId, (uint16_t) (triangleBase + t),
                                         (uint16_t) (ix[0] + vertexBase), (uint16_t) (ix[1] + vertexBase),
                                         (uint16_t) (ix[2] + vertexBase));
-                mesh = this->sourceMeshes[i];
+                mesh = this->sourceMeshes[j];
             }
-            indexOffset += 6;
+            indexOffset = (int) (t + 1) * 6;
         }
-        triangleBase += (uint32_t) mesh->indexCount / 3u;
         vertexBase += mesh->vertexCount;
+        triangleBase += (uint32_t) mesh->indexCount / 3u;
     }
 
     canvas->TransformCreate(this->transformId);
     canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->transformedMeshes = nullptr;
-    this->initialized = 1;
     this->mergedMesh = nullptr;
+    this->initialized = 1;
     this->lods = nullptr;
     this->dirty = 0;
 }
@@ -238,26 +244,21 @@ void MeshMerger::init() {
         return;
     }
 
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
     for (int i = 0; i < this->rows; i++) {
-        int c = 0;
         if (this->lods[i] < -1 || this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
-        for (; c < this->cols; c++) {
+        for (int c = 0; c < this->cols; c++) {
             Mesh *mesh = this->sourceMeshes[this->rows * c + i];
             if (mesh != nullptr) {
                 this->transformedMeshes[this->rows * c + i] =
                         transformMesh(mesh, this->matrices[i]);
             }
         }
-    }
-
-    uint32_t vertexCount = 0;
-    uint32_t indexCount = 0;
-    for (int i = 0; i < this->rows; i++) {
-        Mesh *mesh = this->sourceMeshes[i];
-        vertexCount += mesh->vertexCount;
-        indexCount += (uint32_t) mesh->indexCount / 3u;
+        vertexCount += this->sourceMeshes[i]->vertexCount;
+        indexCount += (uint32_t) this->sourceMeshes[i]->indexCount / 3u;
     }
 
     this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
