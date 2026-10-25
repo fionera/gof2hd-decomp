@@ -228,7 +228,7 @@ void MeshMerger::update() {
         if (this->mergedMesh->vertexFormat & 0x10) {
             uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
             const uint16_t *idx = (const uint16_t *) src->indices;
-            for (int k = src->indexCount; k != 0; k--)
+            for (int k = 0; k < src->indexCount; k++)
                 *dst++ = (uint16_t) (*idx++ + vertexBase);
         }
         vertexBase += src->vertexCount;
@@ -244,21 +244,26 @@ void MeshMerger::init() {
         return;
     }
 
-    uint32_t vertexCount = 0;
-    uint32_t indexCount = 0;
     for (int i = 0; i < this->rows; i++) {
+        int c = 0;
         if (this->lods[i] < -1 || this->cols <= this->lods[i]) {
             this->lods[i] = 0;
         }
-        for (int c = 0; c < this->cols; c++) {
+        for (; c < this->cols; c++) {
             Mesh *mesh = this->sourceMeshes[this->rows * c + i];
             if (mesh != nullptr) {
                 this->transformedMeshes[this->rows * c + i] =
                         transformMesh(mesh, this->matrices[i]);
             }
         }
-        vertexCount += this->sourceMeshes[i]->vertexCount;
-        indexCount += (uint32_t) this->sourceMeshes[i]->indexCount / 3u;
+    }
+
+    uint32_t vertexCount = 0;
+    uint32_t indexCount = 0;
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->sourceMeshes[i];
+        vertexCount += mesh->vertexCount;
+        indexCount += (uint32_t) mesh->indexCount / 3u;
     }
 
     this->canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
