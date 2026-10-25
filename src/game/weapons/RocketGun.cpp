@@ -161,7 +161,7 @@ void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
     Gun *gun = this->gun;
     Level *level = this->level;
-    Radar *radar = this->radar;
+    Array<Matrix> *trailMatrices = this->trailMatrices;
 
     Vector ahead = {0.0f, 0.0f, 0.0f};
     gun->update(elapsed);
@@ -204,27 +204,25 @@ void RocketGun::update(int elapsed) {
         up = VectorCross(heading, side);
         up = VectorNormalize(up);
         frame.m.e0 = side.x;
-        frame.m.e1 = up.x;
-        frame.m.e2 = heading.x;
         frame.m.e4 = side.y;
-        frame.m.e5 = up.y;
-        frame.m.e6 = heading.y;
         frame.m.e8 = side.z;
+        frame.m.e1 = up.x;
+        frame.m.e5 = up.y;
         frame.m.e9 = up.z;
+        frame.m.e2 = heading.x;
+        frame.m.e6 = heading.y;
         frame.m.e10 = heading.z;
         Globals::Canvas->TransformSetLocal(this->transform, frame);
 
         if (this->trailMatrices == nullptr) {
             const int kind = this->rocketKind;
             if ((uint32_t) (kind - 4) < 2 || kind == 0x28) {
-                radar->level->field_80->enableSystemRender(this->particleSystem, true);
-                radar->level->field_80->enableSystemEmit(this->particleSystem, true);
+                this->radar->level->field_80->enableSystemRender(this->particleSystem, true);
+                this->radar->level->field_80->enableSystemEmit(this->particleSystem, true);
             } else {
-                Level *level = radar->level;
-                if (this->gun->itemIndex == 0xe8)
-                    level->field_9c->enableSystemEmit(this->particleSystem, true);
-                else
-                    level->particleRenderBoolPtr->enableSystemEmit(this->particleSystem, this->gun->itemIndex != 0xb3);
+                Level *level = this->radar->level;
+                (this->gun->itemIndex == 0xe8 ? level->field_9c : level->particleRenderBoolPtr)
+                        ->enableSystemEmit(this->particleSystem, this->gun->itemIndex != 0xb3);
             }
         } else if (this->gun->positions.data()[this->gun->currentProjectile].z == 50000.0f) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
@@ -238,7 +236,6 @@ void RocketGun::update(int elapsed) {
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
         }
 
-        gun = this->gun;
         if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->currentProjectile > 0) {
             // Cluster salvo: launch the remaining rockets in the same frame.
             gun->hitSmall = 1;
@@ -256,9 +253,9 @@ void RocketGun::update(int elapsed) {
         if ((uint32_t) (kind - 4) < 2 || kind == 0x28) {
             if (this->fadeTimer == 0)
                 this->fadeTimer = 2000;
-            radar->level->field_80->enableSystemEmit(this->particleSystem, false);
+            this->radar->level->field_80->enableSystemEmit(this->particleSystem, false);
         } else {
-            Level *level = radar->level;
+            Level *level = this->radar->level;
             (gun->itemIndex == 0xe8 ? level->field_9c : level->particleRenderBoolPtr)
                     ->enableSystemEmit(this->particleSystem, false);
         }
@@ -279,14 +276,14 @@ void RocketGun::update(int elapsed) {
         gun = this->gun;
         if (gun->active != 0) {
             if (ahead.z == 50000.0f) {
-                if (this->trailMatrices == nullptr)
+                if (trailMatrices == nullptr)
                     goto fade;
                 this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
                 if ((*this->trailTimers)[i] == 0)
                     (*this->trailTimers)[i] = 2000;
             } else {
                 if (this->homing != 0 &&
-                    (this->trailMatrices != nullptr || gun->lifetimes[i] < gun->initialLifetime - 1000)) {
+                    (trailMatrices != nullptr || gun->lifetimes[i] < gun->initialLifetime - 1000)) {
                     this->seekEnemy(gun->lifetimes[i], i);
                     gun = this->gun;
                 }
@@ -304,12 +301,12 @@ void RocketGun::update(int elapsed) {
                 }
             }
 
-            if (this->trailMatrices != nullptr) {
+            if (trailMatrices != nullptr) {
                 gun = this->gun;
                 ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
-                MatrixSetTranslation((*this->trailMatrices)[i], ahead.x, ahead.y, ahead.z);
+                MatrixSetTranslation((*trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
-                Matrix &trail = (*this->trailMatrices)[i];
+                Matrix &trail = (*trailMatrices)[i];
                 trail.m.e2 = heading.x;
                 trail.m.e6 = heading.y;
                 trail.m.e10 = heading.z;
