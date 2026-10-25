@@ -12,12 +12,24 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/math/Quaternion.h"
 #include <GLES2/gl2.h>
+#include <GLES/gl.h>
 #include <cstdlib>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 
 namespace AbyssEngine {
+    typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported texture-load callback signature)
+
+    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
+                   signed char vertexFormat, Mesh **out);
+    void MeshRelease(Engine *engine, Mesh **slot);
+    void ImageFontRelease(Engine *engine, ImageFont **slot);
+
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    unsigned int *outIds, float scale, AELoadedTexture *outTex,
+                                    bool flag);
+
     void ImageRelease(Image **slot) {
         if (*slot != 0) {
             delete[] (*slot)->data;
@@ -30,60 +42,55 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount, signed char vertexFormat,
-                   Mesh **out);
-
-    void MeshRelease(Engine * engine, Mesh * *slot);
-
     int ImageCreateRegionFromFile(Engine *engine, const char *path, unsigned short index, Image2D *region) {
         if (engine == 0 || path == 0)
             return -4;
 
-        unsigned int handle = 0;
-        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0)
+        uint32_t handle = 0;
+        if (AEFile::OpenRead(path, &handle) == 0)
             return -1;
 
         char magic[8] = "*******";
-        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
+        if (AEFile::Read(8, magic, handle) == 0)
             return -1;
         const char *want = "AEimage";
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k])
                 return -1;
 
-        if (AEFile::Skip((uint32_t) 1, handle) == 0)
+        if (AEFile::Skip(1, handle) == 0)
             return -1;
-        if (AEFile::Read((uint32_t) 2, &region->atlasW, handle) == 0)
+        if (AEFile::Read(2, &region->atlasW, handle) == 0)
             return -1;
-        if (AEFile::Read((uint32_t) 2, &region->atlasH, handle) == 0)
+        if (AEFile::Read(2, &region->atlasH, handle) == 0)
             return -1;
         unsigned short regionCount = 0;
-        if (AEFile::Read((uint32_t) 2, &regionCount, handle) == 0)
+        if (AEFile::Read(2, &regionCount, handle) == 0)
             return -1;
         if (regionCount <= index)
             return -1;
 
-        if (MeshCreate(engine, 4, 2, 0x13, (Mesh **) region) != 1)
+        if (MeshCreate(engine, 4, 2, 0x13, &region->mesh) != 1)
             return -2;
 
         for (unsigned short i = 0; i < regionCount; ++i) {
             if (i != index) {
-                if (AEFile::Skip((uint32_t) 8, handle) == 0)
+                if (AEFile::Skip(8, handle) == 0)
                     goto fail;
                 continue;
             }
-            if (AEFile::Read((uint32_t) 2, &region->offX, handle) == 0)
+            if (AEFile::Read(2, &region->offX, handle) == 0)
                 goto fail;
-            if (AEFile::Read((uint32_t) 2, &region->offY, handle) == 0)
+            if (AEFile::Read(2, &region->offY, handle) == 0)
                 goto fail;
-            if (AEFile::Read((uint32_t) 2, &region->sizeX, handle) == 0)
+            if (AEFile::Read(2, &region->sizeX, handle) == 0)
                 goto fail;
-            if (AEFile::Read((uint32_t) 2, &region->sizeY, handle) == 0)
+            if (AEFile::Read(2, &region->sizeY, handle) == 0)
                 goto fail;
 
             {
                 Mesh *mesh = region->mesh;
-                float *pos = (float *) mesh->positions;
+                float *pos = mesh->positions;
                 pos[0] = 0;
                 pos[1] = 0;
                 pos[2] = 0;
@@ -129,33 +136,27 @@ namespace AbyssEngine {
         return 1;
 
     fail:
-        MeshRelease(engine, (Mesh **) region);
+        MeshRelease(engine, &region->mesh);
         return -1;
     }
 }
 
 namespace AbyssEngine {
-    int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount, signed char vertexFormat,
-                   Mesh **out);
-
-    void ImageFontRelease(Engine * engine, ImageFont * *slot);
-
-
     int ImageCreateFontFromFile(Engine *engine, const char *path, unsigned short index, ImageFont **out) {
         if (engine == 0 || path == 0)
             return -4;
 
-        unsigned int handle = 0;
+        uint32_t handle = 0;
         unsigned short fontCount = 0;
         unsigned short regionCount = 0;
         unsigned short atlasW = 0;
         unsigned short atlasH = 0;
         unsigned char format = 0;
-        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0)
+        if (AEFile::OpenRead(path, &handle) == 0)
             return -1;
 
         char magic[8] = "*******";
-        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
+        if (AEFile::Read(8, magic, handle) == 0)
             goto fail;
         {
             const char *want = "AEimage";
@@ -164,15 +165,15 @@ namespace AbyssEngine {
                     return -1;
         }
 
-        if (AEFile::Read((uint32_t) 1, &format, handle) == 0)
+        if (AEFile::Read(1, &format, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &atlasW, handle) == 0)
+        if (AEFile::Read(2, &atlasW, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &atlasH, handle) == 0)
+        if (AEFile::Read(2, &atlasH, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &regionCount, handle) == 0)
+        if (AEFile::Read(2, &regionCount, handle) == 0)
             goto fail;
-        if (AEFile::Skip((uint32_t) regionCount * 8, handle) == 0)
+        if (AEFile::Skip(regionCount * 8u, handle) == 0)
             goto fail;
 
         // Skip the embedded pixel data: a length-prefixed compressed block or raw RGBA.
@@ -192,7 +193,7 @@ namespace AbyssEngine {
             case 64:
             case 66: {
                 unsigned int size;
-                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                if (AEFile::Read(4, &size, handle) == 0)
                     goto fail;
                 if (AEFile::Skip(size, handle) == 0)
                     goto fail;
@@ -200,14 +201,14 @@ namespace AbyssEngine {
             }
             case 1:
             case 3:
-                if (AEFile::Skip((uint32_t) atlasW * atlasH * 4, handle) == 0)
+                if (AEFile::Skip(atlasW * atlasH * 4u, handle) == 0)
                     goto fail;
                 break;
             default:
                 break;
         }
 
-        if (AEFile::Read((uint32_t) 2, &fontCount, handle) == 0)
+        if (AEFile::Read(2, &fontCount, handle) == 0)
             goto fail;
         if (fontCount <= index)
             goto fail;
@@ -216,17 +217,17 @@ namespace AbyssEngine {
         for (unsigned short f = 0; f < fontCount; ++f) {
             if (f != index) {
                 unsigned short glyphs = 0;
-                if (AEFile::Read((uint32_t) 2, &glyphs, handle) == 0)
+                if (AEFile::Read(2, &glyphs, handle) == 0)
                     goto fail;
-                if (AEFile::Skip((uint32_t) glyphs * 10, handle) == 0)
+                if (AEFile::Skip(glyphs * 10u, handle) == 0)
                     goto fail;
                 continue;
             }
 
-            if (AEFile::Read((uint32_t) 2, &(*out)->glyphCount, handle) == 0)
+            if (AEFile::Read(2, &(*out)->glyphCount, handle) == 0)
                 goto fail;
             (*out)->codes = new uint16_t[(*out)->glyphCount];
-            if (AEFile::Read((uint32_t) (*out)->glyphCount * 2, (*out)->codes, handle) == 0)
+            if (AEFile::Read((*out)->glyphCount * 2u, (*out)->codes, handle) == 0)
                 goto fail;
             (*out)->glyphMeshes = new Mesh *[(*out)->glyphCount];
 
@@ -237,17 +238,17 @@ namespace AbyssEngine {
                 unsigned short v = 0;
                 unsigned short sizeX = 0;
                 unsigned short sizeY = 0;
-                if (AEFile::Read((uint32_t) 2, &u, handle) == 0)
+                if (AEFile::Read(2, &u, handle) == 0)
                     goto fail;
-                if (AEFile::Read((uint32_t) 2, &v, handle) == 0)
+                if (AEFile::Read(2, &v, handle) == 0)
                     goto fail;
-                if (AEFile::Read((uint32_t) 2, &sizeX, handle) == 0)
+                if (AEFile::Read(2, &sizeX, handle) == 0)
                     goto fail;
-                if (AEFile::Read((uint32_t) 2, &sizeY, handle) == 0)
+                if (AEFile::Read(2, &sizeY, handle) == 0)
                     goto fail;
 
                 Mesh *mesh = (*out)->glyphMeshes[g];
-                float *pos = (float *) mesh->positions;
+                float *pos = mesh->positions;
                 pos[0] = 0;
                 pos[1] = 0;
                 pos[2] = 0;
@@ -306,13 +307,13 @@ namespace AbyssEngine {
             return -4;
 
         *out = new Image();
-        unsigned int handle = 0;
+        uint32_t handle = 0;
         unsigned char format = 0;
         unsigned short paletteCount = 0;
         const char *want = "AEimage";
         char magic[8];
         unsigned int size;
-        if (AEFile::OpenRead(path, (uint32_t *) &handle) == 0) {
+        if (AEFile::OpenRead(path, &handle) == 0) {
             if (*out != 0)
                 delete *out;
             *out = 0;
@@ -320,21 +321,21 @@ namespace AbyssEngine {
         }
 
         memcpy(magic, "*******", 8);
-        if (AEFile::Read((uint32_t) 8, magic, handle) == 0)
+        if (AEFile::Read(8, magic, handle) == 0)
             goto fail;
         for (unsigned int k = 0; k < 8; ++k)
             if (want[k] != magic[k])
                 goto fail;
 
-        if (AEFile::Read((uint32_t) 1, &format, handle) == 0)
+        if (AEFile::Read(1, &format, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &(*out)->width, handle) == 0)
+        if (AEFile::Read(2, &(*out)->width, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &(*out)->height, handle) == 0)
+        if (AEFile::Read(2, &(*out)->height, handle) == 0)
             goto fail;
-        if (AEFile::Read((uint32_t) 2, &paletteCount, handle) == 0)
+        if (AEFile::Read(2, &paletteCount, handle) == 0)
             goto fail;
-        AEFile::Skip((uint32_t) paletteCount * 8, handle);
+        AEFile::Skip(paletteCount * 8u, handle);
 
         if (format & 2)
             (*out)->hasMipmaps = 1;
@@ -343,7 +344,7 @@ namespace AbyssEngine {
 
         {
             if (format == 13 || format == 15) {
-                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                if (AEFile::Read(4, &size, handle) == 0)
                     goto fail;
                 (*out)->data = new unsigned char[size];
                 if (AEFile::Read(size, (*out)->data, handle) == 0)
@@ -351,7 +352,7 @@ namespace AbyssEngine {
                 (*out)->dataLen = size;
                 (*out)->format = 4;
             } else if (format == 20 || format == 22 || format == 23 || format == 0x40 || format == 0x42) {
-                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                if (AEFile::Read(4, &size, handle) == 0)
                     goto fail;
                 (*out)->data = new unsigned char[size];
                 if (AEFile::Read(size, (*out)->data, handle) == 0)
@@ -362,34 +363,34 @@ namespace AbyssEngine {
                     (*out)->hasMipmaps = 0;
             } else if (format == 1 || format == 3 || format == 0x81) {
                 // Uncompressed RGBA; the high bit selects the alternate pixel order.
-                (*out)->data = new unsigned char[(*out)->width * (*out)->height * 4];
-                if (AEFile::Read((uint32_t) ((*out)->width * (*out)->height * 4), (*out)->data, handle) == 0)
+                (*out)->data = new unsigned char[(*out)->width * (*out)->height * 4u];
+                if (AEFile::Read((*out)->width * (*out)->height * 4u, (*out)->data, handle) == 0)
                     goto fail;
-                (*out)->dataLen = (*out)->width * (*out)->height * 4;
+                (*out)->dataLen = (*out)->width * (*out)->height * 4u;
                 if ((signed char) format < 0) (*out)->format = 6; else (*out)->format = 3;
             } else if (format == 32 || format == 34) {
-                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                if (AEFile::Read(4, &(*out)->dataLen, handle) == 0)
                     goto fail;
                 (*out)->format = 8;
                 (*out)->data = new unsigned char[(*out)->dataLen];
                 if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
                     goto fail;
             } else if (format == 33 || format == 35) {
-                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                if (AEFile::Read(4, &(*out)->dataLen, handle) == 0)
                     goto fail;
                 (*out)->format = 9;
                 (*out)->data = new unsigned char[(*out)->dataLen];
                 if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
                     goto fail;
             } else if (format == 36 || format == 38) {
-                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                if (AEFile::Read(4, &(*out)->dataLen, handle) == 0)
                     goto fail;
                 (*out)->format = 10;
                 (*out)->data = new unsigned char[(*out)->dataLen];
                 if (AEFile::Read((*out)->dataLen, (*out)->data, handle) == 0)
                     goto fail;
             } else if (format == 16 || format == 18) {
-                if (AEFile::Read((uint32_t) 4, &size, handle) == 0)
+                if (AEFile::Read(4, &size, handle) == 0)
                     goto fail;
                 (*out)->data = new unsigned char[size];
                 if (AEFile::Read(size, (*out)->data, handle) == 0)
@@ -397,7 +398,7 @@ namespace AbyssEngine {
                 (*out)->dataLen = size;
                 (*out)->format = 5;
             } else if (format == 17 || format == 19) {
-                if (AEFile::Read((uint32_t) 4, &(*out)->dataLen, handle) == 0)
+                if (AEFile::Read(4, &(*out)->dataLen, handle) == 0)
                     goto fail;
                 (*out)->format = 7;
                 (*out)->data = new unsigned char[(*out)->dataLen];
@@ -417,40 +418,23 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported texture-load callback signature)
-
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    unsigned int *outIds, float scale, AELoadedTexture *outTex,
-                                    bool flag);
-
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFile signature)
                               // lint: void_ptr (exported TextureCreateFromFile signature)
                               unsigned int *outIds, bool flag, float scale) {
         TextureCreateFromFileIntern(engine, path, cb, user, outIds, scale,
-                                    (AELoadedTexture *) 0, flag);
+                                    0, flag);
         return 1;
     }
 }
 
 namespace AbyssEngine {
-    extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    void glTexEnvi(unsigned int t, unsigned int p, int v);
-    }
-
-    int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
-
-    void ImageRelease(Image * *slot);
-
     int GenerateCompressedTexture(Image * /*image*/) {
         return 1;
     }
 
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *), // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    void *user, unsigned int *outIds, float scale, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    // lint: void_ptr (exported TextureCreateFromFileIntern signature)
-                                    AELoadedTexture *outTex, bool registerTexture) {
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+                                    unsigned int *outIds, float scale, AELoadedTexture *outTex,
+                                    bool registerTexture) {
         Image *image = 0;
         *outIds = 0;
         engine->lastGlError = glGetError();
