@@ -324,7 +324,16 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             }
         }
         this->lifetimes[0] = this->initialLifetime;
-        if (this->fireIndex > -1) {
+        if (this->fireIndex < 0) {
+            reinterpret_cast<Vector &>(this->field_0x90) =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            *this->positions.data() =
+                    ((Level *) this->level)->getPlayer()->getPosition() +
+                    30000.0f * ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            *this->velocities.data() =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            this->field_0x8c = 30000;
+        } else {
             reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
                     (*this->enemies)[this->fireIndex]->getPosition() -
                     ((Level *) this->level)->getPlayer()->getPosition());
@@ -332,15 +341,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             *this->velocities.data() =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             this->field_0x8c = nearest;
-        } else {
-            reinterpret_cast<Vector &>(this->field_0x90) =
-                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
-            Vector egoPosition = ((Level *) this->level)->getPlayer()->getPosition();
-            *this->positions.data() =
-                    egoPosition + 30000.0f * ((Level *) this->level)->getPlayer()->geometry->getDirection();
-            *this->velocities.data() =
-                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
-            this->field_0x8c = 30000;
         }
         return true;
     }

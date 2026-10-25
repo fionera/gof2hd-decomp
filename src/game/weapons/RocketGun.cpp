@@ -180,7 +180,6 @@ void RocketGun::update(int elapsed) {
 
     gun = this->gun;
     this->wasFiring = gun->delayActive;
-    Array<Matrix> *trailMatrices = this->trailMatrices;
 
     if (gun->hitSmall != 0) {
         // A rocket was just launched: orient the rocket mesh along its velocity.
@@ -268,6 +267,7 @@ void RocketGun::update(int elapsed) {
     }
 
     const float dt = (float) elapsed;
+    Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
         ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
