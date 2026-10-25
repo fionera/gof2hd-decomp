@@ -51,16 +51,13 @@ namespace AbyssEngine {
         int timerInterval; // config TIMER token (ConfigReader); ctor default 20
 
         bool vibrationSupported;
-        uint8_t _pad0x2d[3];
 
         ApplicationManager *appManager;
 
         uint32_t field_0x34;
         uint8_t field_0x38;
-        uint8_t _pad0x39[3];
         String str_0x3c;
         uint8_t field_0x48;
-        uint8_t _pad0x49[3];
         String str_0x4c;
         uint64_t field_0x58;
 
@@ -72,7 +69,6 @@ namespace AbyssEngine {
         int textureByteCounter;
 
         bool field_0x74;
-        uint8_t _pad0x75[3];
         int field_0x78;
         int boundTextures[20];
         float field_0xcc;
@@ -429,6 +425,10 @@ using ::AbyssEngine::Engine;
 extern AbyssEngine::Engine *gEngine;
 
 #if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(AbyssEngine::Engine, appManager) == 0x30, "Engine::appManager @0x30");
+static_assert(__builtin_offsetof(AbyssEngine::Engine, str_0x3c) == 0x3c, "Engine::str_0x3c @0x3c");
+static_assert(__builtin_offsetof(AbyssEngine::Engine, str_0x4c) == 0x4c, "Engine::str_0x4c @0x4c");
+static_assert(__builtin_offsetof(AbyssEngine::Engine, field_0x78) == 0x78, "Engine::field_0x78 @0x78");
 static_assert(__builtin_offsetof(AbyssEngine::Engine, statsEnabled) == 0xfd, "Engine::statsEnabled @0xfd");
 static_assert(__builtin_offsetof(AbyssEngine::Engine, field_0x100) == 0x100, "Engine::field_0x100 @0x100");
 #endif
