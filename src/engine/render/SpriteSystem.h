@@ -5,13 +5,12 @@
 namespace AbyssEngine {
     class Mesh;
 
+    // Natural alignment supplies the 0x02 and 0x0d..0x0f holes.
     struct SpriteSystem {
         uint16_t count;
-        uint16_t pad0x2;
         float *posCpu;
         int16_t *sizeCpu;
         uint8_t sharedSize;
-        uint8_t pad0xd[3];
         Mesh *mesh;
     };
 }
