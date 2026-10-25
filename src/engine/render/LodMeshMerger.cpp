@@ -2,12 +2,12 @@
 #include "engine/math/BSphere.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
-#include <cstdlib>
+#include <cstring>
 
 void LodMeshMerger::setEnabled(int index, bool value) {
     if (enabled[index] != value) {
         enabled[index] = value;
-        if (visible[index] != 0) {
+        if (visible[index]) {
             dirty = 1;
         }
     }
@@ -16,7 +16,7 @@ void LodMeshMerger::setEnabled(int index, bool value) {
 void LodMeshMerger::setLod(int index, signed char lod) {
     if (lodLevels[index] != lod) {
         lodLevels[index] = lod;
-        if (enabled[index] != 0) {
+        if (enabled[index]) {
             dirty = 1;
         }
     }
@@ -30,7 +30,7 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
     uint32_t id;
     canvas->MeshCreate(meshId, id, false);
     Mesh *ptr = canvas->MeshGetPointer(id);
-    meshes.data()[rows * lod + index] = ptr;
+    meshes[rows * lod + index] = ptr;
 }
 
 void LodMeshMerger::update() {
@@ -40,21 +40,21 @@ void LodMeshMerger::update() {
                                                                    mesh->bounds.radius);
         if (isVisible != this->visible[i]) {
             this->visible[i] = isVisible;
-            if (this->enabled[i] != 0)
+            if (this->enabled[i])
                 this->dirty = 1;
         }
     }
-    if (this->dirty == 0)
+    if (!this->dirty)
         return;
 
     // Keep the merged index count addressable by 16-bit indices: coarsen LODs until it fits.
     int indexTotal = 0;
     for (int i = 0; i < this->rows; i++) {
-        if (this->enabled[i] != 0 && this->visible[i] != 0)
+        if (this->enabled[i] && this->visible[i])
             indexTotal += this->transformedMeshes[this->rows * this->lodLevels[i] + i]->indexCount;
     }
     for (int i = 0; indexTotal >= 0x10000 && i < this->rows; i++) {
-        if (this->enabled[i] == 0 || this->visible[i] == 0)
+        if (!this->enabled[i] || !this->visible[i])
             continue;
         signed char lod = this->lodLevels[i];
         if (lod < this->cols - 1) {
@@ -68,7 +68,7 @@ void LodMeshMerger::update() {
     int vertexBase = 0;
     int indexBase = 0;
     for (int i = 0; i < this->rows; i++) {
-        if (this->enabled[i] == 0 || this->visible[i] == 0)
+        if (!this->enabled[i] || !this->visible[i])
             continue;
         Mesh *src = this->transformedMeshes[this->rows * this->lodLevels[i] + i];
         if (this->mergedMesh->vertexFormat & 1)
@@ -109,6 +109,8 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     this->lodLevels = new int8_t[this->rows];
     memset(this->lodLevels, 0, this->rows);
     this->transforms = new Matrix[this->rows];
+    // Matrix has a non-trivial default constructor; the explicit re-initialisation loop is
+    // part of the original ctor shape (new[] alone emits a different loop).
     for (int i = 0; i < this->rows; i++) {
         this->transforms[i] = Matrix();
     }
@@ -126,7 +128,7 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
 }
 
 void LodMeshMerger::init() {
-    if (initialized != 0) {
+    if (initialized) {
         return;
     }
 
@@ -136,8 +138,8 @@ void LodMeshMerger::init() {
             lodLevels[i] = 0;
         }
         for (; c < cols; c++) {
-            Mesh *mesh = meshes.data()[rows * c + i];
-            if (mesh != nullptr) {
+            Mesh *mesh = meshes[rows * c + i];
+            if (mesh) {
                 transformedMeshes[rows * c + i] = transformMesh(mesh, transforms[i]);
             }
         }
@@ -146,7 +148,7 @@ void LodMeshMerger::init() {
     uint32_t vertexCount = 0;
     uint32_t indexCount = 0;
     for (int i = 0; i < rows; i++) {
-        Mesh *mesh = meshes.data()[i];
+        Mesh *mesh = meshes[i];
         vertexCount += mesh->vertexCount;
         indexCount += (uint32_t) mesh->indexCount / 3u;
     }
@@ -154,7 +156,7 @@ void LodMeshMerger::init() {
     if (indexCount > 65535u) indexCount = 65535u;
 
     canvas->MeshCreate((uint16_t) vertexCount, (uint16_t) indexCount,
-                       (signed char) meshes.data()[0]->vertexFormat,
+                       (signed char) meshes[0]->vertexFormat,
                        flags, mergedMeshId);
     mergedMesh = canvas->MeshGetPointer(mergedMeshId);
     canvas->TransformCreate(transformId);
@@ -191,7 +193,7 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     }
 
     // The original transforms the radius vector but then measures the untransformed one.
-    Vector extent = {mesh->bounds.radius, mesh->bounds.radius, mesh->bounds.radius};
+    Vector extent(mesh->bounds.radius, mesh->bounds.radius, mesh->bounds.radius);
     AbyssEngine::AEMath::MatrixTransformVector(m, extent);
     float ax = extent.x > 0.0f ? extent.x : -extent.x;
     float ay = extent.y > 0.0f ? extent.y : -extent.y;
@@ -201,25 +203,27 @@ Mesh *LodMeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         radius = ay;
     if (ax > radius)
         radius = ax;
-    AbyssEngine::AEMath::BSphere bounds = {AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center), radius, 1.0f};
-    out->bounds = bounds;
+    // The transform call stays in the constructor argument: it fixes the order the
+    // centre and radius temporaries take on the stack (the original's slot layout).
+    out->bounds = AbyssEngine::AEMath::BSphere(
+            AbyssEngine::AEMath::MatrixTransformVector(m, mesh->bounds.center), radius, 1.0f);
     return out;
 }
 
 
 LodMeshMerger::~LodMeshMerger() {
     for (int i = 0; i < this->rows * this->cols; i++) {
-        if (this->transformedMeshes[i]->positions != nullptr)
+        if (this->transformedMeshes[i]->positions)
             delete[] this->transformedMeshes[i]->positions;
         this->transformedMeshes[i]->positions = nullptr;
-        if (this->transformedMeshes[i]->normals != nullptr)
+        if (this->transformedMeshes[i]->normals)
             delete[] this->transformedMeshes[i]->normals;
         this->transformedMeshes[i]->normals = nullptr;
-        if (this->transformedMeshes[i] != nullptr)
+        if (this->transformedMeshes[i])
             delete this->transformedMeshes[i];
         this->transformedMeshes[i] = nullptr;
     }
-    if (this->transformedMeshes != nullptr)
+    if (this->transformedMeshes)
         delete[] this->transformedMeshes;
     this->transformedMeshes = nullptr;
 
@@ -230,7 +234,7 @@ LodMeshMerger::~LodMeshMerger() {
     delete[] this->visible;
     this->visible = nullptr;
 
-    if (this->transforms != nullptr)
+    if (this->transforms)
         delete[] this->transforms;
     this->transforms = nullptr;
 }
