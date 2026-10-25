@@ -2737,6 +2737,14 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowB->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
+                if (button->id == 60) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
+                        this->messageShowing = 0;
+                        this->purchaseRestorePending = 1;
+                    }
+                }
                 if (button->id == 52) {
                     if (button->OnTouchEnd(x, y)) {
                         switch (this->field_0x1e0) {
@@ -2763,13 +2771,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         }
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = this->field_0x1e0;
                         this->messageShowing = 0;
-                    }
-                } else if (button->id == 60) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
-                        this->messageShowing = 0;
-                        this->purchaseRestorePending = 1;
                     }
                 }
             }
