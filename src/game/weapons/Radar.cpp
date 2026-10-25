@@ -414,7 +414,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (i != 3 && !landmarkHit && !otherLock && !turretMode) {
+                if (!landmarkHit && !otherLock && i != 3 && !turretMode) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -436,14 +436,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 Globals::Canvas->DrawString(radarFont(), *this->labelStrings->data()[i], this->screenX + offset,
                                             this->screenY, false);
                 if (i <= 1) {
-                    if (i != 0 || alienOrbit) {
-                        KIPlayer *landmark = this->landmarks->data()[i];
-                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                             this->cameraX, this->cameraY,
-                                                             this->cameraZ);
-                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
-                                                    this->screenY + Globals::layout->field_0x4, false);
-                    } else {
+                    if (i == 0 && !alienOrbit) {
                         Globals::Canvas->DrawString(
                                 radarFont(),
                                 *Globals::gameText->getText(133) + String(": ") +
@@ -455,6 +448,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                              this->cameraZ);
                         Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
+                    } else {
+                        KIPlayer *landmark = this->landmarks->data()[i];
+                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                             this->cameraX, this->cameraY,
+                                                             this->cameraZ);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
+                                                    this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
             } else if (i == 3) {
@@ -506,11 +506,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr ||
-                this->field_0x14 != 0;
+                this->lockedStation != nullptr;
     if (campaign >= 2 && this->planetTargets != nullptr && !alienOrbit &&
         !this->level->getPlayer()->isDockingToPlanet()) {
         Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
-        int planetHit = 0;
+        bool planetHit = false;
         for (uint32_t i = 0; i < this->planetTargets->size(); ++i) {
             if (this->planetTargets->data()[i] == nullptr) {
                 continue;
@@ -540,17 +540,26 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         marked = true;
                     }
                 }
-                if ((Globals::status->getCurrentCampaignMission() == 116 &&
-                     (uint32_t) (stations->data()[i] - 90) <= 4 &&
-                     ((1 << (stations->data()[i] - 90)) &
-                      ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()) == 0) ||
-                    (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) ||
-                    (Globals::status->getCurrentCampaignMission() == 125 &&
-                     Globals::status->isFreighterMissionStation(stations->data()[i]) &&
-                     ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
-                       (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0)) {
+                if (Globals::status->getCurrentCampaignMission() == 116 &&
+                    (uint32_t) (stations->data()[i] - 90) <= 4 &&
+                    ((1 << (stations->data()[i] - 90)) &
+                     ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()) == 0) {
                     Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
                     marked = true;
+                } else {
+                    if (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) {
+                        Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
+                                                     this->screenY - 10);
+                        marked = true;
+                    }
+                    if (Globals::status->getCurrentCampaignMission() == 125 &&
+                        Globals::status->isFreighterMissionStation(stations->data()[i]) &&
+                        ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+                          (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0) {
+                        Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
+                                                     this->screenY - 10);
+                        marked = true;
+                    }
                 }
             }
             if (freelance != nullptr && !freelance->isEmpty() && freelance->isVisible()) {
