@@ -265,11 +265,11 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         int shieldW = (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446);
         Globals::Canvas->DrawRegion2D(this->shieldBarFillImage, 0, 0, shieldW, this->field_0x44c, 0.0f, 0, 0,
                                       this->field_0x440, this->field_0x44a);
-        armorY = this->field_0x444;
         armorBarY = this->field_0x448;
+        armorY = this->field_0x444;
     } else {
-        armorY = this->field_0x442;
         armorBarY = this->field_0x44a;
+        armorY = this->field_0x442;
     }
     Globals::Canvas->DrawImage2D(ego->player->getArmorHP() < 1 ? this->armorFrameLowImage : this->armorFrameImage,
                                  this->field_0x43c, armorY);
