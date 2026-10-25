@@ -84,32 +84,32 @@ int ParticleSettings::init() {
     this->sets[38] = this->sets[0];
 
     this->sets[4].name = String("SET_STARS");
-    this->sets[4].flags = 0x81;
-    this->sets[4].lifetime = 2000;
-    this->sets[4].lifeBase = 20.0f;
-    this->sets[4].uvV1 = 0.0f;
+    this->sets[4].color1 = 0;
+    this->sets[4].field_0x54 = 0;
+    this->sets[4].uvU1 = 1.0f;
+    this->sets[4].count = 500;
+    this->sets[4].velBaseY = 0.0f;
+    this->sets[4].ySpread = 10000;
+    this->sets[4].posBase = 0;
     this->sets[4].uvU0 = 0.0f;
-    this->sets[4].fadeFrames = 500;
+    this->sets[4].lifetime = 2000;
+    this->sets[4].uvV1 = 0.0f;
+    this->sets[4].flags = 0x81;
+    this->sets[4].lifeBase = 20.0f;
     this->sets[4].color0 = 0xffffffff;
     this->sets[4].uvV0 = 1.0f;
-    this->sets[4].velBaseY = 0.0f;
-    this->sets[4].posBase = 0;
-    this->sets[4].count = 500;
-    this->sets[4].velSpread = 5;
+    this->sets[4].fadeFrames = 500;
     this->sets[4].velDir = -30000.0f;
-    this->sets[4].posDir = 2000.0f;
-    this->sets[4].uvU1 = 1.0f;
     this->sets[4].posSpread = 10000;
+    this->sets[4].posDir = 2000.0f;
     this->sets[4].posRight = 10000.0f;
-    this->sets[4].ySpread = 10000;
-    this->sets[4].field_0x54 = 0;
+    this->sets[4].velSpread = 5;
     this->sets[4].lifeRandom = 0x28;
     this->sets[4].flLifetime = 200.0f;
+    this->sets[4].posUp = 5000.0f;
     this->sets[4].oneShot = 0;
     this->sets[4].speedThreshold = 1;
-    this->sets[4].posUp = 5000.0f;
     this->sets[4].velocityFromSlot = 0.0f;
-    this->sets[4].color1 = 0;
 
 
     this->sets[5].name = String("SET_MESH_STARS");
@@ -537,12 +537,12 @@ int ParticleSettings::init() {
     this->sets[23] = *spark;
     this->sets[23].lifeBase = 4000.0f;
     this->sets[23].name = String("SET_EXPLOSION_BATTLESHIP");
+    this->sets[23].lifeRandom = 1000;
     this->sets[23].lifetime = 1000;
     this->sets[23].flLifetime = 9.0f;
-    this->sets[23].lifeRandom = 1000;
     this->sets[23].posDirRandom = 500.0f;
-    this->sets[23].posSpread = 5000;
     this->sets[23].ySpread = 0x5dc;
+    this->sets[23].posSpread = 5000;
 
     this->sets[24] = *spark;
     this->sets[24].name = String("SET_EXPLOSION_DEEP_SCIENCE_STATION");
@@ -556,20 +556,20 @@ int ParticleSettings::init() {
     this->sets[24].ySpread = 3000;
 
     *ringEmitter = *muzzleFlash;
-    this->sets[25].uvU0 = 0.001953125f;
-    this->sets[25].posRight = 0.0f;
+    this->sets[25].fadeFrames = 0;
+    this->sets[25].color1 = 0;
+    this->sets[25].uvV0 = 0.875f;
+    this->sets[25].flLifetime = 50.0f;
+    this->sets[25].uvV1 = 0.625f;
     this->sets[25].lifetime = 1000;
     this->sets[25].uvU1 = 0.125f;
-    this->sets[25].uvV0 = 0.875f;
-    this->sets[25].color0 = 0xffffffff;
-    this->sets[25].color1 = 0;
-    this->sets[25].uvV1 = 0.625f;
-    this->sets[25].flLifetime = 50.0f;
-    this->sets[25].posUp = 0.0f;
     this->sets[25].count = 0x19;
-    this->sets[25].posDir = 0.0f;
-    this->sets[25].fadeFrames = 0;
+    this->sets[25].uvU0 = 0.001953125f;
+    this->sets[25].posRight = 0.0f;
+    this->sets[25].posUp = 0.0f;
     this->sets[25].lifeBase = 50.0f;
+    this->sets[25].posDir = 0.0f;
+    this->sets[25].color0 = 0xffffffff;
 
     this->sets[26] = *ringEmitter;
     this->sets[26].lifeBase = 100.0f;
