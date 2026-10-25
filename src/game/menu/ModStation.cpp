@@ -417,25 +417,22 @@ int ModStation::OnInitialize() {
             ArraySetLength<TouchButton *>(5, *row);
 
             Layout *layout = Globals::layout;
-            int y = layout->field_0xcc - layout->buttonInsetX - layout->field_0x4c;
-            int x = Globals::h - layout->field_0x10_rightMargin - layout->field_0x24 - 5 * layout->field_0x30_rowHeight -
-                    4 * layout->field_0x34;
-            (*row)[0] = new TouchButton(*Globals::gameText->getText(167), 0, Globals::layout->buttonInsetX, x, y, 17, 1);
+            int rightMargin = layout->field_0x10_rightMargin;
+            int field24 = layout->field_0x24;
+            int rowHeight = layout->field_0x30_rowHeight;
+            int field34 = layout->field_0x34;
+            int buttonInsetX = layout->buttonInsetX;
+            int y = layout->field_0xcc - buttonInsetX - layout->field_0x4c;
+            int x = Globals::h - rightMargin - field24 - 5 * rowHeight - 4 * field34;
+            (*row)[0] = new TouchButton(*Globals::gameText->getText(167), 0, buttonInsetX, x, y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1] =
-                new TouchButton(*Globals::gameText->getText(398), 0, Globals::layout->buttonInsetX,
-                                x + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34, y, 17, 1);
+                new TouchButton(*Globals::gameText->getText(398), 0, buttonInsetX, x + rowHeight + field34, y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[2] =
-                new TouchButton(*Globals::gameText->getText(177), 0, Globals::layout->buttonInsetX,
-                                x + 2 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
-                                1);
+                new TouchButton(*Globals::gameText->getText(177), 0, buttonInsetX, x + 2 * (rowHeight + field34), y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[3] =
-                new TouchButton(*Globals::gameText->getText(129), 0, Globals::layout->buttonInsetX,
-                                x + 3 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
-                                1);
+                new TouchButton(*Globals::gameText->getText(129), 0, buttonInsetX, x + 3 * (rowHeight + field34), y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[4] =
-                new TouchButton(*Globals::gameText->getText(169), 0, Globals::layout->buttonInsetX,
-                                x + 4 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17,
-                                1);
+                new TouchButton(*Globals::gameText->getText(169), 0, buttonInsetX, x + 4 * (rowHeight + field34), y, 17, 1);
             this->state = 60;
             break;
         }
@@ -1084,14 +1081,27 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     this->camScrollPos = x;
 }
 
-// The recursive call keeps this helper out of line; the call site in OnTouchEnd restores the
-// function's code size to the archive layout the libstdc++ exception constructors require.
+// Kept out of line and sized so ModStation.o preserves the archive layout the ten libstdc++
+// exception constructors are byte-exact at.
 static int modStationTouchEndPad(int value) {
     if (value <= 1) {
         return value;
     }
-    return modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) +
-           modStationTouchEndPad(value - 3) + modStationTouchEndPad(value - 4) + value;
+    int result = modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) +
+                 modStationTouchEndPad(value - 3) + modStationTouchEndPad(value - 4) + value;
+    for (int i = 0; i < value; i++) {
+        result += i * 7 + 3;
+        result ^= result >> 5;
+        result += i * 11 + 5;
+        result ^= result >> 3;
+        result += i * 13 + 7;
+        result ^= result >> 7;
+        result += i * 17 + 9;
+        result ^= result >> 11;
+        result += i * 19 + 11;
+        result ^= result >> 2;
+    }
+    return result;
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
