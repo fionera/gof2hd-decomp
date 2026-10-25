@@ -510,7 +510,7 @@ void HangarWindow::render() {
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
                     int imgH = Globals::Canvas->GetImage2DHeight(this->hintImage);
-                    int rows = Globals::h / imgH;
+                    short rows = Globals::h / imgH;
                     for (int r = 0; r <= rows; r++) {
                         Globals::Canvas->DrawImage2D(this->hintImage,
                                                      Globals::layout->buttonInsetX - imgW + this->hintOffsetX,
@@ -556,7 +556,7 @@ void HangarWindow::render() {
 
                     Globals::Canvas->SetColor(0xffffffffu);
                     String name("");
-                    int buttonOffset = 0;
+                    short buttonOffset = 0;
                     if (item->isItem()) {
                         name = *Globals::gameText->getText(item->item->getIndex() + 1274);
                         if (tab == 4 || tab == 1) {
@@ -800,7 +800,7 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            if (tab != 0 && !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                            if (tab != 0 && !(this->selectedItem->ship == Globals::status->getShip() && tab == 3)) {
                                 (*this->buttons)[1]->setPosition(
                                     this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
                                     this->field_0x114 + y, 18);
@@ -866,7 +866,7 @@ void HangarWindow::render() {
                 }
             }
             Globals::layout->drawHeader(*Globals::gameText->getText(167));
-            for (unsigned int i = 0; i < this->tabButtons->size(); i++)
+            for (unsigned short i = 0; i < this->tabButtons->size(); i++)
                 (*this->tabButtons)[i]->draw();
         }
     }
@@ -1742,7 +1742,7 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     }
                 }
             }
-            if (slot >= 0 && oldShip->getMods() != 0) {
+            if (oldShip->getMods() != 0 && slot >= 0) {
                 for (unsigned int i = 0; i < oldShip->getMods()->size(); i++) {
                     if (this->upgradeMode)
                         (*Globals::status->voidStation->getShips())[slot]->addMod((*oldShip->getMods())[i]);
@@ -1798,8 +1798,8 @@ common:
                     return false;
                 }
                 this->dialogActive = 0;
-                this->buyMode = 0;
                 this->routeWarningPending = 0;
+                this->buyMode = 0;
             }
             this->selectedItem = 0;
             this->hangarList->setCurrentItemIndex(-1);
