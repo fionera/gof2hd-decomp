@@ -1776,16 +1776,21 @@ int SpaceLounge::getSoundId(Agent *agent) {
             soundId = Globals::rnd->nextInt(4) + 803;
             break;
         case 0:
-            if (missionType != 0 && missionType != 11) {
-                if (missionType == 12) {
-                    soundId = (*(AbyssEngine::AERandom *volatile *) &Globals::rnd)->nextInt(4) + 762;
-                } else if (Globals::rnd->nextInt(2) != 0) {
-                    soundId = Globals::rnd->nextInt(4) + 777;
-                } else {
-                    soundId = Globals::rnd->nextInt(4) + 799;
-                }
-            } else {
-                soundId = Globals::rnd->nextInt(4) + 769;
+            switch (missionType) {
+                case 12:
+                    soundId = Globals::rnd->nextInt(4) + 762;
+                    break;
+                case 0:
+                case 11:
+                    soundId = Globals::rnd->nextInt(4) + 769;
+                    break;
+                default:
+                    if (Globals::rnd->nextInt(2) != 0) {
+                        soundId = Globals::rnd->nextInt(4) + 777;
+                    } else {
+                        soundId = Globals::rnd->nextInt(4) + 799;
+                    }
+                    break;
             }
             break;
         case 1:
