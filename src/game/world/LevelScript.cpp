@@ -2853,18 +2853,22 @@ bool LevelScript::process(int delta) {
                                 (*enemies)[i]->setVisible(true);
                                 (*enemies)[i]->setActive(true);
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                                Vector offset;
+                                // One Vector per branch: the original emits two nextInt calls in
+                                // each arm (four total) instead of a shared parameterised pair.
                                 if ((*enemies)[i]->shipGroupFlag == 44) {
                                     ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
+                                    Vector offset;
                                     offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     offset.z = (float) (Globals::rnd->nextInt(30000) - 87000);
                                     offset.x = 120000.0f;
+                                    (*enemies)[i]->translate(offset);
                                 } else {
+                                    Vector offset;
                                     offset.y = (float) (Globals::rnd->nextInt(6000) - 3000);
                                     offset.z = (float) (Globals::rnd->nextInt(6000) - 7000);
                                     offset.x = 20000.0f;
+                                    (*enemies)[i]->translate(offset);
                                 }
-                                (*enemies)[i]->translate(offset);
                             }
                         }
                         m_nState = 5;
@@ -3155,7 +3159,6 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_60 = player->player->getArmorHP();
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
-                        player->player->setGammaHP(100);
                         Globals::switch_to_target_setting = 1;
                         Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
@@ -3428,15 +3431,14 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                     for (unsigned int i = 0; i < enemies->count; i++) {
-                        KIPlayer *enemy = (*enemies)[i];
-                        if (enemy->shipGroup == 10 && enemy->player->getEnemy(0)->isDead()) {
+                        if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->player->getEnemy(0)->isDead()) {
                             int target = -1;
                             for (unsigned int k = 2; k <= 5 && target == -1; k++) {
                                 if (!(*enemies)[k]->isDead()) {
                                     target = k;
                                 }
                             }
-                            enemy->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
+                            (*enemies)[i]->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
                         }
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
@@ -4028,6 +4030,7 @@ bool LevelScript::process(int delta) {
                             Globals::status->field_60 = player->player->getArmorHP();
                             Globals::status->field_68 = player->player->getGammaHP();
                             Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
+                            player->player->setGammaHP(100);
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
                             Globals::status->departStation(Globals::status->getStation());
