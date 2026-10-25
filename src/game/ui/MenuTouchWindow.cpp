@@ -360,19 +360,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
 
     bool showLanguages = true;
     switch (menuType) {
-    case 2: {
-        this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, 0);
-        this->addButton(1, *Globals::gameText->getText(29), 1, this->buttons, 0);
-        this->addButton(2, *Globals::gameText->getText(30), 2, this->buttons, 0);
-        this->addButton(3, *Globals::gameText->getText(31), 3, this->buttons, 0);
-        int row = 4;
-        if (Globals::iPad) {
-            this->addButton(25, *Globals::gameText->getText(0), 4, this->buttons, 0);
-            row = 5;
-        }
-        this->addButton(4, *Globals::gameText->getText(43), row, this->buttons, 0);
-        break;
-    }
     case 0: {
         // Main menu.
         Globals::Canvas->Image2DCreate(7002, *(unsigned int *) &this->field_0x120);
@@ -391,6 +378,19 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             next = row + 3;
         }
         this->addButton(4, *Globals::gameText->getText(43), next, this->buttons, mainButtonOffset);
+        break;
+    }
+    case 2: {
+        this->addButton(0, *Globals::gameText->getText(28), 0, this->buttons, 0);
+        this->addButton(1, *Globals::gameText->getText(29), 1, this->buttons, 0);
+        this->addButton(2, *Globals::gameText->getText(30), 2, this->buttons, 0);
+        this->addButton(3, *Globals::gameText->getText(31), 3, this->buttons, 0);
+        int row = 4;
+        if (Globals::iPad) {
+            this->addButton(25, *Globals::gameText->getText(0), 4, this->buttons, 0);
+            row = 5;
+        }
+        this->addButton(4, *Globals::gameText->getText(43), row, this->buttons, 0);
         break;
     }
     case 1: {
