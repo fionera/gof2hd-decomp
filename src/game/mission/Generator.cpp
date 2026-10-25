@@ -338,21 +338,21 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     bool kaamoStation = stationId == 78;
     for (int slot = 0; slot < count; ++slot) {
         bool first = slot == 0;
-        bool fixedShip = allGold || (first && stationIndex == 41);
-        bool forced = fixedShip || (kaamoStation && first);
-        int fixed = forced ? goldShip : 0;
+        int fixedShip = allGold | (first && stationIndex == 41);
+        int forced = fixedShip | (kaamoStation && first);
+        int fixed = forced * goldShip;
         int ship;
         bool unique = false;
         while (!unique) {
             ship = fixed;
-            if (!forced) {
+            if (fixedShip == 0 && (stationId != 78 || !first)) {
                 ship = Globals::globals->getRandomEnemyFighter(race);
             }
             if (count >= 2 && Globals::rnd->nextInt(100) <= 21) {
                 int otherRace = Globals::rnd->nextInt(5);
                 ship = fixed;
-                if (!forced) {
-                    ship = Globals::globals->getRandomEnemyFighter(otherRace == race || otherRace == 4 ? 8 : otherRace);
+                if (fixedShip == 0 && (stationId != 78 || !first)) {
+                    ship = Globals::globals->getRandomEnemyFighter(otherRace == 4 || otherRace == race ? 8 : otherRace);
                 }
             }
             unique = true;
@@ -875,7 +875,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         switch (type) {
             case 0:
                 itemId = Globals::rnd->nextInt(7);
-                amount = (int) ((float) difficulty / 10.0f * 95.0f) + 5;
+                amount = difficulty * 95 / 10 + 5;
                 break;
             case 2:
                 amount = (int) (float) Globals::rnd->nextInt(4) + 2;
@@ -883,10 +883,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             case 3:
             case 5:
                 itemId = type == 3 ? 116 : 117;
-                amount = (int) ((float) difficulty / 10.0f * 8.0f) + 2;
+                amount = difficulty * 8 / 10 + 2;
                 break;
             case 11:
-                amount = (int) ((float) difficulty / 10.0f * 18.0f) + 2;
+                amount = (int) ((float) difficulty * 1.8f) + 2;
                 break;
             case 15:
                 amount = (int) (float) Globals::rnd->nextInt(90) + 30;
