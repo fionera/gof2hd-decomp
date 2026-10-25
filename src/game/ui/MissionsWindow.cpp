@@ -218,16 +218,15 @@ int MissionsWindow::init() {
               Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
     this->m_pCampaignWindow = new ScrollTouchWindow(
             Globals::layout->buttonInsetX + this->m_x, top,
-            (this->m_width / 2) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
+            (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
             this->m_y - top + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
             (Globals::status->gameWon() ? 0 : Globals::layout->field_0x30_rowHeight) -
             Globals::layout->field_0x2c_rowHeight * 2,
             false);
     if (!Globals::status->gameWon() || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagA || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagB) {
-        String text;
-        int cm = Globals::status->getCurrentCampaignMission();
-        if (cm < 164)
-            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[cm]);
+        String text("");
+        if (Globals::status->getCurrentCampaignMission() < 164)
+            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
         if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
             ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) {
             text = Globals::status->replaceHash(
@@ -251,7 +250,7 @@ int MissionsWindow::init() {
     int noFreelance = Globals::status->getFreelanceMission()->isEmpty();
     if (!noFreelance) {
         this->m_pFreelanceWindow = new ScrollTouchWindow(
-                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
+                this->m_x + (w / 2) + Globals::layout->field_0x2c_rowHeight,
                 Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight),
                 (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
                 this->m_y - (Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight)) +
@@ -269,7 +268,7 @@ int MissionsWindow::init() {
                 Globals::imageFactory->loadChar(Globals::status->getFreelanceMission()->getAgent()->getImageParts());
     } else {
         this->m_pFreelanceWindow = new ScrollTouchWindow(
-                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight, top,
+                this->m_x + (w / 2) + Globals::layout->field_0x2c_rowHeight, top,
                 (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
                 this->m_height + (this->m_y - (top + Globals::layout->field_0x2c_rowHeight * 2)) -
                 Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
@@ -347,7 +346,7 @@ void MissionsWindow::draw() {
                              this->m_height - Globals::layout->field_0x20_top - Globals::layout->field_0xc_leftMargin -
                              Globals::layout->field_0x5c - 2 * Globals::layout->field_0x2c_rowHeight -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-                             String("", false));
+                             String());
     this->m_pCampaignWindow->draw();
     if (this->m_pAcceptButton != nullptr)
         this->m_pAcceptButton->draw();
@@ -367,7 +366,7 @@ void MissionsWindow::draw() {
                              Globals::layout->field_0x2c_rowHeight * 2 - Globals::layout->field_0x20_top -
                              Globals::layout->field_0x5c -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-                             String("", false));
+                             String());
     Mission *freelance = Globals::status->getFreelanceMission();
     if (freelance != nullptr && !freelance->isEmpty() && this->m_pAgentImageParts != nullptr) {
         Globals::imageFactory->drawChar(this->m_pAgentImageParts,
