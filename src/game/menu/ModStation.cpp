@@ -365,8 +365,8 @@ int ModStation::OnInitialize() {
             Globals::globals->addSoundResourceToList(107);
             Globals::globals->addSoundResourceToList(103);
             Globals::globals->addSoundResourceToList(126);
-            this->introCountdown = 50;
             this->flag_0x101 = 1;
+            this->introCountdown = 50;
             this->stationName = Globals::status->getStation()->getName();
             if (Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_70) > 30000 &&
                 Globals::status->getStation()->getIndex() != 108) {
@@ -1165,11 +1165,10 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 }
                 Globals::status->field_9c += this->dialogueMission->getProductionGoodAmount();
             } else if (this->dialogueMission->getType() == 14) {
-                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-                if (cargo != nullptr) {
-                    for (unsigned i = 0; i < cargo->size(); i++) {
-                        if ((*cargo)[i]->getIndex() == 115) {
-                            Globals::status->getShip()->removeCargo((*cargo)[i]);
+                if (Globals::status->getShip()->getCargo() != nullptr) {
+                    for (unsigned i = 0; i < Globals::status->getShip()->getCargo()->size(); i++) {
+                        if ((*Globals::status->getShip()->getCargo())[i]->getIndex() == 115) {
+                            Globals::status->getShip()->removeCargo((*Globals::status->getShip()->getCargo())[i]);
                             if (this->hangarWindow != nullptr) {
                                 this->hangarWindow->initialize();
                             }
@@ -1245,7 +1244,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::appManager->SetCurrentApplicationModule(5);
                     return;
                 } else {
-                        if (next == 77 && Globals::status->getStation()->getIndex() == 100) {
+                        Station *station = Globals::status->getStation();
+                        if (next == 77 && station->getIndex() == 100) {
                             Globals::status->getStation()->addShip((*Globals::ships)[37]->makeShip(0));
                         } else if (next == 78) {
                             Globals::status->field_5c = -1;
@@ -1257,20 +1257,19 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             Globals::switch_to_target_setting = 1;
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
-                        } else if (next == 84 && Globals::status->getStation()->getIndex() == 100) {
-                            Station *station = Globals::status->getStation();
-                            if (!station->hasShip(38)) {
-                                station->addShip((*Globals::ships)[38]->makeShip(-1));
+                        } else if (Globals::status->getStation()->getIndex() == 100 && next == 84) {
+                            if (!Globals::status->getStation()->hasShip(38)) {
+                                Globals::status->getStation()->addShip((*Globals::ships)[38]->makeShip(-1));
                             }
-                            if (!station->hasShip(40)) {
-                                station->addShip((*Globals::ships)[40]->makeShip(-1));
+                            if (!Globals::status->getStation()->hasShip(40)) {
+                                Globals::status->getStation()->addShip((*Globals::ships)[40]->makeShip(-1));
                             }
                             Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
                         } else if (next == 160) {
                             Level::initStreamOutPosition = 0;
                             Globals::switch_to_target_setting = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                            this->applicationManager->SetCurrentApplicationModule(2);
+                            Globals::appManager->SetCurrentApplicationModule(2);
                             return;
                         } else if (next == 99 || next == 119) {
                             Level::initStreamOutPosition = 1;
@@ -1493,13 +1492,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
         Globals::sound->stop(95);
         Globals::sound->play(122, nullptr, nullptr, 0.0f);
         Globals::sound->setParamValue(0, Globals::sound->currentMusicEvent, 0.0f);
-        Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
         for (unsigned i = 0; i < reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size(); i++) {
             if (i < 10) {
-                Globals::sub_menu_buttons_x[i] = (int) (*row)[i]->getPosition().x;
+                Globals::sub_menu_buttons_x[i] =
+                    (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]->getPosition().x;
                 Globals::sub_menu_buttons_y[i] =
                     (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]->getPosition().y;
-                row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
             }
         }
         Globals::sub_menu_button_count = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size();
@@ -1558,13 +1556,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
             return;
         }
         this->flag_0x62 = 0;
-        Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
         for (unsigned i = 0; i < reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size(); i++) {
             if (i < 10) {
-                Globals::sub_menu_buttons_x[i] = (int) (*row)[i]->getPosition().x;
+                Globals::sub_menu_buttons_x[i] =
+                    (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]->getPosition().x;
                 Globals::sub_menu_buttons_y[i] =
                     (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]->getPosition().y;
-                row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
             }
         }
         Globals::sub_menu_button_count = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size();
@@ -2133,12 +2130,11 @@ void ModStation::OnUpdate() {
                                                       : -(camX - this->easeX->GetMaxValue())) <= 5.0f) {
             bool back = flipAxis[1];
             flipAxis[1] = back ^ 1;
-            // Keeping the rnd result in a named local also keeps ModStation.o's .text the same
-            // size, which the libstdc++ exception ctors' byte-exactness depends on.
-            int offset = Globals::rnd->nextInt(131);
-            this->easeX->SetRange(camX, this->camKeyX + (float) (back ? offset + 18 : -18 - offset));
+            int offset;
+            this->easeX->SetRange(camX, this->camKeyX + (float) ((offset = Globals::rnd->nextInt(131)),
+                                                                 back ? offset + 18 : -18 - offset));
         }
-        this->easeY->Increase((float) (flipAxis[0] ? backStep : step));
+        this->easeY->Increase((float) (flipAxis[0] ? step : backStep));
         float camY = this->easeY->GetValue();
         if ((camY - this->easeY->GetMaxValue() > 0.0f ? camY - this->easeY->GetMaxValue()
                                                       : -(camY - this->easeY->GetMaxValue())) <= 5.0f) {
@@ -2148,7 +2144,7 @@ void ModStation::OnUpdate() {
             this->easeY->SetRange(camY, this->camKeyY + (float) ((offset = Globals::rnd->nextInt(120)),
                                                                  back ? offset + 30 : -30 - offset));
         }
-        this->easeZ->Increase((float) (flipAxis[2] ? backStep : step));
+        this->easeZ->Increase((float) (flipAxis[2] ? step : backStep));
         float camZ = this->easeZ->GetValue();
         if ((camZ - this->easeZ->GetMaxValue() > 0.0f ? camZ - this->easeZ->GetMaxValue()
                                                       : -(camZ - this->easeZ->GetMaxValue())) <= 5.0f) {
@@ -2180,6 +2176,8 @@ void ModStation::OnUpdate() {
         }
         this->field_0xb4 += this->dt;
         this->cutScene->update(this->dt);
+    }
+    if (this->flag_0x60) {
         if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
             Vector &textPos = reinterpret_cast<Vector &>(this->idleBox);
             float textY = textPos.y;
@@ -2208,10 +2206,9 @@ void ModStation::OnUpdate() {
             Globals::switch_to_target_setting = 0;
             Globals::appManager->SetCurrentApplicationModule(5);
             this->flag_0x60 = 0;
+            return;
         }
-        return;
     }
-
     if (this->flag_0x69) {
         this->dialogueWindow->update(this->dt);
     } else if (this->flag_0x67) {
@@ -2251,7 +2248,8 @@ void ModStation::OnUpdate() {
         bool reachedBeacon = false;
         Mission *completed = Globals::status->missionCompleted(
             true, this->flag_0x65 ? this->spaceLounge->introFinished() : false, 0);
-        if (completed == nullptr && Globals::status->getCurrentCampaignMission() == 116 && this->flag_0x65 &&
+        int currentMission = Globals::status->getCurrentCampaignMission();
+        if (completed == nullptr && currentMission == 116 && this->flag_0x65 &&
             this->spaceLounge->introFinished() &&
             ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 18 &&
             !(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
@@ -2278,7 +2276,7 @@ void ModStation::OnUpdate() {
             }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
-                    Globals::status->getCurrentCampaignMission() >= 148 &&
+                    Globals::status->getCurrentCampaignMission() > 147 &&
                     Globals::status->getCurrentCampaignMission() <= 150 && stationIndex == 96) {
                     Globals::status->setCurrentCampaignMission(151);
                     this->dialogueWindow = new DialogueWindow();
@@ -2317,9 +2315,16 @@ void ModStation::OnUpdate() {
             Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
             bool firstVoice = beacon == 0 || beacon == 2;
             int textId = 2716 + beacon;
-            int face = firstVoice ? 0 : (textId == 2717 ? 57 : 58);
+            int face = 58;
+            if (textId == 2717) {
+                face = 57;
+            }
+            if (firstVoice) {
+                face = 0;
+            }
+            int voiceText = firstVoice ? 1597 : 1516;
             this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
-                                                      Globals::gameText->getText(firstVoice ? 1597 : 1516),
+                                                      Globals::gameText->getText(voiceText),
                                                       gStoryFaceTable[face]);
             this->flag_0x69 = 1;
         } else if (completed != nullptr) {
