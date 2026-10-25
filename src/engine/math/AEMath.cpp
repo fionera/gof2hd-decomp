@@ -1,6 +1,7 @@
 #include "engine/math/AEMath.h"
 
 #include <cmath>
+#include <cstring>
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -28,9 +29,9 @@ namespace AbyssEngine {
         float InvSqrt(float value) {
             float f = value;
             int i;
-            __builtin_memcpy(&i, &f, sizeof(i));
+            std::memcpy(&i, &f, sizeof(i));
             i = 0x5f3759df - (i >> 1);
-            __builtin_memcpy(&f, &i, sizeof(f));
+            std::memcpy(&f, &i, sizeof(f));
             f = f * (1.5f - value * 0.5f * f * f);
             return f;
         }

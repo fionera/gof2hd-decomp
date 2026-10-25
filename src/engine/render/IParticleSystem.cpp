@@ -4,27 +4,6 @@
 #include "engine/core/AERandom.h"
 #include "engine/render/ParticleSettingsRef.h"
 
-namespace AbyssEngine {
-}
-
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector operator-(const Vector &);
-
-        Vector operator-(const Vector &, const Vector &);
-
-        Vector operator+(const Vector &, const Vector &);
-
-        Vector operator*(const Vector &, float);
-
-        Vector operator*(float, const Vector &);
-
-        float VectorDot(const Vector &, const Vector &);
-    }
-}
-
-
-
 void IParticleSystem::enableUpdate(bool enabled) {
     this->updateEnabled = enabled;
 }
@@ -75,18 +54,14 @@ void IParticleSystem::enableRender(bool enabled) {
 }
 
 namespace {
-    inline Vector makeVector(float x, float y, float z) {
-        Vector v = {x, y, z};
-        return v;
-    }
-
-    // Quake-style fast reciprocal square root (one Newton step).
-    inline float invSqrt(float x) {
+    // Quake-style fast reciprocal square root (one Newton step). The original inlines
+    // this at the emit() call sites; AEMath::InvSqrt is an out-of-line export.
+    float fastInverseSqrt(float x) {
         int bits;
-        memcpy(&bits, &x, sizeof(bits));
+        std::memcpy(&bits, &x, sizeof(bits));
         bits = 0x5f3759df - (bits >> 1);
         float y;
-        memcpy(&y, &bits, sizeof(y));
+        std::memcpy(&y, &bits, sizeof(y));
         return (x * -0.5f * y * y + 1.5f) * y;
     }
 }
@@ -116,7 +91,7 @@ void IParticleSystem::emit(int delta) {
 
     float fdelta = (float) delta;
     Vector travel = this->emitterVelocity * (this->emitTimer + fdelta) / 1000.0f;
-    float invTravel = invSqrt(AbyssEngine::AEMath::VectorDot(travel, travel));
+    float invTravel = fastInverseSqrt(AbyssEngine::AEMath::VectorDot(travel, travel));
     float distance = 1.0f / invTravel;
 
     int count;
@@ -139,7 +114,7 @@ void IParticleSystem::emit(int delta) {
     Vector start = position - travel;
     float invSpeed = 0.0f;
     if ((this->flags & 0xc0) == 0)
-        invSpeed = invSqrt(speedSq);
+        invSpeed = fastInverseSqrt(speedSq);
 
     float uv[4];
     float rotated[4];
@@ -161,9 +136,9 @@ void IParticleSystem::emit(int delta) {
             float x = (float) (this->random.nextInt(spread * 2) - spread) + def.velBaseX;
             float y = (float) (this->random.nextInt(spread * 2) - spread) + def.velBaseY;
             float z = (float) (this->random.nextInt(spread * 2) - spread) + def.velBaseZ;
-            this->particleVelocities[this->currentParticle] = makeVector(x, y, z);
+            this->particleVelocities[this->currentParticle] = Vector(x, y, z);
         } else {
-            this->particleVelocities[this->currentParticle] = makeVector(0.0f, 0.0f, 0.0f);
+            this->particleVelocities[this->currentParticle] = Vector();
         }
         if (def.drag != 0.0f)
             this->particleVelocities[this->currentParticle] -= this->emitterVelocity * def.drag;
@@ -200,7 +175,7 @@ void IParticleSystem::emit(int delta) {
             float x = (float) (this->random.nextInt(range * 2) - range);
             float y = (float) (this->random.nextInt(range * 2) - range);
             float z = (float) (this->random.nextInt(range * 2) - range);
-            pos += makeVector(x, y, z);
+            pos += Vector(x, y, z);
         } else {
             if (def.posRight != 0.0f) {
                 pos += right * def.posRight;
@@ -218,7 +193,7 @@ void IParticleSystem::emit(int delta) {
                 int range = def.posSpread;
                 float x = (float) (this->random.nextInt(range * 2) - range);
                 float z = (float) (this->random.nextInt(range * 2) - range);
-                pos += Vector{x, 0.0f, z};
+                pos += Vector(x, 0.0f, z);
             }
             if (def.ySpread != 0)
                 pos.y += (float) (this->random.nextInt(def.ySpread * 2) - def.ySpread);
@@ -238,7 +213,7 @@ void IParticleSystem::emit(int delta) {
             float size1 = def.endSize + (float) this->random.nextInt(def.lifeRandom);
             Vector vel = def.velocityFromSlot != 0.0f
                          ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
-                         : makeVector(0.0f, 0.0f, 0.0f);
+                         : Vector();
             this->setParticle(pos, life, color, uA, vA, uB, vB, masked, size0, size1, vel);
         } else {
             float uA = uvp[0];
@@ -251,7 +226,7 @@ void IParticleSystem::emit(int delta) {
             float size1 = def.endSize;
             Vector vel = def.velocityFromSlot != 0.0f
                          ? def.velocityFromSlot * this->particleVelocities[this->currentParticle]
-                         : makeVector(0.0f, 0.0f, 0.0f);
+                         : Vector();
             this->setParticle(pos, life, color, uA, vA, uB, vB, masked, size0, size1, vel);
         }
 
