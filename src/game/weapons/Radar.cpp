@@ -351,13 +351,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
     bool alienOrbit = Globals::status->inAlienOrbit();
-    int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
     this->route = this->level->getPlayerRoute();
     this->asteroids = this->level->getAsteroids();
     this->gasClouds = this->level->getGasClouds();
     this->planetTargets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+    int campaign = Globals::status->getCurrentCampaignMission();
 
     this->transform = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
     this->cameraX = this->transform.m[3];
