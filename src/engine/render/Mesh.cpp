@@ -707,13 +707,13 @@ namespace AbyssEngine {
                 for (unsigned int v = 0; v < vertices; v++) {
                     Vector normal = ((const Vector *) (*slot)->normals)[v];
                     Vector tangent = accum[v];
-                    Vector projected = tangent - normal * AEMath::VectorDot(normal, tangent);
+                    Vector projected = tangent - normal * AEMath::VectorDot(tangent, normal);
                     Vector unit = AEMath::VectorNormalize(projected);
                     Vector *outTangent = (Vector *) (*slot)->tangents + v;
                     outTangent->x = unit.x;
                     outTangent->y = unit.y;
                     outTangent->z = unit.z;
-                    Vector binormal = AEMath::VectorCross(normal, unit);
+                    Vector binormal = AEMath::VectorCross(projected, normal);
                     Vector *outBinormal = (Vector *) (*slot)->binormals + v;
                     outBinormal->x = binormal.x;
                     outBinormal->y = binormal.y;
