@@ -317,8 +317,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
     int allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : 0;
-    int stationIndex = station->getIndex();
     int stationId = station->getIndex();
+    int stationIndex = station->getIndex();
     int count;
     if (allGold) {
         count = 1;
