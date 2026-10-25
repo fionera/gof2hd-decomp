@@ -762,6 +762,31 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             }
             break;
         }
+        case ITEM_SORT_TURRET: {
+            float z = 300.0f;
+            float x = 0.0f;
+            switch (idx) {
+                case 48:
+                    x = 80.0f;
+                    break;
+                case 181:
+                    z = -300.0f;
+                    break;
+                default:
+                    break;
+            }
+            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 8;
+            gun->setPlayerGun(true);
+            if (idx == 48 || idx == 224 || idx == 181) {
+                gun->field_0xa4_b0 = true;
+                if (idx == 224)
+                    gun->field_0xa5 = true;
+            }
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            break;
+        }
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
@@ -797,37 +822,20 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             gun->setErrorMagnitudePercentage(2);
             break;
-        case ITEM_SORT_TURRET: {
-            float z = 300.0f;
-            float x = 0.0f;
-            switch (idx) {
-                case 48:
-                    x = 80.0f;
-                    break;
-                case 181:
-                    z = -300.0f;
-                    break;
-                default:
-                    break;
-            }
-            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 8;
-            gun->setPlayerGun(true);
-            if (idx == 48 || idx == 224 || idx == 181) {
-                gun->field_0xa4_b0 = true;
-                if (idx == 224)
-                    gun->field_0xa5 = true;
-            }
-            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
-            break;
-        }
         case ITEM_SORT_MINE:
             gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = 11;
             gun->setPlayerGun(true);
             weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        case ITEM_SORT_SENTRY_GUN:
+            gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 39;
+            gun->setPlayerGun(true);
+            weapon = new SentryGun(gun, g_cg_meshTable[idx], 1, 39, this);
             Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
             break;
         case ITEM_SORT_PLASMA_COLLECTOR: {
@@ -850,14 +858,6 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
             break;
         }
-        case ITEM_SORT_SENTRY_GUN:
-            gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 39;
-            gun->setPlayerGun(true);
-            weapon = new SentryGun(gun, g_cg_meshTable[idx], 1, 39, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
         case ITEM_SORT_SHOCK_BLAST:
             gun = new Gun(owner, dmg, 1, hp, 1, rate, (float) color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
