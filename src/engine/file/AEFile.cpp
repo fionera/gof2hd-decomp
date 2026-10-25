@@ -4,6 +4,10 @@
 #include "engine/file/AEPakFile.h"
 #include "engine/file/AENormalFile.h"
 
+#pragma clang section data=".aezdata"
+[[gnu::used]] static char pakExtension[8] = ".aez";
+#pragma clang section data=""
+
 AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
     : fileInterface(fileInterface),
       sizeLimit(static_cast<uint32_t>(sizeLimit)),
@@ -426,11 +430,6 @@ void AEFile::collectPakFiles(const String &path) {
         return;
     }
 
-    // Real pak-extension storage. The 16-byte capacity is load-bearing: the
-    // ten libstdc++ exception ctors use fixed PC-relative GOT deltas, and
-    // shrinking this buffer leaves them 8 bytes short.
-    static char pakExtension[16] = ".aez";
-
     char *pathChars = path.GetAEChar();
     // FileEnumInit is declared uint32_t here, but the original returns bool;
     // call it through a bool-returning member pointer so the branch keeps the
@@ -441,7 +440,7 @@ void AEFile::collectPakFiles(const String &path) {
         String entry;
         while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy(entry);
-            if (entry.IndexOf(String(pakExtension)) != 0xffffffffu) {
+            if (entry.IndexOf(String(".aez")) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
             }
         }
