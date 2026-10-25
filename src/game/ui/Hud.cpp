@@ -854,8 +854,9 @@ void Hud::drawOrbitInformation() {
     Globals::Canvas->SetColor(0x777777ff);
     if (Globals::status->getCurrentCampaignMission() < 16)
         return;
-    int security = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel();
-    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 26 && Globals::status->field_114 > 1)
+    SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+    int security = system->getSecurityLevel();
+    if (system->getIndex() == 26 && Globals::status->field_114 > 1)
         security = 3;
     Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                 String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) +
@@ -1748,7 +1749,7 @@ void Hud::drawChallengeModeScore(int unused) {
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
-    span = step * 7 >> 1;
+    span = step * 7 / 2;
     left = half - span;
     x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
