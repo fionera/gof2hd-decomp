@@ -53,9 +53,9 @@ static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix
 }
 
 static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
-    if (canvas == 0 || screenPosition == 0)
+    if (canvas == 0)
         return false;
-    return (canvas->GetScreenPosition(position, *screenPosition) & 1) != 0;
+    return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
 
 
@@ -1040,27 +1040,26 @@ void StarMap::draw() {
     if (this->starSystemRoot != 0 && this->stations != 0) {
         SolarSystem *system = (*this->systems)[this->selectedSystem];
         if (!system->hasNoOwner()) {
-            PaintCanvas *canvas = Globals::Canvas;
-            canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
-            canvas->DrawImage2D(this->systemNameImage, Globals::layout->field_0x2c_rowHeight,
+            Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
+            Globals::Canvas->DrawImage2D(this->systemNameImage, Globals::layout->field_0x2c_rowHeight,
                                 Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight);
             int indent = Globals::layout->field_0x2c_rowHeight;
-            int nameWidth = canvas->GetImage2DWidth(this->systemNameImage);
-            canvas->SetColor(255, 128, 0, (uint8_t) (this->alpha ^ 255));
+            int nameWidth = Globals::Canvas->GetImage2DWidth(this->systemNameImage);
+            Globals::Canvas->SetColor(255, 128, 0, (uint8_t) (this->alpha ^ 255));
             int textX = nameWidth + indent * 2;
-            canvas->DrawString((unsigned int) (uintptr_t) Globals::font, (*this->systems)[this->selectedSystem]->getName(),
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, (*this->systems)[this->selectedSystem]->getName(),
                                textX, Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight + 2,
                                false);
-            canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
-            canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+            Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                *Globals::gameText->getText((*this->systems)[this->selectedSystem]->getRace() + 406), textX,
                                Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
                                Globals::layout->field_0x4 + 2,
                                false);
             int security = (*this->systems)[this->selectedSystem]->getSecurityLevel();
-            canvas->SetColor((uint8_t) StarMap_securityColors[security][0], (uint8_t) StarMap_securityColors[security][1],
+            Globals::Canvas->SetColor((uint8_t) StarMap_securityColors[security][0], (uint8_t) StarMap_securityColors[security][1],
                              (uint8_t) StarMap_securityColors[security][2], (uint8_t) (this->alpha ^ 255));
-            canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402),
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402),
                                textX,
                                Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
                                Globals::layout->field_0x4 * 2 + 2,
