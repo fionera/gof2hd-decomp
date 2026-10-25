@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.48,
+  "avg_match": 99.5,
   "byte_exact": 1352,
-  "linked_exact": 4427,
-  "fuzzy_perfect": 4427,
+  "linked_exact": 4428,
+  "fuzzy_perfect": 4428,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -22,22 +22,6 @@
    "linked": false,
    "osize": 13052,
    "usize": 12664
-  },
-  {
-   "name": "_ZN11SpaceLounge23getSpecificSoundForRaceEiib",
-   "pct": 28.6,
-   "byte": false,
-   "linked": false,
-   "osize": 116,
-   "usize": 128
-  },
-  {
-   "name": "_ZN11AbyssEngine9Transform18InsertKeyFrame_oldEPKfxi",
-   "pct": 33.7,
-   "byte": false,
-   "linked": false,
-   "osize": 4076,
-   "usize": 4008
   },
   {
    "name": "_ZN11AbyssEngine10Quaternion3SetEfff",
@@ -70,6 +54,14 @@
    "linked": false,
    "osize": 700,
    "usize": 688
+  },
+  {
+   "name": "_ZN11SpaceLounge23getSpecificSoundForRaceEiib",
+   "pct": 44.0,
+   "byte": false,
+   "linked": false,
+   "osize": 116,
+   "usize": 128
   },
   {
    "name": "_ZN6LayoutC1Ev",
@@ -12286,6 +12278,14 @@
    "linked": true,
    "osize": 32,
    "usize": 32
+  },
+  {
+   "name": "_ZN11AbyssEngine9Transform18InsertKeyFrame_oldEPKfxi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 4076,
+   "usize": 4076
   },
   {
    "name": "_ZN11AbyssEngine9Transform18SetAnimationLengthEx",
