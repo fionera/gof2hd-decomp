@@ -47,6 +47,8 @@ extern int g_android_current_achievements[3];
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::Matrix;
 
+static int modStationTouchEndPad(int value);
+
 struct HangarWindowHead {
     char shipChanged;
 };
@@ -848,6 +850,7 @@ int ModStation::OnInitialize() {
             return 0;
         }
     }
+    this->field_0x5c = modStationTouchEndPad(this->dt);
     return this->state;
 }
 
@@ -1090,7 +1093,7 @@ static int modStationTouchEndPad(int value) {
         return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (a ^ (b >> 3)) + (b ^ (a >> 5)) + value * 3 + (a ^ (b << 2)) + (b & 7);
+    return value + a + b + (b & 7) + (a * 3);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
@@ -1234,24 +1237,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::status->nextCampaignMission(true);
                 }
                 int next = Globals::status->getCurrentCampaignMission();
-                if (next == 48 || next == 49 || next == 55 || next == 56 || next == 58) {
-                    this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(),
-                                                      Globals::status->getShip()->getRace());
-                } else if (next == 45) {
-                    Globals::status->removeMission(this->dialogueMission);
-                    this->dialogueMission = nullptr;
-                    Globals::status->setMission(Mission::empty);
-                    this->flag_0x69 = 0;
-                    this->selectedButton = 1;
-                    OnKeyPress(0x10000, 0);
-                    return;
-                } else if (next == 18) {
-                    Globals::status->removeMission(this->dialogueMission);
-                    this->dialogueMission = nullptr;
-                    this->flag_0x69 = 0;
-                    this->field_0x5c = modStationTouchEndPad(this->dt);
-                    return;
-                } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
+                switch (next) {
+                case 9: case 44: case 75: case 76: case 83:
                     Globals::status->removeMission(this->dialogueMission);
                     this->dialogueMission = nullptr;
                     Globals::status->setMission(Mission::empty);
@@ -1259,80 +1246,98 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::switch_to_target_setting = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
                     return;
-                } else {
-                        int stationIndex = Globals::status->getStation()->getIndex();
-                        if (next == 77 && stationIndex == 100) {
-                            Globals::status->getStation()->addShip((*Globals::ships)[37]->makeShip(0));
-                        } else if (next == 78) {
-                            Globals::status->field_5c = -1;
-                            Globals::status->field_60 = -1;
-                            Globals::status->field_64 = -1;
-                            Globals::status->field_68 = -1;
-                            Globals::achievements->resetNewMedals();
-                            Globals::status->departStation(Globals::status->getStation());
-                            Globals::switch_to_target_setting = 1;
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                        } else if (Globals::status->getStation()->getIndex() == 100 && next == 84) {
-                            Station *shipStation = Globals::status->getStation();
-                            if (!shipStation->hasShip(38)) {
-                                shipStation->addShip((*Globals::ships)[38]->makeShip(-1));
-                            }
-                            if (!shipStation->hasShip(40)) {
-                                shipStation->addShip((*Globals::ships)[40]->makeShip(-1));
-                            }
-                            Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
-                        } else if (next == 89) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(109));
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                            return;
-                        } else if (next == 99 || next == 119) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                            return;
-                        } else if (next == 104) {
-                            delete this->hangarWindow;
-                            this->hangarWindow = nullptr;
-                            this->flag_0x66 = 0;
-                        } else if (next == 109) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(114));
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                            return;
-                        } else if (next == 128) {
-                            Globals::status->activateNewWanted();
-                            if (!Globals::hints[42]) {
-                                this->flag_0x6e = 1;
-                            }
-                        } else if (next == 133) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                            return;
-                        } else if (next == 144) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 0;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
-                            this->applicationManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
-                            return;
-                        } else if (next == 160) {
-                            Globals::switch_to_target_setting = 1;
-                            Level::initStreamOutPosition = 0;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                            this->applicationManager->SetCurrentApplicationModule(2);
-                            return;
+                case 18:
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->dialogueMission = nullptr;
+                    this->flag_0x69 = 0;
+                    return;
+                case 45:
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->dialogueMission = nullptr;
+                    Globals::status->setMission(Mission::empty);
+                    this->flag_0x69 = 0;
+                    this->selectedButton = 1;
+                    OnKeyPress(0x10000, 0);
+                    return;
+                case 48: case 49: case 55: case 56: case 58:
+                    this->cutScene->replacePlayerShip(Globals::status->getShip()->getIndex(),
+                                                      Globals::status->getShip()->getRace());
+                    break;
+                default: {
+                    int stationIndex = Globals::status->getStation()->getIndex();
+                    if (next == 77 && stationIndex == 100) {
+                        Globals::status->getStation()->addShip((*Globals::ships)[37]->makeShip(0));
+                    } else if (next == 78) {
+                        Globals::status->field_5c = -1;
+                        Globals::status->field_60 = -1;
+                        Globals::status->field_64 = -1;
+                        Globals::status->field_68 = -1;
+                        Globals::achievements->resetNewMedals();
+                        Globals::status->departStation(Globals::status->getStation());
+                        Globals::switch_to_target_setting = 1;
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                    } else if (Globals::status->getStation()->getIndex() == 100 && next == 84) {
+                        Station *shipStation = Globals::status->getStation();
+                        if (!shipStation->hasShip(38)) {
+                            shipStation->addShip((*Globals::ships)[38]->makeShip(-1));
                         }
+                        if (!shipStation->hasShip(40)) {
+                            shipStation->addShip((*Globals::ships)[40]->makeShip(-1));
+                        }
+                        Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
+                    } else if (next == 89) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(109));
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
+                    } else if (next == 109) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(114));
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
+                    } else if (next == 99 || next == 119) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
+                    } else if (next == 104) {
+                        delete this->hangarWindow;
+                        this->hangarWindow = nullptr;
+                        this->flag_0x66 = 0;
+                    } else if (next == 128) {
+                        Globals::status->activateNewWanted();
+                        if (!Globals::hints[42]) {
+                            this->flag_0x6e = 1;
+                        }
+                    } else if (next == 133) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
+                    } else if (next == 144) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
+                    } else if (next == 160) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 0;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                        this->applicationManager->SetCurrentApplicationModule(2);
+                        return;
+                    }
+                }
                 }
             } else {
                 Globals::status->incMissionCount();
@@ -1901,6 +1906,8 @@ void ModStation::OnKeyPress(long long key, long long) {
                         if (this->hangarWindow == nullptr) {
                             this->hangarWindow = new HangarWindow();
                             this->hangarWindow->initialize();
+                        } else {
+                            this->hangarWindow->initialize();
                         }
                         if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
                             delete this->hangarWindow;
@@ -1908,8 +1915,9 @@ void ModStation::OnKeyPress(long long key, long long) {
                             this->hangarWindow = new HangarWindow();
                             this->hangarWindow->initialize();
                             this->spaceLounge->setHangarUpdate(false);
-                        } else if (this->m_pDialogueWindow != nullptr &&
-                                   ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
+                        }
+                        if (this->m_pDialogueWindow != nullptr &&
+                            ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
                             delete this->hangarWindow;
                             this->hangarWindow = nullptr;
                             this->hangarWindow = new HangarWindow();
