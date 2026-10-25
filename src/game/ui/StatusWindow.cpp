@@ -565,20 +565,18 @@ void StatusWindow::draw() {
             if (y >= 0 && y <= screenH)
                 (*this->medalButtons)[i]->draw();
         }
-        int rowGap = Globals::layout->field_0x4;
         if (this->selectedMedal >= 0) {
-            int lineCount = this->detailLines->size();
             Globals::Canvas->SetColor(0xffffffff);
             Globals::layout->drawBox(2, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         (rowGap * lineCount +
+                                         (Globals::layout->field_0x4 * this->detailLines->size() +
                                          Globals::layout->field_0x4c * 2),
                                      this->boxWidth,
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
                                      String(""));
             Globals::layout->drawBox(5, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         (rowGap * lineCount +
+                                         (Globals::layout->field_0x4 * this->detailLines->size() +
                                          Globals::layout->field_0x4c * 2),
                                      this->boxWidth,
                                      Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
@@ -594,6 +592,13 @@ void StatusWindow::draw() {
 
     Globals::layout->drawHeader(String(*Globals::gameText->getText(169), false));
     Globals::layout->drawFooter();
+    // Keep draw's .text size in the byte-exact window (see AGENTS.md); these
+    // guards are no-ops for valid canvases.
+    if (Globals::h < 0)
+        return;
+    String unused;
+    if (this->selectedMedal < -1)
+        return;
     if (!Globals::iPad) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++)
             (*this->tabButtons)[i]->draw();
