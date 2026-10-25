@@ -2356,39 +2356,36 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
                 (*this->scrollEntries)[i]->OnTouchBegin(x, y);
         }
         break;
-    case 6:
-    case 13:
-        break;
-    case 7:
-        this->optBtnD4->OnTouchBegin(x, y);
-        this->optBtnD8->OnTouchBegin(x, y);
-        this->optBtnDC->OnTouchBegin(x, y);
-        for (unsigned int i = 1; i < this->sliders->size(); i++) {
-            if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
-                (*this->sliders)[i]->OnTouchBegin(x, y);
-            }
+    case 16:
+        for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+            long long id = (*this->scrollEntries)[i]->id;
+            if (id >= 101 && id <= 105)
+                (*this->scrollEntries)[i]->OnTouchBegin(x, y);
         }
-        break;
-    case 8:
-            this->upButtonPressed = 0;
-            this->downButtonPressed = 0;
-            if (x > this->listTopY + Globals::layout->buttonInsetX &&
-                x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
-                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
-                this->upButtonPressed = 1;
-                Globals::sound->play(124, 0, 0, 0.0f);
-            }
-            if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
-                x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
-                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
-                this->downButtonPressed = 1;
-                Globals::sound->play(124, 0, 0, 0.0f);
-            }
-        this->optBtnCC->OnTouchBegin(x, y);
-        this->optBtnD0->OnTouchBegin(x, y);
-        (*this->sliders)[0]->OnTouchBegin(x, y);
+        // fall through
+    case 15:
+        this->scrollWindowB->OnTouchBegin(x, y);
+        for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+            long long id = (*this->scrollEntries)[i]->id;
+            if (id - 52 == 0 || id - 60 == 0)
+                (*this->scrollEntries)[i]->OnTouchBegin(x, y);
+        }
+        for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
+            (*this->scrollSlots)[i]->OnTouchBegin(x, y);
+        if (x > Globals::w - Globals::layout->buttonInsetX -
+                    Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
+            y < ((*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0x20_top +
+                  (*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0xc_leftMargin) +
+                    Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
+            this->scrollbarHit = 1;
+        else
+            this->scrollbarHit = 0;
+        if (x < Globals::layout->buttonInsetX + Globals::Canvas->GetImage2DWidth(this->heapBufA[0])) {
+            this->dragLastX = y;
+            this->dragStartX = y;
+            this->dragVelocity = 0;
+            this->dragging = 1;
+        }
         break;
     case 9:
         this->missionsWindow->OnTouchBegin(x, y);
@@ -2419,6 +2416,27 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
             }
         }
         break;
+    case 8:
+            this->upButtonPressed = 0;
+            this->downButtonPressed = 0;
+            if (x > this->listTopY + Globals::layout->buttonInsetX &&
+                x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
+                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+                this->upButtonPressed = 1;
+                Globals::sound->play(124, 0, 0, 0.0f);
+            }
+            if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
+                x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
+                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
+                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+                this->downButtonPressed = 1;
+                Globals::sound->play(124, 0, 0, 0.0f);
+            }
+        this->optBtnCC->OnTouchBegin(x, y);
+        this->optBtnD0->OnTouchBegin(x, y);
+        (*this->sliders)[0]->OnTouchBegin(x, y);
+        break;
     case 12:
         for (unsigned int i = 0; i < this->buttonsB4->size(); i++)
             (*this->buttonsB4)[i]->OnTouchBegin(x, y);
@@ -2427,35 +2445,17 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         for (unsigned int i = 0; i < this->buttonsB0->size(); i++)
             (*this->buttonsB0)[i]->OnTouchBegin(x, y);
         break;
-    case 16:
-        for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-            long long id = (*this->scrollEntries)[i]->id;
-            if (id >= 101 && id <= 105)
-                (*this->scrollEntries)[i]->OnTouchBegin(x, y);
-        }
-        // fall through
-    case 15:
-        this->scrollWindowB->OnTouchBegin(x, y);
-        for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-            long long id = (*this->scrollEntries)[i]->id;
-            if (id - 52 == 0 || id - 60 == 0)
-                (*this->scrollEntries)[i]->OnTouchBegin(x, y);
-        }
-        for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
-            (*this->scrollSlots)[i]->OnTouchBegin(x, y);
-        if (x > Globals::w - Globals::layout->buttonInsetX -
-                    Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
-            y < ((*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0x20_top +
-                  (*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0xc_leftMargin) +
-                    Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
-            this->scrollbarHit = 1;
-        else
-            this->scrollbarHit = 0;
-        if (x < Globals::layout->buttonInsetX + Globals::Canvas->GetImage2DWidth(this->heapBufA[0])) {
-            this->dragLastX = y;
-            this->dragStartX = y;
-            this->dragVelocity = 0;
-            this->dragging = 1;
+    case 6:
+    case 13:
+        break;
+    case 7:
+        this->optBtnD4->OnTouchBegin(x, y);
+        this->optBtnD8->OnTouchBegin(x, y);
+        this->optBtnDC->OnTouchBegin(x, y);
+        for (unsigned int i = 1; i < this->sliders->size(); i++) {
+            if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
+                (*this->sliders)[i]->OnTouchBegin(x, y);
+            }
         }
         break;
     case 17:
