@@ -232,7 +232,7 @@ StarSystem::StarSystem(int mode) {
     }
     int slot = 0;
     int sunSlot = 0;
-    for (uint32_t i = 0; i <= this->planetsArray->size() - 1; ++i) {
+    for (uint32_t i = 0; i < this->planetsArray->size() && (int) i >= 0; ++i) {
         (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
         if (!this->abstractSystem &&
             ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 15 &&
@@ -344,10 +344,12 @@ StarSystem::StarSystem(int mode) {
         } else if (i > 0 && stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
             (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
         } else {
+            AEGeometry *planet = (*this->planetsArray)[i];
             float tilt = (float) (Globals::rnd->nextInt(4096) - 2048);
-            tilt *= (1.0f / 65536.0f) * kTwoPi;
+            tilt *= (1.0f / 65536.0f);
+            tilt *= kTwoPi;
             Vector rotation{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f};
-            (*this->planetsArray)[i]->setRotation(rotation);
+            planet->setRotation(rotation);
         }
         (*this->planetsArray)[i]->moveForward(-20000.0f);
         if (i == 0) {
