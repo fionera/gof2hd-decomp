@@ -206,7 +206,7 @@ int MissionsWindow::init() {
     this->m_pRejectButton = nullptr;
     delete this->m_pMapButton;
     this->m_pMapButton = nullptr;
-    int w = this->m_width;
+    unsigned int w = this->m_width;
     this->m_pStarMap = nullptr;
     this->m_choiceActive = 0;
     this->m_field_0x21 = 0;
@@ -239,7 +239,7 @@ int MissionsWindow::init() {
                     text, ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStationName(),
                     String("#", false));
         }
-        this->m_pCampaignWindow->setText(String(), text);
+        this->m_pCampaignWindow->setText("", text);
     } else if (Globals::achievements->gotAllGoldMedals() && Globals::status->getShip()->getIndex() != 8) {
         this->m_pCampaignWindow->setText("", *Globals::gameText->getText(650));
     } else {
@@ -276,7 +276,7 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
     }
 
-    int buttonWidth = (int)((unsigned)w >> 2) - Globals::layout->buttonInsetX;
+    int buttonWidth = (this->m_width >> 1) / 2 - Globals::layout->buttonInsetX;
     if (!Globals::status->inAlienOrbit()) {
         if (!Globals::status->gameWon())
             this->m_pAcceptButton = new TouchButton(

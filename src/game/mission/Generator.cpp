@@ -888,7 +888,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 amount = (int) ((float) difficulty * 1.8f) + 2;
                 break;
             case 15:
-                amount = (int) (float) Globals::rnd->nextInt(90) + 30;
+                amount = Globals::rnd->nextInt(90) + 30;
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
                         itemId = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation())
