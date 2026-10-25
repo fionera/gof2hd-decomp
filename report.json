@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.6,
+  "avg_match": 99.61,
   "byte_exact": 1352,
-  "linked_exact": 4438,
-  "fuzzy_perfect": 4438,
+  "linked_exact": 4439,
+  "fuzzy_perfect": 4439,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -414,14 +414,6 @@
    "linked": false,
    "osize": 2900,
    "usize": 2916
-  },
-  {
-   "name": "_ZN6Status15calcCargoPricesEv",
-   "pct": 88.8,
-   "byte": false,
-   "linked": false,
-   "osize": 708,
-   "usize": 712
   },
   {
    "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
@@ -27142,6 +27134,14 @@
    "linked": true,
    "osize": 26,
    "usize": 26
+  },
+  {
+   "name": "_ZN6Status15calcCargoPricesEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 708,
+   "usize": 708
   },
   {
    "name": "_ZN6Status15checkForLevelUpEv",
