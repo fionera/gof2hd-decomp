@@ -2340,9 +2340,10 @@ void Status::moveWanted() {
         // Station lookups do not touch the reader instance, so no FileRead object is created.
         FileRead *reader = 0;
         Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
-        int fromSystem = from->getSystem();
+        int fromSystem;
         Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
         int toSystem = to->getSystem();
+        fromSystem = from->getSystem();
         Array<int> *path;
         if (from->getIndex() == to->getIndex()) {
             unsigned minJumps;
