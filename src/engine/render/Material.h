@@ -6,8 +6,6 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-#include "engine/math/AEMath.h"
-
 namespace AbyssEngine {
     class Mesh;
 
@@ -46,6 +44,9 @@ namespace AbyssEngine {
             this->ambientColor.y = 0;
             this->ambientColor.z = 0;
 
+            // The two loops use different registers in the original. Keeping the fallback
+            // loop's index in a separate local declared here reproduces that -Oz allocation;
+            // a loop-local declaration makes clang reuse the first loop's register.
             int defaultTextureIndex;
             if (other != 0) {
                 for (int i = 0; i != 8; ++i)
@@ -84,10 +85,6 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(Material, arr_5c) == 0x5c, "Material::arr_5c");
     static_assert(__builtin_offsetof(Material, ambientColor) == 0x68, "Material::ambientColor");
 #endif
-}
-
-namespace AbyssEngine {
-    class Material;
 }
 
 using ::AbyssEngine::Material;

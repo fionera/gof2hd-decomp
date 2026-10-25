@@ -1,37 +1,22 @@
 #include "engine/render/Material.h"
-#include "engine/core/AbyssEngine.h"
-#include "engine/file/AEFile.h"
-#include "engine/core/GameText.h"
-#include "engine/file/FileInterfaceAndroid.h"
-#include "engine/math/AEMath.h"
-#include "engine/math/Transform.h"
-#include "game/core/String.h"
-#include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
 #include "engine/render/PaintCanvas.h"
-#include "engine/core/ApplicationManager.h"
-#include "engine/render/FBOContainer.h"
-#include "engine/math/Quaternion.h"
-#include <GLES2/gl2.h>
-#include <cstdlib>
-#include <cmath>
-#include <cstdint>
-#include <cstring>
 
 // Material's constructors/destructor are inline in Material.h (the original emits them weak in
 // PaintCanvas.cpp).
 
 namespace AbyssEngine {
-    int MeshDraw(Engine * engine, Mesh * mesh);
+    int MeshDraw(Engine *engine, Mesh *mesh);
 
     void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTextures) {
-        if (canvas == 0 || mat == 0)
+        if (!canvas || !mat)
             return;
 
         if (setTextures) {
             engine->SetTexturesExt(mat->textures[0], mat->textures[1], mat->textures[2], 0xffffffff);
         }
-        engine->SetAddData(mat->addData, (int) mat->addDataSize);
+        engine->SetAddData(mat->addData, mat->addDataSize);
 
         // Remember the light's ambient colour so it can be restored after drawing.
         LightColor saved = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -47,8 +32,10 @@ namespace AbyssEngine {
             engine->SetUVMatrix(mat->arr_38.data_[i]);
 
             unsigned int packed = mat->arr_50.data_[i];
-            engine->SetColor((float) ((packed >> 24) / 255.0), (float) (((packed >> 16) & 0xff) / 255.0),
-                             (float) (((packed >> 8) & 0xff) / 255.0), (float) ((packed & 0xff) / 255.0));
+            engine->SetColor(static_cast<float>((packed >> 24) / 255.0),
+                             static_cast<float>(((packed >> 16) & 0xff) / 255.0),
+                             static_cast<float>(((packed >> 8) & 0xff) / 255.0),
+                             static_cast<float>((packed & 0xff) / 255.0));
 
             MeshDraw(engine, mat->meshes.data_[i]);
         }
