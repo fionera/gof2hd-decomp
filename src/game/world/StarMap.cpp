@@ -52,6 +52,12 @@ static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix
     return AbyssEngine::AEMath::MatrixGetPosition(matrix);
 }
 
+static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
+    if (canvas == 0 || screenPosition == 0)
+        return false;
+    return (canvas->GetScreenPosition(position, *screenPosition) & 1) != 0;
+}
+
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1118,8 +1124,8 @@ void StarMap::update(int dt) {
     this->lastDt = dt;
     if (this->mode == 0 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
-            int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
-                                                             *(*this->systemPositions)[i]);
+            bool onScreen = StarMap_GetScreenPosition(Globals::Canvas, (*this->systemGeoms)[i]->getPosition(),
+                                                       (*this->systemPositions)[i]);
             (*this->systemPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
@@ -1127,8 +1133,8 @@ void StarMap::update(int dt) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
             this->scratchVector2 = StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
-            int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2,
-                                                             *(*this->stationPositions)[i]);
+            bool onScreen = StarMap_GetScreenPosition(Globals::Canvas, this->scratchVector2,
+                                                       (*this->stationPositions)[i]);
             (*this->stationPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
@@ -1241,19 +1247,21 @@ void StarMap::update(int dt) {
                 this->scratchVector = *(*this->systemPositions)[this->selectedSystem];
                 float centerY = (float) (Globals::h >> 1);
                 float centerX = (float) (Globals::w >> 1);
+                float dy = this->scratchVector.y - centerY;
+                float dx = this->scratchVector.x - centerX;
                 float vx = 0.0f;
                 float vy = 0.0f;
                 if (this->scratchVector.x < centerX)
-                    vx = (this->scratchVector.x - centerX) / -30.0f;
+                    vx = dx / -30.0f;
                 else if (this->scratchVector.x > centerX)
-                    vx = (this->scratchVector.x - centerX) / -30.0f;
+                    vx = dx / -30.0f;
                 if (this->scratchVector.y > centerY)
-                    vy = (this->scratchVector.y - centerY) / -30.0f;
+                    vy = dy / -30.0f;
                 else if (this->scratchVector.y < centerY)
-                    vy = (this->scratchVector.y - centerY) / -30.0f;
-                if (STARMAP_ABS((int) vx) > STARMAP_ABS((int) (this->scratchVector.x - centerX)))
+                    vy = dy / -30.0f;
+                if (STARMAP_ABS((int) vx) > STARMAP_ABS((int) dx))
                     vx = vx * 0.5f;
-                if (STARMAP_ABS((int) vy) > STARMAP_ABS((int) (this->scratchVector.y - centerY)))
+                if (STARMAP_ABS((int) vy) > STARMAP_ABS((int) dy))
                     vy = vy * 0.5f;
                 this->velocityX = vx;
                 this->velocityY = vy;
