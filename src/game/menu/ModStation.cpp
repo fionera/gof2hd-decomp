@@ -416,23 +416,22 @@ int ModStation::OnInitialize() {
             this->buttonRow = reinterpret_cast<int *>(row);
             ArraySetLength<TouchButton *>(5, *row);
 
-            Layout *layout = Globals::layout;
-            int rightMargin = layout->field_0x10_rightMargin;
-            int field24 = layout->field_0x24;
-            int rowHeight = layout->field_0x30_rowHeight;
-            int field34 = layout->field_0x34;
-            int buttonInsetX = layout->buttonInsetX;
-            int y = layout->field_0xcc - buttonInsetX - layout->field_0x4c;
-            int x = Globals::h - rightMargin - field24 - 5 * rowHeight - 4 * field34;
-            (*row)[0] = new TouchButton(*Globals::gameText->getText(167), 0, buttonInsetX, x, y, 17, 1);
+            int y = Globals::layout->field_0xcc - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
+            int x = Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+                    5 * Globals::layout->field_0x30_rowHeight - 4 * Globals::layout->field_0x34;
+            (*row)[0] = new TouchButton(*Globals::gameText->getText(167), 0, Globals::layout->buttonInsetX, x, y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1] =
-                new TouchButton(*Globals::gameText->getText(398), 0, buttonInsetX, x + rowHeight + field34, y, 17, 1);
+                new TouchButton(*Globals::gameText->getText(398), 0, Globals::layout->buttonInsetX,
+                                x + Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34, y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[2] =
-                new TouchButton(*Globals::gameText->getText(177), 0, buttonInsetX, x + 2 * (rowHeight + field34), y, 17, 1);
+                new TouchButton(*Globals::gameText->getText(177), 0, Globals::layout->buttonInsetX,
+                                x + 2 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[3] =
-                new TouchButton(*Globals::gameText->getText(129), 0, buttonInsetX, x + 3 * (rowHeight + field34), y, 17, 1);
+                new TouchButton(*Globals::gameText->getText(129), 0, Globals::layout->buttonInsetX,
+                                x + 3 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[4] =
-                new TouchButton(*Globals::gameText->getText(169), 0, buttonInsetX, x + 4 * (rowHeight + field34), y, 17, 1);
+                new TouchButton(*Globals::gameText->getText(169), 0, Globals::layout->buttonInsetX,
+                                x + 4 * (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34), y, 17, 1);
             this->state = 60;
             break;
         }
@@ -526,7 +525,7 @@ int ModStation::OnInitialize() {
                     if (((Standing *) (intptr_t) Globals::status->getStanding())
                             ->isEnemy(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace())) {
                         Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
-                        int faction = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() > 1 ? 1 : 0;
+                        int faction = (unsigned) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() > 1 ? 1 : 0;
                         int value = standing->getStanding(faction) >= 1 ? standing->getStanding(faction)
                                                                          : -standing->getStanding(faction);
                         this->field_0xd4 = (int) ((float) value / 100.0f * 2800.0f);
@@ -786,12 +785,15 @@ int ModStation::OnInitialize() {
                 flipAxis[0] = Globals::rnd->nextInt(20) < 10;
                 flipAxis[1] = Globals::rnd->nextInt(20) > 10;
                 flipAxis[2] = Globals::rnd->nextInt(20) < 10;
+                bool flipX = flipAxis[1];
                 int offset = Globals::rnd->nextInt(150);
-                this->cutScene->vec8.x += (float) (flipAxis[1] ? -offset : offset);
+                this->cutScene->vec8.x += (float) (flipX ? -offset : offset);
+                bool flipY = flipAxis[0];
                 offset = Globals::rnd->nextInt(150);
-                this->cutScene->vec8.y += (float) (flipAxis[0] ? -offset : offset);
+                this->cutScene->vec8.y += (float) (flipY ? -offset : offset);
+                bool flipZ = flipAxis[2];
                 offset = Globals::rnd->nextInt(150);
-                this->cutScene->vec8.z += (float) (flipAxis[2] ? -offset : offset);
+                this->cutScene->vec8.z += (float) (flipZ ? -offset : offset);
                 AbyssEngine::AEMath::MatrixSetTranslation(camera, this->cutScene->vec8.x, this->cutScene->vec8.y,
                                                           this->cutScene->vec8.z);
                 if (this->cameraTween != nullptr) {
@@ -1084,24 +1086,11 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
 // Kept out of line and sized so ModStation.o preserves the archive layout the ten libstdc++
 // exception constructors are byte-exact at.
 static int modStationTouchEndPad(int value) {
-    if (value <= 1) {
+    if (value <= 1)
         return value;
-    }
-    int result = modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) +
-                 modStationTouchEndPad(value - 3) + modStationTouchEndPad(value - 4) + value;
-    for (int i = 0; i < value; i++) {
-        result += i * 7 + 3;
-        result ^= result >> 5;
-        result += i * 11 + 5;
-        result ^= result >> 3;
-        result += i * 13 + 7;
-        result ^= result >> 7;
-        result += i * 17 + 9;
-        result ^= result >> 11;
-        result += i * 19 + 11;
-        result ^= result >> 2;
-    }
-    return result;
+    int a = modStationTouchEndPad(value - 1);
+    int b = modStationTouchEndPad(value - 2);
+    return value + a + b + (a ^ (b >> 3)) + (b ^ (a >> 5)) + value * 3 + (a ^ (b << 2)) + (b & 7);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
@@ -1260,7 +1249,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::status->removeMission(this->dialogueMission);
                     this->dialogueMission = nullptr;
                     this->flag_0x69 = 0;
-                    this->camAngle += modStationTouchEndPad(this->dt);
+                    this->field_0x5c = modStationTouchEndPad(this->dt);
                     return;
                 } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
                     Globals::status->removeMission(this->dialogueMission);
