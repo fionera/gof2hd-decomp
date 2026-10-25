@@ -359,9 +359,8 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->active = 1;
         this->hitSmall = 1;
         this->currentProjectile = i;
-        this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
-
-        Vector direction;
+        Vector direction = AbyssEngine::AEMath::MatrixGetPosition(m);
+        this->positions.data()[i] = direction;
         direction = Vector{0, 0, 0};
         if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
