@@ -1906,6 +1906,8 @@ void ModStation::OnKeyPress(long long key, long long) {
                         if (this->hangarWindow == nullptr) {
                             this->hangarWindow = new HangarWindow();
                             this->hangarWindow->initialize();
+                        } else {
+                            this->hangarWindow->initialize();
                         }
                         if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
                             delete this->hangarWindow;
