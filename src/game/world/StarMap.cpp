@@ -1149,9 +1149,10 @@ void StarMap::update(int dt) {
         this->markerGeom->setScaling(scale, scale, scale);
         if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
             Vector system = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
-            this->markerGeom->setPosition(system + t *
-                (StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
-                    (*this->stationGeoms)[this->centeredStation]->getMatrix()) - system));
+            Matrix m = this->starSystemRoot->getMatrix() *
+                (*this->stationGeoms)[this->centeredStation]->getMatrix();
+            Vector station = StarMap_MatrixGetPosition(m);
+            this->markerGeom->setPosition(system + t * (station - system));
         }
         this->scratchVector = StarMap_MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
@@ -1246,8 +1247,8 @@ void StarMap::update(int dt) {
                 this->scratchVector = *(*this->systemPositions)[this->selectedSystem];
                 float centerY = (float) (Globals::h >> 1);
                 float centerX = (float) (Globals::w >> 1);
-                float dy = this->scratchVector.y - centerY;
                 float dx = this->scratchVector.x - centerX;
+                float dy = this->scratchVector.y - centerY;
                 float vx = 0.0f;
                 float vy = 0.0f;
                 if (this->scratchVector.x < centerX)
