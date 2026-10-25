@@ -4,14 +4,12 @@
 #include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
 #include "engine/render/ParticleSettings.h"
+#include "engine/render/ParticleSystemMesh.h"
+#include "engine/render/ParticleSystemSprite.h"
 
 #include "engine/math/AEMath.h"
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
-
-class IParticleSystem;
-class ParticleSystemMesh;
-class ParticleSystemSprite;
 
 namespace AbyssEngine {
 #ifndef GOF2_ENUM_BlendMode
@@ -28,10 +26,9 @@ using ::AbyssEngine::PaintCanvas;
 
 class ParticleSystemManager {
 public:
-    // Former union (flags:16 / flagsLow:8) collapsed to the 16-bit field.
-    // flagsLow (2 low-byte writes in PlayerEgo.cpp) now writes via
-    // reinterpret_cast<uint8_t &>(flags).
-    uint16_t flags;
+    // The original stores the two render-enable bytes as one 16-bit word.
+    uint8_t flags;
+    uint8_t flagsHigh;
 
     PaintCanvas *canvas;
     // Ghidra ground truth: a 4-byte field sits at 0x8 (field_0x8) before cameraSet@0xc; our decomp
@@ -128,21 +125,14 @@ private:
     // Handles with bit 14 set address the mesh array, others the sprite array.
     IParticleSystem *getSystem(int handle) {
         if (handle & 0x4000)
-            return reinterpret_cast<IParticleSystem **>(meshSystems.data_)[handle & 0x3fffbfff];
-        return reinterpret_cast<IParticleSystem **>(spriteSystems.data_)[handle];
-    }
-
-    Array<ParticleSystemSprite *> &spriteArray() {
-        return spriteSystems;
-    }
-
-    Array<ParticleSystemMesh *> &meshArray() {
-        return meshSystems;
+            return this->meshSystems[handle & 0x3fffbfff];
+        return this->spriteSystems[handle];
     }
 };
 
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(ParticleSystemManager, flags) == 0x0, "ParticleSystemManager::flags offset");
+static_assert(__builtin_offsetof(ParticleSystemManager, flagsHigh) == 0x1, "ParticleSystemManager::flagsHigh offset");
 static_assert(__builtin_offsetof(ParticleSystemManager, canvas) == 0x4, "ParticleSystemManager::canvas offset");
 #endif
 #endif
