@@ -343,14 +343,14 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    int missionBlocksPlanets = false;
+    bool missionBlocksPlanets = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
     }
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
-    bool alienOrbit = Globals::status->inAlienOrbit();
+    int alienOrbit = Globals::status->inAlienOrbit();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
     this->route = this->level->getPlayerRoute();
@@ -506,11 +506,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr ||
-                this->lockedStation != nullptr;
+                this->field_0x14 != 0;
     if (campaign >= 2 && this->planetTargets != nullptr && !alienOrbit &&
         !this->level->getPlayer()->isDockingToPlanet()) {
         Array<int> *stations = (Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations();
-        bool planetHit = false;
+        int planetHit = 0;
         for (uint32_t i = 0; i < this->planetTargets->size(); ++i) {
             if (this->planetTargets->data()[i] == nullptr) {
                 continue;
@@ -847,7 +847,6 @@ enemies:
                         if (!this->hasTractor13) {
                             hud->hudEvent(9, this->level->getPlayer(), 0);
                             this->field_0x1c = nullptr;
-                            this->enemyLockTimer = 0;
                         }
                     } else if (this->lockedEnemy != this->dockNavPtr) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
@@ -875,10 +874,8 @@ enemies:
                                 }
                             }
                         }
-                        this->enemyLockTimer = 0;
-                    } else {
-                        this->enemyLockTimer = 0;
                     }
+                    this->enemyLockTimer = 0;
                 }
                 if (this->enemyLockTimer > ((navWreck || this->dockNavPtr->field_0x24) ? 500 : 0) &&
                     this->dockNavPtr != nullptr) {
