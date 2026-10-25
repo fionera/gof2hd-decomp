@@ -350,9 +350,8 @@ void ObjectGun::render() {
                     this->orientation = player->field_0x40;
                     const Vector &rocket = this->gun->positions.data()[i];
                     MatrixSetTranslation(this->orientation, rocket.x, rocket.y, rocket.z);
-                    const Vector heading = MatrixGetDir(this->orientation);
-                    const Vector unit = VectorNormalize(heading);
-                    this->gun->velocities.data()[i] = unit * this->gun->pitchRate;
+                    this->gun->velocities.data()[i] =
+                            VectorNormalize(MatrixGetDir(this->orientation)) * this->gun->pitchRate;
                     player->rocketPitch = 0.0f;
                     player->rocketYaw = 0.0f;
                     MatrixSetRotation(steer, 0.0f, 0.0f, this->rollAngle);
@@ -423,10 +422,16 @@ void ObjectGun::render() {
     if (this->wasFiring != 0 && this->geometry != nullptr)
         this->geometry->render();
     this->deltaTime = 0;
-    this->hasGeometry = this->geometry != nullptr;
-    if (this->geometry == nullptr)
-        this->spinAngle = 0.0f;
 }
+
+#pragma GCC visibility push(hidden)
+// Bounds-checked projectile mesh lookup for item indices.
+uint32_t ObjectGunProjectileMesh(int item) {
+    if (item < 0 || item >= 233)
+        return 0;
+    return (uint32_t) kProjectileMeshes[item];
+}
+#pragma GCC visibility pop
 
 void ObjectGun::translate(const Vector & /*v*/) {
 }
