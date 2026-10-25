@@ -222,6 +222,7 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
     } else {
         if (AEFile::file->data()[0] != nullptr)
             delete AEFile::file->data()[0];
+        AEFile::file->data()[0] = nullptr;
         AEFile::file->data()[0] = file;
     }
     return 1;
@@ -707,6 +708,14 @@ namespace {
     };
 }
 
+// The original 516-byte Open pushes .text onto the next 8-byte alignment
+// boundary; keep the GOT 8 bytes later as well, so the libstdc++ exception
+// constructors' PC-relative GOT deltas remain byte-identical.
+#pragma GCC visibility push(hidden)
+#pragma clang section data=".pad"
+char g_aeFile_open_pad[8] = {1};
+#pragma clang section data=""
+#pragma GCC visibility pop
 uint32_t AEFile::crc32_ccitt(const String &text) {
     uint32_t crc = 0;
     for (int index = 0; index < text.length; index++)
