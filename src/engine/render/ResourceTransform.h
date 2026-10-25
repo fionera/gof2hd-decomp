@@ -1,31 +1,43 @@
 #ifndef GOF2_RESOURCETRANSFORM_H
 #define GOF2_RESOURCETRANSFORM_H
-#include "engine/core/Array.h"
-#include "../core/AEString.h"
+#include "engine/math/Matrix.h"
 #include <cstdint>
 #include <new>
 
 namespace AbyssEngine {
+    // Transform resource descriptor: the local matrix followed by the child mesh
+    // and child transform id arrays consumed by PaintCanvas::TransformCreate.
     class ResourceTransform {
     public:
-        uint8_t header[0x40];
-        uint8_t *dataA;
-        uint32_t pad44;
-        uint8_t *dataB;
+        AEMath::Matrix worldMatrix;
+        uint16_t childMeshCount;
+        uint16_t *childMeshIds;
+        uint16_t childTfCount;
+        uint16_t *childTfIds;
 
-        // Inline (the original exports only a WEAK D2, emitted at 0x77ebc.. by the PaintCanvas TU,
-        // right after ReleaseAllResources).
         ~ResourceTransform() {
-            if (this->dataA != nullptr) {
-                ::operator delete[](this->dataA); // lint: operator_call -- explicit call keeps the null test (a delete[] expression elides it; orig keeps the cbz)
+            if (this->childMeshIds != nullptr) {
+                ::operator delete[](this->childMeshIds); // lint: operator_call -- a delete[] expression drops the null test the original keeps
             }
-            this->dataA = nullptr;
+            this->childMeshIds = nullptr;
 
-            if (this->dataB != nullptr) {
-                ::operator delete[](this->dataB); // lint: operator_call -- see above
+            if (this->childTfIds != nullptr) {
+                ::operator delete[](this->childTfIds); // lint: operator_call -- see above
             }
-            this->dataB = nullptr;
+            this->childTfIds = nullptr;
         }
     };
+
+#if __SIZEOF_POINTER__ == 4
+    static_assert(__builtin_offsetof(ResourceTransform, childMeshCount) == 0x3c,
+                  "ResourceTransform::childMeshCount");
+    static_assert(__builtin_offsetof(ResourceTransform, childMeshIds) == 0x40,
+                  "ResourceTransform::childMeshIds");
+    static_assert(__builtin_offsetof(ResourceTransform, childTfCount) == 0x44,
+                  "ResourceTransform::childTfCount");
+    static_assert(__builtin_offsetof(ResourceTransform, childTfIds) == 0x48,
+                  "ResourceTransform::childTfIds");
+    static_assert(sizeof(ResourceTransform) == 0x4c, "ResourceTransform size");
+#endif
 }
 #endif
