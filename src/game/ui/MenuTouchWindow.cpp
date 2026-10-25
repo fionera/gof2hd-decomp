@@ -2673,8 +2673,8 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
 }
 
 int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    this->pendingActivate = 0;
     this->dragging = 0;
+    this->pendingActivate = 0;
 
     if (Globals::layout->choiceWindowOpen) {
         if (Globals::layout->OnTouchEnd(x, y))
