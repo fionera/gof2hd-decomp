@@ -548,8 +548,6 @@ void MGame::handleAccelerometer() {
     float pitch = (float) ((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2];
     AccelTune *tune = (AccelTune *) Globals::options;
     float refRoll = tune->refValue;
-    float dRoll;
-    float dPitch;
     if (tune->invertSign) {
         if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
             if (roll > 1.0f) {
@@ -558,8 +556,21 @@ void MGame::handleAccelerometer() {
                 roll = (1.0f - roll) + 1.0f;
             }
         }
-        dPitch = -(tune->baseValue - pitch) * 3.0f;
-        dRoll = -(refRoll - roll) * 3.0f;
+        float dRoll = (roll - refRoll) * 3.0f;
+        float dPitch = (pitch - tune->baseValue) * 3.0f;
+        float rollAbs = dRoll > 0.0f ? dRoll : -dRoll;
+        float pitchAbs = dPitch > 0.0f ? dPitch : -dPitch;
+        float tilt = pitchAbs > rollAbs ? dPitch : dRoll;
+        if (tilt > 1.0f) {
+            tilt = 1.0f;
+        } else if (tilt < -1.0f) {
+            tilt = -1.0f;
+        }
+        if (tilt < 0.0f) {
+            this->player->down(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+        } else if (tilt > 0.0f) {
+            this->player->up(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+        }
     } else {
         if (((Engine *) this->applicationManager->GetEngine())->GetAccelValue()[2] > 0.0) {
             if (roll > 1.0f) {
@@ -568,23 +579,21 @@ void MGame::handleAccelerometer() {
                 roll = (1.0f - roll) + 1.0f;
             }
         }
-        dPitch = -(pitch - tune->baseValue) * 3.0f;
-        dRoll = (refRoll - roll) * 3.0f;
-    }
-    float rollScaled = dRoll;
-    float pitchScaled = dPitch;
-    float rollAbs = rollScaled > 0.0f ? rollScaled : -rollScaled;
-    float pitchAbs = pitchScaled > 0.0f ? pitchScaled : -pitchScaled;
-    float tilt = pitchAbs > rollAbs ? pitchScaled : rollScaled;
-    if (tilt > 1.0f) {
-        tilt = 1.0f;
-    } else if (tilt < -1.0f) {
-        tilt = -1.0f;
-    }
-    if (tilt < 0.0f) {
-        this->player->down(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
-    } else if (tilt > 0.0f) {
-        this->player->up(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+        float dRoll = (refRoll - roll) * 3.0f;
+        float dPitch = (tune->baseValue - pitch) * 3.0f;
+        float rollAbs = dRoll > 0.0f ? dRoll : -dRoll;
+        float pitchAbs = dPitch > 0.0f ? dPitch : -dPitch;
+        float tilt = pitchAbs > rollAbs ? dPitch : dRoll;
+        if (tilt > 1.0f) {
+            tilt = 1.0f;
+        } else if (tilt < -1.0f) {
+            tilt = -1.0f;
+        }
+        if (tilt < 0.0f) {
+            this->player->down(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+        } else if (tilt > 0.0f) {
+            this->player->up(this->timeWarpState > 0 ? this->field_0x44 : this->deltaTime, tilt * tilt);
+        }
     }
 }
 
