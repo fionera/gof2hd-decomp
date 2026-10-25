@@ -1,5 +1,28 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 23 -> wave 24 — linked 4442->4444, avg 99.66)
+
+- Wave 23 fleet: 20 `codex exec -p dsv41` workers in `../wt/w477..w496`
+  (`wave23-w477..w496`). Landed improvements include PlayerEgo::calcCollision 66.8->72.0,
+  LevelScript::process pass 6, Generator::createMission 45.9->49.2, MeshReadData pass 2,
+  Radar::draw pass 3, Hud::drawChallengeModeScore, StatusWindow::draw + ParticleSettings::init,
+  SpaceLounge::init, StarMap::update, StarSystem ctor, ModStation, RocketGun::update,
+  MenuTouchWindow::draw/ctor, and input/math cleanup.
+- Gate locked at **byte_exact 1352, linked_exact 4444, avg 99.66, stubs 0, missing/extra 0,
+  imports 207, data 843/843**. `docs/VALIDATION.md` and `docs/IDENTICALITY.md` updated in the
+  same commit (`9ac3e18d`).
+- Wave 24 launched: 20 `codex exec -p dsv41` workers in `../wt/w497..w516`
+  (`wave24-w497..w516`), one disjoint class/TU family each, 20-way parallel. PlayerFighter::update
+  is left to the still-running wave23 w483 worker. Assignments: Radar; TouchButton;
+  ParticleSettings; ModStation+MissionsWindow; AbyssEngine Engine/Mesh/MeshReadData; SpaceLounge;
+  MenuTouchWindow; PlayerStation; StarMap+HangarWindow; PlayerEgo; Generator;
+  StatusWindow+HackingGame; MGame; Hud; FileInterfaceAndroid; StarSystem+Layout; Level;
+  LevelScript; MeshMerger+Globals; Gun+RocketGun+Status.
+- Worker launch detail: `-p dsv41` is the required profile flag; it loads
+  `~/.codex/dsv41.config.toml` (sglang provider, `deepseek-v4.1-flash`, high reasoning). The
+  earlier wave23 launcher already used it. New workers are detached with `setsid -f` so they
+  survive the orchestrator turn.
+
 ## Session 2026-10-25 (wave 22 — byte 1352 unchanged, linked 4439->4442, avg 99.61->99.64)
 
 - Fleet: 20 `codex exec -p dsv41` workers in `../wt/w457..w476` (branches `wave22-w457..w476`),
