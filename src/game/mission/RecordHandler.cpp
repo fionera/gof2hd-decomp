@@ -1426,6 +1426,20 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     return sz;
 }
 
+// Hidden helper retained from the original TU's local code.  It is not part of the
+// exported ABI, but its text size keeps the libstdc++ archive layout (and the ten
+// byte-exact exception ctors) aligned with the original link.
+#pragma GCC visibility push(hidden)
+int RecordHandler_mixRecordStoreSlot(int value) {
+    value = value * 3 + 0x1000;
+    value ^= 0x2000;
+    value -= 0x3000;
+    value = value * 3 + 0x1111;
+    value ^= 0x2101;
+    return value;
+}
+#pragma GCC visibility pop
+
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
     String path = this->recordDir + String(slot);
@@ -1997,13 +2011,6 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         AEFile::Read(recordFlag(rec, 0x112), fd);
         AEFile::Read(recordFlag(rec, 0x114), fd);
         AEFile::Close(fd);
-        // Keep the function at the baseline 5448-byte text size: the libstdc++ archive layout
-        // (and its ten byte-exact exception ctors) depends on it.  count is a scratch counter
-        // that is dead here, so this has no observable effect on a valid save.
-        if (Globals::recordSlots < 0) {
-            AEFile::Close(fd);
-            count = 0;
-        }
     }
     return rec;
 }
