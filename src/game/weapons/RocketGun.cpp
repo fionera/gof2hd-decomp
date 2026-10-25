@@ -159,18 +159,17 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
-    Gun *gun = this->gun;
-    Level *level = this->level;
     Array<Matrix> *trailMatrices = this->trailMatrices;
 
     Vector ahead = {0.0f, 0.0f, 0.0f};
-    gun->update(elapsed);
+    Gun *g = this->gun;
+    g->update(elapsed);
 
-    if (this->hasGeometry != 0 && gun->delayActive != 0) {
+    if (this->hasGeometry != 0 && g->delayActive != 0) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
-        PlayerEgo *player = level->getPlayer();
+        PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
-        Vector barrel = this->gun->offset;
+        Vector barrel = g->offset;
         barrel.z += -100.0f;
         const Matrix &ship = reinterpret_cast<const Matrix &>(player->player->transform[0]);
         muzzle += MatrixRotateVector(ship, barrel);
