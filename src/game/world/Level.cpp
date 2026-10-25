@@ -765,7 +765,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
-            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
                           Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
@@ -1913,7 +1913,7 @@ void Level::createMission() {
                 int total = attackerCount + 5;
                 ArraySetLength(total, *this->enemies);
                 int attackerRace = ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(mission->getClientRace());
-                int clientRace = mission->getClientRace() > 3 ? 0 : mission->getClientRace();
+                int clientRace = mission->getClientRace() <= 3 ? mission->getClientRace() : 0;
                 int stationType = clientRace == 1 ? 13 : 15;
                 for (unsigned i = 0; i < this->enemies->size(); i++) {
                     if ((int) i < attackerCount) {
@@ -2777,8 +2777,10 @@ void Level::createCampaignMission() {
         {0.0f, -29726.7f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
     };
     Vector playerPos = this->player->geometry->getPosition();
-    // Matches the original's 8-byte frame slot below playerPos (frame 0x1d0 vs 0x1c8).
-    volatile long long framePad = 0;
+    // The reference frame is 0x1d0 (ours would be 0x1c8): reserve the 8-byte slot below
+    // playerPos.  A volatile read keeps the slot without the zero stores the reference lacks.
+    volatile double framePad;
+    (void) framePad;
 
     switch (Globals::status->getCurrentCampaignMission()) {
         case 0:
