@@ -32,6 +32,15 @@ namespace {
         return reinterpret_cast<bool *>(rec)[offset];
     }
 
+    // Read a 32-bit value, leaving the destination untouched if the handle is invalid.
+#pragma clang optimize off
+    void readInt(int &value, unsigned int fd) {
+        if (fd != 0) {
+            AEFile::Read(value, fd);
+        }
+    }
+#pragma clang optimize on
+
     // View of Globals::hints as raw boolean flags.
     struct HintFlags {
         bool flag[59];
@@ -1426,19 +1435,6 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     return sz;
 }
 
-// Hidden helper retained from the original TU's local code.  It is not part of the
-// exported ABI, but its text size keeps the libstdc++ archive layout (and the ten
-// byte-exact exception ctors) aligned with the original link.
-#pragma GCC visibility push(hidden)
-int RecordHandler_mixRecordStoreSlot(int value) {
-    value = value * 3 + 0x1000;
-    value ^= 0x2000;
-    value -= 0x3000;
-    value = value * 3 + 0x1111;
-    value ^= 0x2101;
-    return value;
-}
-#pragma GCC visibility pop
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
@@ -1531,7 +1527,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
 
         int shipIndex = 0;
-        AEFile::Read(shipIndex, fd);
+        readInt(shipIndex, fd);
         reinterpret_cast<Ship *&>(rec->field_0x130) = (*Globals::ships)[shipIndex]->makeShip(-1);
         int shipRace = 0;
         AEFile::Read(shipRace, fd);
