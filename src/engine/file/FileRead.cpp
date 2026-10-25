@@ -302,7 +302,7 @@ Array<Wanted *> *FileRead::loadWanted() {
         int32_t j;
         int32_t k;
         int32_t l;
-        while (index < 0x19) {
+        while (index < wanted->size()) {
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
