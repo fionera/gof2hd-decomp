@@ -228,7 +228,7 @@ void MeshMerger::update() {
         if (this->mergedMesh->vertexFormat & 0x10) {
             uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
             const uint16_t *idx = (const uint16_t *) src->indices;
-            for (int k = 0; k < src->indexCount; k++)
+            for (int k = src->indexCount; k != 0; k--)
                 *dst++ = (uint16_t) (*idx++ + vertexBase);
         }
         vertexBase += src->vertexCount;
