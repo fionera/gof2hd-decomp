@@ -1971,7 +1971,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                             hud->hudEvent(mission->getType() == 184 ? 38 : 42, this, 0);
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
-                    if (this->dockTransferedAmount > delivered) {
+                    if (this->dockTotalAmount > delivered) {
                         if (mission->getType() == 184) {
                             if (Globals::status->field_178 >= 1) {
                                 Globals::status->field_178 += delivered - this->dockTransferedAmount;
