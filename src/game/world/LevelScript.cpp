@@ -294,25 +294,6 @@ bool LevelScript::process(int delta) {
                     }
                 }
             }
-        } else if (m_nState == 3) {
-            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
-            // message #8 finishes hand control back to the player and reframe onto the player ship.
-            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
-            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
-            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
-                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-                m_nState = 4;
-                player->setComputerControlled(false);
-                player->player->field_5e = 0;
-                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
-                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                m_pCamera->setLookAtCam(false);
-                m_pCamera->setTarget(player->geometry);
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
-                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
-            }
-            // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 4) {
             // State 4 (0x138d2a): once radio message #10 finishes, run the standard cutscene-exit
             // teardown -- stop event 143's radio sting and replay it, drop the player out of turret
@@ -341,6 +322,25 @@ bool LevelScript::process(int delta) {
                 m_nState = 5;
             }
             // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
+        } else if (m_nState == 3) {
+            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
+            // message #8 finishes hand control back to the player and reframe onto the player ship.
+            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
+            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
+                m_nState = 4;
+                player->setComputerControlled(false);
+                player->player->field_5e = 0;
+                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
+                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                m_pCamera->setLookAtCam(false);
+                m_pCamera->setTarget(player->geometry);
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+            }
+            // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
             // ship has slowed to cruise speed.
@@ -690,9 +690,35 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
+            case 6: { // s6 @0x13bb7c: drift escort ship [1] outward; at timer>=1100-delta advance to s7.
+                m_nScriptTimerA =
+                        (long long) ((float) delta * 0.3f +
+                                     (float) m_nScriptTimerA); // 0.3 @0x13b93c
+                (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
+                (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                if (m_nScriptTimerA >= 1100 - delta) {
+                    m_nState = 7;
+                    m_nScriptTimerA = 0;
+                }
+                break;
+            }
             case 7: { // s7 @0x13bc18: at counter>=27001 advance.
                 if (m_nScriptTime >= 27001) {
                     m_nState = 8;
+                }
+                break;
+            }
+            case 8: { // s8 @0x13baf2: drift escort ship [0]; stop at timer>=1100-delta, at >=2001 advance.
+                m_nScriptTimerA =
+                        (long long) ((float) delta * 0.3f +
+                                     (float) m_nScriptTimerA); // 0.3 @0x13b93c
+                if (m_nScriptTimerA < 1100 - delta) {
+                    (*enemies)[0]->geometry->translate(Vector{-((float) delta * 0.3f), 0.0f, 0.0f});
+                    (*enemies)[0]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
+                } else if (m_nScriptTimerA >= 2001) {
+                    m_nState = 9;
+                    m_nScriptTimerA = 0;
+                    m_pCamera->setPosition(-12000.0f, 5000.0f, 15000.0f); // pool @0x13c8f0/c8c4/c8f4
                 }
                 break;
             }
@@ -716,32 +742,6 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
                     m_nState = 10;
                     m_nScriptTimerA = 0;
-                }
-                break;
-            }
-            case 6: { // s6 @0x13bb7c: drift escort ship [1] outward; at timer>=1100-delta advance to s7.
-                m_nScriptTimerA =
-                        (long long) ((float) delta * 0.3f +
-                                     (float) m_nScriptTimerA); // 0.3 @0x13b93c
-                (*enemies)[1]->geometry->translate(Vector{(float) delta * 0.3f, 0.0f, 0.0f});
-                (*enemies)[1]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                if (m_nScriptTimerA >= 1100 - delta) {
-                    m_nState = 7;
-                    m_nScriptTimerA = 0;
-                }
-                break;
-            }
-            case 8: { // s8 @0x13baf2: drift escort ship [0]; stop at timer>=1100-delta, at >=2001 advance.
-                m_nScriptTimerA =
-                        (long long) ((float) delta * 0.3f +
-                                     (float) m_nScriptTimerA); // 0.3 @0x13b93c
-                if (m_nScriptTimerA < 1100 - delta) {
-                    (*enemies)[0]->geometry->translate(Vector{-((float) delta * 0.3f), 0.0f, 0.0f});
-                    (*enemies)[0]->geometry->rotate(Vector{(float) -delta * 9.0e-4f, 0.0f, 0.0f}); // @0x13bdb8
-                } else if (m_nScriptTimerA >= 2001) {
-                    m_nState = 9;
-                    m_nScriptTimerA = 0;
-                    m_pCamera->setPosition(-12000.0f, 5000.0f, 15000.0f); // pool @0x13c8f0/c8c4/c8f4
                 }
                 break;
             }
@@ -2351,7 +2351,18 @@ bool LevelScript::process(int delta) {
             }
             case 56: {
                 // Friendly ships hold fire until the player's armour is gone.
-                if (m_nState == 0) {
+                if (m_nState == 1) {
+                    if (player->player->getArmorHP() <= 0) {
+                        if (enemies != nullptr) {
+                            for (unsigned int i = 0; i < enemies->count; i++) {
+                                if ((*enemies)[i]->player->isAlwaysFriend()) {
+                                    (*enemies)[i]->player->setShootingEnabled(true);
+                                }
+                            }
+                        }
+                        m_nState = 2;
+                    }
+                } else if (m_nState == 0) {
                     if (enemies != nullptr) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->player->isAlwaysFriend()) {
@@ -2360,15 +2371,6 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     m_nState = 1;
-                } else if (m_nState == 1 && player->player->getArmorHP() <= 0) {
-                    if (enemies != nullptr) {
-                        for (unsigned int i = 0; i < enemies->count; i++) {
-                            if ((*enemies)[i]->player->isAlwaysFriend()) {
-                                (*enemies)[i]->player->setShootingEnabled(true);
-                            }
-                        }
-                    }
-                    m_nState = 2;
                 }
                 break;
             }
