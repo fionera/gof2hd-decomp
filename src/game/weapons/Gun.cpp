@@ -568,6 +568,7 @@ void Gun::calcCharacterCollision() {
         return;
     }
     const int weaponType = this->weaponType;
+    const int itemIndex = this->itemIndex;
     this->lastHitKIPlayer = 0;
     bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
     bool mine = weaponType == ITEM_SORT_MINE;
@@ -635,9 +636,9 @@ void Gun::calcCharacterCollision() {
                 }
                 enemy->setBombForce(0.0f);
                 if (explosive) {
-                    enemy->damage(9999, false, this->itemIndex);
+                    enemy->damage(9999, false, itemIndex);
                     if (!Globals::achievements->hasMedal(41, 1) &&
-                        (isRocketLike(this->weaponType) || weaponType == ITEM_SORT_IONIZING_MISSILE)) {
+                        (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
                         int count = ++Globals::status->field_12c;
                         if (count >= Globals::achievements->getValue(41, 1)) {
                             ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(41, 100);
