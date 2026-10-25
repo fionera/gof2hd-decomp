@@ -569,20 +569,23 @@ void Gun::calcCharacterCollision() {
     }
     const int weaponType = this->weaponType;
     const int itemIndex = this->itemIndex;
-    this->lastHitKIPlayer = 0;
-    bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
-    bool mine = weaponType == ITEM_SORT_MINE;
-    bool explosive = isRocketLike(weaponType);
-    bool explodeOnContact = mine;
-    // The original tests the bomb types independently for each flag.
+    bool scatter;
+    bool mine;
+    bool explosive;
     if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
         weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
+        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+        mine = weaponType == ITEM_SORT_MINE;
         explosive = true;
+    } else {
+        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+        mine = weaponType == ITEM_SORT_MINE;
+        explosive = isRocketLike(weaponType);
     }
-    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
-        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
-        explodeOnContact = true;
-    }
+    const bool explodeOnContact =
+            weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
+            weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST || mine;
+    this->lastHitKIPlayer = 0;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
