@@ -48,7 +48,9 @@ static GameText **g_StarMap_end_text;
 
 int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline void MatrixGetPosition(Vector *out, void *matrix) { *out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); } // lint: void_ptr (external symbol; mangling must match lib)
+static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix &matrix) {
+    return AbyssEngine::AEMath::MatrixGetPosition(matrix);
+}
 
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
@@ -270,9 +272,10 @@ void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) 
         } else if (Globals::status->field_7c >= 0) {
             this->scratchVector = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
         }
-        if (target != Globals::status->playerStation && target != 0) {
+        if (target == Globals::status->playerStation)
+            target = 0;
+        else if (target != 0)
             delete target;
-        }
     } else {
         this->scratchVector = (*this->systemGeoms)[this->selectedSystem]->getPosition();
     }
@@ -362,8 +365,8 @@ void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) 
             }
         }
         this->pathAnim = 1;
-        this->momentumFactor = 0.9f;
         this->selectedSystem = this->targetSystem;
+        this->momentumFactor = 0.9f;
     }
 
     this->keyBoxWidth = 0;
@@ -867,7 +870,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
             Globals::Canvas->SetColor(255, 255, 255, STARMAP_MIN(this->alpha, 64));
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, (*this->systems)[index]->getName(), textX, textY, false);
         Globals::Canvas->SetColor(255, 255, 255,
-                                  this->selectedSystem == index || this->selectedSystem < 0
+                                  this->selectedSystem < 0 || this->selectedSystem == index
                                       ? this->alpha
                                       : STARMAP_MIN(this->alpha, 64));
         if (!(*this->systems)[index]->hasNoOwner()) {
@@ -1084,8 +1087,9 @@ void StarMap::draw() {
         Layout *layout = Globals::layout;
         int left = layout->windowX;
         int width = layout->windowWidth;
-        int textWidth = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, line);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, line,
+        unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+        int textWidth = Globals::Canvas->GetTextWidth(font, line);
+        Globals::Canvas->DrawString(font, line,
                                     left + width / 2 - textWidth / 2,
                                     Globals::layout->windowY + Globals::layout->windowHeight -
                                     Globals::layout->footerTextInset,
@@ -1112,21 +1116,19 @@ void StarMap::askForJumpIntoAlienWorld() {
 
 void StarMap::update(int dt) {
     this->lastDt = dt;
-    bool (PaintCanvas::*getScreenPos)(const Vector &, Vector &) =
-            (bool (PaintCanvas::*)(const Vector &, Vector &)) (int (PaintCanvas::*)(const Vector &, Vector &))
-                    &PaintCanvas::GetScreenPosition;
     if (this->mode == 0 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
-            bool onScreen = (Globals::Canvas->*getScreenPos)((*this->systemGeoms)[i]->getPosition(),
+            int onScreen = Globals::Canvas->GetScreenPosition((*this->systemGeoms)[i]->getPosition(),
                                                              *(*this->systemPositions)[i]);
             (*this->systemPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
     if (this->mode == 3 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
-            this->scratchVector2 = MatrixGetPosition(this->starSystemRoot->getMatrix() *
+            this->scratchVector2 = StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
-            bool onScreen = (Globals::Canvas->*getScreenPos)(this->scratchVector2, *(*this->stationPositions)[i]);
+            int onScreen = Globals::Canvas->GetScreenPosition(this->scratchVector2,
+                                                             *(*this->stationPositions)[i]);
             (*this->stationPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
@@ -1143,10 +1145,10 @@ void StarMap::update(int dt) {
         if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
             Vector system = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
             this->markerGeom->setPosition(system + t *
-                (MatrixGetPosition(this->starSystemRoot->getMatrix() *
+                (StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
                     (*this->stationGeoms)[this->centeredStation]->getMatrix()) - system));
         }
-        this->scratchVector = MatrixGetPosition(
+        this->scratchVector = StarMap_MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
         this->scratchVector -= this->markerGeom->getPosition();
         this->scratchVector = VectorNormalize(this->scratchVector);
