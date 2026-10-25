@@ -3402,8 +3402,6 @@ void PlayerEgo::stopMining() {
         amount = (int) ((float) amount * 0.5f);
     if (freeSpace <= amount)
         amount = freeSpace;
-    if (freeSpace < 1)
-        amount = 0;
     if (freeSpace >= 1) {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
@@ -3426,10 +3424,8 @@ void PlayerEgo::stopMining() {
         }
         if (Globals::status->getShip()->getFreeSpace() > 0)
             goto cargoDone;
-        this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
-    } else {
-        this->hud->catchCargo(oreIndex, 0, true, false, true, false, false);
     }
+    this->hud->catchCargo(oreIndex, amount, true, false, true, false, false);
 cargoDone:
     this->setExhaustVisible(true);
     ((PlayerAsteroid *) (intptr_t) this->asteroidTarget)->hasCargo = 0;
