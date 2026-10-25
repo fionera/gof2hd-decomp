@@ -1347,10 +1347,9 @@ bool LevelScript::process(int delta) {
                         m_nState = 1;
                         int xOff = 25000;
                         for (unsigned int i = 0; i < enemies->count; ++i) {
-                            KIPlayer *enemy = (*enemies)[i];
-                            if (enemy->shipGroup == 8) {
+                            if ((*enemies)[i]->shipGroup == 8) {
                                 Vector playerPos = player->getPosition();
-                                enemy->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                                (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                                 (*enemies)[i]->awake();       // vtable+0xc
                                 (*enemies)[i]->setVisible(true);
                                 (*enemies)[i]->player->setEnemy(player->player);
@@ -2055,12 +2054,11 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->player->setVulnerable(false);
                     for (int i = 1; i < 4; i++) {
-                        KIPlayer *enemy = (*enemies)[i];
-                        enemy->revive();
-                        enemy->setPosition((*enemies)[0]->getPosition());
-                        enemy->player->setEnemy((*enemies)[0]->player);
-                        enemy->field_0x38 = 0;
-                        enemy->setState(1);
+                        (*enemies)[i]->revive();
+                        (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
+                        (*enemies)[i]->player->setEnemy((*enemies)[0]->player);
+                        (*enemies)[i]->field_0x38 = 0;
+                        (*enemies)[i]->setState(1);
                     }
                     m_tempVec = Vector{-40000.0f, 500.0f, -30000.0f};
                     (*enemies)[1]->translate(m_tempVec);
@@ -2389,11 +2387,10 @@ bool LevelScript::process(int delta) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
                             for (int i = 8; i <= 10; i++) {
-                                KIPlayer *enemy = (*enemies)[i];
-                                PlayerFixedObject *port = (PlayerFixedObject *) enemy;
+                                PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
                                 port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
-                                enemy->setActive(true);
-                                enemy->field_0x74 = 0;
+                                (*enemies)[i]->setActive(true);
+                                (*enemies)[i]->field_0x74 = 0;
                             }
                         }
                     }
@@ -2852,14 +2849,13 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            KIPlayer *ship = (*enemies)[i];
-                            if (ship->shipGroupFlag == 49 || ship->shipGroupFlag == 44) {
-                                ship->setVisible(true);
-                                ship->setActive(true);
-                                ((PlayerFighter *) ship)->setAIDisabled(false);
+                            if ((*enemies)[i]->shipGroupFlag == 49 || (*enemies)[i]->shipGroupFlag == 44) {
+                                (*enemies)[i]->setVisible(true);
+                                (*enemies)[i]->setActive(true);
+                                ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                                 Vector offset;
-                                if (ship->shipGroupFlag == 44) {
-                                    ((PlayerFighter *) ship)->setCloakingPossible(true);
+                                if ((*enemies)[i]->shipGroupFlag == 44) {
+                                    ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                     offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     offset.z = (float) (Globals::rnd->nextInt(30000) - 87000);
                                     offset.x = 120000.0f;
@@ -2868,7 +2864,7 @@ bool LevelScript::process(int delta) {
                                     offset.z = (float) (Globals::rnd->nextInt(6000) - 7000);
                                     offset.x = 20000.0f;
                                 }
-                                ship->translate(offset);
+                                (*enemies)[i]->translate(offset);
                             }
                         }
                         m_nState = 5;
@@ -3291,22 +3287,23 @@ bool LevelScript::process(int delta) {
                         Vector playerPos = player->getPosition();
                         int leader = -1;
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            KIPlayer *ship = (*enemies)[i];
+                            KIPlayer *enemy = (*enemies)[i];
+                            KIPlayer *ship = enemy;
                             if (ship->shipGroup == 10) {
                                 ship->awake();
                                 if (leader == -1) {
                                     leader = i;
                                 }
                                 if (i == (unsigned int) leader) {
-                                    KIPlayer *fighter = (*enemies)[i];
+                                    KIPlayer *fighter = enemy;
                                     fighter->setPosition((*enemies)[0]->getPosition() + Vector{-82000.0f, 2000.0f, 0.0f});
-                                    ((PlayerFighter *) (*enemies)[i])->cloak(1000, true);
+                                    ((PlayerFighter *) enemy)->cloak(1000, true);
                                 } else if (i == (unsigned int) (leader + 1)) {
-                                    KIPlayer *fighter = (*enemies)[i];
+                                    KIPlayer *fighter = enemy;
                                     fighter->setPosition((*enemies)[leader]->getPosition() + Vector{-2000.0f, -800.0f, -2000.0f});
-                                    ((PlayerFighter *) (*enemies)[i])->cloak(1000, true);
+                                    ((PlayerFighter *) enemy)->cloak(1000, true);
                                 } else {
-                                    KIPlayer *fighter = (*enemies)[i];
+                                    KIPlayer *fighter = enemy;
                                     int dx = Globals::rnd->nextInt(10000) + 35000;
                                     int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                                     int dy = Globals::rnd->nextInt(10000);
@@ -3314,17 +3311,17 @@ bool LevelScript::process(int delta) {
                                     int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
                                     fighter->setPosition(playerPos + Vector{(float) x, (float) (dy - 5000), (float) z});
                                 }
-                                (*enemies)[i]->player->setEnemies(nullptr);
+                                enemy->player->setEnemies(nullptr);
                                 int target = Globals::rnd->nextInt(5);
-                                (*enemies)[i]->player->setEnemy(target == 4 ? player->player : (*enemies)[target + 2]->player);
-                                (*enemies)[i]->awake();
-                                (*enemies)[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
-                                ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                                enemy->player->setEnemy(target == 4 ? player->player : (*enemies)[target + 2]->player);
+                                enemy->awake();
+                                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                                ((PlayerFighter *) enemy)->setAIDisabled(true);
                             } else if (ship->shipGroupFlag == 51) {
                                 Array<Player *> *targets = new Array<Player *>();
                                 ArrayAdd((*enemies)[0]->player, *targets);
                                 ArrayAdd((*enemies)[1]->player, *targets);
-                                (*enemies)[i]->player->setEnemies(targets);
+                                enemy->player->setEnemies(targets);
                             }
                         }
                         player->setTurretMode(false);
@@ -3431,14 +3428,15 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                     }
                     for (unsigned int i = 0; i < enemies->count; i++) {
-                        if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->player->getEnemy(0)->isDead()) {
+                        KIPlayer *enemy = (*enemies)[i];
+                        if (enemy->shipGroup == 10 && enemy->player->getEnemy(0)->isDead()) {
                             int target = -1;
                             for (unsigned int k = 2; k <= 5 && target == -1; k++) {
                                 if (!(*enemies)[k]->isDead()) {
                                     target = k;
                                 }
                             }
-                            (*enemies)[i]->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
+                            enemy->player->setEnemy(target == -1 ? player->player : (*enemies)[target]->player);
                         }
                     }
                     if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() < 10) {
@@ -3565,10 +3563,9 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nScriptTimerA >= 1501) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            KIPlayer *enemy = (*enemies)[i];
-                            if (enemy->shipGroup == 9) {
-                                enemy->setActive(false);
-                                enemy->setVisible(false);
+                            if ((*enemies)[i]->shipGroup == 9) {
+                                (*enemies)[i]->setActive(false);
+                                (*enemies)[i]->setVisible(false);
                             }
                         }
                         m_pCamera->setTarget(player->geometry);
@@ -4470,17 +4467,16 @@ bool LevelScript::process(int delta) {
                         Vector playerPos = player->geometry->getPosition();
                         int off = 10000;
                         for (int i = 2; i < 5; ++i) {
-                            KIPlayer *enemy = (*enemies)[i];
-                            if (enemy->isDead()) {
-                                enemy->revive(); // KIPlayer vtable+0x18
+                            if ((*enemies)[i]->isDead()) {
+                                (*enemies)[i]->revive(); // KIPlayer vtable+0x18
                                 int rx = Globals::rnd->nextInt(1000);
                                 int ry = Globals::rnd->nextInt(1000);
                                 int rz = Globals::rnd->nextInt(1000);
-                                enemy->setPosition(
+                                (*enemies)[i]->setPosition(
                                         playerPos.x + lightDir.x * 100000.0f + (float) off + (float) rx,
                                         (float) ry,
                                         playerPos.z + lightDir.z * 100000.0f + (float) rz);
-                                AEGeometry *geo = enemy->geometry;
+                                AEGeometry *geo = (*enemies)[i]->geometry;
                                 geo->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
                                 Vector right = geo->getRightVector();
                                 geo->translate(right * -30000.0f);
