@@ -9,6 +9,7 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                    Array<Matrix> transforms,
                                    PaintCanvas *canvas, unsigned short flags) {
     uint32_t vertexCount;
+    uint32_t i;
     uint32_t triangleCount;
 
     this->canvas = canvas;
@@ -18,7 +19,8 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
 
     vertexCount = 0;
     triangleCount = 0;
-    for (uint32_t i = 0; i < meshIds.size(); i++) {
+    i = 0;
+    for (; i < meshIds.size(); i++) {
         uint32_t meshId;
         canvas->MeshCreate(meshIds.data()[i], meshId, false);
         this->meshes[i] = canvas->MeshGetPointer(meshId);
@@ -33,10 +35,13 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
     uint32_t triangleBase = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         AbyssEngine::Mesh *mesh;
+        float *uv;
+        float *color;
         int positionOffset = 0;
         int uvOffset = 0;
         int colorOffset = 0;
-        for (uint32_t v = 0; v < (mesh = this->meshes[i])->vertexCount; v++) {
+        for (uint32_t v = 0; v < (mesh = this->meshes[i])->vertexCount;
+             v++, colorOffset += 16, uvOffset += 8, positionOffset += 12) {
             if (mesh->vertexFormat & 1) {
                 Vector p = AbyssEngine::AEMath::MatrixTransformVector(
                         transforms.data()[i], *(Vector *) ((unsigned char *) mesh->positions + positionOffset));
@@ -50,18 +55,15 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                 mesh = this->meshes[i];
             }
             if (mesh->vertexFormat & 2) {
-                float *uv = (float *) (mesh->texCoords + uvOffset);
+                uv = (float *) (mesh->texCoords + uvOffset);
                 canvas->MeshSetUv(this->mergedMeshId, (uint16_t) (vertexBase + v), uv[0], uv[1]);
                 mesh = this->meshes[i];
             }
             if (mesh->vertexFormat & 8) {
-                float *color = (float *) (mesh->colors + colorOffset);
+                color = (float *) (mesh->colors + colorOffset);
                 canvas->MeshSetColor(this->mergedMeshId, (uint16_t) (vertexBase + v),
                                      color[0], color[1], color[2], color[3]);
             }
-            colorOffset += 16;
-            uvOffset += 8;
-            positionOffset += 12;
         }
 
         uint32_t triangles = (uint32_t) mesh->indexCount / 3u;
@@ -74,13 +76,13 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                         (uint16_t) (ix[2] + vertexBase));
                 mesh = this->meshes[i];
             }
-            indexOffset += 6;
+            indexOffset = (int) (t + 1) * 6;
         }
         vertexBase += mesh->vertexCount;
         triangleBase += (uint32_t) mesh->indexCount / 3u;
     }
 
     canvas->TransformCreate(this->transformId);
-    this->initialized = 1;
     canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
+    this->initialized = 1;
 }
