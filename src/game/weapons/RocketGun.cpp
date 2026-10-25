@@ -159,8 +159,6 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
-    Array<Matrix> *trailMatrices = this->trailMatrices;
-
     Vector ahead = {0.0f, 0.0f, 0.0f};
     Gun *g = this->gun;
     g->update(elapsed);
@@ -182,6 +180,7 @@ void RocketGun::update(int elapsed) {
 
     gun = this->gun;
     this->wasFiring = gun->delayActive;
+    Array<Matrix> *trailMatrices = this->trailMatrices;
 
     if (gun->hitSmall != 0) {
         // A rocket was just launched: orient the rocket mesh along its velocity.
@@ -295,8 +294,7 @@ void RocketGun::update(int elapsed) {
                     const float c = Cosf((phase + (float) (this->gun->initialLifetime - this->gun->lifetimes[i])) * 0.003f);
                     const Vector cross = VectorCross(this->gun->velocities.data()[i],
                                                      this->gun->upVectors.data()[i]);
-                    const Vector sideways = VectorNormalize(cross);
-                    this->gun->positions.data()[i] += sideways * (s + s) * dt;
+                    this->gun->positions.data()[i] += VectorNormalize(cross) * (s + s) * dt;
                     this->gun->positions.data()[i] += this->gun->upVectors.data()[i] * (c + c) * dt;
                 }
             }
