@@ -360,45 +360,46 @@ void SpaceLounge::init() {
     if (Globals::iPad) {
         // iPad: place the agent panel next to the selected agent.
         float margin = Globals::iPadHD ? 14.0f : (Globals::iPadLarge ? 20.0f : 10.0f);
-        if (this->agentRects != 0 && this->selectedAgent >= 0 &&
-            (unsigned int) (this->selectedAgent * 2) < this->agentRects->size()) {
-            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
-            float x;
-            if (rect->x - margin - (float) Globals::layout->field_0x68 < (float) Globals::layout->buttonInsetX) {
-                x = SPACELOUNGE_MIN(this->agentBottomRight.x + margin,
-                                     (float) (Globals::w - Globals::layout->buttonInsetX));
-            } else {
-                x = SPACELOUNGE_MAX(this->agentTopLeft.x - margin - (float) Globals::layout->field_0x68,
-                                     (float) Globals::layout->buttonInsetX);
+        if (this->agentRects != 0) {
+            unsigned int agentIndex = (unsigned int) (this->selectedAgent * 2);
+            if (this->selectedAgent >= 0 && agentIndex < this->agentRects->size()) {
+                Vector *rect = (*this->agentRects)[agentIndex];
+                float x;
+                if (rect->x - margin - (float) Globals::layout->field_0x68 < (float) Globals::layout->buttonInsetX) {
+                    x = SPACELOUNGE_MIN(this->agentBottomRight.x + margin,
+                                         (float) (Globals::w - Globals::layout->buttonInsetX));
+                } else {
+                    x = SPACELOUNGE_MAX(this->agentTopLeft.x - margin - (float) Globals::layout->field_0x68,
+                                         (float) Globals::layout->buttonInsetX);
+                }
+                this->panelX = (int) x;
+                float bottom = (float) (Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 - Globals::layout->field_0x6c);
+                float top = this->agentBottomRight.y - (float) (Globals::layout->field_0x6c / 3);
+                float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
+                if (top < bottom) {
+                    bottom = top;
+                }
+                if (bottom < minTop) {
+                    bottom = minTop;
+                }
+                this->panelY = (int) bottom;
+                delete this->scrollWindow;
+                this->scrollWindow = 0;
+                this->scrollWindow = new ScrollTouchWindow(this->panelX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
+                                                           this->panelY, this->panelWidth, Globals::layout->field_0x6c, false);
+                this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
+                this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
+                int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
+                float gap = (float) Globals::layout->field_0x34;
+                float extra = Globals::iPadHD ? 15.46875f : (Globals::iPadLarge ? 22.0f : 11.0f);
+                int spacing = (int) (extra + gap);
+                this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
+                this->buttonY0 = y0;
+                int y1 = Globals::layout->field_0x30_rowHeight + y0 + spacing;
+                (*this->buttons)[2]->setPosition(this->buttonX, y1);
+                (*this->buttons)[3]->setPosition(this->buttonX, y1);
+                (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
             }
-            this->panelX = (int) x;
-            int panelHeight = Globals::layout->field_0x6c;
-            float top = this->agentBottomRight.y - (float) (panelHeight / 3);
-            float bottom = (float) (Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 - panelHeight);
-            float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
-            if (top < bottom) {
-                bottom = top;
-            }
-            if (bottom < minTop) {
-                bottom = minTop;
-            }
-            this->panelY = (int) bottom;
-            delete this->scrollWindow;
-            this->scrollWindow = 0;
-            this->scrollWindow = new ScrollTouchWindow(this->panelX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
-                                                       this->panelY, this->panelWidth, Globals::layout->field_0x6c, false);
-            this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
-            this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
-            int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
-            float gap = (float) Globals::layout->field_0x34;
-            float extra = Globals::iPadHD ? 15.46875f : (Globals::iPadLarge ? 22.0f : 11.0f);
-            int spacing = (int) (extra + gap);
-            this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
-            this->buttonY0 = y0;
-            int y1 = Globals::layout->field_0x30_rowHeight + y0 + spacing;
-            (*this->buttons)[2]->setPosition(this->buttonX, y1);
-            (*this->buttons)[3]->setPosition(this->buttonX, y1);
-            (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
         }
     }
 
@@ -1843,37 +1844,41 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
                 return soundId + 192;
             }
             result = -1;
-            break;
+            goto done;
         }
         case 1: {
             unsigned int delta = soundId - 759;
             if (delta < 48) return soundId + 288;
             result = -1;
-            break;
+            goto done;
         }
         case 2:
         case 3: {
             unsigned int delta = soundId - 759;
             if (delta < 48) return soundId + 144;
             result = -1;
-            break;
+            goto done;
         }
         case 4: {
             unsigned int delta = soundId - 759;
             if (delta < 48) return soundId + 96;
             result = -1;
-            break;
+            goto done;
         }
         case 6:
-            break;
+            result = soundId;
+            goto done;
         case 7: {
             unsigned int delta = soundId - 759;
             if (delta < 48) return soundId + 48;
             result = -1;
-            break;
+            goto done;
         }
     }
-    return result >= 0 ? result : -1;
+    result = -1;
+done:
+    if (result >= 0) return result;
+    return -1;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
