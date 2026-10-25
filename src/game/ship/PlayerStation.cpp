@@ -107,22 +107,24 @@ PlayerStation::PlayerStation(Station *station)
                            : 9;
 
         if (this->stationIndex == 101) {
-            this->rootGeometry = new AEGeometry((uint16_t) 0x4220, Globals::Canvas, false);
+            AEGeometry *&root = this->rootGeometry;
+            root = new AEGeometry((uint16_t) 0x4220, Globals::Canvas, false);
             uint32_t base0 = 0xffffffff;
             Globals::Canvas->TransformCreate(base0);
             Globals::Canvas->TransformAddMesh(base0, 0x4221, false);
-            this->rootGeometry->addChild(base0);
+            root->addChild(base0);
+            uint32_t event1;
             uint32_t base1 = 0xffffffff;
             Globals::Canvas->TransformCreate(base1);
             Globals::Canvas->TransformAddMesh(base1, 0x4222, false);
-            this->rootGeometry->addChild(base1);
+            root->addChild(base1);
             if (Globals::status->getCurrentCampaignMission() == 157 &&
                 Globals::status->getStation()->getIndex() == 112) {
                 uint32_t event0 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event0);
                 Globals::Canvas->TransformAddMesh(event0, 0x4950, false);
                 this->rootGeometry->addChild(event0);
-                uint32_t event1 = 0xffffffff;
+                event1 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event1);
                 Globals::Canvas->TransformAddMesh(event1, 0x4952, false);
                 this->rootGeometry->addChild(event1);
@@ -155,7 +157,6 @@ PlayerStation::PlayerStation(Station *station)
             delete part4;
         } else if ((uint32_t) (this->stationIndex - 109) < 2 ||
                    (this->stationIndex == 111 && Globals::status->getCurrentCampaignMission() > 94)) {
-            Array<int> *oldCollision = collision;
             this->rootGeometry = new AEGeometry((uint16_t) 0x4953, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry((uint16_t) 0x4954, Globals::Canvas, false);
             this->rootGeometry->addChild(part1->transform);
@@ -163,6 +164,7 @@ PlayerStation::PlayerStation(Station *station)
             this->rootGeometry->addChild(part2->transform);
             AEGeometry *part3 = new AEGeometry((uint16_t) 0x4956, Globals::Canvas, false);
             this->rootGeometry->addChild(part3->transform);
+            Array<int> *oldCollision = collision;
             delete oldCollision;
             reader = new FileRead();
             collision = reader->loadStaticCollision(2002);
@@ -199,7 +201,8 @@ PlayerStation::PlayerStation(Station *station)
                         ->SetAnimationState(AbyssEngine::AnimationMode_0, nullptr);
                 ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(t2))
                         ->SetAnimationState(AbyssEngine::AnimationMode_0, nullptr);
-                delete collision;
+                Array<int> *oldCollision = collision;
+                delete oldCollision;
                 reader = new FileRead();
                 collision = reader->loadStationCollision(1005);
                 delete reader;
