@@ -1,5 +1,43 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 20 — byte 1352 unchanged, linked 4432->4435, avg 99.57->99.59)
+
+- Fleet: 32 `codex exec -p dsv41` workers in `../wt/w405..w436` (branches `wave20-w405..w436`).
+  Orchestrator serialized every merge, build, ratchet check, baseline lock, docs update, and push.
+- Landed linked-exact gains: RepairBeam::update (100%), loadingScreen (100%), and AEFile::Open
+  (100%, hidden `.pad` removed) — net linked +3.
+- Landed pct gains: SpaceLounge::getSpecificSoundForRace 44.0->93.6, MenuTouchWindow::OnTouchMove
+  85.5->87.1, StatusWindow::draw 90.4->91.3, StarMap::drawOnScreenInfo 89.1->93.0 and draw
+  85.8->86.6, ModStation OnTouchEnd 83.2->85.6 / OnInitialize 63.3->63.9, HangarWindow::OnTouchEnd
+  78.0->78.7, MGame OnUpdate 78.4->79.0 / OnTouchEnd 73.1->74.2, Level createMission and
+  createCampaignMission, LevelScript::process 42.0->42.7, Mesh ReadEnhancedDataFromFile 78.6->79.7,
+  Gun::calcCharacterCollision 53.3->58.0, RocketGun::update 73.2->75.0, Globals ctor 64.6->69.0,
+  SimpleMeshMerger ctor 62.7->64.9, and HackingGame::render2D 47.3->53.4.
+- Shortcut cleanups: FileInterfaceAndroid lost the DupRet/fence hacks (OpenRead/OpenWrite linked),
+  AEFile lost its `.pad`, RecordHandler::recordStoreRead stopped using a text-padding helper, and
+  IsSubMenuActive was simplified.
+- Held/reverted: w410 PlayerEgo::update, w421 PlayerStation ctor, w424 MissionsWindow::init,
+  w429 Hud::draw, and w431 Layout ctor produced no gate-safe commit (size shifts drop byte_exact
+  to 1342 through the libstdc++ exception-ctor layout).
+- End: byte 1352, linked 4435, avg 99.59, stubs 0, missing/extra 0, imports 207, data 843/843.
+
+## Session 2026-10-25 (wave 21 — byte 1352 unchanged, linked 4435->4438, avg 99.59->99.60; partial)
+
+- Fleet: 20 `codex exec -p dsv41` workers in `../wt/w437..w456` (branches `wave21-w437..w456`),
+  launched at the user's request for higher parallelism. At this checkpoint 18 workers had finished;
+  w441 and w455 were still running.
+- Landed linked-exact gains: Quaternion::Set(Matrix), ObjectGun::render, and
+  RecordHandler::recordStoreRead (99.5->100%) — net linked +3.
+- Landed pct gains: SpaceLounge::startChat 81.2->87.2 (14430 B exact), MenuTouchWindow::OnTouchMove
+  87.1->89.1 and OnTouchEnd 55.0->63.0, PlayerEgo::checkForTurret 86.3->86.6, ModStation
+  OnInitialize 63.9->65.9, StarMap::update passes, Hud::draw, HangarWindow::OnTouchEnd,
+  MGame::OnTouchEnd, and FileRead TU/string-pool order.
+- Shortcut cleanups: GameText lost the visibility/data anchors around `arabicFormRow`; AEFile's
+  Open pad was replaced by real pak-extension storage.
+- Held/blocked: w421/w424/w447/w448/w449 documented source-only near-misses in their `.last`
+  reports (register allocation, spill slots, and the 1342-byte exception-ctor layout trap).
+- End: byte 1352, linked 4438, avg 99.60, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-25 (wave 18 — byte 1352 unchanged, linked 4426->4427, avg 99.45->99.49)
 
 - Fleet: 32 `codex exec -p dsv41` workers in `../wt/w339..w370` (branches `wave18-w339..w370`),
