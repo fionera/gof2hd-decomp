@@ -2182,8 +2182,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             case 0xa6:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
-                    Ship *s = ship;
                     int index = m->getProductionGoodIndex();
+                    Ship *s = ship;
                     int amount = m->getProductionGoodAmount();
                     if (Item::isInList(index, amount, s->getCargo())) {
                         return m;
