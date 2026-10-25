@@ -361,8 +361,8 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->currentProjectile = i;
         this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
-        Vector direction;
-        direction = Vector{0, 0, 0};
+        Vector direction = {0, 0, 0};
+        direction = direction;
         if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
                 this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
@@ -569,20 +569,25 @@ void Gun::calcCharacterCollision() {
     }
     const int weaponType = this->weaponType;
     const int itemIndex = this->itemIndex;
-    this->lastHitKIPlayer = 0;
-    bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
-    bool mine = weaponType == ITEM_SORT_MINE;
-    bool explosive = isRocketLike(weaponType);
-    bool explodeOnContact = mine;
-    // The original tests the bomb types independently for each flag.
-    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
-        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
+    bool bomb = weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
+                weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST;
+    bool scatter;
+    bool mine;
+    bool explosive;
+    bool explodeOnContact;
+    if (bomb) {
+        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+        mine = weaponType == ITEM_SORT_MINE;
         explosive = true;
-    }
-    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
-        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
         explodeOnContact = true;
+    } else {
+        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+        mine = weaponType == ITEM_SORT_MINE;
+        explosive = isRocketLike(weaponType);
+        explodeOnContact = false;
     }
+    this->lastHitKIPlayer = 0;
+    const bool playerGun = this->playerGun;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
@@ -670,7 +675,7 @@ void Gun::calcCharacterCollision() {
                         this->velocities.data()[i] * this->pitchRate * 100.0f;
                 return;
             }
-            if (explodeOnContact) {
+            if (explodeOnContact || mine) {
                 this->ignite();
                 return;
             }
@@ -689,7 +694,7 @@ void Gun::calcCharacterCollision() {
             }
             enemy->damage(amount, this->friendGun, this->itemIndex);
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
-            if (this->playerGun) {
+            if (playerGun) {
                 ((Level *) this->level)->field_30 = 1;
             }
             enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
