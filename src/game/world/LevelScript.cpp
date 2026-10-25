@@ -788,6 +788,7 @@ bool LevelScript::process(int delta) {
                     player->setVisible(true);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 13;
+                    return m_bCinematicBreak != 0;
                 }
                 break;
             }
