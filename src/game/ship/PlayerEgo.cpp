@@ -2389,10 +2389,11 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         Vector surface = this->geometry->getPosition();
         if (object == nullptr)
             continue;
+        surface = this->geometry->getPosition();
         if (i == 0 && !Globals::status->inAlienOrbit()
             && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f && object->field_0x71)
             this->collidesWithStationFlag = 1;
-        if (!object->outerCollide(this->geometry->getPosition()))
+        if (!object->outerCollide(surface))
             continue;
         if (object->getType() == 16994 && object->isVisible()) {
             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
