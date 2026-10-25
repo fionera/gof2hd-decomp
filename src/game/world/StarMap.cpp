@@ -1155,7 +1155,8 @@ void StarMap::update(int dt) {
         this->scratchVector = StarMap_MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
         this->scratchVector -= this->markerGeom->getPosition();
-        this->scratchVector = VectorNormalize(this->scratchVector);
+        Vector normalized = VectorNormalize(this->scratchVector);
+        this->scratchVector = normalized;
         this->scratchVector.x += 0.5f;
         this->markerGeom->setDirection(this->scratchVector, Vector{0.0f, 1.0f, 0.0f});
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->markerGeom->transform))->Update(dt, false);
