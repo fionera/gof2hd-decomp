@@ -1,5 +1,34 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 24/25 — linked 4444->4447, avg 99.67)
+
+- Wave 24 (20 workers, `../wt/w497..w516`) and wave 25 (10 more workers, `../wt/w517..w526`)
+  ran 20-way parallel with `codex exec -p dsv41` (profile loads `~/.codex/dsv41.config.toml`:
+  sglang, `deepseek-v4.1-flash`, high reasoning). Workers were detached with `setsid -f`.
+- Landed linked-exact gains: **MGame::handleAccelerometer 90.5->100**, **MeshMerger::update
+  68.0->100**, **ModStation::OnTouchEnd 94.4->100**. Gate moved
+  **byte_exact 1352, linked_exact 4444 -> 4447, avg 99.67**.
+- Landed pct/semantic gains: ParticleSettings::init 98.2->99.6 (set0/set4 exact), TouchButton
+  draw 98.1->99.4 + init 96.0->99.2, Radar::drawCurrentLock 92.0->94.6, StarSystem ctor
+  87.9->88.7, Level::createMission 70.3->70.4, PlayerEgo::update 91.5->91.6,
+  PlayerFighter::update 97.7->97.9, FileInterfaceAndroid::Read 79.9->84.9,
+  Generator::getShipBuyList 90.1->90.9 / createMission 49.2->49.3,
+  LevelScript::process 46.1->46.8, Hud::draw 67.7->68.4 + challenge score 66.0->66.3,
+  SpaceLounge ctor 94.1->96.0 / startChat 89.3->91.3 / sound 96.7->97.8,
+  MenuTouchWindow::OnTouchEnd 63.0->64.5, Globals IAP 65.6->76.0,
+  MeshReadData 67.4->67.8, HangarWindow::render 60.1->61.0.
+- Layout-sensitive findings: the ten libstdc++ exception ctors are byte-exact only at the
+  current archive layout; a single +4B change (Hud::draw) dropped byte_exact to 1342 and was
+  reverted. Several workers added TU-size padding (Hud/MenuTouchWindow/ModStation) to preserve
+  the layout; these are documented cleanup targets, not permanent source shapes.
+- Blockers: FileInterfaceAndroid::Read/Write are exact under
+  `-mllvm -simplifycfg-dup-ret=true` but need a natural source shape or a per-TU flag;
+  PlayerFighter frame-slot layout; MenuTouchWindow::draw EH landing pad; Gun/RocketGun/Status
+  worker (w516) still running at checkpoint.
+- End checkpoint: **byte_exact 1352, linked_exact 4447, avg 99.67, stubs 0, missing/extra 0,
+  imports 207, data 843/843**. Local `master` is ahead of the remote; push still needs the
+  GitHub SSH key.
+
 ## Session 2026-10-25 (wave 23 -> wave 24 — linked 4442->4444, avg 99.66)
 
 - Wave 23 fleet: 20 `codex exec -p dsv41` workers in `../wt/w477..w496`
