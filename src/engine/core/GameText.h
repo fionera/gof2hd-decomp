@@ -35,9 +35,7 @@ public:
 
     void setSubstituteArray(int *pairs, unsigned count);
 
-    void setLanguage(short stringCount, int langId);
-
-    inline void setLanguage_i(int langId) { setLanguage(langId); }
+    void setLanguage(short langId, int stringCount);
 
     static unsigned short currentLang;
 };

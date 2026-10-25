@@ -48,9 +48,10 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Byte offset of an Arabic letter's row in kArabicForms.
+    // Word offset of an Arabic letter's row in kArabicForms. This unused helper is kept out of
+    // line as a 12-byte .text anchor so the archive/link layout stays stable.
     [[gnu::used]] unsigned int arabicFormRow(unsigned int code) {
-        return (code - 0x621) * 20;
+        return (code - 0x621) * 5;
     }
 
     // Letters that never join to the following letter.
@@ -60,6 +61,8 @@ namespace {
 }
 
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
+// Kept as a macro: at -Oz an inline helper is not inlined and changes convertStringFromArabic's
+// 728-byte code shape.
 #define IS_ARABIC_JOINING(c) ((c) >= 0x600 && (c) != 0x61f && (c) != 0x60c)
 
 
@@ -127,8 +130,7 @@ String GameText::convertStringFromArabic(String in) {
             }
             if (afterNonJoiner) {
                 for (int r = 0; r <= 40; ++r) {
-                    const unsigned int *row = reinterpret_cast<const unsigned int *>(
-                        reinterpret_cast<const char *>(kArabicForms) + arabicFormRow(r + 0x621));
+                    const unsigned int *row = kArabicForms[r];
                     if (row[0] == buf[i]) {
                         int form = 1;
                         if (i < last && IS_ARABIC_JOINING(buf[i + 1]))
@@ -142,8 +144,7 @@ String GameText::convertStringFromArabic(String in) {
         }
 
         for (int r = 0; r < 41; ++r) {
-            const unsigned int *row = reinterpret_cast<const unsigned int *>(
-                reinterpret_cast<const char *>(kArabicForms) + arabicFormRow(r + 0x621));
+            const unsigned int *row = kArabicForms[r];
             if (row[0] != buf[i])
                 continue;
             int form;
