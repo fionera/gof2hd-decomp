@@ -10,9 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <cstring>
-#include <initializer_list>
 
 
 struct VirtualKey {
@@ -494,6 +492,9 @@ namespace {
 
 // Returns 1 when the mouse cursor was just hidden, -1 when it was just shown, 0 otherwise.
 int ActualizeMouseVisibilty(int force) {
+    // The original reads this flag through a volatile access: the load is not folded
+    // into the menu-window test below.
+    volatile int &hackingVisible = Globals::is_hacking_visible;
     if (Globals::mouseCursorActivated != 0) {
         const int arrows = ArrowKeyPressed();
         if ((g_mousePointerLatch != -1 || Globals::isCinematicModeActive != 0) &&
@@ -545,9 +546,7 @@ stillVisible:
         if (__builtin_expect((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible | // lint: arm_builtin
                               Globals::is_menu_visible) != 0, 0))
             goto check;
-        // The original reads this flag through a volatile access: the load is not
-        // folded into the menu-window test above.
-        if (__builtin_expect(*(volatile int *)&Globals::is_hacking_visible != 0, 0)) // lint: arm_builtin
+        if (__builtin_expect(hackingVisible != 0, 0)) // lint: arm_builtin
             goto check;
         if (__builtin_expect((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0, 0)) // lint: arm_builtin
             goto check;
@@ -561,20 +560,6 @@ check:
         Globals::keyBindings[4] != 0)
         g_mousePointerLatch = 0;
     return 0;
-}
-
-namespace {
-    inline bool keyHeld(int index) { return keys[index].pressed != 0; }
-
-    // Quadratic ease of a [-1, 1] stick deflection, re-centred on 0.5.
-    inline float easeAxis(float t) {
-        float eased;
-        if (t > 0.0f)
-            eased = 1.0f - (t - 1.0f) * (t - 1.0f);
-        else
-            eased = -(1.0f - (t + 1.0f) * (t + 1.0f));
-        return eased + 0.5f;
-    }
 }
 
 // Per-frame keyboard/mouse emulation: maps held virtual keys and the captured mouse onto the
@@ -599,22 +584,22 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         stackY = 0;
     }
 
-    if (keyHeld(8))
+    if (keys[8].pressed != 0)
         engine->wheelDelta = -1.0f;
-    if (keyHeld(9))
+    if (keys[9].pressed != 0)
         engine->wheelDelta = 1.0f;
 
-    if (keyHeld(11)) {
+    if (keys[11].pressed != 0) {
         Globals::rotateShipInStation = -20.0f;
-        if (keyHeld(14))
+        if (keys[14].pressed != 0)
             Globals::rotateShipInStation = -40.0f;
-    } else if (keyHeld(12)) {
+    } else if (keys[12].pressed != 0) {
         Globals::rotateShipInStation = 20.0f;
-        if (keyHeld(13))
+        if (keys[13].pressed != 0)
             Globals::rotateShipInStation = 40.0f;
-    } else if (keyHeld(13)) {
+    } else if (keys[13].pressed != 0) {
         Globals::rotateShipInStation = 20.0f;
-    } else if (keyHeld(14)) {
+    } else if (keys[14].pressed != 0) {
         Globals::rotateShipInStation = -20.0f;
     }
 
