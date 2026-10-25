@@ -22,9 +22,6 @@ namespace AbyssEngine {
     class Engine;
 }
 
-#pragma pack(push, 1)
-#pragma pack(pop)
-
 void BuildResourceList(AbyssEngine::Engine *engine);
 
 void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder); // lint: void_ptr (exported free function; mangled signature is fixed)
@@ -59,13 +56,13 @@ public:
 
     float loadResolutionValue(float resolution);
 
-    void *readAgent(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
+    Agent *readAgent(unsigned int fd);
 
     Array<GameRecord *> *readAllPreviewRecords();
 
     Array<GameRecord *> *readAllRecords();
 
-    void *readMission(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
+    Mission *readMission(unsigned int fd);
 
     int readOptionsFileAsByteArray(signed char **out);
 
@@ -75,7 +72,7 @@ public:
 
     void recoverSDVersionSaves();
 
-    void *readWanted(unsigned int fd); // lint: void_ptr (method signature; return type fixed)
+    Wanted *readWanted(unsigned int fd);
 
     GameRecord *recordStoreRead(int slot);
 

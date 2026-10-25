@@ -22,7 +22,6 @@
 
 #include <jni.h>
 #include <openssl/sha.h>
-#include <openssl/crypto.h>
 #include <cstdint>
 #include <cstddef>
 
@@ -107,6 +106,8 @@ namespace {
 
 const char *g_android_origami_super_club = nullptr;
 
+// The vendored SHA-256 API takes an opaque context pointer; this is the real
+// libcrypto SHA256_CTX storage size.
 struct Sha256Context {
     unsigned char state[0x70];
 };
@@ -237,9 +238,7 @@ GameRecord *RecordHandler::readRecord(int slot) {
 void RecordHandler::recoverSDVersionSaves() {
 }
 
-void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
-    // lint: void_ptr (method signature; return type fixed by header)
-    (void) this;
+Wanted *RecordHandler::readWanted(unsigned int fd) {
     bool active = false;
     bool terminated = false;
     int currentLocation = -1;
@@ -247,9 +246,9 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     int lastSeen = -1;
     AEFile::Read(active, fd);
     AEFile::Read(terminated, fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(currentLocation), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(travelsTo), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(lastSeen), fd);
+    AEFile::Read(currentLocation, fd);
+    AEFile::Read(travelsTo, fd);
+    AEFile::Read(lastSeen, fd);
 
     String name;
 
@@ -258,27 +257,27 @@ void *RecordHandler::readWanted(unsigned int fd) { // lint: void_ptr (method sig
     int ship = 0, weapon = 0, hp = 0, loot = 0, lootAmt = 0;
     int reward = 0, reqBounties = 0, reqMission = 0, numWingmen = 0;
 
-    AEFile::Read(name, fd, (bool)1);
-    AEFile::Read(reinterpret_cast<int32_t &>(idx), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(board), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(race), fd);
+    AEFile::Read(name, fd, true);
+    AEFile::Read(idx, fd);
+    AEFile::Read(board, fd);
+    AEFile::Read(race, fd);
     AEFile::Read(male, fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(ship), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(weapon), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(hp), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(loot), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(lootAmt), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(reward), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(reqBounties), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(reqMission), fd);
-    AEFile::Read(reinterpret_cast<int32_t &>(numWingmen), fd);
+    AEFile::Read(ship, fd);
+    AEFile::Read(weapon, fd);
+    AEFile::Read(hp, fd);
+    AEFile::Read(loot, fd);
+    AEFile::Read(lootAmt, fd);
+    AEFile::Read(reward, fd);
+    AEFile::Read(reqBounties, fd);
+    AEFile::Read(reqMission, fd);
+    AEFile::Read(numWingmen, fd);
 
     Wanted *w = new Wanted(idx, String(name, false), board, race, male, ship, weapon, hp, loot,
                            lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = new int[5];
     for (int i = 0; i < 5; i++) {
-        AEFile::Read(reinterpret_cast<int32_t &>(parts[i]), fd);
+        AEFile::Read(parts[i], fd);
     }
     w->setImageParts(parts);
     w->setActive(active);
@@ -328,9 +327,9 @@ GameRecord *RecordHandler::recordStoreReadPreview(int slot) {
 
         AEFile::Read(gr->playTime, fd);
         AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x08), fd);
-        AEFile::Read(reinterpret_cast<String &>(gr->pilotName), fd, (bool)1);
-        AEFile::Read(reinterpret_cast<String &>(gr->field_0x188), fd, (bool)1);
-        AEFile::Read(reinterpret_cast<int32_t &>(gr->field_0x40), fd);
+        AEFile::Read(gr->pilotName, fd, true);
+        AEFile::Read(gr->field_0x188, fd, true);
+        AEFile::Read(gr->field_0x40, fd);
         AEFile::Read(reinterpret_cast<int32_t &>(gr->killsText), fd);
         AEFile::Read(gr->rank, fd);
         AEFile::Read(reinterpret_cast<int32_t &>(gr->shipId), fd);
@@ -369,7 +368,7 @@ int RecordHandler::recordStoreWritePreview(int slot) {
     AEFile::Write(Globals::status->getPlayingTime(), fd);
     AEFile::Write((int32_t) Globals::status->getCredits(), fd);
     AEFile::Write(Globals::status->getStation()->getName(), fd, true);
-    AEFile::Write(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), fd, true);
+    AEFile::Write(reinterpret_cast<SolarSystem *>(Globals::status->getSystem())->getName(), fd, true);
     AEFile::Write((int32_t) Globals::status->getCurrentCampaignMission(), fd);
     AEFile::Write((int32_t) Globals::status->getLevel(), fd);
     AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->difficulty, fd);
@@ -381,79 +380,76 @@ int RecordHandler::recordStoreWritePreview(int slot) {
 
 
 void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
-    RecordHandler * self = this;
-    Agent *agent = agentPtr;
-    AEFile::Write((int32_t)((Agent *) (agent))->getCosts(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSellSystemIndex(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSellBlueprintIndex(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getEvent(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getIndex(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getOffer(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getRace(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemIndex(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemPrice(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSellItemQuantity(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getStation(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getSystem(), fd);
-    AEFile::Write((int32_t)((Agent *) (agent))->getWingmanFriendsCount(), fd);
-    AEFile::Write(((Agent *) (agent))->isMale(), fd);
-    AEFile::Write(((Agent *) (agent))->hasReward(), fd);
-    AEFile::Write(((Agent *) (agent))->hasAcceptedOffer(), fd);
-    AEFile::Write(agent->wasAskedForDifficulty, fd);
-    AEFile::Write(agent->wasAskedForLocation, fd);
+    AEFile::Write((int32_t)agentPtr->getCosts(), fd);
+    AEFile::Write((int32_t)agentPtr->getSellSystemIndex(), fd);
+    AEFile::Write((int32_t)agentPtr->getSellBlueprintIndex(), fd);
+    AEFile::Write((int32_t)agentPtr->getEvent(), fd);
+    AEFile::Write((int32_t)agentPtr->getIndex(), fd);
+    AEFile::Write((int32_t)agentPtr->getOffer(), fd);
+    AEFile::Write((int32_t)agentPtr->getRace(), fd);
+    AEFile::Write((int32_t)agentPtr->getSellItemIndex(), fd);
+    AEFile::Write((int32_t)agentPtr->getSellItemPrice(), fd);
+    AEFile::Write((int32_t)agentPtr->getSellItemQuantity(), fd);
+    AEFile::Write((int32_t)agentPtr->getStation(), fd);
+    AEFile::Write((int32_t)agentPtr->getSystem(), fd);
+    AEFile::Write((int32_t)agentPtr->getWingmanFriendsCount(), fd);
+    AEFile::Write(agentPtr->isMale(), fd);
+    AEFile::Write(agentPtr->hasReward(), fd);
+    AEFile::Write(agentPtr->hasAcceptedOffer(), fd);
+    AEFile::Write(agentPtr->wasAskedForDifficulty, fd);
+    AEFile::Write(agentPtr->wasAskedForLocation, fd);
 
-    if (((Agent *) (agent))->getImageParts() == 0) {
+    if (agentPtr->getImageParts() == 0) {
         AEFile::Write((int32_t)-1, fd);
     } else {
         AEFile::Write((int32_t)5, fd);
         for (int i = 0; i != 5; i++) {
-            int *img = ((Agent *) (agent))->getImageParts();
+            int *img = agentPtr->getImageParts();
             AEFile::Write((int32_t)img[i], fd);
         }
     }
-    if (0x12 < ((Agent *) (agent))->getIndex()) {
-        AEFile::Write((int32_t)((Agent *) (agent))->getSellModIndex(), fd);
+    if (0x12 < agentPtr->getIndex()) {
+        AEFile::Write((int32_t)agentPtr->getSellModIndex(), fd);
     }
 
-    {String s = agent->getMissionString(); AEFile::Write(s, fd, (bool)1);}
-    {String s = agent->getName(); AEFile::Write(s, fd, (bool)1);}
-    {String s = agent->getStationName(); AEFile::Write(s, fd, (bool)1);}
-    {String s = agent->getSystemName(); AEFile::Write(s, fd, (bool)1);}
+    {String s = agentPtr->getMissionString(); AEFile::Write(s, fd, true);}
+    {String s = agentPtr->getName(); AEFile::Write(s, fd, true);}
+    {String s = agentPtr->getStationName(); AEFile::Write(s, fd, true);}
+    {String s = agentPtr->getSystemName(); AEFile::Write(s, fd, true);}
 
-    String *f0c = agent->wingman1;
+    String *f0c = agentPtr->wingman1;
     if (f0c == 0) {
         String s("");
-        AEFile::Write(s, fd, (bool)1);
+        AEFile::Write(s, fd, true);
     } else {
-        AEFile::Write(*f0c, fd, (bool)1);
+        AEFile::Write(*f0c, fd, true);
     }
-    String *f10 = agent->wingman2;
+    String *f10 = agentPtr->wingman2;
     if (f10 == 0) {
         String s("");
-        AEFile::Write(s, fd, (bool)1);
+        AEFile::Write(s, fd, true);
     } else {
-        AEFile::Write(*f10, fd, (bool)1);
+        AEFile::Write(*f10, fd, true);
     }
 
-    self->currentAgent = agent;
-    Mission *mission = agent->getMission();
-    if (mission == 0 || self->currentMission == mission) {
+    this->currentAgent = agentPtr;
+    Mission *mission = agentPtr->getMission();
+    if (mission == 0 || this->currentMission == mission) {
         AEFile::Write((int32_t)-1, fd);
     } else {
         AEFile::Write((int32_t)1, fd);
-        self->writeMission(mission, fd);
+        this->writeMission(mission, fd);
     }
 
-    return;
 }
 
 void RecordHandler::writeMission(Mission *m, unsigned int fd) {
     AEFile::Write((int32_t)m->getType(), fd);
     if (m->isEmpty() == 0) {
-        {String s = m->getClientName(); AEFile::Write(s, fd, (bool)1);}
-        {String s = m->getTargetName(); AEFile::Write(s, fd, (bool)1);}
-        {String s = m->getTargetStationName(); AEFile::Write(s, fd, (bool)1);}
-        {String s = m->getTargetSystemName(); AEFile::Write(s, fd, (bool)1);}
+        {String s = m->getClientName(); AEFile::Write(s, fd, true);}
+        {String s = m->getTargetName(); AEFile::Write(s, fd, true);}
+        {String s = m->getTargetStationName(); AEFile::Write(s, fd, true);}
+        {String s = m->getTargetSystemName(); AEFile::Write(s, fd, true);}
 
         AEFile::Write((bool)m->isCampaignMission(), fd);
         if (m->getClientImage() == 0) {
@@ -461,7 +457,7 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
         } else {
             AEFile::Write((int32_t)5, fd);
             for (int i = 0; i != 5; i++) {
-                int *img = (int *) (long) m->getClientImage();
+                int *img = m->getClientImage();
                 AEFile::Write((int32_t)img[i], fd);
             }
         }
@@ -486,7 +482,6 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
         }
     }
 
-    return;
 }
 
 void RecordHandler::loadOptions() {
@@ -646,7 +641,7 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     return n;
 }
 
-void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
+Mission *RecordHandler::readMission(unsigned int fd) {
     int type = 0;
     AEFile::Read(type, fd);
     if (type == -1) {
@@ -695,7 +690,7 @@ void *RecordHandler::readMission(unsigned int fd) { // lint: void_ptr (method si
 
     int hasAgent = 0;
     AEFile::Read(hasAgent, fd);
-    Agent *agent = hasAgent >= 1 ? (Agent *) this->readAgent(fd) : 0;
+    Agent *agent = hasAgent >= 1 ? this->readAgent(fd) : 0;
 
     Mission *mission;
     if (isEmpty) {
@@ -779,7 +774,7 @@ void RecordHandler::saveOptions() {
     this->addHashToOptions();
 }
 
-void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method signature; return type fixed by header)
+Agent *RecordHandler::readAgent(unsigned int fd) {
     int costs = 0;
     AEFile::Read(costs, fd);
     int sellSystem = 0;
@@ -848,7 +843,7 @@ void *RecordHandler::readAgent(unsigned int fd) { // lint: void_ptr (method sign
     int hasMission = 0;
     AEFile::Read(hasMission, fd);
     if (hasMission >= 1) {
-        mission = (Mission *) this->readMission(fd);
+        mission = this->readMission(fd);
     } else {
         mission = 0;
     }
@@ -891,7 +886,7 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     AEFile::Write((int32_t)w->getTravelsTo(), fd);
     AEFile::Write((int32_t)w->getLastSeen(), fd);
 
-    {String name = w->getName(); AEFile::Write(name, fd, (bool)1);}
+    {String name = w->getName(); AEFile::Write(name, fd, true);}
 
     AEFile::Write((int32_t)w->getIndex(), fd);
     AEFile::Write((int32_t)w->getBoard(), fd);
@@ -912,7 +907,6 @@ void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
         AEFile::Write((int32_t)parts[i], fd);
     }
 
-    return;
 }
 
 int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
@@ -927,12 +921,12 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     AEFile::OpenWrite(path, &fd);
     AEFile::Write(rec->playTime, fd);
     AEFile::Write((int32_t) rec->field_0x08, fd);
-    AEFile::Write(reinterpret_cast<Station *>((intptr_t) rec->field_0x138)->getName(), fd, true);
-    AEFile::Write(reinterpret_cast<String &>(rec->field_0x188), fd, true);
+    AEFile::Write(reinterpret_cast<Station *>(rec->field_0x138)->getName(), fd, true);
+    AEFile::Write(rec->field_0x188, fd, true);
     AEFile::Write((int32_t) rec->field_0x40, fd);
     AEFile::Write((int32_t) rec->killsText, fd);
     AEFile::Write(rec->rank, fd);
-    AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) rec->field_0x130)->getIndex(), fd);
+    AEFile::Write((int32_t) reinterpret_cast<Ship *>(rec->field_0x130)->getIndex(), fd);
     AEFile::Close(fd);
     return 1;
 }
@@ -1214,12 +1208,12 @@ int RecordHandler::recordStoreWrite(int slot) {
     AEFile::Write(hints->flag[37], fd);
     AEFile::Write(hints->flag[38], fd);
 
-    Ship *wingman = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c);
+    Ship *wingman = reinterpret_cast<Ship *>(Globals::status->field_8c);
     if (wingman != 0) {
         AEFile::Write((int32_t) 1, fd);
-        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getIndex(), fd);
-        AEFile::Write((int32_t) reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getRace(), fd);
-        Array<Item *> *wingEquipment = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getEquipment();
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>(Globals::status->field_8c)->getIndex(), fd);
+        AEFile::Write((int32_t) reinterpret_cast<Ship *>(Globals::status->field_8c)->getRace(), fd);
+        Array<Item *> *wingEquipment = reinterpret_cast<Ship *>(Globals::status->field_8c)->getEquipment();
         if (wingEquipment != 0) {
             AEFile::Write((int32_t) wingEquipment->size(), fd);
             for (unsigned i = 0; i < wingEquipment->size(); i++) {
@@ -1234,7 +1228,7 @@ int RecordHandler::recordStoreWrite(int slot) {
         } else {
             AEFile::Write((int32_t) 0, fd);
         }
-        items = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getCargo();
+        items = reinterpret_cast<Ship *>(Globals::status->field_8c)->getCargo();
         if (items != 0) {
             AEFile::Write((int32_t) items->size(), fd);
             for (unsigned i = 0; i < items->size(); i++) {
@@ -1301,7 +1295,7 @@ int RecordHandler::recordStoreWrite(int slot) {
         AEFile::Write((int32_t) 0, fd);
     }
     if (Globals::status->field_8c != 0) {
-        mods = reinterpret_cast<Ship *>((intptr_t) Globals::status->field_8c)->getMods();
+        mods = reinterpret_cast<Ship *>(Globals::status->field_8c)->getMods();
         if (mods != 0) {
             AEFile::Write((int32_t) mods->size(), fd);
             for (unsigned i = 0; i < mods->size(); i++) {
@@ -1398,16 +1392,6 @@ int RecordHandler::recordStoreWrite(int slot) {
     return 1;
 }
 
-void *Galaxy_getStationByIndex(int idx); // lint: void_ptr (external symbol; mangled signature is fixed)
-
-void *Standing_new(); // lint: void_ptr (external symbol; mangled signature is fixed)
-
-void Standing_setStandingsArr(void *st, int *standings); // lint: void_ptr (external symbol; mangled signature is fixed)
-
-void *RH_str_make(void *src); // lint: void_ptr (external symbol; mangled signature is fixed)
-
-
-
 
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     String tmp(this->optionsPath, false);
@@ -1427,17 +1411,6 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 }
 
 
-namespace {
-    // Mix a record-store slot into a stable hash; kept local to this TU.
-    [[gnu::used]] int mixRecordStoreSlot(int value) {
-        value = value * 3 + 0x1000;
-        value ^= 0x2000;
-        value -= 0x3000;
-        value = value * 3 + 0x1111;
-        value ^= 0x2101;
-        return value;
-    }
-}
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
@@ -1469,8 +1442,8 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x28), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x3c), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x40), fd);
-        reinterpret_cast<Mission *&>(rec->field_0x54) = (Mission *)this->readMission(fd);
-        reinterpret_cast<Mission *&>(rec->field_0x58) = (Mission *)this->readMission(fd);
+        reinterpret_cast<Mission *&>(rec->field_0x54) = this->readMission(fd);
+        reinterpret_cast<Mission *&>(rec->field_0x58) = this->readMission(fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x30), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x34), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x38), fd);
@@ -1589,7 +1562,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             int stationIndex = 0;
             AEFile::Read(stationIndex, fd);
             if (stationIndex != -1) {
-                station = (Station *)(intptr_t)Globals::galaxy->getStation(stationIndex);
+                station = Globals::galaxy->getStation(stationIndex);
                 AEFile::Read(cargoCount, fd);
                 if (cargoCount >= 1) {
                     Array<Item *> *items = new Array<Item *>();
@@ -1631,7 +1604,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
                     Array<Agent *> *agents = new Array<Agent *>();
                     ArraySetLength(agentCount, *agents);
                     for (int i = 0; i < agentCount; i++) {
-                        (*agents)[i] = (Agent *)this->readAgent(fd);
+                        (*agents)[i] = this->readAgent(fd);
                     }
                     station->setAgents(agents);
                 }
@@ -1765,7 +1738,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         reinterpret_cast<Array<Agent *> *&>(rec->field_0x148) = new Array<Agent *>();
         ArraySetLength(agentCount, *reinterpret_cast<Array<Agent *> *&>(rec->field_0x148));
         for (unsigned i = 0; i < reinterpret_cast<Array<Agent *> *&>(rec->field_0x148)->size(); i++) {
-            (*reinterpret_cast<Array<Agent *> *&>(rec->field_0x148))[i] = (Agent *)this->readAgent(fd);
+            (*reinterpret_cast<Array<Agent *> *&>(rec->field_0x148))[i] = this->readAgent(fd);
         }
         AEFile::Read(recordFlag(rec, 0xe4), fd);
         AEFile::Read(recordFlag(rec, 0xe5), fd);
@@ -1977,7 +1950,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4) = new Array<Wanted *>();
             ArraySetLength(count, *reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4));
             for (int i = 0; i < count; i++) {
-                (*reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4))[i] = (Wanted *)this->readWanted(fd);
+                (*reinterpret_cast<Array<Wanted *> *&>(rec->field_0x1b4))[i] = this->readWanted(fd);
             }
         }
         for (unsigned i = 0; i < 4; i++) {
