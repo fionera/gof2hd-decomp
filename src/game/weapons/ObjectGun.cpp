@@ -1,8 +1,6 @@
 #include "game/weapons/ObjectGun.h"
 #include "engine/core/ArrayReleaseClasses.h"
 
-#include <cstddef>
-
 #include "game/world/Level.h"
 #include "engine/math/Transform.h"
 #include "game/mission/Explosion.h"
@@ -13,44 +11,8 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
-struct EgoPlayerView {
-    char header[0x40];
-    Matrix orientation;
-};
-#if __SIZEOF_POINTER__ == 4
-static_assert(offsetof(EgoPlayerView, orientation) == 0x40,
-              "EgoPlayerView.orientation must sit at 0x40");
-#endif
-
-namespace AbyssEngine {
-    namespace AEMath {
-        Matrix MatrixMultiply(const Matrix &, const Matrix &);
-    }
-}
-
-static PaintCanvas **g_PaintCanvas = nullptr;
-
-uint32_t TransformGetTransform(void *canvas, uint32_t transform); // lint: void_ptr free-function signature, retype changes mangling
-
-void MatrixRotateVector(void *out, const void *matrix, const void *vec); // lint: void_ptr free-function signature, retype changes mangling
-
-static inline void MatrixGetDir(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetDir(*matrix); }
-
-static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
-
-void MatrixSetRotation(Matrix *dst, float x, float y, float z);
-
-void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
-
-void MatrixSetScaling(Matrix *dst, float x, float y, float z);
-
-static inline void VectorNormalize(Vector *out, const Vector *in) { *out = AbyssEngine::AEMath::VectorNormalize(*in); }
-
-static inline void VectorCross(Vector *out, const Vector *a, const Vector *b) { *out = AbyssEngine::AEMath::VectorCross(*a, *b); }
-
-static uint8_t *g_ObjectGunRenderScaleFlag = nullptr;
 // Projectile mesh per item index (-1: the item has no visible projectile).
-static const int kProjectileMeshes[233] = {
+static const int MUZZLE_MESHES[233] = {
     14500, 14500, 14500, 14501, 14501, 14502, 14502, 14503, 14503, 14500, 14503, 14502,
     14501, 14501, 14501, 14501, 14504, 14504, 14504, 14505, 14505, 14505, 14506, 14506,
     14507, 14507, 14508, 14508, 14506, 14505, 14502, -1, -1, -1, -1, -1,
@@ -72,19 +34,6 @@ static const int kProjectileMeshes[233] = {
     -1, -1, -1, -1, -1, -1, -1, -1, 14505, -1, -1, -1,
     14501, 14501, 14508, 14502, -1,
 };
-
-static uint32_t (*g_TransformGetObject)(PaintCanvas *canvas, uint32_t mesh) = nullptr;
-
-static void (*g_TransformSetState)(uint32_t object, int state, int value) = nullptr;
-
-
-
-
-
-
-
-
-
 
 ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level)
     : dir(), up(), side() {
@@ -140,13 +89,13 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
 
     if (gun->field_0xa8 != 0)
         this->hasGeometry = 1;
-    else if (gun->isPlayerGun() && kProjectileMeshes[gun->itemIndex] >= 0)
+    else if (gun->isPlayerGun() && MUZZLE_MESHES[gun->itemIndex] >= 0)
         this->hasGeometry = gun->weaponType != ITEM_SORT_MINE;
     else
         this->hasGeometry = 0;
 
     this->geometry = this->hasGeometry
-                     ? new AEGeometry((uint16_t) kProjectileMeshes[gun->itemIndex], Globals::Canvas, false)
+                     ? new AEGeometry((uint16_t) MUZZLE_MESHES[gun->itemIndex], Globals::Canvas, false)
                      : nullptr;
     this->wasFiring = 0;
     this->deltaTime = 0;
@@ -182,7 +131,7 @@ void ObjectGun::update(int dt) {
     if (this->hasGeometry == 0 && !this->gun->isPlayerGun() && this->gun->owner != nullptr &&
         this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
         this->hasGeometry = 1;
-        this->geometry = new AEGeometry((uint16_t) kProjectileMeshes[this->gun->itemIndex], Globals::Canvas, false);
+        this->geometry = new AEGeometry((uint16_t) MUZZLE_MESHES[this->gun->itemIndex], Globals::Canvas, false);
     }
 
     if (this->hasGeometry != 0) {
@@ -190,8 +139,7 @@ void ObjectGun::update(int dt) {
             PlayerEgo *ego = this->level->getPlayer();
             Vector position = this->gun->isPlayerGun() ? ego->getPosition() : this->gun->owner->getPosition();
 
-            Matrix shipMatrix = reinterpret_cast<const Matrix &>(
-                    (this->gun->isPlayerGun() ? ego->player : this->gun->owner)->transform[0]);
+            Matrix shipMatrix = (this->gun->isPlayerGun() ? ego->player : this->gun->owner)->transform;
             Vector barrel = this->gun->offset;
             barrel.z += -100.0f;
             position += AbyssEngine::AEMath::MatrixRotateVector(shipMatrix, barrel);
@@ -425,11 +373,12 @@ void ObjectGun::render() {
 }
 
 namespace {
-    // Bounds-checked projectile mesh lookup for item indices; kept local to this TU.
+    // Bounds-checked projectile mesh lookup for item indices. Kept out of line as the
+    // 24-byte .text anchor that preserves the libc++abi archive layout.
     [[gnu::used]] uint32_t ObjectGunProjectileMesh(int item) {
         if (item < 0 || item >= 233)
             return 0;
-        return (uint32_t) kProjectileMeshes[item];
+        return (uint32_t) MUZZLE_MESHES[item];
     }
 }
 
