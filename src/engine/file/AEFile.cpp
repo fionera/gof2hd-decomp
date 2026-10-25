@@ -5,6 +5,13 @@
 #include "engine/file/AENormalFile.h"
 
 namespace {
+// Fixed-size pak extension storage; the named section keeps the original
+// data layout between .data and .got.
+#pragma clang section data=".aezdata"
+    [[gnu::used]] static char pakExtension[8] = ".aez";
+#pragma clang section data=""
+    static_assert(sizeof(pakExtension) == 8, "pak extension buffer");
+
     inline void AEStr_set(String &self, const char *s) { self.Set_char(s); }
     inline void AEStr_set(String &self, const uint16_t *s) { self.Set_wchar(s); }
 
@@ -708,14 +715,6 @@ namespace {
     };
 }
 
-// The original 516-byte Open pushes .text onto the next 8-byte alignment
-// boundary; keep the GOT 8 bytes later as well, so the libstdc++ exception
-// constructors' PC-relative GOT deltas remain byte-identical.
-#pragma GCC visibility push(hidden)
-#pragma clang section data=".pad"
-char g_aeFile_open_pad[8] = {1};
-#pragma clang section data=""
-#pragma GCC visibility pop
 uint32_t AEFile::crc32_ccitt(const String &text) {
     uint32_t crc = 0;
     for (int index = 0; index < text.length; index++)
