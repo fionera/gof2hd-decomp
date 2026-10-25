@@ -63,7 +63,7 @@ public:
 
     ParticleSettings();
 
-    int init();
+    void init();
 
     static void multiplyAll(float scale);
 
