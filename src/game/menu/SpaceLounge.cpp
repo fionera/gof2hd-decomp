@@ -1822,49 +1822,72 @@ int SpaceLounge::getSoundId(Agent *agent) {
 }
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
-    // Generic chat sounds 759..806 map onto a per-race bank.
-    int result;
+    int result = -1;
     switch (race) {
         case 0:
         case 5:
+        {
+            unsigned int delta = soundId - 759;
             if (alternate) {
-                if (soundId >= 759 && soundId < 807) {
-                    return soundId + 240;
+                if (delta < 48) {
+                    result = soundId + 240;
+                    break;
                 }
-            } else if (soundId >= 759 && soundId < 807) {
-                return soundId + 192;
+            } else if (delta < 48) {
+                result = soundId + 192;
+                break;
             }
-            result = -1;
-            break;
+            goto fail;
+        }
         case 2:
+        {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) {
+                result = soundId + 144;
+                break;
+            }
+            goto fail;
+        }
         case 3:
-            if (soundId >= 759 && soundId < 807) {
-                return soundId + 144;
+        {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) {
+                result = soundId + 144;
+                break;
             }
-            result = -1;
-            break;
+            goto fail;
+        }
         case 1:
-            if (soundId >= 759 && soundId < 807) {
-                return soundId + 288;
+        {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) {
+                result = soundId + 288;
+                break;
             }
-            result = -1;
-            break;
+            goto fail;
+        }
         case 4:
-            if (soundId >= 759 && soundId < 807) {
-                return soundId + 96;
+        {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) {
+                result = soundId + 96;
+                break;
             }
-            result = -1;
-            break;
+            goto fail;
+        }
         case 6:
-            result = soundId;
             break;
         case 7:
-            if (soundId >= 759 && soundId < 807) {
-                return soundId + 48;
+        {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) {
+                result = soundId + 48;
+                break;
             }
-            result = -1;
-            break;
+            goto fail;
+        }
         default:
+        fail:
             result = -1;
             break;
     }
