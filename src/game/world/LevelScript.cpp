@@ -1092,11 +1092,10 @@ bool LevelScript::process(int delta) {
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
         for (unsigned int i = 0; i < enemies->count; ++i) {
-            KIPlayer *kp = (*enemies)[i];
-            if (!kp->isWingMan()) {
-                kp->player->setAlwaysFriend(false);
-                kp->player->setAlwaysEnemy(true);
-                kp->player->turnEnemy();
+            if (!(*enemies)[i]->isWingMan()) {
+                (*enemies)[i]->player->setAlwaysFriend(false);
+                (*enemies)[i]->player->setAlwaysEnemy(true);
+                (*enemies)[i]->player->turnEnemy();
             }
         }
         ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
@@ -1342,29 +1341,25 @@ bool LevelScript::process(int delta) {
                     // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
                     // group-8 escort into a widening formation ahead of the player, re-aim it at the
                     // player and wipe its cargo list.
-                    if (!player->isDockedToDockingPoint() &&
-                        m_nScriptTime < 60001) {
-                        // Not-yet-progressed: 0x13c524 branches to the trampoline 0x141198, which
-                        // reloads m_nState and falls into the shared state tail at 0x1391ca. For
-                        // m_nState==0 that tail immediately returns via `if (m_nState < 1) break`, so
-                        // this path is a plain break (the states>=1 tail is handled below).
-                        break; // -> post-switch tail (0x144e36)
-                    }
-                    m_nState = 1;
-                    int xOff = 25000;
-                    for (unsigned int i = 0; i < enemies->count; ++i) {
-                        if ((*enemies)[i]->shipGroup == 8) {
-                            Vector playerPos = player->getPosition();
-                            (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
-                            (*enemies)[i]->awake();       // vtable+0xc
-                            (*enemies)[i]->setVisible(true);
-                            (*enemies)[i]->player->setEnemy(player->player);
-                            delete (*enemies)[i]->cargo;
-                            (*enemies)[i]->cargo = nullptr;
+                    if (player->isDockedToDockingPoint() ||
+                        m_nScriptTime >= 60001) {
+                        m_nState = 1;
+                        int xOff = 25000;
+                        for (unsigned int i = 0; i < enemies->count; ++i) {
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->shipGroup == 8) {
+                                Vector playerPos = player->getPosition();
+                                enemy->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                                (*enemies)[i]->awake();       // vtable+0xc
+                                (*enemies)[i]->setVisible(true);
+                                (*enemies)[i]->player->setEnemy(player->player);
+                                delete (*enemies)[i]->cargo;
+                                (*enemies)[i]->cargo = nullptr;
+                            }
+                            xOff += 1000;
                         }
-                        xOff += 1000;
+                        m_nScriptTimerA = 0; // 64-bit script counter @0x90
                     }
-                    m_nScriptTimerA = 0; // 64-bit script counter @0x90
                     break; // -> post-switch tail (0x144e36)
                 }
                 if (m_nState < 1) {
@@ -1390,7 +1385,8 @@ bool LevelScript::process(int delta) {
                 // formation and re-aim it at the player.
                 int xOff = 25000;
                 for (unsigned int i = 0; i < enemies->count; ++i) {
-                    if ((*enemies)[i]->shipGroup == 8 && (*enemies)[i]->isDead()) {
+                    KIPlayer *enemy = (*enemies)[i];
+                    if (enemy->shipGroup == 8 && enemy->isDead()) {
                         Vector playerPos = player->getPosition();
                         (*enemies)[i]->revive();          // vtable+0x18
                         (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
@@ -1518,8 +1514,9 @@ bool LevelScript::process(int delta) {
                             m_tempVec -= (*enemies)[i]->geometry->getRightVector()
                                          * ((float) m_nScriptTimerA / 100000.0f);
                         }
-                        (*enemies)[i]->geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(m_tempVec),
-                                                              Vector{0.0f, 1.0f, 0.0f});
+                        AEGeometry *geometry = (*enemies)[i]->geometry;
+                        geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(m_tempVec),
+                                               Vector{0.0f, 1.0f, 0.0f});
                         (*enemies)[i]->geometry->moveForward((float) (m_nScriptTimerA * delta) * 0.001f);
                     }
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
@@ -1528,7 +1525,8 @@ bool LevelScript::process(int delta) {
                         for (int i = 0; i < 13; i++) {
                             (*enemies)[i]->setActive(false);
                             (*enemies)[i]->setVisible(false);
-                            (*enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f);
+                            KIPlayer *enemy = (*enemies)[i];
+                            enemy->setPosition(50000.0f, 50000.0f, 50000.0f);
                         }
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
@@ -2383,14 +2381,17 @@ bool LevelScript::process(int delta) {
                     m_pLevel->setPlayerRoute(route);
                     player->setRoute(route);
                     m_nScriptTimerA = 0;
-                } else if (m_nState == 1 && player->getRoute() != 0
-                           && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
-                    m_nState = 2;
-                    for (int i = 8; i <= 10; i++) {
-                        PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
-                        port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
-                        (*enemies)[i]->setActive(true);
-                        (*enemies)[i]->field_0x74 = 0;
+                } else if (m_nState == 1) {
+                    if (player->getRoute() != 0) {
+                        if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
+                            m_nState = 2;
+                            for (int i = 8; i <= 10; i++) {
+                                PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
+                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
+                                (*enemies)[i]->setActive(true);
+                                (*enemies)[i]->field_0x74 = 0;
+                            }
+                        }
                     }
                 }
                 if (m_nState == 2) {
@@ -3782,7 +3783,7 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
-                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setLookAtCam(true);
                     player->player->setVulnerable(false);
                     player->geometry->setRotation(0.0f, 1.5707964f, 0.0f); // yaw = pi/2 @0x13ed8c
                     player->setComputerControlled(true);
