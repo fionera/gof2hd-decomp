@@ -367,8 +367,10 @@ int ModStation::OnInitialize() {
             Globals::globals->addSoundResourceToList(126);
             this->flag_0x101 = 1;
             this->introCountdown = 50;
-            String stationName = Globals::status->getStation()->getName();
-            this->stationName = stationName;
+            {
+                String stationName = Globals::status->getStation()->getName();
+                this->stationName = stationName;
+            }
             long long lastVisit = reinterpret_cast<long long &>(Globals::status->field_70);
             long long now = Globals::status->getPlayingTime();
             if (now - lastVisit > 30000 &&
@@ -1088,7 +1090,8 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) {
         return value;
     }
-    return modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) + value * 3 + 1;
+    return modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) +
+           modStationTouchEndPad(value - 3) + modStationTouchEndPad(value - 4) + value;
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
