@@ -904,13 +904,11 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = 10;
     }
 
-    float reward =
-            (Globals::galaxy->distance(
-                     systems->data()[Globals::status->getStation()->getSystem()],
-                     systems->data()[((Station *) (intptr_t) Globals::galaxy->getStation(targetStation))->getSystem()]) /
-                     1200.0f +
-             1.0f) *
-            (float) difficulty / 10.0f * 5500.0f + 1500.0f;
+    Galaxy *galaxy = Globals::galaxy;
+    int fromSystem = Globals::status->getStation()->getSystem();
+    int toSystem = ((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem();
+    float reward = (galaxy->distance(systems->data()[fromSystem], systems->data()[toSystem]) / 1200.0f + 1.0f) *
+                   (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 9 || type == 7) {
         reward *= type == 9 ? 1.2f : 0.7f;
     } else if (type == 8) {
