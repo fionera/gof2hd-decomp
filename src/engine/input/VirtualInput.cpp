@@ -167,13 +167,16 @@ int IsInPrimaryMenu(int) {
 
 // Touch windows 0x579.. are the in-game sub menu buttons.
 int IsSubMenuActive(int key) {
+    int result = 0;
     const int handle = keys[key].touchWindowHandle;
-    if (handle <= 0x578)
-        return 0;
     if (handle - 0x579 >= Globals::sub_menu_button_count)
-        return 0;
+        return result;
+    if (handle <= 0x578)
+        return result;
+    const int active = (Globals::topMenuIndex != 1 && Globals::topMenuIndex != 2) ||
+                       Globals::is_menu_visible == 0;
     if (Globals::is_menu_visible != 0)
-        return Globals::topMenuIndex != 1 && Globals::topMenuIndex != 2;
+        return active;
     if (Globals::subMenuIndex != -1)
         return 1;
     return Globals::appManager->GetCurrentApplicationModule() == 5;
@@ -433,7 +436,7 @@ bool ArrowKeyPressed() {
            keys[2].pressed != 0 || keys[3].pressed != 0;
 }
 
-bool keyIsPressed() {
+int keyIsPressed() {
     return (keys[0].pressed | keys[1].pressed | keys[2].pressed | keys[3].pressed |
             g_input.mouseCaptured) != 0;
 }
@@ -754,11 +757,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         const float ex = g_mouse.easedX;
         const float ey = g_mouse.easedY;
 
-        // The original keyIsPressed returns an int (0/1); the header declares bool.
-        // Calling it through an int-returning pointer keeps the original's
-        // normalisation of arbitrary non-zero values without changing the symbol.
-        int (*keyPressed)() = reinterpret_cast<int (*)()>(keyIsPressed);
-        const int down = keyPressed();
+        const int down = keyIsPressed();
         const int active = g_simTouchActive;
         const int inactive = (active ^ 1) != 0;
         const float touchXf = (cx - dim) + (dim + dim) * ex;
@@ -806,6 +805,15 @@ void setValuesForGamepad(float x, float y) {
     g_mouse.gamepadX = x;
     g_mouse.gamepadY = y;
 }
+
+// The original 148-byte IsSubMenuActive pushes .text onto the next alignment
+// boundary; keep the GOT 8 bytes later as well, so the libstdc++ exception
+// constructors' PC-relative GOT deltas remain byte-identical.
+#pragma GCC visibility push(hidden)
+#pragma clang section data=".pad"
+char g_submenu_active_pad[8] = {1};
+#pragma clang section data=""
+#pragma GCC visibility pop
 
 extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
