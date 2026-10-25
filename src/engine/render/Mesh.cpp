@@ -579,7 +579,7 @@ namespace AbyssEngine {
             mesh->positions = new float[mesh->vertexCount * 3];
             mesh = *slot;
             unsigned int count = mesh->vertexCount * 3;
-            for (unsigned int i = 0; i != count; i++) {
+            for (int i = 0; i != count; i++) {
                 unsigned int axis = i % 3;
                 float value = raw[i];
                 ((float *) mesh->positions)[i] = value;
