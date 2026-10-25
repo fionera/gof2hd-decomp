@@ -368,8 +368,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         list->data()[slot]->adjustPrice();
     }
 
-    bool terranExtras = false;
-    bool vossExtras = false;
+    int terranExtras = 0;
+    int vossExtras = 0;
     switch (race) {
         case 0:
             if (Globals::rnd->nextInt(7) == 0) {
@@ -579,7 +579,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         count += (existing->data()[i]->getStation() == station->getIndex()) & keep;
     }
     if (station->getIndex() != 108) {
-        if (__builtin_expect((int) (Globals::rnd->nextInt(2) + count + 3) <= 4, 0)) { // lint: arm_builtin (branch-probability hint reproduces the original cold-path layout)
+        if ((int) (Globals::rnd->nextInt(2) + count + 3) <= 4) {
             count += 3 + Globals::rnd->nextInt(2);
         } else {
             count = 5;
@@ -766,7 +766,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Array<bool> *used = Globals::status->field_50;
     while (!selected) {
         selected = guard < 1;
-        int pick = Globals::rnd->nextInt(15);
+        short pick = Globals::rnd->nextInt(15);
         --guard;
         type = pick;
         if (pick == 8) {
@@ -877,7 +877,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 amount = difficulty * 95 / 10 + 5;
                 break;
             case 2:
-                amount = (int) (float) Globals::rnd->nextInt(4) + 2;
+                amount = Globals::rnd->nextInt(4) + 2;
                 break;
             case 3:
             case 5:
@@ -910,7 +910,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                      systems->data()[((Station *) (intptr_t) Globals::galaxy->getStation(targetStation))->getSystem()]) /
                      1200.0f +
              1.0f) *
-            (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
+            (float) difficulty / 10.0f * 5500.0f + 1500.0f;
     if (type == 9 || type == 7) {
         reward *= type == 9 ? 1.2f : 0.7f;
     } else if (type == 8) {
