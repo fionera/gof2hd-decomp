@@ -2,7 +2,6 @@
 #define GOF2_LODMESHMERGER_H
 #include "engine/core/Array.h"
 #include "engine/render/AMeshMerger.h"
-#include "../core/AEString.h"
 #include "PaintCanvas.h"
 
 #include "engine/math/Matrix.h"
@@ -26,7 +25,7 @@ public:
     bool *enabled;
     bool *visible;
     int cols;
-    uint8_t dirty;
+    bool dirty;
 
     LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags);
 
