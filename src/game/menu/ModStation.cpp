@@ -367,8 +367,11 @@ int ModStation::OnInitialize() {
             Globals::globals->addSoundResourceToList(126);
             this->flag_0x101 = 1;
             this->introCountdown = 50;
-            this->stationName = Globals::status->getStation()->getName();
-            if (Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_70) > 30000 &&
+            String stationName = Globals::status->getStation()->getName();
+            this->stationName = stationName;
+            long long lastVisit = reinterpret_cast<long long &>(Globals::status->field_70);
+            long long now = Globals::status->getPlayingTime();
+            if (now - lastVisit > 30000 &&
                 Globals::status->getStation()->getIndex() != 108) {
                 // Restock the trade goods after a while away.
                 Generator *generator = new Generator();
@@ -1135,12 +1138,13 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 if (!this->dialogueMission->isCampaignMission()) {
                     Globals::status->field_b8 += this->dialogueMission->getProductionGoodAmount();
                 }
-                if (Globals::status->getShip()->getCargo() != nullptr) {
-                    for (unsigned i = 0; i < Globals::status->getShip()->getCargo()->size(); i++) {
+                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                if (cargo != nullptr) {
+                    for (unsigned i = 0; i < cargo->size(); i++) {
                         if ((*Globals::status->getShip()->getCargo())[i]->isUnsaleable() &&
                             ((*Globals::status->getShip()->getCargo())[i]->getIndex() == 116 ||
                              (*Globals::status->getShip()->getCargo())[i]->getIndex() == 117)) {
-                            Globals::status->getShip()->removeCargo((*Globals::status->getShip()->getCargo())[i]);
+                            Globals::status->getShip()->removeCargo((*cargo)[i]);
                             if (this->hangarWindow != nullptr) {
                                 this->hangarWindow->initialize();
                             }
@@ -1267,11 +1271,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 shipStation->addShip((*Globals::ships)[40]->makeShip(-1));
                             }
                             Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
-                        } else if (next == 160) {
-                            Level::initStreamOutPosition = 0;
+                        } else if (next == 89) {
+                            Level::initStreamOutPosition = 1;
                             Globals::switch_to_target_setting = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(109));
                             Globals::appManager->SetCurrentApplicationModule(2);
+                            this->stationActive = 0;
                             return;
                         } else if (next == 99 || next == 119) {
                             Level::initStreamOutPosition = 1;
@@ -1310,12 +1315,11 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             this->applicationManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
                             return;
-                        } else if (next == 89) {
-                            Level::initStreamOutPosition = 1;
+                        } else if (next == 160) {
+                            Level::initStreamOutPosition = 0;
                             Globals::switch_to_target_setting = 1;
-                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(109));
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
                             Globals::appManager->SetCurrentApplicationModule(2);
-                            this->stationActive = 0;
                             return;
                         }
                 }
@@ -1997,8 +2001,11 @@ void ModStation::OnKeyPress(long long key, long long) {
                         }
                         return;
                     case 3:
-                        if (Globals::status->getCurrentCampaignMission() <= 8)
-                            goto notAvailable;
+                        if (Globals::status->getCurrentCampaignMission() <= 8) {
+                            this->choiceWindow->set(*Globals::gameText->getText(528));
+                            this->flag_0x63 = 1;
+                            return;
+                        }
                         if (this->m_pDialogueWindow != nullptr)
                             ((MissionsWindow *) this->m_pDialogueWindow)->init();
                         else
