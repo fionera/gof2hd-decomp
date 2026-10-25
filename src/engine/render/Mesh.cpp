@@ -134,7 +134,7 @@ namespace AbyssEngine {
             switch (type) {
                 case 1: {
                 if (AEFile::Read(2, &count, file) == 0) goto fail;
-                for (unsigned short i = 0; i < count; i++) {
+                for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) goto fail;
                     if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
                     if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
@@ -145,7 +145,7 @@ namespace AbyssEngine {
                 case 0: {
                 for (unsigned int axis = 0; axis < 3; axis++) {
                     if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned short i = 0; i < count; i++) {
+                    for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) goto fail;
                         if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) goto fail;
@@ -178,7 +178,7 @@ namespace AbyssEngine {
                     delete anim;
                     return -1;
                 }
-                for (unsigned short i = 0; i < count; i++) {
+                for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) {
                         delete anim;
                         return -1;
@@ -198,7 +198,7 @@ namespace AbyssEngine {
                         delete anim;
                         return -1;
                     }
-                    for (unsigned short i = 0; i < count; i++) {
+                    for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
                             return -1;
@@ -230,10 +230,10 @@ namespace AbyssEngine {
             switch (type) {
                 case 1: {
                 if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
-                for (unsigned short i = 0; i < count; i++) {
-                    if (AEFile::Read(4, &scalar, file) == 0) goto fail;
+                for (unsigned int i = 0; i < count; i++) {
+                    if (AEFile::Read(4, &scalar, file) == 0) { delete anim; return -1; }
                     if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
-                    if (AEFile::Read(12, vec, file) == 0) goto fail;
+                    if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
                     anim->InsertKeyFrame(vec, 0x38, (int) scalar);
                 }
                     break;
@@ -241,7 +241,7 @@ namespace AbyssEngine {
                 case 0: {
                 for (unsigned int axis = 0; axis < 3; axis++) {
                     if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned short i = 0; i < count; i++) {
+                    for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) goto fail;
                         if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
                         if (AEFile::Read(4, &scalar, file) == 0) goto fail;
@@ -266,8 +266,8 @@ namespace AbyssEngine {
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned short i = 0; i < count; i++) {
+                    if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
+                    for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
                             return -1;
@@ -295,7 +295,7 @@ namespace AbyssEngine {
                             delete anim;
                             return -1;
                         }
-                        for (unsigned short i = 0; i < keys; i++) {
+                        for (int i = 0; i < keys; i++) {
                             if (AEFile::Read(4, vec, file) == 0) {
                                 delete anim;
                                 return -1;
@@ -740,9 +740,7 @@ namespace AbyssEngine {
                 mesh->colors = new unsigned char[mesh->vertexCount * 16];
                 unsigned int ok = AEFile::Read((*slot)->vertexCount * 16, (*slot)->colors, handle);
                 int result = ok != 0 ? 1 : -1;
-                if (enhanced == 0)
-                    return result;
-                if (ok == 0)
+                if (enhanced == 0 || ok == 0)
                     return result;
             }
         }
@@ -752,12 +750,12 @@ namespace AbyssEngine {
 
         if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
             return -1;
-        unsigned short children;
+        unsigned short children = 0;
         if (AEFile::Read(2, &children, handle) == 0)
             return -1;
         if ((*slot)->animation != 0)
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
-        for (unsigned int c = 0; c < children; c++) {
+        for (unsigned short c = 0; c < children; c++) {
             Mesh *child = new Mesh();
             child->vboEligible = 1;
             child->vertexFormat = (*slot)->vertexFormat;
