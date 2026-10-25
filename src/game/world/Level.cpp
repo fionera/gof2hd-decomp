@@ -3509,8 +3509,11 @@ void Level::createCampaignMission() {
             (*this->enemies)[2]->geometry->setRotation(0.0f, 1.5707964f, 0.0f);
 
             for (int i = 0; i < 8; i++) {
-                Waypoint *wp = (i < 4 ? this->friendRoute : this->enemyRoute)
-                                       ->getWaypoint(i < 4 ? (i > 1 ? 1 : 0) : (i < 7 ? 1 : 0));
+                Waypoint *wp;
+                if (i < 4)
+                    wp = this->friendRoute->getWaypoint(i > 1 ? 1 : 0);
+                else
+                    wp = this->enemyRoute->getWaypoint(i < 7 ? 1 : 0);
                 KIPlayer *ship = this->createShip(3, 0, Globals::globals->getRandomEnemyFighter(3), wp, true, false);
                 ship->setRoute(this->friendRoute->clone());
                 this->spawnPosition = ship->getPosition();
@@ -3626,16 +3629,28 @@ void Level::createCampaignMission() {
             int coords[3] = {0, 0, 50000};
             this->enemyRoute = new Route(coords, 3);
             unsigned char weakDevice = Globals::isRunningHDonWeakDevice;
-            unsigned enemyCount = weakDevice ? 8 : 12;
+            unsigned enemyCount;
+            if (weakDevice)
+                enemyCount = 8;
+            else
+                enemyCount = 12;
             this->enemies = new Array<KIPlayer *>();
-            unsigned total = weakDevice ? 11 : 19;
+            unsigned total;
+            if (weakDevice)
+                total = 11;
+            else
+                total = 19;
             ArraySetLength(total, *this->enemies);
             for (unsigned i = 0; i < enemyCount; i++) {
                 (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
                                                        this->enemyRoute->getWaypoint(0), true, false);
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
             }
-            unsigned friendEnd = weakDevice ? 11 : 16;
+            unsigned friendEnd;
+            if (weakDevice)
+                friendEnd = 11;
+            else
+                friendEnd = 16;
             for (unsigned i = enemyCount; i < friendEnd; i++) {
                 (*this->enemies)[i] = this->createShip(2, 0, Globals::globals->getRandomEnemyFighter(2),
                                                        this->enemyRoute->getWaypoint(0), true, false);
