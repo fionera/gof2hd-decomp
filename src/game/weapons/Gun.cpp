@@ -298,7 +298,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         }
     }
 
-    Vector *positions = nullptr;
     if (this->homing) {
         if (this->lifetimes[0] >= 1) {
             return this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
@@ -345,8 +344,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         }
         return true;
     }
-    (void) positions;
-
     bool fired = false;
     bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
     for (unsigned i = 0; i < this->positions.count; ++i) {
@@ -364,7 +361,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->currentProjectile = i;
         this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
-        Vector direction = {0, 0, 0};
+        Vector direction;
         direction = Vector{0, 0, 0};
         if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
@@ -570,16 +567,21 @@ void Gun::calcCharacterCollision() {
     if (this->enemies == nullptr) {
         return;
     }
+    const int weaponType = this->weaponType;
     this->lastHitKIPlayer = 0;
-    bool scatter = this->weaponType == ITEM_SORT_SCATTER_GUN;
-    bool mine = this->weaponType == ITEM_SORT_MINE;
-    bool explosive = (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE ||
-                      this->weaponType == ITEM_SORT_IONIZING_MISSILE || this->weaponType == ITEM_SORT_SHOCK_BLAST) ||
-                     isRocketLike(this->weaponType);
-    bool explodeOnContact = (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE ||
-                             this->weaponType == ITEM_SORT_IONIZING_MISSILE ||
-                             this->weaponType == ITEM_SORT_SHOCK_BLAST) ||
-                            mine;
+    bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+    bool mine = weaponType == ITEM_SORT_MINE;
+    bool explosive = isRocketLike(weaponType);
+    bool explodeOnContact = mine;
+    // The original tests the bomb types independently for each flag.
+    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
+        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
+        explosive = true;
+    }
+    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
+        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
+        explodeOnContact = true;
+    }
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
@@ -635,7 +637,7 @@ void Gun::calcCharacterCollision() {
                 if (explosive) {
                     enemy->damage(9999, false, this->itemIndex);
                     if (!Globals::achievements->hasMedal(41, 1) &&
-                        (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
+                        (isRocketLike(this->weaponType) || weaponType == ITEM_SORT_IONIZING_MISSILE)) {
                         int count = ++Globals::status->field_12c;
                         if (count >= Globals::achievements->getValue(41, 1)) {
                             ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(41, 100);
