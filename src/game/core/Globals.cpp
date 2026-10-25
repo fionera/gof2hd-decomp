@@ -689,11 +689,11 @@ Globals::Globals() {
 
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
-    // intAt48 (0x48) and shortAt4c (0x4c) are adjacent aligned zero words; clang
-    // merges them into one 8-byte store, which also clears flagAt4e (0x4e).
-    settings->intAt48 = 0;
-    settings->shortAt4c = 0;
     secondary->slot0 = 0;
+    // intAt48 (0x48) and shortAt4c (0x4c) are adjacent aligned zero words; clang
+    // emits separate 4-byte and 2-byte stores here (no 8-byte merge).
+    settings->shortAt4c = 0;
+    settings->intAt48 = 0;
 
     int *p7b = (int *) &Globals::imageFactory;
     int *p5b = (int *) &Globals::achievements;
