@@ -945,12 +945,12 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
             if (this->field_0x456 <= y && y <= this->field_0x456 + this->field_0x4d8 && this->field_0x454 <= x &&
                 x <= this->field_0x454 + this->field_0x4d8)
                 return 0x200;
-            if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
-                x <= this->field_0x45e + this->field_0x4d8)
-                return 0x800;
             if (this->field_0x45a <= y && y <= this->field_0x45a + this->field_0x4d8 && this->field_0x458 <= x &&
                 x <= this->field_0x458 + this->field_0x4d8)
                 return 0x400;
+            if (this->field_0x460 <= y && y <= this->field_0x460 + this->field_0x4d8 && this->field_0x45e <= x &&
+                x <= this->field_0x45e + this->field_0x4d8)
+                return 0x800;
         }
         return 0;
     }
