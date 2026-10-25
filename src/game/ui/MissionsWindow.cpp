@@ -186,7 +186,7 @@ int MissionsWindow::init() {
                                         (*this->m_pTabButtons)[1]->getWidth() + Globals::layout->field_0x38,
                                         this->m_y, 18);
     (*this->m_pTabButtons)[0] = tab0;
-    tab0->setAlwaysPressed(true);
+    (*this->m_pTabButtons)[0]->setAlwaysPressed(true);
     Globals::layout->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
 
     if (this->m_pAgentImageParts != nullptr) {
@@ -224,7 +224,7 @@ int MissionsWindow::init() {
             Globals::layout->field_0x2c_rowHeight * 2,
             false);
     if (!Globals::status->gameWon() || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagA || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagB) {
-        String text("");
+        String text;
         if (Globals::status->getCurrentCampaignMission() < 164)
             text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
         if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
@@ -239,7 +239,7 @@ int MissionsWindow::init() {
                     text, ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStationName(),
                     String("#", false));
         }
-        this->m_pCampaignWindow->setText("", text);
+        this->m_pCampaignWindow->setText(String(), text);
     } else if (Globals::achievements->gotAllGoldMedals() && Globals::status->getShip()->getIndex() != 8) {
         this->m_pCampaignWindow->setText("", *Globals::gameText->getText(650));
     } else {
@@ -346,7 +346,7 @@ void MissionsWindow::draw() {
                              this->m_height - Globals::layout->field_0x20_top - Globals::layout->field_0xc_leftMargin -
                              Globals::layout->field_0x5c - 2 * Globals::layout->field_0x2c_rowHeight -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-                             String());
+                             String("", false));
     this->m_pCampaignWindow->draw();
     if (this->m_pAcceptButton != nullptr)
         this->m_pAcceptButton->draw();
@@ -366,7 +366,7 @@ void MissionsWindow::draw() {
                              Globals::layout->field_0x2c_rowHeight * 2 - Globals::layout->field_0x20_top -
                              Globals::layout->field_0x5c -
                              Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-                             String());
+                             String("", false));
     Mission *freelance = Globals::status->getFreelanceMission();
     if (freelance != nullptr && !freelance->isEmpty() && this->m_pAgentImageParts != nullptr) {
         Globals::imageFactory->drawChar(this->m_pAgentImageParts,
