@@ -1412,6 +1412,18 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 
 
 
+namespace {
+    // Mix a record-store slot into a stable hash; kept local to this TU.
+    [[gnu::used]] int mixRecordStoreSlot(int value) {
+        value = value * 3 + 0x1000;
+        value ^= 0x2000;
+        value -= 0x3000;
+        value = value * 3 + 0x1111;
+        value ^= 0x2101;
+        return value;
+    }
+}
+
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
     int32_t *visitedCount = 0;

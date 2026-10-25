@@ -48,10 +48,10 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Word offset of an Arabic letter's row in kArabicForms. This unused helper is kept out of
-    // line as a 12-byte .text anchor so the archive/link layout stays stable.
+    // Byte offset of an Arabic letter's row in kArabicForms. This unused helper is kept out of
+    // line as a 16-byte .text anchor so the archive/link layout stays stable.
     [[gnu::used]] unsigned int arabicFormRow(unsigned int code) {
-        return (code - 0x621) * 5;
+        return (code - 0x621) * 20;
     }
 
     // Letters that never join to the following letter.
