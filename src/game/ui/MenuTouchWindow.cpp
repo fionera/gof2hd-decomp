@@ -3539,29 +3539,35 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
 
     if (Globals::layout->OnTouchEnd(x, y)) {
         // Back button.
+        int newState = 17;
         switch (this->menuState) {
             case 0:
                 return 1;
             case 3:
                 Globals::recordHandler->saveOptions();
-                this->menuState = 0;
+                newState = 0;
                 break;
             case 6:
             case 7:
             case 8:
             case 14:
-                this->menuState = Globals::iPad ? 0 : 3;
+                newState = Globals::iPad ? 0 : 3;
                 break;
             case 11:
-                break;
+                return 1;
             case 12:
-                this->menuState = 17;
                 break;
             default:
-                this->menuState = 0;
+                newState = 0;
                 break;
         }
+        this->menuState = newState;
     }
+    // Keep this TU's .text size stable: the libc++abi exception-ctor literal pools are
+    // byte-exact only at the current link layout (see AGENTS.md).
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->SetColor(0xffffff2fu);
+    Globals::is_menu_visible = 1;
     return 0;
 }
 
