@@ -345,12 +345,11 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->pressedFrame[0] = this->touchedFrame[0];
         this->height = Globals::Canvas->GetImage2DHeight(this->normalFrame[0]);
         int w = Globals::Canvas->GetImage2DWidth(this->normalFrame[0]);
-        int h = this->height;
-        this->layoutHeight = h;
+        this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
         this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (h / 2) +
+        this->textOffsetY = (int) ((float) (this->height >> 1) +
                                    lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
         this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
