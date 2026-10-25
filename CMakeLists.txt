@@ -24,11 +24,6 @@ set(GOF2_FMOD_LIBDIR "${_orig_dir}/apk_libs" CACHE PATH "Directory holding the A
 # link (gold link below). The original .so is -fPIC, so these objects match it and link cleanly.
 file(GLOB_RECURSE _srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")
 add_library(gof2 OBJECT ${_srcs})
-# The original FileInterfaceAndroid TU was built with SimplifyCFG's DupRet: it duplicates the return
-# block into unconditional predecessors, which is what gives Read its per-path stack-canary epilogue.
-# A tree-wide flag regresses everything else, so scope it to the one TU that needs it.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/engine/file/FileInterfaceAndroid.cpp" PROPERTIES COMPILE_OPTIONS "-mllvm;-simplifycfg-dup-ret=true")
-
 # Whole-.so byte/hash identity requires reproducing the original's (interleaved) .text function
 # order, since every inter-function bl/blx and GOT/PLT relative offset depends on it. The original's
 # layout is NOT one-class-per-file, so it cannot arise from our source organisation; instead we emit
