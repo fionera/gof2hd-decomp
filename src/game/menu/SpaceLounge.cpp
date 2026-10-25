@@ -489,21 +489,25 @@ void SpaceLounge::startChat() {
     if (Globals::iPad) {
         // iPad: move the chat panel next to the agent.
         int margin = (int) (Globals::iPadHD ? 14.0625f : (Globals::iPadLarge ? 20.0f : 10.0f));
-        Vector *rectTopLeft = (*this->agentRects)[this->selectedAgent * 2];
         float x;
         if ((*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68 <
             (float) Globals::layout->buttonInsetX) {
-            x = SPACELOUNGE_MIN((*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin,
-                                (float) (Globals::w - Globals::layout->buttonInsetX));
+            // Right of the agent, limited to the screen edge (the limit is evaluated first).
+            x = (float) (Globals::w - Globals::layout->buttonInsetX) >
+                        (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
+                    ? (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
+                    : (float) (Globals::w - Globals::layout->buttonInsetX);
         } else {
             x = (*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68;
         }
         this->panelX = (int) x;
-        float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
         float bottom = (float) (Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
                                 Globals::layout->field_0x6c);
-        float minTop = (float) (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin);
-        this->panelY = (int) (top < bottom ? SPACELOUNGE_MAX(top, minTop) : SPACELOUNGE_MAX(bottom, minTop));
+        float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
+        float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
+        // Clamp against the higher of the two candidate rows, then keep the chosen row unless clamped.
+        bool clamp = SPACELOUNGE_MIN(top, bottom) < minTop;
+        this->panelY = (int) (top < bottom ? (clamp ? minTop : top) : (clamp ? minTop : bottom));
         delete this->scrollWindow;
         this->scrollWindow = 0;
         this->scrollWindow = new ScrollTouchWindow(
@@ -512,8 +516,8 @@ void SpaceLounge::startChat() {
         this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
         this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
         int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
-        int spacing = (int) ((Globals::iPadHD ? 0.0f : (Globals::iPadLarge ? 0.0f : 11.0f)) +
-                             (float) Globals::layout->field_0x34);
+        float extra = Globals::iPadHD ? 0.0f : (Globals::iPadLarge ? 0.0f : 11.0f);
+        int spacing = (int) ((float) Globals::layout->field_0x34 + extra);
         this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
         this->buttonY0 = y0;
         int y1 = y0 + Globals::layout->field_0x30_rowHeight + spacing;
@@ -521,7 +525,7 @@ void SpaceLounge::startChat() {
         (*this->buttons)[3]->setPosition(this->buttonX, y1);
         (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
         {
-            Vector *rect = rectTopLeft;
+            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
             float x = rect->x;
             float y = rect->y;
             float z = rect->z;
@@ -600,18 +604,19 @@ void SpaceLounge::startChat() {
                 int race = agent->getRace();
                 int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
                                    ->getStanding(race != 2 && race != 3 ? 0 : 1);
-                if (!((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
-                    body = *Globals::gameText->getText(883);
-                    this->scrollWindow->setText(agent->getName(), body);
-                    this->chatScroll = 0;
-                    this->mode = 3;
-                    return;
+                if (((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
+                    int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
+                    int textId = race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882;
+                    body = *Globals::gameText->getText(textId);
+                    body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
+                    agent->setCosts(costs);
+                    break;
                 }
-                int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
-                body = *Globals::gameText->getText(race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882);
-                body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
-                agent->setCosts(costs);
-                break;
+                body = *Globals::gameText->getText(883);
+                this->scrollWindow->setText(agent->getName(), body);
+                this->chatScroll = 0;
+                this->mode = 3;
+                return;
             }
             case 5:
                 // Freelance job.
