@@ -20,9 +20,8 @@
 
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); void SpriteSystemSetAllSize(short, SpriteSystem*); int MeshConvertToVBO(Mesh*); }
 namespace AbyssEngine {
-    typedef void (*ImageCallback)(Image *, void *); // lint: void_ptr (exported TextureCreateFromFile signature)
-    int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, bool flag, float scale); // lint: void_ptr (exported TextureCreateFromFile signature)
-    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag); // lint: void_ptr (exported TextureCreateFromFileIntern signature)
+    int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, ImageUserData user, unsigned int *outIds, bool flag, float scale);
+    int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, ImageUserData user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag);
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
                    signed char meshType, Mesh **out);
     int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat);
@@ -273,41 +272,6 @@ namespace {
 #endif
 }
 
-namespace {
-    struct PCArrayHeader {
-        uint32_t count;
-        char *data;
-        uint32_t capacity;
-    };
-
-    inline void PCArrayCtor(PCArrayHeader *arrayHeader) {
-        PCArrayHeader *a = arrayHeader;
-        a->count = 0;
-        a->data = nullptr;
-        a->capacity = 0;
-    }
-
-    template<class T>
-    inline void PCArrayAdd(T item, PCArrayHeader *arrayHeader) {
-        PCArrayHeader *a = arrayHeader;
-        if (a->count >= a->capacity) {
-            uint32_t newCap = a->count + 1;
-            T *grown = (T *) ::operator new((size_t) newCap * sizeof(T));
-            for (uint32_t i = 0; i < a->count; ++i)
-                grown[i] = ((T *) a->data)[i];
-            ::operator delete(a->data);
-            a->data = (char *) grown;
-            a->capacity = newCap;
-        }
-        ((T *) a->data)[a->count] = item;
-        a->count += 1;
-    }
-
-    inline void PCArrayRemoveAll(PCArrayHeader *arrayHeader) {
-        PCArrayHeader *a = arrayHeader;
-        a->count = 0;
-    }
-}
 
 
 
@@ -316,9 +280,6 @@ namespace {
 
 
 
-static inline void paintcanvas_ext_set_wvm2(void *self, void *m) { ((PaintCanvas*)self)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix*)m); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void paintcanvas_ext_meshdraw(void *eng, void *mesh) { AbyssEngine::MeshDraw((AbyssEngine::Engine*)eng, (AbyssEngine::Mesh*)mesh); } // lint: void_ptr (external symbol; mangling must match lib)
 
 
 
@@ -342,12 +303,6 @@ namespace AbyssEngine {
 
 
 
-static inline int pc_GetWidth(AbyssEngine::PaintCanvas *self) { return self->GetWidth(); }
-static inline int pc_GetHeight(AbyssEngine::PaintCanvas *self) { return self->GetHeight(); }
-
-void pc_Camera_ctor(void *cam, float h, float w); // lint: void_ptr (external symbol; mangling must match lib)
-
-void pc_ArrayAdd_Camera(void *cam, void *arr); // lint: void_ptr (external symbol; mangling must match lib)
 
 int PaintCanvas::GetImage2DWidth(unsigned int index) {
     if (index < this->images.count) {
@@ -586,15 +541,13 @@ void PaintCanvas::MeshResourceChangeMaterial(unsigned short matId, unsigned shor
     }
 }
 
-void *PaintCanvas::TransformGetLocal(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
-    char *result;
+AbyssEngine::AEMath::Matrix *PaintCanvas::TransformGetLocal(unsigned int index) {
+    AbyssEngine::AEMath::Matrix *result;
     if (index < this->transforms.count) {
-        result = (char *) this->transforms.data_[index];
+        result = (AbyssEngine::AEMath::Matrix *) this->transforms.data_[index];
     } else {
-        char tmp[60];
-        result = (char *) &this->identityMatrix;
-        AbyssEngine::AEMath::MatrixIdentity(
-            *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(result));
+        result = &this->identityMatrix;
+        AbyssEngine::AEMath::MatrixIdentity(*result);
     }
     return result;
 }
@@ -620,7 +573,7 @@ int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str
     return 0;
 }
 
-void *PaintCanvas::MaterialGetMaterial(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
+AbyssEngine::Material *PaintCanvas::MaterialGetMaterial(unsigned int index) {
     if (index < this->materials.count) {
         return (this->materials.data_)[index];
     }
@@ -1315,8 +1268,8 @@ void PaintCanvas::End2d() {
         m[12] = 1.0f;
         m[13] = 1.0f;
         m[14] = 1.0f;
-        paintcanvas_ext_set_wvm2(this, buf);
-        paintcanvas_ext_meshdraw(this->engine, this->quad2dMesh);
+        this->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) buf);
+        AbyssEngine::MeshDraw(this->engine, (AbyssEngine::Mesh *) this->quad2dMesh);
     }
 }
 
@@ -2346,7 +2299,7 @@ PaintCanvas::~PaintCanvas() {
             case 1:
             case 3:
             case 6:
-                operator delete(res->payload);
+                delete res->payload;
                 break;
             case 2:
                 delete (AbyssEngine::ResourceTexture *) res->payload;
@@ -2605,8 +2558,8 @@ void PaintCanvas::TransformRemoveChild(unsigned int parent, unsigned int child) 
     }
 }
 
-void PaintCanvas::TextureCreate(unsigned short resId, void (*callback)(AbyssEngine::Image *, void *), // lint: void_ptr (external symbol; mangling must match lib)
-                                void *userData, unsigned int &out, bool useCallbackLoader) { // lint: void_ptr (external symbol; mangling must match lib)
+void PaintCanvas::TextureCreate(unsigned short resId, ImageCallback callback,
+                                ImageUserData userData, unsigned int &out, bool useCallbackLoader) {
     Engine *eng = (Engine *) this->engine;
     eng->boundTextures[0] = -1;
     eng->boundTextures[1] = -1;
@@ -3214,7 +3167,7 @@ short PaintCanvas::FontGetSpacing(unsigned int index) {
     return 0;
 }
 
-void *PaintCanvas::TransformGetTransform(unsigned int index) { // lint: void_ptr (external symbol; mangling must match lib)
+AbyssEngine::Transform *PaintCanvas::TransformGetTransform(unsigned int index) {
     if (index < this->transforms.count) {
         return this->transforms.data_[index];
     }
