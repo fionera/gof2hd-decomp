@@ -791,7 +791,7 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
-            default: { // s11 @0x13bd2c: the wingmen swarm past, then the camera hands off to the tail ship.
+            case 11: { // s11 @0x13bd2c: the wingmen swarm past, then the camera hands off to the tail ship.
                 // Drift the camera, then once 3s elapse push every trailing wingman forward and reframe
                 // the camera onto the ship ten slots from the end (the mission's designated tail ship).
                 m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) delta * 3.0f); // 0.7 @0x13b944
@@ -4712,6 +4712,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 4) {
                     m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        m_nScriptTimerA = 0;
                         m_nState = 5;
                         for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                             KIPlayer *ship = (*m_pLevel->getEnemies())[i];
