@@ -692,8 +692,8 @@ namespace AbyssEngine {
                     unsigned int i1 = index[1];
                     unsigned int i2 = index[2];
                     float du1 = uv[i1 * 2] - uv[i0 * 2];
-                    float dv1 = uv[i1 * 2 + 1] - uv[i0 * 2 + 1];
                     float du2 = uv[i2 * 2] - uv[i0 * 2];
+                    float dv1 = uv[i1 * 2 + 1] - uv[i0 * 2 + 1];
                     float dv2 = uv[i2 * 2 + 1] - uv[i0 * 2 + 1];
                     float r = 1.0f / (du1 * dv2 - du2 * dv1);
                     Vector tangent(
