@@ -33,8 +33,8 @@ public:
     Array<Explosion *> *explosions;
     uint8_t *explosionReady;
     int deltaTime;
-    // Ghidra ground truth: a 4-byte gap sits between deltaTime@0x34 and flScaleX@0x3c; ours lacked it.
-    int _gap_0x38;
+    // Unreferenced in the Android binary; occupies the slot before scaleX at 0x3c.
+    int field_0x38;
     float scaleX;
     float scaleY;
     float scaleZ;
