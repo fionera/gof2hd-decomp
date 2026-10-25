@@ -405,7 +405,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
         (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93)) {
-        for (uint32_t i = 0; i < this->landmarks->size(); ++i) {
+        for (int i = 0; i < this->landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
             }
@@ -657,7 +657,7 @@ enemies:
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
-            if (!enemy->player->isActive() || (enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74) {
+            if (!(enemy->player->isActive() && (!enemy->isDying() || enemy->hasCargo) && !enemy->field_0x74)) {
                 if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
                     this->field_0x1bc++;
                     if (enemy->shipGroup == 10) {
