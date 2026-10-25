@@ -765,7 +765,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case ITEM_SORT_EMP_BOMB:
         case ITEM_SORT_NUKE:
         case ITEM_SORT_IONIZING_MISSILE: {
-            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
                           Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
@@ -1689,23 +1689,23 @@ void Level::createMission() {
                     ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                     switch (i - 10) {
                         case 0:
-                            offset.y = -3000.0f;
                             offset.x = 20000.0f;
+                            offset.y = -3000.0f;
                             offset.z = -50000.0f;
                             break;
                         case 1:
-                            offset.y = -7000.0f;
                             offset.x = 10000.0f;
+                            offset.y = -7000.0f;
                             offset.z = -30000.0f;
                             break;
                         case 2:
-                            offset.y = 0.0f;
                             offset.x = 25000.0f;
+                            offset.y = 0.0f;
                             offset.z = -36000.0f;
                             break;
                         default:
-                            offset.y = 6000.0f;
                             offset.x = 12000.0f;
+                            offset.y = 6000.0f;
                             offset.z = -45000.0f;
                             break;
                     }
@@ -6208,18 +6208,20 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
                 fixed->setWreckedMeshId(0x477f);
                 break;
+            // The reference emits the race-3 hull boxes before the race-2 ones in the
+            // literal pool, so the source order is 3 then 2.
+            case 3:
+                ArraySetLength(2, *volumes);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+                fixed->setWreckedMeshId(0x477c);
+                break;
             case 2:
                 ArraySetLength(3, *volumes);
                 (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -85.0f, 24.0f, 4335.0f, 1245.0f, 10880.0f);
                 (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 710.0f, 292.0f, 2990.0f, 935.0f, 11450.0f);
                 (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 1510.0f, -2886.0f, 2750.0f, 1010.0f, 2750.0f);
                 fixed->setWreckedMeshId(0x477d);
-                break;
-            case 3:
-                ArraySetLength(2, *volumes);
-                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
-                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
-                fixed->setWreckedMeshId(0x477c);
                 break;
             default:
                 break;
