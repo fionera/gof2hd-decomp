@@ -116,6 +116,7 @@ namespace AbyssEngine {
     }
 
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
+        const unsigned int materialFlags = flags & 0x10;
         Transform *anim = new Transform();
 
         if (AEFile::Read(4, &this->bounds.center.x, file) == 0) goto fail;
@@ -290,7 +291,7 @@ namespace AbyssEngine {
             }
 
             // Material/shader animation tracks.
-            if ((flags & 0x10) != 0) {
+            if (materialFlags != 0) {
                 if (AEFile::Read(2, &count, file) == 0) {
                     delete anim;
                     return -1;
@@ -313,7 +314,7 @@ namespace AbyssEngine {
                                 return -1;
                             }
                             scalar = scalar / 100.0f;
-                            long long channelFlags;
+                            int channelFlags;
                             switch (channel) {
                                 case 0:
                                     channelFlags = 0x400;
@@ -524,7 +525,7 @@ namespace AbyssEngine {
 
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        unsigned int enhanced = flags & 0x1a;
+        bool enhanced = (flags & 0x1a) != 0;
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
             return -1;
 
@@ -542,9 +543,9 @@ namespace AbyssEngine {
 
         float minimum[3];
         float maximum[3];
-        minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
         maximum[0] = maximum[1] = maximum[2] = -10000000.0f;
-        unsigned int packed = flags & 4;
+        minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
+        bool packed = (flags & 4) != 0;
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
@@ -556,11 +557,10 @@ namespace AbyssEngine {
                     delete[] (unsigned char *) raw;
                     return -1;
                 }
-                mesh = *slot;
                 mesh->positions = new float[mesh->vertexCount * 3];
                 mesh = *slot;
                 unsigned int count = mesh->vertexCount * 3;
-                for (unsigned int i = 0; i != count; i++) {
+                for (int i = 0; i != count; i++) {
                     unsigned int axis = i % 3;
                     float value = raw[i];
                     ((float *) mesh->positions)[i] = value;
@@ -606,15 +606,13 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 2) {
             if (packed != 0) {
-                Mesh *mesh = *slot;
-                short *raw = (short *) new unsigned char[mesh->vertexCount * 4];
-                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                short *raw = (short *) new unsigned char[(*slot)->vertexCount * 4];
+                if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
                     delete[] (unsigned char *) raw;
                     return -1;
                 }
-                mesh = *slot;
+                Mesh *mesh = *slot;
                 mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
-                mesh = *slot;
                 bool flipV = Engine::enableShader != 0;
                 for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
                     float *uv = (float *) mesh->texCoords + i;
@@ -630,7 +628,7 @@ namespace AbyssEngine {
                     return -1;
                 if (Engine::enableShader != 0) {
                     mesh = *slot;
-                    for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
+                    for (int i = 0; i < (mesh->vertexCount << 1); i += 2) {
                         float *v = (float *) mesh->texCoords + i + 1;
                         *v = 1.0f - *v;
                     }
@@ -646,9 +644,8 @@ namespace AbyssEngine {
                     delete[] (unsigned char *) raw;
                     return -1;
                 }
-                mesh = *slot;
                 mesh->normals = new float[mesh->vertexCount * 3];
-                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount * 3); i += 3) {
+                for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
@@ -693,12 +690,7 @@ namespace AbyssEngine {
                 mesh = *slot;
                 unsigned int triangles = mesh->indexCount / 3;
                 unsigned int vertices = mesh->vertexCount;
-                Vector *accum = (Vector *) new unsigned char[vertices * 12];
-                for (unsigned int v = 0; v < vertices; v++) {
-                    accum[v].x = 0.0f;
-                    accum[v].y = 0.0f;
-                    accum[v].z = 0.0f;
-                }
+                Vector *accum = new Vector[vertices]();
                 for (unsigned int t = 0; t < triangles; t++) {
                     mesh = *slot;
                     const Vector *pos = (const Vector *) mesh->positions;
@@ -712,10 +704,10 @@ namespace AbyssEngine {
                     float du2 = uv[i2 * 2] - uv[i0 * 2];
                     float dv2 = uv[i2 * 2 + 1] - uv[i0 * 2 + 1];
                     float r = 1.0f / (du1 * dv2 - du2 * dv1);
-                    Vector tangent;
-                    tangent.x = ((pos[i1].x - pos[i0].x) * dv2 - (pos[i2].x - pos[i0].x) * dv1) * r;
-                    tangent.y = ((pos[i1].y - pos[i0].y) * dv2 - (pos[i2].y - pos[i0].y) * dv1) * r;
-                    tangent.z = ((pos[i1].z - pos[i0].z) * dv2 - (pos[i2].z - pos[i0].z) * dv1) * r;
+                    Vector tangent(
+                            ((pos[i1].x - pos[i0].x) * dv2 - (pos[i2].x - pos[i0].x) * dv1) * r,
+                            ((pos[i1].y - pos[i0].y) * dv2 - (pos[i2].y - pos[i0].y) * dv1) * r,
+                            ((pos[i1].z - pos[i0].z) * dv2 - (pos[i2].z - pos[i0].z) * dv1) * r);
                     accum[i0] += tangent;
                     accum[i1] += tangent;
                     accum[i2] += tangent;
