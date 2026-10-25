@@ -683,9 +683,8 @@ Globals::Globals() {
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
     secondary->slot0 = 0;
-    settings->flagAt4e = 0;
-    settings->shortAt4c = 0;
-    settings->intAt48 = 0;
+    // 0x48..0x4f: intAt48, shortAt4c, flagAt4e and padding are all zero.
+    *reinterpret_cast<long long *>(reinterpret_cast<uint8_t *>(settings) + 0x48) = 0;
 
     Globals::imageFactory = 0;
     this->soundResources = 0;
@@ -2658,10 +2657,8 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
     int result = -1;
     if (list != nullptr) {
         unsigned i = 0;
-        int searching = 1;
-        do {
-            if (i >= list->size())
-                break;
+        bool searching = true;
+        while (i < list->size() && searching) {
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
@@ -2684,11 +2681,11 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                 }
                 if (differs == 0) {
                     result = (int) i;
-                    searching = false;
+                    break;
                 }
             }
             i++;
-        } while (searching);
+        }
     }
     return result;
 }
