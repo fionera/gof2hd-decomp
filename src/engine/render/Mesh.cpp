@@ -284,6 +284,7 @@ namespace AbyssEngine {
 
             // Material/shader animation tracks.
             if (materialFlags != 0) {
+                unsigned short count;
                 if (AEFile::Read(2, &count, file) == 0) {
                     delete anim;
                     return -1;
