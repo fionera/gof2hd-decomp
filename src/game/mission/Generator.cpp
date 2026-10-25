@@ -817,8 +817,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 type = 12;
                 break;
         }
-    }
-    if (type == 12) {
+    } else if (type == 12) {
         targetStation = agent->getStation();
     }
 
