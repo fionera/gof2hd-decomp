@@ -49,7 +49,7 @@ namespace AbyssEngine {
             x = scale * 0.25f;
             w = w_value;
             y = (matrix.m[4] + matrix.m[1]) / scale;
-            z = (matrix.m[8] + matrix.m[2]) / scale;
+            z = (matrix.m[2] + matrix.m[8]) / scale;
         } else if (m11 > m22) {
             float scale = sqrtf(((m11 + one) - m00) - m22);
             scale = scale + scale;
@@ -86,10 +86,10 @@ namespace AbyssEngine {
         float cosZsinY = cosZ * sinY;
         float sinX = sinf(halfX);
         float cosZcosY = cosZ * cosY;
-        x = cosX * sinZsinY - cosZcosY * sinX;
-        y = -(cosYsinZ * sinX) - cosX * cosZsinY;
-        z = cosZsinY * sinX - cosX * cosYsinZ;
+        y = -(cosX * cosZsinY) - cosYsinZ * sinX;
         w = sinZsinY * sinX + cosZcosY * cosX;
+        x = cosX * sinZsinY - cosZcosY * sinX;
+        z = cosZsinY * sinX - cosX * cosYsinZ;
     }
 
     Quaternion Quaternion::Inverse() const {
