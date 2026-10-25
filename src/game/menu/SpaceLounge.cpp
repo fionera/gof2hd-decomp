@@ -505,9 +505,12 @@ void SpaceLounge::startChat() {
                                 Globals::layout->field_0x6c);
         float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
         float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
-        // Clamp against the higher of the two candidate rows, then keep the chosen row unless clamped.
-        bool clamp = SPACELOUNGE_MIN(top, bottom) < minTop;
-        this->panelY = (int) (top < bottom ? (clamp ? minTop : top) : (clamp ? minTop : bottom));
+        float chosen = top < bottom ? top : bottom;
+        if (chosen < minTop) {
+            top = minTop;
+            bottom = minTop;
+        }
+        this->panelY = (int) (top < bottom ? top : bottom);
         delete this->scrollWindow;
         this->scrollWindow = 0;
         this->scrollWindow = new ScrollTouchWindow(
@@ -516,8 +519,9 @@ void SpaceLounge::startChat() {
         this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
         this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
         int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
+        const float gap = (float) Globals::layout->field_0x34;
         float extra = Globals::iPadHD ? 0.0f : (Globals::iPadLarge ? 0.0f : 11.0f);
-        int spacing = (int) ((float) Globals::layout->field_0x34 + extra);
+        int spacing = (int) (gap + extra);
         this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
         this->buttonY0 = y0;
         int y1 = y0 + Globals::layout->field_0x30_rowHeight + spacing;
