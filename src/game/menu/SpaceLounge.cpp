@@ -1827,76 +1827,52 @@ int SpaceLounge::getSoundId(Agent *agent) {
 }
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
-    int result = -1;
+    short result = soundId;
     switch (race) {
         case 0:
-        case 5:
-        {
+        case 5: {
             unsigned int delta = soundId - 759;
             if (alternate) {
-                if (delta < 48) {
-                    result = soundId + 240;
-                    break;
-                }
+                if (delta < 48) return soundId + 240;
             } else if (delta < 48) {
-                result = soundId + 192;
-                break;
+                return soundId + 192;
             }
-            goto fail;
+            result = -1;
+            goto done;
+        }
+        case 1: {
+            unsigned int delta = soundId - 759;
+            if (delta < 48) return soundId + 288;
+            result = -1;
+            goto done;
         }
         case 2:
-        {
+        case 3: {
             unsigned int delta = soundId - 759;
-            if (delta < 48) {
-                result = soundId + 144;
-                break;
-            }
-            goto fail;
+            if (delta < 48) return soundId + 144;
+            result = -1;
+            goto done;
         }
-        case 3:
-        {
+        case 4: {
             unsigned int delta = soundId - 759;
-            if (delta < 48) {
-                result = soundId + 144;
-                break;
-            }
-            goto fail;
-        }
-        case 1:
-        {
-            unsigned int delta = soundId - 759;
-            if (delta < 48) {
-                result = soundId + 288;
-                break;
-            }
-            goto fail;
-        }
-        case 4:
-        {
-            unsigned int delta = soundId - 759;
-            if (delta < 48) {
-                result = soundId + 96;
-                break;
-            }
-            goto fail;
+            if (delta < 48) return soundId + 96;
+            result = -1;
+            goto done;
         }
         case 6:
-            break;
-        case 7:
-        {
+            result = soundId;
+            goto done;
+        case 7: {
             unsigned int delta = soundId - 759;
-            if (delta < 48) {
-                result = soundId + 48;
-                break;
-            }
-            goto fail;
-        }
-        default:
-        fail:
+            if (delta < 48) return soundId + 48;
             result = -1;
-            break;
+            goto done;
+        }
     }
-    return result;
+    result = -1;
+done:
+    if (result >= 0) return result;
+    return -1;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
