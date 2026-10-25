@@ -244,7 +244,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->leftWidth = w;
         this->textOffsetY = this->height + 5;
         int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
-        this->textOffsetX = w / 2 - textW / 2;
+        this->textOffsetX = (w >> 1) - textW / 2;
         this->iconSmall = -1;
         this->iconOverlay = -1;
         Globals::Canvas->Image2DCreate(g_TB_medalIcons[medalIndex], (unsigned int &) this->iconSmall);
@@ -513,7 +513,7 @@ void TouchButton::draw() {
                 if (this->kind == 10)
                     Globals::Canvas->DrawString(
                         this->fontId, this->splitText,
-                        this->x + (this->width >> 1) - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
+                        this->x + this->width / 2 - Globals::Canvas->GetTextWidth(this->fontId, this->splitText) / 2,
                         this->y + this->height - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) * 2, false);
                 else
                     Globals::Canvas->DrawString(this->fontId, this->splitText,
