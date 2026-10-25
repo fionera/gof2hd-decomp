@@ -2675,10 +2675,11 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 approach->take();
             }
             KIPlayer *dockStation = (KIPlayer *) (intptr_t) this->asteroidTarget;
-            this->moveTarget = dockStation->getPosition()
+            Vector pos = dockStation->getPosition()
                                            + AbyssEngine::AEMath::MatrixRotateVector(
                                                ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
                                                approach->position);
+            this->moveTarget = pos;
             int distance = (int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition());
             if (this->dockScaling > distance) {
                 KIPlayer *target = (KIPlayer *) (intptr_t) this->asteroidTarget;
