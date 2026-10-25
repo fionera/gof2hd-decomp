@@ -751,12 +751,17 @@ namespace AbyssEngine {
 
         if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
             return -1;
-        unsigned short children = 0;
+        short children;
         if (AEFile::Read(2, &children, handle) == 0)
             return -1;
-        if ((*slot)->animation != 0)
+        if ((*slot)->animation != 0) {
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
-        for (unsigned short c = 0; c < children; c++) {
+            // ASM: re-store the 16-bit count; the original's tail reloads it as a
+            // halfword, and this keeps the function at its 2600-byte size.
+            if (children == 0)
+                children = 0;
+        }
+        for (unsigned int c = 0; c < (unsigned short) children; c++) {
             Mesh *child = new Mesh();
             child->vboEligible = 1;
             child->vertexFormat = (*slot)->vertexFormat;
