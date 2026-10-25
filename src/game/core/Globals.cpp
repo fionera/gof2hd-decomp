@@ -39,9 +39,10 @@ namespace {
         uint8_t flagAt39;
         uint8_t _pad3a;
         int32_t intAt3b;
-        uint8_t flagAt3f;
-        int16_t shortAt40;
-        uint8_t _pad42[2];
+        // flagAt3f (0x3f) and shortAt40 (0x40) are zeroed as one 4-byte word;
+        // _pad43 keeps qualityLevel at 0x44.
+        int32_t intAt3f;
+        uint8_t _pad43;
         float qualityLevel;
         int32_t intAt48;
         int16_t shortAt4c;
@@ -108,8 +109,7 @@ namespace {
     static_assert(offsetof(GameSettingsRecord, intAt35) == 0x35, "intAt35");
     static_assert(offsetof(GameSettingsRecord, flagAt39) == 0x39, "flagAt39");
     static_assert(offsetof(GameSettingsRecord, intAt3b) == 0x3b, "intAt3b");
-    static_assert(offsetof(GameSettingsRecord, flagAt3f) == 0x3f, "flagAt3f");
-    static_assert(offsetof(GameSettingsRecord, shortAt40) == 0x40, "shortAt40");
+    static_assert(offsetof(GameSettingsRecord, intAt3f) == 0x3f, "intAt3f");
     static_assert(offsetof(GameSettingsRecord, qualityLevel) == 0x44, "qualityLevel");
     static_assert(offsetof(GameSettingsRecord, intAt48) == 0x48, "intAt48");
     static_assert(offsetof(GameSettingsRecord, shortAt4c) == 0x4c, "shortAt4c");
@@ -639,15 +639,10 @@ static const int gDialogueSoundPairs[3008] = {
 // against the original via Ghidra (recovered symbol names + plate comments).
 
 Globals::Globals() {
-    Globals *self = this;
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
-    int *p5 = (int *) &Globals::recordHandler;
-    int *p7 = &Globals::lastStationMusicPlayed;
-    int *p9 = &Globals::lastCampaignMissionFailCount;
-    int *p11 = &Globals::lastSpaceMusicPlayed;
-    int *p12 = &Globals::lastCampaignMissionFailed;
 
+    Globals::recordHandler = 0;
     Globals::Canvas = 0;
     Globals::shipTemplate = 0;
     Globals::gameText = 0;
@@ -658,10 +653,9 @@ Globals::Globals() {
     Globals::globals = 0;
     Globals::layout = 0;
     Globals::appManager = 0;
-    *p5 = 0;
     Globals::generator = 0;
 
-    *(int *) self = 0;
+    this->field_0x0 = 0;
 
     settings->colorR = 0.5f;
     settings->colorG = 0.5f;
@@ -679,7 +673,7 @@ Globals::Globals() {
     settings->contrast = 0.5f;
     settings->_region[2] = 1;
     settings->enableFlag30 = 1;
-    settings->shortAt40 = 0;
+    settings->intAt3f = 0;
     settings->intAt50 = 0;
     settings->flagAt39 = 0;
     settings->intAt35 = 0;
@@ -687,40 +681,35 @@ Globals::Globals() {
     secondary->slot1 = 0;
     secondary->flagAt13 = 0;
 
-    settings->flagAt3f = 0;
     settings->intAt3b = 0;
     secondary->slot0 = 0;
-    // intAt48 (0x48) and shortAt4c (0x4c) are adjacent aligned zero words; clang
-    // emits separate 4-byte and 2-byte stores here (no 8-byte merge).
+    // intAt48 (0x48), shortAt4c (0x4c) and flagAt4e (0x4e) are zeroed with
+    // separate stores, matching the original.
+    settings->flagAt4e = 0;
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
 
-    int *p7b = (int *) &Globals::imageFactory;
-    int *p5b = (int *) &Globals::achievements;
-    int *p11b = (int *) &Globals::galaxy;
-    int *p9b = (int *) &Globals::status;
-    int *p8b = (int *) &Globals::ships;
 
-    *p7b = 0;
-    self->soundResources = 0;
+    Globals::imageFactory = 0;
+    this->soundResources = 0;
     Globals::instantActionType = -1;
-    *p9b = 0;
+    Globals::status = 0;
     settings->shortAt60 = 0x100;
     Globals::items = 0;
-    *p5b = 0;
-    *p11b = 0;
+    Globals::achievements = 0;
+    Globals::galaxy = 0;
     Globals::instantActionScore = 0;
     Globals::instantActionWave = 0;
     Globals::instantActionPlayerName = 0;
-    *p8b = 0;
+    Globals::ships = 0;
 
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
-    *p12 = -1;
-    *p7 = -1;
+    Globals::lastCampaignMissionFailed = -1;
+    Globals::lastStationMusicPlayed = -1;
     Globals::initMemoryWarning = 0;
-    *p11 = -1;
-    *p9 = 0;
+    Globals::lastSpaceMusicPlayed = -1;
+    Globals::lastCampaignMissionFailCount = 0;
 
     float fv = settings->qualityLevel;
     int v54 = 0x247;
