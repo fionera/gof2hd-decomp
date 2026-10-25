@@ -8,13 +8,16 @@
 SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                    Array<Matrix> transforms,
                                    PaintCanvas *canvas, unsigned short flags) {
+    uint32_t vertexCount;
+    uint32_t triangleCount;
+
     this->canvas = canvas;
     this->flags = flags;
     this->rows = (int) transforms.size();
     ArraySetLength(meshIds.size(), this->meshes);
 
-    uint32_t vertexCount = 0;
-    uint32_t triangleCount = 0;
+    vertexCount = 0;
+    triangleCount = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t meshId;
         canvas->MeshCreate(meshIds.data()[i], meshId, false);
@@ -56,9 +59,9 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                 canvas->MeshSetColor(this->mergedMeshId, (uint16_t) (vertexBase + v),
                                      color[0], color[1], color[2], color[3]);
             }
-            positionOffset += 12;
-            uvOffset += 8;
             colorOffset += 16;
+            uvOffset += 8;
+            positionOffset += 12;
         }
 
         uint32_t triangles = (uint32_t) mesh->indexCount / 3u;
@@ -78,6 +81,6 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
     }
 
     canvas->TransformCreate(this->transformId);
-    canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->initialized = 1;
+    canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
 }
