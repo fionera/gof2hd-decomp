@@ -758,11 +758,7 @@ void PlayerFighter::update(int dt) {
                 if (this->KIPlayer::route->getWaypoint() && this->player->isActive()) {
                     this->KIPlayer::route->update(this->geometry->getPosition());
                     if (this->KIPlayer::route->getWaypoint()) {
-                        if (!this->KIPlayer::route->getDockingTarget()) {
-                            this->targetPos.x = (float) this->KIPlayer::route->getWaypoint()->x;
-                            this->targetPos.y = (float) this->KIPlayer::route->getWaypoint()->y;
-                            this->targetPos.z = (float) this->KIPlayer::route->getWaypoint()->z;
-                        } else {
+                        if (this->KIPlayer::route->getDockingTarget()) {
                             if (this->state == 1) {
                                 this->state = 7;
                             }
@@ -803,6 +799,10 @@ void PlayerFighter::update(int dt) {
                                     }
                                 }
                             }
+                        } else {
+                            this->targetPos.x = (float) this->KIPlayer::route->getWaypoint()->x;
+                            this->targetPos.y = (float) this->KIPlayer::route->getWaypoint()->y;
+                            this->targetPos.z = (float) this->KIPlayer::route->getWaypoint()->z;
                         }
                         this->field_0x12c = true;
                     }
