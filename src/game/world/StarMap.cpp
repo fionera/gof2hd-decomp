@@ -1248,16 +1248,18 @@ void StarMap::update(int dt) {
                 float centerX = (float) (Globals::w >> 1);
                 float dx = this->scratchVector.x - centerX;
                 float dy = this->scratchVector.y - centerY;
+                float vxStep = dx / -30.0f;
+                float vyStep = dy / -30.0f;
                 float vx = 0.0f;
                 float vy = 0.0f;
                 if (this->scratchVector.x < centerX)
-                    vx = dx / -30.0f;
+                    vx = vxStep;
                 else if (this->scratchVector.x > centerX)
-                    vx = dx / -30.0f;
+                    vx = vxStep;
                 if (this->scratchVector.y > centerY)
-                    vy = dy / -30.0f;
+                    vy = vyStep;
                 else if (this->scratchVector.y < centerY)
-                    vy = dy / -30.0f;
+                    vy = vyStep;
                 if (STARMAP_ABS((int) vx) > STARMAP_ABS((int) dx))
                     vx = vx * 0.5f;
                 if (STARMAP_ABS((int) vy) > STARMAP_ABS((int) dy))
@@ -1282,12 +1284,10 @@ void StarMap::update(int dt) {
             int yawDiff = yaw - target;
             if (yawDiff < 0)
                 yawDiff = -yawDiff;
-            float yawStep;
             if (target > yaw)
-                yawStep = (float) (target - yaw) * 0.25f;
+                this->yaw += (float) (target - yaw) * 0.25f;
             else
-                yawStep = (float) (yaw - target) * 0.25f * -1.0f;
-            this->yaw += yawStep;
+                this->yaw -= (float) (yaw - target) * 0.25f;
             if (yawDiff <= 10)
                 this->stationCenterAnim = 0;
             float pitchStep;
