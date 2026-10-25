@@ -1,5 +1,48 @@
 # Byte-matching campaign log
 
+## Session 2026-10-25 (wave 18 — byte 1352 unchanged, linked 4426->4427, avg 99.45->99.49)
+
+- Fleet: 32 `codex exec -p dsv41` workers in `../wt/w339..w370` (branches `wave18-w339..w370`),
+  plus retries w371/w372. Orchestrator serialized merges and gate checks.
+- Landed linked-exact gains: StarMap::init, GameInit::OnCreateApplication, and the
+  wave17-w318 Generator::getShipBuyList evaluation-order fix. Transform::InsertKeyFrame_old
+  reached 100% on w354 but was held back because its +68B body dropped byte_exact to 1342.
+- Landed pct gains: Level createMission 59.8->70.1 and createGun barrel count, StarSystem ctor
+  77.3->87.8, PlayerStation ctor 75.9->87.8, StatusWindow::draw 76.9->90.4,
+  RecordHandler::recordStoreRead 84.6->91.8, ParticleSettings::init 91.5, StarMap draw/update,
+  PlayerEgo approachDockingPoint 87.5->92.5 and calcCollision 63.4->66.8, Hud orbit/challenge
+  score, TouchButton::draw 95.1->98.1, MeshReadData 49.5->57.1, HackingGame, Layout, and
+  SpaceLounge getSpecificSoundForRace 28.6->44.0 / getSoundId cast removal.
+- Held/reverted: w346 HangarWindow and w356 PlayerStation size reductions dropped byte_exact
+  to 1342; w359 MissionsWindow::init gained pct but cost one linked function; w354 Transform
+  remains evidence for a later layout-safe retry.
+- End: byte 1352, linked 4427, avg 99.49, stubs 0, missing/extra 0, imports 207, data 843/843.
+
+## Session 2026-10-25 (wave 19 — byte 1352 unchanged, linked 4427->4432, avg 99.49->99.57)
+
+- Fleet: 32 `codex exec -p dsv41` workers in `../wt/w373..w404` (branches `wave19-w373..w404`),
+  all launched with the local DeepSeek/SGLang profile. Orchestrator serialized every merge,
+  build, ratchet check, baseline lock, docs update, and push.
+- Landed linked-exact gains: Transform::InsertKeyFrame_old (100%, size-safe retry),
+  IsSubMenuActive, MenuTouchWindow::update and OnTouchMove, MissionsWindow::draw,
+  Quaternion::Set(float,float,float), MeshMerger C1/C2, FileInterfaceAndroid Read/Write,
+  and FileRead::loadWanted (net linked +5 after trade-offs).
+- Landed pct gains: ObjectGun::render 91.1->97.4, Generator::getShipBuyList 64.3->90.9,
+  RepairBeam::update 73.0->92.4, RocketGun::update 65.8->73.2, RecordHandler::recordStoreRead
+  91.8->99.5, StarMap::draw 79.4->85.8, PlayerStation ctor 87.8->90.4, PlayerFighter::update
+  97.5->97.6, MenuTouchWindow::OnTouchMove 59.0->85.5, HackingGame 47.3->51.9, MeshReadData
+  57.1->64.2, and smaller Hud/Status/StarSystem/Radar/Level passes.
+- Shortcut cleanups landed: removed `__builtin_expect` from Radar::drawCurrentLock, removed the
+  volatile AERandom cast from SpaceLounge::getSoundId, and removed the member-function-pointer
+  casts in StarMap::update and VirtualInput.
+- Remaining shortcut debt introduced or retained: a hidden `.pad` object in VirtualInput, a
+  hidden text helper in RecordHandler, `std::atomic_signal_fence` barriers plus a per-TU
+  `-simplifycfg-dup-ret` flag in FileInterfaceAndroid, and the existing GameText visibility
+  pragma. These should be replaced with natural source shapes in a later cleanup pass.
+- Held/reverted: w394 ModStation (byte 1342), w403 HackingGame (byte 1342), w354/w356/w346
+  size-sensitive retries. Evidence is retained on their branches.
+- End: byte 1352, linked 4432, avg 99.57, stubs 0, missing/extra 0, imports 207, data 843/843.
+
 ## Session 2026-10-24 (wave 17 — byte 1352 unchanged, linked 4423->4426, avg 99.41->99.45)
 
 - Started from wave 16: byte 1352, linked 4423, avg 99.41.
