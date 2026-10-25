@@ -325,7 +325,7 @@ StarSystem::StarSystem(int mode) {
                             placed = usedSlots[slot] == 0;
                         }
                     }
-                    float scale = (float) ((0.8 + 0.01 * Globals::rnd->nextInt(40)) * (2300.0 / 65536.0));
+                    float scale = (float) ((0.8f + 0.01 * Globals::rnd->nextInt(40)) * (2300.0 / 65536.0));
                     (*this->planetsArray)[i]->setScaling(Vector{scale, scale, scale});
                     flip = sunSlot - slot < 12 ? 0 : 0x8000;
                     if (sunSlot <= slot) {
