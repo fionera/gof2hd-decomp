@@ -2212,6 +2212,13 @@ void MenuTouchWindow::update(int dt) {
     }
 
     switch (this->menuState) {
+    case 15:
+        this->scrollWindowB->update(dt);
+        break;
+    case 9:
+        if (this->missionsWindow != 0)
+            this->missionsWindow->update(dt);
+        break;
     case 0:
         if (this->backgroundEnabled == 1) {
             // Centre the main menu buttons vertically.
@@ -2224,6 +2231,9 @@ void MenuTouchWindow::update(int dt) {
             }
         }
         break;
+    case 4:
+        this->scrollWindowA->update(dt);
+        break;
     case 3: {
         int top = Globals::h / 2 - (this->optionsButtons->size() * Globals::layout->field_0x30_rowHeight +
                                     (this->buttons->size() - 1) * this->buttonRowGap) / 2;
@@ -2232,16 +2242,6 @@ void MenuTouchWindow::update(int dt) {
                                                      top);
         break;
     }
-    case 4:
-        this->scrollWindowA->update(dt);
-        break;
-    case 9:
-        if (this->missionsWindow != 0)
-            this->missionsWindow->update(dt);
-        break;
-    case 15:
-        this->scrollWindowB->update(dt);
-        break;
     }
     if (this->messageShowing)
         this->choiceWindow->update(dt);
@@ -2405,8 +2405,8 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
             } else if (touchId != 0 && this->cinematicTouchIdA != touchId) {
                 if (touchB == 0 && x > Globals::w - 220 &&
                     y > *(int *) &Globals::options[88] - 20 && y < *(int *) &Globals::options[88] + 230) {
-                    this->cinematicTouchIdB = touchId;
                     this->cinematicTouchState = 0x100;
+                    this->cinematicTouchIdB = touchId;
                     this->cinematicAnchorB = y;
                 } else {
                     this->cinematicTouchState = 0;
