@@ -1564,15 +1564,15 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 this->bluePrintItem->item->setAmount(this->savedAmount);
                 this->bluePrintItem->item->setBlueprintAmount(this->savedBlueprintAmount);
                 Globals::status->setCredits(this->savedCredits);
-                this->savedStationAmount = 0;
                 this->bluePrintBuyCount = 0;
+                this->savedStationAmount = 0;
                 this->selectedItem = 0;
                 this->savedAmount = 0;
                 this->savedBlueprintAmount = 0;
                 this->currentLoad = this->savedLoad;
                 this->hangarList->setCurrentItemIndex(-1);
-                this->dialogActive = 0;
                 this->bluePrintPurchasePending = 0;
+                this->dialogActive = 0;
                 this->buyMode = 0;
                 if (Globals::status->getCredits() < cost && !this->localBluePrint) {
                     this->dialog->set(Globals::status->replaceHash(
@@ -1588,8 +1588,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
         } else if (this->sellShipPending) {
             int choice = this->dialog->OnTouchEnd(x, y);
             if (choice == 0) {
-                this->sellShipPending = 0;
                 this->dialogActive = 0;
+                this->sellShipPending = 0;
                 Globals::status->changeCredits(this->selectedItem->getPrice());
                 Globals::status->getStation()->removeShip(this->selectedItem->ship);
                 this->hangarList->initShopTab(this->itemList, Globals::status->getStation()->getShips());
