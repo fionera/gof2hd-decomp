@@ -250,49 +250,48 @@ PlayerStation::PlayerStation(Station *station)
         Vector extent = {0.0f, 0.0f, 0.0f};
         this->boundingVolumes = new BoundingVolumeList();
         ArraySetLength(count, *(BoundingVolumeList *) this->boundingVolumes);
-        int i = 0;
-        int cursor = 1;
-        do {
-            int *data = collision->data();
-            int next = cursor + 1;
-            int type = data[cursor];
+        for (int i = 0, cursor = 1; i < count; i++) {
             BoundingVolume *volume;
-            if (type == 0) {
-                float x = (float) -data[next];
-                float z = (float) data[cursor + 2];
-                float y = (float) data[cursor + 3];
-                extent.x = (float) data[cursor + 4];
-                if (alienOrbit) {
-                    extent *= 0.4f;
-                } else {
-                    extent *= 0.5f;
+            switch ((*collision)[cursor++]) {
+                case 0: {
+                    float x = (float) -(*collision)[cursor];
+                    float z = (float) (*collision)[cursor + 1];
+                    float y = (float) (*collision)[cursor + 2];
+                    extent.x = (float) (*collision)[cursor + 3];
+                    cursor += 4;
+                    if (alienOrbit) {
+                        extent *= 0.4f;
+                    } else {
+                        extent *= 0.5f;
+                    }
+                    if (extent.x < 0.0f) {
+                        extent *= -1.0f;
+                    }
+                    volume = new BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, extent.x);
+                    break;
                 }
-                if (extent.x < 0.0f) {
-                    extent *= -1.0f;
+                case 1: {
+                    float z = (float) (*collision)[cursor + 1];
+                    float y = (float) (*collision)[cursor + 2];
+                    float x = (float) -(*collision)[cursor];
+                    extent.x = (float) (*collision)[cursor + 3];
+                    extent.z = (float) (*collision)[cursor + 4];
+                    extent.y = (float) (*collision)[cursor + 5];
+                    cursor += 6;
+                    if (alienOrbit) {
+                        extent *= 0.9f;
+                    } else {
+                        extent *= 1.0f;
+                    }
+                    volume = new BoundingAAB(x, y, z, 0.0f, 0.0f, 0.0f, extent.x + extent.x,
+                                             extent.y + extent.y, extent.z + extent.z);
+                    break;
                 }
-                volume = new BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, extent.x);
-                cursor += 5;
-            } else if (type == 1) {
-                float z = (float) data[cursor + 2];
-                float y = (float) data[cursor + 3];
-                float x = (float) -data[next];
-                extent.x = (float) data[cursor + 4];
-                extent.z = (float) data[cursor + 5];
-                extent.y = (float) data[cursor + 6];
-                if (alienOrbit) {
-                    extent *= 0.9f;
-                } else {
-                    extent *= 1.0f;
-                }
-                volume = new BoundingAAB(x, y, z, 0.0f, 0.0f, 0.0f, extent.x + extent.x, extent.y + extent.y,
-                                         extent.z + extent.z);
-                cursor += 7;
-            } else {
-                ++cursor;
-                continue;
+                default:
+                    continue;
             }
             (*(BoundingVolumeList *) this->boundingVolumes)[i] = volume;
-        } while (++i < count);
+        }
         ArrayRelease(*collision);
         delete collision;
     }
