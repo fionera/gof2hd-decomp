@@ -120,6 +120,10 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                         placed = false;
                     }
                 }
+                // The original keeps a zero-initialised local live across this branch: it shows up
+                // as a debug value between the compare and the branch, which is why the check is a
+                // cmp/bne pair rather than a cbnz.
+                int placedSlot = 0;
                 if (placed)
                     continue;
 
