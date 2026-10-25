@@ -1293,6 +1293,13 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         Globals::appManager->SetCurrentApplicationModule(2);
                         this->stationActive = 0;
                         return;
+                    } else if (next == 109) {
+                        Globals::switch_to_target_setting = 1;
+                        Level::initStreamOutPosition = 1;
+                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(114));
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->stationActive = 0;
+                        return;
                     } else if (next == 99 || next == 119) {
                         Globals::switch_to_target_setting = 1;
                         Level::initStreamOutPosition = 1;
@@ -1304,13 +1311,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         delete this->hangarWindow;
                         this->hangarWindow = nullptr;
                         this->flag_0x66 = 0;
-                    } else if (next == 109) {
-                        Globals::switch_to_target_setting = 1;
-                        Level::initStreamOutPosition = 1;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(114));
-                        Globals::appManager->SetCurrentApplicationModule(2);
-                        this->stationActive = 0;
-                        return;
                     } else if (next == 128) {
                         Globals::status->activateNewWanted();
                         if (!Globals::hints[42]) {
