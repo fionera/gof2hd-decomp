@@ -2496,6 +2496,39 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
         return false;
     }
     switch (this->menuState) {
+        case 11:
+            // Touch control preview: drag the steering pad / fire buttons.
+            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+                if (this->cinematicBtnA != 0)
+                    this->cinematicBtnA->OnTouchMove(x, y);
+                if (this->cinematicBtnB != 0)
+                    this->cinematicBtnB->OnTouchMove(x, y);
+                if (touchId != 0) {
+                    if (this->cinematicTouchIdA == touchId) {
+                        Globals::globals->setCoordsSteer(
+                            *(int *) &Globals::options[84] + y - this->cinematicAnchorA,
+                            Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                            Globals::Canvas->GetImage2DWidth(this->steerImageC),
+                            Globals::Canvas->GetImage2DWidth(this->steerImageB), this->steerCoord_0x2e,
+                            this->steerCoord_0x30, this->steerCoord_0x40, this->steerCoord_0x42, this->steerCoord_0x3c,
+                            this->steerCoord_0x3e, this->steerCoord_0x34, this->steerCoord_0x32, this->steerCoord_0x48,
+                            this->steerCoord_0x4a);
+                        this->cinematicAnchorA = y;
+                        this->cinematicTouchState = 1;
+                    } else if (this->cinematicTouchIdB == touchId) {
+                        Globals::globals->setCoordsFire(
+                            *(int *) &Globals::options[88] + y - this->cinematicAnchorB,
+                            Globals::Canvas->GetImage2DWidth(this->fireImageA), this->fireImageA, this->fireImageB,
+                            this->fireSize_0x74, this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
+                            this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a, this->fireCoord_0x6c,
+                            this->fireCoord_0x6e, this->fireCoord_0x70, this->fireCoord_0x72, this->fireCoord_0x4c,
+                            this->fireCoord_0x4e);
+                        this->cinematicAnchorB = y;
+                        this->cinematicTouchState = 0x100;
+                    }
+                }
+            }
+            break;
         case 1:
         case 2:
             // Load / save list.
@@ -2563,7 +2596,7 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
             Globals::sound->setVolume(2, (*this->sliders)[2]->getValue());
             Globals::sound->setVolume(3, (*this->sliders)[3]->getValue());
             for (unsigned int i = 1; i < this->sliders->size(); i++) {
-                if (i != 5 || Globals::layout->field_0x284_sliderSlot5Enabled)
+                if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0))
                     (*this->sliders)[i]->OnTouchMove(x, y);
             }
             break;
@@ -2586,35 +2619,6 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
             break;
         case 9:
             this->missionsWindow->OnTouchMove(x, y);
-            break;
-        case 11:
-            // Touch control preview: drag the steering pad / fire buttons.
-            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
-                this->cinematicBtnA->OnTouchMove(x, y);
-                this->cinematicBtnB->OnTouchMove(x, y);
-                if (touchId != 0) {
-                    if (this->cinematicTouchIdA == touchId) {
-                        Globals::globals->setCoordsSteer(
-                            *(int *) &Globals::options[84] + y - this->cinematicAnchorA,
-                            Globals::Canvas->GetImage2DWidth(this->steerImageA),
-                            Globals::Canvas->GetImage2DWidth(this->steerImageC),
-                            Globals::Canvas->GetImage2DWidth(this->steerImageB), this->steerCoord_0x2e,
-                            this->steerCoord_0x30, this->steerCoord_0x40, this->steerCoord_0x42, this->steerCoord_0x3c,
-                            this->steerCoord_0x3e, this->steerCoord_0x34, this->steerCoord_0x32, this->steerCoord_0x48,
-                            this->steerCoord_0x4a);
-                        this->cinematicAnchorA = y;
-                    } else if (this->cinematicTouchIdB == touchId) {
-                        Globals::globals->setCoordsFire(
-                            *(int *) &Globals::options[88] + y - this->cinematicAnchorB,
-                            Globals::Canvas->GetImage2DWidth(this->fireImageA), this->fireImageA, this->fireImageB,
-                            this->fireSize_0x74, this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
-                            this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a, this->fireCoord_0x6c,
-                            this->fireCoord_0x6e, this->fireCoord_0x70, this->fireCoord_0x72, this->fireCoord_0x4c,
-                            this->fireCoord_0x4e);
-                        this->cinematicAnchorB = y;
-                    }
-                }
-            }
             break;
         case 12:
             for (unsigned int i = 0; i < this->buttonsB4->size(); i++)
