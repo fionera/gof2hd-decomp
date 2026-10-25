@@ -39,10 +39,9 @@ namespace {
         uint8_t flagAt39;
         uint8_t _pad3a;
         int32_t intAt3b;
-        // flagAt3f (0x3f) and shortAt40 (0x40) are zeroed as one 4-byte word;
-        // _pad43 keeps qualityLevel at 0x44.
-        int32_t intAt3f;
-        uint8_t _pad43;
+        uint8_t flagAt3f;
+        int16_t shortAt40;
+        uint8_t _pad42[2];
         float qualityLevel;
         int32_t intAt48;
         int16_t shortAt4c;
@@ -109,7 +108,8 @@ namespace {
     static_assert(offsetof(GameSettingsRecord, intAt35) == 0x35, "intAt35");
     static_assert(offsetof(GameSettingsRecord, flagAt39) == 0x39, "flagAt39");
     static_assert(offsetof(GameSettingsRecord, intAt3b) == 0x3b, "intAt3b");
-    static_assert(offsetof(GameSettingsRecord, intAt3f) == 0x3f, "intAt3f");
+    static_assert(offsetof(GameSettingsRecord, flagAt3f) == 0x3f, "flagAt3f");
+    static_assert(offsetof(GameSettingsRecord, shortAt40) == 0x40, "shortAt40");
     static_assert(offsetof(GameSettingsRecord, qualityLevel) == 0x44, "qualityLevel");
     static_assert(offsetof(GameSettingsRecord, intAt48) == 0x48, "intAt48");
     static_assert(offsetof(GameSettingsRecord, shortAt4c) == 0x4c, "shortAt4c");
@@ -673,7 +673,7 @@ Globals::Globals() {
     settings->contrast = 0.5f;
     settings->_region[2] = 1;
     settings->enableFlag30 = 1;
-    settings->intAt3f = 0;
+    settings->shortAt40 = 0;
     settings->intAt50 = 0;
     settings->flagAt39 = 0;
     settings->intAt35 = 0;
@@ -681,6 +681,7 @@ Globals::Globals() {
     secondary->slot1 = 0;
     secondary->flagAt13 = 0;
 
+    settings->flagAt3f = 0;
     settings->intAt3b = 0;
     secondary->slot0 = 0;
     // intAt48 (0x48), shortAt4c (0x4c) and flagAt4e (0x4e) are zeroed with
@@ -2662,7 +2663,9 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
     if (list != nullptr) {
         bool searching = true;
         unsigned i = 0;
-        while (i < list->size() && searching) {
+        do {
+            if (i >= list->size())
+                return result;
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
@@ -2685,11 +2688,14 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                 }
                 if (differs == 0) {
                     result = (int) i;
-                    break;
+                    searching = false;
+                }
+                else {
+                    searching = true;
                 }
             }
             i++;
-        }
+        } while (searching);
     }
     return result;
 }
