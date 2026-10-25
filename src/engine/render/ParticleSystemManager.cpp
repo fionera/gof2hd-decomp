@@ -11,19 +11,6 @@
 #include "engine/render/ParticleSystemSprite.h"
 #include "engine/render/PaintCanvas.h"
 
-// lint: void_ptr -- the following forward-declared shims are UNDEFINED (UND)
-// symbols in the linked .so; their mangled names encode `Pv` (void*), so their
-// signatures are fixed by symbol parity and must NOT be retyped.
-void _psm_ArrayReleaseSprites(void *arr); // lint: void_ptr
-
-void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res); // lint: void_ptr
-
-void _ips_emitManual(void *sys, float x, float y, float z); // lint: void_ptr
-
-void _psm_arraySpriteCtor(void *arr); // lint: void_ptr
-
-void _psm_arraySpriteDtor(void *arr); // lint: void_ptr
-
 ParticleSystemManager::ParticleSystemManager(
     PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
     bool spriteFlag, unsigned short meshTex, bool meshFlag)
@@ -52,7 +39,8 @@ void ParticleSystemManager::construct() {
     this->meshId = 0xffffffff;
     this->transformId = 0xffffffff;
     this->meshParticleCount = 0;
-    this->flags = 0x101;
+    this->flags = 1;
+    this->flagsHigh = 1;
 }
 
 void ParticleSystemManager::init() {
@@ -83,9 +71,9 @@ void ParticleSystemManager::initSprites() {
 
     this->canvas->SpriteSystemSetAllSize(this->spriteSystemId, 0);
 
-    // Sprite UV rectangle of the first particle set (floats at cur + 0x88..0x94).
-    const float *uv = reinterpret_cast<const float *>(ParticleSettingsRef::curBytes() + 0x88);
-    this->canvas->SpriteSystemSetAllUv(this->spriteSystemId, uv[0], uv[1], uv[2], uv[3]);
+    const ParticleSettings::SetDefinition &definition = ParticleSettingsRef::cur.sets[0];
+    this->canvas->SpriteSystemSetAllUv(this->spriteSystemId, definition.uvU0, definition.uvV0,
+                                       definition.uvU1, definition.uvV1);
 
     for (unsigned i = 0, offset = 0; i < this->spriteSystems.count; ++i) {
         IParticleSystem *sys = this->spriteSystems[i];
@@ -171,22 +159,20 @@ void ParticleSystemManager::update(long long dt) {
 int ParticleSystemManager::addSystem(AbyssEngine::AEMath::Matrix const *matrix,
                                      ParticleSettings::ParticleSet set, bool flag) {
     Array<ParticleSettings::ParticleSet> sets;
-    ArrayAdd<ParticleSettings::ParticleSet>(set, sets);
+    ArrayAdd(set, sets);
 
-    ParticleSettings::SetDefinition *definitions =
-        ParticleSettingsRef::cur.sets;
-    uint32_t *setFlags = &definitions[(int) set].flags;
+    ParticleSettings::SetDefinition &definition = ParticleSettingsRef::cur.sets[(int) set];
 
     int handle;
-    if ((*setFlags & 1) != 0) {
+    if ((definition.flags & 1) != 0) {
         handle = addSpriteSystem(matrix, sets, flag);
-    } else if ((*setFlags & 2) != 0) {
+    } else if ((definition.flags & 2) != 0) {
         handle = (int) addMeshSystem(matrix, sets, flag);
     } else {
         return -1;
     }
 
-    if ((*setFlags & 0x01000000u) != 0)
+    if ((definition.flags & 0x01000000u) != 0)
         enableSystemUpdate(handle, false);
     return handle;
 }
@@ -195,7 +181,7 @@ int ParticleSystemManager::addSpriteSystem(AbyssEngine::AEMath::Matrix const *ma
                                            Array<ParticleSettings::ParticleSet> const &sets, bool flag) {
     ParticleSystemSprite *sys =
         new ParticleSystemSprite(this->canvas, matrix, sets, flag, this->spriteUsesExtra);
-    ArrayAdd<ParticleSystemSprite *>(sys, spriteArray());
+    ArrayAdd(sys, this->spriteSystems);
     this->spriteParticleCount += sys->getParticleCount();
     return this->spriteSystems.count - 1;
 }
@@ -205,7 +191,7 @@ unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix co
                                                   bool flag) {
     ParticleSystemMesh *sys =
         new ParticleSystemMesh(this->canvas, matrix, sets, flag, this->meshUsesExtra);
-    ArrayAdd<ParticleSystemMesh *>(sys, meshArray());
+    ArrayAdd(sys, this->meshSystems);
 
     this->meshParticleCount += sys->getQuadCount();
 
@@ -261,7 +247,7 @@ ParticleSystemManager::~ParticleSystemManager() {
 void ParticleSystemManager::release() {
     releaseSprites();
     this->canvas = nullptr;
-    ArrayReleaseClasses<ParticleSystemMesh *>(meshArray());
+    ArrayReleaseClasses(this->meshSystems);
 }
 
 void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam) {
@@ -283,10 +269,9 @@ void ParticleSystemManager::releaseSprites() {
 void ParticleSystemManager::render3d() {
     if (this->enabled == 0)
         return;
-    uint8_t *active = reinterpret_cast<uint8_t *>(&this->flags);
-    if (active[1] != 0)
+    if (this->flagsHigh != 0)
         renderMeshes();
-    if (active[0] != 0)
+    if (this->flags != 0)
         renderSprites();
 }
 
