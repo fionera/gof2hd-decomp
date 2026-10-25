@@ -406,8 +406,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         else
             passengers = !(Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
                            Globals::status->getStation()->getIndex() == 131);
-        String count = String(Globals::status->field_178) + String(" / ") +
-                       String(Globals::status->getShip()->getMaxPassengers());
+        String count = String(Globals::status->field_178) +
+                       (String(" / ") + String(Globals::status->getShip()->getMaxPassengers()));
         if (passengers)
             Globals::Canvas->DrawImage2D(this->image_0x334, this->field_0x438 - Globals::layout->field_0x1f0,
                                          this->field_0x43a);
@@ -426,8 +426,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, count,
                                         this->field_0x438 + Globals::layout->field_0x200, this->field_0x43a + 5, false);
         } else {
-            String load = String(String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
-                                 String(Globals::status->getShip()->getMaxLoad()) + String("t"), false);
+            String load = String(Globals::status->getShip()->getCurrentLoad()) +
+                          (String(" / ") + String(Globals::status->getShip()->getMaxLoad()) + String("t"));
             int shift = 0;
             if (Globals::status->getShip()->getCurrentLoad() >= 101)
                 shift = -2 * Globals::layout->field_0x2c_rowHeight;
