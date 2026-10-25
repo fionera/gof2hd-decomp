@@ -934,10 +934,10 @@ void PlayerEgo::checkForTurret() {
     int barrelExtraMesh = -1;
     unsigned short baseMesh;
     unsigned short barrelMesh;
-    int baseExtraMesh = -1;
     float offsetZ = 0.0f;
     float offsetY;
     float offsetX = 0.0f;
+    int baseExtraMesh = -1;
     int turretIndex = (*equipment)[0]->getIndex();
     if (turretIndex == 48) {
         baseMesh = 0x1a74;
