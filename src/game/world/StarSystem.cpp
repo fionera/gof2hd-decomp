@@ -229,7 +229,7 @@ StarSystem::StarSystem(int mode) {
         }
         int sunSlot = 0;
         int slot = 0;
-        for (uint32_t i = 0; i < this->planetsArray->size() && (int) i >= 0; ++i) {
+        for (i = 0; i < this->planetsArray->size(); ++i) {
             (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
             if (!this->abstractSystem &&
                 ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 15 &&
@@ -263,10 +263,11 @@ StarSystem::StarSystem(int mode) {
                     float sunScale = Globals::status->getCurrentCampaignMission() < 106 ? 65000.0f / 65536.0f
                                                                                          : 90000.0f / 65536.0f;
                     (*this->planetsArray)[0]->setScaling(Vector{sunScale, sunScale, sunScale});
-                    this->sunStreak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
-                    this->sunStreak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
+                    AEGeometry *streak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
+                    this->sunStreak = streak;
+                    streak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
                     if (((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
-                        reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(this->sunStreak->meshId)->materialId) =
+                        reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(streak->meshId)->materialId) =
                                 0.22f;
                     }
                     Globals::Canvas->TextureCreate((uint16_t) 0x2dde, this->supernovaSunTexture, false);
@@ -332,7 +333,6 @@ StarSystem::StarSystem(int mode) {
                         flip = 0x8000;
                     }
                 }
-                usedSlots[slot] = 1;
             }
 
             const float kTwoPi = 6.2831855f;
@@ -348,6 +348,7 @@ StarSystem::StarSystem(int mode) {
                 Vector rotation{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f};
                 planet->setRotation(rotation);
             }
+            usedSlots[slot] = 1;
             (*this->planetsArray)[i]->moveForward(-20000.0f);
             if (i == 0) {
                 this->lightDirection = (*this->planetsArray)[0]->getDirection();
@@ -360,6 +361,7 @@ StarSystem::StarSystem(int mode) {
             (*this->positionsArray)[i] = (*this->planetsArray)[i]->getPosition();
         }
         Globals::rnd->reset();
+        this->fogEnabled = 0;
     }
     this->initLight();
 }
