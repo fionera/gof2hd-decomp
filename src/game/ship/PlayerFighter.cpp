@@ -790,8 +790,8 @@ void PlayerFighter::update(int dt) {
                                         Vector dockDir = VectorNormalize(MatrixRotateVector(
                                                 this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->direction));
                                         Vector navPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
-                                        Vector dockPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
-                                        Vector up = VectorNormalize(navPos - dockPos);
+                                        Vector diff = navPos - MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
+                                        Vector up = VectorNormalize(diff);
                                         Matrix dockMatrix;
                                         // the original materialises the returned matrix in a local slot
                                         Matrix result = MatrixSetRotation(dockMatrix, VectorNormalize(VectorCross(up, dockDir)), up, dockDir);
