@@ -2448,22 +2448,20 @@ void MGame::OnUpdate() {
     }
 
     // Mouse drag of the free camera.
-    int mouseX = Globals::mouseDeltaX;
-    int mouseY = Globals::mouseDeltaY;
     if (this->cameraMode == 3 && Globals::mouseCursorActivated && !Globals::is_hacking_visible &&
-        (mouseX | mouseY) != 0) {
+        (Globals::mouseDeltaX | Globals::mouseDeltaY) != 0) {
+        int mouseX = Globals::mouseDeltaX;
+        int mouseY = Globals::mouseDeltaY;
         int lastX = this->lastMouseX;
         int lastY = this->lastMouseY;
         freeCamTouchBegin(400, 400, keyboardTouchId());
         freeCamTouchMove(400 + (mouseX - lastX) / 2, 400 + (mouseY - lastY) / 2, keyboardTouchId());
         freeCamTouchEnd(400, 400, keyboardTouchId());
-        mouseX = 0;
-        mouseY = 0;
         Globals::mouseDeltaX = 0;
         Globals::mouseDeltaY = 0;
     }
-    this->lastMouseX = mouseX;
-    this->lastMouseY = mouseY;
+    this->lastMouseX = Globals::mouseDeltaX;
+    this->lastMouseY = Globals::mouseDeltaY;
     if (this->player->isDockingToAsteroid()) {
         Globals::mouseDeltaX = 0;
         Globals::mouseDeltaY = 0;
