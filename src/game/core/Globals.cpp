@@ -683,9 +683,8 @@ Globals::Globals() {
     settings->flagAt3f = 0;
     settings->intAt3b = 0;
     secondary->slot0 = 0;
-    settings->flagAt4e = 0;
-    settings->shortAt4c = 0;
-    settings->intAt48 = 0;
+    // 0x48..0x4f: intAt48, shortAt4c, flagAt4e and padding are all zero.
+    *reinterpret_cast<long long *>(reinterpret_cast<uint8_t *>(settings) + 0x48) = 0;
 
     Globals::imageFactory = 0;
     this->soundResources = 0;
