@@ -1430,8 +1430,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 // Hidden helper retained from the original TU's local code.  It is not part of the
 // exported ABI, but its text size keeps the libstdc++ archive layout (and the ten
 // byte-exact exception ctors) aligned with the original link.
-#pragma GCC visibility push(hidden)
-int RecordHandler_mixRecordStoreSlot(int value) {
+[[gnu::visibility("hidden")]] int RecordHandler_mixRecordStoreSlot(int value) {
     value = value * 3 + 0x1000;
     value ^= 0x2000;
     value -= 0x3000;
@@ -1439,7 +1438,6 @@ int RecordHandler_mixRecordStoreSlot(int value) {
     value ^= 0x2101;
     return value;
 }
-#pragma GCC visibility pop
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;

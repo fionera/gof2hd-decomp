@@ -419,19 +419,17 @@ void ObjectGun::render() {
             gun->active = 0;
     }
 
-    if (this->wasFiring != 0 && this->geometry != nullptr)
+    if (this->wasFiring != 0 && this->geometry)
         this->geometry->render();
     this->deltaTime = 0;
 }
 
-#pragma GCC visibility push(hidden)
 // Bounds-checked projectile mesh lookup for item indices.
-uint32_t ObjectGunProjectileMesh(int item) {
+[[gnu::visibility("hidden")]] uint32_t ObjectGunProjectileMesh(int item) {
     if (item < 0 || item >= 233)
         return 0;
     return (uint32_t) kProjectileMeshes[item];
 }
-#pragma GCC visibility pop
 
 void ObjectGun::translate(const Vector & /*v*/) {
 }

@@ -2,12 +2,9 @@
 #include <cmath>
 
 namespace AbyssEngine {
-#pragma GCC visibility push(hidden)
-    // Byte offset of a quaternion component; operator[] walks the x..w block.
-    int QuaternionComponentOffset(int index) {
+    [[gnu::visibility("hidden")]] int QuaternionComponentOffset(int index) {
         return index * sizeof(float);
     }
-#pragma GCC visibility pop
 
     Quaternion::Quaternion() {
     }
