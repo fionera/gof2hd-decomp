@@ -1241,7 +1241,7 @@ void StarMap::update(int dt) {
         if (this->pathAnim) {
             // Scroll the selected system to the screen centre.
             Array<bool> *visible = Globals::status->getSystemVisibilities();
-            if (visible != 0 && this->selectedSystem >= 0 && this->selectedSystem < visible->size() &&
+            if (visible != 0 && visible->size() > (unsigned) this->selectedSystem && this->selectedSystem >= 0 &&
                 (*visible)[this->selectedSystem]) {
                 this->scratchVector = *(*this->systemPositions)[this->selectedSystem];
                 float centerY = (float) (Globals::h >> 1);
@@ -1291,10 +1291,10 @@ void StarMap::update(int dt) {
             if (yawDiff <= 10)
                 this->stationCenterAnim = 0;
             float pitchStep;
-            if (pitch <= -3096)
-                pitchStep = (float) (-3096 - pitch) * 0.25f;
-            else
+            if (pitch >= -3096)
                 pitchStep = (float) (pitch + 3096) * -0.25f;
+            else
+                pitchStep = (float) (-3096 - pitch) * 0.25f;
             this->pitch += pitchStep;
             if (yawDiff <= dt * 4 && pitchDiff <= dt * 4) {
                 this->lastSelectedStation = this->selectedStation;
