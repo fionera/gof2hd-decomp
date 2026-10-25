@@ -1135,12 +1135,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 if (!this->dialogueMission->isCampaignMission()) {
                     Globals::status->field_b8 += this->dialogueMission->getProductionGoodAmount();
                 }
-                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-                if (cargo != nullptr) {
-                    for (unsigned i = 0; i < cargo->size(); i++) {
-                        if ((*cargo)[i]->isUnsaleable() &&
-                            ((*cargo)[i]->getIndex() == 116 || (*cargo)[i]->getIndex() == 117)) {
-                            Globals::status->getShip()->removeCargo((*cargo)[i]);
+                if (Globals::status->getShip()->getCargo() != nullptr) {
+                    for (unsigned i = 0; i < Globals::status->getShip()->getCargo()->size(); i++) {
+                        if ((*Globals::status->getShip()->getCargo())[i]->isUnsaleable() &&
+                            ((*Globals::status->getShip()->getCargo())[i]->getIndex() == 116 ||
+                             (*Globals::status->getShip()->getCargo())[i]->getIndex() == 117)) {
+                            Globals::status->getShip()->removeCargo((*Globals::status->getShip()->getCargo())[i]);
                             if (this->hangarWindow != nullptr) {
                                 this->hangarWindow->initialize();
                             }
@@ -1165,10 +1165,11 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 }
                 Globals::status->field_9c += this->dialogueMission->getProductionGoodAmount();
             } else if (this->dialogueMission->getType() == 14) {
-                if (Globals::status->getShip()->getCargo() != nullptr) {
-                    for (unsigned i = 0; i < Globals::status->getShip()->getCargo()->size(); i++) {
-                        if ((*Globals::status->getShip()->getCargo())[i]->getIndex() == 115) {
-                            Globals::status->getShip()->removeCargo((*Globals::status->getShip()->getCargo())[i]);
+                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                if (cargo != nullptr) {
+                    for (unsigned i = 0; i < cargo->size(); i++) {
+                        if ((*cargo)[i]->getIndex() == 115) {
+                            Globals::status->getShip()->removeCargo((*cargo)[i]);
                             if (this->hangarWindow != nullptr) {
                                 this->hangarWindow->initialize();
                             }
@@ -1226,14 +1227,9 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::status->removeMission(this->dialogueMission);
                     this->dialogueMission = nullptr;
                     Globals::status->setMission(Mission::empty);
+                    this->flag_0x69 = 0;
                     this->selectedButton = 1;
-                    this->flag_0x69 = 0;
                     OnKeyPress(0x10000, 0);
-                    return;
-                } else if (next == 18) {
-                    Globals::status->removeMission(this->dialogueMission);
-                    this->flag_0x69 = 0;
-                    this->dialogueMission = nullptr;
                     return;
                 } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
                     Globals::status->removeMission(this->dialogueMission);
@@ -1243,9 +1239,14 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::switch_to_target_setting = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
                     return;
+                } else if (next == 18) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->flag_0x69 = 0;
+                    this->dialogueMission = nullptr;
+                    return;
                 } else {
-                        Station *station = Globals::status->getStation();
-                        if (next == 77 && station->getIndex() == 100) {
+                        int stationIndex = Globals::status->getStation()->getIndex();
+                        if (next == 77 && stationIndex == 100) {
                             Globals::status->getStation()->addShip((*Globals::ships)[37]->makeShip(0));
                         } else if (next == 78) {
                             Globals::status->field_5c = -1;
@@ -1258,11 +1259,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
                         } else if (Globals::status->getStation()->getIndex() == 100 && next == 84) {
-                            if (!Globals::status->getStation()->hasShip(38)) {
-                                Globals::status->getStation()->addShip((*Globals::ships)[38]->makeShip(-1));
+                            Station *shipStation = Globals::status->getStation();
+                            if (!shipStation->hasShip(38)) {
+                                shipStation->addShip((*Globals::ships)[38]->makeShip(-1));
                             }
-                            if (!Globals::status->getStation()->hasShip(40)) {
-                                Globals::status->getStation()->addShip((*Globals::ships)[40]->makeShip(-1));
+                            if (!shipStation->hasShip(40)) {
+                                shipStation->addShip((*Globals::ships)[40]->makeShip(-1));
                             }
                             Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
                         } else if (next == 160) {
@@ -1424,8 +1426,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                         return;
                     }
                     Globals::status->changeCredits(-25000);
-                    this->flag_0x63 = 0;
                     this->flag_0x6d = 0;
+                    this->flag_0x63 = 0;
                     Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(70));
                     Globals::switch_to_target_setting = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
