@@ -1294,26 +1294,26 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             }
                             Globals::status->getShip()->addCargo((*Globals::items)[137]->makeItem(1));
                         } else if (next == 89) {
-                            Level::initStreamOutPosition = 1;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(109));
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
                             return;
                         } else if (next == 99 || next == 119) {
-                            Level::initStreamOutPosition = 1;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
                             return;
                         } else if (next == 104) {
                             delete this->hangarWindow;
-                            this->flag_0x66 = 0;
                             this->hangarWindow = nullptr;
+                            this->flag_0x66 = 0;
                         } else if (next == 109) {
-                            Level::initStreamOutPosition = 1;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(114));
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
@@ -1324,8 +1324,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                                 this->flag_0x6e = 1;
                             }
                         } else if (next == 133) {
-                            Level::initStreamOutPosition = 1;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 1;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
                             Globals::appManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
@@ -1459,8 +1459,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     Globals::appManager->SetCurrentApplicationModule(5);
                 }
                 if (this->pendingHangarClose && this->flag_0x66) {
-                    this->pendingHangarClose = 0;
                     this->flag_0x66 = 0;
+                    this->pendingHangarClose = 0;
                 }
                 this->flag_0x63 = 0;
                 return;
