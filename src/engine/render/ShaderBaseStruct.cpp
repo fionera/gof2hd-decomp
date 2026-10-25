@@ -53,9 +53,9 @@ namespace AbyssEngine {
                         glDeleteShader(vertexShader);
                         glDeleteShader(fragmentShader);
 
-                        char *name = (char *) this->name.GetAEChar();
+                        char *name = this->name.GetAEChar();
                         AELabelObject(0x8b40, program, name);
-                        operator delete[](name);
+                        delete[] name;
                     } else {
                         int logLength = 0;
                         glGetProgramiv(program, 0x8b84, &logLength);
@@ -121,8 +121,8 @@ namespace AbyssEngine {
                     fragmentSource[fragmentSize] = 0;
 
                     result = ES2LoadProgram(vertexSource, fragmentSource);
-                    operator delete[](fragmentSource);
-                    operator delete[](vertexSource);
+                    delete[] fragmentSource;
+                    delete[] vertexSource;
                 }
             }
         }
