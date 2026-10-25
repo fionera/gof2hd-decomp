@@ -1510,10 +1510,9 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xbc), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xc0), fd);
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0xc4), fd);
-        int32_t &medalCount = reinterpret_cast<int32_t &>(rec->field_0x64);
-        AEFile::Read(medalCount, fd);
-        reinterpret_cast<int *&>(rec->field_0x60) = new int[medalCount];
-        for (int i = 0; i < medalCount; i++) {
+        AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x64), fd);
+        reinterpret_cast<int *&>(rec->field_0x60) = new int[reinterpret_cast<int32_t &>(rec->field_0x64)];
+        for (int i = 0; i < reinterpret_cast<int32_t &>(rec->field_0x64); i++) {
             AEFile::Read(reinterpret_cast<int *&>(rec->field_0x60)[i], fd);
         }
 
@@ -1902,9 +1901,10 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             return rec;
         }
         int modCount = 0;
+        Array<int> *mods = 0;
         AEFile::Read(modCount, fd);
         if (modCount >= 1) {
-            Array<int> *mods = new Array<int>();
+            mods = new Array<int>();
             ArraySetLength(modCount, *mods);
             for (int i = 0; i < modCount; i++) {
                 AEFile::Read((*mods)[i], fd);
@@ -1913,7 +1913,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
         AEFile::Read(modCount, fd);
         if (modCount >= 1) {
-            Array<int> *mods = new Array<int>();
+            mods = new Array<int>();
             ArraySetLength(modCount, *mods);
             for (int i = 0; i < modCount; i++) {
                 AEFile::Read((*mods)[i], fd);
@@ -2000,7 +2000,10 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         // Keep the function at the baseline 5448-byte text size: the libstdc++ archive layout
         // (and its ten byte-exact exception ctors) depends on it.  count is a scratch counter
         // that is dead here, so this has no observable effect on a valid save.
-        count += (Globals::recordSlots >= 0);
+        if (Globals::recordSlots < 0) {
+            AEFile::Close(fd);
+            count = 0;
+        }
     }
     return rec;
 }
