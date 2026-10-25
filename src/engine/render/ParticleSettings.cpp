@@ -593,20 +593,21 @@ void ParticleSettings::init() {
     this->sets[39] = *ringEmitter;
     SetDefinition *plume = &this->sets[43];
     this->sets[39].flags = (uint32_t)(176146 + 0x100000);
-    this->sets[39].uvV0 = 0.498046875f;
-    this->sets[39].uvU1 = 0.998046875f;
     this->sets[39].lifeBase = 100.0f;
-    this->sets[39].color0 = 0xffffffff;
-    this->sets[39].flLifetime = 125.0f;
-    this->sets[39].uvU0 = 0.751953125f;
     this->sets[39].posDir = 0.0f;
     this->sets[39].posUp = 0.0f;
-    this->sets[39].uvV1 = 0.001953125f;
     this->sets[39].posRight = 0.0f;
-    this->sets[39].color1 = 0;
     this->sets[39].lifetime = 3000;
+    this->sets[39].flLifetime = 125.0f;
     this->sets[39].count = 0x1d;
+    this->sets[39].color0 = 0xffffffff;
+    this->sets[39].color1 = 0;
+    this->sets[39].uvU0 = 0.751953125f;
+    this->sets[39].uvV0 = 0.498046875f;
+    this->sets[39].uvU1 = 0.998046875f;
+    this->sets[39].uvV1 = 0.001953125f;
     *plume = *dustCloud;
+    this->sets[43].oneShot = 1;
     this->sets[43].posDir = 0.0f;
     this->sets[43].posUp = 0.0f;
     this->sets[43].color1 = 0;
@@ -625,7 +626,6 @@ void ParticleSettings::init() {
     this->sets[43].lifetime = 5000;
     this->sets[43].posSpread = 0x5dc;
     this->sets[43].ySpread = 0x5dc;
-    this->sets[43].oneShot = 1;
 
     this->sets[44] = *plume;
     this->sets[44].uvU0 = 0.501f;
