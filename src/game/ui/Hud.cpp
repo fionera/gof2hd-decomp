@@ -380,7 +380,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Mission status panel (top right).
     if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 12) {
-        String kills = String(ego->level->killCountB) + (String(" : ") + String(ego->level->killCountA));
+        String kills = String(ego->level->killCountB) + String(" : ") + String(ego->level->killCountA);
         Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -450,7 +450,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
                                ->getAmount()
                          : 0;
-        String cargo = amount + (String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace()));
+        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -651,7 +651,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->SetColor(0xffffffff);
         Globals::Canvas->DrawImage2D(this->image_0x358, Globals::w >> 1, Globals::h, 0x11, 0x24);
         String label = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 1274) +
-                       String(String(" (") + String(this->currentSecondaryWeapon->getAmount()) + String(")"), false);
+                       String(String(" (") + String(this->currentSecondaryWeapon->getAmount()) + String(")"));
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, label,
             (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, label) >> 1),
