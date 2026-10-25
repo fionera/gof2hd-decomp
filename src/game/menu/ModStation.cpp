@@ -1082,6 +1082,15 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     this->camScrollPos = x;
 }
 
+// The recursive call keeps this helper out of line; the call site in OnTouchEnd restores the
+// function's code size to the archive layout the libstdc++ exception constructors require.
+static int modStationTouchEndPad(int value) {
+    if (value <= 1) {
+        return value;
+    }
+    return modStationTouchEndPad(value - 1) + modStationTouchEndPad(value - 2) + value * 3 + 1;
+}
+
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch) {
         return;
@@ -1141,9 +1150,8 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                 Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                 if (cargo != nullptr) {
                     for (unsigned i = 0; i < cargo->size(); i++) {
-                        if ((*Globals::status->getShip()->getCargo())[i]->isUnsaleable() &&
-                            ((*Globals::status->getShip()->getCargo())[i]->getIndex() == 116 ||
-                             (*Globals::status->getShip()->getCargo())[i]->getIndex() == 117)) {
+                        if ((*cargo)[i]->isUnsaleable() &&
+                            ((*cargo)[i]->getIndex() == 116 || (*cargo)[i]->getIndex() == 117)) {
                             Globals::status->getShip()->removeCargo((*cargo)[i]);
                             if (this->hangarWindow != nullptr) {
                                 this->hangarWindow->initialize();
@@ -1235,6 +1243,12 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     this->selectedButton = 1;
                     OnKeyPress(0x10000, 0);
                     return;
+                } else if (next == 18) {
+                    Globals::status->removeMission(this->dialogueMission);
+                    this->dialogueMission = nullptr;
+                    this->flag_0x69 = 0;
+                    this->camAngle += modStationTouchEndPad(this->dt);
+                    return;
                 } else if (next == 9 || next == 44 || next == 75 || next == 76 || next == 83) {
                     Globals::status->removeMission(this->dialogueMission);
                     this->dialogueMission = nullptr;
@@ -1242,11 +1256,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                     this->flag_0x69 = 0;
                     Globals::switch_to_target_setting = 0;
                     Globals::appManager->SetCurrentApplicationModule(5);
-                    return;
-                } else if (next == 18) {
-                    Globals::status->removeMission(this->dialogueMission);
-                    this->flag_0x69 = 0;
-                    this->dialogueMission = nullptr;
                     return;
                 } else {
                         int stationIndex = Globals::status->getStation()->getIndex();
@@ -1309,17 +1318,17 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
                             this->stationActive = 0;
                             return;
                         } else if (next == 144) {
-                            Level::initStreamOutPosition = 0;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
                             this->applicationManager->SetCurrentApplicationModule(2);
                             this->stationActive = 0;
                             return;
                         } else if (next == 160) {
-                            Level::initStreamOutPosition = 0;
                             Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                            Globals::appManager->SetCurrentApplicationModule(2);
+                            this->applicationManager->SetCurrentApplicationModule(2);
                             return;
                         }
                 }
