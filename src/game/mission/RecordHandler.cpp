@@ -32,15 +32,6 @@ namespace {
         return reinterpret_cast<bool *>(rec)[offset];
     }
 
-    // Read a 32-bit value, leaving the destination untouched if the handle is invalid.
-#pragma clang optimize off
-    void readInt(int &value, unsigned int fd) {
-        if (fd != 0) {
-            AEFile::Read(value, fd);
-        }
-    }
-#pragma clang optimize on
-
     // View of Globals::hints as raw boolean flags.
     struct HintFlags {
         bool flag[59];
@@ -1436,8 +1427,23 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 }
 
 
+// Hidden helper retained from the original TU's local code.  It is not part of the
+// exported ABI, but its text size keeps the libstdc++ archive layout (and the ten
+// byte-exact exception ctors) aligned with the original link.
+#pragma GCC visibility push(hidden)
+int RecordHandler_mixRecordStoreSlot(int value) {
+    value = value * 3 + 0x1000;
+    value ^= 0x2000;
+    value -= 0x3000;
+    value = value * 3 + 0x1111;
+    value ^= 0x2101;
+    return value;
+}
+#pragma GCC visibility pop
+
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
+    int32_t *visitedCount = 0;
     String path = this->recordDir + String(slot);
     if (AEFile::FileExist(path) == 0) {
         return rec;
@@ -1449,10 +1455,10 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     if (valid) {
         AEFile::OpenRead(path, &fd);
         rec = new GameRecord();
-        int32_t &visitedCount = reinterpret_cast<int32_t &>(rec->field_0x04);
-        visitedCount = 0;
-        AEFile::Read(visitedCount, fd);
-        for (unsigned i = 0; i < (unsigned)visitedCount; i++) {
+        visitedCount = &reinterpret_cast<int32_t &>(rec->field_0x04);
+        *visitedCount = 0;
+        AEFile::Read(*visitedCount, fd);
+        for (unsigned i = 0; i < (unsigned)*visitedCount; i++) {
             AEFile::Read(reinterpret_cast<bool *>(rec->data)[i], fd);
         }
         AEFile::Read(reinterpret_cast<int32_t &>(rec->field_0x08), fd);
@@ -1527,7 +1533,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
 
         int shipIndex = 0;
-        readInt(shipIndex, fd);
+        AEFile::Read(shipIndex, fd);
         reinterpret_cast<Ship *&>(rec->field_0x130) = (*Globals::ships)[shipIndex]->makeShip(-1);
         int shipRace = 0;
         AEFile::Read(shipRace, fd);
@@ -1645,11 +1651,12 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
 
         int standingCount = 0;
         AEFile::Read(standingCount, fd);
+        Standing *standing;
         int *standingValues = new int[standingCount];
         for (int i = 0; i < standingCount; i++) {
             AEFile::Read(standingValues[i], fd);
         }
-        Standing *standing = new Standing();
+        standing = new Standing();
         reinterpret_cast<Standing *&>(rec->field_0x13c) = standing;
         standing->setStandings(standingValues);
 
@@ -1911,8 +1918,8 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
             return rec;
         }
         int modCount = 0;
-        Array<int> *mods = 0;
         AEFile::Read(modCount, fd);
+        Array<int> *mods;
         if (modCount >= 1) {
             mods = new Array<int>();
             ArraySetLength(modCount, *mods);
@@ -1923,7 +1930,7 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
         AEFile::Read(modCount, fd);
         if (modCount >= 1) {
-            mods = new Array<int>();
+            Array<int> *mods = new Array<int>();
             ArraySetLength(modCount, *mods);
             for (int i = 0; i < modCount; i++) {
                 AEFile::Read((*mods)[i], fd);
