@@ -343,7 +343,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     Globals::Canvas->SetColor(0xffffffff);
 
     Mission *mission = Globals::status->getMission();
-    bool missionBlocksPlanets = false;
+    int missionBlocksPlanets = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
@@ -399,7 +399,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
-    bool otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr ||
+    int otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr ||
                      this->field_0x1c != nullptr || this->field_0x14 != 0;
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
@@ -529,7 +529,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            bool marked = false;
+            int marked = false;
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
@@ -642,8 +642,8 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool enemyHit = false;
-    bool alwaysEnemySeen = false;
-    bool bossSeen = false;
+    int alwaysEnemySeen = false;
+    int bossSeen = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -915,8 +915,8 @@ enemies:
         }
     }
 
-    bool otherLock2 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
-                      this->lockedStation != nullptr || this->field_0x14 != 0;
+    otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
+                this->lockedStation != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
         bool gasHit = false;
         for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
@@ -974,7 +974,7 @@ enemies:
                     Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX - this->halfScreenHeight,
                                                 this->screenY + this->halfScreenWidth, false);
                 }
-                if (!(this->level->getPlayer()->isAutoPilot() || otherLock2 || enemyHit)) {
+                if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit)) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -1044,8 +1044,8 @@ asteroids:
         this->asteroidSlots[i] = -1;
     }
     {
-        bool otherLock3 = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
-                          this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
+        otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
+                    this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
         if (!this->level->getPlayer()->isInDockingProcedure() && this->asteroids != nullptr) {
             int inCenter = 0;
             if (this->field_0x1aa) {
@@ -1063,7 +1063,7 @@ asteroids:
                 this->update(asteroid);
                 bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
-                    if (!(this->level->getPlayer()->isAutoPilot() || otherLock3 || enemyHit || asteroidHit ||
+                    if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
                         asteroidHit = false;
                         if (asteroid->isMinable() && !this->field_0x1a8) {
@@ -1329,7 +1329,6 @@ void Radar::drawCurrentLock(Hud *) {
         return;
     }
 
-    Array<KIPlayer *> *landmarks = this->landmarks;
     KIPlayer *target = this->lockedAsteroid;
     if (target == nullptr) {
         target = this->lockedGasCloud;
@@ -1345,6 +1344,7 @@ void Radar::drawCurrentLock(Hud *) {
         }
     }
     Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
+    Array<KIPlayer *> *landmarks = this->landmarks;
     KIPlayer *asteroid = this->lockedAsteroid;
     KIPlayer *station = this->lockedStation;
     String *titleText;
@@ -1357,9 +1357,9 @@ void Radar::drawCurrentLock(Hud *) {
 
     if (target == this->lockedGasCloud) {
         String text(*Globals::gameText->getText(3236), false);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
-                                    (Globals::w >> 1) -
-                                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
+        int x = (Globals::w >> 1) -
+                (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
                                     this->field_0x214 + layoutField(0xc4), false);
         return;
     }
@@ -1377,6 +1377,7 @@ void Radar::drawCurrentLock(Hud *) {
     }
 
     String text;
+    int x;
     if (target->name.length != 0 &&
         (target->name.Compare(*Globals::gameText->getText(1611)) == 0 ||
          target->name.Compare(*Globals::gameText->getText(1663)) == 0 || target->field_0x42)) {
@@ -1385,45 +1386,43 @@ void Radar::drawCurrentLock(Hud *) {
         if (target->field_0x42) {
             text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
         }
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text,
-                                    (Globals::w >> 1) -
-                                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
-                                    this->field_0x214 + layoutField(0xc4), false);
-        Globals::Canvas->SetColor(0xffffffff);
-        return;
-    }
-
-    int x;
-    const String *label;
-    if (target == station) {
-        label = &title;
-    } else if (target->name.length == 0) {
-        label = Globals::gameText->getText(target->shipGroup + 406);
-    } else {
-        label = &target->name;
-    }
-    text = *label;
-    if (target != station) {
-        text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
-        x = (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-    } else {
-        if (Globals::status->inAlienOrbit()) {
-            if (Globals::status->dlc1Won()) {
-                this->lockSprite->setFrame(8);
-            } else {
-                this->lockSprite->setFrame(9);
-            }
-        } else {
-            this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
-        }
         x = (Globals::w >> 1) -
             (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
-                                      this->field_0x214 + layoutField(0xc8));
-        this->lockSprite->draw(1.0f, 1.0f);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                    this->field_0x214 + layoutField(0xc4), false);
+        Globals::Canvas->SetColor(0xffffffff);
+    } else {
+        const String *label;
+        if (target == station) {
+            label = &title;
+        } else if (target->name.length == 0) {
+            label = Globals::gameText->getText(target->shipGroup + 406);
+        } else {
+            label = &target->name;
+        }
+        text = *label;
+        if (target != station) {
+            text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
+            x = (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+        } else {
+            if (Globals::status->inAlienOrbit()) {
+                if (Globals::status->dlc1Won()) {
+                    this->lockSprite->setFrame(8);
+                } else {
+                    this->lockSprite->setFrame(9);
+                }
+            } else {
+                this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
+            }
+            x = (Globals::w >> 1) -
+                (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+            this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
+                                          this->field_0x214 + layoutField(0xc8));
+            this->lockSprite->draw(1.0f, 1.0f);
+        }
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                    this->field_0x214 + layoutField(0xc4), false);
     }
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
-                                this->field_0x214 + layoutField(0xc4), false);
     if (target != station && target->shipGroup != 10) {
         this->lockSprite->setFrame(target->shipGroup);
         this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
