@@ -368,8 +368,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         list->data()[slot]->adjustPrice();
     }
 
-    int terranExtras = 0;
-    int vossExtras = 0;
+    bool terranExtras = false;
+    bool vossExtras = false;
     switch (race) {
         case 0:
             if (Globals::rnd->nextInt(7) == 0) {
@@ -760,9 +760,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
-    int type = 0;
-    bool selected = false;
     int guard = 999;
+    bool selected = false;
+    int type = 0;
     Array<bool> *used = Globals::status->field_50;
     while (!selected) {
         selected = guard < 1;
@@ -955,11 +955,11 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
     int costRem = costs % 50;
-    int rounded = costs + costRem;
-    if (rounded % 50 != 0) {
-        rounded = costs - costRem;
+    costs += costRem;
+    if (costs % 50 != 0) {
+        costs -= costRem * 2;
     }
-    mission->setCosts(rounded);
+    mission->setCosts(costs);
     mission->setProductionGoods(itemId, amount);
     mission->setBonus(bonus);
 
