@@ -167,15 +167,15 @@ int IsInPrimaryMenu(int) {
 
 // Touch windows 0x579.. are the in-game sub menu buttons.
 int IsSubMenuActive(int key) {
-    int result = 0;
     const int handle = keys[key].touchWindowHandle;
     if (handle - 0x579 >= Globals::sub_menu_button_count)
-        return result;
+        return 0;
     if (handle <= 0x578)
-        return result;
+        return 0;
+    const int menuVisible = Globals::is_menu_visible;
     const int active = (Globals::topMenuIndex != 1 && Globals::topMenuIndex != 2) ||
-                       Globals::is_menu_visible == 0;
-    if (Globals::is_menu_visible != 0)
+                       menuVisible == 0;
+    if (menuVisible != 0)
         return active;
     if (Globals::subMenuIndex != -1)
         return 1;
