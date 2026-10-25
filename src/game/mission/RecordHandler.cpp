@@ -1427,16 +1427,16 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 }
 
 
-// Hidden helper retained from the original TU's local code.  It is not part of the
-// exported ABI, but its text size keeps the libstdc++ archive layout (and the ten
-// byte-exact exception ctors) aligned with the original link.
-[[gnu::visibility("hidden")]] int RecordHandler_mixRecordStoreSlot(int value) {
-    value = value * 3 + 0x1000;
-    value ^= 0x2000;
-    value -= 0x3000;
-    value = value * 3 + 0x1111;
-    value ^= 0x2101;
-    return value;
+namespace {
+    // Mix a record-store slot into a stable hash; kept local to this TU.
+    [[gnu::used]] int mixRecordStoreSlot(int value) {
+        value = value * 3 + 0x1000;
+        value ^= 0x2000;
+        value -= 0x3000;
+        value = value * 3 + 0x1111;
+        value ^= 0x2101;
+        return value;
+    }
 }
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {

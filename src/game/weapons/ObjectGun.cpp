@@ -424,11 +424,13 @@ void ObjectGun::render() {
     this->deltaTime = 0;
 }
 
-// Bounds-checked projectile mesh lookup for item indices.
-[[gnu::visibility("hidden")]] uint32_t ObjectGunProjectileMesh(int item) {
-    if (item < 0 || item >= 233)
-        return 0;
-    return (uint32_t) kProjectileMeshes[item];
+namespace {
+    // Bounds-checked projectile mesh lookup for item indices; kept local to this TU.
+    [[gnu::used]] uint32_t ObjectGunProjectileMesh(int item) {
+        if (item < 0 || item >= 233)
+            return 0;
+        return (uint32_t) kProjectileMeshes[item];
+    }
 }
 
 void ObjectGun::translate(const Vector & /*v*/) {

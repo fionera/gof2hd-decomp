@@ -2,8 +2,11 @@
 #include <cmath>
 
 namespace AbyssEngine {
-    [[gnu::visibility("hidden")]] int QuaternionComponentOffset(int index) {
-        return index * sizeof(float);
+    namespace {
+        // Byte offset of a quaternion component; kept local to this TU.
+        [[gnu::used]] int QuaternionComponentOffset(int index) {
+            return index * sizeof(float);
+        }
     }
 
     Quaternion::Quaternion() {
@@ -136,7 +139,7 @@ namespace AbyssEngine {
 
     Quaternion::operator const float *() const { return &x; }
 
-    float &Quaternion::operator[](int i) { return *reinterpret_cast<float *>(reinterpret_cast<char *>(&x) + QuaternionComponentOffset(i)); }
+    float &Quaternion::operator[](int i) { return (&x)[i]; }
 
     float Quaternion::operator[](int i) const { return (&x)[i]; }
 

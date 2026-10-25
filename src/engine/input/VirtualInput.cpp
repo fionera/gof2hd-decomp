@@ -806,15 +806,6 @@ void setValuesForGamepad(float x, float y) {
     g_mouse.gamepadY = y;
 }
 
-// The original 148-byte IsSubMenuActive pushes .text onto the next alignment
-// boundary; keep the GOT 8 bytes later as well, so the libstdc++ exception
-// constructors' PC-relative GOT deltas remain byte-identical.
-#pragma GCC visibility push(hidden)
-#pragma clang section data=".pad"
-char g_submenu_active_pad[8] = {1};
-#pragma clang section data=""
-#pragma GCC visibility pop
-
 extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
 // Blowfish round function over the S-boxes loaded by InitializeBlowfish.
