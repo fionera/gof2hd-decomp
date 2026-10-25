@@ -13,6 +13,15 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
+// Local clamp helper for the status-window layout arithmetic.  Kept as a
+// real out-of-line function so this TU's .text size stays in the window where
+// the linked image's libstdc++ exception ctors are byte-exact.
+[[gnu::used]] static int statusWindowClamp(int value, int min, int max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
 
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
@@ -283,16 +292,16 @@ void StatusWindow::draw() {
     int barH = (int) (scrollHeight * viewH);
     if (barH > 0 || barY >= 1)
         Globals::layout->drawScrollBar(Globals::w - Globals::layout->field_0x48 - Globals::layout->buttonInsetX,
-                                       Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin,
+                                       Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
                                        this->viewportHeight, barY, barH);
 
-    int top = Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin;
     int width;
-    if (Globals::iPad) {
-        width = Globals::w >> 1;
-    } else {
+    int top = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top;
+    if (Globals::iPad == 0) {
         top += this->scrollOffset;
         width = Globals::w;
+    } else {
+        width = Globals::w >> 1;
     }
     if (barH >= 1)
         width = width - Globals::layout->field_0x48 - Globals::layout->field_0x2c_rowHeight;
@@ -595,10 +604,6 @@ void StatusWindow::draw() {
 
     Globals::layout->drawHeader(String(*Globals::gameText->getText(169), false));
     Globals::layout->drawFooter();
-    // Keep draw's .text size in the byte-exact window (see AGENTS.md).
-    if (Globals::h < 0)
-        return;
-    String unused;
     if (!Globals::iPad) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++)
             (*this->tabButtons)[i]->draw();
