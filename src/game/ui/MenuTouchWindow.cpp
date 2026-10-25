@@ -1386,8 +1386,8 @@ void MenuTouchWindow::draw() {
         case 0: {
             // Main menu.
             if (this->backgroundEnabled != 0) {
-                Globals::layout->drawHeader(String(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171)),
-                                            false);
+                String title(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171));
+                Globals::layout->drawHeader(title, false);
             } else {
                 Globals::Canvas->SetColor(0xffffffffu);
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
@@ -2511,7 +2511,6 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
                             this->steerCoord_0x30, this->steerCoord_0x40, this->steerCoord_0x42, this->steerCoord_0x3c,
                             this->steerCoord_0x3e, this->steerCoord_0x34, this->steerCoord_0x32, this->steerCoord_0x48,
                             this->steerCoord_0x4a);
-                        this->cinematicTouchState = 1;
                         this->cinematicAnchorA = y;
                     } else if (this->cinematicTouchIdB == touchId) {
                         Globals::globals->setCoordsFire(
@@ -2521,11 +2520,8 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
                             this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a, this->fireCoord_0x6c,
                             this->fireCoord_0x6e, this->fireCoord_0x70, this->fireCoord_0x72, this->fireCoord_0x4c,
                             this->fireCoord_0x4e);
-                        this->cinematicTouchState = 0x100;
                         this->cinematicAnchorB = y;
                     }
-                } else {
-                    this->cinematicTouchState = 0;
                 }
             }
             break;
@@ -2639,7 +2635,7 @@ bool MenuTouchWindow::OnTouchMove(int x, int y, void *touchId) { // lint: void_p
             this->scrollWindowB->OnTouchMove(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 long long id = (*this->scrollEntries)[i]->id;
-                if (id == 52 || id == 60)
+                if (id - 52 == 0 || id - 60 == 0)
                     (*this->scrollEntries)[i]->OnTouchMove(x, y);
             }
             for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
