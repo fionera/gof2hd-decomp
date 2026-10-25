@@ -1027,8 +1027,9 @@ bool LevelScript::process(int delta) {
         if (Globals::status->getWingmen() != 0) {
             Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
             for (unsigned int i = 0; i < wingmen->count; ++i) {
-                if ((*wingmen)[i]->isWingMan()) {
-                    ((PlayerFighter *) (*wingmen)[i])->field_0x12d = 1;
+                KIPlayer *wingman = (*wingmen)[i];
+                if (wingman->isWingMan()) {
+                    ((PlayerFighter *) wingman)->field_0x12d = 1;
                 }
             }
         }
@@ -1509,15 +1510,16 @@ bool LevelScript::process(int delta) {
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*enemies)[13]->geometry->transform))
                             ->Update((long long) ((float) delta * 0.3f), false);
                     for (int i = 0; i < 13; i++) {
-                        m_tempVec = (*enemies)[i]->geometry->getDirection();
+                        KIPlayer *enemy = (*enemies)[i];
+                        m_tempVec = enemy->geometry->getDirection();
                         if (m_nScriptTimerA > 2000 && m_nScriptTimerA < 5000) {
-                            m_tempVec -= (*enemies)[i]->geometry->getRightVector()
+                            m_tempVec -= enemy->geometry->getRightVector()
                                          * ((float) m_nScriptTimerA / 100000.0f);
                         }
-                        AEGeometry *geometry = (*enemies)[i]->geometry;
+                        AEGeometry *geometry = enemy->geometry;
                         geometry->setDirection(AbyssEngine::AEMath::VectorNormalize(m_tempVec),
                                                Vector{0.0f, 1.0f, 0.0f});
-                        (*enemies)[i]->geometry->moveForward((float) (m_nScriptTimerA * delta) * 0.001f);
+                        enemy->geometry->moveForward((float) (m_nScriptTimerA * delta) * 0.001f);
                     }
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
                     if (m_nScriptTimerA > 9999) {
@@ -2053,11 +2055,12 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->player->setVulnerable(false);
                     for (int i = 1; i < 4; i++) {
-                        (*enemies)[i]->revive();
-                        (*enemies)[i]->setPosition((*enemies)[0]->getPosition());
-                        (*enemies)[i]->player->setEnemy((*enemies)[0]->player);
-                        (*enemies)[i]->field_0x38 = 0;
-                        (*enemies)[i]->setState(1);
+                        KIPlayer *enemy = (*enemies)[i];
+                        enemy->revive();
+                        enemy->setPosition((*enemies)[0]->getPosition());
+                        enemy->player->setEnemy((*enemies)[0]->player);
+                        enemy->field_0x38 = 0;
+                        enemy->setState(1);
                     }
                     m_tempVec = Vector{-40000.0f, 500.0f, -30000.0f};
                     (*enemies)[1]->translate(m_tempVec);
@@ -2386,10 +2389,11 @@ bool LevelScript::process(int delta) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
                             for (int i = 8; i <= 10; i++) {
-                                PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
+                                KIPlayer *enemy = (*enemies)[i];
+                                PlayerFixedObject *port = (PlayerFixedObject *) enemy;
                                 port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
-                                (*enemies)[i]->setActive(true);
-                                (*enemies)[i]->field_0x74 = 0;
+                                enemy->setActive(true);
+                                enemy->field_0x74 = 0;
                             }
                         }
                     }
@@ -3561,9 +3565,10 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nScriptTimerA >= 1501) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
-                            if ((*enemies)[i]->shipGroup == 9) {
-                                (*enemies)[i]->setActive(false);
-                                (*enemies)[i]->setVisible(false);
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->shipGroup == 9) {
+                                enemy->setActive(false);
+                                enemy->setVisible(false);
                             }
                         }
                         m_pCamera->setTarget(player->geometry);
@@ -4465,16 +4470,17 @@ bool LevelScript::process(int delta) {
                         Vector playerPos = player->geometry->getPosition();
                         int off = 10000;
                         for (int i = 2; i < 5; ++i) {
-                            if ((*enemies)[i]->isDead()) {
-                                (*enemies)[i]->revive(); // KIPlayer vtable+0x18
+                            KIPlayer *enemy = (*enemies)[i];
+                            if (enemy->isDead()) {
+                                enemy->revive(); // KIPlayer vtable+0x18
                                 int rx = Globals::rnd->nextInt(1000);
                                 int ry = Globals::rnd->nextInt(1000);
                                 int rz = Globals::rnd->nextInt(1000);
-                                (*enemies)[i]->setPosition(
+                                enemy->setPosition(
                                         playerPos.x + lightDir.x * 100000.0f + (float) off + (float) rx,
                                         (float) ry,
                                         playerPos.z + lightDir.z * 100000.0f + (float) rz);
-                                AEGeometry *geo = (*enemies)[i]->geometry;
+                                AEGeometry *geo = enemy->geometry;
                                 geo->setDirection(-lightDir, Vector{0.0f, 1.0f, 0.0f});
                                 Vector right = geo->getRightVector();
                                 geo->translate(right * -30000.0f);
