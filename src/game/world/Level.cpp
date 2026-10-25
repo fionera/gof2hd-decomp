@@ -6147,12 +6147,13 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
     int x = wx + jitterX - 20000;
     int y = wy + jitterY - 20000;
-    int z = wz + jitterZ - 20000;
+    float z = (float) (wz + jitterZ - 20000);
+    int zInt = (int) z;
     player->setEmpData(empPoints, empTime);
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, (float) zInt, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
@@ -6170,7 +6171,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
+        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, (float) zInt);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
