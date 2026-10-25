@@ -174,7 +174,9 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
         }
         env->DeleteLocalRef(array);
     }
-    return ok;
+    if (ok == 1)
+        return true;
+    return false;
 }
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
