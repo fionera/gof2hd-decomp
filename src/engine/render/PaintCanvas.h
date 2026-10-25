@@ -61,7 +61,7 @@ namespace AbyssEngine {
         // real offsets (meshCount 0x24, meshes 0x28, engine 0x34).
         ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;  // 0x10 (count/data/capacity)
         unsigned char field_0x1c;                              // 0x1c
-        int field_0x20;                                        // 0x20
+        Image2D *field_0x20;                                   // 0x20: active 2D mask
         ::Array<AbyssEngine::Mesh *> meshes;                   // 0x24 (count/data/capacity)
         int gameOrientation;                                   // 0x30 (orientation)
         Engine *engine;                                        // 0x34
