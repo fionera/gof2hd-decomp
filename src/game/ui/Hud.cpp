@@ -1749,7 +1749,7 @@ void Hud::drawChallengeModeScore(int unused) {
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
-    span = step * 7 / 2;
+    span = step * 7 >> 1;
     left = half - span;
     x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
