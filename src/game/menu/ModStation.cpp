@@ -2207,8 +2207,6 @@ void ModStation::OnUpdate() {
         }
         this->field_0xb4 += this->dt;
         this->cutScene->update(this->dt);
-    }
-    if (this->flag_0x60) {
         if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
             Vector &textPos = reinterpret_cast<Vector &>(this->idleBox);
             float textY = textPos.y;
@@ -2239,8 +2237,7 @@ void ModStation::OnUpdate() {
             this->flag_0x60 = 0;
             return;
         }
-    }
-    if (this->flag_0x69) {
+    } else if (this->flag_0x69) {
         this->dialogueWindow->update(this->dt);
     } else if (this->flag_0x67) {
         this->starMap->update(this->dt);
@@ -2344,7 +2341,7 @@ void ModStation::OnUpdate() {
             int beaconStation = Globals::status->getStation()->getIndex();
             int beacon = beaconStation == 94 ? 3 : beaconStation - 90;
             Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
-            bool firstVoice = beacon == 0 || beacon == 2;
+            bool firstVoice = (beacon == 0) != (beacon == 2);
             int textId = 2716 + beacon;
             int face = 58;
             if (textId == 2717) {
