@@ -159,8 +159,7 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
-    Vector ahead;
-    ahead = Vector{0.0f, 0.0f, 0.0f};
+    Vector ahead = {0.0f, 0.0f, 0.0f};
     Gun &g = *this->gun;
     g.update(elapsed);
 
@@ -197,8 +196,7 @@ void RocketGun::update(int elapsed) {
 
         Matrix frame = *(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         Vector up = {0.0f, 1.0f, 0.0f};
-        Vector side;
-        side = VectorCross(up, heading);
+        Vector side = VectorCross(up, heading);
         side = VectorNormalize(side);
         up = VectorCross(heading, side);
         up = VectorNormalize(up);

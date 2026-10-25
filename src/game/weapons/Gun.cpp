@@ -359,8 +359,9 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->active = 1;
         this->hitSmall = 1;
         this->currentProjectile = i;
-        Vector direction = AbyssEngine::AEMath::MatrixGetPosition(m);
-        this->positions.data()[i] = direction;
+        this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
+
+        Vector direction;
         direction = Vector{0, 0, 0};
         if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
@@ -570,7 +571,7 @@ void Gun::calcCharacterCollision() {
     const int itemIndex = this->itemIndex;
     bool scatter;
     bool mine;
-    bool explosive;
+    int explosive;
     if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
         weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
         scatter = weaponType == ITEM_SORT_SCATTER_GUN;
