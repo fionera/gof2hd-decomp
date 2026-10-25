@@ -1628,8 +1628,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->active = 0;
                         this->applicationManager->SetCurrentApplicationModule(2);
                         return;
-                    } else if (mission->isCampaignMission() && (Globals::status->getCurrentCampaignMission() == 96 ||
-                                                               Globals::status->getCurrentCampaignMission() == 127)) {
+                    } else if (mission->isCampaignMission() &&
+                               (Globals::status->getCurrentCampaignMission() == 96 ||
+                                (mission->isCampaignMission() &&
+                                 Globals::status->getCurrentCampaignMission() == 127))) {
                         Globals::switch_to_target_setting = 1;
                         Globals::status->field_64 = this->player->player->getHitpoints();
                         Globals::status->field_5c = this->player->player->getShieldHP();
@@ -2843,7 +2845,7 @@ void MGame::OnUpdate() {
                 Globals::hints[23] = 1;
                 return;
             }
-            if (!Globals::hints[33] && Globals::status->getShip()->hasJumpDrive()) {
+            if (!Globals::hints[33] && Globals::status->getShip()->hasJumpDrive() == 1) {
                 if (this->choiceWindow == nullptr) {
                     this->choiceWindow = new ChoiceWindow();
                 }
