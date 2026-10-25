@@ -625,7 +625,7 @@ void HangarWindow::render() {
                                         item->item->getBlueprintAmount();
                             }
                             String leftText = String(left) + String("t");
-                            String rightText;
+                            String rightText("");
                             rightText = (tab == 1
                                                     ? String(right)
                                                     : String(right) + String("/") +
@@ -745,7 +745,7 @@ void HangarWindow::render() {
                                                      (int) (rate * (float) (this->progressBarWidth - 4))),
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
                             Globals::Canvas->SetColor(0x777777ffu);
-                            String progress;
+                            String progress("");
                             progress = String((int) (rate * 100.0f)) + String("%  (") +
                                               item->bluePrint->stationName + String(")");
                             Globals::Canvas->DrawString(
@@ -1494,11 +1494,10 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     Globals::options[77] && Globals::options[76])
                     offersLeft = Globals::options[75] == 0;
                 uint8_t *appData = (uint8_t *) Globals::appManager->GetApplicationData();
-                if (appData != nullptr && (!appData[21] || offersLeft)) {
+                if (!appData[21] || offersLeft) {
                     for (int i = 12; i != 17; i++)
                         (*this->buttons)[i]->setVisible(false);
                     this->showFreeCreditsWindow();
-                    return false;
                 }
             }
         } else if (this->freeCreditsActive) {
