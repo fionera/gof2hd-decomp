@@ -1704,7 +1704,7 @@ void SpaceLounge::drawLounge() {
     Globals::imageFactory->drawChar(this->agentImageParts, this->panelX + Globals::layout->field_0x4c,
                                     this->buttonPanelY + Globals::layout->field_0x4c, true);
 
-    if (offer == 1 || this->singleOffer != 0 || this->mode == 3) {
+    if (this->singleOffer != 0 || offer == 1 || this->mode == 3) {
         (*this->buttons)[0]->setVisible(true);
         (*this->buttons)[0]->draw();
     } else {
