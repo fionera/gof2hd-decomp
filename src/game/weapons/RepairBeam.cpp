@@ -112,7 +112,7 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
 
                 Array<int> *targets = this->targetIds;
                 bool placed = false;
-                for (unsigned slot = 0; !placed && slot < targets->size(); ++slot) {
+                for (unsigned slot = 0; slot < targets->size() && !placed; ++slot) {
                     if ((*targets)[slot] == -1) {
                         (*targets)[slot] = e;
                         placed = true;
@@ -143,7 +143,7 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
 
         float healStep = (float) dt * 0.03f;
         float shieldStep = (float) dt * 0.01f;
-        int idle = 1;
+        bool idle = true;
         for (unsigned i = 0; i < this->targetIds->size(); ++i) {
             if ((*this->targetIds)[i] == -1)
                 continue;
@@ -174,7 +174,8 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                             ? level->getPlayer()->GetDirVector() * -300.0f + level->getPlayer()->GetUpVector() * 200.0f
                             : Vector{0.0f, 0.0f, 0.0f};
 
-            (*this->geometries)[i]->setScaling(0.5f, 0.5f, AbyssEngine::AEMath::VectorLength(this->beamPosition));
+            float beamLength = AbyssEngine::AEMath::VectorLength(this->beamPosition);
+            (*this->geometries)[i]->setScaling(0.5f, 0.5f, beamLength);
             (*this->geometries)[i]->setDirection(
                     AbyssEngine::AEMath::VectorNormalize(this->beamPosition - egoOffset), Vector{0.0f, 1.0f, 0.0f});
             (*this->geometries)[i]->setPosition(level->getPlayer()->getPosition() + egoOffset);
@@ -182,13 +183,14 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                     Globals::Canvas->TransformGetTransform((*this->geometries)[i]->transform))
                     ->Update(dt, false);
 
-            if (this->sort == 0x25) {
+            switch (this->sort) {
+            case 0x25:
                 (*enemies)[(*this->targetIds)[i]]->player->heal(
                         healStep *
                         (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
                         100.0f);
-            }
-            if (this->sort == 0x29) {
+                break;
+            case 0x29:
                 if (level->getPlayer()->player->getShieldDamageRate() < 100) {
                     (*this->charges)[i] +=
                             shieldStep *
@@ -203,11 +205,12 @@ void RepairBeam::update(int dt, Radar * /*radar*/, Level *level, Hud * /*hud*/) 
                             (float) Globals::status->getShip()->getFirstEquipmentOfSort(this->sort)->getAttribute(0x36) /
                             100.0f);
                 }
+                break;
             }
 
             if (!Globals::sound->isPlaying(kWeaponSounds[this->itemIndex]))
                 Globals::sound->play(kWeaponSounds[this->itemIndex], nullptr, nullptr, 0.0f);
-            idle = 0;
+            idle = false;
         }
         if (idle)
             Globals::sound->stop(kWeaponSounds[this->itemIndex]);
