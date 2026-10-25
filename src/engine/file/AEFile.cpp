@@ -222,7 +222,6 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
     } else {
         if (AEFile::file->data()[0] != nullptr)
             delete AEFile::file->data()[0];
-        AEFile::file->data()[0] = nullptr;
         AEFile::file->data()[0] = file;
     }
     return 1;
