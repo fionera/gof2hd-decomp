@@ -35,7 +35,7 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHol
     canvas->SetColor(0xffffffffu);
     if (fontHolder != nullptr) {
         unsigned int font = *static_cast<unsigned int *>(fontHolder);
-        if (GameText::getLanguage() == 9 ||
+        if (__predict_false(GameText::getLanguage() == 9) ||
             !canvas->ResourceLoaded(font, static_cast<AbyssEngine::ResourceType>(1))) {
             Globals::globals->loadFont(GameText::getLanguage());
             *static_cast<unsigned int *>(fontHolder) = font;
@@ -64,9 +64,7 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *fontHol
             remaining = 100 - progress;
         }
 
-        // The 32-bit mask is a no-op; it reproduces the original's callee-saved register choice.
-        Globals::Canvas->DrawString(font, caption, (Globals::w >> 1) - Globals::Canvas->GetTextWidth(font, caption) / 2 -
-                                        (font & 0xffffffffu),
+        Globals::Canvas->DrawString(font, caption, (Globals::w >> 1) - Globals::Canvas->GetTextWidth(font, caption) / 2,
                                     (Globals::h >> 1) - topOffset - Globals::layout->field_0x4 -
                                         Globals::layout->field_0x280,
                                     false);
