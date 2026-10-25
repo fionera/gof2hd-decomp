@@ -2769,6 +2769,7 @@ bool LevelScript::process(int delta) {
                     m_pGeometry4 = new AEGeometry(Globals::Canvas);
                     m_pGeometry4->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
                     m_pGeometry4->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    m_nScriptTimerA = 0;
                     m_nState = 1;
                 }
                 if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
@@ -2817,6 +2818,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(0.0f, lift * (float) delta, 0.0f);
                     if (m_nScriptTimerA >= 8001) {
                         m_nScriptTimerB = 0;
+                        m_nScriptTimerA = 0;
                         m_nState = 4;
                     }
                 } else if (m_nState == 4) {
@@ -2925,6 +2927,7 @@ bool LevelScript::process(int delta) {
                         m_nState = 6;
                     }
                 } else if (m_nState == 6) {
+                    m_nScriptTimerA = 0;
                     m_nScriptTimerA += delta;
                     KIPlayer *chaser = (*enemies)[chaserIndex];
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -4665,12 +4668,15 @@ bool LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
+                        m_nScriptTimerA = 0;
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
+                    m_nScriptTimerA = 0;
                     m_nState = 3;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
                 } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
+                    m_nScriptTimerA = 0;
                     m_nState = 4;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     (*m_pLevel->getLandmarks())[3]->setVisible(true);
@@ -4712,7 +4718,6 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 4) {
                     m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
-                        m_nScriptTimerA = 0;
                         m_nState = 5;
                         for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                             KIPlayer *ship = (*m_pLevel->getEnemies())[i];
