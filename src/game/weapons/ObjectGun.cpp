@@ -317,8 +317,7 @@ void ObjectGun::render() {
 
                 if (this->visible != 0) {
                     // Camera-facing projectile (beam heads, flares): billboard along the flight direction.
-                    Vector facing;
-                    facing = -this->dir;
+                    Vector facing = -this->dir;
                     gun = this->gun;
                     if ((uint32_t) (gun->itemIndex - 0xb4) > 2) {
                         camera = *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
@@ -421,11 +420,12 @@ void ObjectGun::render() {
             gun->active = 0;
     }
 
-    // The hasGeometry test is redundant (the flag is only set together with the pointer) but keeps
-    // this function at the 1480-byte size the linked libstdc++ archive layout depends on.
-    if (this->wasFiring != 0 && this->hasGeometry != 0 && this->geometry != nullptr)
+    if (this->wasFiring != 0 && this->geometry != nullptr)
         this->geometry->render();
     this->deltaTime = 0;
+    this->hasGeometry = this->geometry != nullptr;
+    if (this->geometry == nullptr)
+        this->spinAngle = 0.0f;
 }
 
 void ObjectGun::translate(const Vector & /*v*/) {
