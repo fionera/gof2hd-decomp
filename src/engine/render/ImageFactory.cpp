@@ -6,39 +6,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Sprite.h"
 
-static PaintCanvas **g_reload_canvas = &Globals::Canvas;
-static PaintCanvas **g_drawChar_canvas = &Globals::Canvas;
-
-int IMAGE_OFFSETS[13][4][2] = {
-    {{16, 45}, {16, 26}, {32, 75}, {16, 0}},
-    {{16, 52}, {16, 25}, {32, 75}, {16, 0}},
-    {{16, 45}, {16, 24}, {32, 75}, {16, 0}},
-    {{32, -20}, {32, -20}, {32, 0}, {16, -75}},
-    {{32, 75}, {16, 17}, {32, 75}, {16, 0}},
-    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
-    {{32, 75}, {16, 42}, {16, 0}, {16, 0}},
-    {{16, 39}, {16, 21}, {32, 75}, {16, 0}},
-    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
-    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
-    {{16, 46}, {16, 26}, {32, 75}, {16, 0}},
-    {{16, 0}, {16, 0}, {16, 0}, {16, 0}},
-    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
-};
-int IMAGE_OFFSETS_IPAD[13][4][2] = {
-    16, 75, 16, 43, 32, 125, 16, 0,
-    16, 86, 16, 41, 32, 125, 16, 0,
-    16, 74, 16, 40, 32, 125, 16, 0,
-    32, -33, 32, -33, 32, 0, 16, -125,
-    32, 125, 16, 28, 32, 125, 16, 0,
-    16, -33, 32, -33, 32, 0, 16, -125,
-    32, 125, 16, 72, 16, 0, 16, 0,
-    16, 65, 16, 35, 32, 125, 16, 0,
-    16, -33, 32, -33, 32, 0, 16, -125,
-    32, 125, 32, 0, 32, 0, 32, 0,
-    16, 76, 16, 43, 32, 125, 16, 0,
-    16, 0, 16, 0, 16, 0, 16, 0,
-    32, 125, 32, 0, 32, 0, 32, 0,
-};
 int IMAGE_OFFSETS_IPAD_HD[13][4][2] = {
     16, 84, 16, 48, 32, 141, 16, 0,
     16, 96, 16, 45, 32, 141, 16, 0,
@@ -54,6 +21,7 @@ int IMAGE_OFFSETS_IPAD_HD[13][4][2] = {
     32, 141, 32, 0, 32, 0, 32, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 };
+
 int IMAGE_OFFSETS_IPAD_LARGE[13][4][2] = {
     16, 120, 16, 68, 32, 200, 16, 0,
     16, 137, 16, 65, 32, 200, 16, 0,
@@ -68,6 +36,38 @@ int IMAGE_OFFSETS_IPAD_LARGE[13][4][2] = {
     16, 121, 16, 68, 32, 200, 16, 0,
     16, 0, 16, 0, 16, 0, 16, 0,
     32, 200, 32, 0, 32, 0, 32, 0,
+};
+
+int IMAGE_OFFSETS_IPAD[13][4][2] = {
+    16, 75, 16, 43, 32, 125, 16, 0,
+    16, 86, 16, 41, 32, 125, 16, 0,
+    16, 74, 16, 40, 32, 125, 16, 0,
+    32, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 16, 28, 32, 125, 16, 0,
+    16, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 16, 72, 16, 0, 16, 0,
+    16, 65, 16, 35, 32, 125, 16, 0,
+    16, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 32, 0, 32, 0, 32, 0,
+    16, 76, 16, 43, 32, 125, 16, 0,
+    16, 0, 16, 0, 16, 0, 16, 0,
+    32, 125, 32, 0, 32, 0, 32, 0,
+};
+
+int IMAGE_OFFSETS[13][4][2] = {
+    {{16, 45}, {16, 26}, {32, 75}, {16, 0}},
+    {{16, 52}, {16, 25}, {32, 75}, {16, 0}},
+    {{16, 45}, {16, 24}, {32, 75}, {16, 0}},
+    {{32, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {16, 17}, {32, 75}, {16, 0}},
+    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {16, 42}, {16, 0}, {16, 0}},
+    {{16, 39}, {16, 21}, {32, 75}, {16, 0}},
+    {{16, -20}, {32, -20}, {32, 0}, {16, -75}},
+    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
+    {{16, 46}, {16, 26}, {32, 75}, {16, 0}},
+    {{16, 0}, {16, 0}, {16, 0}, {16, 0}},
+    {{32, 75}, {32, 0}, {32, 0}, {32, 0}},
 };
 
 // Image resource of each portrait part: [row][part], -1 = part not available.
@@ -111,7 +111,6 @@ static const int kRetinaOffsets[13][4][2] = {
                                           : Globals::iPad ? IMAGE_OFFSETS_IPAD[row][part][k] \
                                                           : IMAGE_OFFSETS[row][part][k])
 
-static AbyssEngine::AERandom **gCreateChar2Rng1 = &Globals::rnd;
 static const int gCreateChar2Table[] = {
     11, 11, 11, 11,
      4,  5,  6,  9,
@@ -125,9 +124,6 @@ static const int gCreateChar2Table[] = {
      1,  1,  1,  1,
      4,  4,  5,  7,
 };
-static AbyssEngine::AERandom **gCreateChar2Rng2 = &Globals::rnd;
-static AbyssEngine::AERandom **gCreateCharRng = &Globals::rnd;
-
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;
     if (Globals::retinaDisplay || Globals::n9) {
@@ -141,13 +137,12 @@ ImageFactory::ImageFactory() {
 
 void ImageFactory::reload() {
     unsigned *ids = new unsigned[6];
-    PaintCanvas **canvasHolder = g_reload_canvas;
-    (*canvasHolder)->Image2DCreate(0x4fa, ids[0]);
-    (*canvasHolder)->Image2DCreate(0x4fb, ids[1]);
-    (*canvasHolder)->Image2DCreate(0x4f7, ids[2]);
-    (*canvasHolder)->Image2DCreate(0x4f8, ids[3]);
-    (*canvasHolder)->Image2DCreate(0x4f9, ids[4]);
-    (*canvasHolder)->Image2DCreate(0x4fc, ids[5]);
+    Globals::Canvas->Image2DCreate(0x4fa, ids[0]);
+    Globals::Canvas->Image2DCreate(0x4fb, ids[1]);
+    Globals::Canvas->Image2DCreate(0x4f7, ids[2]);
+    Globals::Canvas->Image2DCreate(0x4f8, ids[3]);
+    Globals::Canvas->Image2DCreate(0x4f9, ids[4]);
+    Globals::Canvas->Image2DCreate(0x4fc, ids[5]);
 
     if (this->sprite != nullptr) {
         delete this->sprite;
@@ -156,11 +151,11 @@ void ImageFactory::reload() {
 
     this->sprite = new Sprite(
         (uint32_t *) ids, 6,
-        (*canvasHolder)->GetImage2DWidth(ids[0]),
-        (*canvasHolder)->GetImage2DHeight(ids[0]));
+        Globals::Canvas->GetImage2DWidth(ids[0]),
+        Globals::Canvas->GetImage2DHeight(ids[0]));
 
-    (*canvasHolder)->Image2DCreate(0x485, this->itemImage);
-    (*canvasHolder)->Image2DCreate(0x511, this->shipImage);
+    Globals::Canvas->Image2DCreate(0x485, this->itemImage);
+    Globals::Canvas->Image2DCreate(0x511, this->shipImage);
 }
 
 ImageFactory::~ImageFactory() {
@@ -169,13 +164,13 @@ ImageFactory::~ImageFactory() {
 }
 
 int *ImageFactory::createChar(int race) {
-    int sexRoll = (*gCreateCharRng)->nextInt(2);
+    int sexRoll = Globals::rnd->nextInt(2);
     return this->createChar(sexRoll == 0, race);
 }
 
 int *ImageFactory::createChar(bool isMale, int race) {
     if (race == 3) {
-        int reroll = (*gCreateChar2Rng1)->nextInt(4);
+        int reroll = Globals::rnd->nextInt(4);
         race = (reroll != 0) ? 2 : 0;
     }
     int row = race;
@@ -188,7 +183,7 @@ int *ImageFactory::createChar(bool isMale, int race) {
 
     const int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
-        desc[i + 1] = (*gCreateChar2Rng2)->nextInt(partCounts[i]);
+        desc[i + 1] = Globals::rnd->nextInt(partCounts[i]);
     return desc;
 }
 
@@ -218,14 +213,13 @@ void *ImageFactory::loadImage(int row, int part, int frame) { // lint: void_ptr 
 }
 
 void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag) {
-    PaintCanvas **sl = g_drawChar_canvas;
-    (*sl)->SetColor(0xffffffffu);
-    (*sl)->DrawImage2D(this->itemImage, x, y);
+    Globals::Canvas->SetColor(0xffffffffu);
+    Globals::Canvas->DrawImage2D(this->itemImage, x, y);
     for (unsigned i = 0; i < parts->size(); ++i) {
         ImagePart *part = (*parts)[i];
         if (part != nullptr) part->draw(x, y, flag);
     }
-    (*sl)->DrawImage2D(this->shipImage, x, y);
+    Globals::Canvas->DrawImage2D(this->shipImage, x, y);
 }
 
 void ImageFactory::drawItem(int itemId, int frame, int x, int y) {
