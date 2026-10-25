@@ -211,7 +211,7 @@ SpaceLounge::SpaceLounge()
             Agent *agent = (*this->agents)[i];
             if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
                 agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
-                ArrayRemove((*this->agents)[i], *this->agents);
+                ArrayRemove(agent, *this->agents);
                 this->init();
                 break;
             }
@@ -770,7 +770,8 @@ void SpaceLounge::startChat() {
                     return;
                 }
                 agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                agent->setSellItemPrice(Globals::status->getShip()->getPrice() * agent->getModPricePercentage() / 100);
+                int shipPrice = Globals::status->getShip()->getPrice();
+                agent->setSellItemPrice(shipPrice * agent->getModPricePercentage() / 100);
                 message = *Globals::gameText->getText(agent->field_0x28);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 message += String(" ") + *Globals::gameText->getText(879);
@@ -789,9 +790,11 @@ void SpaceLounge::startChat() {
                     agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
                 message = *Globals::gameText->getText(agent->field_0x28);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                if (agent->field_0x2c == -1)
-                    agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
-                message += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+                int detailText = agent->field_0x2c;
+                if (detailText == -1)
+                    detailText = 773 + Globals::rnd->nextInt(2);
+                agent->field_0x2c = detailText;
+                message += String("\n") + *Globals::gameText->getText(detailText);
                 message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
                                                        String("#Q"));
                 message = Globals::status->replaceHash(
@@ -828,7 +831,8 @@ void SpaceLounge::startChat() {
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 if (agent->field_0x2c == -1)
                     agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
-                message += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+                int detailText = agent->field_0x2c;
+                message += String("\n") + *Globals::gameText->getText(detailText);
                 message = Globals::status->replaceHash(message, String(String(1), false), String("#Q"));
                 message = Globals::status->replaceHash(
                     message, *Globals::gameText->getText(913 + agent->getSellItemIndex()), String("#P"));
@@ -970,6 +974,7 @@ int SpaceLounge::onKeyPress(int key) {
                 this->choiceWindow->right();
             } else if (key == 0x10000) {
                 // The player confirmed the deal.
+                {
                 String message = *Globals::gameText->getText(850 + Globals::rnd->nextInt(3));
                 Agent *agent = key_agent(this);
                 switch (agent->getOffer()) {
@@ -1140,8 +1145,9 @@ int SpaceLounge::onKeyPress(int key) {
                 if (agent->getOffer() != 8)
                     agent->setOfferAccepted(true);
                 this->scrollWindow->setText(agent->getName(), message);
-                this->chatScroll = 0;
                 this->mode = 3;
+                this->chatScroll = 0;
+                }
                 this->chatActive = 0;
             }
             break;
@@ -1866,7 +1872,6 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
             goto done;
         }
         case 6:
-            result = soundId;
             goto done;
         case 7: {
             unsigned int delta = soundId - 759;
@@ -1877,7 +1882,7 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
     }
     result = -1;
 done:
-    return result >= 0 ? result : -1;
+    return result;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
