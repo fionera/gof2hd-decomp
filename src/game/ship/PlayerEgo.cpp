@@ -2386,7 +2386,8 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         return;
     for (unsigned int i = 0; i < objects->size(); i++) {
         KIPlayer *object = (*objects)[i];
-        Vector surface;
+        Vector surface = this->geometry->getPosition();
+        surface.x = surface.y;
         if (object == nullptr)
             continue;
         if (i == 0 && !Globals::status->inAlienOrbit()
