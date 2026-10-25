@@ -216,9 +216,10 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
         for (uint32_t i = 0; i < 0x22; i++) {
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
-            uint32_t count;
             AEFile::ReadSwitched(faction, handle);
+            bool visible;
             AEFile::ReadSwitched(flag, handle);
+            visible = flag == 1;
             AEFile::ReadSwitched(a, handle);
             AEFile::ReadSwitched(b, handle);
             AEFile::ReadSwitched(c, handle);
@@ -226,6 +227,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
 
+            uint32_t count;
             AEFile::ReadSwitched((int32_t &) count, handle);
             int32_t *routes = new int32_t[count];
             for (int32_t j = 0; j < (int32_t) count; j++) {
@@ -265,7 +267,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary() {
                 }
             }
 
-            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
+            systems->data()[i] = new SolarSystem((int32_t) i, name, faction, visible, a, b, c, d, e, f,
                                                  routes, stations, wrecks, statics);
             delete[] routes;
         }
@@ -300,7 +302,7 @@ Array<Wanted *> *FileRead::loadWanted() {
         int32_t j;
         int32_t k;
         int32_t l;
-        while (index < wanted->size()) {
+        while (index < 0x19) {
 
             AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
