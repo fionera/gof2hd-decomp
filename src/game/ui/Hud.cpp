@@ -380,7 +380,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Mission status panel (top right).
     if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 12) {
-        String kills = String(ego->level->killCountB) + String(" : ") + String(ego->level->killCountA);
+        String kills = String(ego->level->killCountB) + (String(" : ") + String(ego->level->killCountA));
         Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -406,8 +406,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         else
             passengers = !(Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
                            Globals::status->getStation()->getIndex() == 131);
-        String count = String(Globals::status->field_178) + String(" / ") +
-                       String(Globals::status->getShip()->getMaxPassengers());
+        String count = String(Globals::status->field_178) +
+                       (String(" / ") + String(Globals::status->getShip()->getMaxPassengers()));
         if (passengers)
             Globals::Canvas->DrawImage2D(this->image_0x334, this->field_0x438 - Globals::layout->field_0x1f0,
                                          this->field_0x43a);
@@ -450,7 +450,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
                                ->getAmount()
                          : 0;
-        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
+        String cargo = amount + (String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace()));
         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -858,8 +858,8 @@ void Hud::drawOrbitInformation() {
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 26 && Globals::status->field_114 > 1)
         security = 3;
     Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
-                                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) + String(" ") +
-                                    *Globals::gameText->getText(137),
+                                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) +
+                                    (String(" ") + *Globals::gameText->getText(137)),
                                 x, Globals::layout->orbitInfoSystemY, false);
     Globals::Canvas->SetColor(g_Hud_securityColors[security][0], g_Hud_securityColors[security][1],
                               g_Hud_securityColors[security][2], 255);
