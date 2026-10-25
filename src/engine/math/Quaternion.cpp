@@ -2,6 +2,13 @@
 #include <cmath>
 
 namespace AbyssEngine {
+#pragma GCC visibility push(hidden)
+    // Byte offset of a quaternion component; operator[] walks the x..w block.
+    int QuaternionComponentOffset(int index) {
+        return index * sizeof(float);
+    }
+#pragma GCC visibility pop
+
     Quaternion::Quaternion() {
     }
 
@@ -49,7 +56,7 @@ namespace AbyssEngine {
             x = scale * 0.25f;
             w = w_value;
             y = (matrix.m[4] + matrix.m[1]) / scale;
-            z = (matrix.m[2] + matrix.m[8]) / scale;
+            z = (matrix.m[8] + matrix.m[2]) / scale;
         } else if (m11 > m22) {
             float scale = sqrtf(((m11 + one) - m00) - m22);
             scale = scale + scale;
@@ -132,7 +139,7 @@ namespace AbyssEngine {
 
     Quaternion::operator const float *() const { return &x; }
 
-    float &Quaternion::operator[](int i) { return (&x)[i]; }
+    float &Quaternion::operator[](int i) { return *reinterpret_cast<float *>(reinterpret_cast<char *>(&x) + QuaternionComponentOffset(i)); }
 
     float Quaternion::operator[](int i) const { return (&x)[i]; }
 
