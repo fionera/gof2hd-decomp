@@ -576,11 +576,12 @@ void Gun::calcCharacterCollision() {
         weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
         scatter = weaponType == ITEM_SORT_SCATTER_GUN;
         mine = weaponType == ITEM_SORT_MINE;
-        explosive = true;
+        explosive = 1;
     } else {
         scatter = weaponType == ITEM_SORT_SCATTER_GUN;
         mine = weaponType == ITEM_SORT_MINE;
-        explosive = isRocketLike(weaponType);
+        explosive = weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE ||
+                    weaponType == ITEM_SORT_CLUSTER_MISSILE;
     }
     const bool explodeOnContact =
             weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
@@ -624,11 +625,11 @@ void Gun::calcCharacterCollision() {
             if (!(outer && ki->outerCollide(position))) {
                 float r = (float) radius;
                 if (!(enemyPosition.x - position.x + velocity.x < r &&
-                      enemyPosition.x - position.x + velocity.x > (float) -radius &&
+                      enemyPosition.x - position.x + velocity.x > -(float) radius &&
                       enemyPosition.y - position.y + velocity.y < r &&
-                      enemyPosition.y - position.y + velocity.y > (float) -radius &&
+                      enemyPosition.y - position.y + velocity.y > -(float) radius &&
                       enemyPosition.z - position.z + velocity.z < r &&
-                      enemyPosition.z - position.z + velocity.z > (float) -radius && !outer)) {
+                      enemyPosition.z - position.z + velocity.z > -(float) radius && !outer)) {
                     continue;
                 }
             }
