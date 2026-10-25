@@ -169,8 +169,7 @@ void RocketGun::update(int elapsed) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
         PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
-        Vector barrel = g->offset;
-        barrel.z += -100.0f;
+        Vector barrel = {g->offset.x, g->offset.y, g->offset.z - 100.0f};
         const Matrix &ship = reinterpret_cast<const Matrix &>(player->player->transform[0]);
         muzzle += MatrixRotateVector(ship, barrel);
         this->geometry->setPosition(muzzle);
@@ -186,8 +185,8 @@ void RocketGun::update(int elapsed) {
 
     if (gun->hitSmall != 0) {
         // A rocket was just launched: orient the rocket mesh along its velocity.
-        this->activeShotId = -1;
         this->fadeTimer = 0;
+        this->activeShotId = -1;
         gun->hitSmall = 0;
 
         PaintCanvas *canvas = Globals::Canvas;
@@ -237,8 +236,8 @@ void RocketGun::update(int elapsed) {
 
         if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->currentProjectile > 0) {
             // Cluster salvo: launch the remaining rockets in the same frame.
-            gun->hitSmall = 1;
             gun->currentProjectile = gun->currentProjectile - 1;
+            gun->hitSmall = 1;
             this->update(elapsed);
             this->gun->update(elapsed);
             gun = this->gun;
@@ -255,8 +254,10 @@ void RocketGun::update(int elapsed) {
             this->radar->level->field_80->enableSystemEmit(this->particleSystem, false);
         } else {
             Level *level = this->radar->level;
-            (gun->itemIndex == 0xe8 ? level->field_9c : level->particleRenderBoolPtr)
-                    ->enableSystemEmit(this->particleSystem, false);
+            if (gun->itemIndex == 0xe8)
+                level->field_9c->enableSystemEmit(this->particleSystem, false);
+            else
+                level->particleRenderBoolPtr->enableSystemEmit(this->particleSystem, false);
         }
     } else if (this->fadeTimer > 0 && gun->positions.count == 1 && gun->positions.data()[0].z == 50000.0f) {
         const int left = this->fadeTimer - elapsed;
@@ -282,7 +283,7 @@ void RocketGun::update(int elapsed) {
                     (*this->trailTimers)[i] = 2000;
             } else {
                 if (this->homing != 0 &&
-                    (trailMatrices != nullptr || gun->lifetimes[i] < gun->initialLifetime - 1000)) {
+                    (this->trailMatrices != nullptr || gun->lifetimes[i] < gun->initialLifetime - 1000)) {
                     this->seekEnemy(gun->lifetimes[i], i);
                     gun = this->gun;
                 }
