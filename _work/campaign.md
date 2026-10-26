@@ -40,6 +40,12 @@
     original store schedule; `linked_exact` rises 4451 -> **4452**.
   - `MGame::OnUpdate` 80.9% -> **81.8%** (11468/11440B) by restoring the direct script-time
     read, black-market `Status` local, empty-cargo guard, and previous-offer lifetime.
+  - `MenuTouchWindow::draw` 46.4% -> **60.2%** (12656/13052B) by unrolling the three option
+    rows and gating slider slot 5; the constructor stays at 65.0% and OnTouchBegin/Move/End
+    at 95.3/89.1/64.8%.
+  - `Level::createMission` 70.7% -> **71.0%** (17180/17172B) by moving the TU's `.text` layout
+    anchor from createMission to createCampaignMission (83.3% -> 83.1%), keeping the archive
+    layout and the ten libstdc++ exception ctors byte-exact.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
   `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
   `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
@@ -50,6 +56,8 @@
   (`startChat` 97.2%, ctor 96.0%, `drawLounge` 94.9%, `onKeyPress` 89.9%); `w621` was
   launched on `Level::createCampaignMission` (83.3%) and `Level::createScene` (76.2%),
   keeping 20 live `codex exec -p dsv41` workers.
+- `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
+  `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
   (`drawMenu` 89.3%, `touchBegin` 86.2%, `drawOrbitInformation` 72.4%,
   `drawChallengeModeScore` 68.4%), keeping 20 live `codex exec -p dsv41` workers.
