@@ -1613,7 +1613,7 @@ void SpaceLounge::drawLounge() {
         int pad = Globals::layout->field_0x94;
         Globals::Canvas->SetColor(0xffffffffu);
         int centerX = (int) (topLeft.x + (bottomRight.x - topLeft.x) * 0.5f);
-        int top = (int) (bottomRight.y - (float) (pad * 2));
+        int top = (int) (bottomRight.y - (float) (pad + pad));
 
         String name = agent->isKnown() || agent->isStoryAgent()
                               ? agent->getName()
@@ -1636,7 +1636,7 @@ void SpaceLounge::drawLounge() {
         if (x - pad < layout->buttonInsetX) {
             x = layout->buttonInsetX + pad;
         } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
-            x = Globals::w - layout->buttonInsetX - (width + pad * 2);
+            x = Globals::w - layout->buttonInsetX - (width + pad + pad);
         }
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
