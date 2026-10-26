@@ -639,9 +639,10 @@ bool LevelScript::process(int delta) {
         if (m_nScriptTime >= 7901) {
             // 0x13834e: advance landmarks[0]'s station-root transform animation this frame.
             // landmarks[0]'s [+0x140] field is PlayerStation::rootGeometry (offset 0x140).
+            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
             PlayerStation *station = (PlayerStation *) (*m_pLevel->getLandmarks())[0];
             AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                    Globals::Canvas->TransformGetTransform(station->rootGeometry->transform);
+                    canvas->TransformGetTransform(station->rootGeometry->transform);
             t->Update((long long) delta, false); // 0x138374
         }
         // 0x138378: dispatch on (m_nState - 1) -> substates s1..s12 (states 0 / >12 do nothing).
@@ -838,9 +839,10 @@ bool LevelScript::process(int delta) {
                     m_tempVec.y += 500.0f;
                     (*m_pLevel->getEnemies())[0]->setPosition(m_tempVec);
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward(-10000.0f);
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
+                    ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     m_pGeometry6->setDirection(-(*m_pLevel->getEnemies())[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
@@ -4804,12 +4806,9 @@ bool LevelScript::process(int delta) {
     // because the libstdc++ exception ctors' PC-relative GOT deltas depend on it.  process is the
     // only LevelScript function that is short of the original, so the anchor lives here.
     {
-        volatile double layoutPad;
-        layoutPad = 1.0;
+        volatile char layoutPad;
+        layoutPad = 0;
         (void) layoutPad;
-        volatile int layoutPad2;
-        layoutPad2 = 0;
-        (void) layoutPad2;
     }
     // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
     // m_nFlags @0x11 -- normalised to 0/1.
