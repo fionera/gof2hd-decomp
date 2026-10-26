@@ -1,5 +1,17 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 39 — 20-way continuation)
+
+- Launched `w895..w914` (20 `codex exec -p dsv41` workers, explicit sglang profile)
+  from master `ee2e1f6c`, one owner per remaining non-linked TU: ModStation,
+  Generator, Radar, PlayerFighter, SpaceLounge, StarMap, MenuTouchWindow,
+  HangarWindow, PlayerStation, PlayerEgo, Hud, Level, Status, MGame, RocketGun,
+  Mesh, HackingGame, Gun, Globals+Layout, LevelScript. Each worker is gate-bound
+  to byte_exact >= 1352, linked_exact >= 4468 and a clean lint.
+- Current gate before the batch: **byte_exact 1352, linked_exact 4468, avg 99.78,
+  stubs 0, missing/extra 0, imports 207, data 843/843**, `.text 0x1343c0`,
+  `RATCHET PASS`.
+
 ## Session 2026-10-26 (wave 37/38 harvest)
 
 - Harvested `w884`: `StarSystem::StarSystem` C1/C2 91.9% -> **93.9%** (2900B, now the
