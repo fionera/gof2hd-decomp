@@ -1090,13 +1090,14 @@ void StarMap::draw() {
         int left = layout->windowX;
         int width = layout->windowWidth;
         unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-        int textWidth = Globals::Canvas->GetTextWidth(font, line);
-        Globals::Canvas->DrawString(font, line,
-                                    left + width / 2 - textWidth / 2,
-                                    Globals::layout->windowY + Globals::layout->windowHeight -
-                                    Globals::layout->footerTextInset,
-                                    false);
-        Globals::Canvas->SetColor(0xffffffffu);
+        PaintCanvas *canvas = Globals::Canvas;
+        int textWidth = canvas->GetTextWidth(font, line);
+        canvas->DrawString(font, line,
+                           left + width / 2 - textWidth / 2,
+                           Globals::layout->windowY + Globals::layout->windowHeight -
+                           Globals::layout->footerTextInset,
+                           false);
+        canvas->SetColor(0xffffffffu);
     }
     this->backButton->draw();
     if (this->choiceVisible != 0) {
