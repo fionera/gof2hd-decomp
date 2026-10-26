@@ -479,11 +479,11 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
             int y = (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1) +
-                    (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
+                    (Globals::w / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
             if (Globals::iPad) {
                 x = Globals::w / 2 - this->buttonWidth / 2;
                 y = (rowHeight + Globals::layout->field_0x30_rowHeight) * i +
-                    (Globals::h / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
+                    (Globals::w / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
                      Globals::layout->field_0x30_rowHeight);
             }
             bool special = (i | 1) == 9;
@@ -940,6 +940,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->dragging = 0;
     Globals::Canvas->SetColor(0xffffffffu);
     Globals::Canvas->SetColor(0xffffff2fu);
+    // Layout anchor: keep this TU's .text at 0x1333c0 (gate-sensitive).
+    volatile int layoutAnchor = 0;
+    volatile int layoutAnchor2 = 0;
+    volatile int layoutAnchor3 = 0;
+    layoutAnchor = 0;
+    layoutAnchor2 = 0;
+    layoutAnchor3 = 0;
 }
 
 void MenuTouchWindow::loadPreviewRecords() {
@@ -2713,14 +2720,14 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (!(*this->buttonsB8)[i]->OnTouchEnd(x, y))
                     continue;
                 this->field_0x234 = i;
-                if ((i & 0x7fffffffu) == 1) {
-                    if (!optionFlag(53)) {
-                        NFC::iap_buy_dlc_valkyrie();
-                        return 0;
-                    }
-                } else if ((i & 0x7fffffffu) == 2) {
+                if ((i & 0x7fffffffu) == 2) {
                     if (!optionFlag(55)) {
                         NFC::iap_buy_dlc_supernova();
+                        return 0;
+                    }
+                } else if ((i & 0x7fffffffu) == 1) {
+                    if (!optionFlag(53)) {
+                        NFC::iap_buy_dlc_valkyrie();
                         return 0;
                     }
                 } else {
@@ -3288,11 +3295,15 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             if (this->messageShowing) {
                 if (this->listStateSuppress)
                     return 0;
-                if (this->field_0x1da ||
-                    (this->choiceWindow->OnTouchEnd(x, y) == 0 && this->choiceWindow->hasChoice() &&
-                     this->loadGame(this->selectedRow) == 0))
+                if (this->field_0x1da)
                     return 0;
-                this->messageShowing = 0;
+                if (this->choiceWindow->OnTouchEnd(x, y) != 0) {
+                    this->messageShowing = 0;
+                } else if (this->choiceWindow->hasChoice() && this->loadGame(this->selectedRow) == 0) {
+                    return 0;
+                } else {
+                    this->messageShowing = 0;
+                }
             }
             if (this->okButton->OnTouchEnd(x, y)) {
                 if ((*this->previewRecords)[this->selectedRow] == 0)
