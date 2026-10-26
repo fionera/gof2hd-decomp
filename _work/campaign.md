@@ -2,6 +2,20 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested the first wave29 continuation batch:
+  - `w718`: `MGame::OnUpdate` 83.1% -> **84.5%** (11444B), preserving OnTouchEnd 78.0.
+  - `w716`: `HackingGame::render2D` 61.5% -> **67.8%** (2072B) with the transplanted tile-local
+    order and a retuned `.text` anchor; avg 99.73 -> **99.74**.
+  - `w717`: `Level::createCampaignMission` 83.9% -> **84.7%** (29676B exact) by materializing
+    the landmark vector temporary and restoring the original source order.
+  - `w719`: `Generator::getShipBuyList` 93.7% -> **98.2%** (2244B exact) by removing the
+    defensive clamp; `createMission` trades 65.1% -> 63.1% (2000B) to keep the TU size.
+  - `w715` (`Status::missionCompleted` 60.2% -> 85.4%) is blocked by the 190-byte
+    `kMissionOrder` table crossing a `.rodata` page boundary and shifting `.data`; no commit.
+  - `w711`/`w712`/`w713`/`w714`/`w720` were clean no-ops: their source changes were already
+    landed on master.
+- Current gate after the batch: **byte_exact 1352, linked_exact 4456, avg 99.74,
+  stubs 0, missing/extra 0, imports 207, data 843/843** (`RATCHET PASS`).
 - Launched 20 additional disjoint workers `w691..w710`, all with the `-p dsv41` profile:
   ParticleSettings, Radar ctor/drawCurrentLock, Radar draw, StatusWindow, MissionsWindow,
   Status, HackingGame, Engine ResetLightParam, SpaceLounge, ModStation, MenuTouchWindow,
