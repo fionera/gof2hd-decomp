@@ -38,6 +38,8 @@
     before X while preserving the original `VectorDot(tangent, normal)` argument order.
   - `Engine::ResetLightParam` 83.0% -> **100.0% linked-exact** (480/480B) by restoring the
     original store schedule; `linked_exact` rises 4451 -> **4452**.
+  - `MGame::OnUpdate` 80.9% -> **81.8%** (11468/11440B) by restoring the direct script-time
+    read, black-market `Status` local, empty-cargo guard, and previous-offer lifetime.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
   `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
   `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
