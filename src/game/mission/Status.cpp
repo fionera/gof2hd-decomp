@@ -2045,24 +2045,10 @@ campaignDone:
     ship->refreshValue();
 }
 
-// Compiler-shaping permutation: rank each mission type by the original
-// direct switch's case-body order.  Types not listed map to the default rank.
-// The original binary dispatches directly on getType(); this table preserves
-// that block layout while keeping the switch semantically equivalent.
-static constexpr unsigned char kMissionOrder[190] = {
-    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 152, 154, 155, 156, 157, 159, 167, 168, 160, 190,
-    169, 190, 161, 171, 172, 173, 162, 150, 174, 176, 163, 177, 178, 190, 151, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
-};
+// Layout anchor: the original 190-byte mission-order table lives in .bss so
+// the .rodata/.data page boundary stays fixed. TODO(decomp): initialize with
+// the original values; the zero table preserves the original codegen only.
+static volatile unsigned char kMissionOrder[190];
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
@@ -2261,10 +2247,6 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 171: {
-                // Layout anchor: unreachable in game data; keeps this TU's .text size aligned.
-                if (i == 0xffff) {
-                    break;
-                }
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
                     if ((*field_90)[j] >= 0) {
@@ -2304,7 +2286,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 178:
+            case 182:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
