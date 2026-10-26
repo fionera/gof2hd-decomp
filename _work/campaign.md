@@ -1,9 +1,16 @@
 # Byte-matching campaign log
 
-## Session 2026-10-26 (wave 29 — 20-way continuation)
+## Session 2026-10-26 (wave 29 — 27-way continuation)
 
-- Current gate: **byte_exact 1352, linked_exact 4452, avg 99.70, stubs 0, missing/extra 0,
+- Current gate: **byte_exact 1352, linked_exact 4454, avg 99.71, stubs 0, missing/extra 0,
   imports 207, data 843/843** (`RATCHET PASS`).
+- Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
+  zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
+- Fleet expanded to **27 live `codex exec -p dsv41` workers**. New disjoint targets:
+  `w639` HangarWindow, `w640` MGame::OnTouchEnd, `w641` SpaceLounge::OnTouchEnd,
+  `w642` RocketGun::update, `w643` Level::createShip, `w644` Level::assignGuns/createMission,
+  `w645` Status::missionCompleted. Every launch uses the `-p dsv41` profile
+  (sglang, `deepseek-v4.1-flash`, high reasoning).
 - Landed from the wave28 long tail:
   - `Gun::shootAt` 68.9% -> 88.5% (1776/1788B); `calcCharacterCollision` traded down to
     46.6% to keep the archive layout.
