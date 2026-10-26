@@ -33,7 +33,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,258,432 | **−1,032** | the remaining 69 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
-| **.rodata** | 269,159 | 266,599 | **−2,560** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
+| **.rodata** | 269,159 | 267,767 | **−1,392** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
 | .ARM.extab | 156,312 | 151,772 | −4,540 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
@@ -46,7 +46,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    remaining 69 are the long tail (26 in 90–99%, 15 in 80–89%, 9 in 70–79%, 15 in 60–69%,
    1 in 50–59%, 3 below 50%). Their combined `.text` delta is only −1,032 B, so this is a
    finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 2,560 B smaller and `.data` 92 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 1,392 B smaller and `.data` 92 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
 3. **EH tables.** `.ARM.extab` is 4,560 B smaller, following the remaining function-size/EH-layout

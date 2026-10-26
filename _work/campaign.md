@@ -6,6 +6,9 @@
   imports 207, data 843/843** (`RATCHET PASS`).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
+- Harvested `w664`: converted 68 remaining GLSL source declarations across 30 shader TUs
+  from `static const char *const` to `static const char []`; `.rodata` rose
+  0x41167 -> **0x415f7** (delta -2,560 -> **-1,392**), gate unchanged.
 - Harvested `w644`: `Level::assignGuns` 69.6% -> **87.8%** (2948/2948B) by hoisting the
   first loop index and matching the original rotated second-loop shape; `createMission`
   stays 71.0% and one extra Level anchor store keeps `.text` at `0x1333c0`
