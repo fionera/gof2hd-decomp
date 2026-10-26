@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.73,
+  "avg_match": 99.74,
   "byte_exact": 1352,
   "linked_exact": 4456,
   "fuzzy_perfect": 4456,
@@ -54,14 +54,6 @@
    "linked": false,
    "osize": 1432,
    "usize": 1440
-  },
-  {
-   "name": "_ZN11HackingGame8render2DEv",
-   "pct": 61.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2090,
-   "usize": 2066
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
@@ -118,6 +110,14 @@
    "linked": false,
    "osize": 13052,
    "usize": 12668
+  },
+  {
+   "name": "_ZN11HackingGame8render2DEv",
+   "pct": 67.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2090,
+   "usize": 2072
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
