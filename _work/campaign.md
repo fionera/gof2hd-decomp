@@ -2,6 +2,9 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w633`: `Status::moveWanted` 75.5% -> **76.0%** (856/860B) by
+  reordering locals and using the original systems/pathFinder init guard; a documented
+  12-byte `missionCompleted` case-0xa3 anchor keeps the TU `.text` size and `byte_exact 1352`.
 - Harvested `w652`: `Radar::draw` 61.0% -> **61.6%** (9596B) by matching the
   gas/asteroid lock sound query to `isPlaying(0)`, keeping the gas lock candidate in the
   original local, and preserving the raw-frame load order.
