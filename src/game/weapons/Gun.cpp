@@ -604,7 +604,7 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            Vector position(this->positions.data()[i]);
+            Vector position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition =
                     AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
@@ -698,7 +698,7 @@ void Gun::calcCharacterCollision() {
             } else if (enemy->egoFlag) {
                 amount = (int) ((float) this->damage * 0.2f);
             }
-            enemy->damage(amount, this->friendGun, this->itemIndex);
+            enemy->damage(amount, this->friendGun, itemIndex);
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
                 ((Level *) this->level)->field_30 = 1;
@@ -742,7 +742,7 @@ void Gun::calcCharacterCollision() {
                             falloff = 0.0f;
                         }
                         other->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
-                        if (this->empDamage >= 1) {
+                        if (this->empDamage > 0) {
                             other->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
                     }
