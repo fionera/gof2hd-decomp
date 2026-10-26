@@ -46,7 +46,7 @@ static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
 
 
 static const int
-kaamoSpecialItems[9] = {};
+kaamoSpecialItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 
 // Layout anchor: the original Generator TU is 8 bytes larger than the
 // reconstructed getShipBuyList body; keep the archive-sensitive .text size.

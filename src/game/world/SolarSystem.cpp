@@ -7,7 +7,7 @@
 
 static const int kPirateBaseStations[4] = {1, 33, 47, 86};
 
-static const int kAttackRaceTable[4] = {0, 0, 0, 0};
+static const int kAttackRaceTable[4] = {1, 0, 3, 2};
 
 static const int kBlueprintStations[5] = {132, 133, 134, 129, 123};
 

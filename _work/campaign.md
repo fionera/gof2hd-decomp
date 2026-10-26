@@ -2,6 +2,15 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w916`: durable `_work/reconstructions/jump_table_audit.md` (489 lines). It
+  found a real semantic bug: `Status::missionCompleted` switches on an all-zero
+  `kMissionOrder[190]`, so every mission type takes case 0; it also identified three
+  wrong zero lookup tables and dead decompiler scaffolding.
+- Harvested `w920`: fixed the three F2 tables to their original bytes —
+  `Agent::kModPriceTable {20,30,40,20}`, `SolarSystem::kAttackRaceTable {1,0,3,2}`,
+  `Generator::kaamoSpecialItems {200,220,208,213,216,228,229,230,231}`. All three
+  functions stay linked-exact; gate unchanged (byte 1352, linked 4468, avg 99.78).
+  `.rodata` 268,007 -> 267,975 (delta vs original now -1,184).
 - Launched `w895..w914` (20 `codex exec -p dsv41` workers, explicit sglang profile)
   from master `ee2e1f6c`, one owner per remaining non-linked TU: ModStation,
   Generator, Radar, PlayerFighter, SpaceLounge, StarMap, MenuTouchWindow,
