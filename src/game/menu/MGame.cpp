@@ -2105,36 +2105,36 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             this->hudMenuOpen = 0;
             resumeSounds();
             this->hud->closeHudMenu();
-        } else {
-            if (wingmanCommand >= 0) {
-                // Order the wingmen.
-                Array<KIPlayer *> *enemies = this->level->getEnemies();
-                if (enemies != nullptr) {
-                    for (unsigned i = 0; i < enemies->size(); i++) {
-                        KIPlayer *wingman = (*enemies)[i];
-                        if (wingman->isWingMan() && !wingman->isDead()) {
-                            wingman->setWingmanCommand(wingmanCommand,
-                                                       wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
-                        }
+        } else if (wingmanCommand >= 0) {
+            // Order the wingmen.
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    KIPlayer *wingman = (*enemies)[i];
+                    if (wingman->isWingMan() && !wingman->isDead()) {
+                        wingman->setWingmanCommand(wingmanCommand,
+                                                   wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
                     }
                 }
-                this->hudMenuOpen = 0;
-                this->hud->closeHudMenu();
-                this->pauseOpen = 0;
-                resumeSounds();
             }
-            if (this->hudTouchFlags == 0) {
+            this->hudMenuOpen = 0;
+            this->hud->closeHudMenu();
+            this->pauseOpen = 0;
+            resumeSounds();
+        }
+        if (this->hudTouchFlags == 0) {
+            if (this->hud != nullptr) {
                 this->hud->closeHudMenu();
-                this->hudMenuOpen = 0;
-                this->touch0Id = nullptr;
-                this->touch1Id = nullptr;
-                this->pauseOpen = 0;
-                resumeSounds();
-                if (this->_bc8) {
-                    this->_bc8 = 0;
-                    if (this->player != nullptr) {
-                        this->player->resetGunDelay();
-                    }
+            }
+            this->hudMenuOpen = 0;
+            this->touch0Id = nullptr;
+            this->touch1Id = nullptr;
+            this->pauseOpen = 0;
+            resumeSounds();
+            if (this->_bc8) {
+                this->_bc8 = 0;
+                if (this->player != nullptr) {
+                    this->player->resetGunDelay();
                 }
             }
         }
