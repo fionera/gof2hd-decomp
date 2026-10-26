@@ -563,8 +563,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowB->setText(String(""), *Globals::gameText->getText(87 + this->field_0x1e0));
 
     int storeX = (int) (anchor.x + (float) this->buttonWidth + (float) (this->buttonWidth / 3));
-    anchor = (*this->buttons)[0]->getPosition();
-    int storeY = (int) (anchor.y - (float) (Globals::layout->field_0x2c_rowHeight * 3));
+    int storeY = (int) ((*this->buttons)[0]->getPosition().y - (float) (Globals::layout->field_0x2c_rowHeight * 3));
     TouchButton *store = new TouchButton(*Globals::gameText->getText(97), 17, storeX, storeY, 20);
     store->id = 53;
     ArrayAdd(store, *this->scrollEntries);
@@ -1559,23 +1558,36 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             layout->drawBox(0, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, layout->field_0x1c,
                             String(*Globals::gameText->getText(501)));
-            for (int line = 0; line < 3; line++) {
-                layout = Globals::layout;
-                if (line == 0)
-                    y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
-                else
-                    y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
-                layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
-                                String(""));
-                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
-                                            *Globals::gameText->getText(34 + line),
-                                            this->listTopY + Globals::layout->buttonInsetX + 10,
-                                            y + this->sliderRowHeight / 2 -
-                                                Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) /
-                                                    2 +
-                                                1,
-                                            false);
-            }
+            layout = Globals::layout;
+            y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
+            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
+                            String(""));
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(34),
+                                        this->listTopY + Globals::layout->buttonInsetX + 10,
+                                        y + this->sliderRowHeight / 2 -
+                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                            1,
+                                        false);
+            layout = Globals::layout;
+            y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
+            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
+                            String(""));
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(35),
+                                        this->listTopY + Globals::layout->buttonInsetX + 10,
+                                        y + this->sliderRowHeight / 2 -
+                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                            1,
+                                        false);
+            layout = Globals::layout;
+            y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
+            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
+                            String(""));
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(36),
+                                        this->listTopY + Globals::layout->buttonInsetX + 10,
+                                        y + this->sliderRowHeight / 2 -
+                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                            1,
+                                        false);
 
             // Graphics.
             y = y + this->sliderRowHeight + Globals::layout->field_0x2fc;
@@ -1635,37 +1647,14 @@ void MenuTouchWindow::draw() {
                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
                                                       *Globals::gameText->getText(515)),
                     y + (this->sliderRowHeight - sliderLabelOffset), false);
-                if (Globals::layout->field_0x284_sliderSlot5Enabled) {
-                    layout = Globals::layout;
-                    y = y + layout->field_0x2c_rowHeight + this->sliderRowHeight;
-                    layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
-                                    String(""));
-                    Globals::Canvas->DrawString(
-                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
-                        this->listTopY + Globals::layout->buttonInsetX + 10,
-                        y + (this->sliderSpacing / 2 -
-                             Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) + 1,
-                        false);
-                    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(507),
-                                                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-                                                y + (this->sliderRowHeight - sliderLabelOffset), false);
-                    Globals::Canvas->DrawString(
-                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(508),
-                        Globals::layout->buttonInsetX + this->listTopY + this->metricC + (*this->sliders)[5]->getWidth() / 2 -
-                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                          *Globals::gameText->getText(508)) / 2,
-                        y + (this->sliderRowHeight - sliderLabelOffset), false);
-                    Globals::Canvas->DrawString(
-                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(509),
-                        Globals::layout->buttonInsetX + this->listTopY + this->metricC + (*this->sliders)[5]->getWidth() -
-                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                          *Globals::gameText->getText(509)),
-                        y + (this->sliderRowHeight - sliderLabelOffset), false);
-                }
             }
             Globals::Canvas->SetColor(0xffffffffu);
-            for (unsigned int i = 1; i < this->sliders->size() - 1; i++)
+            (*this->sliders)[5]->getWidth();
+            for (unsigned int i = 1; i < this->sliders->size() - 1; i++) {
+                if (i == 5 && !Globals::layout->field_0x284_sliderSlot5Enabled)
+                    continue;
                 (*this->sliders)[i]->draw();
+            }
             this->optBtnD4->draw();
             this->optBtnD8->draw();
             this->optBtnDC->draw();
@@ -1694,19 +1683,30 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             y = layout->field_0x1c + y + layout->field_0x2c_rowHeight;
             layout->drawBox(5, layout->buttonInsetX, y, this->optionsWidth, this->sliderSpacing, String(""));
-            for (int line = 0; line < 3; line++) {
-                if (line != 0) {
-                    layout = Globals::layout;
-                    y = this->sliderSpacing + y + layout->field_0x2c_rowHeight * 2;
-                    layout->drawBox(5, layout->buttonInsetX, y, this->optionsWidth, this->sliderSpacing, String(""));
-                }
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(34 + line),
-                    Globals::layout->buttonInsetX + 10,
-                    y + this->sliderSpacing / 2 -
-                        Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
-                    false);
-            }
+            Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(34),
+                Globals::layout->buttonInsetX + 10,
+                y + this->sliderSpacing / 2 -
+                    Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
+                false);
+            layout = Globals::layout;
+            y = this->sliderSpacing + y + layout->field_0x2c_rowHeight * 2;
+            layout->drawBox(5, layout->buttonInsetX, y, this->optionsWidth, this->sliderSpacing, String(""));
+            Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(35),
+                Globals::layout->buttonInsetX + 10,
+                y + this->sliderSpacing / 2 -
+                    Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
+                false);
+            layout = Globals::layout;
+            y = this->sliderSpacing + y + layout->field_0x2c_rowHeight * 2;
+            layout->drawBox(5, layout->buttonInsetX, y, this->optionsWidth, this->sliderSpacing, String(""));
+            Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(36),
+                Globals::layout->buttonInsetX + 10,
+                y + this->sliderSpacing / 2 -
+                    Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
+                false);
             layout = Globals::layout;
             y = this->sliderSpacing + y + layout->field_0x2c_rowHeight * 2;
             layout->drawBox(0, layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
@@ -3560,8 +3560,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         }
         this->menuState = newState;
     }
-    // Keep this TU's .text size stable: the libc++abi exception-ctor literal pools are
-    // byte-exact only at the current link layout (see AGENTS.md).
     Globals::Canvas->SetColor(0xffffffffu);
     Globals::Canvas->SetColor(0xffffff2fu);
     Globals::is_menu_visible = 1;
