@@ -127,10 +127,11 @@ static const float kRimLightColors[57] = {
 #define STAR_MIN(a, b) ((a) > (b) ? (b) : (a))
 #define STAR_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// 8-byte .text anchor: compensates the ctor's 8-byte reduction while preserving
-// the archive/link layout.
+// .text layout anchor: the ctor below is now 2900 bytes (the original size), so this
+// 14-byte stub absorbs the section-alignment slack and keeps the linked .text section
+// at its original 0x1343c0 size (later TUs embed pc-relative offsets that depend on it).
 [[gnu::used]] static int starSystemLayoutAnchor(int value) {
-    return value * 3 + 1;
+    return value * 3 + 1 + (value & 1);
 }
 
 StarSystem::StarSystem(int mode) {
@@ -266,14 +267,18 @@ StarSystem::StarSystem(int mode) {
                         break;
                 }
                 if (this->supernovaSystem) {
-                    float sunScale = Globals::status->getCurrentCampaignMission() < 106 ? 65000.0f / 65536.0f
-                                                                                         : 90000.0f / 65536.0f;
-                    (*this->planetsArray)[0]->setScaling(Vector{sunScale, sunScale, sunScale});
+                    if (Globals::status->getCurrentCampaignMission() >= 106) {
+                        (*this->planetsArray)[0]->setScaling(
+                                Vector{90000.0f / 65536.0f, 90000.0f / 65536.0f, 90000.0f / 65536.0f});
+                    } else {
+                        (*this->planetsArray)[0]->setScaling(
+                                Vector{65000.0f / 65536.0f, 65000.0f / 65536.0f, 65000.0f / 65536.0f});
+                    }
                     AEGeometry *streak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
-                    streak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
                     this->sunStreak = streak;
+                    streak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
                     if (((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
-                        reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(streak->meshId)->materialId) =
+                        reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(this->sunStreak->meshId)->materialId) =
                                 0.22f;
                     }
                     Globals::Canvas->TextureCreate((uint16_t) 0x2dde, this->supernovaSunTexture, false);
@@ -329,7 +334,7 @@ StarSystem::StarSystem(int mode) {
                         slot = Globals::rnd->nextInt(11) + 7;
                         placed = false;
                         if (abs(slot - sunSlot) >= 3) {
-                            placed = usedSlots[slot] == 0;
+                            placed = usedSlots[slot] < 1;
                         }
                     }
                     float scale = (float) ((0.8f + 0.01 * Globals::rnd->nextInt(40)) * (2300.0 / 65536.0));
@@ -355,7 +360,7 @@ StarSystem::StarSystem(int mode) {
                 Vector rotation{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f};
                 planet->setRotation(rotation);
             }
-            usedSlots[slot] = 1;
+            usedSlots[slot] |= 1;
             (*this->planetsArray)[i]->moveForward(-20000.0f);
             if (i == 0) {
                 this->lightDirection = (*this->planetsArray)[0]->getDirection();

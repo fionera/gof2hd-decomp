@@ -2,6 +2,11 @@
 
 ## Session 2026-10-26 (wave 37/38 harvest)
 
+- Harvested `w884`: `StarSystem::StarSystem` C1/C2 91.9% -> **93.9%** (2900B, now the
+  original size) by making the sun-scale ternary branch-local, restoring the streak
+  store/reload order, and keeping the slot test in the original register shape. The
+  documented 14-byte layout anchor keeps `.text` at 0x1343c0. Gate unchanged:
+  byte_exact 1352, linked_exact 4468, avg 99.78.
 - Harvested `w894`: `Generator::createMission` 65.1% -> **65.7%** (1992B, original 1996B)
   by restoring the route-fallback order and using `SolarSystem *` pointers for the
   distance calculation. Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
