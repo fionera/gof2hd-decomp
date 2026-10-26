@@ -330,7 +330,7 @@ void RocketGun::update(int elapsed) {
                 ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
                 MatrixSetTranslation((*trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
-                Matrix &trail = (*trailMatrices)[i];
+                Matrix &trail = trailMatrices->data()[i];
                 trail.m.e2 = heading.x;
                 trail.m.e6 = heading.y;
                 trail.m.e10 = heading.z;
