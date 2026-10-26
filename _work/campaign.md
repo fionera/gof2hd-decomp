@@ -6,6 +6,8 @@
   imports 207, data 843/843** (`RATCHET PASS`).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
+- Harvested `w670`: replaced the zero `gAchievementValues[135]` placeholder with the
+  original 45x3 threshold table (content-level `.rodata` fix; section size unchanged).
 - Harvested `w664`: converted 68 remaining GLSL source declarations across 30 shader TUs
   from `static const char *const` to `static const char []`; `.rodata` rose
   0x41167 -> **0x415f7** (delta -2,560 -> **-1,392**), gate unchanged.
@@ -23,9 +25,9 @@
 - Harvested `w629`: `Generator::getShipBuyList` 90.9% -> **93.7%** (2252/2244B) by
   simplifying the forced/fixed selection; the extra 8B is a documented defensive clamp that
   keeps the Generator TU `.text` at the archive-sensitive size. `createMission` stays 65.1%.
-- Fleet now has **40 live `codex exec -p dsv41` workers**: 27 primary targets plus 13
-  second-opinion/data-layout workers (`w647..w670`) on the hardest non-linked functions and
-  anonymous `.rodata`/shader-literal data. New disjoint targets:
+- Fleet now has **41 live `codex exec -p dsv41` workers**: 27 primary targets plus 14
+  second-opinion/data-layout workers (`w647..w673`) on the hardest non-linked functions and
+  anonymous `.rodata`/`.data`/`.bss` layout. New disjoint targets:
   `w639` HangarWindow, `w640` MGame::OnTouchEnd, `w641` SpaceLounge::OnTouchEnd,
   `w642` RocketGun::update, `w643` Level::createShip, `w644` Level::assignGuns/createMission,
   `w645` Status::missionCompleted. Every launch uses the `-p dsv41` profile
