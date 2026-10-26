@@ -1399,7 +1399,7 @@ int SpaceLounge::onKeyPress(int key) {
                     } else {
                         this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
                         if (this->starMap != 0) {
-                            this->starMap->init(true, agent->getMission(), false, -1);
+                            this->starMap->init(true, key_agent(this)->getMission(), false, -1);
                         } else {
                             StarMap *map = new StarMap(true, key_agent(this)->getMission(), false, -1);
                             ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap = map;
