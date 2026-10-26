@@ -2,6 +2,12 @@
 
 ## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
 
+- Harvested `w943` follow-up: `PlayerEgo::update` 93.6% -> **94.1%** (8852B
+  exact) by keeping the `moveTarget` copy in the auto-target distance check,
+  inverting the turret-view else arm, and restoring the yaw/pitch argument
+  order in the rotation matrix. Gate: byte 1352, linked 4469, avg 99.79,
+  `.text 0x1343c0`, lint CLEAN, drift 0.
+
 - Harvested `w943`: `PlayerEgo::update` 93.1% -> **93.6%** (8852B exact) by
   reconstructing the mission-transfer local order, inlining the emergency-system
   `setMatrix`/`translate` sequence, and restoring the trailing field-store

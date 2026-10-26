@@ -2059,7 +2059,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             } else {
                 Vector position = target->getPosition();
                 this->moveTarget = position;
-                if ((int) AbyssEngine::AEMath::VectorLength(position - this->getPosition()) <= 19999)
+                if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) <= 19999)
                     this->aboutToReachAutoTargetFlag = 1;
                 float speed = 4.0f;
                 if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
@@ -2121,7 +2121,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
         rotation = AbyssEngine::AEMath::MatrixSetRotation(
             rotation, (float) ((double) this->pitchAccumD * 0.25 * 0.000244140625 * 6.2831854820251465),
-            this->yawAccumF * -0.000244140625f * 6.2831855f, 0.0f);
+            0.0f, this->yawAccumF * -0.000244140625f * 6.2831855f);
         this->field_0x4->setMatrix(rotation);
         if (steered) {
             reinterpret_cast<Matrix &>(this->player->transform[0]) =

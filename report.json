@@ -296,14 +296,6 @@
    "usize": 3444
   },
   {
-   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 93.6,
-   "byte": false,
-   "linked": false,
-   "osize": 8852,
-   "usize": 8852
-  },
-  {
    "name": "_ZN10StarSystemC1Ei",
    "pct": 93.9,
    "byte": false,
@@ -318,6 +310,14 @@
    "linked": false,
    "osize": 2900,
    "usize": 2900
+  },
+  {
+   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
+   "pct": 94.1,
+   "byte": false,
+   "linked": false,
+   "osize": 8852,
+   "usize": 8852
   },
   {
    "name": "_ZN11SpaceLounge10onKeyPressEi",
