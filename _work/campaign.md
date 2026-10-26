@@ -1,5 +1,17 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 37/38 harvest)
+
+- Harvested `w894`: `Generator::createMission` 65.1% -> **65.7%** (1992B, original 1996B)
+  by restoring the route-fallback order and using `SolarSystem *` pointers for the
+  distance calculation. Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
+- Launched `w885..w894` (10 more `codex exec -p dsv41` workers) alongside the still-live
+  `w875..w884` near-100 finishers. Coverage: PlayerStation ctor, PlayerEgo update/
+  calcCollision, Hud drawMenu/drawChallengeModeScore, Gun shootAt/calcCharacterCollision,
+  Level assignGuns/createScene, Status missionCompleted/moveWanted, MGame update/touch,
+  RocketGun update, Mesh read paths, Generator createMission.
+- Wave 37/38 workers remain live; only gate-green commits are harvested.
+
 ## Session 2026-10-26 (wave 34/35/36 harvest)
 
 - Harvested the unmerged wave32 results:

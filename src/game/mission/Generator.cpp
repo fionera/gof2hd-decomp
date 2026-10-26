@@ -835,7 +835,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             }
         }
         if (race < 4 && type == 13) {
-            if (systems->data()[agent->getSystem()]->getRoutes() != nullptr) {
+            int agentSystem = agent->getSystem();
+            if (systems->data()[agentSystem]->getRoutes() == nullptr) {
+                type = 4;
+                if (Globals::rnd->nextInt(2) == 0) {
+                    type = 1;
+                }
+            } else {
                 bool found = false;
                 while (!found) {
                     targetStation = generateStationIndex(systems, agent->getStation());
@@ -848,8 +854,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                     }
                 }
                 type = 13;
-            } else {
-                type = Globals::rnd->nextInt(2) == 0 ? 1 : 4;
             }
         }
     }
@@ -908,10 +912,11 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = 10;
     }
 
+    SolarSystem *fromSystem = systems->data()[Globals::status->getStation()->getSystem()];
     Galaxy *galaxy = Globals::galaxy;
-    int fromSystem = Globals::status->getStation()->getSystem();
-    int toSystem = ((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem();
-    float reward = (galaxy->distance(systems->data()[fromSystem], systems->data()[toSystem]) / 1200.0f + 1.0f) *
+    SolarSystem *toSystem =
+            systems->data()[((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem()];
+    float reward = (galaxy->distance(fromSystem, toSystem) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
         reward *= 0.7f;
@@ -930,7 +935,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     reward += (float) (level * level * level * 10);
 
     int bonus;
-    if (type == 8 || type == 12) {
+    if ((type | 4) == 12) {
         bonus = 0;
     } else {
         int rawBonus = (int) (reward * ((Standing *) (intptr_t) Globals::status->getStanding())
