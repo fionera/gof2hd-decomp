@@ -229,7 +229,7 @@ namespace AbyssEngine {
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
                 for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) { delete anim; return -1; }
                     if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
@@ -266,7 +266,7 @@ namespace AbyssEngine {
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
                     for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
@@ -645,9 +645,9 @@ namespace AbyssEngine {
                     // The original re-reads (*slot)->normals for every store, so keep the
                     // member access inline instead of caching a float* base pointer.
                     if (length == 0.0f) {
-                        ((float *) (*slot)->normals)[i + 1] = 1.0f;
-                        ((float *) (*slot)->normals)[i] = 0.0f;
-                        ((float *) (*slot)->normals)[i + 2] = 0.0f;
+                        (*slot)->normals[i + 1] = 1.0f;
+                        (*slot)->normals[i] = 0.0f;
+                        (*slot)->normals[i + 2] = 0.0f;
                     } else {
                         x /= length;
                         y /= length;
@@ -655,15 +655,12 @@ namespace AbyssEngine {
                         float cx = (double) x < -1.0 ? -1.0 : x;
                         float cy = (double) y < -1.0 ? -1.0 : y;
                         float cz = (double) z < -1.0 ? -1.0 : z;
-                        if (x > 1.0f)
-                            cx = 1.0f;
-                        if (y > 1.0f)
-                            cy = 1.0f;
-                        if (z > 1.0f)
-                            cz = 1.0f;
-                        ((float *) (*slot)->normals)[i] = cx;
-                        ((float *) (*slot)->normals)[i + 1] = cy;
-                        ((float *) (*slot)->normals)[i + 2] = cz;
+                        if (x > 1.0f) cx = 1.0f;
+                        if (y > 1.0f) cy = 1.0f;
+                        if (cz > 1.0f) cz = 1.0f;
+                        (*slot)->normals[i] = cx;
+                        (*slot)->normals[i + 1] = cy;
+                        (*slot)->normals[i + 2] = cz;
                     }
                 }
                 delete[] (unsigned char *) raw;
