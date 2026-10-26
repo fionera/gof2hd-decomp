@@ -327,10 +327,6 @@ Generator *Globals::generator;
 
 #include <new>
 
-static inline int nextInt_71ad0(AbyssEngine::AERandom *self, int bound) { return self->nextInt(bound); }
-
-void MatrixSetTranslation(void *m, float x, float y, float z); // lint: void_ptr (Pv-mangled internal shim; ABI-fixed signature)
-
 
 extern int g_android_leaderboard_scores[8];
 
@@ -1137,7 +1133,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
         if (Globals::status->dlc1Won() == 0) {
             r = 9;
         } else {
-            int n = nextInt_71ad0(Globals::rnd, 0x64);
+            int n = Globals::rnd->nextInt(0x64);
             r = 0x27;
             if (n < 0x55) {
                 r = 0x29;
@@ -1153,7 +1149,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     } else {
         do {
             do {
-                r = nextInt_71ad0(Globals::rnd, 0x25);
+                r = Globals::rnd->nextInt(0x25);
             } while ((unsigned) ((r & ~4u) - 9) < 2);
         } while (((r < 0x10) && ((1u << r & 0x8101u) != 0)) ||
                  (gRaceTable[r] != t));
@@ -1163,7 +1159,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
 
 String Globals::getRandomPlanetName() {
     FileRead *f = new FileRead();
-    int which = nextInt_71ad0(Globals::rnd, 0x64);
+    int which = Globals::rnd->nextInt(0x64);
     Station *st = f->loadStation(which);
     String name = st->getName();
     delete st;
@@ -1173,7 +1169,7 @@ String Globals::getRandomPlanetName() {
 
 Station *Globals::getRandomStation() {
     FileRead *f = new FileRead();
-    int which = nextInt_71ad0(Globals::rnd, 0x87);
+    int which = Globals::rnd->nextInt(0x87);
     Station *r = f->loadStation(which);
     delete f;
     return r;

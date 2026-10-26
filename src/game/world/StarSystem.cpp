@@ -25,10 +25,6 @@ namespace AbyssEngine {
     }
 }
 
-static inline void MatrixGetUp(Vector *out, const Matrix *matrix) { *out = AbyssEngine::AEMath::MatrixGetUp(*matrix); }
-
-static inline void MatrixGetLookAt(Matrix *out, const Vector *from, const Vector *to, const Vector *up) { *out = AbyssEngine::AEMath::MatrixGetLookAt(*from, *to, *up); }
-
 
 
 // Per-system / per-station render tables (.rodata, original TU order).

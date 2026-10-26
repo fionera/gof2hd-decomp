@@ -83,8 +83,6 @@ static_assert(offsetof(MtwAppData, prices) == 0x50, "appdata 0x50");
 static_assert(offsetof(MtwAppData, productIds) == 0x54, "appdata 0x54");
 #endif
 
-static inline void *_mtw_GameText_getText(void *gt, int id) { return ((GameText*)gt)->getText(id); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
 void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b); // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
@@ -178,8 +176,6 @@ int _mtw_idiv(int a, int b);
 
 
 static inline void * _mtw_RecordHandler_dtor(void *rh) { ((RecordHandler*)rh)->~RecordHandler(); return (void *)(rh); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
-
-static inline void * _mtw_GameRecord_dtor(void *gr) { ((GameRecord*)gr)->~GameRecord(); return (void *)(gr); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 static inline void _mtw_GameRecord_load(void *gr) { ((GameRecord*)gr)->load(); } // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
@@ -1188,7 +1184,7 @@ void MenuTouchWindow::saveGame(int slot) {
     if (rec == 0) {
         cell = arr + slot;
     } else {
-        ::operator delete(_mtw_GameRecord_dtor(rec));
+        delete rec;
         cell = (int *) &this->previewRecords->data_[slot];
     }
     *cell = 0;
@@ -1199,7 +1195,7 @@ void MenuTouchWindow::saveGame(int slot) {
 
     this->createRecordButtons(true);
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
-    String *s = (String *) _mtw_GameText_getText(Globals::gameText, 0x32);
+    String *s = Globals::gameText->getText(0x32);
     cw->set(*s, false);
     this->messageShowing = 1;
     this->saveDialogShowing = 0;
@@ -1214,8 +1210,8 @@ void MenuTouchWindow::saveGame(int slot) {
 void MenuTouchWindow::showSupernovaMessage() {
     ChoiceWindow *cw = (ChoiceWindow *) this->choiceWindow;
     GameText *gt = Globals::gameText;
-    String *s1 = (String *) _mtw_GameText_getText(gt, 0x266);
-    String *s2 = (String *) _mtw_GameText_getText(Globals::gameText, 0x267);
+    String *s1 = gt->getText(0x266);
+    String *s2 = Globals::gameText->getText(0x267);
     cw->set(*s1, *s2, false);
     this->messageShowing = 1;
     this->supernovaMessageShowing = 1;
@@ -3825,8 +3821,8 @@ void MenuTouchWindow::callDlcMenu() {
     ChoiceWindow *win = (ChoiceWindow *) this->choiceWindow;
     this->messageShowing = 1;
     this->dlcMessageShowing = 1;
-    String *s1 = (String *) _mtw_GameText_getText(*gt, 0x47);
-    String *s2 = (String *) _mtw_GameText_getText(*gt, 0x1a9);
+    String *s1 = (*gt)->getText(0x47);
+    String *s2 = (*gt)->getText(0x1a9);
     win->set(*s1, *s2);
 }
 

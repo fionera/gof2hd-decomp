@@ -58,17 +58,6 @@ namespace AbyssEngine {
 }
 
 
-static inline void TFC_setLookAtCam(TargetFollowCamera *c, int v) { c->setLookAtCam(v); }
-
-
-
-
-
-
-static inline void TFC_setActive(TargetFollowCamera *c, int v) { c->setActive(v); }
-
-static inline void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z) { c->setPosition(x, y, z); }
-
 
 
 
@@ -2162,8 +2151,8 @@ void MGame::startJumpScene() {
 
     if (this->player->isDockedToDockingPoint() != 0) {
         this->player->dockToDockingPoint(nullptr, this->radar);
-        TFC_setActive(this->camera, 1);
-        TFC_setLookAtCam(this->camera, 0);
+        this->camera->setActive(1);
+        this->camera->setLookAtCam(0);
         this->camera->useTargetsUpVector(false);
         this->player->setSpeed(0.0f);
         this->player->setDockingState(0);
@@ -2193,7 +2182,7 @@ void MGame::startJumpScene() {
     this->jumpDriveActive = 1;
     this->jumpActive = 1;
     this->player->setCollide(false);
-    TFC_setLookAtCam(this->camera, 1);
+    this->camera->setLookAtCam(1);
     this->player->stopBoost();
     Engine *eng = static_cast<Engine *>(this->applicationManager->GetEngine());
     eng->SetPostEffect(0x01400002, false);
@@ -2233,7 +2222,7 @@ void MGame::startJumpScene() {
         this->egoJumpPos.y += 300.0f;
         this->egoJumpPos.z += 4000.0f;
     }
-    TFC_setPosition(this->camera, this->egoJumpPos.x, this->egoJumpPos.y, this->egoJumpPos.z);
+    this->camera->setPosition(this->egoJumpPos.x, this->egoJumpPos.y, this->egoJumpPos.z);
 }
 
 void MGame::setCinematicMode(bool on) {

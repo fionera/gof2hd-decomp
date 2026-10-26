@@ -10,12 +10,6 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
 
-static inline void MatrixGetDir(Vector &out, const Matrix &matrix) { out = AbyssEngine::AEMath::MatrixGetDir(matrix); }
-
-static inline void VectorCross(Vector &out, const Vector &a, const Vector &b) { out = AbyssEngine::AEMath::VectorCross(a, b); }
-
-static inline void VectorNormalize(Vector &out, const Vector &in) { out = AbyssEngine::AEMath::VectorNormalize(in); }
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator+(const Vector &a, const Vector &b);

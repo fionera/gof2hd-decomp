@@ -36,29 +36,15 @@
 
 int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
-static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix &matrix) {
-    return AbyssEngine::AEMath::MatrixGetPosition(matrix);
-}
-
 [[gnu::used]] static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
     return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
-
-void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void VectorNormalize(Vector *out, Vector *value) { *out = AbyssEngine::AEMath::VectorNormalize(*value); }
 
 void FileRead_ctor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
 void *FileRead_dtor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
 int Station_getTextureIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
-
-void MatrixSetRotation(void *matrix, float x, float y, float z, float w); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
 
 void *SystemPathFinder_ctor(void *finder); // lint: void_ptr (external symbol; mangling must match lib)
 
@@ -1086,7 +1072,7 @@ void StarMap::update(int dt) {
     }
     if (this->mode == 3 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
-            this->scratchVector2 = StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
+            this->scratchVector2 = AbyssEngine::AEMath::MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
             bool onScreen = (Globals::Canvas->*getScreenPosition)(this->scratchVector2,
                                                                   *(*this->stationPositions)[i]);
@@ -1107,10 +1093,10 @@ void StarMap::update(int dt) {
             Vector system = (*this->systemGeoms)[Globals::status->field_7c]->getPosition();
             Matrix m = this->starSystemRoot->getMatrix() *
                 (*this->stationGeoms)[this->centeredStation]->getMatrix();
-            Vector station = StarMap_MatrixGetPosition(m);
+            Vector station = AbyssEngine::AEMath::MatrixGetPosition(m);
             this->markerGeom->setPosition(system + t * (station - system));
         }
-        this->scratchVector = StarMap_MatrixGetPosition(
+        this->scratchVector = AbyssEngine::AEMath::MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
         Vector markerPosition = this->markerGeom->getPosition();
         this->scratchVector -= markerPosition;

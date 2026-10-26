@@ -56,14 +56,6 @@ namespace AbyssEngine {
     }
 }
 
-void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-void MatrixSetRotation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
 static Layout **SpaceLounge_touch_layout_slot;
 static GameText **SpaceLounge_touch_help_text_slot;
 static GameText **SpaceLounge_touch_list_help_text_slot;
@@ -87,18 +79,6 @@ static AbyssEngine::AERandom *SpaceLounge_getSoundId_offer1;
 static AbyssEngine::AERandom *SpaceLounge_getSoundId_accepted;
 static GameText **SpaceLounge_getSoundId_specialText;
 static AbyssEngine::AERandom *SpaceLounge_getSoundId_specialRandom;
-
-static inline void MatrixGetRight(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetRight(*(const AbyssEngine::AEMath::Matrix*)matrix); }
-
-static inline void MatrixGetPosition(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix*)matrix); }
-
-static inline void MatrixGetUp(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix*)matrix); } // lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void MatrixGetLookAt(void *out, void *pos, void *target, void *up) { *(AbyssEngine::AEMath::Matrix*)out = AbyssEngine::AEMath::MatrixGetLookAt(*(const AbyssEngine::AEMath::Vector*)pos, *(const AbyssEngine::AEMath::Vector*)target, *(const AbyssEngine::AEMath::Vector*)up); } // lint: void_ptr (external symbol; mangling must match lib)
-
-// lint: void_ptr (external symbol; mangling must match lib)
-
-static inline void MatrixGetDir(void *out, void *matrix) { *(AbyssEngine::AEMath::Vector*)out = AbyssEngine::AEMath::MatrixGetDir(*(const AbyssEngine::AEMath::Matrix*)matrix); } // lint: void_ptr (external symbol; mangling must match lib)
 
 static Level *SpaceLounge_screen_level_slot;
 static PaintCanvas **SpaceLounge_screen_canvas_slot;
