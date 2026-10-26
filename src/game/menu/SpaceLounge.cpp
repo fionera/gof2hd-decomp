@@ -2213,17 +2213,16 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
                             message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
                             String("#C"));
                         break;
-                    case 4:
+                    case 4: {
                         message = *Globals::gameText->getText(870);
+                        SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
                         message = Globals::status->replaceHash(
-                            message,
-                            String(((SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex()))->getName(),
-                                   false),
-                            String("#S"));
+                            message, String(system->getName(), false), String("#S"));
                         message = Globals::status->replaceHash(
                             message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false),
                             String("#C"));
                         break;
+                    }
                     case 2:
                     case 9:
                         message = *Globals::gameText->getText(868);
