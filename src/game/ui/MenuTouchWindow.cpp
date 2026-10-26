@@ -2805,10 +2805,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             }
             if (this->scrollbarHit &&
                 x > Globals::w - Globals::layout->buttonInsetX -
-                        Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
-                y < Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]) +
-                        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin)) {
-                // Scrollbar release: nothing to do in this build.
+                        Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0])) {
+                Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]);
             }
             break;
         }
@@ -3061,13 +3059,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (button->OnTouchEnd(x, y))
                         NFC::openTermsOfService();
                 } else if (button->id == 106) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openPrivacyPolicy();
-                } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
                     }
+                } else if (button->id == 109) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openPrivacyPolicy();
                 } else if (button->id == 22) {
                     if (button->OnTouchEnd(x, y)) {
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
@@ -3541,9 +3539,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         }
         this->menuState = newState;
     }
-    Globals::Canvas->SetColor(0xffffffffu);
-    Globals::Canvas->SetColor(0xffffff2fu);
-    Globals::is_menu_visible = 1;
     return 0;
 
 clearMessage:
@@ -3947,6 +3942,7 @@ static void mtwTextLayoutAnchor() {
     a = 657; a = 658; a = 659; a = 660; a = 661; a = 662; a = 663; a = 664;
     a = 665; a = 666; a = 667; a = 668; a = 669; a = 670; a = 671; a = 672;
     a = 673; a = 674; a = 675; a = 676; a = 677; a = 678; a = 679; a = 680;
+    a = 681; a = 682; a = 683; a = 684; a = 685; a = 686; a = 687;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6; a = 7; a = 8; a = 9;
     c = 0; c = 1; c = 2;
     (void) a;
