@@ -3,10 +3,10 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kGenericShader1VertexSource =
+static const char kGenericShader1VertexSource[] =
     "attribute highp vec4 \ta_position;  attribute mediump vec2  a_texCoord;   \tattribute highp vec3  \ta_normal; \t\tattribute lowp vec3 \ta_tangent;\t\tattribute lowp vec3 \ta_bitangent;\tuniform highp mat4 u_ModelViewProjectionMatrix;uniform highp mat3 u_ModelMatrix;uniform highp vec3 u_lightdirmodel;uniform highp vec3 u_eyeposmodel;varying mediump    vec2 v_texCoord;void main(){\tv_texCoord = a_texCoord;\tgl_Position = u_ModelViewProjectionMatrix * a_position;\t}";
 
-static const char *const kGenericShader1FragmentSource =
+static const char kGenericShader1FragmentSource[] =
     "precision lowp float;uniform sampler2D  s_texture;uniform lowp vec4  glColor;uniform lowp vec4  u_AmbientColor;uniform lowp vec4  u_DiffuseColor;uniform lowp vec4  u_SpecularColor;varying mediump    vec2 v_texCoord;void main(){\tgl_FragColor =  texture2D( s_texture, v_texCoord );}\t";
 
 namespace AbyssEngine {

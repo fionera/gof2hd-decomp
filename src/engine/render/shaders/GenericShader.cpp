@@ -4,7 +4,7 @@
 #include <GLES2/gl2.h>
 
 
-static const char *const kGenericShaderVertexSource =
+static const char kGenericShaderVertexSource[] =
     "attribute highp vec4 \ta_position;  \n"
     "attribute mediump vec2  a_texCoord;    \n"
     "attribute highp vec3  \ta_normal; \t  \n"
@@ -35,7 +35,7 @@ static const char *const kGenericShaderVertexSource =
     "   v_eye_dir = normalize(tangentSpaceXform*(u_eyeposmodel - a_position.xyz)); \n"
     "}  \n";
 
-static const char *const kGenericShaderFragmentSource =
+static const char kGenericShaderFragmentSource[] =
     "precision lowp float;  \n"
     "varying mediump vec2 v_texCoord;  \n"
     "varying lowp vec3 v_light_dir;  \n"
