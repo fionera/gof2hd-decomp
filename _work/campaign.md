@@ -51,6 +51,8 @@
     at 78.0%.
   - `Gun::calcCharacterCollision` 46.6% -> **59.0%** (1904/1984B) by hoisting the `Level*`
     local and restoring the original guard/`-radius` shapes; `Gun::shootAt` stays at 88.5%.
+  - `Radar::draw` 60.9% -> **61.0%** (9596/9908B) by restoring the nested `otherLock`
+    shape and keeping the inner music value live across the shared play call.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
   `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
   `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
