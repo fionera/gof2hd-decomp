@@ -68,19 +68,12 @@ static const char kCubeMappingFragmentSource[] =
     "   //gl_FragColor = vec4(v_rimFactor, v_rimFactor, v_rimFactor, 1.0); \n"
     "}   \t\t  \n";
 
-// Layout anchor: the array reference above shares the 1777-byte vertex literal with
-// SpecCubeMapping.cpp.  The constructor name is padded so .rodata ends below 0x208ec0,
-// keeping the RW segment at 0x209ec0 and the libc++abi constructors byte-exact.
-// The 190-byte Status mission-order table now lives in .rodata, so the anchor
-// is reduced by the same amount to keep the RW segment boundary fixed.
-static const char kCubeMappingLayoutAnchor[75] = "CubeMapping";
-
 namespace AbyssEngine {
     int CubeMapping::ShaderIndex = -1;
 
     CubeMapping::CubeMapping() {
         CubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String(kCubeMappingLayoutAnchor, false);
+        this->name = String("CubeMapping", false);
     }
 
     void CubeMapping::Init(Engine *) {
