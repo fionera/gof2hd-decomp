@@ -32,9 +32,9 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,258,432 | **−1,032** | the remaining 56 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
+| **.text** | 1,259,464 | 1,262,528 | **+3,064** | the remaining 56 non-linked exported functions plus the documented MenuTouchWindow 0x1000 layout anchor; local-code gaps are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 268,007 | **−1,152** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
-| .ARM.extab | 156,312 | 151,752 | −4,560 | smaller EH tables in the remaining non-exact functions. |
+| .ARM.extab | 156,312 | 151,760 | −4,552 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data | 10,604 | 10,616 | **+12** | anonymous initialised-data layout still differs; the Transform pre-.got anchor now lives in .aezdata and the DialogueWindow last face row is 4 ints. |
@@ -44,12 +44,13 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 1. **56 non-linked exported functions.** 4467 of 4523 compared functions are linked-exact; the
    remaining 56 are the long tail (20 in 90–99%, 13 in 80–89%, 9 in 70–79%, 11 in 60–69%,
-   3 below 50%). Their combined `.text` delta is only −1,032 B, so this is a
+   3 below 50%). The `.text` total is +3,064 B because of the documented
+   MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
 2. **Anonymous data layout.** `.rodata` is 1,152 B smaller, `.data` 12 B larger, and `.bss` 228 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is 4,560 B smaller, following the remaining function-size/EH-layout
+3. **EH tables.** `.ARM.extab` is 4,552 B smaller, following the remaining function-size/EH-layout
    differences.
 4. **Link metadata.** `.dynsym`/`.dynstr` sizes now match exactly; dynamic-symbol order and the GNU
    build-id are content hashes that converge only when everything else does.
@@ -72,8 +73,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1352 byte_exact,
-4467 linked_exact, 4498 size_match of 4523; pct buckets {100:4467, 90-99:20, 80-89:13, 70-79:9,
-60-69:11, <50:3}. 25 functions size-MISMATCH (need restructuring); 24 size-match >=80%
+4467 linked_exact, 4498 size_match of 4523; pct buckets {100:4467, 90-99:20, 80-89:13, 70-79:10,
+60-69:10, <50:3}. 25 functions size-MISMATCH (need restructuring); 24 size-match >=80%
 not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):

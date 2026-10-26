@@ -56,36 +56,28 @@
    "usize": 1892
   },
   {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 64.2,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9640
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 64.2,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9640
+  },
+  {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
    "pct": 65.1,
    "byte": false,
    "linked": false,
    "osize": 1996,
    "usize": 1992
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 65.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9660
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 65.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9660
-  },
-  {
-   "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 67.3,
-   "byte": false,
-   "linked": false,
-   "osize": 13052,
-   "usize": 12692
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
@@ -174,6 +166,14 @@
    "linked": false,
    "osize": 9700,
    "usize": 9724
+  },
+  {
+   "name": "_ZN15MenuTouchWindow4drawEv",
+   "pct": 73.0,
+   "byte": false,
+   "linked": false,
+   "osize": 13052,
+   "usize": 13168
   },
   {
    "name": "_ZN5Level11createSceneEv",
