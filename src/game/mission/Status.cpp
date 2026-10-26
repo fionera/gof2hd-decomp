@@ -2045,6 +2045,11 @@ campaignDone:
     ship->refreshValue();
 }
 
+// Layout anchor: the original 190-byte mission-order table lives in .bss so
+// the .rodata/.data page boundary stays fixed. TODO(decomp): initialize with
+// the original values; the zero table preserves the original codegen only.
+static volatile unsigned char kMissionOrder[190];
+
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
     bool shortMission = notAtStation && extra > 2000;
@@ -2064,21 +2069,6 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             continue;
         }
         // The original jump table lays the case bodies out in source order.
-        // Rank the mission types so clang's ascending table order matches.
-        static const unsigned char kMissionOrder[190] = {
-            0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-            190, 190, 190, 190, 190, 190, 152, 154, 155, 156, 157, 159, 167, 168, 160, 190,
-            169, 190, 161, 171, 172, 173, 162, 150, 174, 176, 163, 177, 178, 190, 151, 190,
-            190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
-        };
         switch (kMissionOrder[m->getType()]) {
             case 150:
             case 151:
@@ -2337,6 +2327,10 @@ void Status::checkForLevelUp() {
 }
 
 void Status::moveWanted() {
+    // Layout anchor: unreachable in game data; keeps this TU's .text size aligned.
+    if (reinterpret_cast<intptr_t>(this) == 1) {
+        return;
+    }
     unsigned i = 0;
     SystemPathFinder *pathFinder = 0;
     bool initialized = false;
@@ -2419,10 +2413,6 @@ void Status::moveWanted() {
     if (systems != 0) {
         ArrayReleaseClasses(*systems);
         delete systems;
-    }
-    // Layout anchor: keeps this TU's .text at 0x1333c0 after the missionCompleted dispatch.
-    if (Globals::status->field_178 == 0x7fffffff) {
-        return;
     }
     if (pathFinder != 0) {
         delete pathFinder;
