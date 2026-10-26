@@ -11,10 +11,15 @@
     (1948B exact); `onKeyPress` preserved at 89.9%.
   - `ModStation::OnInitialize` 68.2% -> 79.5% (6328/6396B), with the existing out-of-line
     layout anchor trimmed by 8B so `byte_exact` stays 1352.
-- Launched four more disjoint workers (`w600..w603`) so the fleet is back to 20 live
+- Launched six more disjoint workers (`w600..w606`) so the fleet is back to 20 live
   `codex exec -p dsv41` processes. New coverage: MenuTouchWindow, Level, PlayerEgo,
-  PlayerFighter. Every launch uses the `-p dsv41` profile (sglang,
-  `deepseek-v4.1-flash`, high reasoning).
+  PlayerFighter, HangarWindow, StatusWindow, Gun. Every launch uses the `-p dsv41`
+  profile (sglang, `deepseek-v4.1-flash`, high reasoning).
+- Radar retry evidence (`w528`, branch `wave28-w528`): `Radar::draw` reaches 60.9% and
+  preserves its 9588B body, but the four commits shift the archive `.text`/literal layout on
+  current master and drop `byte_exact` 1352 -> 1342 even when `.text` is restored to
+  0x1333b0. The commits are retained for a layout-aware retry; master stays at the last
+  green checkpoint.
 
 ## Session 2026-10-26 (wave 28 — 20 workers, long-tail finishing)
 
