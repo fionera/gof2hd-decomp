@@ -115,6 +115,13 @@
   using `empDamage > 0`, and copying the position Vector directly. Gate unchanged.
 - `w614` exited after confirming the same 59.1% state; `w634` launched on
   `Gun::shootAt` (88.5%, 1776/1788B), keeping 20 live `codex exec -p dsv41` workers.
+- Harvested `w629`: `Generator::createMission` 60.9% -> **65.1%** (1992/1996B) by
+  reordering the reward/offer branches; `createAgents` stays 99.2%. Nine Level anchor
+  stores were trimmed (+72B body compensated), so `.text` stays `0x1333c0` and
+  `createCampaignMission` rises 83.0% -> **83.1%**.
+- `w617` exited with a 60.1% `HackingGame` variant (master already has 61.1%); `w635`
+  launched on the `ModStation` ctor (97.8%), `OnKeyPress` (93.2%) and `OnInitialize` (80.0%),
+  keeping 20 live workers.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
