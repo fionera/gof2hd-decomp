@@ -323,8 +323,9 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                 }
             }
         }
+        int fireIndex = this->fireIndex;
         this->lifetimes[0] = this->initialLifetime;
-        if (this->fireIndex >= 0) {
+        if (fireIndex >= 0) {
             reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
                     (*this->enemies)[this->fireIndex]->getPosition() -
                     ((Level *) this->level)->getPlayer()->getPosition());
@@ -420,7 +421,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
 
         bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
         bool keepAmmo = true;
-        if (!this->friendGun && this->ammoCount >= 1 && ammo->getType() == 1) {
+        if (!this->friendGun && ammo != nullptr && this->ammoCount >= 1 && ammo->getType() == 1) {
             keepAmmo = false;
             if (this->itemIndex == 179) {
                 Globals::status->field_144 = 0;
@@ -570,24 +571,15 @@ void Gun::calcCharacterCollision() {
     }
     const int weaponType = this->weaponType;
     const int itemIndex = this->itemIndex;
-    bool scatter;
-    bool mine;
+    const bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
+    const bool mine = weaponType == ITEM_SORT_MINE;
     int explosive;
     if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
         weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
-        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
-        mine = weaponType == ITEM_SORT_MINE;
         explosive = 1;
     } else {
-        scatter = weaponType == ITEM_SORT_SCATTER_GUN;
-        mine = weaponType == ITEM_SORT_MINE;
-        if (weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE) {
-            explosive = 1;
-        } else if (weaponType == ITEM_SORT_CLUSTER_MISSILE) {
-            explosive = 1;
-        } else {
-            explosive = 0;
-        }
+        explosive = weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE ||
+                    weaponType == ITEM_SORT_CLUSTER_MISSILE;
     }
     const bool explodeOnContact =
             weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
