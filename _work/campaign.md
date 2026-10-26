@@ -2,6 +2,9 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w679`: `Mesh::ReadEnhancedDataFromFile` 80.2% -> **80.4%** (1832B
+  exact) by making the material flag a real `bool`, reusing the track count, and reading
+  material keys as `short`; `MeshReadData` preserved at 70.8% (2600/2632B).
 - Harvested `w677`: moved the Transform pre-`.got` 72-byte anchor into the existing
   `.aezdata` anchor section and corrected the DialogueWindow last speaker row to a 4-int
   array. `.data` 0x29c8 -> **0x2978** (delta +92 -> **+12**), `.rodata` delta -960,
