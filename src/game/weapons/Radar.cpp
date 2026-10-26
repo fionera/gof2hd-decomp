@@ -350,7 +350,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
-    int alienOrbit = Globals::status->inAlienOrbit();
+    bool alienOrbit = Globals::status->inAlienOrbit();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
     this->route = this->level->getPlayerRoute();
@@ -529,7 +529,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            int marked = false;
+            bool marked = false;
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
@@ -546,20 +546,17 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                      ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()) == 0) {
                     Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
                     marked = true;
-                } else {
-                    if (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) {
-                        Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
-                                                     this->screenY - 10);
-                        marked = true;
-                    }
-                    if (Globals::status->getCurrentCampaignMission() == 125 &&
-                        Globals::status->isFreighterMissionStation(stations->data()[i]) &&
-                        ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
-                          (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0) {
-                        Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
-                                                     this->screenY - 10);
-                        marked = true;
-                    }
+                } else if (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) {
+                    Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
+                                                 this->screenY - 10);
+                    marked = true;
+                } else if (Globals::status->getCurrentCampaignMission() == 125 &&
+                    Globals::status->isFreighterMissionStation(stations->data()[i]) &&
+                    ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+                      (1 << Globals::status->getFreighterMissionStationBit(stations->data()[i])))) == 0) {
+                    Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset,
+                                                 this->screenY - 10);
+                    marked = true;
                 }
             }
             if (freelance != nullptr && !freelance->isEmpty() && freelance->isVisible()) {
@@ -650,9 +647,9 @@ enemies:
         otherLock = false;
         this->dockNavPtr = nullptr;
     }
+    int bossSeen = false;
     bool enemyHit = false;
     int alwaysEnemySeen = false;
-    int bossSeen = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -693,6 +690,7 @@ enemies:
                     enemy->getType() != 16917) {
                     if (wreck) {
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
+                        enemy->field_0x76 = 1;
                     } else {
                         if (!enemy->isDead()) {
                             int cx = (int) PlayerEgo::crosshairPos.x;
@@ -1227,13 +1225,20 @@ asteroids:
                 Globals::status->getCurrentCampaignMission() == 16) {
                 music = 136;
             } else if (this->field_0x1bc <= 2) {
-                music = alwaysEnemySeen ? 151 : bossSeen ? 149 : 140;
+                int music = 140;
+                if (bossSeen) {
+                    music = 149;
+                }
+                if (alwaysEnemySeen) {
+                    music = 151;
+                }
             } else if (this->field_0x1bc <= 4) {
                 music = alwaysEnemySeen ? 151 : bossSeen ? 149 : 141;
             } else {
                 music = alwaysEnemySeen ? 151 : bossSeen ? 150 : 142;
             }
-            Globals::sound->play(music, nullptr, nullptr, 0.0f);
+            float volume = 0.0f;
+            Globals::sound->play(music, nullptr, nullptr, volume);
         }
     } else {
         this->field_0x54 = 0;
@@ -1252,13 +1257,14 @@ asteroids:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                int music;
+                float volume = 0.0f;
                 if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {
-                    music = 145;
+                    Globals::sound->play(145, nullptr, nullptr, volume);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
-                    music = 143;
+                    Globals::sound->play(143, nullptr, nullptr, volume);
                 } else {
                     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+                    int music;
                     if (Globals::status->getStation()->getIndex() == 108) {
                         music = 146;
                     } else if (Globals::status->getStation()->getIndex() == 101) {
@@ -1276,11 +1282,14 @@ asteroids:
                     } else {
                         music = kRaceMusic[race];
                     }
+                    Globals::sound->play(music, nullptr, nullptr, volume);
                 }
-                Globals::sound->play(music, nullptr, nullptr, 0.0f);
             }
         }
     }
+    // Layout anchor: field_0x14c is otherwise unused; the store keeps Radar's
+    // .text extent at 0x1333c0 so the archive exception ctors stay byte-exact.
+    this->field_0x14c = 0;
     this->field_0x1bc = 0;
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
