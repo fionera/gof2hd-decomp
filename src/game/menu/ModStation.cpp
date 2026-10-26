@@ -408,14 +408,13 @@ int ModStation::OnInitialize() {
             this->pendingHangarClose = 0;
             this->flag_0x63 = 0;
 
-            int y = Globals::layout->field_0xcc - Globals::layout->buttonInsetX -
-                    Globals::layout->field_0x4c;
             int infoBoxW = Globals::layout->field_0xcc;
             this->infoBoxW = infoBoxW;
             this->infoBoxH = Globals::h - Globals::layout->field_0xc_leftMargin -
                              Globals::layout->field_0x10_rightMargin;
             this->infoBoxY = Globals::layout->field_0xc_leftMargin;
             this->infoBoxX = 0;
+            int y = infoBoxW - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
                                                   Globals::w - this->buttonLaunch->getWidth(), Globals::h, 34);
@@ -574,8 +573,9 @@ int ModStation::OnInitialize() {
             if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
                 Globals::status->getShip()->removeCargo(131);
             }
-            if ((Globals::status->getCurrentCampaignMission() == 43 && stationIndex == 10) ||
-                (Globals::status->getCurrentCampaignMission() == 44 && stationIndex == 10)) {
+            if (Globals::status->getCurrentCampaignMission() == 43 && stationIndex == 10) {
+                this->flag_0xd9 = 1;
+            } else if (Globals::status->getCurrentCampaignMission() == 44 && stationIndex == 10) {
                 this->flag_0xd9 = 1;
             }
             if (Globals::status->gameWon() && stationIndex == 10 &&
@@ -664,15 +664,21 @@ int ModStation::OnInitialize() {
                 this->flag_0x63 = 1;
                 Globals::hints[43] = 1;
             }
-            if (Globals::status->gameWon() && !(Globals::hints[56] || Globals::options[53])) {
-                this->choiceWindow->set(*Globals::gameText->getText(110));
-                this->flag_0x63 = 1;
-                Globals::hints[56] = 1;
+            unsigned char *hints = Globals::hints;
+            unsigned char *options = Globals::options;
+            if (Globals::status->gameWon()) {
+                if (!(options[53] || hints[56])) {
+                    this->choiceWindow->set(*Globals::gameText->getText(110));
+                    this->flag_0x63 = 1;
+                    hints[56] = 1;
+                }
             }
-            if (Globals::status->dlc1Won() && !(Globals::hints[57] || Globals::options[55])) {
-                this->choiceWindow->set(*Globals::gameText->getText(111));
-                this->flag_0x63 = 1;
-                Globals::hints[57] = 1;
+            if (Globals::status->dlc1Won()) {
+                if (!(options[55] || hints[57])) {
+                    this->choiceWindow->set(*Globals::gameText->getText(111));
+                    this->flag_0x63 = 1;
+                    hints[57] = 1;
+                }
             }
             int newWanted = Globals::status->activateNewWanted();
             if (newWanted >= 1 && !this->flag_0x63) {
@@ -814,11 +820,13 @@ int ModStation::OnInitialize() {
                 !Globals::layout->rewardMessageActive && Globals::status->getStation()->getIndex() != 101) {
                 int hasJumpDrive = Globals::status->getShip()->hasJumpDrive();
                 int hasFuel = Globals::status->getShip()->hasCargo(85, 1);
-                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr &&
-                    !(hasJumpDrive | hasFuel) && Globals::status->getCurrentCampaignMission() >= 17) {
-                    this->choiceWindow->set(*Globals::gameText->getText(335), true);
-                    this->flag_0x63 = 1;
-                    this->flag_0x6d = 1;
+                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr) {
+                    int mission = Globals::status->getCurrentCampaignMission();
+                    if (!(hasJumpDrive | hasFuel) && mission >= 17) {
+                        this->choiceWindow->set(*Globals::gameText->getText(335), true);
+                        this->flag_0x63 = 1;
+                        this->flag_0x6d = 1;
+                    }
                 }
             }
             reinterpret_cast<uint8_t &>(Globals::status->field_f8) = 1;
@@ -1097,7 +1105,7 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (b & 7) + (a * 3) + (a >> 1) + (b & 15) + (b * 3);
+    return value + a + b + (b & 7) + (a * 3) + (a >> 1);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr

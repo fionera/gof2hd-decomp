@@ -249,11 +249,11 @@
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
-   "pct": 85.6,
+   "pct": 86.0,
    "byte": false,
    "linked": false,
    "osize": 6396,
-   "usize": 6376
+   "usize": 6384
   },
   {
    "name": "_ZN5Level10assignGunsEv",
