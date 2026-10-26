@@ -241,11 +241,11 @@
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
-   "pct": 81.1,
+   "pct": 83.6,
    "byte": false,
    "linked": false,
    "osize": 6396,
-   "usize": 6352
+   "usize": 6384
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
