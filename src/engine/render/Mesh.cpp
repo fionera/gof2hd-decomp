@@ -541,34 +541,7 @@ namespace AbyssEngine {
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
-        if ((flags & 4) == 0) {
-            if ((flags & 3) != 0) {
-                Mesh *mesh = *slot;
-                int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
-                if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
-                    delete[] (unsigned char *) raw;
-                    return -1;
-                }
-                mesh->positions = new float[mesh->vertexCount * 3];
-                mesh = *slot;
-                unsigned int count = mesh->vertexCount * 3;
-                for (int i = 0; i != count; i++) {
-                    unsigned int axis = i % 3;
-                    float value = raw[i];
-                    ((float *) mesh->positions)[i] = value;
-                    if (minimum[axis] > value)
-                        minimum[axis] = value;
-                    if (maximum[axis] < value)
-                        maximum[axis] = value;
-                }
-                delete[] (unsigned char *) raw;
-            } else if ((flags & 0x18) != 0) {
-                Mesh *mesh = *slot;
-                mesh->positions = new float[mesh->vertexCount * 3];
-                if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
-                    return -1;
-            }
-        } else {
+        if ((flags & 4) != 0) {
             Mesh *mesh = *slot;
             short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
             if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
@@ -589,6 +562,31 @@ namespace AbyssEngine {
                     maximum[axis] = value;
             }
             delete[] (unsigned char *) raw;
+        } else if ((flags & 3) != 0) {
+            Mesh *mesh = *slot;
+            int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
+            if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
+                delete[] (unsigned char *) raw;
+                return -1;
+            }
+            mesh->positions = new float[mesh->vertexCount * 3];
+            mesh = *slot;
+            unsigned int count = mesh->vertexCount * 3;
+            for (int i = 0; i != count; i++) {
+                unsigned int axis = i % 3;
+                float value = raw[i];
+                ((float *) mesh->positions)[i] = value;
+                if (minimum[axis] > value)
+                    minimum[axis] = value;
+                if (maximum[axis] < value)
+                    maximum[axis] = value;
+            }
+            delete[] (unsigned char *) raw;
+        } else if ((flags & 0x18) != 0) {
+            Mesh *mesh = *slot;
+            mesh->positions = new float[mesh->vertexCount * 3];
+            if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
+                return -1;
         }
 
         (*slot)->bounds.center = Vector((maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
@@ -607,10 +605,9 @@ namespace AbyssEngine {
                 mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
                 for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
-                    float *uv = (float *) mesh->texCoords + i;
-                    uv[0] = (float) ((double) raw[i] * (1.0 / 4096.0));
+                    ((float *) mesh->texCoords)[i] = (float) ((double) raw[i] * (1.0 / 4096.0));
                     double v = (double) raw[i + 1] * (1.0 / 4096.0);
-                    uv[1] = (float) (flipV ? 1.0 - v : v);
+                    ((float *) mesh->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
