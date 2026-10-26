@@ -64,11 +64,11 @@ Known gate limitations (do not lean on them):
 - `linked_exact` compares intra-function branch offsets literally and cross-function calls by
   resolved symbol name (PLT-aware). Calls into **local (non-exported) code** still mask (`#X`) —
   a wrong callee among local helpers is invisible; cross-check reconstructions against Ghidra.
-- The `drift` target is real now (NDK clang, AAPCS, forced layout completion) and currently
-  reports **74 genuinely drifted fields across 8 classes** (PlayerFighter, Radar, GameData,
-  ParticleSystemMesh, PlayerAsteroid, IParticleSystem, Hud markers, PlayerTurret) — pre-existing
-  bugs the old host-i386 probe never saw. Reconcile each against Ghidra `get_struct_layout` under
-  the verify gate; don't silence the target.
+- The `drift` target is real now (NDK clang, AAPCS, forced layout completion). The former
+  **74-field backlog across 8 classes** (PlayerFighter, Radar, GameData, ParticleSystemMesh,
+  PlayerAsteroid, IParticleSystem, Hud markers, PlayerTurret) has been reconciled; a clean run
+  now reports **0 drifted fields**. Keep it at zero and re-check against Ghidra
+  `get_struct_layout` when changing a struct.
 - Lint waivers are same-line only, every criterion — a waiver on a neighbouring line waives
   nothing.
 
