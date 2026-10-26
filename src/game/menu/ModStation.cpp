@@ -2205,7 +2205,9 @@ void ModStation::OnUpdate() {
         }
         this->field_0xb4 += this->dt;
         this->cutScene->update(this->dt);
-        if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
+        // Radio::lastMessageShown() is bool in the original; the local header still says uint8_t.
+        if ((((Radio *) (intptr_t) this->activeMission)
+                 ->*reinterpret_cast<bool (Radio::*)()>(&Radio::lastMessageShown))()) {
             Vector &textPos = reinterpret_cast<Vector &>(this->idleBox);
             float textY = textPos.y;
             if (textY > (float) (Globals::h / 2)) {
@@ -2629,7 +2631,9 @@ void ModStation::OnRender2D() {
     } else if (this->flag_0x60) {
         Radio *radio = (Radio *) (intptr_t) this->activeMission;
         radio->draw((long long) this->field_0xb4, nullptr, nullptr);
-        if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown()) {
+        // Radio::lastMessageShown() is bool in the original; the local header still says uint8_t.
+        if ((((Radio *) (intptr_t) this->activeMission)
+                 ->*reinterpret_cast<bool (Radio::*)()>(&Radio::lastMessageShown))()) {
             Globals::Canvas->DrawImage2D(this->field_0x5c, 0, (int) reinterpret_cast<float &>(this->field_0x108), 20, 68);
             this->scrollBox->draw();
         }
