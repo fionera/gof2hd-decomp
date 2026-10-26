@@ -16,14 +16,21 @@
   PlayerFighter, HangarWindow, StatusWindow, Gun. Every launch uses the `-p dsv41`
   profile (sglang, `deepseek-v4.1-flash`, high reasoning).
 - Landed wave29 completions:
+  - `Radar::draw` 60.6% -> **60.9%** (9596/9908B) with the layout-safe w528 codegen and a
+    4-byte `field_0x14c` store anchor.
+  - `MeshReadData` 69.4% -> **69.9%** (2600/2632B) and `ReadEnhancedDataFromFile`
+    76.0% -> **80.2%** (1832/1832B), keeping the Mesh TU at 4432B.
+  - `LevelScript::process` 46.8% -> **47.0%** (57152B exact), restoring the escort
+    `setVisible` calls and the speed loop.
   - `HackingGame::render2D` 53.4% -> **58.8%** (2148/2090B) with the original tile-loop
     branch shape.
   - `MeshReadData` 67.9% -> **69.4%** (2608/2632B) with natural x/y/z normal stores and the
     shared fail path; `ReadEnhancedDataFromFile` traded 80.2% -> 76.0% to keep the Mesh TU
     `.text` total and `byte_exact 1352`.
-- Replacement workers `w607..w609` are live: TouchButton retry (w570 crashed with
-  max_output_tokens), layout-safe Radar retry, and Mesh `ReadEnhancedDataFromFile` recovery.
-  Fleet remains at 20 `codex exec -p dsv41` workers.
+- Replacement workers `w607..w613` are live: TouchButton retry (w570 crashed with
+  max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
+  without a report), Status retry, plus fresh Mesh and Radar continuation workers. Fleet
+  remains at 20 `codex exec -p dsv41` workers.
 - Radar retry evidence (`w528`, branch `wave28-w528`): `Radar::draw` reaches 60.9% and
   preserves its 9588B body, but the four commits shift the archive `.text`/literal layout on
   current master and drop `byte_exact` 1352 -> 1342 even when `.text` is restored to
