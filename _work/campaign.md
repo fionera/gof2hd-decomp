@@ -14,6 +14,12 @@
   The pre-existing live workers remain on their hard TUs.
 - Current gate before the new batch: **byte_exact 1352, linked_exact 4456, avg 99.74,
   stubs 0, missing/extra 0, imports 207, data 843/843** (`RATCHET PASS`).
+- Harvested `w734`: `LevelScript::process` 47.3% -> **47.4%** (57152B) by hoisting
+  the Canvas pointer for the 0x4e/89 animation calls and trimming the tail anchor;
+  gate unchanged.
+- Harvested `w726`: `HangarWindow::render` 61.5% -> **72.6%** (9728 -> 9724B) by
+  keeping the Layout pointer live, default-initialising the row name, and constructing
+  `rightText`/`progress` directly; `OnTouchEnd` stays 80.5% (5832B). Gate unchanged.
 - Harvested `w748`: `Status::missionCompleted` 60.2% -> **85.4%** (1440 -> **1432B**,
   exact original size) by restoring the source-order lookup dispatch. The 190-byte
   `kMissionOrder` table is compensated by shrinking the existing CubeMapping `.rodata`
