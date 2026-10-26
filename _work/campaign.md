@@ -2,6 +2,12 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Launched 20 additional disjoint workers `w691..w710`, all with the `-p dsv41` profile:
+  ParticleSettings, Radar ctor/drawCurrentLock, Radar draw, StatusWindow, MissionsWindow,
+  Status, HackingGame, Engine ResetLightParam, SpaceLounge, ModStation, MenuTouchWindow,
+  Hud, Level, MGame, Generator, PlayerEgo, StarMap, TouchButton, PlayerFighter, Layout.
+  The pre-existing live workers remain on the other hard TUs. Launch with `setsid -f`:
+  plain `nohup ... &` children were reaped when the orchestrator shell exited.
 - Harvested `w643`: `Level::createShip` 65.9% -> **67.9%** (2764B exact) by
   restoring the original race-case source order (race 3 before race 1 in the hull-box
   literal pool).
