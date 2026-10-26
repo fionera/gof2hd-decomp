@@ -332,7 +332,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         this->field_0x4b4 = 300;
     if (this->field_0x4ac >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4ac * 255 / 300));
-        Globals::Canvas->DrawImage2D(sideImage, (Globals::w >> 1) - ego->field_0x14->imageWidth, Globals::h >> 1,
+        Globals::Canvas->DrawImage2D(sideImage, (Globals::w / 2) - ego->field_0x14->imageWidth, Globals::h >> 1,
                                      Globals::Canvas->GetImage2DWidth(sideImage),
                                      Globals::Canvas->GetImage2DHeight(sideImage), 0x11, 0x41, 1);
         this->field_0x4ac -= dt;
@@ -389,7 +389,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, kills,
                                     this->field_0x438 + Globals::layout->field_0x1fc, this->field_0x43a + 5, false);
     } else if (timeLeft > 0 && Globals::status->getCurrentCampaignMission() != 42) {
-        String time = "";
+        String time;
         Globals::globals->longToTimeString(timeLeft, time);
         Globals::Canvas->DrawImage2D(this->image_0x320, this->field_0x438, this->field_0x43a);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, time,
