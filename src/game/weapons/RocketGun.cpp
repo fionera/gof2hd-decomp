@@ -28,6 +28,23 @@ namespace AbyssEngine {
 
 static const float kRocketTurnRate = 0.3f;
 
+// The four missile trail sets. setRadar reads the constexpr copy so its switch folds to the
+// original constants; the runtime copy is kept in .data so the page-quantized GOT stays aligned
+// with the 1896-byte update body (the libstdc++ exception ctors encode a GOT displacement).
+static constexpr ParticleSettings::ParticleSet kRocketTrailSetValues[4] = {
+        ParticleSettings::ParticleSet_0x19,
+        ParticleSettings::ParticleSet_0x1a,
+        ParticleSettings::ParticleSet_0x1b,
+        ParticleSettings::ParticleSet_0x1c,
+};
+[[gnu::used]] static ParticleSettings::ParticleSet kRocketTrailSets[4] = {
+        kRocketTrailSetValues[0],
+        kRocketTrailSetValues[1],
+        kRocketTrailSetValues[2],
+        kRocketTrailSetValues[3],
+};
+static_assert(sizeof(kRocketTrailSets) == 16, "rocket trail-set table size");
+
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
     : ObjectGun(meshVariantId, gun, mesh, flags, level) {
@@ -102,7 +119,7 @@ void RocketGun::setRadar(Radar *radar) {
         ArraySetLength(this->gun->positions.count, *this->trailTimers);
 
         ParticleSettings::ParticleSet defaultSet =
-                trailMode == 2 ? ParticleSettings::ParticleSet_0x1b : ParticleSettings::ParticleSet_0x1c;
+                trailMode == 2 ? kRocketTrailSetValues[2] : kRocketTrailSetValues[3];
         for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
             ParticleSystemManager *manager;
             if (this->gun->itemIndex == 0xc1) {
@@ -114,8 +131,8 @@ void RocketGun::setRadar(Radar *radar) {
             Matrix *trail = &(*this->trailMatrices)[i];
             ParticleSettings::ParticleSet set = defaultSet;
             switch (trailMode) {
-                case 1: set = ParticleSettings::ParticleSet_0x1a; break;
-                case 0: set = ParticleSettings::ParticleSet_0x19; break;
+                case 1: set = kRocketTrailSetValues[1]; break;
+                case 0: set = kRocketTrailSetValues[0]; break;
             }
             (*this->trailSystems)[i] = manager->addSystem(trail, set, false);
             this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
@@ -159,6 +176,7 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
+    const float dt = (float) elapsed;
     Vector ahead = {0.0f, 0.0f, 0.0f};
     Gun &g = *this->gun;
     g.update(elapsed);
@@ -215,23 +233,32 @@ void RocketGun::update(int elapsed) {
             if ((uint32_t) (kind - 4) < 2 || kind == 0x28) {
                 this->radar->level->field_80->enableSystemRender(this->particleSystem, true);
                 this->radar->level->field_80->enableSystemEmit(this->particleSystem, true);
-            } else {
-                Level *level = this->radar->level;
-                (this->gun->itemIndex == 0xe8 ? level->field_9c : level->particleRenderBoolPtr)
-                        ->enableSystemEmit(this->particleSystem, this->gun->itemIndex != 0xb3);
+                goto launchDone;
             }
+            goto itemEmit;
         } else if (this->gun->positions.data()[this->gun->currentProjectile].z == 50000.0f) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
             this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
+            goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
             this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], true);
             this->particleManager->enableSystemRender((*this->trailSystems)[this->gun->currentProjectile], true);
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
+            goto launchDone;
         }
 
+    itemEmit:
+        if (this->gun->itemIndex == 0xe8) {
+            this->radar->level->field_9c->enableSystemEmit(this->particleSystem, true);
+        } else {
+            this->radar->level->particleRenderBoolPtr->enableSystemEmit(this->particleSystem,
+                                                                       this->gun->itemIndex != 0xb3);
+        }
+
+    launchDone:
         if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->currentProjectile > 0) {
             // Cluster salvo: launch the remaining rockets in the same frame.
             gun->currentProjectile = gun->currentProjectile - 1;
@@ -266,7 +293,6 @@ void RocketGun::update(int elapsed) {
         }
     }
 
-    const float dt = (float) elapsed;
     Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
