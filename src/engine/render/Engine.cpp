@@ -414,7 +414,7 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
 
         Vector normalized =
                 AbyssEngine::AEMath::VectorNormalize(Vector{x, y, z});
-        (&this->field_0x468)[index] = normalized;
+        this->lightPositions[index] = normalized;
         this->lightDirty[index] = 0.0f;
     }
     return;
@@ -1031,7 +1031,7 @@ void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light
         value.x = x;
         value.y = y;
         value.z = z;
-        (&this->field_0x468)[index] = value;
+        this->lightPositions[index] = value;
         this->lightDirty[index] = 1.0f;
     }
     return;
@@ -1097,8 +1097,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 }
 
 Engine::Engine()
-        : lightDir(), field_0x33c(), lightColor(), field_0x3cc(), fogColor(), eyePosition(),
-          field_0x468(), field_0x474() {
+        : lightColor(), field_0x3cc() {
     this->quadMesh = nullptr;
     this->viewFramebuffer = 0;
     this->postEffectFlags = 0;
@@ -1288,17 +1287,17 @@ void Engine::SetModelMatrix(const Matrix &matrix) {
         gl[14] = m[11];
         gl[15] = 1.0f;
         if (this->lightDirty[0] == 0.0f) {
-            this->lightDir = AbyssEngine::AEMath::VectorNormalize(
-                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x468));
+            this->lightDir[0] = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[0]));
         } else {
-            this->lightDir = this->field_0x468;
+            this->lightDir[0] = this->lightPositions[0];
         }
         if (this->lightCount > 1) {
             if (this->lightDirty[1] == 0.0f) {
-                this->field_0x33c = AbyssEngine::AEMath::VectorNormalize(
-                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->field_0x474));
+                this->lightDir[1] = AbyssEngine::AEMath::VectorNormalize(
+                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[1]));
             } else {
-                this->field_0x33c = this->field_0x474;
+                this->lightDir[1] = this->lightPositions[1];
             }
         }
         this->ShaderUpdate();
@@ -1320,7 +1319,7 @@ void Engine::LightSetLight(unsigned int light) {
         }
         this->lightCount = count;
 
-        const Vector &dir = (&this->field_0x468)[index];
+        const Vector &dir = this->lightPositions[index];
         position[0] = dir.x;
         position[1] = dir.y;
         position[2] = dir.z;
@@ -1488,7 +1487,7 @@ void Engine::ResetLightParam() {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->field_0x468 = up;
+        this->lightPositions[0] = up;
     }
     this->lightDirty[0] = 0.0f;
     {
@@ -1496,7 +1495,7 @@ void Engine::ResetLightParam() {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->field_0x474 = up;
+        this->lightPositions[1] = up;
     }
     this->lightDirty[1] = 0.0f;
 }

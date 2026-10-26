@@ -65,8 +65,8 @@ namespace AbyssEngine {
 
         if (this->dirty != 0) {
             glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
-            glUniform3f(this->uLightDirLoc, engine->lightDir.x, engine->lightDir.y,
-                        engine->lightDir.z);
+            glUniform3f(this->uLightDirLoc, engine->lightDir[0].x, engine->lightDir[0].y,
+                        engine->lightDir[0].z);
             glUniform3f(this->uEyePosLoc, engine->lightColor.x, engine->lightColor.y,
                         engine->lightColor.z);
             this->dirty = 0;

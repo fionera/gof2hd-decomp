@@ -119,8 +119,8 @@ namespace AbyssEngine {
 
         glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         glUniformMatrix3fv(this->uModelMatrixLoc, 1, 0, engine->normalMatrix);
-        glUniform4f(this->uLightposmodelLoc, engine->lightDir.x, engine->lightDir.y,
-                    engine->lightDir.z, engine->lightDirty[0]);
+        glUniform4f(this->uLightposmodelLoc, engine->lightDir[0].x, engine->lightDir[0].y,
+                    engine->lightDir[0].z, engine->lightDirty[0]);
         glUniform3f(this->uEyeposmodelLoc, engine->lightColor.x, engine->lightColor.y,
                     engine->lightColor.z);
 

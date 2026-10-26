@@ -81,8 +81,8 @@ namespace AbyssEngine {
             glUniform1f(this->uTexBiasNormalLoc, Engine::lodBiasNormal);
 
         if (this->dirty != 0) {
-            glUniform3f(this->uLightdirmodelLoc, engine->lightDir.x, engine->lightDir.y,
-                        engine->lightDir.z);
+            glUniform3f(this->uLightdirmodelLoc, engine->lightDir[0].x, engine->lightDir[0].y,
+                        engine->lightDir[0].z);
             if (this->uEyeposmodelLoc >= 0)
                 glUniform3f(this->uEyeposmodelLoc, engine->lightColor.x, engine->lightColor.y,
                             engine->lightColor.z);

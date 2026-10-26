@@ -127,9 +127,7 @@ namespace AbyssEngine {
 
         int lightCount;
 
-        Vector lightDir;
-
-        Vector field_0x33c;
+        Vector lightDir[2];  // [0] lightDir, [1] field_0x33c
 
         int lineVertexBase;
 
@@ -182,9 +180,7 @@ namespace AbyssEngine {
         uint32_t glEnableFlags;
         bool lightingEnabled;
         float uvMatrixGL[16];
-        Vector field_0x468;
-
-        Vector field_0x474;
+        Vector lightPositions[2];  // [0] field_0x468, [1] field_0x474
 
         bool hasVibration;
         DestroyCallback *onDestroyCallback;
