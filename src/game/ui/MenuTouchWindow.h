@@ -3,9 +3,6 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "game/ui/TouchButton.h"
-#include "game/ui/ModuleTransitionThunk.h"
-
-#include "game/ui/RefreshThunk.h"
 class TouchButton;
 class TouchSlider;
 class GameRecord;

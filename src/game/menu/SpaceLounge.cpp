@@ -56,10 +56,6 @@ namespace AbyssEngine {
     }
 }
 
-// Projection helper installed in SpaceLounge_screen_projector (maps a world Vector to a screen Vector).
-typedef void (*ScreenProjectFn)(Vector *out, Vector *in);
-
-
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
@@ -106,7 +102,6 @@ static inline void MatrixGetDir(void *out, void *matrix) { *(AbyssEngine::AEMath
 
 static Level *SpaceLounge_screen_level_slot;
 static PaintCanvas **SpaceLounge_screen_canvas_slot;
-static ScreenProjectFn SpaceLounge_screen_projector;
 static PaintCanvas **SpaceLounge_lounge_canvas_slot;
 static Layout **SpaceLounge_lounge_layout_slot;
 static ImageFactory **SpaceLounge_lounge_image_factory_slot;

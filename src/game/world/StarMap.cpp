@@ -34,18 +34,6 @@
 #include "game/ship/Agent.h"
 #include "game/mission/PendingProduct.h"
 
-
-static Status **g_StarMap_draw_status;
-static Layout **g_StarMap_draw_layout;
-static GameText **g_StarMap_draw_text;
-static unsigned char **g_StarMap_draw_font;
-
-
-
-static Layout **g_StarMap_end_layout;
-static FModSound **g_StarMap_end_sound;
-static GameText **g_StarMap_end_text;
-
 int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix &matrix) {
@@ -56,56 +44,23 @@ static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix
     return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
 
-
 void MatrixSetTranslation(void *matrix, float x, float y, float z); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
 static inline void VectorNormalize(Vector *out, Vector *value) { *out = AbyssEngine::AEMath::VectorNormalize(*value); }
 
-
-
-
-static Layout **g_StarMap_touch_layout;
-static int *g_StarMap_touch_screenH;
-static FModSound **g_StarMap_touch_sound;
-
 void FileRead_ctor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
 void *FileRead_dtor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
-static Layout **g_StarMap_drawKey_layout;
-static int *g_StarMap_drawKey_screenW;
-static int *g_StarMap_drawKey_screenH;
-
-static void (*g_StarMap_drawKey_drawImage)(uint32_t, uint32_t, int, int);
-
-static GameText **g_StarMap_drawKey_text;
-
-static String *(*g_StarMap_drawKey_getText)(GameText *, int);
-
-static unsigned char **g_StarMap_drawKey_font;
-
-static void (*g_StarMap_drawKey_drawString)(uint32_t, unsigned char *, String *, int, int, bool);
-
 int Station_getTextureIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
-
-
-
-static void (*g_StarMap_init_imageCreate)(uint32_t, int, uint32_t *);
-
-static Layout **g_StarMap_init_layout;
-static GameText **g_StarMap_init_text;
-static unsigned char **g_StarMap_init_font;
-static int *g_StarMap_init_screenW;
-static int *g_StarMap_init_screenH;
 
 void MatrixSetRotation(void *matrix, float x, float y, float z, float w); // lint: void_ptr (external symbol; mangling must match lib)
 
 // lint: void_ptr (external symbol; mangling must match lib)
 
 void *SystemPathFinder_ctor(void *finder); // lint: void_ptr (external symbol; mangling must match lib)
-
 
 StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         : scratchVector(), scratchVector2() {

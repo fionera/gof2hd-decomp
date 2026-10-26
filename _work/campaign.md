@@ -2,6 +2,14 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w917`: durable `_work/reconstructions/layout_anchor_audit.md` (515 lines).
+  It quantifies the `.text` anchors, the `.got`/`.data` ordering, and the ten
+  libstdc++ exception-ctor invariant (`.got - ctor == 0x7c0c0`), and ranks proper
+  source-shape fixes.
+- Harvested `w922`: dead-scaffolding pass 1 removed `RefreshThunk`/
+  `ModuleTransitionThunk`/`RefreshFn`, 24 unused StarMap globals, unused
+  LevelScript/SpaceLounge typedefs, the fake PlayerEgoVtable, and the Sparks
+  function-pointer indirection. Gate unchanged (byte 1352, linked 4468, avg 99.78).
 - Harvested `w916`: durable `_work/reconstructions/jump_table_audit.md` (489 lines). It
   found a real semantic bug: `Status::missionCompleted` switches on an all-zero
   `kMissionOrder[190]`, so every mission type takes case 0; it also identified three

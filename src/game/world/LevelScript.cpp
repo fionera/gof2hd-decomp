@@ -37,31 +37,6 @@
 #include "game/world/Galaxy.h"
 
 
-struct StackVector {
-    float v[3];
-
-    StackVector() {
-    }
-
-    StackVector(float x, float y, float z) {
-        v[0] = x;
-        v[1] = y;
-        v[2] = z;
-    }
-
-    operator Vector *() { return reinterpret_cast<Vector *>(v); }
-};
-
-typedef unsigned char * (*LevelListProc)(Level *);
-
-typedef void (*ReadWaypointProc)(StackVector *out, Waypoint *waypoint);
-
-typedef void (*SetVectorProc)(unsigned char *self, StackVector *value);
-
-typedef void (*VirtualCommandProc)(unsigned char *self, int a, int b, int c);
-
-static LevelListProc gLevelListProc;
-
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);
 }

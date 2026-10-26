@@ -4,10 +4,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/AERandom.h"
 
-static int Sparks_nextInt(AERandom *rng, int bound) {
-    return rng->nextInt(bound);
-}
-
 static PaintCanvas **g_Sparks_canvas_ctor = &Globals::Canvas;
 
 static AERandom **g_Sparks_random_ctor = &Globals::rnd;
@@ -38,7 +34,7 @@ Sparks::Sparks(int kind) {
         AERandom **rng = g_Sparks_random_ctor;
         for (uint32_t i = 0; i < n; i++) {
             (*canvas)->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i, 1);
-            int value = Sparks_nextInt(*rng, 0x1f4);
+            int value = (*rng)->nextInt(0x1f4);
             this->lifetimeThresholds[i] = value;
             n = this->count;
             this->totalThreshold = value + this->totalThreshold;
@@ -96,8 +92,6 @@ static PaintCanvas **g_Sparks_canvas_explode_single = &Globals::Canvas;
 
 static AERandom **g_Sparks_random_explode = &Globals::rnd;
 
-static int (*g_Sparks_nextInt_explode)(AERandom *rng, int bound) = Sparks_nextInt;
-
 void Sparks::explode(int x, int y, int z) {
     int x0 = x;
     int y0 = y;
@@ -110,13 +104,12 @@ void Sparks::explode(int x, int y, int z) {
         uint32_t i = 0;
         PaintCanvas **canvas = g_Sparks_canvas_explode_rocket;
         AERandom **rng = g_Sparks_random_explode;
-        int(*nextInt)(AERandom *, int) = g_Sparks_nextInt_explode;
         for (; i < this->count; i++) {
             uint32_t sprite = this->spriteSystem;
             PaintCanvas *canvasObj = *canvas;
-            float px = (float) (nextInt(*rng, 0x190) + x0);
-            float py = (float) (nextInt(*rng, 0x190) + y0);
-            float pz = (float) (nextInt(*rng, 0x190) + z0);
+            float px = (float) ((*rng)->nextInt(0x190) + x0);
+            float py = (float) ((*rng)->nextInt(0x190) + y0);
+            float pz = (float) ((*rng)->nextInt(0x190) + z0);
             canvasObj->SpriteSystemSetPosition(sprite, (uint16_t) i,
                                                px, py, pz);
         }

@@ -304,8 +304,6 @@ void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int 
 static const char gCrbDash[] = "";
 
 
-typedef void (*RefreshFn)();
-
 
 static const int g_mtw_upTextIds[16] = {};
 
