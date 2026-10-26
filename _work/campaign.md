@@ -2,6 +2,11 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w924`: replaced all 18 live decompiler shim wrappers with direct
+  calls (AEMath/Vector wrappers in SpaceLounge/StarMap/StarSystem/RocketGun,
+  TargetFollowCamera in MGame, GameText/GameRecord in MenuTouchWindow,
+  AERandom::nextInt in Globals), removing 80 lines of non-source indirection.
+  Gate unchanged (byte 1352, linked 4468, avg 99.78, drift 0).
 - Harvested `w912`/`w888`: `Gun::shootAt` 89.4% -> **90.6%** (1788B exact) by
   checking `ammoCount` before the ammo pointer and marking the guard hot.
 - Harvested `w913`: `Globals::Globals` C1/C2 69.9% -> **70.8%** (612B) by
