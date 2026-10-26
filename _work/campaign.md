@@ -1,5 +1,18 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
+
+- Launched `w930..w949` (20 `codex exec -p dsv41` workers, explicit sglang
+  profile) from master `da7661af`, one owner per high-value non-linked function:
+  ModStation ctor, Radar ctor, Generator::createAgents, PlayerFighter::update,
+  SpaceLounge sound/startChat, StarMap::drawOnScreenInfo,
+  MenuTouchWindow::OnTouchBegin, SpaceLounge drawLounge/onKeyPress/OnTouchEnd,
+  Radar::drawCurrentLock, HangarWindow::OnTouchEnd, StarSystem/PlayerStation
+  ctors, PlayerEgo::update, Hud::drawMenu, Level::assignGuns,
+  ModStation::OnInitialize, Status missionCompleted/moveWanted, and
+  Level::createCampaignMission. Each worker is gate-bound to byte_exact >= 1352,
+  linked_exact >= 4468, `.text 0x1343c0`, lint CLEAN, drift 0.
+
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
 - Harvested `w923`: dropped the 103 dead decompiler shim names (106 declaration
