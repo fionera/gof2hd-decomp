@@ -2790,8 +2790,9 @@ void MGame::OnUpdate() {
                     }
                     int variant = Globals::rnd->nextInt(2);
                     int textId = variant == 0 ? 533 : 534;
-                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
-                                                              Globals::gameText->getText(1602), gMGameFaces + 5);
+                    DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
+                                                                  Globals::gameText->getText(1602), gMGameFaces + 5);
+                    this->dialogueWindow = dialogue;
                     Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
@@ -2808,8 +2809,9 @@ void MGame::OnUpdate() {
                     }
                     int variant = Globals::rnd->nextInt(2);
                     int textId = variant == 0 ? 535 : 536;
-                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
-                                                              Globals::gameText->getText(1603), gMGameFaces + 10);
+                    DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
+                                                                  Globals::gameText->getText(1603), gMGameFaces + 10);
+                    this->dialogueWindow = dialogue;
                     Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
@@ -2820,8 +2822,9 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
-                    this->level->createRadioMessage(
-                        28, Globals::rnd->nextInt(2) + (Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166));
+                    int radioIndex = Globals::rnd->nextInt(2);
+                    int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
+                    this->level->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >

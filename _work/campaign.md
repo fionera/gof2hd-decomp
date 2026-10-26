@@ -5,6 +5,9 @@
 - Harvested `w894`: `Generator::createMission` 65.1% -> **65.7%** (1992B, original 1996B)
   by restoring the route-fallback order and using `SolarSystem *` pointers for the
   distance calculation. Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
+- Harvested `w891`: `MGame::OnUpdate` 84.5% -> **84.6%** (11444B, original 11440B)
+  by keeping the dialogue-window pointer local and splitting the radio-message index/base.
+  Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
 - Launched `w885..w894` (10 more `codex exec -p dsv41` workers) alongside the still-live
   `w875..w884` near-100 finishers. Coverage: PlayerStation ctor, PlayerEgo update/
   calcCollision, Hud drawMenu/drawChallengeModeScore, Gun shootAt/calcCharacterCollision,
