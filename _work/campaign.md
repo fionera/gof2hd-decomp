@@ -2,6 +2,13 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w636`: `StarMap::drawOnScreenInfo(int,bool)` 93.0% -> **97.1%**
+  (3488/3488B) by folding the campaign-target OR into the station/system ternary and
+  expressing the target-station sentinel as `<= -1`. `draw` 89.2% and `update` 91.7% preserved.
+- Harvested `w655`: `Level::createShip` 63.6% -> **65.9%** (2764/2764B exact) by keeping
+  the position Y local as `float`; the createCampaignMission layout anchor was extended to
+  keep `.text 0x1333c0` and `byte_exact 1352`. Analysis committed as
+  `_work/reconstructions/Level-createShip-floaty.md`.
 - Harvested `w659`: `Globals::Globals` C1/C2 69.5% -> **69.9%** by restoring the
   original `initMemoryWarning`/`lastSpaceMusicPlayed` store order; `FileInterfaceAndroid::Write`
   89.1% -> **95.7%** (172B exact) with the original early return and an acquire compiler fence;
