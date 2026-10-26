@@ -211,7 +211,7 @@ padding, giving the observed one-page (`0x1000`) shift from `0x1333c0` to `0x134
 
 | # | location | mechanism | size | section/effect | evidence |
 |---|---|---|---:|---|---|
-| 16 | `src/engine/render/shaders/CubeMapping.cpp:71-75,82` | `kCubeMappingLayoutAnchor[265] = "CubeMapping"` used as the shader name | `0x109` = 265 B | `.rodata` pad; keeps `.rodata` end below the RW page threshold | object symbol `0x109`; comment says it compensates the 190-byte Status table |
+| 16 | `src/engine/render/shaders/CubeMapping.cpp:71-75,82` | **removed** (was `kCubeMappingLayoutAnchor[75] = "CubeMapping"`) | 75 B removed | `.rodata` -0x30; `String("CubeMapping", false)` restored | commit `1ed51c3c`; `.rodata` 0x415d7 -> 0x415a7, gate unchanged |
 | 17 | `src/game/mission/Status.cpp:2048-2051,2072` | `static volatile unsigned char kMissionOrder[190]` zero table used in `switch` | `0xbe` = 190 B | `.bss`; original 190-byte table lives in `.bss` | object symbol `0xbe`; `.bss` section size `0xbe` |
 | 18 | `src/engine/math/Transform.cpp:8-17` | `g_transform_matrix_flag[80] = {1}` in `.aezdata` | 80 B | `.aezdata`; moves `.got`/`.bss` without changing `.data` | object `.aezdata` size `0x50`; original has no `.aezdata` |
 | 19 | `src/game/weapons/RocketGun.cpp:31-46` | unused runtime `kRocketTrailSets[4]` copy in `.data` | 16 B | `.data`; page-quantized GOT alignment | object `.data` size `0x10`; `kRocketTrailSetValues` constexpr is the used copy |
@@ -430,8 +430,8 @@ therefore require real-body recovery.
 and the `.got` address. They should be fixed after the `.text` shape is stable, or in a
 coordinated layout pass.
 
-- `CubeMapping.cpp:71-75`: restore the real 190-byte Status mission-order table and use
-  `"CubeMapping"` directly; remove the 265-byte `.rodata` pad.
+- `CubeMapping.cpp:71-75`: **done** (`1ed51c3c`); the 75-byte `.rodata` pad is removed and
+  the real `"CubeMapping"` literal is used directly.
 - `Status.cpp:2048-2051`: recover the original 190-byte table values/initialization; the
   table is a real `.bss` object, not just padding.
 - `Transform.cpp:8-17`: restore the original 72-byte pre-`.got` data in `.data` (or its
@@ -509,7 +509,7 @@ Check:
    The small dead-code cluster is 120 B (`StarSystem` 14, `Generator` 8, `ObjectGun` 20,
    `GameText` 16, `StatusWindow` 16, `RecordHandler` 30, `StarMap` 16); the semantic inline
    anchors add about 234 B (`Level` 132+8 call, `ModStation` 62+8 call, `HackingGame` 6,
-   `LevelScript` 4, `Status` 14); the data anchors add 559 B (`CubeMapping` 265,
+   `LevelScript` 4, `Status` 14); the remaining data anchors add 484 B (`CubeMapping` removed;
    `Status` 190, `Transform` 80, `RocketGun` 16, `AEFile` 8). The hard target is not
    simply deleting `3,064` B of `.text`; it includes the 22 size-mismatched functions
    (net `-1,230` B) plus the data-layout anchors.

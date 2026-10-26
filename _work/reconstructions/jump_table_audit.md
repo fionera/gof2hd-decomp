@@ -368,7 +368,7 @@ These are intentionally gate-sensitive. They are not necessarily bugs, but they 
 | `src/game/world/LevelScript.cpp:4805-4812` | `volatile char layoutPad` | `.text` size | keep |
 | `src/game/ui/HangarWindow.cpp:898-905` | repeated `description = description;` | `.text` size; no-op on rendered text | keep |
 | `src/game/mission/Status.cpp:2330-2333` | `if (reinterpret_cast<intptr_t>(this) == 1) return;` | unreachable `.text` anchor in `moveWanted` | keep until F1 is settled; it is coupled to the TU size |
-| `src/engine/render/shaders/CubeMapping.cpp:71-75` | 265-byte `kCubeMappingLayoutAnchor` | `.rodata` page boundary / RW segment address; explicitly compensates the 190-byte Status table | must be re-tuned if F1 changes the 190-byte table |
+| `src/engine/render/shaders/CubeMapping.cpp:71-75` | **removed** (was 75-byte `kCubeMappingLayoutAnchor`) | `.rodata` page boundary / RW segment address | removed by `1ed51c3c`; gate unchanged |
 
 **Observation:** these are all documented in-source and/or in `docs/IDENTICALITY.md`.
 **Inference:** they are temporary scaffolding, not original source. **Risk:** removing any one can
@@ -447,7 +447,7 @@ These are source-like and should not be "cleaned up":
 
 | Priority | Package | Files | Expected risk |
 |---|---|---|---|
-| P0 | Fix `Status::missionCompleted` semantics (non-zero ranking table or direct switch) | `Status.cpp`, `CubeMapping.cpp` | high: `.bss`/`.rodata`/anchor coupling |
+| P0 | Fix `Status::missionCompleted` semantics (non-zero ranking table or direct switch) | `Status.cpp` | high: `.bss`/`.rodata` coupling; CubeMapping anchor already removed (`1ed51c3c`) |
 | P0 | Fix the three wrong lookup tables | `Agent.cpp`, `SolarSystem.cpp`, `Generator.cpp` | medium: `.rodata` bytes, local data not gate-checked |
 | P1 | Remove dead thunk structs / `RefreshFn` | `RefreshThunk.h`, `ModuleTransitionThunk.h`, `MenuTouchWindow.h/.cpp` | low: no codegen if unused |
 | P1 | Remove dead `StarMap` globals and unused typedefs/arrays | `StarMap.cpp`, `LevelScript.cpp`, `SpaceLounge.cpp`, `Level.cpp`, `MenuTouchWindow.cpp`, `Hud.cpp` | low/medium: `.bss` shrink, layout |
