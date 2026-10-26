@@ -324,7 +324,15 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             }
         }
         this->lifetimes[0] = this->initialLifetime;
-        if (this->fireIndex < 0) {
+        if (this->fireIndex >= 0) {
+            reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
+                    (*this->enemies)[this->fireIndex]->getPosition() -
+                    ((Level *) this->level)->getPlayer()->getPosition());
+            *this->positions.data() = (*this->enemies)[this->fireIndex]->getPosition();
+            *this->velocities.data() =
+                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
+            this->field_0x8c = nearest;
+        } else {
             reinterpret_cast<Vector &>(this->field_0x90) =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             *this->positions.data() =
@@ -333,14 +341,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             *this->velocities.data() =
                     ((Level *) this->level)->getPlayer()->geometry->getDirection();
             this->field_0x8c = 30000;
-        } else {
-            reinterpret_cast<Vector &>(this->field_0x90) = AbyssEngine::AEMath::VectorNormalize(
-                    (*this->enemies)[this->fireIndex]->getPosition() -
-                    ((Level *) this->level)->getPlayer()->getPosition());
-            *this->positions.data() = (*this->enemies)[this->fireIndex]->getPosition();
-            *this->velocities.data() =
-                    ((Level *) this->level)->getPlayer()->geometry->getDirection();
-            this->field_0x8c = nearest;
         }
         return true;
     }
@@ -362,9 +362,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
 
         if (this->offset != Vector{0, 0, 0}) {
           if (this->weaponType != ITEM_SORT_SHOCK_BLAST) {
-            if (!this->field_0xa5 && !this->field_0xa4_b0) {
-                this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
-            } else {
+            if (this->field_0xa5 || this->field_0xa4_b0) {
                 // alternate the muzzle between the mirrored offsets
                 if (this->field_0xa4_b0) {
                     this->targetDir = this->offset;
@@ -374,14 +372,16 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                     this->field_0xa6 = !this->field_0xa6;
                     this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
-                if (this->field_0xa5 && this->field_0xa6) {
-                    this->targetDir = this->offset;
-                    if (this->field_0xa7) {
-                        this->targetDir.y = -this->targetDir.y;
-                    }
-                    this->field_0xa7 = !this->field_0xa7;
-                    this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
+            } else {
+                this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
+            }
+            if (this->field_0xa5 && this->field_0xa6) {
+                this->targetDir = this->offset;
+                if (this->field_0xa7) {
+                    this->targetDir.y = -this->targetDir.y;
                 }
+                this->field_0xa7 = !this->field_0xa7;
+                this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
             }
           }
         }
@@ -444,11 +444,11 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             return true;
         }
     }
-    if (this->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
-        return true;
+    if (this->weaponType != ITEM_SORT_CLUSTER_MISSILE) {
+        return false;
     }
     if (!fired) {
-        return false;
+        return true;
     }
     this->ammoCount--;
     if (ammo != nullptr) {
@@ -721,9 +721,7 @@ void Gun::calcCharacterCollision() {
                 if (this->impact->isRocket()) {
                     reinterpret_cast<uint8_t *>(&enemy->field_54)[1] = 1;
                 }
-                if (this->impact != nullptr) {
-                    this->impact->explode(position);
-                }
+                this->impact->explode(position);
             }
             if (scatter) {
                 this->hitFlags[i] = 1;
