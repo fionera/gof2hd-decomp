@@ -1104,7 +1104,7 @@ static int modStationTouchEndPad(int value) {
     for (int i = 0; i < (b & 3); i++) {
         sum ^= (b << i) + (a >> i);
     }
-    return sum + (a & 31) + (b & 63) + (a >> 3) + (a >> 2) + (a - 1);
+    return sum + (a & 31) + (b & 63) + (a - 1);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
