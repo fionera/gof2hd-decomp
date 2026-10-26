@@ -183,7 +183,7 @@ void HackingGame::render2D() {
         unsigned char row = i / 3;
         unsigned char col = i % 3;
         int image = this->current[i];
-        if (solved && (this->wonTimer / 200) % 2 == 0)
+        if (solved && (this->wonTimer / 200 & 1) == 0)
             Globals::Canvas->DrawImage2D(this->tileImages[this->type * 12 + 6 + image], (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) col * tileWidth) + (float) offset[i][0]), (row - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
         else
             Globals::Canvas->DrawImage2D(this->tileImages[this->type * 12 + image], (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) col * tileWidth) + (float) offset[i][0]), (row - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
