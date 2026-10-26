@@ -1156,9 +1156,9 @@ void StarMap::update(int dt) {
         }
         this->scratchVector = StarMap_MatrixGetPosition(
             *(const Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
-        this->scratchVector -= this->markerGeom->getPosition();
-        Vector normalized = VectorNormalize(this->scratchVector);
-        this->scratchVector = normalized;
+        Vector markerPosition = this->markerGeom->getPosition();
+        this->scratchVector -= markerPosition;
+        this->scratchVector = VectorNormalize(this->scratchVector);
         this->scratchVector.x += 0.5f;
         this->markerGeom->setDirection(this->scratchVector, Vector{0.0f, 1.0f, 0.0f});
         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->markerGeom->transform))->Update(dt, false);
@@ -1292,15 +1292,17 @@ void StarMap::update(int dt) {
                 this->yaw -= (float) (yaw - target) * 0.25f;
             if (yawDiff <= 10)
                 this->stationCenterAnim = 0;
-            float pitchStep;
-            if (pitch >= -3096)
-                pitchStep = (float) (pitch + 3096) * -0.25f;
+            if (pitch < -3096)
+                this->pitch += (float) (-3096 - pitch) * 0.25f;
             else
-                pitchStep = (float) (-3096 - pitch) * 0.25f;
-            this->pitch += pitchStep;
-            if (yawDiff <= dt * 4 && pitchDiff <= dt * 4) {
-                this->lastSelectedStation = this->selectedStation;
-                this->stationCenterAnim = 0;
+                this->pitch -= (float) (pitch + 3096) * 0.25f;
+            if (yawDiff <= dt * 4) {
+                if (pitchDiff < 0)
+                    pitchDiff = -pitchDiff;
+                if (pitchDiff <= dt * 4) {
+                    this->stationCenterAnim = 0;
+                    this->lastSelectedStation = this->selectedStation;
+                }
             }
         } else if (!this->dragging) {
             this->velocityX = this->momentumFactor * this->velocityX;
@@ -1319,10 +1321,16 @@ void StarMap::update(int dt) {
                     (*this->stationGeoms)[i]->rotate(0.0f, (float) dt * 0.0002f, 0.0f);
             }
         }
-        this->yaw = (float) ((int) this->yaw % 0x10000);
-        this->pitch = STARMAP_MIN(STARMAP_MAX(this->pitch, -8192.0f), 8192.0f);
-        this->starSystemRoot->setRotation(this->pitch * (1.0f / 65536.0f) * 6.2831855f,
-                                          this->yaw * (1.0f / 65536.0f) * 6.2831855f, -0.09817477f);
+        float p = this->pitch;
+        float clamped = p > -8192.0f ? 8192.0f : -8192.0f;
+        clamped = p > 8192.0f ? 8192.0f : clamped;
+        float pitch = p > -8192.0f ? p : clamped;
+        pitch = p > 8192.0f ? clamped : pitch;
+        float yaw = (float) ((int) this->yaw % 0x10000);
+        this->yaw = yaw;
+        this->pitch = pitch;
+        this->starSystemRoot->setRotation(pitch * (1.0f / 65536.0f) * 6.2831855f,
+                                          yaw * (1.0f / 65536.0f) * 6.2831855f, -0.09817477f);
         break;
     }
     }

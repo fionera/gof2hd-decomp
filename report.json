@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.76,
   "byte_exact": 1352,
-  "linked_exact": 4460,
-  "fuzzy_perfect": 4460,
+  "linked_exact": 4461,
+  "fuzzy_perfect": 4461,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -326,14 +326,6 @@
    "linked": false,
    "osize": 8580,
    "usize": 8580
-  },
-  {
-   "name": "_ZN7StarMap6updateEi",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 3132,
-   "usize": 3132
   },
   {
    "name": "_ZN10StarSystemC1Ei",
@@ -29030,6 +29022,14 @@
    "linked": true,
    "osize": 144,
    "usize": 144
+  },
+  {
+   "name": "_ZN7StarMap6updateEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 3132,
+   "usize": 3132
   },
   {
    "name": "_ZN7StarMap7drawKeyEv",
