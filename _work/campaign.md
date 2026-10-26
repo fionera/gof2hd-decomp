@@ -2738,3 +2738,22 @@ QUEUE CORRECTIONS (verified against source, 2026-07-21):
   fn needing real reconstruction (DeepOpen oracle + orig disasm), orchestrator-only.
   Gun::shoot (orig 88B) forwards to it and will follow once shootAt exists.
 End state: **byte 1132, linked 2227, stubs 0, extra 36, imports 1090, avg 73.53.**
+
+## Session 2026-10-26 (wave 32 harvest)
+
+Landed ratchet-gated passes (master):
+- `e3a93f3e` Radar::draw 61.6 -> 62.1% (9596B)
+- `9971757a` PlayerEgo::update 91.6 -> 93.1% (8852B)
+- `1c390154` Generator::getShipBuyList 98.2 -> 100% (linked 4458 -> 4459)
+- `f880d543` PlayerEgo::calcCollision 71.5 -> 71.8%
+- `973f1c4f` StarMap::drawOnScreenInfo 93.1 -> 97.1%
+- `374433d4` Gun::calcCharacterCollision 59.7 -> 64.1%
+- `5ec0bfde` ModStation::OnInitialize 83.6 -> 85.6%
+- `57db33ad` Level::createMission 70.7 -> 71.0%
+- `47bf0995` Status::moveWanted 65.9 -> 79.5%
+- `68d2ba47` FileInterfaceAndroid::GetDirPreFix 42.9 -> 100% (linked 4459 -> 4460; 4-byte ObjectGun anchor compensation)
+- `549013e4` ObjectGun anchor cleanup; GameText helper restored
+
+Fleet: 30 wave32 workers launched in `w770`-`w799` with `codex exec -p dsv41`.
+Final gate after this batch: **byte_exact 1352, linked_exact 4460, avg 99.75%, .text 0x1333c0, lint CLEAN, RATCHET PASS**.
+Remaining non-linked: **63**.
