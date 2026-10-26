@@ -2762,3 +2762,9 @@ Wave 32 continued:
 - `b8f68db4` MenuTouchWindow::OnTouchBegin 95.3 -> 96.7% (avg 99.75 -> 99.76)
 - `2ea25c5f` StarSystem ctor 90.3 -> 91.9% (8-byte local .text anchor; byte_exact preserved)
 - Pruned stale w1xx-w7xx workers; kept the wave32 fleet (w770-w809) running.
+
+Wave 32 near-100 batch:
+- `dad1509b` ModStation::OnKeyPress 93.2 -> 99.4%
+- `64879cca` SpaceLounge::OnTouchEnd 80.6 -> 80.7%
+- `4ae1a504` StarMap::update 91.7 -> 100% (linked 4460 -> 4461)
+Current gate: **byte_exact 1352, linked_exact 4461, avg 99.76%, .text 0x1333c0, lint CLEAN**; remaining non-linked **62**.
