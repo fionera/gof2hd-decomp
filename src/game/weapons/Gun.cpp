@@ -573,14 +573,11 @@ void Gun::calcCharacterCollision() {
     const int itemIndex = this->itemIndex;
     const bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
     const bool mine = weaponType == ITEM_SORT_MINE;
-    int explosive;
-    if (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
-        weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST) {
-        explosive = 1;
-    } else {
-        explosive = weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE ||
-                    weaponType == ITEM_SORT_CLUSTER_MISSILE;
-    }
+    const bool explosive = weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
+                           weaponType == ITEM_SORT_IONIZING_MISSILE ||
+                           weaponType == ITEM_SORT_SHOCK_BLAST || weaponType == ITEM_SORT_ROCKET ||
+                           weaponType == ITEM_SORT_MISSILE ||
+                           weaponType == ITEM_SORT_CLUSTER_MISSILE;
     const bool explodeOnContact =
             weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
             weaponType == ITEM_SORT_IONIZING_MISSILE || weaponType == ITEM_SORT_SHOCK_BLAST || mine;
