@@ -50,6 +50,9 @@
   (`startChat` 97.2%, ctor 96.0%, `drawLounge` 94.9%, `onKeyPress` 89.9%); `w621` was
   launched on `Level::createCampaignMission` (83.3%) and `Level::createScene` (76.2%),
   keeping 20 live `codex exec -p dsv41` workers.
+- `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
+  (`drawMenu` 89.3%, `touchBegin` 86.2%, `drawOrbitInformation` 72.4%,
+  `drawChallengeModeScore` 68.4%), keeping 20 live `codex exec -p dsv41` workers.
 - Replacement workers `w607..w615` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
   without a report), Status retry, fresh Mesh/Radar continuation workers, a Gun retry
