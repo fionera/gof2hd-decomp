@@ -2757,3 +2757,8 @@ Landed ratchet-gated passes (master):
 Fleet: 30 wave32 workers launched in `w770`-`w799` with `codex exec -p dsv41`.
 Final gate after this batch: **byte_exact 1352, linked_exact 4460, avg 99.75%, .text 0x1333c0, lint CLEAN, RATCHET PASS**.
 Remaining non-linked: **63**.
+
+Wave 32 continued:
+- `b8f68db4` MenuTouchWindow::OnTouchBegin 95.3 -> 96.7% (avg 99.75 -> 99.76)
+- `2ea25c5f` StarSystem ctor 90.3 -> 91.9% (8-byte local .text anchor; byte_exact preserved)
+- Pruned stale w1xx-w7xx workers; kept the wave32 fleet (w770-w809) running.
