@@ -38,7 +38,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data | 10,604 | 10,616 | **+12** | anonymous initialised-data layout still differs; the Transform pre-.got anchor now lives in .aezdata and the DialogueWindow last face row is 4 ints. |
-| .bss | 27,052 | 27,280 | **+228** | anonymous zero-initialised-data layout still differs. |
+| .bss | 27,052 | 27,088 | **+36** | anonymous zero-initialised-data layout still differs. |
 
 ## The four real gaps (in priority/size order)
 
@@ -47,7 +47,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    3 below 50%). The `.text` total is +3,064 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 1,184 B smaller, `.data` 12 B larger, and `.bss` 228 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 1,184 B smaller, `.data` 12 B larger, and `.bss` 36 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
 3. **EH tables.** `.ARM.extab` is 4,548 B smaller, following the remaining function-size/EH-layout
