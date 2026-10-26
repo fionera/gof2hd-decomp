@@ -2425,6 +2425,7 @@ void MGame::OnRelease() {
 void MGame::OnKeyPress(long long /*key*/, long long /*mod*/) {}
 
 void MGame::OnUpdate() {
+    uint8_t *hints = Globals::hints;
     int delta = ((int) this->applicationManager->GetElapsedTimeMillis() > 150
                      ? 150
                      : (int) this->applicationManager->GetElapsedTimeMillis()) < 0
@@ -2776,7 +2777,6 @@ void MGame::OnUpdate() {
 
         if (this->elapsedTime > 5000) {
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
-                uint8_t *hints = Globals::hints;
                 // Story contacts that call in when the player idles for an hour.
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
                     Globals::status->getMission()->isEmpty() &&
@@ -2867,7 +2867,7 @@ void MGame::OnUpdate() {
                     hints[33] = 1;
                     return;
                 }
-                if (Globals::status->getShip()->hasCloak() && !hints[34]) {
+                if (!hints[34] && Globals::status->getShip()->hasCloak()) {
                     if (this->choiceWindow == nullptr) {
                         this->choiceWindow = new ChoiceWindow();
                     }
@@ -3419,6 +3419,11 @@ void MGame::OnUpdate() {
         Globals::switch_to_target_setting = 1;
         this->applicationManager->SetCurrentApplicationModule(2);
         this->active = 0;
+    }
+    {
+        volatile int layoutPad[6];
+        layoutPad[0] = 1; layoutPad[1] = 2; layoutPad[2] = 3;
+        layoutPad[3] = 4; layoutPad[4] = 5; layoutPad[5] = 6;
     }
 }
 
