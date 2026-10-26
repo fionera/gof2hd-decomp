@@ -290,7 +290,7 @@ namespace AbyssEngine {
                 }
                 if (count != 0) {
                     short keys;
-                    for (unsigned int channel = 0; channel < 7; channel++) {
+                    for (unsigned short channel = 0; channel < 7; channel++) {
                         if (AEFile::Read(2, &keys, file) == 0) {
                             delete anim;
                             return -1;
@@ -517,7 +517,7 @@ namespace AbyssEngine {
 
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        bool enhanced = (flags & 0x1a) != 0;
+        bool enhanced = flags & 0x1a;
         float minimum[3];
         float maximum[3];
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
@@ -725,7 +725,6 @@ namespace AbyssEngine {
                     delete[] raw;
                     return -1;
                 }
-                mesh = *slot;
                 mesh->colors = new unsigned char[mesh->vertexCount * 16];
                 mesh = *slot;
                 for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 2); i++)
