@@ -34,14 +34,16 @@
   - `RocketGun::update` 76.0% -> **80.8%** (1896/1908B) with the trail-first launch block,
     branchy item-emit path, and `dt` hoist; a 16-byte `.data` trail-set table keeps the
     page-quantized GOT aligned with the larger body.
-  - `MeshReadData` 69.9% -> **70.6%** (2600/2632B) by evaluating the normal Y component
-    before X and passing the normal first to `VectorDot`.
+  - `MeshReadData` 69.9% -> **70.8%** (2600/2632B) by evaluating the normal Y component
+    before X while preserving the original `VectorDot(tangent, normal)` argument order.
   - `Engine::ResetLightParam` 83.0% -> **100.0% linked-exact** (480/480B) by restoring the
     original store schedule; `linked_exact` rises 4451 -> **4452**.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
   `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
   `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
   the fleet to 20 live `codex exec -p dsv41` workers.
+- `w578` completed `Engine::ResetLightParam` at 100% linked-exact. `w619` replaced it on
+  `MGame::OnUpdate` (80.9%), keeping 20 live `codex exec -p dsv41` workers.
 - Replacement workers `w607..w615` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
   without a report), Status retry, fresh Mesh/Radar continuation workers, a Gun retry
