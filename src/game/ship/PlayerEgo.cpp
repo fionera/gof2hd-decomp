@@ -2404,29 +2404,29 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             int distance = (int) AbyssEngine::AEMath::VectorLength(pull);
             int strength = 40000 - distance;
             bool playing = Globals::sound->isPlaying(34);
-            if (strength < 1) {
+            if (strength >= 1) {
+                if (playing) {
+                    Vector velocity = {0.0f, 0.0f, 0.0f};
+                    Vector position = object->getPosition();
+                    Globals::sound->updateEvent3DAttributes(34, &position, &velocity, false);
+                } else {
+                    Globals::sound->play(34, nullptr, nullptr, 0.0f);
+                }
+                pull = AbyssEngine::AEMath::VectorNormalize(pull);
+                Vector &drift = this->moveDirection;
+                drift = Vector(pull);
+                drift *= (float) (strength >> 8);
+                this->geometry->translate(drift);
+                this->hitCamera();
+                if (distance < 1000)
+                    this->inWormhole = 1;
+                reinterpret_cast<Matrix &>(this->player->transform[0]) =
+                    *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+                    * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+            } else {
                 if (playing)
                     Globals::sound->stop(34);
-                continue;
             }
-            if (playing) {
-                Vector velocity = {0.0f, 0.0f, 0.0f};
-                Vector position = object->getPosition();
-                Globals::sound->updateEvent3DAttributes(34, &position, &velocity, false);
-            } else {
-                Globals::sound->play(34, nullptr, nullptr, 0.0f);
-            }
-            pull = AbyssEngine::AEMath::VectorNormalize(pull);
-            Vector &drift = this->moveDirection;
-            drift = Vector(pull);
-            drift *= (float) (strength >> 8);
-            this->geometry->translate(drift);
-            this->hitCamera();
-            if (distance < 1000)
-                this->inWormhole = 1;
-            reinterpret_cast<Matrix &>(this->player->transform[0]) =
-                *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
-                * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
             continue;
         }
         if (object->stealFlagByte) {
