@@ -813,10 +813,10 @@ int ModStation::OnInitialize() {
 
             if (!this->flag_0x69 && !this->flag_0x6a && !this->flag_0x63 &&
                 !Globals::layout->rewardMessageActive && Globals::status->getStation()->getIndex() != 101) {
-                bool hasJumpDrive = Globals::status->getShip()->hasJumpDrive();
-                bool hasFuel = Globals::status->getShip()->hasCargo(85, 1);
+                int hasJumpDrive = Globals::status->getShip()->hasJumpDrive();
+                int hasFuel = Globals::status->getShip()->hasCargo(85, 1);
                 if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr &&
-                    !(hasJumpDrive || hasFuel) && Globals::status->getCurrentCampaignMission() >= 17) {
+                    !(hasJumpDrive | hasFuel) && Globals::status->getCurrentCampaignMission() >= 17) {
                     this->choiceWindow->set(*Globals::gameText->getText(335), true);
                     this->flag_0x63 = 1;
                     this->flag_0x6d = 1;
