@@ -46,8 +46,9 @@
   - `Level::createMission` 70.7% -> **71.0%** (17180/17172B) by moving the TU's `.text` layout
     anchor from createMission to createCampaignMission (83.3% -> 83.1%), keeping the archive
     layout and the ten libstdc++ exception ctors byte-exact.
-  - `MGame::OnUpdate` 81.8% -> **82.0%** (11472/11440B) by hoisting the dialogue text id and
-    restoring the original level-flag store order.
+  - `MGame::OnUpdate` 81.8% -> **82.8%** (11472/11440B) by hoisting the hints pointer,
+    reordering the cloak hint guard, and hoisting the dialogue text id; `OnTouchEnd` stays
+    at 78.0%.
   - `Gun::calcCharacterCollision` 46.6% -> **59.0%** (1904/1984B) by hoisting the `Level*`
     local and restoring the original guard/`-radius` shapes; `Gun::shootAt` stays at 88.5%.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
@@ -63,6 +64,8 @@
 - `w600` was harvested and exited; `w624` replaced it on the Mesh long tail
   (`MeshReadData` 70.8%, `ReadEnhancedDataFromFile` 80.2%), keeping 20 live
   `codex exec -p dsv41` workers.
+- `w604` and `w611` finished and exited; `w625` (MenuTouchWindow) and `w626`
+  (HangarWindow) replaced them, keeping 20 live `codex exec -p dsv41` workers.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
