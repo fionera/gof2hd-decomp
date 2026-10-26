@@ -2,7 +2,7 @@
 
 ## Session 2026-10-26 (wave 29 — 20-way continuation)
 
-- Current gate: **byte_exact 1352, linked_exact 4451, avg 99.69, stubs 0, missing/extra 0,
+- Current gate: **byte_exact 1352, linked_exact 4451, avg 99.70, stubs 0, missing/extra 0,
   imports 207, data 843/843** (`RATCHET PASS`).
 - Landed from the wave28 long tail:
   - `Gun::shootAt` 68.9% -> 88.5% (1776/1788B); `calcCharacterCollision` traded down to
@@ -27,6 +27,16 @@
   - `MeshReadData` 67.9% -> **69.4%** (2608/2632B) with natural x/y/z normal stores and the
     shared fail path; `ReadEnhancedDataFromFile` traded 80.2% -> 76.0% to keep the Mesh TU
     `.text` total and `byte_exact 1352`.
+  - `Generator::createAgents` 90.0% -> **99.2%** (1464/1464B) by hoisting the campaign
+    lookup out of the offer loop; `createMission` 60.5% -> **60.9%** (1920/1996B) with the
+    case-4 target station, case-2 float conversion, and split type-9/type-7 reward branches.
+    `getShipBuyList` preserved at 90.9%.
+  - `RocketGun::update` 76.0% -> **80.8%** (1896/1908B) with the trail-first launch block,
+    branchy item-emit path, and `dt` hoist; a 16-byte `.data` trail-set table keeps the
+    page-quantized GOT aligned with the larger body.
+- `w615` completed the RocketGun pass. Replacement `w616` was launched on ModStation
+  (`OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%), restoring the fleet to 20
+  live `codex exec -p dsv41` workers.
 - Replacement workers `w607..w615` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
   without a report), Status retry, fresh Mesh/Radar continuation workers, a Gun retry
