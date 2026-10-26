@@ -3170,7 +3170,7 @@ void MGame::OnUpdate() {
                             }
                         }
                     }
-                    if (this->choiceItemCount <= 0) {
+                    if (this->choiceItemCount == 0) {
                         this->choiceItemCount = 100;
                     }
                     float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
@@ -3186,9 +3186,11 @@ void MGame::OnUpdate() {
                     String offer = status->replaceHash(String(*Globals::gameText->getText(448), false),
                                                                 Globals::layout->formatCredits(this->choiceItemCount),
                                                                 String("#C"));
-                    String previousOffer(offer, false);
-                    offer = status->replaceHash(previousOffer, String((int) (share * 100.0f)),
-                                                String("#P"));
+                    {
+                        String previousOffer(offer, false);
+                        offer = status->replaceHash(previousOffer, String((int) (share * 100.0f)),
+                                                    String("#P"));
+                    }
                     this->choiceWindow->set(offer, true);
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
