@@ -52,7 +52,7 @@ static inline Vector StarMap_MatrixGetPosition(const AbyssEngine::AEMath::Matrix
     return AbyssEngine::AEMath::MatrixGetPosition(matrix);
 }
 
-static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
+[[gnu::used]] static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
     return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
 
@@ -1119,10 +1119,13 @@ void StarMap::askForJumpIntoAlienWorld() {
 
 void StarMap::update(int dt) {
     this->lastDt = dt;
+    bool (PaintCanvas::*getScreenPosition)(const Vector &, Vector &) =
+            (bool (PaintCanvas::*)(const Vector &, Vector &))
+                    (int (PaintCanvas::*)(const Vector &, Vector &)) &PaintCanvas::GetScreenPosition;
     if (this->mode == 0 || this->transitionIn || this->transitionOut) {
         for (unsigned int i = 0; i < this->systemPositions->size(); i++) {
-            bool onScreen = StarMap_GetScreenPosition(Globals::Canvas, (*this->systemGeoms)[i]->getPosition(),
-                                                       (*this->systemPositions)[i]);
+            bool onScreen = (Globals::Canvas->*getScreenPosition)((*this->systemGeoms)[i]->getPosition(),
+                                                                  *(*this->systemPositions)[i]);
             (*this->systemPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
@@ -1130,8 +1133,8 @@ void StarMap::update(int dt) {
         for (unsigned int i = 0; i < this->stationPositions->size(); i++) {
             this->scratchVector2 = StarMap_MatrixGetPosition(this->starSystemRoot->getMatrix() *
                                                      (*this->stationGeoms)[i + 1]->getMatrix());
-            bool onScreen = StarMap_GetScreenPosition(Globals::Canvas, this->scratchVector2,
-                                                       (*this->stationPositions)[i]);
+            bool onScreen = (Globals::Canvas->*getScreenPosition)(this->scratchVector2,
+                                                                  *(*this->stationPositions)[i]);
             (*this->stationPositions)[i]->z = onScreen ? 1.0f : -1.0f;
         }
     }
