@@ -108,7 +108,7 @@ namespace AbyssEngine {
     }
 
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
-        const unsigned int materialFlags = flags & 0x10;
+        const bool materialFlags = (flags & 0x10) != 0;
         Transform *anim = new Transform();
 
         if (AEFile::Read(4, &this->bounds.center.x, file) == 0) goto fail;
@@ -284,14 +284,13 @@ namespace AbyssEngine {
 
             // Material/shader animation tracks.
             if (materialFlags != 0) {
-                unsigned short count;
                 if (AEFile::Read(2, &count, file) == 0) {
                     delete anim;
                     return -1;
                 }
                 if (count != 0) {
+                    short keys;
                     for (unsigned int channel = 0; channel < 7; channel++) {
-                        int keys;
                         if (AEFile::Read(2, &keys, file) == 0) {
                             delete anim;
                             return -1;
