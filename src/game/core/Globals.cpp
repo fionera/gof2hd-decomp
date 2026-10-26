@@ -2655,38 +2655,41 @@ float Globals::sqrt(float x) {
 }
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
-    int result = -1;
+    int result;
     if (list != nullptr) {
         unsigned i = 0;
         bool searching = true;
-        while (i < list->size() && searching) {
+        do {
+            if (i >= list->size()) {
+                result = -1;
+                break;
+            }
             String *entry = (*list)[i];
             String prefix = String("www.fishlabs.net.gof2hd") + String(".");
             if (entry == nullptr) {
                 result = -1;
                 searching = false;
             } else {
-                int differs = 1;
                 switch (productCode) {
-                    case 0: differs = entry->Compare(prefix + String("dlc1")); break;
-                    case 1: differs = entry->Compare(prefix + String("dlc2")); break;
-                    case 2: differs = entry->Compare(prefix + String("dlc3")); break;
-                    case 3: differs = entry->Compare(prefix + String("dlc4")); break;
-                    case 4: differs = entry->Compare(prefix + String("dlc5")); break;
-                    case 50: differs = entry->Compare(prefix + String("dlcCredits1")); break;
-                    case 51: differs = entry->Compare(prefix + String("dlcCredits2")); break;
-                    case 52: differs = entry->Compare(prefix + String("dlcCredits3")); break;
-                    case 53: differs = entry->Compare(prefix + String("dlcCredits4.0")); break;
-                    case 54: differs = entry->Compare(prefix + String("dlcCredits5")); break;
-                    default: break;
+                    case 0: searching = entry->Compare(prefix + String("dlc1")) != 0; break;
+                    case 1: searching = entry->Compare(prefix + String("dlc2")) != 0; break;
+                    case 2: searching = entry->Compare(prefix + String("dlc3")) != 0; break;
+                    case 3: searching = entry->Compare(prefix + String("dlc4")) != 0; break;
+                    case 4: searching = entry->Compare(prefix + String("dlc5")) != 0; break;
+                    case 50: searching = entry->Compare(prefix + String("dlcCredits1")) != 0; break;
+                    case 51: searching = entry->Compare(prefix + String("dlcCredits2")) != 0; break;
+                    case 52: searching = entry->Compare(prefix + String("dlcCredits3")) != 0; break;
+                    case 53: searching = entry->Compare(prefix + String("dlcCredits4.0")) != 0; break;
+                    case 54: searching = entry->Compare(prefix + String("dlcCredits5")) != 0; break;
+                    default: searching = true; break;
                 }
-                if (differs == 0) {
+                if (!searching)
                     result = (int) i;
-                    break;
-                }
             }
             i++;
-        }
+        } while (searching);
+    } else {
+        result = -1;
     }
     return result;
 }
