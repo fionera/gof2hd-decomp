@@ -2401,19 +2401,19 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         }
         for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
             (*this->scrollSlots)[i]->OnTouchBegin(x, y);
-        if (x > Globals::w - Globals::layout->buttonInsetX -
-                    Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
-            y < ((*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0x20_top +
-                  (*(decltype(Globals::layout) volatile *) &Globals::layout)->field_0xc_leftMargin) +
-                    Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
-            this->scrollbarHit = 1;
-        else
-            this->scrollbarHit = 0;
-        if (x < Globals::layout->buttonInsetX + Globals::Canvas->GetImage2DWidth(this->heapBufA[0])) {
-            this->dragLastX = y;
-            this->dragStartX = y;
-            this->dragVelocity = 0;
-            this->dragging = 1;
+        {
+            PaintCanvas *canvas = Globals::Canvas;
+            if (x > Globals::w - (Globals::layout->buttonInsetX + canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0])) &&
+                y < (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) + canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
+                this->scrollbarHit = 1;
+            else
+                this->scrollbarHit = 0;
+            if (x < Globals::layout->buttonInsetX + Globals::Canvas->GetImage2DWidth(this->heapBufA[0])) {
+                this->dragLastX = y;
+                this->dragStartX = y;
+                this->dragVelocity = 0;
+                this->dragging = 1;
+            }
         }
         break;
     case 9:

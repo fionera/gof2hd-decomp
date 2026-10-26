@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.75,
+  "avg_match": 99.76,
   "byte_exact": 1352,
   "linked_exact": 4460,
   "fuzzy_perfect": 4460,
@@ -416,14 +416,6 @@
    "usize": 1948
   },
   {
-   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 95.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1896,
-   "usize": 1896
-  },
-  {
    "name": "_ZN11SpaceLoungeC1Ev",
    "pct": 96.0,
    "byte": false,
@@ -438,6 +430,14 @@
    "linked": false,
    "osize": 1200,
    "usize": 1200
+  },
+  {
+   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1896,
+   "usize": 1896
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
