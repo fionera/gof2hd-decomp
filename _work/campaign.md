@@ -2,6 +2,10 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w677`: moved the Transform pre-`.got` 72-byte anchor into the existing
+  `.aezdata` anchor section and corrected the DialogueWindow last speaker row to a 4-int
+  array. `.data` 0x29c8 -> **0x2978** (delta +92 -> **+12**), `.rodata` delta -960,
+  `.bss` +36, `.text 0x1333c0`, gate unchanged.
 - Harvested `w636`: `StarMap::drawOnScreenInfo(int,bool)` 93.0% -> **97.1%**
   (3488/3488B) by folding the campaign-target OR into the station/system ternary and
   expressing the target-station sentinel as `<= -1`. `draw` 89.2% and `update` 91.7% preserved.
