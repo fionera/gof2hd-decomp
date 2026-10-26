@@ -484,11 +484,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     Globals::Canvas->Image2DCreate(3006, this->scrollImage_0x144);
     Globals::Canvas->Image2DCreate(3007, this->scrollImage_0x148);
     this->scrollbarHit = 0;
-    this->field_0x1da = 0;
-    this->listStateSuppress = 0;
-    this->field_0x1dc = 0;
-    this->field_0x1dd = 0;
-    this->field_0x1de = 0;
     this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
     this->slotImageWidth = Globals::Canvas->GetImage2DWidth(this->heapBufA[0]);
     this->slotX = Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight;
@@ -885,11 +880,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->storeInitDialogShowing = 0;
     this->purchaseRestorePending = 0;
     this->scrollOffset = 0;
-    this->field_0x1de = 0;
-    this->field_0x1da = 0;
-    this->listStateSuppress = 0;
-    this->field_0x1dc = 0;
-    this->field_0x1dd = 0;
     this->dragLastX = 0;
     this->field_0x210 = 0;
     this->dragVelocity = 0;
@@ -2882,8 +2872,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     else
                         this->startGOF2();
                 } else if (r == 1) {
-                    this->messageShowing = 0;
                     this->returnToMenuSubFlag = 0;
+                    goto clearMessage;
                 }
                 return 0;
             }
@@ -3331,8 +3321,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         Globals::sound->stopAll();
                         Globals::switch_to_target_setting = 2;
                         Globals::appManager->SetCurrentApplicationModule(1);
-                        this->messageShowing = 0;
                         this->quitConfirmShowing = 0;
+                        goto clearMessage;
                     } else if (r == 1) {
                         this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
@@ -3554,6 +3544,10 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
     Globals::Canvas->SetColor(0xffffffffu);
     Globals::Canvas->SetColor(0xffffff2fu);
     Globals::is_menu_visible = 1;
+    return 0;
+
+clearMessage:
+    this->messageShowing = 0;
     return 0;
 }
 
@@ -3954,6 +3948,8 @@ static void mtwTextLayoutAnchor() {
     a = 665; a = 666; a = 667; a = 668; a = 669; a = 670; a = 671; a = 672;
     a = 673; a = 674; a = 675; a = 676; a = 677; a = 678; a = 679; a = 680;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6; a = 7; a = 8; a = 9;
+    c = 0; c = 1; c = 2;
+    (void) a;
     if (a == -1)
         mtwTextLayoutAnchor();
 }
