@@ -48,20 +48,20 @@
    "usize": 57152
   },
   {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 59.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1892
-  },
-  {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
    "pct": 62.1,
    "byte": false,
    "linked": false,
    "osize": 9908,
    "usize": 9596
+  },
+  {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 64.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1892
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
