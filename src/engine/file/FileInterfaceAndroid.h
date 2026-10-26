@@ -86,8 +86,8 @@ public:
     void SetSaveDirectory(String dir) override;
 
     String GetDirPreFix() override { // inline: orig WEAK
-        // 16-byte empty-string shape: layout anchor keeping .text at 0x1333c0.
-        String s; s.data = nullptr; s.length = 0; return s;
+        // Original returns the empty-string constant ("" at .rodata 0x1ca472).
+        return String("");
     }
 
     static jmethodID methodRead;

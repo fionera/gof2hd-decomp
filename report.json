@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.74,
+  "avg_match": 99.75,
   "byte_exact": 1352,
-  "linked_exact": 4459,
-  "fuzzy_perfect": 4459,
+  "linked_exact": 4460,
+  "fuzzy_perfect": 4460,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -15,14 +15,6 @@
   "extra": 0
  },
  "rows": [
-  {
-   "name": "_ZN20FileInterfaceAndroid12GetDirPreFixEv",
-   "pct": 42.9,
-   "byte": false,
-   "linked": false,
-   "osize": 20,
-   "usize": 16
-  },
   {
    "name": "_ZN6LayoutC1Ev",
    "pct": 45.4,
@@ -19150,6 +19142,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN20FileInterfaceAndroid12GetDirPreFixEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 20,
+   "usize": 20
   },
   {
    "name": "_ZN20FileInterfaceAndroid13GetAppRootDirEv",
