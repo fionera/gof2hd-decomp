@@ -27,10 +27,11 @@
   - `MeshReadData` 67.9% -> **69.4%** (2608/2632B) with natural x/y/z normal stores and the
     shared fail path; `ReadEnhancedDataFromFile` traded 80.2% -> 76.0% to keep the Mesh TU
     `.text` total and `byte_exact 1352`.
-- Replacement workers `w607..w613` are live: TouchButton retry (w570 crashed with
+- Replacement workers `w607..w614` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
-  without a report), Status retry, plus fresh Mesh and Radar continuation workers. Fleet
-  remains at 20 `codex exec -p dsv41` workers.
+  without a report), Status retry, fresh Mesh/Radar continuation workers, and a Gun retry
+  (w606 crashed with max_output_tokens after reaching calcCharacterCollision 55.9%).
+  Fleet remains at 20 `codex exec -p dsv41` workers.
 - Radar retry evidence (`w528`, branch `wave28-w528`): `Radar::draw` reaches 60.9% and
   preserves its 9588B body, but the four commits shift the archive `.text`/literal layout on
   current master and drop `byte_exact` 1352 -> 1342 even when `.text` is restored to
