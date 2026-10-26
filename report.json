@@ -256,14 +256,6 @@
    "usize": 2948
   },
   {
-   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
-   "pct": 88.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1788,
-   "usize": 1788
-  },
-  {
    "name": "_ZN11SpaceLounge10OnTouchEndEii",
    "pct": 89.0,
    "byte": false,
@@ -278,6 +270,14 @@
    "linked": false,
    "osize": 660,
    "usize": 660
+  },
+  {
+   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
+   "pct": 89.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1788,
+   "usize": 1788
   },
   {
    "name": "_ZN7StarMap4drawEv",

@@ -421,10 +421,12 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
 
         bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
         bool keepAmmo = true;
-        if (!this->friendGun && ammo != nullptr && this->ammoCount >= 1 && ammo->getType() == 1) {
-            keepAmmo = false;
-            if (this->itemIndex == 179) {
-                Globals::status->field_144 = 0;
+        if (!this->friendGun) {
+            if (__builtin_expect(ammo != nullptr && this->ammoCount >= 1 && ammo->getType() == 1, 0)) { // lint: arm_builtin
+                keepAmmo = false;
+                if (this->itemIndex == 179) {
+                    Globals::status->field_144 = 0;
+                }
             }
         }
         this->delayActive = 1;

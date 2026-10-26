@@ -5,6 +5,9 @@
 - Harvested `w894`: `Generator::createMission` 65.1% -> **65.7%** (1992B, original 1996B)
   by restoring the route-fallback order and using `SolarSystem *` pointers for the
   distance calculation. Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
+- Harvested `w888`: `Gun::shootAt` 88.9% -> **89.4%** (1788B exact) by restoring the
+  nested friend-gun/ammo guard and its cold-branch hint. Gate unchanged: byte_exact 1352,
+  linked_exact 4468, avg 99.78.
 - Harvested `w880`: `TouchButton::init` 99.5% -> **100% linked-exact** (1816B);
   `linked_exact` 4467 -> **4468**. The equality-chain language mask and signed `tw / 2`
   reproduce the original register allocation and rounding. Docs/baseline updated.
