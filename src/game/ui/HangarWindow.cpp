@@ -21,13 +21,8 @@
 #include "game/menu/ModStation.h"
 
 
-static int hangarWindowDivide(int numerator, int denominator) {
-    return numerator / denominator;
-}
-
 // Credits granted by the five free-credit offers (index 0 is the "rate us" entry without reward).
-// The final slot is unused; it keeps the shared division helper materialized for the layout math.
-static const int FREE_CREDIT_AMOUNTS[6] = {0, 7500, 5000, 5000, 5000, (int) hangarWindowDivide};
+static const int FREE_CREDIT_AMOUNTS[5] = {0, 7500, 5000, 5000, 5000};
 
 // View of the application data block used by the credit dialogs (GameData byte 0x15).
 struct HangarAppData {
@@ -510,7 +505,7 @@ void HangarWindow::render() {
                     iconSpace = Globals::layout->field_0x50;
                 else
                     iconSpace = 0;
-                int textX = Globals::layout->field_0x4c + Globals::layout->field_0x2cc + iconSpace;
+                int textX = Globals::layout->field_0x2cc + Globals::layout->field_0x4c + iconSpace;
 
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
@@ -1881,10 +1876,10 @@ common:
     }
 
     if (y > Globals::layout->field_0xc_leftMargin) {
-        int row = hangarWindowDivide(y - Globals::layout->field_0xc_leftMargin -
-                                         Globals::layout->field_0x20_top - this->field_0x100.d -
-                                         this->scrollOffset,
-                                     Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
+        int row = (y - Globals::layout->field_0xc_leftMargin -
+                   Globals::layout->field_0x20_top - this->field_0x100.d -
+                   this->scrollOffset) /
+                  (Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
         if (row < (int) this->hangarList->getCurrentLength()) {
             this->hangarList->setCurrentItemIndex(row);
             if (this->currentItemIsHighlighted() && this->sellConfirmPending) {
