@@ -561,7 +561,7 @@ void StatusWindow::draw() {
         }
         int gridY = Globals::layout->field_0xc_leftMargin + (this->medalRowHeight >> 1) +
                     Globals::layout->field_0x2c_rowHeight;
-        int screenH = Globals::h;
+        int medalRowHeight = this->medalRowHeight;
         if (Globals::iPad) {
             int medalTop = top;
             Globals::layout->drawBox(0, (&this->standingBarWidth)[-1] + Globals::layout->buttonInsetX * 2, medalTop,
@@ -569,35 +569,35 @@ void StatusWindow::draw() {
                                      String(*Globals::gameText->getText(168), false));
             gridY = Globals::layout->field_0x1c + gridY + Globals::layout->field_0x2c_rowHeight;
         }
-        for (unsigned int i = 0; (int) i < this->medalCount; i++) {
+        for (int i = 0; i < this->medalCount; i++) {
             int column = i % 3;
             int row = i / 3;
-            int y = row * this->medalRowHeight + gridY + this->scrollOffset;
+            int y = row * medalRowHeight + gridY + this->scrollOffset;
             (*this->medalButtons)[i]->setPosition(column * columnW + gridX, y);
-            if (y >= 0 && y <= screenH)
+            if (y >= 0 && y <= Globals::h)
                 (*this->medalButtons)[i]->draw();
         }
         if (this->selectedMedal >= 0) {
             Globals::Canvas->SetColor(0xffffffff);
             Globals::layout->drawBox(2, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         (Globals::layout->field_0x4 * this->detailLines->size() +
-                                         Globals::layout->field_0x4c * 2),
+                                         this->detailLines->size() * Globals::layout->field_0x4 -
+                                         Globals::layout->field_0x4c * 2,
                                      (&this->standingBarWidth)[-1],
-                                     Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
+                                     Globals::layout->field_0x4c * 2 + this->detailLines->size() * Globals::layout->field_0x4,
                                      String(""));
             Globals::layout->drawBox(5, Globals::layout->buttonInsetX,
                                      Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                         (Globals::layout->field_0x4 * this->detailLines->size() +
+                                         (this->detailLines->size() * Globals::layout->field_0x4 +
                                          Globals::layout->field_0x4c * 2),
                                      (&this->standingBarWidth)[-1],
-                                     Globals::layout->field_0x4c * 2 + Globals::layout->field_0x4 * this->detailLines->size(),
+                                     Globals::layout->field_0x4c * 2 + this->detailLines->size() * Globals::layout->field_0x4,
                                      String(""));
             Globals::globals->drawLines((unsigned int) (uintptr_t) Globals::font, this->detailLines,
                                         Globals::layout->buttonInsetX + Globals::layout->field_0x4c,
                                         Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
                                             Globals::layout->field_0x2c_rowHeight -
-                                            Globals::layout->field_0x4 * this->detailLines->size(),
+                                            this->detailLines->size() * Globals::layout->field_0x4,
                                         false);
         }
     }
