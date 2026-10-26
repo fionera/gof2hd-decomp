@@ -2053,8 +2053,8 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
             Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), camera);
             if (this->cameraEase != 0)
                 this->cameraEase->SetRange(camera, camera);
-            this->introDone = 1;
             this->headBobPhase = 0;
+            this->introDone = 1;
             return false;
         }
         if (this->agents != 0) {
@@ -2104,8 +2104,8 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
                 case 0:
                 case 5:
                     if (this->singleOffer) {
-                        this->mode = 2;
                         this->singleOffer = 0;
+                        this->mode = 2;
                         String text = Globals::globals->getAgentMissionText((*this->agents)[this->selectedAgent]);
                         if (agent->getMission() != 0 && !agent->getMission()->isEmpty()) {
                             text = Globals::status->replaceHash(
