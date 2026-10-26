@@ -2774,10 +2774,9 @@ void MGame::OnUpdate() {
             }
         }
 
-        int scriptTime = (int) this->levelScript->m_nScriptTime;
         uint8_t *hints = Globals::hints;
         if (this->elapsedTime > 5000) {
-            if (scriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
+            if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
                 // Story contacts that call in when the player idles for an hour.
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
                     Globals::status->getMission()->isEmpty() &&
@@ -3152,7 +3151,8 @@ void MGame::OnUpdate() {
                     return;
                 }
                 // Black market: offer to buy the whole cargo.
-                if (Globals::status->inBlackMarketSystem() && !Globals::status->field_110 && !Globals::status->field_0x111 &&
+                Status *status = Globals::status;
+                if (status->inBlackMarketSystem() && !status->field_110 && !status->field_0x111 &&
                     !this->field_0xd4 && this->level->getMessages() != nullptr &&
                     (*this->level->getMessages())[0]->isOver()) {
                     this->pauseOpen = 1;
@@ -3161,15 +3161,15 @@ void MGame::OnUpdate() {
                         this->choiceWindow = new ChoiceWindow();
                     }
                     this->choiceItemCount = 0;
-                    Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-                    if (cargo != nullptr) {
+                    Array<Item *> *cargo = status->getShip()->getCargo();
+                    if (cargo != nullptr && !cargo->empty()) {
                         for (unsigned i = 0; i < cargo->size(); i++) {
                             if ((*cargo)[i] != nullptr) {
                                 this->choiceItemCount += (*cargo)[i]->getAmount() * (*cargo)[i]->getSinglePrice();
                             }
                         }
                     }
-                    if (this->choiceItemCount == 0) {
+                    if (this->choiceItemCount <= 0) {
                         this->choiceItemCount = 100;
                     }
                     float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
@@ -3182,11 +3182,12 @@ void MGame::OnUpdate() {
                         share = difficulty == 1.0f ? 0.1f : 0.2f;
                     }
                     this->choiceItemCount = (int) (share * (float) this->choiceItemCount);
-                    String offer = Globals::status->replaceHash(String(*Globals::gameText->getText(448), false),
+                    String offer = status->replaceHash(String(*Globals::gameText->getText(448), false),
                                                                 Globals::layout->formatCredits(this->choiceItemCount),
                                                                 String("#C"));
-                    offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
-                                                         String("#P"));
+                    String previousOffer(offer, false);
+                    offer = status->replaceHash(previousOffer, String((int) (share * 100.0f)),
+                                                String("#P"));
                     this->choiceWindow->set(offer, true);
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
