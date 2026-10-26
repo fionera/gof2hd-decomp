@@ -1,6 +1,15 @@
 # Byte-matching campaign log
 
-## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
+## Session 2026-10-26 (wave 41 — third 20-way finisher fleet)
+
+- Launched `w950..w969` (20 `codex exec -p dsv41` workers) from master
+  `5043afcf` for the remaining lower-pct functions: MenuTouchWindow draw/
+  OnTouchEnd/ctor, HangarWindow render, Level createMission/createShip/
+  createScene, MeshReadData, HackingGame render2D, Hud draw/drawChallengeModeScore,
+  Globals ctor, Generator createMission, Gun calcCharacterCollision, Radar draw,
+  LevelScript process, Layout ctor, MGame OnTouchEnd, Status moveWanted, and
+  ModStation OnUpdate. Gate floor: byte 1352, linked 4469, `.text 0x1343c0`.
+
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
   (6400B, original 6396B) by reloading `this->buttonRow` after each
