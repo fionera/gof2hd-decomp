@@ -4269,7 +4269,7 @@ void Level::createCampaignMission() {
         layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
         layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
         layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
-        layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0;
+        layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0; layoutPad = 22.0;
         (void) layoutPad;
         volatile int layoutPad2;
         (void) layoutPad2;
@@ -6300,8 +6300,8 @@ void Level::assignGuns() {
         return;
     }
 
-    unsigned int i, slots = 0;
-    for (i = 0; i < enemies->size(); i++) {
+    unsigned int slots = 0;
+    for (unsigned int i = 0; i < enemies->size(); i++) {
         if ((*enemies)[i] != nullptr && (*enemies)[i]->field_0x25) {
             slots += (*enemies)[i]->isWingMan() ? 2 : 1;
         }
@@ -6316,8 +6316,12 @@ void Level::assignGuns() {
     }
 
     unsigned int gunIndex = 0;
-    for (unsigned int i = 0; i < enemies->size(); i++) {
+    unsigned int i = 0;
+    // Pre-test preserves the empty-array case while keeping the original loop's
+    // increment/continue shape.
+    if (i < enemies->size()) do {
         if ((*enemies)[i] == nullptr) {
+            i++;
             continue;
         }
         if ((*enemies)[i]->field_0x25) {
@@ -6558,7 +6562,8 @@ void Level::assignGuns() {
             Globals::globals->addSoundResourceToList(74);
             gunIndex++;
         }
-    }
+        i++;
+    } while (i < enemies->size());
 }
 
 void Level::createGasClouds() {
