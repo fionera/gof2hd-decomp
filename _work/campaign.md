@@ -16,8 +16,8 @@
   PlayerFighter, HangarWindow, StatusWindow, Gun. Every launch uses the `-p dsv41`
   profile (sglang, `deepseek-v4.1-flash`, high reasoning).
 - Landed wave29 completions:
-  - `Radar::draw` 60.6% -> **60.9%** (9596/9908B) with the layout-safe w528 codegen and a
-    4-byte `field_0x14c` store anchor.
+  - `Radar::draw` 60.6% -> **60.9%** (9596/9908B) with the layout-safe w528 codegen; the
+    artificial `field_0x14c` anchor was later removed at the same 60.9% (9600/9908B).
   - `MeshReadData` 69.4% -> **69.9%** (2600/2632B) and `ReadEnhancedDataFromFile`
     76.0% -> **80.2%** (1832/1832B), keeping the Mesh TU at 4432B.
   - `LevelScript::process` 46.8% -> **47.0%** (57152B exact), restoring the escort
