@@ -15,6 +15,12 @@
   `codex exec -p dsv41` processes. New coverage: MenuTouchWindow, Level, PlayerEgo,
   PlayerFighter, HangarWindow, StatusWindow, Gun. Every launch uses the `-p dsv41`
   profile (sglang, `deepseek-v4.1-flash`, high reasoning).
+- Landed wave29 completions:
+  - `HackingGame::render2D` 53.4% -> **58.8%** (2148/2090B) with the original tile-loop
+    branch shape.
+  - `MeshReadData` 67.9% -> **69.4%** (2608/2632B) with natural x/y/z normal stores and the
+    shared fail path; `ReadEnhancedDataFromFile` traded 80.2% -> 76.0% to keep the Mesh TU
+    `.text` total and `byte_exact 1352`.
 - Radar retry evidence (`w528`, branch `wave28-w528`): `Radar::draw` reaches 60.9% and
   preserves its 9588B body, but the four commits shift the archive `.text`/literal layout on
   current master and drop `byte_exact` 1352 -> 1342 even when `.text` is restored to
