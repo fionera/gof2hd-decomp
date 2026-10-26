@@ -2971,7 +2971,8 @@ void Level::createCampaignMission() {
             for (int i = 0; i < 2; i++) {
                 (*this->enemies)[i] = this->createShip(9, 0, 8, nullptr, true, false);
                 Vector pos = this->player->getPosition();
-                pos -= VectorNormalize(this->player->geometry->getDirection()) * 8000.0f;
+                Vector norm = VectorNormalize(this->player->geometry->getDirection());
+                pos -= norm * 8000.0f;
                 pos.x += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.y += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.z += (float) (Globals::rnd->nextInt(1400) - 700);
@@ -3701,8 +3702,8 @@ void Level::createCampaignMission() {
                                    Globals::rnd->nextInt(140000) - 70000, 0, -500000,
                                    Globals::rnd->nextInt(140000) - 70000, 0, -70000};
             this->friendRoute = new Route(friendCoords, 9);
-            Waypoint *dockWp = new Waypoint(-50000, 1000, 70000, nullptr);
-            Waypoint *escortWp = new Waypoint(20000, 10000, 10000, nullptr);
+            Waypoint *volatile dockWp = new Waypoint(-50000, 1000, 70000, nullptr);
+            Waypoint *volatile escortWp = new Waypoint(20000, 10000, 10000, nullptr);
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(10, *this->enemies);
             (*this->enemies)[0] = this->createStaticObject(dockWp, 18804, true);
