@@ -296,14 +296,6 @@
    "usize": 2636
   },
   {
-   "name": "_ZN11SpaceLounge10onKeyPressEi",
-   "pct": 89.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8580,
-   "usize": 8580
-  },
-  {
    "name": "_ZN10StarSystemC1Ei",
    "pct": 91.9,
    "byte": false,
@@ -342,6 +334,14 @@
    "linked": false,
    "osize": 3440,
    "usize": 3444
+  },
+  {
+   "name": "_ZN11SpaceLounge10onKeyPressEi",
+   "pct": 94.3,
+   "byte": false,
+   "linked": false,
+   "osize": 8580,
+   "usize": 8580
   },
   {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
