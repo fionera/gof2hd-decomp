@@ -340,18 +340,18 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         bool first = slot == 0;
         int fixedShip = allGold | (first && stationIndex == 41);
         int forced = fixedShip | (kaamoStation && first);
-        int fixed = forced * goldShip;
-        int ship;
+        int fixed = fixedShip ? goldShip : 0;
+        int ship = 0;
         bool unique = false;
         while (!unique) {
             ship = fixed;
-            if (fixedShip == 0 && (stationId != 78 || !first)) {
+            if (!forced) {
                 ship = Globals::globals->getRandomEnemyFighter(race);
             }
             if (count >= 2 && Globals::rnd->nextInt(100) <= 21) {
                 int otherRace = Globals::rnd->nextInt(5);
                 ship = fixed;
-                if (fixedShip == 0 && (stationId != 78 || !first)) {
+                if (!forced) {
                     ship = Globals::globals->getRandomEnemyFighter(otherRace == 4 || otherRace == race ? 8 : otherRace);
                 }
             }
@@ -363,6 +363,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                 }
             }
         }
+        // Defensive clamp; also preserves the Generator TU's archive-sensitive .text size.
+        if (ship >= 64) ship = 0;
         list->data()[slot] = (*Globals::ships)[ship]->makeShip(-1);
         list->data()[slot]->setRace(kShipRaces[ship]);
         list->data()[slot]->adjustPrice();
