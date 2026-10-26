@@ -135,6 +135,9 @@
   `shootAt` stays 88.9% at the exact 1788B size.
 - `w634` exited; `w637` launched on `HackingGame::render2D` (61.1%, 2148/2090B), keeping
   20 live `codex exec -p dsv41` workers.
+- Harvested `w605`: `StatusWindow::draw` 94.3% -> **100% linked-exact** (6280B) by hoisting
+  the detail/rank locals and splitting the fire-power decimal conversion; `linked_exact`
+  rises 4453 -> **4454**.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
