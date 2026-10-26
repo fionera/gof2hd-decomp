@@ -6126,12 +6126,17 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x2c)
-        hitpoints = (int) ((float) hitpoints * 2.25f);
-    else if (type == 0x33)
-        hitpoints = (int) ((float) hitpoints * 1.7f);
-    else if (type == 0x31)
-        hitpoints = (int) ((float) hitpoints * 17.0f);
+    switch (type) {
+        case 0x2c:
+            hitpoints = (int) ((float) hitpoints * 2.25f);
+            break;
+        case 0x33:
+            hitpoints = (int) ((float) hitpoints * 1.7f);
+            break;
+        case 0x31:
+            hitpoints = (int) ((float) hitpoints * 17.0f);
+            break;
+    }
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
@@ -6163,14 +6168,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        if (type == 0x2c) {
+        if (type == 0x2c || type == 0x31) {
             delete fighter->cargo;
             fighter->cargo = nullptr;
         } else if (type == 0x33) {
             fighter->field_0x25 = 0;
-        } else if (type == 0x31) {
-            delete fighter->cargo;
-            fighter->cargo = nullptr;
         }
         ship = fighter;
     } else if (shipClass == 1) {
