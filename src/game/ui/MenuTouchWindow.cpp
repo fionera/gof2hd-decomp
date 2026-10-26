@@ -2714,16 +2714,18 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (!(*this->buttonsB8)[i]->OnTouchEnd(x, y))
                     continue;
                 this->field_0x234 = i;
-                if (i == 1) {
+                if ((i & 0x7fffffffu) == 1) {
                     if (!optionFlag(53)) {
                         NFC::iap_buy_dlc_valkyrie();
                         return 0;
                     }
-                } else if (i == 2) {
+                } else if ((i & 0x7fffffffu) == 2) {
                     if (!optionFlag(55)) {
                         NFC::iap_buy_dlc_supernova();
                         return 0;
                     }
+                } else {
+                    this->menuState = 12;
                 }
                 this->menuState = 12;
                 break;
@@ -2732,11 +2734,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         case 15: {
             // DLC store.
             if (this->dlcMessageShowing) {
-                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                    this->dlcMessageShowing = 0;
-                    this->messageShowing = 0;
-                }
+                if (this->choiceWindow->OnTouchEnd(x, y) != 0)
+                    return 0;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
+                this->dlcMessageShowing = 0;
+                this->messageShowing = 0;
                 return 0;
             }
             if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
@@ -2799,7 +2801,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 this->field_0x1e0 = i;
                 if (previous == (int) i) {
                     // Tapping the selected DLC again buys it.
-                    switch (i) {
+                    switch (previous & 0x7fffffffu) {
                         case 0:
                             NFC::iap_buy_dlc_valkyrie();
                             break;
@@ -3075,27 +3077,22 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                switch (button->id) {
-                    case 22:
-                        if (button->OnTouchEnd(x, y)) {
-                            ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                            NFC::rateGame();
-                        }
-                        break;
-                    case 106:
-                        if (button->OnTouchEnd(x, y)) {
-                            NFC::rateGame();
-                            ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
-                        }
-                        break;
-                    case 109:
-                        if (button->OnTouchEnd(x, y))
-                            NFC::openPrivacyPolicy();
-                        break;
-                    case 110:
-                        if (button->OnTouchEnd(x, y))
-                            NFC::openTermsOfService();
-                        break;
+                if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
+                } else if (button->id == 106) {
+                    if (button->OnTouchEnd(x, y)) {
+                        NFC::rateGame();
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
+                    }
+                } else if (button->id == 109) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openPrivacyPolicy();
+                } else if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 }
             }
             break;
@@ -3301,13 +3298,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             if (this->okButton->OnTouchEnd(x, y)) {
                 if ((*this->previewRecords)[this->selectedRow] == 0)
                     return 0;
-                if (Globals::status->getPlayingTime() > 0) {
-                    this->choiceWindow->set(*Globals::gameText->getText(51), true);
-                    this->messageShowing = 1;
+                if (Globals::status->getPlayingTime() == 0) {
+                    Globals::sound->play(123, 0, 0, 0.0f);
+                    this->loadGame(this->selectedRow);
                     return 0;
                 }
-                Globals::sound->play(123, 0, 0, 0.0f);
-                this->loadGame(this->selectedRow);
+                this->choiceWindow->set(*Globals::gameText->getText(51), true);
+                this->messageShowing = 1;
                 return 0;
             }
             break;
@@ -3319,8 +3316,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (r == 0) {
                         Globals::appManager->Quit();
                     } else if (r == 1) {
-                        this->returnToMenuShowing = 0;
                         this->messageShowing = 0;
+                        this->returnToMenuShowing = 0;
                     }
                     return 0;
                 }
