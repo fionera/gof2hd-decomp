@@ -651,7 +651,7 @@ enemies:
         otherLock = false;
         this->dockNavPtr = nullptr;
     }
-    int bossSeen = false;
+    bool bossSeen = false;
     bool enemyHit = false;
     int alwaysEnemySeen = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
@@ -1066,8 +1066,7 @@ asteroids:
             bool asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
-                if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
-                    (asteroid->isDead() || asteroid->isDying())) {
+                if ((asteroid->isDead() || asteroid->isDying()) && !asteroid->hasCargo) {
                     continue;
                 }
                 this->update(asteroid);
@@ -1231,19 +1230,29 @@ asteroids:
                 Globals::status->getCurrentCampaignMission() == 16) {
                 music = 136;
             } else if (this->field_0x1bc <= 2) {
-                // Intentional shadowing: at -Oz the inner value stays live in r1 across
-                // the shared play below, matching the original binary's codegen.
-                int music = 140;
-                if (bossSeen) {
-                    music = 149;
-                }
                 if (alwaysEnemySeen) {
                     music = 151;
+                } else if (bossSeen) {
+                    music = 149;
+                } else {
+                    music = 140;
                 }
             } else if (this->field_0x1bc <= 4) {
-                music = alwaysEnemySeen ? 151 : bossSeen ? 149 : 141;
+                if (alwaysEnemySeen) {
+                    music = 151;
+                } else if (bossSeen) {
+                    music = 149;
+                } else {
+                    music = 141;
+                }
             } else {
-                music = alwaysEnemySeen ? 151 : bossSeen ? 150 : 142;
+                if (alwaysEnemySeen) {
+                    music = 151;
+                } else if (bossSeen) {
+                    music = 150;
+                } else {
+                    music = 142;
+                }
             }
             float volume = 0.0f;
             Globals::sound->play(music, nullptr, nullptr, volume);
