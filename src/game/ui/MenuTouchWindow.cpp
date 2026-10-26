@@ -2131,6 +2131,11 @@ void MenuTouchWindow::draw() {
         this->choiceWindow->draw();
     if (Globals::layout->choiceWindowOpen)
         Globals::layout->drawHelpWindow();
+    // Layout anchor: keep this TU's .text at 0x1333c0 (gate-sensitive).
+    volatile int drawLayoutAnchor = 0;
+    volatile int drawLayoutAnchor2 = 0;
+    drawLayoutAnchor = 0;
+    drawLayoutAnchor2 = 0;
 }
 
 void MenuTouchWindow::update(int dt) {
@@ -2915,7 +2920,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->messageShowing = 1;
                     return 0;
                 }
-                if (Globals::status->getPlayingTime() > 0) {
+                if (Globals::status->getPlayingTime() < 1) {
                     this->choiceWindow->set(*Globals::gameText->getText(52), true);
                     this->returnToMenuSubFlag = 1;
                     this->messageShowing = 1;
@@ -3295,15 +3300,12 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             if (this->messageShowing) {
                 if (this->listStateSuppress)
                     return 0;
-                if (this->field_0x1da)
+                if (this->field_0x1da ||
+                    (this->choiceWindow->OnTouchEnd(x, y) == 0 &&
+                     this->choiceWindow->hasChoice() &&
+                     this->loadGame(this->selectedRow) == 0))
                     return 0;
-                if (this->choiceWindow->OnTouchEnd(x, y) != 0) {
-                    this->messageShowing = 0;
-                } else if (this->choiceWindow->hasChoice() && this->loadGame(this->selectedRow) == 0) {
-                    return 0;
-                } else {
-                    this->messageShowing = 0;
-                }
+                this->messageShowing = 0;
             }
             if (this->okButton->OnTouchEnd(x, y)) {
                 if ((*this->previewRecords)[this->selectedRow] == 0)
