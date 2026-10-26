@@ -2,6 +2,9 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w681`: `Globals::getInAppPurchaseArrayIndex` 76.0% -> **100.0% linked-exact**
+  (716/716B) by restoring the original do/while search with explicit out-of-range and null-entry
+  exits. `linked_exact` 4454 -> **4455**; avg 99.73. Remaining non-linked functions: **68**.
 - Harvested `w679`: `Mesh::ReadEnhancedDataFromFile` 80.2% -> **80.4%** (1832B
   exact) by making the material flag a real `bool`, reusing the track count, and reading
   material keys as `short`; `MeshReadData` preserved at 70.8% (2600/2632B).
@@ -27,7 +30,7 @@
 - Fleet now has **40 live `codex exec -p dsv41` workers**, including new data-layout
   (`w677`), `.rodata` (`w678`), Mesh (`w679`), and remaining-ModStation (`w680`) workers.
   Every launch uses the `-p dsv41` profile (sglang, `deepseek-v4.1-flash`, high reasoning).
-- Current gate: **byte_exact 1352, linked_exact 4454, avg 99.73, stubs 0, missing/extra 0,
+- Current gate: **byte_exact 1352, linked_exact 4455, avg 99.73, stubs 0, missing/extra 0,
   imports 207, data 843/843** (`RATCHET PASS`). `.rodata` delta is now **-960** after the
   CubeMapping shader pass.
 - Harvested `w622`: `Hud::drawOrbitInformation()` 72.4% -> **94.4%** (608/608B) by
