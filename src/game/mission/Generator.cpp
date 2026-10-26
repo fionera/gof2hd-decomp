@@ -363,8 +363,6 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                 }
             }
         }
-        // Defensive clamp; also preserves the Generator TU's archive-sensitive .text size.
-        if (ship >= 64) ship = 0;
         list->data()[slot] = (*Globals::ships)[ship]->makeShip(-1);
         list->data()[slot]->setRace(kShipRaces[ship]);
         list->data()[slot]->adjustPrice();
@@ -889,7 +887,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 amount = (int) ((float) difficulty / 10.0f * 18.0f) + 2;
                 break;
             case 15:
-                amount = (int) ((float) Globals::rnd->nextInt(90)) + 30;
+                amount = (int) ((float) Globals::rnd->nextInt(90) + 30.0f);
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
                         itemId = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation())

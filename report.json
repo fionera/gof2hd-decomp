@@ -72,20 +72,20 @@
    "usize": 9596
   },
   {
+   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
+   "pct": 63.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1996,
+   "usize": 2000
+  },
+  {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
    "pct": 65.1,
    "byte": false,
    "linked": false,
    "osize": 8132,
    "usize": 8232
-  },
-  {
-   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 65.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1996,
-   "usize": 1992
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
@@ -400,14 +400,6 @@
    "usize": 3444
   },
   {
-   "name": "_ZN9Generator14getShipBuyListEP7Station",
-   "pct": 93.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2244,
-   "usize": 2252
-  },
-  {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
    "pct": 94.6,
    "byte": false,
@@ -486,6 +478,14 @@
    "linked": false,
    "osize": 116,
    "usize": 116
+  },
+  {
+   "name": "_ZN9Generator14getShipBuyListEP7Station",
+   "pct": 98.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2244,
+   "usize": 2244
   },
   {
    "name": "_ZN13PlayerFighter6updateEi",
