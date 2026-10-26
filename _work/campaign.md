@@ -2,6 +2,13 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w635`: `ModStation` ctor 97.8% -> **98.4%** (1008/1008B) by
+  loading yaw bits through a volatile local while keeping the three per-field camera-table
+  ternaries; `OnInitialize` 80.0% -> **80.5%** (6396/6352B) with original store/condition
+  order in the case-60, fuel, case-80, and default paths. `OnKeyPress` preserved at 93.2%.
+- Fleet now has **40 live `codex exec -p dsv41` workers**, including new data-layout
+  (`w677`), `.rodata` (`w678`), Mesh (`w679`), and remaining-ModStation (`w680`) workers.
+  Every launch uses the `-p dsv41` profile (sglang, `deepseek-v4.1-flash`, high reasoning).
 - Current gate: **byte_exact 1352, linked_exact 4454, avg 99.72, stubs 0, missing/extra 0,
   imports 207, data 843/843** (`RATCHET PASS`). `.rodata` delta is now **-960** after the
   CubeMapping shader pass.
