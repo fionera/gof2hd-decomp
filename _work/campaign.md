@@ -2,8 +2,19 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
-- Current gate: **byte_exact 1352, linked_exact 4454, avg 99.71, stubs 0, missing/extra 0,
-  imports 207, data 843/843** (`RATCHET PASS`).
+- Current gate: **byte_exact 1352, linked_exact 4454, avg 99.72, stubs 0, missing/extra 0,
+  imports 207, data 843/843** (`RATCHET PASS`). `.rodata` delta is now **-960** after the
+  CubeMapping shader pass.
+- Harvested `w622`: `Hud::drawOrbitInformation()` 72.4% -> **94.4%** (608/608B) by
+  dropping the cached orbit value and restoring the original left-associative expression;
+  `drawChallengeModeScore` 68.4% -> **68.7%** (944/944B) with the original challenge-loop
+  order. `touchBegin` 86.2% and `drawMenu` 89.3% preserved.
+- Harvested `w669`: `CubeMapping` vertex shader is now an array-reference literal and the
+  constructor-name literal restores the original layout anchor; `.rodata` rose
+  0x415f7 -> **0x417a7** (delta -1,392 -> **-960**), gate unchanged.
+- Fleet now has **39 live `codex exec -p dsv41` workers**. Replaced the completed Hud worker
+  with `w676` on the remaining `Hud::draw`/`drawChallengeModeScore` gap. Every launch uses
+  the `-p dsv41` profile (sglang, `deepseek-v4.1-flash`, high reasoning).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
 - Harvested `w656`: `MenuTouchWindow` ctor 65.0% -> **65.8%** (9656/9600B) by fixing the
