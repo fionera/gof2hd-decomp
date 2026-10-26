@@ -939,68 +939,80 @@ void PlayerEgo::checkForTurret() {
     float offsetX = 0.0f;
     int baseExtraMesh = -1;
     int turretIndex = (*equipment)[0]->getIndex();
-    if (turretIndex == 48) {
-        baseMesh = 0x1a74;
-        offsetY = 55.0f;
-        barrelMesh = 0x1a75;
-    } else if (turretIndex == 47) {
-        offsetY = 60.0f;
-        baseMesh = 0x1a72;
-        barrelMesh = 0x1a73;
-    } else if (turretIndex == 49) {
-        baseMesh = 0x1a76;
-        offsetY = 60.0f;
-        barrelMesh = 0x1a77;
-    } else if (turretIndex == 180) {
-        this->autoTurretEquipped = 1;
-        offsetY = 84.0f;
-        baseMesh = 0x1a95;
-        barrelMesh = 0x1a96;
-    } else if (turretIndex == 181) {
-        this->autoTurretEquipped = 1;
-        offsetY = 88.0f;
-        offsetZ = -11.0f;
-        baseMesh = 0x1a97;
-        barrelMesh = 0x1a98;
-    } else if (turretIndex == 182) {
-        this->autoTurretEquipped = 1;
-        offsetX = 34.0f;
-        offsetY = 88.0f;
-        baseMesh = 0x1a99;
-        offsetZ = 1.6f;
-        barrelMesh = 0x1a9a;
-    } else if (turretIndex == 198) {
-        glowMesh = 0x4a7f;
-        offsetY = 80.0f;
-        baseMesh = 0x4963;
-        barrelExtraMesh = 0x4966;
-        baseExtraMesh = 0x4964;
-        barrelMesh = 0x4967;
-    } else if (turretIndex == 199) {
-        glowMesh = 0x4a7f;
-        offsetY = 38.0f;
-        baseMesh = 0x4968;
-        barrelExtraMesh = 0x496a;
-        baseExtraMesh = 0x4969;
-        barrelMesh = 0x496b;
-    } else if (turretIndex == 200) {
-        glowMesh = 0x4a7f;
-        offsetY = 75.0f;
-        barrelExtraMesh2 = 0x4970;
-        baseMesh = 0x496c;
-        barrelExtraMesh = 0x496e;
-        baseExtraMesh = 0x496d;
-        barrelMesh = 0x496f;
-    } else if (turretIndex == 224) {
-        offsetY = 82.0f;
-        baseMesh = 0x499a;
-        barrelExtraMesh = 0x499d;
-        baseExtraMesh = 0x499c;
-        barrelMesh = 0x499b;
-    } else {
-        baseMesh = 0xffff;
-        barrelMesh = 0xffff;
-        offsetY = 0.0f;
+    switch (turretIndex) {
+        case 200:
+            glowMesh = 0x4a7f;
+            offsetY = 75.0f;
+            barrelExtraMesh2 = 0x4970;
+            baseMesh = 0x496c;
+            barrelExtraMesh = 0x496e;
+            baseExtraMesh = 0x496d;
+            barrelMesh = 0x496f;
+            break;
+        case 47:
+            offsetY = 60.0f;
+            baseMesh = 0x1a72;
+            barrelMesh = 0x1a73;
+            break;
+        default:
+            baseMesh = 0xffff;
+            barrelMesh = 0xffff;
+            offsetY = 0.0f;
+            break;
+        case 48:
+            baseMesh = 0x1a74;
+            offsetY = 55.0f;
+            barrelMesh = 0x1a75;
+            break;
+        case 49:
+            baseMesh = 0x1a76;
+            offsetY = 60.0f;
+            barrelMesh = 0x1a77;
+            break;
+        case 180:
+            this->autoTurretEquipped = 1;
+            offsetY = 84.0f;
+            baseMesh = 0x1a95;
+            barrelMesh = 0x1a96;
+            break;
+        case 181:
+            this->autoTurretEquipped = 1;
+            offsetY = 88.0f;
+            offsetZ = -11.0f;
+            baseMesh = 0x1a97;
+            barrelMesh = 0x1a98;
+            break;
+        case 182:
+            this->autoTurretEquipped = 1;
+            offsetX = 34.0f;
+            offsetY = 88.0f;
+            baseMesh = 0x1a99;
+            offsetZ = 1.6f;
+            barrelMesh = 0x1a9a;
+            break;
+        case 198:
+            glowMesh = 0x4a7f;
+            offsetY = 80.0f;
+            baseMesh = 0x4963;
+            barrelExtraMesh = 0x4966;
+            baseExtraMesh = 0x4964;
+            barrelMesh = 0x4967;
+            break;
+        case 199:
+            glowMesh = 0x4a7f;
+            offsetY = 38.0f;
+            baseMesh = 0x4968;
+            barrelExtraMesh = 0x496a;
+            baseExtraMesh = 0x4969;
+            barrelMesh = 0x496b;
+            break;
+        case 224:
+            offsetY = 82.0f;
+            baseMesh = 0x499a;
+            barrelExtraMesh = 0x499d;
+            baseExtraMesh = 0x499c;
+            barrelMesh = 0x499b;
+            break;
     }
 
     this->turretBaseGeo = new AEGeometry(baseMesh, Globals::Canvas, false);
@@ -3403,8 +3415,6 @@ void PlayerEgo::stopMining() {
         amount = (int) ((float) amount * 0.5f);
     if (freeSpace <= amount)
         amount = freeSpace;
-    if (freeSpace < 1)
-        amount = 0;
     if (freeSpace >= 1) {
         if (((MiningGame *) (intptr_t) this->miningGame)->gotCore()) {
             Item *core = (*Globals::items)[coreIndex]->makeItem(1);
