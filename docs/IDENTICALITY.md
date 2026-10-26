@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1352, linked_exact 4451, avg 99.70%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1352, linked_exact 4452, avg 99.70%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1352, linked_exact 4451, avg 99.70%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1352, linked_exact 4452, avg 99.70%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -32,7 +32,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,258,432 | **−1,032** | the remaining 72 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
+| **.text** | 1,259,464 | 1,258,432 | **−1,032** | the remaining 71 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 266,567 | **−2,592** | anonymous const/string data still differs; exported objects are exact. |
 | .ARM.extab | 156,312 | 151,752 | −4,560 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
@@ -41,8 +41,8 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 ## The four real gaps (in priority/size order)
 
-1. **72 non-linked exported functions.** 4451 of 4523 compared functions are linked-exact; the
-   remaining 72 are the long tail (28 in 90–99%, 22 in 70–89%, 18 in 50–69%, 4 below 50%). Their
+1. **71 non-linked exported functions.** 4452 of 4523 compared functions are linked-exact; the
+   remaining 71 are the long tail (28 in 90–99%, 23 in 70–89%, 15 in 50–69%, 5 below 50%). Their
    combined `.text` delta is only −1,032 B, so this is a finishing campaign, not a missing-code
    campaign.
 2. **Anonymous data layout.** `.rodata` is 2,592 B smaller and `.data` 76 B larger than the original;
@@ -58,7 +58,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
   (no .symtab/.strtab/.debug_*). Parity unaffected (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
-Same-hash == completing the decompile to byte-perfection: make the remaining 72 functions exact,
+Same-hash == completing the decompile to byte-perfection: make the remaining 71 functions exact,
 recover the residual anonymous const/initialised data, and match the exact link layout. Progress is
 tracked by: byte_exact/linked_exact function counts (verify) and the section-size deltas above.
 
@@ -71,7 +71,7 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1352 byte_exact,
-4451 linked_exact, 4488 size_match of 4523; pct buckets {100:4451, 90-99:28, 70-89:24, 50-69:15,
+4452 linked_exact, 4488 size_match of 4523; pct buckets {100:4452, 90-99:28, 70-89:23, 50-69:15,
 <50:5}. 35 functions size-MISMATCH (need restructuring); 27 size-match >=80% not-linked
 (the highest-value near-misses).
 
