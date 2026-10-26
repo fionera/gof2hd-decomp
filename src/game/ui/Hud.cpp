@@ -842,30 +842,32 @@ static const int g_Hud_securityColors[4][3] = {
 };
 
 void Hud::drawOrbitInformation() {
-    if (Globals::status->inAlienOrbit() != 0)
-        return;
-    Globals::Canvas->SetColor(0xffffffff);
-    int x = Globals::Canvas->GetImage2DWidth(this->factionLogoImage);
-    x += Globals::layout->orbitInfoTextX;
-    if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner() == 0)
-        Globals::Canvas->DrawImage2D(this->factionLogoImage, 3, 3);
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, Globals::status->getStation()->getName(), x,
-                                Globals::layout->orbitInfoStationY, false);
-    Globals::Canvas->SetColor(0x777777ff);
-    if (Globals::status->getCurrentCampaignMission() < 16)
-        return;
-    SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-    int security = system->getSecurityLevel();
-    if (system->getIndex() == 26 && Globals::status->field_114 > 1)
-        security = 3;
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
-                                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) +
-                                    (String(" ") + *Globals::gameText->getText(137)),
-                                x, Globals::layout->orbitInfoSystemY, false);
-    Globals::Canvas->SetColor(g_Hud_securityColors[security][0], g_Hud_securityColors[security][1],
-                              g_Hud_securityColors[security][2], 255);
-    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(security + 402), x,
-                                Globals::layout->orbitInfoSecurityY, false);
+    if (Globals::status->inAlienOrbit() == 0) {
+        Globals::Canvas->SetColor(0xffffffff);
+        int x = Globals::Canvas->GetImage2DWidth(this->factionLogoImage);
+        x += Globals::layout->orbitInfoTextX;
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner() != 1)
+            Globals::Canvas->DrawImage2D(this->factionLogoImage, 3, 3);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, Globals::status->getStation()->getName(), x,
+                                    Globals::layout->orbitInfoStationY, false);
+        Globals::Canvas->SetColor(0x777777ff);
+        if (Globals::status->getCurrentCampaignMission() >= 16) {
+            int security = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getSecurityLevel();
+            if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 26 &&
+                Globals::status->field_114 > 1)
+                security = 3;
+            Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font,
+                String(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getName(), false) + String(" ") +
+                    *Globals::gameText->getText(137),
+                x, Globals::layout->orbitInfoSystemY, false);
+            Globals::Canvas->SetColor(g_Hud_securityColors[security][0], g_Hud_securityColors[security][1],
+                                      g_Hud_securityColors[security][2], 255);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                        *Globals::gameText->getText(security + 402), x,
+                                        Globals::layout->orbitInfoSecurityY, false);
+        }
+    }
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
@@ -1769,9 +1771,9 @@ void Hud::drawChallengeModeScore(int unused) {
             String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
             int bonusY = digitH + y;
             int offset = 0;
-            for (unsigned int i = 1; i <= bonus.size(); i++) {
-                int frame = bonus.SubString(i - 1, i).ValueOf();
-        this->digitSprite->setFrame(frame);
+            for (unsigned int i = 0; i < bonus.size(); i++) {
+                int frame = bonus.SubString(i, i + 1).ValueOf();
+                this->digitSprite->setFrame(frame);
                 this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
                                                bonusY + Globals::layout->field_0x2c_rowHeight);
                 offset += step;
@@ -1783,9 +1785,9 @@ void Hud::drawChallengeModeScore(int unused) {
         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
         String multiplier(Globals::status->field_0x18c);
         int mx = half + rowGap - (step * 7 >> 1);
-        for (unsigned int i = 0; i < multiplier.size(); i++) {
-            int frame = multiplier.SubString(i, i + 1).ValueOf();
-        this->digitSprite->setFrame(frame);
+        for (unsigned int i = 1; i <= multiplier.size(); i++) {
+            int frame = multiplier.SubString(i - 1, i).ValueOf();
+            this->digitSprite->setFrame(frame);
             this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
             mx += step;
             this->digitSprite->draw(scale, scale);
