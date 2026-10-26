@@ -640,7 +640,6 @@ static const int gDialogueSoundPairs[3008] = {
 
 Globals::Globals() {
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
-    CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
     Globals::recordHandler = 0;
     Globals::Canvas = 0;
     Globals::shipTemplate = 0;
@@ -650,7 +649,9 @@ Globals::Globals() {
     Globals::fontLangSelect = 0;
     Globals::rnd = 0;
     Globals::globals = 0;
+    settings->tintR = 0.6f;
     Globals::layout = 0;
+    Globals::imageFactory = 0;
     Globals::appManager = 0;
     Globals::generator = 0;
 
@@ -662,12 +663,12 @@ Globals::Globals() {
     reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
     *reinterpret_cast<int16_t *>(reinterpret_cast<uint8_t *>(settings) + 0x10) = 0;
 
-    settings->glowR = 0.5f;
+    settings->tintG = 0.6f;
     settings->glowG = 0.5f;
 
-    settings->tintR = 0.6f;
-    settings->tintG = 0.6f;
     settings->tintB = 0.5f;
+    settings->glowR = 0.5f;
+    CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
     settings->brightness = 1.0f;
     settings->contrast = 0.5f;
     settings->_region[2] = 1;
@@ -687,7 +688,6 @@ Globals::Globals() {
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
 
-    Globals::imageFactory = 0;
     this->soundResources = 0;
     Globals::instantActionType = -1;
     Globals::status = 0;

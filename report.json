@@ -104,22 +104,6 @@
    "usize": 9212
   },
   {
-   "name": "_ZN7GlobalsC1Ev",
-   "pct": 69.9,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
-   "name": "_ZN7GlobalsC2Ev",
-   "pct": 69.9,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 70.2,
    "byte": false,
@@ -142,6 +126,22 @@
    "linked": false,
    "osize": 2632,
    "usize": 2600
+  },
+  {
+   "name": "_ZN7GlobalsC1Ev",
+   "pct": 70.8,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
+  },
+  {
+   "name": "_ZN7GlobalsC2Ev",
+   "pct": 70.8,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
   },
   {
    "name": "_ZN5Level13createMissionEv",
