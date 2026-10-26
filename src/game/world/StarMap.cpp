@@ -936,7 +936,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
 
 void StarMap::draw() {
     this->alpha = this->mode == 0 ? 255 : 0;
-    if (this->transitionIn | this->transitionOut) {
+    if (this->transitionIn != this->transitionOut) {
         float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
                   (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
         this->alpha = (int) ((this->transitionIn ? 1.0f - t : t) * 255.0f);
