@@ -321,7 +321,8 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
     int pitchBits = *(const volatile int *) &gHangarCamPitch[race];
-    MatrixSetRotation(nearKey, *(const float *) &pitchBits, yawTable[race], 0.0f,
+    int yawBits = *(const volatile int *) &yawTable[race];
+    MatrixSetRotation(nearKey, *(const float *) &pitchBits, *(const float *) &yawBits, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     Matrix farKey;
     MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
@@ -444,8 +445,8 @@ int ModStation::OnInitialize() {
         }
         case 60: {
             this->flag_0x100 = 0;
-            this->camScrollPos = 0;
             this->field_0xe0 = 0;
+            this->camScrollPos = 0;
             this->camScrollVel = 0;
             this->field_0xf4 = 0;
             this->field_0xf8 = 0;
@@ -588,7 +589,7 @@ int ModStation::OnInitialize() {
                 // Keep some fuel for sale where the story needs it.
                 Item *fuel = Globals::status->getShip()->getCargo(122);
                 int fuelAmount = fuel != nullptr ? fuel->getAmount() : 0;
-                if (fuelAmount <= 5 && !Globals::status->getStation()->hasItem(122)) {
+                if (!Globals::status->getStation()->hasItem(122) && fuelAmount <= 5) {
                     Globals::status->getStation()->addItem((*Globals::items)[122]->makeItem(10));
                 }
             }
@@ -664,12 +665,12 @@ int ModStation::OnInitialize() {
                 this->flag_0x63 = 1;
                 Globals::hints[43] = 1;
             }
-            if (Globals::status->gameWon() && !(Globals::options[53] || Globals::hints[56])) {
+            if (Globals::status->gameWon() && !(Globals::hints[56] || Globals::options[53])) {
                 this->choiceWindow->set(*Globals::gameText->getText(110));
                 this->flag_0x63 = 1;
                 Globals::hints[56] = 1;
             }
-            if (Globals::status->dlc1Won() && !(Globals::options[55] || Globals::hints[57])) {
+            if (Globals::status->dlc1Won() && !(Globals::hints[57] || Globals::options[55])) {
                 this->choiceWindow->set(*Globals::gameText->getText(111));
                 this->flag_0x63 = 1;
                 Globals::hints[57] = 1;
@@ -817,8 +818,8 @@ int ModStation::OnInitialize() {
                 if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr &&
                     !(hasJumpDrive || hasFuel) && Globals::status->getCurrentCampaignMission() >= 17) {
                     this->choiceWindow->set(*Globals::gameText->getText(335), true);
-                    this->flag_0x6d = 1;
                     this->flag_0x63 = 1;
+                    this->flag_0x6d = 1;
                 }
             }
             reinterpret_cast<uint8_t &>(Globals::status->field_f8) = 1;
@@ -838,8 +839,8 @@ int ModStation::OnInitialize() {
                 Globals::globals->playMusicAndFadeOutCurrent(Globals::switch_to_target_setting);
             }
             Globals::switch_to_target_setting = -1;
-            this->stationActive = 1;
             this->state = 100;
+            this->stationActive = 1;
             Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
             if (row != nullptr) {
                 // Remember the sub menu button positions for the touch overlay.
