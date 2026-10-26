@@ -2,17 +2,27 @@
 
 ## Session 2026-10-26 (wave 28 — 20 workers, long-tail finishing)
 
-- Wave28 added 15 `codex exec -p dsv41` workers in `../wt/w569..w583`
-  (branches `wave28-w569..w583`), one disjoint TU family each, alongside the 14 still-active
-  wave26 workers. The fleet covers the remaining non-exact long tail: ParticleSettings,
-  TouchButton, PlayerFighter, StarMap, Generator, Level, Layout, LevelScript,
-  Engine::ResetLightParam, MGame::OnUpdate, MissionsWindow, StatusWindow, plus retries for
-  HangarWindow, SpaceLounge and MenuTouchWindow on the current master layout.
+- Wave28 added 28 `codex exec -p dsv41` workers in `../wt/w569..w596`
+  (branches `wave28-w569..w596`), one disjoint TU family each, alongside the 14 still-active
+  wave26 workers and follow-up retries. The fleet covers the remaining non-exact long tail:
+  ParticleSettings, TouchButton, PlayerFighter, StarMap, Generator, Level, Layout, LevelScript,
+  Engine::ResetLightParam, MGame, MissionsWindow, StatusWindow, ModStation, Mesh, Globals,
+  FileInterfaceAndroid, Hud, HackingGame, Gun, RocketGun, Status, plus retries for
+  HangarWindow, SpaceLounge, MenuTouchWindow and StarSystem on the current master layout.
 - Start gate: **byte_exact 1352, linked_exact 4449, avg 99.68**.
 - Landed from completed workers and cherry-picked onto master under the full gate:
   - `MGame::OnTouchEnd` 74.7% -> 78.0% (8080B preserved).
   - `MeshReadData` 67.8% -> 67.9% (2600B preserved).
   - `Status::moveWanted` 74.1% -> 75.5% (864 -> 868B).
+  - `MissionsWindow::init` 95.4% -> 100.0% linked, size 2468B -> linked_exact 4449 -> 4450.
+  - `PlayerEgo::stopMining` 92.4% -> 94.8% (528B) with calcCollision compensating to byte 1352.
+  - `Globals::Globals` 64.6% -> 69.5% (612B), compensated by `FileInterfaceAndroid::Write` 168 -> 160B.
+  - `Hud::drawChallengeModeScore` 66.3% -> 68.4% (944B, original size).
+  - `Layout::Layout` 45.3% -> 45.4% (size preserved).
+  - `MenuTouchWindow::OnTouchEnd` 64.5% -> 64.8% (8236 -> 8240B) with DLC index masking.
+  - `HangarWindow` render 61.0% -> 61.5% and OnTouchEnd 79.7% -> 80.5%; the 4-byte
+    `hangarWindowDivide` helper is a documented layout anchor to clean up later.
+- Checkpoint after these passes: **byte_exact 1352, linked_exact 4450, avg 99.68**.
 - Retry workers `w575`/`w582`/`w583` were launched because their original branches were
   based on the older `d2de68cb` archive layout: the source gains were real, but the
   cherry-picks shifted the ten libstdc++ exception ctors and dropped byte_exact to 1342.
