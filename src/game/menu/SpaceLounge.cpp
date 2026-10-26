@@ -2324,12 +2324,13 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
                     this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
                     if (this->starMap != 0) {
                         this->starMap->init(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);
+                        this->mapVisible = 1;
                     } else {
                         StarMap *map = new StarMap(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);
                         ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap = map;
                         this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+                        this->mapVisible = 1;
                     }
-                    this->mapVisible = 1;
                 }
                 break;
             }
