@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.74,
   "byte_exact": 1352,
-  "linked_exact": 4458,
-  "fuzzy_perfect": 4458,
+  "linked_exact": 4459,
+  "fuzzy_perfect": 4459,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -64,20 +64,20 @@
    "usize": 9596
   },
   {
-   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 63.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1996,
-   "usize": 2000
-  },
-  {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
    "pct": 65.1,
    "byte": false,
    "linked": false,
    "osize": 8132,
    "usize": 8232
+  },
+  {
+   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
+   "pct": 65.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1996,
+   "usize": 1992
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
@@ -470,14 +470,6 @@
    "linked": false,
    "osize": 116,
    "usize": 116
-  },
-  {
-   "name": "_ZN9Generator14getShipBuyListEP7Station",
-   "pct": 98.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2244,
-   "usize": 2244
   },
   {
    "name": "_ZN13PlayerFighter6updateEi",
@@ -31918,6 +31910,14 @@
    "linked": true,
    "osize": 1840,
    "usize": 1840
+  },
+  {
+   "name": "_ZN9Generator14getShipBuyListEP7Station",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2244,
+   "usize": 2244
   },
   {
    "name": "_ZN9Generator18computerTradeGoodsEP7Station",

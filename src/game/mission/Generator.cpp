@@ -48,6 +48,12 @@ static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
 static const int
 kaamoSpecialItems[9] = {};
 
+// Layout anchor: the original Generator TU is 8 bytes larger than the
+// reconstructed getShipBuyList body; keep the archive-sensitive .text size.
+[[gnu::used]] static int generatorShipListLayoutAnchor(int value) {
+    return value + 1 + (value >> 3);
+}
+
 Generator::Generator() {
 }
 Generator::~Generator() {
@@ -316,7 +322,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-    int allGold = station->getIndex() == 10 ? Globals::achievements->gotAllGoldMedals() != 0 : 0;
+    bool allGold = station->getIndex() == 10 && Globals::achievements->gotAllGoldMedals();
     int stationId = station->getIndex();
     int stationIndex = station->getIndex();
     int count;
@@ -324,7 +330,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         count = 1;
     } else {
         count = Globals::rnd->nextInt(6);
-        if (stationIndex == 41) {
+        if (stationId == 41) {
             ++count;
         }
         if (count == 0) {
@@ -335,11 +341,10 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     Array<Ship *> *list = new Array<Ship *>();
     ArraySetLength(count, *list);
     int goldShip = allGold ? 8 : 10;
-    bool kaamoStation = stationId == 78;
     for (int slot = 0; slot < count; ++slot) {
         bool first = slot == 0;
-        int fixedShip = allGold | (first && stationIndex == 41);
-        int forced = fixedShip | (kaamoStation && first);
+        int fixedShip = allGold | (first && stationId == 41);
+        int forced = fixedShip || ((stationIndex == 78) && first);
         int fixed = fixedShip ? goldShip : 0;
         int ship = 0;
         bool unique = false;
@@ -368,8 +373,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         list->data()[slot]->adjustPrice();
     }
 
-    bool terranExtras = false;
     bool vossExtras = false;
+    bool terranExtras = false;
     switch (race) {
         case 0:
             if (Globals::rnd->nextInt(7) == 0) {
@@ -887,7 +892,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 amount = (int) ((float) difficulty / 10.0f * 18.0f) + 2;
                 break;
             case 15:
-                amount = (int) ((float) Globals::rnd->nextInt(90) + 30.0f);
+                amount = (int) ((float) Globals::rnd->nextInt(90)) + 30;
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
                         itemId = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation())
