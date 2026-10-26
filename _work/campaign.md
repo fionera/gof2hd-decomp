@@ -46,6 +46,10 @@
   - `Level::createMission` 70.7% -> **71.0%** (17180/17172B) by moving the TU's `.text` layout
     anchor from createMission to createCampaignMission (83.3% -> 83.1%), keeping the archive
     layout and the ten libstdc++ exception ctors byte-exact.
+  - `MGame::OnUpdate` 81.8% -> **82.0%** (11472/11440B) by hoisting the dialogue text id and
+    restoring the original level-flag store order.
+  - `Gun::calcCharacterCollision` 46.6% -> **59.0%** (1904/1984B) by hoisting the `Level*`
+    local and restoring the original guard/`-radius` shapes; `Gun::shootAt` stays at 88.5%.
 - `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
   `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
   `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
@@ -56,6 +60,9 @@
   (`startChat` 97.2%, ctor 96.0%, `drawLounge` 94.9%, `onKeyPress` 89.9%); `w621` was
   launched on `Level::createCampaignMission` (83.3%) and `Level::createScene` (76.2%),
   keeping 20 live `codex exec -p dsv41` workers.
+- `w600` was harvested and exited; `w624` replaced it on the Mesh long tail
+  (`MeshReadData` 70.8%, `ReadEnhancedDataFromFile` 80.2%), keeping 20 live
+  `codex exec -p dsv41` workers.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
