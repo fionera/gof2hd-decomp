@@ -529,7 +529,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            bool marked = false;
+            int marked = false;
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
@@ -1225,7 +1225,7 @@ asteroids:
                 Globals::status->getCurrentCampaignMission() == 16) {
                 music = 136;
             } else if (this->field_0x1bc <= 2) {
-                int music = 140;
+                music = 140;
                 if (bossSeen) {
                     music = 149;
                 }
@@ -1287,9 +1287,6 @@ asteroids:
             }
         }
     }
-    // Layout anchor: field_0x14c is otherwise unused; the store keeps Radar's
-    // .text extent at 0x1333c0 so the archive exception ctors stay byte-exact.
-    this->field_0x14c = 0;
     this->field_0x1bc = 0;
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
