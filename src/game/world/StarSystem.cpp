@@ -333,6 +333,7 @@ StarSystem::StarSystem(int mode) {
                         flip = 0x8000;
                     }
                 }
+                usedSlots[slot] = 1;
             }
 
             const float kTwoPi = 6.2831855f;
