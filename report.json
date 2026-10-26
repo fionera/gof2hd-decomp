@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.78,
+  "avg_match": 99.79,
   "byte_exact": 1352,
   "linked_exact": 4469,
   "fuzzy_perfect": 4469,
@@ -241,11 +241,11 @@
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
-   "pct": 86.0,
+   "pct": 86.3,
    "byte": false,
    "linked": false,
    "osize": 6396,
-   "usize": 6384
+   "usize": 6400
   },
   {
    "name": "_ZN5Level10assignGunsEv",
@@ -280,14 +280,6 @@
    "usize": 2636
   },
   {
-   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 93.1,
-   "byte": false,
-   "linked": false,
-   "osize": 8852,
-   "usize": 8852
-  },
-  {
    "name": "_ZN13PlayerStationC1EP7Station",
    "pct": 93.6,
    "byte": false,
@@ -302,6 +294,14 @@
    "linked": false,
    "osize": 3440,
    "usize": 3444
+  },
+  {
+   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
+   "pct": 93.6,
+   "byte": false,
+   "linked": false,
+   "osize": 8852,
+   "usize": 8852
   },
   {
    "name": "_ZN10StarSystemC1Ei",

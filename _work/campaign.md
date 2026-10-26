@@ -2,6 +2,16 @@
 
 ## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
 
+- Harvested `w943`: `PlayerEgo::update` 93.1% -> **93.6%** (8852B exact) by
+  reconstructing the mission-transfer local order, inlining the emergency-system
+  `setMatrix`/`translate` sequence, and restoring the trailing field-store
+  schedule. `avg` 99.78 -> **99.79**.
+- Harvested `w947`: `ModStation::OnInitialize` 86.0% -> **86.3%**
+  (6384 -> 6400B, original 6396B) by splitting the mission 43/44 guards,
+  restoring the flag store order, and retuning the documented 62 -> 46-byte
+  `.text` anchor. Gate: byte 1352, linked 4469, avg 99.79, `.text 0x1343c0`,
+  lint CLEAN, drift 0.
+
 - Harvested `w901`: `MenuTouchWindow::MenuTouchWindow` C1/C2 64.2% -> **65.2%**
   (9640 -> 9616B, original 9600B). The `.text` layout anchor is now kept alive
   by an address-only extra `MenuTouchWindow_languageIds` element instead of an
