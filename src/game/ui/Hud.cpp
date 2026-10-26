@@ -1756,7 +1756,8 @@ void Hud::drawChallengeModeScore(int unused) {
     half = screenW / 2;
     left = half - step * 7 / 2;
     int x = left;
-    for (unsigned int i = 0; i < score.size(); i++) {
+    unsigned int scoreLen = score.size();
+    for (unsigned int i = 0; i < scoreLen; i++) {
         int frame = score.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
         this->digitSprite->setPosition(x, y);
