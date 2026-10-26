@@ -2,6 +2,15 @@
 
 ## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
 
+- Harvested `w912`: `Gun::shootAt` 90.6% -> **100% linked-exact** (1788B).
+  Moving the `cluster` int after `fired` and removing the hot hint on the
+  `keepAmmo` guard reproduces the original late `weaponType` load and the
+  out-of-line `!friendGun` block. `linked_exact` 4468 -> **4469**.
+- Harvested the follow-up `Gun::calcCharacterCollision` pass: 64.1% -> **64.3%**
+  (1892 -> 1888B) with the original combined if/else explosive/explodeOnContact
+  flag initialization. Gate: byte_exact 1352, linked_exact 4469, avg 99.78,
+  `.text 0x1343c0`, lint CLEAN, drift 0.
+
 - Launched `w930..w949` (20 `codex exec -p dsv41` workers, explicit sglang
   profile) from master `da7661af`, one owner per high-value non-linked function:
   ModStation ctor, Radar ctor, Generator::createAgents, PlayerFighter::update,
