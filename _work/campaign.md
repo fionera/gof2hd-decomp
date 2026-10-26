@@ -1,5 +1,25 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 28 — 20 workers, long-tail finishing)
+
+- Wave28 added 15 `codex exec -p dsv41` workers in `../wt/w569..w583`
+  (branches `wave28-w569..w583`), one disjoint TU family each, alongside the 14 still-active
+  wave26 workers. The fleet covers the remaining non-exact long tail: ParticleSettings,
+  TouchButton, PlayerFighter, StarMap, Generator, Level, Layout, LevelScript,
+  Engine::ResetLightParam, MGame::OnUpdate, MissionsWindow, StatusWindow, plus retries for
+  HangarWindow, SpaceLounge and MenuTouchWindow on the current master layout.
+- Start gate: **byte_exact 1352, linked_exact 4449, avg 99.68**.
+- Landed from completed workers and cherry-picked onto master under the full gate:
+  - `MGame::OnTouchEnd` 74.7% -> 78.0% (8080B preserved).
+  - `MeshReadData` 67.8% -> 67.9% (2600B preserved).
+  - `Status::moveWanted` 74.1% -> 75.5% (864 -> 868B).
+- Retry workers `w575`/`w582`/`w583` were launched because their original branches were
+  based on the older `d2de68cb` archive layout: the source gains were real, but the
+  cherry-picks shifted the ten libstdc++ exception ctors and dropped byte_exact to 1342.
+  The retries must preserve the pct gains while restoring byte_exact 1352.
+- Worker reports are `/tmp/w569.last..w583.last`; logs are `/tmp/w569.log..w583.log`.
+
+
 ## Session 2026-10-25 (wave 27 — 20 cleanup workers launched)
 
 - Second fleet: 20 `codex exec -p dsv41` workers in `../wt/w547..w566`
