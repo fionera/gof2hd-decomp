@@ -1,5 +1,20 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 30 — 20-way continuation)
+
+- Harvested `w707`: `StarMap::drawOnScreenInfo` 93.0% -> **93.1%** (3488B exact) by
+  using the original `getTargetStation() == -1` sentinel; `StarMap::draw` 89.2% and
+  `StarMap::update` 91.7% preserved. Gate unchanged.
+- Launched 20 additional workers `w728..w747`, all with the `-p dsv41` profile:
+  PlayerStation, StarSystem, RocketGun, MeshReadData, Mesh enhanced-data, Globals ctor,
+  LevelScript, TouchButton, PlayerFighter, Generator createAgents, ModStation ctor,
+  PlayerEgo stopMining, SpaceLounge ctor/sound/drawLounge, Hud draw helpers,
+  FileInterfaceAndroid Read/Write, MGame OnTouchEnd, SpaceLounge OnTouchEnd/startChat,
+  Level createScene/createShip, plus second-opinion Status and HangarWindow workers.
+  The pre-existing live workers remain on their hard TUs.
+- Current gate before the new batch: **byte_exact 1352, linked_exact 4456, avg 99.74,
+  stubs 0, missing/extra 0, imports 207, data 843/843** (`RATCHET PASS`).
+
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
 - Harvested the first wave29 continuation batch:
