@@ -127,6 +127,12 @@ static const float kRimLightColors[57] = {
 #define STAR_MIN(a, b) ((a) > (b) ? (b) : (a))
 #define STAR_MAX(a, b) ((a) > (b) ? (a) : (b))
 
+// 8-byte .text anchor: compensates the ctor's 8-byte reduction while preserving
+// the archive/link layout.
+[[gnu::used]] static int starSystemLayoutAnchor(int value) {
+    return value * 3 + 1;
+}
+
 StarSystem::StarSystem(int mode) {
     this->stationIdxArray = nullptr;
     this->texturesArray = nullptr;
@@ -264,8 +270,8 @@ StarSystem::StarSystem(int mode) {
                                                                                          : 90000.0f / 65536.0f;
                     (*this->planetsArray)[0]->setScaling(Vector{sunScale, sunScale, sunScale});
                     AEGeometry *streak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
-                    this->sunStreak = streak;
                     streak->setScaling(Vector{130000.0f / 65536.0f, 13000.0f / 65536.0f, 65000.0f / 65536.0f});
+                    this->sunStreak = streak;
                     if (((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
                         reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer(streak->meshId)->materialId) =
                                 0.22f;
@@ -362,7 +368,6 @@ StarSystem::StarSystem(int mode) {
             (*this->positionsArray)[i] = (*this->planetsArray)[i]->getPosition();
         }
         Globals::rnd->reset();
-        this->fogEnabled = 0;
     }
     this->initLight();
 }

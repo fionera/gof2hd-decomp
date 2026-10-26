@@ -328,28 +328,28 @@
    "usize": 8580
   },
   {
-   "name": "_ZN10StarSystemC1Ei",
-   "pct": 90.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2900,
-   "usize": 2912
-  },
-  {
-   "name": "_ZN10StarSystemC2Ei",
-   "pct": 90.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2900,
-   "usize": 2912
-  },
-  {
    "name": "_ZN7StarMap6updateEi",
    "pct": 91.7,
    "byte": false,
    "linked": false,
    "osize": 3132,
    "usize": 3132
+  },
+  {
+   "name": "_ZN10StarSystemC1Ei",
+   "pct": 91.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2900,
+   "usize": 2904
+  },
+  {
+   "name": "_ZN10StarSystemC2Ei",
+   "pct": 91.9,
+   "byte": false,
+   "linked": false,
+   "osize": 2900,
+   "usize": 2904
   },
   {
    "name": "_ZN10ModStation8OnUpdateEv",
