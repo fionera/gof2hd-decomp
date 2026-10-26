@@ -272,20 +272,20 @@
    "usize": 660
   },
   {
-   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
-   "pct": 89.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1788,
-   "usize": 1788
-  },
-  {
    "name": "_ZN7StarMap4drawEv",
    "pct": 89.7,
    "byte": false,
    "linked": false,
    "osize": 2644,
    "usize": 2636
+  },
+  {
+   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
+   "pct": 90.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1788,
+   "usize": 1788
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
