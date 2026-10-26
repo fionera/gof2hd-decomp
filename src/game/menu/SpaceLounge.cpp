@@ -206,16 +206,22 @@ SpaceLounge::SpaceLounge()
     this->init();
 
     // A finished "rescue" mission agent leaves the lounge: drop it and rebuild.
+    bool found = false;
+    int foundIndex = 0;
     if (this->agents != 0) {
         for (unsigned i = 0; i < this->agents->size(); ++i) {
             Agent *agent = (*this->agents)[i];
             if ((agent->getOffer() == 6 || agent->getOffer() == 0) && agent->getMission() != 0 &&
                 agent->getMission()->getType() == 12 && agent->hasAcceptedOffer()) {
-                ArrayRemove(agent, *this->agents);
-                this->init();
+                found = true;
+                foundIndex = i;
                 break;
             }
         }
+    }
+    if (found) {
+        ArrayRemove((*this->agents)[foundIndex], *this->agents);
+        this->init();
     }
 
     if (this->cutScene == 0) {
@@ -254,9 +260,10 @@ SpaceLounge::SpaceLounge()
                                               (float) SpaceLounge_cameraEndPos[race * 3 + 1],
                                               (float) SpaceLounge_cameraEndPos[race * 3 + 2]);
     AbyssEngine::AEMath::MatrixSetRotation(to, 0.0f, SpaceLounge_cameraEndRot[race], 0.0f);
+    PaintCanvas *canvas;
     this->cameraEase = new AbyssEngine::EaseInOutMatrix(from, to, 3000);
 
-    PaintCanvas *canvas = Globals::Canvas;
+    canvas = Globals::Canvas;
     canvas->CameraSetLocal(canvas->CameraGetCurrent(), from);
     this->introDone = 0;
     this->initialized = 1;
