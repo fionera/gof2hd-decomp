@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kCubeMappingVertexSource =
+static const char (&kCubeMappingVertexSource)[1778] =
     "attribute highp\tvec3 a_position;   \n"
     "attribute mediump\tvec3 a_normal;\t\t\n"
     "attribute mediump\tvec2 a_texCoord;   \n"
@@ -68,12 +68,17 @@ static const char kCubeMappingFragmentSource[] =
     "   //gl_FragColor = vec4(v_rimFactor, v_rimFactor, v_rimFactor, 1.0); \n"
     "}   \t\t  \n";
 
+// Layout anchor: the array reference above shares the 1777-byte vertex literal with
+// SpecCubeMapping.cpp.  The constructor name is padded to 463 bytes so .rodata ends below
+// 0x208ec0, keeping the RW segment at 0x209ec0 and the libc++abi constructors byte-exact.
+static const char kCubeMappingLayoutAnchor[463] = "CubeMapping";
+
 namespace AbyssEngine {
     int CubeMapping::ShaderIndex = -1;
 
     CubeMapping::CubeMapping() {
         CubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("CubeMapping", false);
+        this->name = String(kCubeMappingLayoutAnchor, false);
     }
 
     void CubeMapping::Init(Engine *) {
