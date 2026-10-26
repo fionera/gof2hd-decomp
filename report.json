@@ -160,20 +160,20 @@
    "usize": 944
   },
   {
-   "name": "_ZN5Level13createMissionEv",
-   "pct": 70.7,
-   "byte": false,
-   "linked": false,
-   "osize": 17172,
-   "usize": 17324
-  },
-  {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
    "pct": 70.8,
    "byte": false,
    "linked": false,
    "osize": 2632,
    "usize": 2600
+  },
+  {
+   "name": "_ZN5Level13createMissionEv",
+   "pct": 71.0,
+   "byte": false,
+   "linked": false,
+   "osize": 17172,
+   "usize": 17188
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
