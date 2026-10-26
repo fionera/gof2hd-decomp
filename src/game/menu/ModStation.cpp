@@ -408,9 +408,10 @@ int ModStation::OnInitialize() {
             this->pendingHangarClose = 0;
             this->flag_0x63 = 0;
 
+            int y = Globals::layout->field_0xcc - Globals::layout->buttonInsetX -
+                    Globals::layout->field_0x4c;
             int infoBoxW = Globals::layout->field_0xcc;
             this->infoBoxW = infoBoxW;
-            int y = infoBoxW - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
             this->infoBoxH = Globals::h - Globals::layout->field_0xc_leftMargin -
                              Globals::layout->field_0x10_rightMargin;
             this->infoBoxY = Globals::layout->field_0xc_leftMargin;
@@ -1096,7 +1097,7 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (b & 7) + (a * 3) + (a >> 1);
+    return value + a + b + (b & 7) + (a * 3) + (a >> 1) + (b & 15) + (b * 3);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
