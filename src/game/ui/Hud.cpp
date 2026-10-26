@@ -846,7 +846,10 @@ void Hud::drawOrbitInformation() {
         Globals::Canvas->SetColor(0xffffffff);
         int x = Globals::Canvas->GetImage2DWidth(this->factionLogoImage);
         x += Globals::layout->orbitInfoTextX;
-        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->hasNoOwner() != 1)
+        // hasNoOwner() is declared uint32_t but only ever returns 0/1.  Calling it through a
+        // bool-returning member pointer lets clang fold `!= 1` to a zero test (orig: cbnz).
+        bool (SolarSystem::*hasNoOwner)() = (bool (SolarSystem::*)())&SolarSystem::hasNoOwner;
+        if ((((SolarSystem *) (intptr_t) Globals::status->getSystem())->*hasNoOwner)() != 1)
             Globals::Canvas->DrawImage2D(this->factionLogoImage, 3, 3);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, Globals::status->getStation()->getName(), x,
                                     Globals::layout->orbitInfoStationY, false);
