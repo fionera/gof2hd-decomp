@@ -419,10 +419,9 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->velocities.data()[i] *= this->pitchRate;
         this->lifetimes[i] = this->weaponType == ITEM_SORT_SENTRY_GUN ? 0 : this->initialLifetime;
 
-        bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
         bool keepAmmo = true;
         if (!this->friendGun) {
-            if (__builtin_expect(this->ammoCount >= 1 && ammo != nullptr && ammo->getType() == 1, 1)) { // lint: arm_builtin
+            if (this->ammoCount >= 1 && ammo != nullptr && ammo->getType() == 1) {
                 keepAmmo = false;
                 if (this->itemIndex == 179) {
                     Globals::status->field_144 = 0;
@@ -434,6 +433,7 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
             ((TargetFollowCamera *) ((Level *) this->level)->getPlayer()->getTargetFollowCamera())->hitSmall();
         }
         fired = true;
+        int cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
         if (keepAmmo || cluster) {
             if (!cluster) {
                 return true;

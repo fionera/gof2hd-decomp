@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1352, linked_exact 4468, avg 99.78%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1352, linked_exact 4469, avg 99.78%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1352, linked_exact 4468, avg 99.78%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1352, linked_exact 4469, avg 99.78%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -32,7 +32,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,262,528 | **+3,064** | the remaining 55 non-linked exported functions plus the documented MenuTouchWindow 0x1000 layout anchor; local-code gaps are bracketed by the same neighbours. |
+| **.text** | 1,259,464 | 1,262,528 | **+3,064** | the remaining 54 non-linked exported functions plus the documented MenuTouchWindow 0x1000 layout anchor; local-code gaps are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 267,975 | **−1,184** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
 | .ARM.extab | 156,312 | 151,764 | −4,548 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
@@ -42,8 +42,8 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 ## The four real gaps (in priority/size order)
 
-1. **55 non-linked exported functions.** 4468 of 4523 compared functions are linked-exact; the
-   remaining 55 are the long tail (21 in 90–99%, 11 in 80–89%, 10 in 70–79%, 10 in 60–69%,
+1. **54 non-linked exported functions.** 4469 of 4523 compared functions are linked-exact; the
+   remaining 54 are the long tail (20 in 90–99%, 11 in 80–89%, 10 in 70–79%, 10 in 60–69%,
    3 below 50%). The `.text` total is +3,064 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
@@ -73,7 +73,7 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1352 byte_exact,
-4468 linked_exact, 4501 size_match of 4523; pct buckets {100:4468, 90-99:22, 80-89:10, 70-79:12,
+4469 linked_exact, 4501 size_match of 4523; pct buckets {100:4469, 90-99:21, 80-89:10, 70-79:12,
 60-69:8, <50:3}. 22 functions size-MISMATCH (need restructuring); 26 size-match >=80%
 not-linked (the highest-value near-misses).
 

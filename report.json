@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.78,
   "byte_exact": 1352,
-  "linked_exact": 4468,
-  "fuzzy_perfect": 4468,
+  "linked_exact": 4469,
+  "fuzzy_perfect": 4469,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -278,14 +278,6 @@
    "linked": false,
    "osize": 2644,
    "usize": 2636
-  },
-  {
-   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
-   "pct": 90.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1788,
-   "usize": 1788
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
@@ -19814,6 +19806,14 @@
    "linked": true,
    "osize": 520,
    "usize": 520
+  },
+  {
+   "name": "_ZN3Gun7shootAtEN11AbyssEngine6AEMath6MatrixEiP6Playerb",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1788,
+   "usize": 1788
   },
   {
    "name": "_ZN3Gun8setEnemyEP6Player",
