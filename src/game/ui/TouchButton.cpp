@@ -348,8 +348,9 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->layoutHeight = this->height;
         this->width = w;
         this->leftWidth = w;
-        this->textOffsetX = w / 2 - Globals::Canvas->GetTextWidth(this->fontId, text) / 2;
-        this->textOffsetY = (int) ((float) (this->height >> 1) +
+        int tw = Globals::Canvas->GetTextWidth(this->fontId, text);
+        this->textOffsetX = w / 2 - (tw >> 1);
+        this->textOffsetY = (int) ((float) (this->height / 2) +
                                    lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
         this->touchMargin = Globals::layout->field_0x80_touchMargin;
         break;
