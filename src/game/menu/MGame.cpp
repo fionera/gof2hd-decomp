@@ -2774,443 +2774,446 @@ void MGame::OnUpdate() {
             }
         }
 
-        if (this->elapsedTime > 5000 && this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive &&
-            !this->cutsceneActive) {
-            // Story contacts that call in when the player idles for an hour.
-            if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
-                Globals::status->getMission()->isEmpty() &&
-                Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
-                3600000) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                int variant = Globals::rnd->nextInt(2);
-                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 533 : 534),
-                                                          Globals::gameText->getText(1602), gMGameFaces + 5);
-                Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
-            } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
-                       Globals::status->getMission()->isEmpty() &&
-                       Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
-                       3600000) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                int variant = Globals::rnd->nextInt(2);
-                int textId = variant == 0 ? 535 : 536;
-                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
-                                                          Globals::gameText->getText(1603), gMGameFaces + 10);
-                Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
-            } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
-                       Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
-                       Globals::status->getMission()->isEmpty() &&
-                       Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
-                       3600000 &&
-                       !this->jumpDriveActive && !this->usingJumpDrive) {
-                this->level->createRadioMessage(
-                    28, Globals::rnd->nextInt(2) + (Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166));
-                reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
-            } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
-                       Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
-                       12000 &&
-                       !this->jumpDriveActive && !this->usingJumpDrive) {
-                int messageIndex = -1;
-                for (int i = 0; i < 3; i++) {
-                    if (Globals::status->getCurrentCampaignMission() >= gWingmenRadioMissions[i]) {
-                        messageIndex++;
+        int scriptTime = (int) this->levelScript->m_nScriptTime;
+        uint8_t *hints = Globals::hints;
+        if (this->elapsedTime > 5000) {
+            if (scriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
+                // Story contacts that call in when the player idles for an hour.
+                if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
+                    Globals::status->getMission()->isEmpty() &&
+                    Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
+                    3600000) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
                     }
-                }
-                if (messageIndex >= 0 && messageIndex < 3) {
-                    Globals::status->field_0x17c = 0;
-                    this->level->createRadioMessage(27, messageIndex);
-                }
-            }
-
-            // One-time tutorial hints.
-            if (!Globals::hints[23] && Globals::status->getShip()->hasBooster() &&
-                Globals::status->getCurrentCampaignMission() >= 2) {
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(596));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->pauseOpen = 1;
-                pauseSounds();
-                Globals::hints[23] = 1;
-                return;
-            }
-            if (!Globals::hints[33] && Globals::status->getShip()->hasJumpDrive() == 1) {
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->pauseOpen = 1;
-                pauseSounds();
-                Globals::hints[33] = 1;
-                return;
-            }
-            if (Globals::status->getShip()->hasCloak() && !Globals::hints[34]) {
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(593));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->pauseOpen = 1;
-                pauseSounds();
-                Globals::hints[34] = 1;
-                return;
-            }
-            if (!Globals::hints[32] && !this->player->isAutoPilot() &&
-                Globals::status->getCurrentCampaignMission() >= 10 && Globals::status->getMission()->isEmpty()) {
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(584));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->pauseOpen = 1;
-                pauseSounds();
-                Globals::hints[32] = 1;
-                return;
-            }
-            if (Globals::status->wingmen != nullptr && !Globals::hints[21]) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(637));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[21] = 1;
-                return;
-            }
-            if (!Globals::hints[28] &&
-                ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemyWithAnyone()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(648));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[28] = 1;
-                return;
-            }
-            if (!this->field_0x1e6 && Globals::status->getCurrentCampaignMission() == 5) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(619));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->field_0x1e6 = 1;
-                return;
-            }
-            if (!Globals::hints[17] && !this->player->isMining() && !this->field_0x1e5 &&
-                Globals::status->getCurrentCampaignMission() == 2 &&
-                (this->player->player->getHitpoints() < this->player->player->getMaxHitpoints() ||
-                 this->levelScript->m_nScriptTime > 40000)) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint(*Globals::gameText->getText(1725), false);
-                hint = Globals::globals->replaceKeyBindingTokens(hint);
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->field_0x1e5 = 1;
-                return;
-            }
-            if (!Globals::hints[17] && this->player->isMining() && !Globals::hints[17]) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(620));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[17] = 1;
-                return;
-            }
-            if (!Globals::hints[18] && this->player->isMining() && Globals::status->getCurrentCampaignMission() >= 4) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(621));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[18] = 1;
-                return;
-            }
-            if (Globals::status->getCurrentCampaignMission() == 2 && !Globals::hints[55] &&
-                this->player->lostMiningGame()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(617));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[55] = 1;
-                return;
-            }
-            if (!Globals::hints[20] && this->hud->cargoFull() && Globals::status->getCurrentCampaignMission() >= 7) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(636));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[20] = 1;
-                return;
-            }
-            if (!Globals::hints[35] && !Globals::status->inAlienOrbit() &&
-                ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
-                this->level->createRadioMessage(5, 0);
-                Globals::hints[35] = 1;
-                this->field_0xe0 = 1;
-                return;
-            }
-            if (Globals::hints[35] && !Globals::hints[36] && !this->field_0xe0 && !Globals::status->inAlienOrbit() &&
-                ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
-                this->level->createRadioMessage(6, 0);
-                Globals::hints[36] = 1;
-                return;
-            }
-            if (!Globals::hints[37] && Globals::status->getShip()->getFirstEquipmentOfSort(13) != nullptr &&
-                !this->player->isMining() && Globals::status->getMission()->isEmpty() &&
-                Globals::status->getCurrentCampaignMission() == 24) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(1912),
-                                                          Globals::gameText->getText(1603), gMGameFaces + 10);
-                Globals::sound->play(463, nullptr, nullptr, 0.0f);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                Globals::hints[37] = 1;
-                return;
-            }
-            if (!Globals::hints[40] && this->player->isHacking()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(599));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[40] = 1;
-                return;
-            }
-            if (!Globals::hints[41] &&
-                ((Globals::status->getCurrentCampaignMission() == 91 &&
-                  Globals::status->getStation()->getIndex() == 110 &&
-                  (*this->level->getMessages())[4]->isOver()) ||
-                 (Globals::status->getCurrentCampaignMission() != 91 &&
-                  Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
-                                                              Globals::status->getCurrentCampaignMission()) > 0.0f))) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(600));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[41] = 1;
-                return;
-            }
-            if (!Globals::hints[44] && this->player->hasVolatileGoods()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceWindow->set(*Globals::gameText->getText(602));
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[44] = 1;
-                return;
-            }
-            if (!Globals::hints[46] && Globals::status->getCurrentCampaignMission() == 91 &&
-                Globals::status->getStation()->getIndex() == 110 && (*this->level->getMessages())[4]->isOver()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(603));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[46] = 1;
-                return;
-            }
-            if (!Globals::hints[47] && Globals::status->getCurrentCampaignMission() == 91 &&
-                Globals::status->getStation()->getIndex() == 110 && this->player->isDockedToDockingPoint() &&
-                Globals::status->field_178 == 10 && (*this->level->getMessages())[6]->isOver()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(606));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[47] = 1;
-                return;
-            }
-            if (!Globals::hints[48] && Globals::status->getCurrentCampaignMission() == 92 &&
-                Globals::status->getStation()->getIndex() == 113 && this->player->isDockedToDockingPoint() &&
-                Globals::status->field_178 == 0) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(609));
-                this->choiceWindow->set(hint);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                Globals::hints[48] = 1;
-                return;
-            }
-            // Campaign finished: hand out the follow-up missions.
-            if (Globals::options[53] && !Globals::hints[38] && !this->cutsceneActive && !this->player->isMining() &&
-                Globals::status->getMission()->isEmpty() && !this->player->isAutoPilot() &&
-                Globals::status->gameWon()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                this->dialogueWindow = new DialogueWindow();
-                this->dialogueWindow->set(new Mission(160, 0, -1), 1, 46);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                Globals::hints[38] = 1;
-                Globals::status->nextCampaignMission(true);
-                Globals::status->nextCampaignMission(true);
-                return;
-            }
-            if (Globals::options[55] && !Globals::hints[49] && !this->cutsceneActive && !this->player->isMining() &&
-                Globals::status->getMission()->isEmpty() && !this->player->isAutoPilot() &&
-                Globals::status->dlc1Won()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                this->dialogueWindow = new DialogueWindow();
-                this->dialogueWindow->set(new Mission(160, 0, -1), 1, 85);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                Globals::hints[49] = 1;
-                Globals::status->nextCampaignMission(true);
-                Globals::status->nextCampaignMission(true);
-                return;
-            }
-            // Black market: offer to buy the whole cargo.
-            if (Globals::status->inBlackMarketSystem() && !Globals::status->field_110 && !Globals::status->field_0x111 &&
-                !this->field_0xd4 && this->level->getMessages() != nullptr &&
-                (*this->level->getMessages())[0]->isOver()) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->choiceWindow == nullptr) {
-                    this->choiceWindow = new ChoiceWindow();
-                }
-                this->choiceItemCount = 0;
-                Array<Item *> *cargo = Globals::status->getShip()->getCargo();
-                if (cargo != nullptr) {
-                    for (unsigned i = 0; i < cargo->size(); i++) {
-                        if ((*cargo)[i] != nullptr) {
-                            this->choiceItemCount += (*cargo)[i]->getAmount() * (*cargo)[i]->getSinglePrice();
+                    int variant = Globals::rnd->nextInt(2);
+                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 533 : 534),
+                                                              Globals::gameText->getText(1602), gMGameFaces + 5);
+                    Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
+                } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
+                           Globals::status->getMission()->isEmpty() &&
+                           Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
+                           3600000) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
+                    }
+                    int variant = Globals::rnd->nextInt(2);
+                    int textId = variant == 0 ? 535 : 536;
+                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
+                                                              Globals::gameText->getText(1603), gMGameFaces + 10);
+                    Globals::sound->play(variant == 0 ? 467 : 468, nullptr, nullptr, 0.0f);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
+                } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
+                           Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
+                           Globals::status->getMission()->isEmpty() &&
+                           Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
+                           3600000 &&
+                           !this->jumpDriveActive && !this->usingJumpDrive) {
+                    this->level->createRadioMessage(
+                        28, Globals::rnd->nextInt(2) + (Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166));
+                    reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
+                } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
+                           Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
+                           12000 &&
+                           !this->jumpDriveActive && !this->usingJumpDrive) {
+                    int messageIndex = -1;
+                    for (int i = 0; i < 3; i++) {
+                        if (Globals::status->getCurrentCampaignMission() >= gWingmenRadioMissions[i]) {
+                            messageIndex++;
                         }
                     }
+                    if (messageIndex >= 0 && messageIndex < 3) {
+                        Globals::status->field_0x17c = 0;
+                        this->level->createRadioMessage(27, messageIndex);
+                    }
                 }
-                if (this->choiceItemCount == 0) {
-                    this->choiceItemCount = 100;
-                }
-                float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
-                float share;
-                if (difficulty <= 0.0f) {
-                    share = 0.02f;
-                } else if (difficulty == 0.5f) {
-                    share = 0.05f;
-                } else {
-                    share = difficulty == 1.0f ? 0.1f : 0.2f;
-                }
-                this->choiceItemCount = (int) (share * (float) this->choiceItemCount);
-                String offer = Globals::status->replaceHash(String(*Globals::gameText->getText(448), false),
-                                                            Globals::layout->formatCredits(this->choiceItemCount),
-                                                            String("#C"));
-                offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
-                                                     String("#P"));
-                this->choiceWindow->set(offer, true);
-                this->choiceWindowOpen = 1;
-                this->needsRedraw = 1;
-                this->field_0xcf = 1;
-                this->field_0xd4 = 1;
-            } else if (!Globals::status->field_114 && !Globals::status->inAlienOrbit() &&
-                       Globals::status->getStation()->getIndex() == 108) {
-                this->pauseOpen = 1;
-                pauseSounds();
-                if (this->dialogueWindow != nullptr) {
-                    delete this->dialogueWindow;
-                    this->dialogueWindow = nullptr;
-                }
-                this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(457),
-                                                          Globals::gameText->getText(1601), gMGameFaces);
-                Globals::sound->play(1468, nullptr, nullptr, 0.0f);
-                this->cutsceneActive = 1;
-                this->needsRedraw = 1;
-                Globals::status->field_114 = 1;
-                return;
-            }
-        }
 
-        if (this->elapsedTime > 5000 && !this->cutsceneActive && !Globals::status->getMission()->hasFailed() &&
-            !Globals::status->getMission()->hasWon()) {
-            dialogueEvent();
+                // One-time tutorial hints.
+                if (!hints[23] && Globals::status->getShip()->hasBooster() &&
+                    Globals::status->getCurrentCampaignMission() >= 2) {
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(596));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    hints[23] = 1;
+                    return;
+                }
+                if (!hints[33] && Globals::status->getShip()->hasJumpDrive() == 1) {
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    hints[33] = 1;
+                    return;
+                }
+                if (Globals::status->getShip()->hasCloak() && !hints[34]) {
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(593));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    hints[34] = 1;
+                    return;
+                }
+                if (!hints[32] && !this->player->isAutoPilot() &&
+                    Globals::status->getCurrentCampaignMission() >= 10 && Globals::status->getMission()->isEmpty()) {
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(584));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    hints[32] = 1;
+                    return;
+                }
+                if (Globals::status->wingmen != nullptr && !hints[21]) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(637));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[21] = 1;
+                    return;
+                }
+                if (!hints[28] &&
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->isEnemyWithAnyone()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(648));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[28] = 1;
+                    return;
+                }
+                if (!this->field_0x1e6 && Globals::status->getCurrentCampaignMission() == 5) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(619));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->field_0x1e6 = 1;
+                    return;
+                }
+                if (!hints[17] && !this->player->isMining() && !this->field_0x1e5 &&
+                    Globals::status->getCurrentCampaignMission() == 2 &&
+                    (this->player->player->getHitpoints() < this->player->player->getMaxHitpoints() ||
+                     this->levelScript->m_nScriptTime > 40000)) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint(*Globals::gameText->getText(1725), false);
+                    hint = Globals::globals->replaceKeyBindingTokens(hint);
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->field_0x1e5 = 1;
+                    return;
+                }
+                if (!hints[17] && this->player->isMining() && !hints[17]) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(620));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[17] = 1;
+                    return;
+                }
+                if (!hints[18] && this->player->isMining() && Globals::status->getCurrentCampaignMission() >= 4) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(621));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[18] = 1;
+                    return;
+                }
+                if (Globals::status->getCurrentCampaignMission() == 2 && !hints[55] &&
+                    this->player->lostMiningGame()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(617));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[55] = 1;
+                    return;
+                }
+                if (!hints[20] && this->hud->cargoFull() && Globals::status->getCurrentCampaignMission() >= 7) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(636));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[20] = 1;
+                    return;
+                }
+                if (!hints[35] && !Globals::status->inAlienOrbit() &&
+                    ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
+                    this->level->createRadioMessage(5, 0);
+                    hints[35] = 1;
+                    this->field_0xe0 = 1;
+                    return;
+                }
+                if (hints[35] && !hints[36] && !this->field_0xe0 && !Globals::status->inAlienOrbit() &&
+                    ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
+                    this->level->createRadioMessage(6, 0);
+                    hints[36] = 1;
+                    return;
+                }
+                if (!hints[37] && Globals::status->getShip()->getFirstEquipmentOfSort(13) != nullptr &&
+                    !this->player->isMining() && Globals::status->getMission()->isEmpty() &&
+                    Globals::status->getCurrentCampaignMission() == 24) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
+                    }
+                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(1912),
+                                                              Globals::gameText->getText(1603), gMGameFaces + 10);
+                    Globals::sound->play(463, nullptr, nullptr, 0.0f);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    hints[37] = 1;
+                    return;
+                }
+                if (!hints[40] && this->player->isHacking()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(599));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[40] = 1;
+                    return;
+                }
+                if (!hints[41] &&
+                    ((Globals::status->getCurrentCampaignMission() == 91 &&
+                      Globals::status->getStation()->getIndex() == 110 &&
+                      (*this->level->getMessages())[4]->isOver()) ||
+                     (Globals::status->getCurrentCampaignMission() != 91 &&
+                      Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                                  Globals::status->getCurrentCampaignMission()) > 0.0f))) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(600));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[41] = 1;
+                    return;
+                }
+                if (!hints[44] && this->player->hasVolatileGoods()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceWindow->set(*Globals::gameText->getText(602));
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[44] = 1;
+                    return;
+                }
+                if (!hints[46] && Globals::status->getCurrentCampaignMission() == 91 &&
+                    Globals::status->getStation()->getIndex() == 110 && (*this->level->getMessages())[4]->isOver()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(603));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[46] = 1;
+                    return;
+                }
+                if (!hints[47] && Globals::status->getCurrentCampaignMission() == 91 &&
+                    Globals::status->getStation()->getIndex() == 110 && this->player->isDockedToDockingPoint() &&
+                    Globals::status->field_178 == 10 && (*this->level->getMessages())[6]->isOver()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(606));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[47] = 1;
+                    return;
+                }
+                if (!hints[48] && Globals::status->getCurrentCampaignMission() == 92 &&
+                    Globals::status->getStation()->getIndex() == 113 && this->player->isDockedToDockingPoint() &&
+                    Globals::status->field_178 == 0) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(609));
+                    this->choiceWindow->set(hint);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    hints[48] = 1;
+                    return;
+                }
+                // Campaign finished: hand out the follow-up missions.
+                if (Globals::options[53] && !hints[38] && !this->cutsceneActive && !this->player->isMining() &&
+                    Globals::status->getMission()->isEmpty() && !this->player->isAutoPilot() &&
+                    Globals::status->gameWon()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
+                    }
+                    this->dialogueWindow = new DialogueWindow();
+                    this->dialogueWindow->set(new Mission(160, 0, -1), 1, 46);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    hints[38] = 1;
+                    Globals::status->nextCampaignMission(true);
+                    Globals::status->nextCampaignMission(true);
+                    return;
+                }
+                if (Globals::options[55] && !hints[49] && !this->cutsceneActive && !this->player->isMining() &&
+                    Globals::status->getMission()->isEmpty() && !this->player->isAutoPilot() &&
+                    Globals::status->dlc1Won()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
+                    }
+                    this->dialogueWindow = new DialogueWindow();
+                    this->dialogueWindow->set(new Mission(160, 0, -1), 1, 85);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    hints[49] = 1;
+                    Globals::status->nextCampaignMission(true);
+                    Globals::status->nextCampaignMission(true);
+                    return;
+                }
+                // Black market: offer to buy the whole cargo.
+                if (Globals::status->inBlackMarketSystem() && !Globals::status->field_110 && !Globals::status->field_0x111 &&
+                    !this->field_0xd4 && this->level->getMessages() != nullptr &&
+                    (*this->level->getMessages())[0]->isOver()) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->choiceWindow == nullptr) {
+                        this->choiceWindow = new ChoiceWindow();
+                    }
+                    this->choiceItemCount = 0;
+                    Array<Item *> *cargo = Globals::status->getShip()->getCargo();
+                    if (cargo != nullptr) {
+                        for (unsigned i = 0; i < cargo->size(); i++) {
+                            if ((*cargo)[i] != nullptr) {
+                                this->choiceItemCount += (*cargo)[i]->getAmount() * (*cargo)[i]->getSinglePrice();
+                            }
+                        }
+                    }
+                    if (this->choiceItemCount == 0) {
+                        this->choiceItemCount = 100;
+                    }
+                    float difficulty = reinterpret_cast<const float &>(Globals::options[44]);
+                    float share;
+                    if (difficulty <= 0.0f) {
+                        share = 0.02f;
+                    } else if (difficulty == 0.5f) {
+                        share = 0.05f;
+                    } else {
+                        share = difficulty == 1.0f ? 0.1f : 0.2f;
+                    }
+                    this->choiceItemCount = (int) (share * (float) this->choiceItemCount);
+                    String offer = Globals::status->replaceHash(String(*Globals::gameText->getText(448), false),
+                                                                Globals::layout->formatCredits(this->choiceItemCount),
+                                                                String("#C"));
+                    offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
+                                                         String("#P"));
+                    this->choiceWindow->set(offer, true);
+                    this->choiceWindowOpen = 1;
+                    this->needsRedraw = 1;
+                    this->field_0xcf = 1;
+                    this->field_0xd4 = 1;
+                } else if (!Globals::status->field_114 && !Globals::status->inAlienOrbit() &&
+                           Globals::status->getStation()->getIndex() == 108) {
+                    this->pauseOpen = 1;
+                    pauseSounds();
+                    if (this->dialogueWindow != nullptr) {
+                        delete this->dialogueWindow;
+                        this->dialogueWindow = nullptr;
+                    }
+                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(457),
+                                                              Globals::gameText->getText(1601), gMGameFaces);
+                    Globals::sound->play(1468, nullptr, nullptr, 0.0f);
+                    this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
+                    Globals::status->field_114 = 1;
+                    return;
+                }
+            }
+
+            if (this->elapsedTime > 5000 && !this->cutsceneActive && !Globals::status->getMission()->hasFailed() &&
+                !Globals::status->getMission()->hasWon()) {
+                dialogueEvent();
+            }
         }
     }
 
