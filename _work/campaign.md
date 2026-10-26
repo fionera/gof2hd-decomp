@@ -1,5 +1,21 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 29 — 20-way continuation)
+
+- Current gate: **byte_exact 1352, linked_exact 4451, avg 99.69, stubs 0, missing/extra 0,
+  imports 207, data 843/843** (`RATCHET PASS`).
+- Landed from the wave28 long tail:
+  - `Gun::shootAt` 68.9% -> 88.5% (1776/1788B); `calcCharacterCollision` traded down to
+    46.6% to keep the archive layout.
+  - `SpaceLounge::startChat` 91.3% -> 97.2% (14450B exact) and `drawLounge` 93.7% -> 94.9%
+    (1948B exact); `onKeyPress` preserved at 89.9%.
+  - `ModStation::OnInitialize` 68.2% -> 79.5% (6328/6396B), with the existing out-of-line
+    layout anchor trimmed by 8B so `byte_exact` stays 1352.
+- Launched four more disjoint workers (`w600..w603`) so the fleet is back to 20 live
+  `codex exec -p dsv41` processes. New coverage: MenuTouchWindow, Level, PlayerEgo,
+  PlayerFighter. Every launch uses the `-p dsv41` profile (sglang,
+  `deepseek-v4.1-flash`, high reasoning).
+
 ## Session 2026-10-26 (wave 28 — 20 workers, long-tail finishing)
 
 - Wave28 added 28 `codex exec -p dsv41` workers in `../wt/w569..w596`
