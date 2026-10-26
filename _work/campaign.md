@@ -2,6 +2,15 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w912`/`w888`: `Gun::shootAt` 89.4% -> **90.6%** (1788B exact) by
+  checking `ammoCount` before the ammo pointer and marking the guard hot.
+- Harvested `w913`: `Globals::Globals` C1/C2 69.9% -> **70.8%** (612B) by
+  reordering the settings stores and the `imageFactory` zeroing to the original
+  schedule.
+- Harvested `w893`: `Mesh::ReadEnhancedDataFromFile` 80.4% -> **80.9%**
+  (1836B, original 1832B) with a 16-bit channel counter; `MeshReadData` gives
+  back 0.1 pt (70.8 -> 70.7, 2600B) to keep the Mesh TU size at 8208B and the
+  ten libstdc++ ctors byte-exact. Size-match rises 4499 -> 4501.
 - Harvested `w921`: `Status::missionCompleted` now uses the recovered non-zero
   mission-order ranking table instead of an all-zero array, fixing the unreachable
   per-type cases. Function stays 85.4% / 1432 B; gate unchanged. The 190-byte table

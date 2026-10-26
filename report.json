@@ -121,11 +121,11 @@
   },
   {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 70.8,
+   "pct": 70.7,
    "byte": false,
    "linked": false,
    "osize": 2632,
-   "usize": 2600
+   "usize": 2596
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -201,11 +201,11 @@
   },
   {
    "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
-   "pct": 80.4,
+   "pct": 80.9,
    "byte": false,
    "linked": false,
    "osize": 1832,
-   "usize": 1832
+   "usize": 1836
   },
   {
    "name": "_ZN9RocketGun6updateEi",
