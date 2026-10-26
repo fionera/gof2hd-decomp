@@ -2,6 +2,13 @@
 
 ## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
 
+- Harvested `w901`: `MenuTouchWindow::MenuTouchWindow` C1/C2 64.2% -> **65.2%**
+  (9640 -> 9616B, original 9600B). The `.text` layout anchor is now kept alive
+  by an address-only extra `MenuTouchWindow_languageIds` element instead of an
+  unreachable constructor hook, removing 24 bytes from each ctor body while
+  preserving `draw` 73.0%, `OnTouchEnd` 67.8%, `OnTouchBegin` 96.7% and
+  `OnTouchMove` linked-exact. Gate: byte 1352, linked 4469, `.text 0x1343c0`.
+
 - Harvested `w912`: `Gun::shootAt` 90.6% -> **100% linked-exact** (1788B).
   Moving the `cluster` int after `fired` and removing the hot hint on the
   `keepAmmo` guard reproduces the original late `weaponType` load and the

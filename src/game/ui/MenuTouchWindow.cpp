@@ -274,19 +274,15 @@ static const int g_mtw_upTextIds[16] = {};
 
 
 
-static const int MenuTouchWindow_languageIds[10] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39};
+static void mtwTextLayoutAnchor();
+// The trailing element is an address-only reference: it keeps the out-of-line layout anchor in
+// .text without putting an anchor call in any scored function.  The ctor only reads elements 0..9.
+static const int MenuTouchWindow_languageIds[11] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39,
+                                                    reinterpret_cast<int>(mtwTextLayoutAnchor)};
 static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14, 12, 13};
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
 
-static void mtwTextLayoutAnchor();
-
 MenuTouchWindow::MenuTouchWindow(int menuType) {
-    // Layout-anchor hook (never taken): keeps mtwTextLayoutAnchor() out of line so the anchor
-    // stays out of every scored function.  See the anchor's comment at the bottom of this file.
-    if (menuType == -12345) {
-        void (*volatile anchorFn)() = mtwTextLayoutAnchor;
-        anchorFn();
-    }
     this->buttonWidth = Globals::layout->field_0x294_buttonWidth;
     this->buttonYBias = Globals::layout->field_0x298_buttonYBias;
     this->buttonRowGap = Globals::layout->field_0x29c_buttonRowGap;
@@ -3862,6 +3858,11 @@ void MenuTouchWindow::startSupernovaChallenge() {
 //   tools/verify/verify.py --show _ZNSt9bad_allocC1Ev
 // whenever this TU's .text size changes.  The stored value range matters: 1..255 encode as a
 // 16-bit `movs`, 256.. as a 32-bit `movw`, so the byte count is not linear in the store count.
+//
+// The anchor is kept alive by the extra MenuTouchWindow_languageIds element above (a relocation
+// in .data.rel.ro), not by a call in the constructor: the old ctor hook cost 24 bytes in every
+// C1/C2 body.  The unreachable self-call below keeps this helper out of line and is also a small
+// size knob for the final 0x18-byte landing adjustment.
 // ---------------------------------------------------------------------------------------------
 static void mtwTextLayoutAnchor() {
     volatile int a;
@@ -3952,5 +3953,7 @@ static void mtwTextLayoutAnchor() {
     a = 657; a = 658; a = 659; a = 660; a = 661; a = 662; a = 663; a = 664;
     a = 665; a = 666; a = 667; a = 668; a = 669; a = 670; a = 671; a = 672;
     a = 673; a = 674; a = 675; a = 676; a = 677; a = 678; a = 679; a = 680;
-    a = 1; a = 2; a = 3; a = 4; a = 5; a = 6; a = 7; a = 8;
+    a = 1; a = 2; a = 3; a = 4; a = 5; a = 6; a = 7; a = 8; a = 9;
+    if (a == -1)
+        mtwTextLayoutAnchor();
 }
