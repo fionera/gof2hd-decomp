@@ -2316,7 +2316,11 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(1.0f - rumble, 100);
                     if (m_nScriptTimerA >= 2151) {
-                        ((PlayerStation *) (*enemies)[0])->rootGeometry->setVisible(false);
+                        KIPlayer *e0 = (*enemies)[0];
+                        KIPlayer *e1 = (*enemies)[1];
+                        e0->setVisible(false);
+                        e1->setVisible(false);
+                        (*m_pLevel->getLandmarks())[0]->setVisible(false);
                         if (m_nScriptTimerA >= 10001) {
                             m_pCamera->setRumblePercentage(0.0f, 0);
                             m_pCamera->setLookAtCam(false);
@@ -4419,9 +4423,12 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB =
                             (long long) ((float) delta * 0.05f +
                                          (float) m_nScriptTimerB);
-                    (*enemies)[2]->geometry->moveForward((float) ((double) delta * 2.5));
-                    (*enemies)[3]->geometry->moveForward((float) ((double) delta * 2.4));
-                    (*enemies)[4]->geometry->moveForward((float) ((double) delta * 2.3));
+                    for (int i = 2; i < 5; ++i) {
+                        (*enemies)[i]->geometry->moveForward(
+                                i == 2 ? (float) ((double) delta * 2.5)
+                                       : (i == 3 ? (float) delta * 2.4f
+                                                 : (float) delta * 2.3f));
+                    }
                     {
                         AEGeometry *geo = (*enemies)[2]->geometry;
                         AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
