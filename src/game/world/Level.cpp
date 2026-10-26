@@ -6226,17 +6226,6 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                     fixed->setWreckedMeshId(0x477e);
                 }
                 break;
-            case 1:
-                ArraySetLength(5, *volumes);
-                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, 351.0f, 5827.0f, 3930.0f, 1590.0f, 2070.0f);
-                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 616.0f, 4573.0f, 4440.0f, 2120.0f, 1035.0f);
-                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 780.0f, 3303.0f, 4970.0f, 2620.0f, 1895.0f);
-                (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 456.0f, -309.0f, 2695.0f, 3530.0f, 6600.0f);
-                (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
-                fixed->setWreckedMeshId(0x477f);
-                break;
-            // The reference emits the race-3 hull boxes before the race-2 ones in the
-            // literal pool, so the source order is 3 then 2.
             case 3:
                 ArraySetLength(2, *volumes);
                 (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
@@ -6252,6 +6241,17 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 break;
             default:
                 break;
+            case 1:
+                ArraySetLength(5, *volumes);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, 351.0f, 5827.0f, 3930.0f, 1590.0f, 2070.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 616.0f, 4573.0f, 4440.0f, 2120.0f, 1035.0f);
+                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 780.0f, 3303.0f, 4970.0f, 2620.0f, 1895.0f);
+                (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 456.0f, -309.0f, 2695.0f, 3530.0f, 6600.0f);
+                (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
+                fixed->setWreckedMeshId(0x477f);
+                break;
+            // The reference emits the race-3 hull boxes before the race-2 ones in the
+            // literal pool, so the source order is 3 then 2.
         }
         fixed->setBV(volumes);
         fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
