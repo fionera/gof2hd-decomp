@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.74,
   "byte_exact": 1352,
-  "linked_exact": 4456,
-  "fuzzy_perfect": 4456,
+  "linked_exact": 4457,
+  "fuzzy_perfect": 4457,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -542,14 +542,6 @@
    "linked": false,
    "osize": 1464,
    "usize": 1464
-  },
-  {
-   "name": "_ZN11TouchButton4drawEv",
-   "pct": 99.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1376,
-   "usize": 1376
   },
   {
    "name": "Blowfish_decipher",
@@ -13478,6 +13470,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN11TouchButton4drawEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1376,
+   "usize": 1376
   },
   {
    "name": "_ZN11TouchButton7getTextEv",

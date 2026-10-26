@@ -406,6 +406,7 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
 
 
 void TouchButton::draw() {
+    PaintCanvas *canvasTop = Globals::Canvas;
     unsigned int imageToDraw;
     int imageX, imageY;
     unsigned int savedColor = Globals::Canvas->GetColor();
@@ -537,6 +538,7 @@ void TouchButton::draw() {
                 Globals::Canvas->SetColor(this->textColor);
             }
         }
+        __builtin_assume(canvasTop != 0); // lint: arm_builtin
         break;
     }
     }
@@ -544,10 +546,9 @@ void TouchButton::draw() {
 drawSingleImage:
     Globals::Canvas->DrawImage2D(imageToDraw, imageX, imageY);
 restoreDrawState:
-    PaintCanvas *canvas = Globals::Canvas;
     Globals::layout->setDrawColor(0xffffffff);
-    canvas->FontSetSpacing(this->fontId, savedSpacing);
-    canvas->SetColor(savedColor);
+    Globals::Canvas->FontSetSpacing(this->fontId, savedSpacing);
+    Globals::Canvas->SetColor(savedColor);
 }
 
 
