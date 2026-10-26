@@ -313,7 +313,7 @@ static const int g_dw_genericOtherTexts[5] = {384, 385, 386, 387, 388};
 
 // Character face parts per campaign speaker; speaker 0 (the player) uses the default face.
 static int g_dw_playerFace[5];
-static int g_dw_speakerFaceParts[62][5] = {
+static int g_dw_speakerFaceParts[61][5] = {
     {0, 8, 8, 1, 8},
     {2, 1, 1, 1, 1},
     {0, 9, 9, 8, 9},
@@ -375,8 +375,8 @@ static int g_dw_speakerFaceParts[62][5] = {
     {2, 3, 1, 1, 4},
     {2, 1, 4, 2, 0},
     {0, 0, 4, 3, 5},
-    {0, 10, 2, 9, 4},
 };
+static int g_dw_lastSpeakerFaceParts[4] = {0, 10, 2, 9};
 static int *const g_dw_speakerFaces[63] = {
     g_dw_playerFace,
     g_dw_speakerFaceParts[0],
@@ -440,7 +440,7 @@ static int *const g_dw_speakerFaces[63] = {
     g_dw_speakerFaceParts[58],
     g_dw_speakerFaceParts[59],
     g_dw_speakerFaceParts[60],
-    g_dw_speakerFaceParts[61],
+    g_dw_lastSpeakerFaceParts,
 };
 
 void DialogueWindow::loadContent() {
