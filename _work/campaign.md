@@ -35,6 +35,24 @@
   PlayerStation ctors, Hud::drawMenu, Level assignGuns/createCampaignMission,
   MGame::OnUpdate, RocketGun::update, and Mesh::ReadEnhancedDataFromFile.
 
+- Harvested `w958`: `Level::createShip` 67.9% -> **68.1%** (2764B) by restoring
+  the type-scaling switch and the shared 0x2c/0x31 cargo teardown.
+
+- Launched `w1010..w1017` (8 `codex exec -p dsv41` workers) for anchor removal:
+  CubeMapping `.rodata`, Transform `.aezdata`, AEFile `.aezdata`, ObjectGun
+  `.text`, GameText `arabicFormRow`, RecordHandler `mixRecordStoreSlot`,
+  StatusWindow clamp, and a PulseShader audit. These workers must replace the
+  anchor with real source shape, not retune it.
+
+- Launched `w1020..w1039` (20 `codex exec -p dsv41` workers) as a worst-first
+  fleet from master `d3e49338`: Layout ctor, LevelScript::process, Radar::draw,
+  Gun::calcCharacterCollision, Generator::createMission, Level::createShip,
+  MenuTouchWindow ctor/OnTouchEnd/draw, Hud draw/drawChallengeModeScore,
+  HackingGame::render2D, MeshReadData, Globals ctor, Level createMission/
+  createScene, PlayerEgo::calcCollision, HangarWindow::render,
+  MGame::OnTouchEnd, and Status::moveWanted. The prompt prioritizes real
+  control-flow/struct/TU root causes over one-point instruction nudging.
+
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
   (6400B, original 6396B) by reloading `this->buttonRow` after each
