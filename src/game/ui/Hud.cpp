@@ -406,8 +406,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         else
             passengers = !(Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
                            Globals::status->getStation()->getIndex() == 131);
-        String count = String(Globals::status->field_178) +
-                       (String(" / ") + String(Globals::status->getShip()->getMaxPassengers()));
+        String count = String(Globals::status->field_178) + String(" / ") +
+                       String(Globals::status->getShip()->getMaxPassengers());
         if (passengers)
             Globals::Canvas->DrawImage2D(this->image_0x334, this->field_0x438 - Globals::layout->field_0x1f0,
                                          this->field_0x43a);
@@ -450,7 +450,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
                                ->getAmount()
                          : 0;
-        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
+        String cargoPrefix = amount + String(" / ");
+        String cargo = cargoPrefix + String(amount + Globals::status->getShip()->getFreeSpace());
         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -1733,7 +1734,7 @@ void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
     int digitW, overlap, y, digitH, screenW;
     int step;
-    int half, span, left, x;
+    int half, left;
     Globals::Canvas->SetColor(0xffffffff);
     digitW = this->digitSprite->getFrameWidth();
     overlap = Globals::layout->field_0x2c_rowHeight;
@@ -1749,9 +1750,8 @@ void Hud::drawChallengeModeScore(int unused) {
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
-    span = step * 7 >> 1;
-    left = half - span;
-    x = left;
+    left = half - step * 7 / 2;
+    int x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
         int frame = score.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
@@ -1783,7 +1783,7 @@ void Hud::drawChallengeModeScore(int unused) {
         float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
         String multiplier(Globals::status->field_0x18c);
-        int mx = half + rowGap - span;
+        int mx = half + rowGap - (step * 7 >> 1);
         for (unsigned int i = 0; i < multiplier.size(); i++) {
             int frame = multiplier.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
