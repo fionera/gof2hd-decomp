@@ -26,6 +26,12 @@
   createScene, Hud draw/drawMenu, PlayerEgo update/calcCollision/checkForTurret,
   StarMap::draw, ModStation::OnInitialize, RocketGun::update, MGame::OnTouchEnd,
   and SpaceLounge::OnTouchEnd. The original wave30 workers remain live.
+- Harvested `w735`: `TouchButton::draw` 99.4% -> **100% linked-exact** (1376B)
+  by keeping the Canvas pointer live across the progress block and restoring the
+  direct `Globals::Canvas` tail. `linked_exact` 4456 -> **4457**.
+- Harvested `w760`: `ModStation::OnInitialize` 81.1% -> **83.6%** (6384/6396B)
+  by restoring the case-80 local layout, y-before-info-box ordering, member-backed
+  button row, per-row layout reads, and the original flag/activeTouch store order.
 - Harvested `w748`: `Status::missionCompleted` 60.2% -> **85.4%** (1440 -> **1432B**,
   exact original size) by restoring the source-order lookup dispatch. The 190-byte
   `kMissionOrder` table is compensated by shrinking the existing CubeMapping `.rodata`
