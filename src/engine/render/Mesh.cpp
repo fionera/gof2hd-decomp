@@ -642,11 +642,12 @@ namespace AbyssEngine {
                     float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
-                    float *normal = (float *) (*slot)->normals + i;
+                    // The original re-reads (*slot)->normals for every store, so keep the
+                    // member access inline instead of caching a float* base pointer.
                     if (length == 0.0f) {
-                        normal[1] = 1.0f;
-                        normal[0] = 0.0f;
-                        normal[2] = 0.0f;
+                        ((float *) (*slot)->normals)[i + 1] = 1.0f;
+                        ((float *) (*slot)->normals)[i] = 0.0f;
+                        ((float *) (*slot)->normals)[i + 2] = 0.0f;
                     } else {
                         x /= length;
                         y /= length;
@@ -660,9 +661,9 @@ namespace AbyssEngine {
                             cy = 1.0f;
                         if (z > 1.0f)
                             cz = 1.0f;
-                        normal[0] = cx;
-                        normal[1] = cy;
-                        normal[2] = cz;
+                        ((float *) (*slot)->normals)[i + 1] = cy;
+                        ((float *) (*slot)->normals)[i] = cx;
+                        ((float *) (*slot)->normals)[i + 2] = cz;
                     }
                 }
                 delete[] (unsigned char *) raw;
