@@ -23,8 +23,8 @@
 - Harvested `w629`: `Generator::getShipBuyList` 90.9% -> **93.7%** (2252/2244B) by
   simplifying the forced/fixed selection; the extra 8B is a documented defensive clamp that
   keeps the Generator TU `.text` at the archive-sensitive size. `createMission` stays 65.1%.
-- Fleet now has **38 live `codex exec -p dsv41` workers**: 27 primary targets plus 11
-  second-opinion/data-layout workers (`w647..w664`) on the hardest non-linked functions and
+- Fleet now has **40 live `codex exec -p dsv41` workers**: 27 primary targets plus 13
+  second-opinion/data-layout workers (`w647..w670`) on the hardest non-linked functions and
   anonymous `.rodata`/shader-literal data. New disjoint targets:
   `w639` HangarWindow, `w640` MGame::OnTouchEnd, `w641` SpaceLounge::OnTouchEnd,
   `w642` RocketGun::update, `w643` Level::createShip, `w644` Level::assignGuns/createMission,
