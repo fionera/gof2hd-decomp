@@ -73,6 +73,14 @@
   `OnTouchEnd` stays at 78.0%, `.text` stays `0x1333d0`, gate unchanged.
 - `w627` launched on `Status::missionCompleted` (60.2%) and `Status::moveWanted` (75.5%),
   restoring the fleet to 20 live `codex exec -p dsv41` workers.
+- Harvested `w616`: `ModStation::OnUpdate` 92.3% -> **92.4%** (3652B exact) by using the
+  original `(textId == 2716) | (textId == 2718)` boolean OR shape, and
+  `ModStation::OnInitialize` 79.5% -> **80.0%** (6352/6396B) by caching `Globals::h`; the
+  existing `modStationTouchEndPad` anchor was trimmed 120 -> 94B so the TU stays at
+  `0x1333d0`. Gate unchanged (byte 1352, linked 4452, avg 99.71).
+- `w616` exited; `w629` launched on `Generator::createMission` (60.9%),
+  `createAgents` (99.2%) and `getShipBuyList` (90.9%), keeping 20 live
+  `codex exec -p dsv41` workers.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
