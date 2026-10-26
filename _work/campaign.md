@@ -2,6 +2,12 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w643`: `Level::createShip` 65.9% -> **67.9%** (2764B exact) by
+  restoring the original race-case source order (race 3 before race 1 in the hull-box
+  literal pool).
+- Harvested `w674`: `MenuTouchWindow::OnTouchEnd` 64.8% -> **65.1%** (8232/8132B)
+  with the original signed `getPlayingTime() < 1` test and combined case-1 guard;
+  ctor 65.8%, draw 67.3%, OnTouchMove 89.1%, OnTouchBegin 95.3% preserved.
 - Harvested `w648`: `LevelScript::process` 47.0% -> **47.3%** (57152/57232B)
   by restoring the original top-tested case-21 loop, with the case-56/125 branch order
   and a documented tail anchor keeping `.text 0x1333c0`.
