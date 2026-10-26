@@ -338,7 +338,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         }
         unsigned short language = GameText::getLanguage();
         float lineFactor;
-        if (language < 16 && ((1 << language) & 0x8c00))
+        if (language == 10 || language == 11 || language == 15)
             lineFactor = 1.0f;
         else
             lineFactor = language == 14 ? 1.0f : 1.5f;
@@ -349,7 +349,7 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
         this->width = w;
         this->leftWidth = w;
         int tw = Globals::Canvas->GetTextWidth(this->fontId, text);
-        this->textOffsetX = w / 2 - (tw >> 1);
+        this->textOffsetX = w / 2 - tw / 2;
         this->textOffsetY = (int) ((float) (this->height / 2) +
                                    lineFactor * (float) Globals::Canvas->GetTextHeight(this->fontId));
         this->touchMargin = Globals::layout->field_0x80_touchMargin;

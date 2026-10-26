@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.78,
   "byte_exact": 1352,
-  "linked_exact": 4467,
-  "fuzzy_perfect": 4467,
+  "linked_exact": 4468,
+  "fuzzy_perfect": 4468,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -446,14 +446,6 @@
    "linked": false,
    "osize": 2516,
    "usize": 2516
-  },
-  {
-   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
-   "pct": 99.5,
-   "byte": false,
-   "linked": false,
-   "osize": 1816,
-   "usize": 1816
   },
   {
    "name": "_ZN10ModStation8OnUpdateEv",
@@ -13414,6 +13406,14 @@
    "linked": true,
    "osize": 1376,
    "usize": 1376
+  },
+  {
+   "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1816,
+   "usize": 1816
   },
   {
    "name": "_ZN11TouchButton7getTextEv",
