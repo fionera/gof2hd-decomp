@@ -2664,6 +2664,50 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
     if (station->isDying())
         return false;
     switch (this->dockingPointIndex) {
+        case 3: {
+            SpacePoint *exit = ((KIPlayer *) (intptr_t) this->asteroidTarget)
+                                   ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
+            this->moveTarget =
+                ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
+                + AbyssEngine::AEMath::MatrixRotateVector(((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
+                                                          exit->position);
+            if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) >= 200) {
+                this->easeMatrix->Increase((float) this->shakeIntensity);
+                Matrix eased = this->easeMatrix->GetValue();
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                    eased, this->getPosition()
+                               + (this->moveTarget - this->getPosition()) * (float) this->shakeIntensity * 0.0012f);
+                Matrix identity;
+                this->field_0x4->setMatrix(identity);
+                this->geometry->setMatrix(eased);
+                reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
+                this->dockOffsetVec = this->geometry->getPosition();
+                return false;
+            }
+            this->dockedFlag = 0;
+            this->field_0x145 = 0;
+            this->asteroidTarget = 0;
+            radar->lockedEnemy = nullptr;
+            radar->dockNavPtr = nullptr;
+            this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
+            this->targetFollowCamera->setActive(true);
+            this->targetFollowCamera->setLookAtCam(false);
+            this->targetFollowCamera->useTargetsUpVector(false);
+            this->levelScript->resetCamera(this->level);
+            this->player->resetGunDelay(0);
+            this->field_0xb0 = 1;
+            this->dockingPointIndex = 0;
+            if (this->spacePoint != 0) {
+                ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
+                this->spacePoint = 0;
+            }
+            if (this->hackingGame != 0) {
+                delete (HackingGame *) (intptr_t) this->hackingGame;
+                this->hackingGame = 0;
+                hud->setHackingGameActive(false);
+            }
+            return false;
+        }
         case 0: {
             SpacePoint *approach = ((KIPlayer *) (intptr_t) this->asteroidTarget)
                                        ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
@@ -2676,11 +2720,10 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 approach->take();
             }
             KIPlayer *dockStation = (KIPlayer *) (intptr_t) this->asteroidTarget;
-            Vector pos = dockStation->getPosition()
+            this->moveTarget = dockStation->getPosition()
                                            + AbyssEngine::AEMath::MatrixRotateVector(
                                                ((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
                                                approach->position);
-            this->moveTarget = pos;
             int distance = (int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition());
             if (this->dockScaling > distance) {
                 KIPlayer *target = (KIPlayer *) (intptr_t) this->asteroidTarget;
@@ -2713,7 +2756,7 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
                 Vector position = this->player->getPosition();
                 Globals::sound->updateEvent3DAttributes(2270, &position, &velocity, false);
                 this->StopEngineSound();
-                return false;
+                break;
             }
             Vector target = this->moveTarget;
             float speed = 4.0f;
@@ -2810,53 +2853,10 @@ bool PlayerEgo::approachDockingPoint(Hud *hud, int /*unused*/, Radar *radar) {
             this->dockOffsetVec = this->geometry->getPosition();
             return false;
         }
-        case 3: {
-            SpacePoint *exit = ((KIPlayer *) (intptr_t) this->asteroidTarget)
-                                   ->getNearestNavigationPoint(this->getPosition(), (SpacePoint *) (intptr_t) this->spacePoint);
-            this->moveTarget =
-                ((KIPlayer *) (intptr_t) this->asteroidTarget)->getPosition()
-                + AbyssEngine::AEMath::MatrixRotateVector(((KIPlayer *) (intptr_t) this->asteroidTarget)->geometry->getMatrix(),
-                                                          exit->position);
-            if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) >= 200) {
-                this->easeMatrix->Increase((float) this->shakeIntensity);
-                Matrix eased = this->easeMatrix->GetValue();
-                AbyssEngine::AEMath::MatrixSetTranslation(
-                    eased, this->getPosition()
-                               + (this->moveTarget - this->getPosition()) * (float) this->shakeIntensity * 0.0012f);
-                Matrix identity;
-                this->field_0x4->setMatrix(identity);
-                this->geometry->setMatrix(eased);
-                reinterpret_cast<Matrix &>(this->player->transform[0]) = this->geometry->getMatrix();
-                this->dockOffsetVec = this->geometry->getPosition();
-                return false;
-            }
-            this->dockedFlag = 0;
-            this->field_0x145 = 0;
-            this->asteroidTarget = 0;
-            radar->lockedEnemy = nullptr;
-            radar->dockNavPtr = nullptr;
-            this->miningUpVec = Vector{0.0f, 0.0f, 0.0f};
-            this->targetFollowCamera->setActive(true);
-            this->targetFollowCamera->setLookAtCam(false);
-            this->targetFollowCamera->useTargetsUpVector(false);
-            this->levelScript->resetCamera(this->level);
-            this->player->resetGunDelay(0);
-            this->field_0xb0 = 1;
-            this->dockingPointIndex = 0;
-            if (this->spacePoint != 0) {
-                ((SpacePoint *) (intptr_t) this->spacePoint)->giveFree();
-                this->spacePoint = 0;
-            }
-            if (this->hackingGame != 0) {
-                delete (HackingGame *) (intptr_t) this->hackingGame;
-                this->hackingGame = 0;
-                hud->setHackingGameActive(false);
-            }
-            return false;
-        }
         default:
-            return false;
+            break;
     }
+    return false;
 }
 
 bool PlayerEgo::isDockingToDockingPoint() {
