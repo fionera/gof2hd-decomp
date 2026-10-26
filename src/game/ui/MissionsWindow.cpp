@@ -23,9 +23,9 @@
 
 struct CampaignMissionFlags {
     char pad00[0x35];
-    char campaignVisibleFlagA;
+    bool campaignVisibleFlagA;
     char pad36;
-    char campaignVisibleFlagB;
+    bool campaignVisibleFlagB;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagA) == 0x35,
@@ -153,7 +153,7 @@ MissionsWindow::~MissionsWindow() {
     this->m_pWantedWindow = nullptr;
 }
 
-int MissionsWindow::init() {
+void MissionsWindow::init() {
     if (!Globals::iPad) {
         this->m_x = 0;
         this->m_y = 0;
@@ -206,7 +206,6 @@ int MissionsWindow::init() {
     this->m_pRejectButton = nullptr;
     delete this->m_pMapButton;
     this->m_pMapButton = nullptr;
-    unsigned int w = this->m_width;
     this->m_pStarMap = nullptr;
     this->m_choiceActive = 0;
     this->m_field_0x21 = 0;
@@ -217,14 +216,14 @@ int MissionsWindow::init() {
     int top = Globals::layout->field_0xc_leftMargin + this->m_y + Globals::layout->field_0x20_top +
               Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
     this->m_pCampaignWindow = new ScrollTouchWindow(
-            Globals::layout->buttonInsetX + this->m_x, top,
+            this->m_x + Globals::layout->buttonInsetX, top,
             (this->m_width >> 1) - (Globals::layout->field_0x2c_rowHeight + Globals::layout->buttonInsetX),
-            this->m_y - top + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+            this->m_height + this->m_y - top - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
             (Globals::status->gameWon() ? 0 : Globals::layout->field_0x30_rowHeight) -
             Globals::layout->field_0x2c_rowHeight * 2,
             false);
     if (!Globals::status->gameWon() || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagA || ((CampaignMissionFlags *) Globals::options)->campaignVisibleFlagB) {
-        String text;
+        String text("");
         if (Globals::status->getCurrentCampaignMission() < 164)
             text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
         if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
@@ -248,9 +247,17 @@ int MissionsWindow::init() {
 
     // Freelance mission on the right half.
     int noFreelance = Globals::status->getFreelanceMission()->isEmpty();
-    if (!noFreelance) {
+    if (noFreelance) {
         this->m_pFreelanceWindow = new ScrollTouchWindow(
-                this->m_x + (w / 2) + Globals::layout->field_0x2c_rowHeight,
+                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight, top,
+                (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
+                this->m_y - top + this->m_height - Globals::layout->field_0x2c_rowHeight * 2 -
+                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+                false);
+        this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
+    } else {
+        this->m_pFreelanceWindow = new ScrollTouchWindow(
+                this->m_x + (this->m_width >> 1) + Globals::layout->field_0x2c_rowHeight,
                 Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight),
                 (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
                 this->m_y - (Globals::layout->field_0x2d8 + (top + Globals::layout->field_0x2c_rowHeight)) +
@@ -266,21 +273,13 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText("", text);
         this->m_pAgentImageParts =
                 Globals::imageFactory->loadChar(Globals::status->getFreelanceMission()->getAgent()->getImageParts());
-    } else {
-        this->m_pFreelanceWindow = new ScrollTouchWindow(
-                this->m_x + (w / 2) + Globals::layout->field_0x2c_rowHeight, top,
-                (this->m_width >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
-                this->m_height + (this->m_y - (top + Globals::layout->field_0x2c_rowHeight * 2)) -
-                Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-                false);
-        this->m_pFreelanceWindow->setText("", *Globals::gameText->getText(174));
     }
 
     int buttonWidth = (this->m_width >> 1) / 2 - Globals::layout->buttonInsetX;
     if (!Globals::status->inAlienOrbit()) {
         if (!Globals::status->gameWon())
             this->m_pAcceptButton = new TouchButton(
-                    *Globals::gameText->getText(424), 0, Globals::layout->buttonInsetX + this->m_x,
+                    *Globals::gameText->getText(424), 0, this->m_x + Globals::layout->buttonInsetX,
                     this->m_y + this->m_height - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
                     Globals::layout->field_0x2c_rowHeight,
                     buttonWidth, 33, 4);
@@ -304,15 +303,14 @@ int MissionsWindow::init() {
         }
     }
 
-    this->m_mode = 0;
     this->m_hangarNeedsUpdate = 0;
+    this->m_mode = 0;
     if (Globals::status->wantedBoardAccessible()) {
         if (this->m_pWantedWindow != nullptr)
             this->m_pWantedWindow->init();
         else
             this->m_pWantedWindow = new WantedWindow();
     }
-    return 0;
 }
 
 void MissionsWindow::draw() {

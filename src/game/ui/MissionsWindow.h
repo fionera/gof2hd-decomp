@@ -54,7 +54,7 @@ public:
 
     void render3D();
 
-    int init();
+    void init();
 
     void draw();
 
