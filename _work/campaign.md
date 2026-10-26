@@ -6,6 +6,11 @@
   imports 207, data 843/843** (`RATCHET PASS`).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
+- Harvested `w656`: `MenuTouchWindow` ctor 65.0% -> **65.8%** (9656/9600B) by fixing the
+  language-row width anchor and the load-dialog guard shape; `OnTouchEnd` stays 64.8% and
+  `draw` stays 67.3%. A documented 16-byte constructor-tail anchor keeps `.text` at `0x1333c0`.
+- Harvested `w641`: `SpaceLounge::OnTouchEnd` 78.8% -> **80.6%** (7448/7448B) by setting
+  `mapVisible` in both star-map paths.
 - Harvested `w670`: replaced the zero `gAchievementValues[135]` placeholder with the
   original 45x3 threshold table (content-level `.rodata` fix; section size unchanged).
 - Harvested `w664`: converted 68 remaining GLSL source declarations across 30 shader TUs
