@@ -604,10 +604,11 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            const Vector &position = this->positions.data()[i];
+            Vector position(this->positions.data()[i]);
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition =
                     AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
+            Level *level = (Level *) this->level;
             int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
             if (mine) {
                 radius *= 5;
@@ -631,11 +632,11 @@ void Gun::calcCharacterCollision() {
             if (!(outer && ki->outerCollide(position))) {
                 float r = (float) radius;
                 if (!(enemyPosition.x - position.x + velocity.x < r &&
-                      enemyPosition.x - position.x + velocity.x > -(float) radius &&
+                      enemyPosition.x - position.x + velocity.x > (float) -radius &&
                       enemyPosition.y - position.y + velocity.y < r &&
-                      enemyPosition.y - position.y + velocity.y > -(float) radius &&
+                      enemyPosition.y - position.y + velocity.y > (float) -radius &&
                       enemyPosition.z - position.z + velocity.z < r &&
-                      enemyPosition.z - position.z + velocity.z > -(float) radius && !outer)) {
+                      enemyPosition.z - position.z + velocity.z > (float) -radius && !outer)) {
                     continue;
                 }
             }
@@ -690,8 +691,8 @@ void Gun::calcCharacterCollision() {
             }
             int amount = this->damage;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
-                if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
-                    ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
+                if (enemy->egoFlag && level->getPlayer() != nullptr &&
+                    level->getPlayer()->isDockedToDockingPoint()) {
                     amount = (int) ((float) this->damage * 3.0f * 0.25f);
                 }
             } else if (enemy->egoFlag) {
@@ -721,7 +722,9 @@ void Gun::calcCharacterCollision() {
                 if (this->impact->isRocket()) {
                     reinterpret_cast<uint8_t *>(&enemy->field_54)[1] = 1;
                 }
-                this->impact->explode(position);
+                if (this->impact != nullptr) {
+                    this->impact->explode(position);
+                }
             }
             if (scatter) {
                 this->hitFlags[i] = 1;
