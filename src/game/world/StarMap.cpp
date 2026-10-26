@@ -795,7 +795,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
             } else if (Globals::status->getCurrentCampaignMission() >= 33 &&
                        (stationMode ? (*this->stations)[index]->getIndex() == Globals::status->field_80
                                     : (int) (*this->systems)[index]->getStationEnumIndex(Globals::status->field_80) >= 0) &&
-                       campaign->getTargetStation() <= -1) {
+                       campaign->getTargetStation() == -1) {
                 this->iconBuffer[1] = this->keyImageWanted;
             }
         }

@@ -376,6 +376,14 @@
    "usize": 3652
   },
   {
+   "name": "_ZN7StarMap16drawOnScreenInfoEib",
+   "pct": 93.1,
+   "byte": false,
+   "linked": false,
+   "osize": 3488,
+   "usize": 3488
+  },
+  {
    "name": "_ZN10ModStation10OnKeyPressExx",
    "pct": 93.2,
    "byte": false,
@@ -454,14 +462,6 @@
    "linked": false,
    "osize": 1200,
    "usize": 1200
-  },
-  {
-   "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 97.1,
-   "byte": false,
-   "linked": false,
-   "osize": 3488,
-   "usize": 3488
   },
   {
    "name": "_ZN11SpaceLounge9startChatEv",
