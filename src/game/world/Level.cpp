@@ -2780,8 +2780,8 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f);
                 KIPlayer *enemy = (*this->enemies)[i];
-                ((PlayerFighter *) enemy)->crateCaptured() = 0;
                 enemy->cargo = nullptr;
+                ((PlayerFighter *) enemy)->crateCaptured() = 0;
                 (*this->enemies)[i]->player->setHitpoints(150);
                 if (i <= 2)
                     ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
@@ -2967,7 +2967,8 @@ void Level::createCampaignMission() {
             for (int i = 0; i < 2; i++) {
                 (*this->enemies)[i] = this->createShip(9, 0, 8, nullptr, true, false);
                 Vector pos = this->player->getPosition();
-                pos -= VectorNormalize(this->player->geometry->getDirection()) * 8000.0f;
+                Vector dir = VectorNormalize(this->player->geometry->getDirection());
+                pos -= dir * 8000.0f;
                 pos.x += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.y += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.z += (float) (Globals::rnd->nextInt(1400) - 700);
@@ -3122,8 +3123,10 @@ void Level::createCampaignMission() {
             }
             break;
         case 50:
-            this->spawnPosition =
-                    (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+            if ((*this->landmarks)[1] != nullptr)
+                this->spawnPosition = (*this->landmarks)[1]->getPosition();
+            else
+                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(4, *this->enemies);
             for (unsigned i = 0; i < this->enemies->size(); i++) {
@@ -3133,8 +3136,10 @@ void Level::createCampaignMission() {
             }
             break;
         case 51: {
-            this->spawnPosition =
-                    (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+            if ((*this->landmarks)[1] != nullptr)
+                this->spawnPosition = (*this->landmarks)[1]->getPosition();
+            else
+                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
             this->enemyRoute->setLoop(true);
@@ -3152,8 +3157,10 @@ void Level::createCampaignMission() {
             break;
         }
         case 52: {
-            this->spawnPosition =
-                    (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+            if ((*this->landmarks)[1] != nullptr)
+                this->spawnPosition = (*this->landmarks)[1]->getPosition();
+            else
+                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
             this->enemyRoute->setLoop(true);
@@ -3214,11 +3221,14 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->name = *Globals::gameText->getText(441);
             for (unsigned i = 1; i < this->enemies->size(); i++) {
                 (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
+                float centerX = center.x;
                 int x = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
+                float centerY = center.y;
                 int y = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
+                float centerZ = center.z;
                 int z = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
-                (*this->enemies)[i]->setPosition((int) (center.x + (float) x), (int) (center.y + (float) y),
-                                                 (int) (center.z + (float) z));
+                (*this->enemies)[i]->setPosition((int) (centerX + (float) x), (int) (centerY + (float) y),
+                                                 (int) (centerZ + (float) z));
                 (*this->enemies)[i]->setToSleep();
             }
             this->objectivesA = new Objective(27, 4, this);
@@ -3333,7 +3343,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
             this->spawnPosition = start + (target - start) / 4.0f;
             (*this->enemies)[0]->setPosition(this->spawnPosition);
-            (*this->enemies)[0]->geometry->setDirection(VectorNormalize(target - start), Vector{0.0f, 1.0f, 0.0f});
+            Vector direction = VectorNormalize(target - start);
+            (*this->enemies)[0]->geometry->setDirection(direction, Vector{0.0f, 1.0f, 0.0f});
             Player *p = (*this->enemies)[0]->player;
             p->setHitpoints((int) ((float) p->getMaxHitpoints() * 2.5f));
             this->objectivesA = new Objective(1, 0, this);
@@ -4269,7 +4280,7 @@ void Level::createCampaignMission() {
         layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
         layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
         layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
-        layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0; layoutPad = 22.0; layoutPad = 23.0; layoutPad = 24.0;
+        layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0; layoutPad = 22.0;
         (void) layoutPad;
         volatile int layoutPad2;
         (void) layoutPad2;
@@ -6960,6 +6971,7 @@ void Level::createScene() {
         delete this->enemies;
     }
     this->enemies = nullptr;
+    int k;
     if (this->missionPtr == 2) {
             this->createPlayer();
             Globals::status->setMission(Mission::empty);
@@ -7010,7 +7022,7 @@ void Level::createScene() {
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength(3, *this->enemies);
             }
-            for (int k = 0; k < staticCount; k++) {
+            for (k = 0; k < staticCount; k++) {
                 AEGeometry *g = new AEGeometry(kBarMeshes[race][k], Globals::Canvas, false);
                 (*this->enemies)[this->enemies->size() - staticCount + k] = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             }
@@ -7038,7 +7050,7 @@ void Level::createScene() {
             (*this->enemies)[0]->setToSleep();
             (*this->enemies)[0]->player->setAlwaysFriend(true);
             bool plainHangar = sceneRace == 1 || sceneRace > 3;
-            for (int k = 0; k < 4; k++) {
+            for (k = 0; k < 4; k++) {
                 int mesh = kHangarMeshes[sceneRace][k];
                 if (mesh < 0)
                     continue;
