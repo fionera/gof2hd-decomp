@@ -873,7 +873,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         switch (type) {
             case 0:
                 itemId = Globals::rnd->nextInt(7);
-                amount = difficulty * 95 / 10 + 5;
+                amount = (int) ((float) difficulty / 10.0f * 95.0f) + 5;
                 break;
             case 2:
                 amount = (int) ((float) Globals::rnd->nextInt(4)) + 2;
@@ -881,13 +881,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             case 3:
             case 5:
                 itemId = type == 3 ? 116 : 117;
-                amount = difficulty * 8 / 10 + 2;
+                amount = (int) ((float) difficulty / 10.0f * 8.0f) + 2;
                 break;
             case 11:
-                amount = (int) ((float) difficulty * 1.8f) + 2;
+                amount = (int) ((float) difficulty / 10.0f * 18.0f) + 2;
                 break;
             case 15:
-                amount = Globals::rnd->nextInt(90) + 30;
+                amount = (int) ((float) Globals::rnd->nextInt(90)) + 30;
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
                         itemId = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation())
@@ -908,10 +908,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int toSystem = ((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem();
     float reward = (galaxy->distance(systems->data()[fromSystem], systems->data()[toSystem]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
-    if (type == 9) {
-        reward *= 1.2f;
-    } else if (type == 7) {
+    if (type == 7) {
         reward *= 0.7f;
+    } else if (type == 9) {
+        reward *= 1.2f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
     } else if (type == 3 || type == 5) {
