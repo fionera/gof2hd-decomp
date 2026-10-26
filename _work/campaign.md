@@ -2,6 +2,13 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w648`: `LevelScript::process` 47.0% -> **47.3%** (57152/57232B)
+  by restoring the original top-tested case-21 loop, with the case-56/125 branch order
+  and a documented tail anchor keeping `.text 0x1333c0`.
+- Harvested `w621`: `Level::createCampaignMission` 83.0% -> **83.9%** (29820/29676B)
+  by interleaving the campaign spawn-center loads and hoisting the normalized direction;
+  `createScene` 76.2% -> **76.6%** (2252B exact). `createShip` 65.9% and `createMission`
+  71.0% preserved; the campaign anchor was trimmed to keep `.text 0x1333c0`.
 - Harvested `w676`: `Hud::drawOrbitInformation` 94.4% -> **100.0% linked-exact**
   (608/608B). Calling `hasNoOwner()` through a bool-returning member pointer lets clang
   fold `!= 1` to the original `cbnz` while keeping x in its original stack slot.
