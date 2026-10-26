@@ -2386,13 +2386,12 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         return;
     for (unsigned int i = 0; i < objects->size(); i++) {
         KIPlayer *object = (*objects)[i];
-        Vector surface = this->geometry->getPosition();
         if (object == nullptr)
             continue;
-        surface = this->geometry->getPosition();
-        if (i == 0 && !Globals::status->inAlienOrbit()
-            && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f && object->field_0x71)
+        if (i == 0 && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f
+            && !Globals::status->inAlienOrbit() && object->field_0x71)
             this->collidesWithStationFlag = 1;
+        Vector surface = this->geometry->getPosition();
         if (!object->outerCollide(surface))
             continue;
         if (object->getType() == 16994 && object->isVisible()) {
@@ -2449,9 +2448,10 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         }
         if (!object->isVisible())
             continue;
-        surface = object->projectCollisionOnSurface(this->geometry->getPosition());
-        if (surface != Vector{0.0f, 0.0f, 0.0f}) {
-            this->geometry->setPosition(surface);
+        surface = object->projectCollisionOnSurface(surface);
+        Vector collision = surface;
+        if (collision != Vector{0.0f, 0.0f, 0.0f}) {
+            this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
