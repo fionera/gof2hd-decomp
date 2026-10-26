@@ -2,6 +2,9 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w652`: `Radar::draw` 61.0% -> **61.6%** (9596B) by matching the
+  gas/asteroid lock sound query to `isPlaying(0)`, keeping the gas lock candidate in the
+  original local, and preserving the raw-frame load order.
 - Harvested `w649`: `Gun::calcCharacterCollision` 59.4% -> **59.7%** (1892/1984B)
   by restoring the original bomb-first explosive/explode-on-contact branch shape;
   `shootAt` preserved at 88.9% (1788B exact).
