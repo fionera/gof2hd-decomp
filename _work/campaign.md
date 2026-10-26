@@ -1,5 +1,21 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 34 — 20-way continuation)
+
+- Harvested `w823`: `HackingGame::render2D` 67.8% -> **70.3%** (2090 -> 2072B) by
+  restoring the branch-local tile draw and x-term order. Gate unchanged:
+  byte_exact 1352, linked_exact 4465, avg 99.77.
+- Launched 20 fresh workers `w840..w859`, all with the explicit `-p dsv41` profile
+  (sglang, `deepseek-v4.1-flash`, high reasoning), based on master `e7b6d6ce`.
+  Coverage: Layout, LevelScript, Radar, Gun, Generator, MenuTouchWindow,
+  HackingGame, Level, Hud, Globals, Mesh, PlayerEgo, HangarWindow, MGame,
+  Status, SpaceLounge, RocketGun, StarMap, StarSystem, PlayerStation.
+  These are second opinions on the remaining non-linked TUs; only the best
+  gate-green commit per TU will be harvested.
+- Current gate before the new batch: **byte_exact 1352, linked_exact 4465,
+  avg 99.77, stubs 0, missing/extra 0, imports 207, data 843/843**
+  (`RATCHET PASS`), `.text 0x1333c0`.
+
 ## Session 2026-10-26 (wave 33 — 20-way continuation)
 
 - Harvested `w786`: `StarMap::draw` 89.2% -> **89.7%** (2636B, orig 2644B) by
