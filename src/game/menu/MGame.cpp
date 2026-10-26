@@ -2774,9 +2774,9 @@ void MGame::OnUpdate() {
             }
         }
 
-        uint8_t *hints = Globals::hints;
         if (this->elapsedTime > 5000) {
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
+                uint8_t *hints = Globals::hints;
                 // Story contacts that call in when the player idles for an hour.
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
                     Globals::status->getMission()->isEmpty() &&
@@ -2789,7 +2789,8 @@ void MGame::OnUpdate() {
                         this->dialogueWindow = nullptr;
                     }
                     int variant = Globals::rnd->nextInt(2);
-                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(variant == 0 ? 533 : 534),
+                    int textId = variant == 0 ? 533 : 534;
+                    this->dialogueWindow = new DialogueWindow(Globals::gameText->getText(textId),
                                                               Globals::gameText->getText(1602), gMGameFaces + 5);
                     Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
                     this->cutsceneActive = 1;
@@ -3412,9 +3413,9 @@ void MGame::OnUpdate() {
         Globals::status->field_60 = this->player->player->getArmorHP();
         Globals::status->field_68 = this->player->player->getGammaHP();
         Globals::status->field_f4 = this->player->getCurrentSecondaryWeaponIndex();
-        Level::comingFromAlienWorld = 1;
-        Level::initStreamOutPosition = 1;
         Level::programmedStation = nullptr;
+        Level::initStreamOutPosition = 1;
+        Level::comingFromAlienWorld = 1;
         Globals::switch_to_target_setting = 1;
         this->applicationManager->SetCurrentApplicationModule(2);
         this->active = 0;
