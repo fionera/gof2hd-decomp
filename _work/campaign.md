@@ -10,6 +10,31 @@
   LevelScript process, Layout ctor, MGame OnTouchEnd, Status moveWanted, and
   ModStation OnUpdate. Gate floor: byte 1352, linked 4469, `.text 0x1343c0`.
 
+- Harvested wave 41 finishers (all gate-green, counts unchanged at byte 1352 /
+  linked 4469 / avg 99.79 / `.text 0x1343c0`):
+  - `w961`: `MenuTouchWindow` ctor C1/C2 65.2% -> **68.4%** (9616 -> 9600B,
+    original 9600B) by removing duplicate zero stores and sharing the
+    message-clear tail.
+  - `w948`: `Status::missionCompleted` 85.4% -> **86.3%** (1432B exact) by
+    switching the final dispatch to case 182 and restoring the zero
+    mission-order table.
+  - `w947` follow-ups: `ModStation::OnInitialize` 86.4% -> **87.0%** by
+    hoisting `atLab` and binding the `flag_0x63` reference in the new-wanted
+    block.
+  - `w959`: `MenuTouchWindow::OnTouchEnd` 67.8% -> **68.7%** (8196 -> 8152B)
+    by dropping the tail paint reset and correcting the About-button order and
+    scrollbar-height call.
+  - `w957`: `Hud::draw` 68.3% -> **68.4%** (9212B) by default-constructing the
+    time string and using signed `/2` for the first damage indicator.
+
+- Launched `w970..w989` (20 `codex exec -p dsv41` workers) from master
+  `283f158b` for the next non-linked tier: ModStation OnKeyPress/ctor,
+  Generator::createAgents, Radar ctor/drawCurrentLock, PlayerFighter::update,
+  SpaceLounge sound/startChat/drawLounge, StarMap::drawOnScreenInfo,
+  MenuTouchWindow::OnTouchBegin, HangarWindow::OnTouchEnd, StarSystem/
+  PlayerStation ctors, Hud::drawMenu, Level assignGuns/createCampaignMission,
+  MGame::OnUpdate, RocketGun::update, and Mesh::ReadEnhancedDataFromFile.
+
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
   (6400B, original 6396B) by reloading `this->buttonRow` after each
