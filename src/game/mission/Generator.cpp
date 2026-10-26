@@ -594,11 +594,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             continue;
         }
         result->data()[out++] = existing->data()[i];
-        // Re-read the status pointer here so the allocator keeps it live across the offer
-        // checks and spills `out` instead, matching the original's register allocation.
-        (void) Globals::status->inSupernovaSystem();
+        int campaign = Globals::status->getCurrentCampaignMission();
         if (existing->data()[i]->getOffer() == 9) {
-            int index = Globals::status->getCurrentCampaignMission() >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
+            int index = campaign >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
             int itemId = kAgentOfferItems[index];
             existing->data()[i]->setSellItemData(itemId, (uint32_t) (index - 3) < 2 ? 10 : 1,
                                                  (*Globals::items)[itemId]->getSinglePrice() *
@@ -815,6 +813,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 break;
             case 4:
                 type = 12;
+                targetStation = agent->getStation();
                 break;
         }
     } else if (type == 12) {
@@ -877,7 +876,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                 amount = difficulty * 95 / 10 + 5;
                 break;
             case 2:
-                amount = Globals::rnd->nextInt(4) + 2;
+                amount = (int) ((float) Globals::rnd->nextInt(4)) + 2;
                 break;
             case 3:
             case 5:
@@ -909,8 +908,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int toSystem = ((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem();
     float reward = (galaxy->distance(systems->data()[fromSystem], systems->data()[toSystem]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
-    if (type == 9 || type == 7) {
-        reward *= type == 9 ? 1.2f : 0.7f;
+    if (type == 9) {
+        reward *= 1.2f;
+    } else if (type == 7) {
+        reward *= 0.7f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
     } else if (type == 3 || type == 5) {
