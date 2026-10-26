@@ -393,7 +393,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, kills,
                                     this->field_0x438 + Globals::layout->field_0x1fc, this->field_0x43a + 5, false);
     } else if (timeLeft > 0 && Globals::status->getCurrentCampaignMission() != 42) {
-        String time;
+        String time = "";
         Globals::globals->longToTimeString(timeLeft, time);
         Globals::Canvas->DrawImage2D(this->image_0x320, this->field_0x438, this->field_0x43a);
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, time,
@@ -450,8 +450,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
                                ->getAmount()
                          : 0;
-        String cargoPrefix = amount + String(" / ");
-        String cargo = cargoPrefix + String(amount + Globals::status->getShip()->getFreeSpace());
+        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
