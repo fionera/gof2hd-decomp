@@ -399,8 +399,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
-    int otherLock = this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr ||
-                     this->field_0x1c != nullptr || this->field_0x14 != 0;
+    int otherLock;
+    if (this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr) {
+        otherLock = 1;
+    } else {
+        otherLock = this->field_0x14 != 0;
+    }
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
@@ -1225,7 +1229,9 @@ asteroids:
                 Globals::status->getCurrentCampaignMission() == 16) {
                 music = 136;
             } else if (this->field_0x1bc <= 2) {
-                music = 140;
+                // Intentional shadowing: at -Oz the inner value stays live in r1 across
+                // the shared play below, matching the original binary's codegen.
+                int music = 140;
                 if (bossSeen) {
                     music = 149;
                 }
