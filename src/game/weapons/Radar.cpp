@@ -1016,17 +1016,19 @@ enemies:
             }
             if (gasHit) {
                 this->gasLockTimer += mode;
+                KIPlayer *lockedGas = nullptr;
                 if (this->gasLockTimer > this->field_0x1b8 - 200) {
-                    if (!this->lockConfirmed && !Globals::sound->isPlaying(26)) {
+                    if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
                         Globals::sound->play(26, nullptr, nullptr, 0.0f);
                     }
-                    this->lockedGasCloud = this->field_0x3c;
+                    lockedGas = this->field_0x3c;
+                    this->lockedGasCloud = lockedGas;
                 }
                 if (this->gasLockTimer > 500) {
                     Sprite *blip = this->blipSprite;
-                    int last = blip->getRawFrameCount() - 1;
                     KIPlayer *candidate = this->field_0x3c;
-                    if (candidate == nullptr || candidate == this->lockedGasCloud) {
+                    int last = blip->getRawFrameCount() - 1;
+                    if (candidate == nullptr || candidate == lockedGas) {
                         blip->setFrame(last);
                     } else {
                         int frame = (int) ((float) (this->gasLockTimer - 500) / (float) (this->field_0x1b8 - 500) *
@@ -1176,7 +1178,7 @@ asteroids:
                                 hud->hudEvent(9, this->level->getPlayer(), 0);
                             }
                         } else if (this->hasScanner19) {
-                            if (!this->lockConfirmed && !Globals::sound->isPlaying(26)) {
+                            if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
                                 Globals::sound->play(26, nullptr, nullptr, 0.0f);
                             }
                             this->lockedAsteroid = this->field_0x10;
