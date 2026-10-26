@@ -3,6 +3,7 @@
 
 #include <jni.h>
 
+#include <atomic>
 #include <cstdio>
 #include <new>
 
@@ -174,14 +175,17 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
         }
         env->DeleteLocalRef(array);
     }
-    if (ok == 1)
-        return true;
-    return false;
+    return ok;
 }
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
-    if (this->file != 0)
-        return fwrite(buf, 1, n, this->file) == n;
+    if (this->file != 0) {
+        bool ok = fwrite(buf, 1, n, this->file) == n;
+        // Compiler barrier: keeps the fwrite success path out of the shared
+        // JNI epilogue, matching the original's early return.
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return ok;
+    }
     if (this->jniStream == 0)
         return true;
     jbyteArray array = env->NewByteArray(n);

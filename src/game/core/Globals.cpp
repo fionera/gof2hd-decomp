@@ -702,8 +702,8 @@ Globals::Globals() {
 
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
-    Globals::lastSpaceMusicPlayed = -1;
     Globals::initMemoryWarning = 0;
+    Globals::lastSpaceMusicPlayed = -1;
     Globals::lastStationMusicPlayed = -1;
     Globals::lastCampaignMissionFailed = -1;
     Globals::lastCampaignMissionFailCount = 0;
