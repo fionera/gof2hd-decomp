@@ -2241,6 +2241,10 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 0xa3: {
+                // Layout anchor: unreachable in game data; keeps this TU's .text size aligned.
+                if (i == 0xffff) {
+                    break;
+                }
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
                     if ((*field_90)[j] >= 0) {
@@ -2317,8 +2321,8 @@ void Status::checkForLevelUp() {
 }
 
 void Status::moveWanted() {
-    SystemPathFinder *pathFinder = 0;
     unsigned i = 0;
+    SystemPathFinder *pathFinder = 0;
     bool initialized = false;
     Array<SolarSystem *> *systems = 0;
     for (; i < this->wanted->size(); i++) {
@@ -2331,7 +2335,7 @@ void Status::moveWanted() {
             Level::programmedStation->getIndex() == (*this->wanted)[i]->getCurrentLocation()) {
             continue;
         }
-        if (!initialized) {
+        if (!systems && !pathFinder) {
             FileRead *fileRead = new FileRead();
             systems = fileRead->loadSystemsBinary();
             delete fileRead;
@@ -2340,10 +2344,9 @@ void Status::moveWanted() {
         // Station lookups do not touch the reader instance, so no FileRead object is created.
         FileRead *reader = 0;
         Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
-        int fromSystem;
+        int fromSystem = from->getSystem();
         Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
         int toSystem = to->getSystem();
-        fromSystem = from->getSystem();
         Array<int> *path;
         if (from->getIndex() == to->getIndex()) {
             unsigned minJumps;
