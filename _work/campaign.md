@@ -6,11 +6,16 @@
   imports 207, data 843/843** (`RATCHET PASS`).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
+- Harvested `w650`: `MenuTouchWindow::draw` 60.2% -> **67.3%** (12660/13052B) by
+  moving the common 502 header and naming the volume string; `.text` stays `0x1333c0`.
+- Harvested `w653`: `HackingGame::render2D` 61.1% -> **61.5%** (2066/2090B) by caching
+  the main canvas and naming the tile row/col; `.text` stays `0x1333c0`.
 - Harvested `w629`: `Generator::getShipBuyList` 90.9% -> **93.7%** (2252/2244B) by
   simplifying the forced/fixed selection; the extra 8B is a documented defensive clamp that
   keeps the Generator TU `.text` at the archive-sensitive size. `createMission` stays 65.1%.
-- Fleet now has **37 live `codex exec -p dsv41` workers**: 27 primary targets plus 10
-  second-opinion workers (`w647..w656`) on the hardest non-linked functions. New disjoint targets:
+- Fleet now has **39 live `codex exec -p dsv41` workers**: 27 primary targets plus 12
+  second-opinion/data-layout workers (`w647..w663`) on the hardest non-linked functions and
+  anonymous `.rodata`/shader-literal data. New disjoint targets:
   `w639` HangarWindow, `w640` MGame::OnTouchEnd, `w641` SpaceLounge::OnTouchEnd,
   `w642` RocketGun::update, `w643` Level::createShip, `w644` Level::assignGuns/createMission,
   `w645` Status::missionCompleted. Every launch uses the `-p dsv41` profile
