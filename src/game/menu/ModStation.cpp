@@ -1910,8 +1910,6 @@ void ModStation::OnKeyPress(long long key, long long) {
                         if (this->hangarWindow == nullptr) {
                             this->hangarWindow = new HangarWindow();
                             this->hangarWindow->initialize();
-                        } else {
-                            this->hangarWindow->initialize();
                         }
                         if (this->spaceLounge != nullptr && this->spaceLounge->hangarNeedsUpdate()) {
                             delete this->hangarWindow;
@@ -1919,8 +1917,7 @@ void ModStation::OnKeyPress(long long key, long long) {
                             this->hangarWindow = new HangarWindow();
                             this->hangarWindow->initialize();
                             this->spaceLounge->setHangarUpdate(false);
-                        }
-                        if (this->m_pDialogueWindow != nullptr &&
+                        } else if (this->m_pDialogueWindow != nullptr &&
                             ((MissionsWindow *) this->m_pDialogueWindow)->hangarNeedsUpdate()) {
                             delete this->hangarWindow;
                             this->hangarWindow = nullptr;
@@ -1959,7 +1956,7 @@ void ModStation::OnKeyPress(long long key, long long) {
                         }
                         return;
                     case 1:
-                        if (Globals::status->getCurrentCampaignMission() < 13 ||
+                        if (__builtin_expect(Globals::status->getCurrentCampaignMission() < 13, 0) || // lint: arm_builtin
                             Globals::status->getCurrentCampaignMission() == 49)
                             goto notAvailable;
                         if (Globals::status->getStation()->getIndex() == 88 &&

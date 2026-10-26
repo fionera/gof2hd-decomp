@@ -368,14 +368,6 @@
    "usize": 8852
   },
   {
-   "name": "_ZN10ModStation10OnKeyPressExx",
-   "pct": 93.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2516,
-   "usize": 2516
-  },
-  {
    "name": "_ZN13PlayerStationC1EP7Station",
    "pct": 93.6,
    "byte": false,
@@ -518,6 +510,14 @@
    "linked": false,
    "osize": 1464,
    "usize": 1464
+  },
+  {
+   "name": "_ZN10ModStation10OnKeyPressExx",
+   "pct": 99.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2516,
+   "usize": 2516
   },
   {
    "name": "Blowfish_decipher",
