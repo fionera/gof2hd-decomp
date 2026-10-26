@@ -1,5 +1,27 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 33 — 20-way continuation)
+
+- Harvested `w786`: `StarMap::draw` 89.2% -> **89.7%** (2636B, orig 2644B) by
+  caching `Globals::Canvas` in the jump-cost block so `GetTextWidth` /
+  `DrawString` / `SetColor` share one canvas load. `StarMap::update` stays
+  linked-exact and `drawOnScreenInfo` stays 97.1%; gate unchanged.
+- Launched 20 additional workers `w820..w839`, all with the `-p dsv41` profile
+  (sglang, `deepseek-v4.1-flash`, high reasoning). The pre-existing wave32
+  workers remain live, so the fleet is ~40 `codex exec -p dsv41` processes.
+  New coverage: Hud draw/menu/touch/challenge, MGame update/touch, Globals ctor,
+  HackingGame render2D, Layout ctor, Gun shootAt/calcCharacterCollision,
+  Status missionCompleted/moveWanted, StarMap draw/drawOnScreenInfo,
+  StarSystem ctor, PlayerEgo checkForTurret, Mesh enhanced-data read,
+  MenuTouchWindow OnTouchMove, ModStation OnInitialize, Radar draw,
+  SpaceLounge onKeyPress/drawLounge, PlayerStation ctor, PlayerFighter update,
+  Generator createMission/createAgents, HangarWindow render, TouchButton init.
+  Several are deliberate second opinions on the hardest live TUs; only the
+  best gate-green commit per TU will be harvested.
+- Current gate before the new batch: **byte_exact 1352, linked_exact 4461,
+  avg 99.76, stubs 0, missing/extra 0, imports 207, data 843/843**
+  (`RATCHET PASS`), `.text 0x1333c0`.
+
 ## Session 2026-10-26 (wave 30 — 20-way continuation)
 
 - Harvested `w707`: `StarMap::drawOnScreenInfo` 93.0% -> **93.1%** (3488B exact) by
