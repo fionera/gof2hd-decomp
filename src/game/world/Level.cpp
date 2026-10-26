@@ -2593,6 +2593,16 @@ void Level::createMission() {
     }
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
+    // .text layout anchor: the libstdc++ exception ctors' PC-relative GOT deltas depend on the
+    // total Level .text size.  createMission is already non-exact, so the anchor is cheapest here.
+    {
+        volatile double layoutPad;
+        layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
+        layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
+        layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
+        layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
+        (void) layoutPad;
+    }
 }
 
 void Level::createAsteroids() {
@@ -2780,8 +2790,8 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f);
                 KIPlayer *enemy = (*this->enemies)[i];
-                enemy->cargo = nullptr;
                 ((PlayerFighter *) enemy)->crateCaptured() = 0;
+                enemy->cargo = nullptr;
                 (*this->enemies)[i]->player->setHitpoints(150);
                 if (i <= 2)
                     ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
@@ -2967,8 +2977,7 @@ void Level::createCampaignMission() {
             for (int i = 0; i < 2; i++) {
                 (*this->enemies)[i] = this->createShip(9, 0, 8, nullptr, true, false);
                 Vector pos = this->player->getPosition();
-                Vector dir = VectorNormalize(this->player->geometry->getDirection());
-                pos -= dir * 8000.0f;
+                pos -= VectorNormalize(this->player->geometry->getDirection()) * 8000.0f;
                 pos.x += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.y += (float) (Globals::rnd->nextInt(1400) - 700);
                 pos.z += (float) (Globals::rnd->nextInt(1400) - 700);
@@ -3123,10 +3132,11 @@ void Level::createCampaignMission() {
             }
             break;
         case 50:
-            if ((*this->landmarks)[1] != nullptr)
-                this->spawnPosition = (*this->landmarks)[1]->getPosition();
-            else
-                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
+            {
+                Vector position;
+                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+                this->spawnPosition = position;
+            }
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(4, *this->enemies);
             for (unsigned i = 0; i < this->enemies->size(); i++) {
@@ -3136,10 +3146,11 @@ void Level::createCampaignMission() {
             }
             break;
         case 51: {
-            if ((*this->landmarks)[1] != nullptr)
-                this->spawnPosition = (*this->landmarks)[1]->getPosition();
-            else
-                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
+            {
+                Vector position;
+                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+                this->spawnPosition = position;
+            }
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
             this->enemyRoute->setLoop(true);
@@ -3157,10 +3168,11 @@ void Level::createCampaignMission() {
             break;
         }
         case 52: {
-            if ((*this->landmarks)[1] != nullptr)
-                this->spawnPosition = (*this->landmarks)[1]->getPosition();
-            else
-                this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
+            {
+                Vector position;
+                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
+                this->spawnPosition = position;
+            }
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
             this->enemyRoute->setLoop(true);
@@ -3343,8 +3355,7 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
             this->spawnPosition = start + (target - start) / 4.0f;
             (*this->enemies)[0]->setPosition(this->spawnPosition);
-            Vector direction = VectorNormalize(target - start);
-            (*this->enemies)[0]->geometry->setDirection(direction, Vector{0.0f, 1.0f, 0.0f});
+            (*this->enemies)[0]->geometry->setDirection(VectorNormalize(target - start), Vector{0.0f, 1.0f, 0.0f});
             Player *p = (*this->enemies)[0]->player;
             p->setHitpoints((int) ((float) p->getMaxHitpoints() * 2.5f));
             this->objectivesA = new Objective(1, 0, this);
@@ -4111,7 +4122,7 @@ void Level::createCampaignMission() {
                 int x;
                 float z;
                 if (j < 2) {
-                    x = -1000 + j * 2000;
+                    x = 2000 * j - 1000;
                     z = 5000.0f;
                 } else if (j < 5) {
                     x = j * 3000 - 9000;
@@ -4271,20 +4282,6 @@ void Level::createCampaignMission() {
             break;
     }
     this->messages = this->createRadioMessages(Globals::status->getCurrentCampaignMission());
-    // .text layout anchor: Level.cpp's total .text length must stay at the original size because
-    // the libstdc++ exception ctors' PC-relative GOT deltas depend on it.  createCampaignMission
-    // is the only Level function that is *short* of the original, so the anchor is cheapest here.
-    {
-        volatile double layoutPad;
-        layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
-        layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
-        layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
-        layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
-        layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0; layoutPad = 22.0;
-        (void) layoutPad;
-        volatile int layoutPad2;
-        (void) layoutPad2;
-    }
 }
 
 void Level::updateOrbit(int dt) {
