@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kGreenShaderVertexSource =
+static const char kGreenShaderVertexSource[] =
     "attribute highp vec4 a_position; \n"
     "uniform highp mat4 u_ModelViewProjectionMatrix;\n"
     "void main()                 \n"
@@ -11,7 +11,7 @@ static const char *const kGreenShaderVertexSource =
     "\tgl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
     "} \n";
 
-static const char *const kGreenShaderFragmentSource =
+static const char kGreenShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D  s_texture;\n"

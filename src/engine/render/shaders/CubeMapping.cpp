@@ -47,7 +47,7 @@ static const char *const kCubeMappingVertexSource =
     "\t//v_rimFactor = clamp( 1.2 - dot( normalize( u_eyeposmodel - a_position), a_normal ), 0.0, 1.0);  \n"
     "}                            \n";
 
-static const char *const kCubeMappingFragmentSource =
+static const char kCubeMappingFragmentSource[] =
     "precision mediump float;                            \n"
     "uniform samplerCube u_texture_cubemap;\t\t\t \n"
     "uniform sampler2D\t u_texture_base;                        \n"

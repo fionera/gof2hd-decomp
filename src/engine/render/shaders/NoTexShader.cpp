@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kNoTexShaderVertexSource =
+static const char kNoTexShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "uniform highp mat4 u_WorldMatrix;  \n"
     "void main()                  \n"
@@ -11,7 +11,7 @@ static const char *const kNoTexShaderVertexSource =
     "   gl_Position = u_WorldMatrix * a_position;\t\t\n"
     "}                            \n";
 
-static const char *const kNoTexShaderFragmentSource =
+static const char kNoTexShaderFragmentSource[] =
     "precision lowp float;                            \n"
     "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"
     "void main()                                         \n"

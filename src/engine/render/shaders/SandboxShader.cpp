@@ -6,7 +6,7 @@
 static AbyssEngine::SandboxShader *SandboxShader_registerSrc = nullptr;
 static AbyssEngine::SandboxShader **SandboxShader_registerDst = &SandboxShader_registerSrc;
 
-static const char *const kSandboxShaderVertexSource =
+static const char kSandboxShaderVertexSource[] =
     "attribute highp vec4 \ta_position;   \t\n"
     "attribute mediump vec2  a_texCoord;   \t\n"
     "attribute highp vec3  \ta_normal; \t\t\n"
@@ -34,7 +34,7 @@ static const char *const kSandboxShaderVertexSource =
     "\t//v_DiffuseLight.a = 1.0;\n"
     "}\n";
 
-static const char *const kSandboxShaderFragmentSource =
+static const char kSandboxShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "varying mediump vec3 v_light_dir;\n"

@@ -8,7 +8,7 @@
 #include <string.h>
 
 
-static const char *const kPostBWShaderVertexSource =
+static const char kPostBWShaderVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying mediump vec2 v_texCoord;\n"
@@ -19,7 +19,7 @@ static const char *const kPostBWShaderVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kPostBWShaderFragmentSource =
+static const char kPostBWShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"

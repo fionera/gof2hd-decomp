@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kColorMixAddVertexSource =
+static const char kColorMixAddVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord;   \n"
     "varying mediump vec2 v_texCoord;     \n"
@@ -19,7 +19,7 @@ static const char *const kColorMixAddVertexSource =
     "       v_texCoord = a_texCoord; \n"
     "}                            \n";
 
-static const char *const kColorMixAddFragmentSource =
+static const char kColorMixAddFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "uniform sampler2D s_texture;                        \n"

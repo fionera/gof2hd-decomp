@@ -4,7 +4,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kMaskShaderVertexSource =
+static const char kMaskShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord_0;   \n"
     "attribute mediump vec2 a_texCoord_1;   \n"
@@ -17,7 +17,7 @@ static const char *const kMaskShaderVertexSource =
     "   v_texCoord[1] = a_texCoord_1;  \n"
     "}                            \n";
 
-static const char *const kMaskShaderFragmentSource =
+static const char kMaskShaderFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord[2];                     \n"
     "uniform sampler2D s_texture[2];                        \n"

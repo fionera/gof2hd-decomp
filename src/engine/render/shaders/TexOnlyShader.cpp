@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kTexOnlyShaderVertexSource =
+static const char kTexOnlyShaderVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying mediump vec2 v_texCoord;\n"
@@ -14,7 +14,7 @@ static const char *const kTexOnlyShaderVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kTexOnlyShaderFragmentSource =
+static const char kTexOnlyShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"

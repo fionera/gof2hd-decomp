@@ -8,7 +8,7 @@
 #include <arm_neon.h>
 
 
-static const char *const kDrawFBOShaderVertexSource =
+static const char kDrawFBOShaderVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying mediump vec2 v_texCoord;\n"
@@ -19,7 +19,7 @@ static const char *const kDrawFBOShaderVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kDrawFBOShaderFragmentSource =
+static const char kDrawFBOShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"

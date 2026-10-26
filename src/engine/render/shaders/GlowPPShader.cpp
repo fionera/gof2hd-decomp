@@ -6,7 +6,7 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/ApplicationManager.h"
 
-static const char *const kGlowPPVertexSource =
+static const char kGlowPPVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying lowp vec2 v_texCoord;\n"
@@ -17,7 +17,7 @@ static const char *const kGlowPPVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kGlowPPCopyFragmentSource =
+static const char kGlowPPCopyFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -26,7 +26,7 @@ static const char *const kGlowPPCopyFragmentSource =
     "   gl_FragColor.rgb = texture2D(s_texture_base, v_texCoord).rgb * texture2D(s_texture_base, v_texCoord).a;\n"
     "}\n";
 
-static const char *const kGlowPPBlurHFragmentSource =
+static const char kGlowPPBlurHFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -50,7 +50,7 @@ static const char *const kGlowPPBlurHFragmentSource =
     "\tgl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kGlowPPBlurVFragmentSource =
+static const char kGlowPPBlurVFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -74,7 +74,7 @@ static const char *const kGlowPPBlurVFragmentSource =
     "\tgl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kGlowPPCombineFragmentSource =
+static const char kGlowPPCombineFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"

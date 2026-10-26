@@ -4,7 +4,7 @@
 #include <GLES2/gl2.h>
 
 
-static const char *const kBumpShaderVertexSource =
+static const char kBumpShaderVertexSource[] =
     "attribute highp vec3 \ta_position;  \n"
     "attribute highp vec2  a_texCoord;    \n"
     "attribute highp vec3  \ta_normal; \t  \n"
@@ -59,7 +59,7 @@ static const char *const kBumpShaderVertexSource =
     "   v_normal = a_normal; \n"
     "}  \n";
 
-static const char *const kBumpShaderFragmentSource =
+static const char kBumpShaderFragmentSource[] =
     "precision lowp float;  \n"
     "varying highp vec2 v_texCoord;  \n"
     "varying highp vec3 v_normal;   \n"

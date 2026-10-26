@@ -3,12 +3,12 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kVertexColorAlphaTextureShaderVertexSource =
+static const char kVertexColorAlphaTextureShaderVertexSource[] =
     "attribute highp   vec4 \ta_position;   attribute mediump vec2  a_texCoord;   \tattribute highp   vec3  a_normal; \t\t\tattribute lowp    vec3 \ta_tangent;\t\tattribute lowp    vec3 \ta_bitangent;\tattribute highp    vec4  a_vertexColor;varying mediump vec2 v_texCoord;varying mediump vec3 v_light_dir;varying mediump vec3 v_eye_dir;varying mediump vec3 v_lightvec;varying mediump vec3 v_normal;varying mediump vec3 v_specular_dir;varying highp   vec4 v_color;uniform highp mat4 u_ModelViewProjectionMatrix;uniform highp vec3 u_lightdirmodel;uniform highp vec3 u_eyeposmodel;\n"
     "//uniform highp mat3 u_ModelMatrix;\n"
     "void main(){\tgl_Position = u_ModelViewProjectionMatrix * a_position;\tv_color     = a_vertexColor;\tv_texCoord  = a_texCoord;}";
 
-static const char *const kVertexColorAlphaTextureShaderFragmentSource =
+static const char kVertexColorAlphaTextureShaderFragmentSource[] =
     "precision lowp float;varying mediump vec2 v_texCoord;varying mediump vec3 v_light_dir;varying mediump vec3 v_eye_dir;varying mediump vec3 v_lightvec;varying mediump vec3 v_normal;varying mediump vec3 v_specular_dir;varying highp    vec4 v_color;uniform sampler2D  s_texture;\n"
     "//uniform lowp vec4  u_AmbientColor;\n"
     "//uniform lowp vec4  u_DiffuseColor;\n"

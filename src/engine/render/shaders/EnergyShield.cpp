@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kEnergyShieldVertexSource =
+static const char kEnergyShieldVertexSource[] =
     "attribute highp    vec3 a_position;\n"
     "attribute mediump  vec2 a_texCoord;\n"
     "attribute highp    vec3 a_normal;\n"
@@ -25,7 +25,7 @@ static const char *const kEnergyShieldVertexSource =
     "   v_eye_dir = normalize((u_ModelViewProjectionMatrix * vec4(u_eyeposmodel - a_position, 0.0)).rgb); \n"
     "}\n";
 
-static const char *const kEnergyShieldFragmentSource =
+static const char kEnergyShieldFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "varying lowp vec3 v_eye_dir;\n"

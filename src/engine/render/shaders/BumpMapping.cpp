@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kBumpMappingVertexSource =
+static const char kBumpMappingVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec3 a_normal;\n"
     "attribute mediump vec3 a_tangent;\n"
@@ -21,7 +21,7 @@ static const char *const kBumpMappingVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kBumpMappingFragmentSource =
+static const char kBumpMappingFragmentSource[] =
     "precision mediump float;   \n"
     "varying mediump vec2 v_texCoord;    \n"
     "varying mediump vec3 v_lightvec;    \n"

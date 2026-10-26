@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kCubeNormalMappingVertexSource =
+static const char kCubeNormalMappingVertexSource[] =
     "attribute highp\tvec3 a_position;   \n"
     "attribute mediump\tvec3 a_normal;\t\t\n"
     "attribute mediump\tvec2 a_texCoord;   \n"
@@ -36,7 +36,7 @@ static const char *const kCubeNormalMappingVertexSource =
     "\tv_DiffuseLight.a = 1.0; \n"
     "}                            \n";
 
-static const char *const kCubeNormalMappingFragmentSource =
+static const char kCubeNormalMappingFragmentSource[] =
     "precision mediump float;                            \n"
     "uniform samplerCube u_texture_cubemap;\t\t\t \n"
     "uniform sampler2D\t u_texture_base;                        \n"

@@ -5,7 +5,7 @@
 #include <GLES2/gl2.h>
 
 
-static const char *const kDNSShaderVertexSource =
+static const char kDNSShaderVertexSource[] =
     "attribute highp vec3 \ta_position;  \n"
     "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
     "void main()  \n"
@@ -13,7 +13,7 @@ static const char *const kDNSShaderVertexSource =
     "\tgl_Position = u_ModelViewProjectionMatrix * vec4(a_position, 1.0);  \n"
     "}  \n";
 
-static const char *const kDNSShaderFragmentSource =
+static const char kDNSShaderFragmentSource[] =
     "precision lowp float;  \n"
     "void main()  \n"
     "{  \n"

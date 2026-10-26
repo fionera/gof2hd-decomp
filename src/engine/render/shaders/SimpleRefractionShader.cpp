@@ -4,7 +4,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kSimpleRefractionShaderVertexSource =
+static const char kSimpleRefractionShaderVertexSource[] =
     "attribute highp    vec3 a_position;\n"
     "attribute mediump  vec2 a_texCoord;\n"
     "attribute lowp\t\tvec3  \ta_normal; \t  \n"
@@ -27,7 +27,7 @@ static const char *const kSimpleRefractionShaderVertexSource =
     "   v_eye_dir = normalize(tangentSpaceXform*(u_eyeposmodel - a_position)); \n"
     "}\n";
 
-static const char *const kSimpleRefractionShaderFragmentSource =
+static const char kSimpleRefractionShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "varying lowp vec3 v_eye_dir;\n"

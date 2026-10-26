@@ -8,7 +8,7 @@
 #include <GLES2/gl2.h>
 #include <cstring>
 
-static const char *const kBloomVertexSource =
+static const char kBloomVertexSource[] =
     "attribute highp vec4 a_position;\n"
     "attribute mediump vec2 a_texCoord;\n"
     "varying mediump vec2 v_texCoord;\n"
@@ -19,7 +19,7 @@ static const char *const kBloomVertexSource =
     "\tv_texCoord = a_texCoord;\n"
     "}\n";
 
-static const char *const kBloomLumaFragmentSource =
+static const char kBloomLumaFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -29,7 +29,7 @@ static const char *const kBloomLumaFragmentSource =
     "\tgl_FragColor = textureColor;\n"
     "}\n";
 
-static const char *const kBloomDownSampleFragmentSource =
+static const char kBloomDownSampleFragmentSource[] =
     "precision mediump float;\n"
     "//const float Luminance = 0.005; \n"
     "//const float fMiddleGray = 0.04;\n"
@@ -50,7 +50,7 @@ static const char *const kBloomDownSampleFragmentSource =
     "\tgl_FragColor = vec4( ColorOut, 1.0 );\n"
     "}\n";
 
-static const char *const kBloomBlurHFragmentSource =
+static const char kBloomBlurHFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -76,7 +76,7 @@ static const char *const kBloomBlurHFragmentSource =
     "\t  gl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kBloomBlurVFragmentSource =
+static const char kBloomBlurVFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"
@@ -102,7 +102,7 @@ static const char *const kBloomBlurVFragmentSource =
     "\t  gl_FragColor = vec4(tc, 1.0);\n"
     "}\n";
 
-static const char *const kBloomFinalFragmentSource =
+static const char kBloomFinalFragmentSource[] =
     "precision lowp float;\n"
     "varying lowp vec2 v_texCoord;\n"
     "uniform sampler2D s_texture_base;\n"

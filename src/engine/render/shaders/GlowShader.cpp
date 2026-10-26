@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kGlowShaderVertexSource =
+static const char kGlowShaderVertexSource[] =
     "attribute highp vec4 \ta_position;  \n"
     "attribute mediump vec2  a_texCoord;    \n"
     "varying mediump vec2 v_texCoord;  \n"
@@ -14,7 +14,7 @@ static const char *const kGlowShaderVertexSource =
     "\tv_texCoord  = a_texCoord;    \n"
     "}  \n";
 
-static const char *const kGlowShaderFragmentSource =
+static const char kGlowShaderFragmentSource[] =
     "precision lowp float;  \n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D  s_texture;\n"

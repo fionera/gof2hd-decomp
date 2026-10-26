@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kNoTexVtxColorShaderVertexSource =
+static const char kNoTexVtxColorShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec4 a_VertexColor;   \n"
     "varying mediump vec4 v_VertexColor;     \n"
@@ -14,7 +14,7 @@ static const char *const kNoTexVtxColorShaderVertexSource =
     "   v_VertexColor = a_VertexColor;  \n"
     "}                            \n";
 
-static const char *const kNoTexVtxColorShaderFragmentSource =
+static const char kNoTexVtxColorShaderFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec4 v_VertexColor;                            \n"
     "uniform lowp vec4 glColor;\t\t\t\t\t\t\t\t \n"

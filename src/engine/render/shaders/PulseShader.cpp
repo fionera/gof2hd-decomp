@@ -11,7 +11,7 @@ float sinf(float x);
 }
 
 
-static const char *const kPulseShaderVertexSource =
+static const char kPulseShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord;   \n"
     "varying mediump vec2 v_texCoord;     \n"
@@ -22,7 +22,7 @@ static const char *const kPulseShaderVertexSource =
     "   v_texCoord = a_texCoord;  \n"
     "}                            \n";
 
-static const char *const kPulseShaderFragmentSource =
+static const char kPulseShaderFragmentSource[] =
     "precision lowp float;\n"
     "varying mediump vec2 v_texCoord;\n"
     "uniform sampler2D  s_texture;\n"

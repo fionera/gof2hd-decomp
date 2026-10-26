@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kTextureLightShaderVertexSource =
+static const char kTextureLightShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord;   \n"
     "attribute highp vec3  a_normal; \n"
@@ -72,7 +72,7 @@ static const char *const kTextureLightShaderVertexSource =
     "\tv_DiffuseLight[1] += u_AmbientColor[1];\n"
     "}                            \n";
 
-static const char *const kTextureLightShaderFragmentSource =
+static const char kTextureLightShaderFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "varying lowp vec3  v_DiffuseLight[2];\t\n"

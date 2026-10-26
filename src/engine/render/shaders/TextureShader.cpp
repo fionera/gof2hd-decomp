@@ -4,7 +4,7 @@
 #include <GLES2/gl2.h>
 
 
-static const char *const kTextureShaderVertexSource =
+static const char kTextureShaderVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord;   \n"
     "varying mediump vec2 v_texCoord;     \n"
@@ -39,7 +39,7 @@ static const char *const kTextureShaderVertexSource =
     "    } \n"
     "}                            \n";
 
-static const char *const kTextureShaderFragmentSource =
+static const char kTextureShaderFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "uniform sampler2D s_texture;                        \n"
@@ -51,7 +51,7 @@ static const char *const kTextureShaderFragmentSource =
     "\tgl_FragColor = glColor * textureColor;\t\t\n"
     "} \n";
 
-static const char *const kTextureShaderFogFragmentSource =
+static const char kTextureShaderFogFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "uniform sampler2D s_texture;                        \n"

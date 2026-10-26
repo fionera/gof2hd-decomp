@@ -3,10 +3,10 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kSimpleShaderVertexSource =
+static const char kSimpleShaderVertexSource[] =
     "attribute highp vec4 a_position; uniform highp mat4 u_WorldMatrix;void main()                 {                          \tgl_Position = u_WorldMatrix * a_position;\t\t} ";
 
-static const char *const kSimpleShaderFragmentSource =
+static const char kSimpleShaderFragmentSource[] =
     "precision lowp float;uniform lowp vec4 glColor;void main()  {   gl_FragColor = glColor;} ";
 
 namespace AbyssEngine {
