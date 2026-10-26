@@ -2,6 +2,15 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w921`: `Status::missionCompleted` now uses the recovered non-zero
+  mission-order ranking table instead of an all-zero array, fixing the unreachable
+  per-type cases. Function stays 85.4% / 1432 B; gate unchanged. The 190-byte table
+  moved from `.bss` to `.rodata`, so `.bss` 27,280 -> 27,088 (delta +36 B) and the
+  CubeMapping anchor was retuned 265 -> 75 bytes. `docs/IDENTICALITY.md` updated.
+- Harvested `w915`: durable `_work/reconstructions/extern_shim_audit.md` (571 lines).
+  It classifies 103 dead shim names (106 declaration lines), 18 live wrappers with
+  concrete direct-call replacements, and confirms there is no inline asm,
+  `__attribute__`, `__declspec`, or source-level manual jump table in `src/`.
 - Harvested `w917`: durable `_work/reconstructions/layout_anchor_audit.md` (515 lines).
   It quantifies the `.text` anchors, the `.got`/`.data` ordering, and the ten
   libstdc++ exception-ctor invariant (`.got - ctor == 0x7c0c0`), and ranks proper
