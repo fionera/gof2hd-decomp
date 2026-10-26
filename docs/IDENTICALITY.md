@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1352, linked_exact 4450, avg 99.68%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1352, linked_exact 4450, avg 99.69%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1352, linked_exact 4450, avg 99.68%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1352, linked_exact 4450, avg 99.69%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -32,9 +32,9 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,258,416 | **−1,048** | the remaining 73 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
-| **.rodata** | 269,159 | 266,583 | **−2,576** | anonymous const/string data still differs; exported objects are exact. |
-| .ARM.extab | 156,312 | 151,756 | −4,556 | smaller EH tables in the remaining non-exact functions. |
+| **.text** | 1,259,464 | 1,258,432 | **−1,032** | the remaining 73 non-linked exported functions and their size deltas; local-code gaps are now ~52 KB total and are bracketed by the same neighbours. |
+| **.rodata** | 269,159 | 266,567 | **−2,592** | anonymous const/string data still differs; exported objects are exact. |
+| .ARM.extab | 156,312 | 151,752 | −4,560 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data | 10,604 | 10,680 | **+76** | anonymous initialised-data layout still differs. |
@@ -42,13 +42,13 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 ## The four real gaps (in priority/size order)
 
 1. **73 non-linked exported functions.** 4450 of 4523 compared functions are linked-exact; the
-   remaining 73 are the long tail (27 in 90–99%, 24 in 70–89%, 18 in 50–69%, 4 below 50%). Their
-   combined `.text` delta is only −1,048 B, so this is a finishing campaign, not a missing-code
+   remaining 73 are the long tail (29 in 90–99%, 22 in 70–89%, 18 in 50–69%, 4 below 50%). Their
+   combined `.text` delta is only −1,032 B, so this is a finishing campaign, not a missing-code
    campaign.
-2. **Anonymous data layout.** `.rodata` is 2,576 B smaller and `.data` 76 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 2,592 B smaller and `.data` 76 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is 4,556 B smaller, following the remaining function-size/EH-layout
+3. **EH tables.** `.ARM.extab` is 4,560 B smaller, following the remaining function-size/EH-layout
    differences.
 4. **Link metadata.** `.dynsym`/`.dynstr` sizes now match exactly; dynamic-symbol order and the GNU
    build-id are content hashes that converge only when everything else does.
@@ -71,8 +71,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1352 byte_exact,
-4450 linked_exact, 4484 size_match of 4523; pct buckets {100:4450, 90-99:27, 70-89:24, 50-69:18,
-<50:4}. 39 functions size-MISMATCH (need restructuring); 28 size-match >=80% not-linked
+4450 linked_exact, 4487 size_match of 4523; pct buckets {100:4450, 90-99:29, 70-89:22, 50-69:18,
+<50:4}. 36 functions size-MISMATCH (need restructuring); 28 size-match >=80% not-linked
 (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):
