@@ -637,9 +637,10 @@ namespace AbyssEngine {
                     return -1;
                 }
                 mesh->normals = new float[mesh->vertexCount * 3];
+                short *rawY = raw + 1;
                 for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
+                    float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
-                    float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
                     // The original re-reads (*slot)->normals for every store, so keep the
@@ -705,7 +706,7 @@ namespace AbyssEngine {
                 for (unsigned int v = 0; v < vertices; v++) {
                     Vector normal = ((const Vector *) (*slot)->normals)[v];
                     Vector tangent = accum[v];
-                    Vector projected = tangent - normal * AEMath::VectorDot(tangent, normal);
+                    Vector projected = tangent - normal * AEMath::VectorDot(normal, tangent);
                     Vector unit = AEMath::VectorNormalize(projected);
                     Vector *outTangent = (Vector *) (*slot)->tangents + v;
                     outTangent->x = unit.x;
