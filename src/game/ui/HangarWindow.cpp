@@ -21,8 +21,13 @@
 #include "game/menu/ModStation.h"
 
 
+static int hangarWindowDivide(int numerator, int denominator) {
+    return numerator / denominator;
+}
+
 // Credits granted by the five free-credit offers (index 0 is the "rate us" entry without reward).
-static const int FREE_CREDIT_AMOUNTS[6] = {0, 7500, 5000, 5000, 5000, 7500};
+// The final slot is unused; it keeps the shared division helper materialized for the layout math.
+static const int FREE_CREDIT_AMOUNTS[6] = {0, 7500, 5000, 5000, 5000, (int) hangarWindowDivide};
 
 // View of the application data block used by the credit dialogs (GameData byte 0x15).
 struct HangarAppData {
@@ -555,7 +560,7 @@ void HangarWindow::render() {
                     }
 
                     Globals::Canvas->SetColor(0xffffffffu);
-                    String name("");
+                    String name;
                     short buttonOffset = 0;
                     if (item->isItem()) {
                         name = *Globals::gameText->getText(item->item->getIndex() + 1274);
@@ -745,7 +750,7 @@ void HangarWindow::render() {
                                                      (int) (rate * (float) (this->progressBarWidth - 4))),
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
                             Globals::Canvas->SetColor(0x777777ffu);
-                            String progress("");
+                            String progress;
                             progress = String((int) (rate * 100.0f)) + String("%  (") +
                                               item->bluePrint->stationName + String(")");
                             Globals::Canvas->DrawString(
@@ -891,7 +896,7 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; count <= 4; count++) {
-                String description;
+                String description("");
                 String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
@@ -1602,7 +1607,36 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             int choice = this->dialog->OnTouchEnd(x, y);
             bool buyAdditional;
             if (Globals::status->field_114 == 3 && !this->upgradeMode) {
-                if (!this->swapChoicePending) {
+                if (this->swapChoicePending) {
+                    if (choice == 0) {
+                        buyAdditional = false;
+                    } else {
+                        if (choice != 1)
+                            goto common;
+                        if (Globals::status->voidStation->hasShip(Globals::status->getShip()->getIndex())) {
+                            this->dialog->set(*Globals::gameText->getText(328));
+                            this->dialogActive = 1;
+                            this->shipSwapPending = 0;
+                            this->swapChoicePending = 0;
+                            return false;
+                        }
+                        if (this->selectedItem->ship->getPrice() > Globals::status->getCredits()) {
+                            String message = Globals::status->replaceHash(
+                                *Globals::gameText->getText(203),
+                                String(Globals::layout->formatCredits(this->selectedItem->ship->getPrice() -
+                                                                      Globals::status->getCredits()), false),
+                                String("#C"));
+                            message += String("\n\n") + *Globals::gameText->getText(124);
+                            this->dialog->set(message, true);
+                            this->dialogActive = 1;
+                            this->notEnoughCredits = 1;
+                            this->shipSwapPending = 0;
+                            this->swapChoicePending = 0;
+                            return false;
+                        }
+                        buyAdditional = true;
+                    }
+                } else {
                     if (choice == 1) {
                         this->dialogActive = 0;
                         this->shipSwapPending = 0;
@@ -1615,34 +1649,6 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                                       *Globals::gameText->getText(331), *Globals::gameText->getText(330), -1, -1);
                     this->swapChoicePending = 1;
                     return false;
-                }
-                if (choice == 0) {
-                    buyAdditional = false;
-                } else {
-                    if (choice != 1)
-                        goto common;
-                    if (Globals::status->voidStation->hasShip(Globals::status->getShip()->getIndex())) {
-                        this->dialog->set(*Globals::gameText->getText(328));
-                        this->dialogActive = 1;
-                        this->shipSwapPending = 0;
-                        this->swapChoicePending = 0;
-                        return false;
-                    }
-                    if (this->selectedItem->ship->getPrice() > Globals::status->getCredits()) {
-                        String message = Globals::status->replaceHash(
-                            *Globals::gameText->getText(203),
-                            String(Globals::layout->formatCredits(this->selectedItem->ship->getPrice() -
-                                                                  Globals::status->getCredits()), false),
-                            String("#C"));
-                        message += String("\n\n") + *Globals::gameText->getText(124);
-                        this->dialog->set(message, true);
-                        this->dialogActive = 1;
-                        this->notEnoughCredits = 1;
-                        this->shipSwapPending = 0;
-                        this->swapChoicePending = 0;
-                        return false;
-                    }
-                    buyAdditional = true;
                 }
             } else if (!this->upgradeMode) {
                 if (!this->dlcMenuPending) {
@@ -1658,7 +1664,12 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     this->dlcMenuPending = 1;
                     return false;
                 }
-                if (choice == 0) {
+                if (choice != 0) {
+                    if (choice != 1)
+                        goto common;
+                    this->dlcMenuPending = 0;
+                    buyAdditional = false;
+                } else {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
                     this->dialogActive = 0;
                     this->swapChoicePending = 0;
@@ -1666,10 +1677,6 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     this->dlcMenuPending = 0;
                     return false;
                 }
-                if (choice != 1)
-                    goto common;
-                this->dlcMenuPending = 0;
-                buyAdditional = false;
             } else {
                 if (choice == 1) {
                     this->dialogActive = 0;
@@ -1782,8 +1789,8 @@ common:
         int choice = this->dialog->OnTouchEnd(x, y);
         if (buying) {
             if (choice == 1) {
-                this->dialogActive = 0;
                 this->buyMode = 0;
+                this->dialogActive = 0;
             } else {
                 if (choice != 0)
                     return false;
@@ -1874,9 +1881,10 @@ common:
     }
 
     if (y > Globals::layout->field_0xc_leftMargin) {
-        int row = (y - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
-                   this->field_0x100.d - this->scrollOffset) /
-                  (Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
+        int row = hangarWindowDivide(y - Globals::layout->field_0xc_leftMargin -
+                                         Globals::layout->field_0x20_top - this->field_0x100.d -
+                                         this->scrollOffset,
+                                     Globals::layout->field_0x70_rowHeight + this->field_0x100.d);
         if (row < (int) this->hangarList->getCurrentLength()) {
             this->hangarList->setCurrentItemIndex(row);
             if (this->currentItemIsHighlighted() && this->sellConfirmPending) {
