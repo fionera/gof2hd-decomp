@@ -554,6 +554,7 @@ int ModStation::OnInitialize() {
             }
 
             int stationIndex = Globals::status->getStation()->getIndex();
+            bool atLab = stationIndex == 100;
             Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             if (Globals::status->getCurrentCampaignMission() == 20 && campaign->getTargetStation() == stationIndex) {
                 Array<Item *> *items = Globals::status->getStation()->getItems();
@@ -581,7 +582,6 @@ int ModStation::OnInitialize() {
                 !Globals::status->getStation()->hasItem(85) && !Globals::status->getStation()->hasItem(164)) {
                 Globals::status->getStation()->addItem((*Globals::items)[164]->makeItem(50));
             }
-            bool atLab = stationIndex == 100;
             if (stationIndex == 100 || stationIndex == 101 || stationIndex == 10) {
                 // Keep some fuel for sale where the story needs it.
                 Item *fuel = Globals::status->getShip()->getCargo(122);
@@ -1109,6 +1109,7 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
+    if (a == b) return a;
     return value + a + b + (b % 8);
 }
 
