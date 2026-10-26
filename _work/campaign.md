@@ -2,6 +2,11 @@
 
 ## Session 2026-10-26 (wave 40 — second 20-way finisher fleet)
 
+- Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
+  (6400B, original 6396B) by reloading `this->buttonRow` after each
+  `getPosition()` in the sub-menu position loop instead of caching the array
+  pointer. Gate: byte 1352, linked 4469, avg 99.79, `.text 0x1343c0`.
+
 - Harvested `w943` follow-up: `PlayerEgo::update` 93.6% -> **94.1%** (8852B
   exact) by keeping the `moveTarget` copy in the auto-target distance check,
   inverting the turret-view else arm, and restoring the yaw/pitch argument

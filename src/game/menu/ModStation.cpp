@@ -846,17 +846,23 @@ int ModStation::OnInitialize() {
             Globals::switch_to_target_setting = -1;
             this->state = 100;
             this->stationActive = 1;
-            Array<TouchButton *> *row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
-            if (row != nullptr) {
+            if (reinterpret_cast<Array<TouchButton *> *>(this->buttonRow) != nullptr) {
                 // Remember the sub menu button positions for the touch overlay.
-                for (unsigned i = 0; i < row->size(); i++) {
+                for (unsigned i = 0;
+                     i < reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size(); i++) {
                     if (i < 10) {
-                        Globals::sub_menu_buttons_x[i] = (int) (*row)[i]->getPosition().x;
-                        Globals::sub_menu_buttons_y[i] = (int) (*row)[i]->getPosition().y;
-                        row = reinterpret_cast<Array<TouchButton *> *>(this->buttonRow);
+                        Globals::sub_menu_buttons_x[i] =
+                            (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]
+                                ->getPosition()
+                                .x;
+                        Globals::sub_menu_buttons_y[i] =
+                            (int) (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[i]
+                                ->getPosition()
+                                .y;
                     }
                 }
-                Globals::sub_menu_button_count = row->size();
+                Globals::sub_menu_button_count =
+                    reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size();
             }
             this->field_0x5c = modStationTouchEndPad(this->dt);
             return 0;
