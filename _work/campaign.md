@@ -34,9 +34,10 @@
   - `RocketGun::update` 76.0% -> **80.8%** (1896/1908B) with the trail-first launch block,
     branchy item-emit path, and `dt` hoist; a 16-byte `.data` trail-set table keeps the
     page-quantized GOT aligned with the larger body.
-- `w615` completed the RocketGun pass. Replacement `w616` was launched on ModStation
-  (`OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%), restoring the fleet to 20
-  live `codex exec -p dsv41` workers.
+- `w610` was harvested and exited; `w615` completed the RocketGun pass. Replacements
+  `w616` (ModStation: `OnUpdate` 92.3%, `OnKeyPress` 93.2%, `OnInitialize` 79.5%),
+  `w617` (HackingGame::render2D 58.8%), and `w618` (LevelScript::process 47.0%) restored
+  the fleet to 20 live `codex exec -p dsv41` workers.
 - Replacement workers `w607..w615` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
   without a report), Status retry, fresh Mesh/Radar continuation workers, a Gun retry
