@@ -2002,8 +2002,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                 }
             } else if (!mission->isEmpty() && (mission->getType() == 184 || mission->getType() == 168)
                        && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 2) {
-                int delivered = this->dockTransferedAmount;
                 int total = this->dockTotalAmount;
+                int delivered = this->dockTransferedAmount;
                 if (delivered != this->dockTotalAmount) {
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1500.0f);
                     if (total <= this->dockTransferedAmount) {
@@ -2194,12 +2194,13 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     }
 
     if (this->field_0xac != 0 && this->emergencySystemTimer >= 1) {
-        AEGeometry *emergency = (AEGeometry *) (intptr_t) this->field_0xac;
         this->player->setVulnerable(false);
         this->emergencySystemTimer -= dt;
-        emergency->setMatrix(reinterpret_cast<Matrix &>(this->player->transform[0]));
-        ((AEGeometry *) (intptr_t) this->field_0xac)->translate(AbyssEngine::AEMath::MatrixRotateVector(
-            reinterpret_cast<Matrix &>(this->player->transform[0]), this->emergencyVec));
+        ((AEGeometry *) (intptr_t) this->field_0xac)
+            ->setMatrix(reinterpret_cast<Matrix &>(this->player->transform[0]));
+        Vector emergencyOffset = AbyssEngine::AEMath::MatrixRotateVector(
+            reinterpret_cast<Matrix &>(this->player->transform[0]), this->emergencyVec);
+        ((AEGeometry *) (intptr_t) this->field_0xac)->translate(emergencyOffset);
         AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(((AEGeometry *) (intptr_t) this->field_0xac)->meshId);
         mesh->shaderAnimValue1 += (float) dt * 0.001f;
         float total = (float) this->emergencyVal1;
@@ -2253,8 +2254,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    this->field_0x20 = 0;
     this->field_0x30a = 0;
+    this->field_0x20 = 0;
     if (Globals::mouseCursorActivated != this->field_0x378)
         this->field_0x84 = 1;
     if (this->lastHP > this->player->getCombinedHP() && !this->computerControlled && !this->freeze) {
