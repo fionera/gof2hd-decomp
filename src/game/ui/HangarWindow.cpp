@@ -35,7 +35,10 @@ int HangarWindow::lastTab = 1;
 HangarWindow::HangarWindow() {
     this->bluePrint = nullptr;
     this->bluePrintItem = nullptr;
-    this->dialogActive = 0;
+    // Non-volatile store: the original ctor schedules bluePrint/bluePrintItem
+    // before dialogActive and bluePrintPurchasePending after it; a volatile store
+    // lets the scheduler swap those two neighbours.
+    *(uint8_t *) &this->dialogActive = 0;
     this->bluePrintPurchasePending = 0;
     this->hangarList = nullptr;
     this->listItemWindow = nullptr;
@@ -894,7 +897,10 @@ void HangarWindow::render() {
                 String price("");
                 // Layout anchor: keep this TU's .text at 0x1333c0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  The assignments are no-ops on the rendered text.
+                // byte-exact.  The six self-assignments are no-ops on the
+                // rendered text; one is needed because OnTouchEnd is now the
+                // original 5828 bytes instead of the old 5832-byte stub.
+                description = description;
                 description = description;
                 description = description;
                 description = description;
@@ -1639,12 +1645,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                         buyAdditional = true;
                     }
                 } else {
-                    if (choice == 1) {
-                        this->dialogActive = 0;
-                        this->shipSwapPending = 0;
-                        this->swapChoicePending = 0;
-                        return false;
-                    }
+                    if (choice == 1)
+                        goto swapDone;
                     if (choice != 0)
                         goto common;
                     this->dialog->set(String(""), *Globals::gameText->getText(327), true, *Globals::gameText->getText(330),
@@ -1654,12 +1656,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 }
             } else if (!this->upgradeMode) {
                 if (!this->dlcMenuPending) {
-                    if (choice == 1) {
-                        this->dialogActive = 0;
-                        this->shipSwapPending = 0;
-                        this->swapChoicePending = 0;
-                        return false;
-                    }
+                    if (choice == 1)
+                        goto swapDone;
                     if (choice != 0)
                         goto common;
                     this->dialog->set(String(""), *Globals::gameText->getText(189), true);
@@ -1680,17 +1678,15 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     return false;
                 }
             } else {
-                if (choice == 1) {
-                    this->dialogActive = 0;
-                    this->shipSwapPending = 0;
-                    this->swapChoicePending = 0;
-                    return false;
-                }
+                if (choice == 1)
+                    goto swapDone;
                 if (choice != 0)
                     goto common;
                 buyAdditional = false;
             }
 
+            // Braced so the swapDone jumps above do not bypass these initialisers.
+            {
             // Swap the current ship for the selected one.
             Globals::status->getShip()->setCargo(Item::extractItems(this->itemList, true));
             if (buyAdditional)
@@ -1784,6 +1780,13 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             this->shipSwapPending = 0;
             this->swapChoicePending = 0;
             return false;
+            }
+
+        swapDone:
+            this->dialogActive = 0;
+            this->shipSwapPending = 0;
+            this->swapChoicePending = 0;
+            return false;
         }
 
 common:
@@ -1791,27 +1794,31 @@ common:
         int choice = this->dialog->OnTouchEnd(x, y);
         if (buying) {
             if (choice == 1) {
+                HangarList *list = this->hangarList;
                 this->buyMode = 0;
                 this->dialogActive = 0;
-            } else {
-                if (choice != 0)
-                    return false;
-                if (!this->routeWarningPending) {
-                    this->dialogActive = 0;
-                    if (this->autoEquipped) {
-                        for (unsigned int i = 0; i < this->tabButtons->size(); i++)
-                            (*this->tabButtons)[i]->resetTouch();
-                    } else {
-                        this->buyMode = 1;
-                    }
-                    return false;
-                }
-                this->dialogActive = 0;
-                this->routeWarningPending = 0;
-                this->buyMode = 0;
+                this->selectedItem = 0;
+                list->setCurrentItemIndex(-1);
+                return false;
             }
+            if (choice != 0)
+                return false;
+            if (!this->routeWarningPending) {
+                this->dialogActive = 0;
+                if (this->autoEquipped) {
+                    for (unsigned int i = 0; i < this->tabButtons->size(); i++)
+                        (*this->tabButtons)[i]->resetTouch();
+                } else {
+                    this->buyMode = 1;
+                }
+                return false;
+            }
+            HangarList *list = this->hangarList;
+            this->dialogActive = 0;
+            this->routeWarningPending = 0;
+            this->buyMode = 0;
             this->selectedItem = 0;
-            this->hangarList->setCurrentItemIndex(-1);
+            list->setCurrentItemIndex(-1);
             return false;
         }
         if (choice != 0)

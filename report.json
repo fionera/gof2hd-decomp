@@ -165,7 +165,7 @@
    "byte": false,
    "linked": false,
    "osize": 9700,
-   "usize": 9724
+   "usize": 9732
   },
   {
    "name": "_ZN15MenuTouchWindow4drawEv",
@@ -206,14 +206,6 @@
    "linked": false,
    "osize": 1832,
    "usize": 1832
-  },
-  {
-   "name": "_ZN12HangarWindow10OnTouchEndEii",
-   "pct": 80.5,
-   "byte": false,
-   "linked": false,
-   "osize": 5828,
-   "usize": 5832
   },
   {
    "name": "_ZN9RocketGun6updateEi",
@@ -342,6 +334,14 @@
    "linked": false,
    "osize": 8580,
    "usize": 8580
+  },
+  {
+   "name": "_ZN12HangarWindow10OnTouchEndEii",
+   "pct": 94.3,
+   "byte": false,
+   "linked": false,
+   "osize": 5828,
+   "usize": 5828
   },
   {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
