@@ -514,9 +514,9 @@ void SpaceLounge::startChat() {
         float resultBottom = bottom;
         if (chosen < minTop) {
             resultTop = minTop;
-            resultBottom = minTop;
+            resultBottom = resultTop;
         }
-        if (bottom < top)
+        if (top < bottom)
             resultTop = resultBottom;
         this->panelY = (int) resultTop;
         delete this->scrollWindow;

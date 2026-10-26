@@ -5,6 +5,9 @@
 - Harvested `w894`: `Generator::createMission` 65.1% -> **65.7%** (1992B, original 1996B)
   by restoring the route-fallback order and using `SolarSystem *` pointers for the
   distance calculation. Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
+- Harvested `w875`: `SpaceLounge::startChat` 97.2% -> **97.3%** (14450B) by restoring
+  the original top/bottom clamp copy chain. Gate unchanged: byte_exact 1352,
+  linked_exact 4467, avg 99.78.
 - Harvested `w891`: `MGame::OnUpdate` 84.5% -> **84.6%** (11444B, original 11440B)
   by keeping the dialogue-window pointer local and splitting the radio-message index/base.
   Gate unchanged: byte_exact 1352, linked_exact 4467, avg 99.78.
