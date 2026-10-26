@@ -44,6 +44,10 @@
   the fleet to 20 live `codex exec -p dsv41` workers.
 - `w578` completed `Engine::ResetLightParam` at 100% linked-exact. `w619` replaced it on
   `MGame::OnUpdate` (80.9%), keeping 20 live `codex exec -p dsv41` workers.
+- `w612` completed `MeshReadData` at 70.8%. `w620` replaced it on SpaceLounge
+  (`startChat` 97.2%, ctor 96.0%, `drawLounge` 94.9%, `onKeyPress` 89.9%); `w621` was
+  launched on `Level::createCampaignMission` (83.3%) and `Level::createScene` (76.2%),
+  keeping 20 live `codex exec -p dsv41` workers.
 - Replacement workers `w607..w615` are live: TouchButton retry (w570 crashed with
   max_output_tokens), layout-safe Radar retry, Mesh recovery, Generator retry (w573 died
   without a report), Status retry, fresh Mesh/Radar continuation workers, a Gun retry
