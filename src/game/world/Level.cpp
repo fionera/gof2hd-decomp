@@ -2593,16 +2593,6 @@ void Level::createMission() {
     }
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
-    {
-        volatile double layoutPad;
-        layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
-        layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
-        layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
-        layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0; layoutPad = 19.0;
-        (void) layoutPad;
-        volatile int layoutPad2;
-        (void) layoutPad2;
-    }
 }
 
 void Level::createAsteroids() {
@@ -4270,6 +4260,19 @@ void Level::createCampaignMission() {
             break;
     }
     this->messages = this->createRadioMessages(Globals::status->getCurrentCampaignMission());
+    // .text layout anchor: Level.cpp's total .text length must stay at the original size because
+    // the libstdc++ exception ctors' PC-relative GOT deltas depend on it.  createCampaignMission
+    // is the only Level function that is *short* of the original, so the anchor is cheapest here.
+    {
+        volatile double layoutPad;
+        layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
+        layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
+        layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
+        layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
+        (void) layoutPad;
+        volatile int layoutPad2;
+        (void) layoutPad2;
+    }
 }
 
 void Level::updateOrbit(int dt) {
