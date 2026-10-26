@@ -229,7 +229,7 @@ namespace AbyssEngine {
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
+                if (AEFile::Read(2, &count, file) == 0) goto fail;
                 for (unsigned int i = 0; i < count; i++) {
                     if (AEFile::Read(4, &scalar, file) == 0) { delete anim; return -1; }
                     if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
@@ -266,7 +266,7 @@ namespace AbyssEngine {
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
                     for (unsigned int i = 0; i < count; i++) {
                         if (AEFile::Read(4, vec, file) == 0) {
                             delete anim;
@@ -661,8 +661,8 @@ namespace AbyssEngine {
                             cy = 1.0f;
                         if (z > 1.0f)
                             cz = 1.0f;
-                        ((float *) (*slot)->normals)[i + 1] = cy;
                         ((float *) (*slot)->normals)[i] = cx;
+                        ((float *) (*slot)->normals)[i + 1] = cy;
                         ((float *) (*slot)->normals)[i + 2] = cz;
                     }
                 }
@@ -757,10 +757,6 @@ namespace AbyssEngine {
             return -1;
         if ((*slot)->animation != 0) {
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
-            // ASM: re-store the 16-bit count; the original's tail reloads it as a
-            // halfword, and this keeps the function at its 2600-byte size.
-            if (children == 0)
-                children = 0;
         }
         for (unsigned int c = 0; c < (unsigned short) children; c++) {
             Mesh *child = new Mesh();
