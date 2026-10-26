@@ -789,14 +789,13 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
             !(Globals::status->getCurrentCampaignMission() >= 148 && Globals::status->getCurrentCampaignMission() < 152) &&
             !(Globals::status->getCurrentCampaignMission() == 59 &&
               (stationMode ? (*this->stations)[index]->getIndex() == 101 : (*this->systems)[index]->getIndex() == 23))) {
-            bool const target = stationMode ? (*this->stations)[index]->getIndex() == campaign->getTargetStation()
-                                            : (int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1;
-            if (targeted || target) {
+            if (stationMode ? ((*this->stations)[index]->getIndex() == campaign->getTargetStation() || targeted)
+                            : ((int) (*this->systems)[index]->getStationEnumIndex(campaign->getTargetStation()) > -1 || targeted)) {
                 this->iconBuffer[1] = this->keyImageWanted;
             } else if (Globals::status->getCurrentCampaignMission() >= 33 &&
                        (stationMode ? (*this->stations)[index]->getIndex() == Globals::status->field_80
                                     : (int) (*this->systems)[index]->getStationEnumIndex(Globals::status->field_80) >= 0) &&
-                       campaign->getTargetStation() == -1) {
+                       campaign->getTargetStation() <= -1) {
                 this->iconBuffer[1] = this->keyImageWanted;
             }
         }
