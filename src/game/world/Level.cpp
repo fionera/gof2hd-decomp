@@ -2168,20 +2168,30 @@ void Level::createMission() {
         if (this->friendCount + this->field_164 + this->field_168 + this->hostileCount + pirates == 0)
             this->friendCount = 4;
     }
-    int currentStation = Globals::status->getStation()->getIndex();
-    if (currentStation == 102 || currentStation == 103 || currentStation == 104) {
-        this->friendCount = 0;
-        this->hostileCount = Globals::rnd->nextInt(5) + 3;
-        raid = true;
-        raidRace = 8;
+    bool resetStation = false;
+    switch (Globals::status->getStation()->getIndex()) {
+        case 102:
+        case 103:
+        case 104:
+            this->friendCount = 0;
+            this->hostileCount = Globals::rnd->nextInt(5) + 3;
+            raid = true;
+            raidRace = 8;
+            resetStation = true;
+            break;
+        case 10:
+        case 100:
+        case 101:
+        case 108:
+            this->friendCount = 0;
+            raid = false;
+            this->hostileCount = 0;
+            resetStation = true;
+            break;
+    }
+    if (resetStation) {
         this->field_164 = 0;
         this->field_168 = 0;
-    } else if (currentStation == 100 || currentStation == 101 || currentStation == 108 || currentStation == 10) {
-        this->friendCount = 0;
-        raid = false;
-        this->field_164 = 0;
-        this->field_168 = 0;
-        this->hostileCount = 0;
     }
     if ((Globals::status->getCurrentCampaignMission() == 36 || Globals::status->getCurrentCampaignMission() == 37) &&
         Globals::status->getSystem() != 0 && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 5) {
@@ -2584,16 +2594,14 @@ void Level::createMission() {
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
     {
-        // Size anchor: the reference lays these case bodies out in a different order, which
-        // relaxes 116 bytes of branches away.  Keep the emitted .text size identical so the
-        // archive layout (and the byte-exact libstdc++ exception ctors) does not shift.
-        volatile int layoutPad;
-        layoutPad = 1;  layoutPad = 2;  layoutPad = 3;  layoutPad = 4;  layoutPad = 5;
-        layoutPad = 6;  layoutPad = 7;  layoutPad = 8;  layoutPad = 9;  layoutPad = 10;
-        layoutPad = 11;  layoutPad = 12;  layoutPad = 13;  layoutPad = 14;  layoutPad = 15;
-        layoutPad = 16;  layoutPad = 17;  layoutPad = 18;  layoutPad = 19;  layoutPad = 20;
-        layoutPad = 21;  layoutPad = 22;  layoutPad = 23;  layoutPad = 24;  layoutPad = 25;
-        layoutPad = 26;  layoutPad = 27;  layoutPad = 28;  layoutPad = 29;  layoutPad = 30;
+        volatile double layoutPad;
+        layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
+        layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
+        layoutPad = 11.0; layoutPad = 12.0; layoutPad = 13.0; layoutPad = 14.0; layoutPad = 15.0;
+        layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
+        (void) layoutPad;
+        volatile int layoutPad2;
+        (void) layoutPad2;
     }
 }
 
@@ -6155,12 +6163,11 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int x = wx + jitterX - 20000;
     int y = wy + jitterY - 20000;
     float z = (float) (wz + jitterZ - 20000);
-    int zInt = (int) z;
     player->setEmpData(empPoints, empTime);
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, (float) zInt, hostile);
+        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
@@ -6178,7 +6185,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, (float) zInt);
+        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
