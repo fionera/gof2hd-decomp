@@ -107,6 +107,10 @@
   `_work/reconstructions/Status-missionCompleted-blockorder.md`.
 - `w590` exited; `w632` launched on `Layout::Layout()` (45.4%, 7072B), keeping 20 live
   `codex exec -p dsv41` workers.
+- Harvested `w624`: `MeshReadData` stays 70.8% (2600/2632B) and
+  `ReadEnhancedDataFromFile` stays 80.2% (1832B), but the position dispatch now tests
+  `flags & 4` (packed) before `flags & 3` (int) and `flags & 0x18` (float), matching the
+  original branch order, and the packed texcoord loop stores through the member directly.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
