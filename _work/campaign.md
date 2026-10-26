@@ -2,6 +2,12 @@
 
 ## Session 2026-10-26 (wave 39 — 20-way continuation)
 
+- Harvested `w923`: dropped the 103 dead decompiler shim names (106 declaration
+  lines) identified by `extern_shim_audit.md`; no live call sites changed. Gate
+  unchanged: byte 1352, linked 4468, avg 99.78, data 843/843, imports 207,
+  lint CLEAN, drift 0. Lint soft counts improved (`void_ptr` 31 -> 9,
+  `operator_call` 221 -> 18, `arm_builtin` 10 -> 4).
+
 - Harvested `w924`: replaced all 18 live decompiler shim wrappers with direct
   calls (AEMath/Vector wrappers in SpaceLounge/StarMap/StarSystem/RocketGun,
   TargetFollowCamera in MGame, GameText/GameRecord in MenuTouchWindow,

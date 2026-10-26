@@ -20,9 +20,7 @@
 
 
 
-void String_concat(String * out, String * a, String * b);
 
-void String_assign_op(String * self, String * src);
 
 String::~String() {
     if (this->data)

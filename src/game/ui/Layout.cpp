@@ -10,9 +10,7 @@
 #include "game/ui/TouchButton.h"
 #include "engine/render/PaintCanvas.h"
 
-void TouchButton_footerAnim(...);
 
-void Globals_drawLines(...);
 
 uint8_t Layout::isFading() {
     return this->fading;

@@ -68,10 +68,6 @@ namespace AbyssEngine {
     long long triDrawn;
     unsigned char ShaderSet;
 
-    void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
-                                    unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
-                                    unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
-                                    unsigned int m12, unsigned int m13, unsigned int m14, int dst);
 }
 
 unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const char *label) {

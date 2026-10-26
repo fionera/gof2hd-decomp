@@ -2,7 +2,6 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/Transform.h"
 
-uint32_t Transform_GetTransform(uint32_t tf);
 
 Vector AEGeometry::getPosition() {
     Matrix &loc = *(Matrix *) this->canvas->TransformGetLocal(this->transform);

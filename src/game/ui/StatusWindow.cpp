@@ -87,7 +87,6 @@ float StatusWindow::getRelativeScrollStartPos() {
     return -(float) range / (float) this->contentHeight;
 }
 
-void Status_replaceHash(void *out, void *key, void *a, void *b); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 

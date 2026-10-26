@@ -88,13 +88,11 @@ static ImageFactory **SpaceLounge_lounge_image_factory_slot;
 static GameText **SpaceLounge_lounge_text_slot;
 static String **SpaceLounge_lounge_font_slot;
 
-void *Station_getAgents(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
 static Layout **SpaceLounge_init_layout_slot;
 static GameText **SpaceLounge_init_text_slot;
 static PaintCanvas **SpaceLounge_init_camera_slot;
 
-void ArrayRemove_AgentPtr(void *agent, void *array); // lint: void_ptr (external symbol; mangling must match lib)
 
 static PaintCanvas **SpaceLounge_ctor_camera_slot;
 static Layout **SpaceLounge_draw_layout_slot;

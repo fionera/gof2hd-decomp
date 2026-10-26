@@ -20,17 +20,13 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 
-void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-void Image2DCreate(void *canvas, unsigned short id, void *outField); // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
-void Hud_loadImages(Hud * self);
 
-void Hud_buildQuickMenu(Hud *self, int menuType);
 
 static unsigned int g_Hud_heImportantMask = 0;
 

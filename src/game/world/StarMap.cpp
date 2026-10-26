@@ -34,19 +34,14 @@
 #include "game/ship/Agent.h"
 #include "game/mission/PendingProduct.h"
 
-int Station_getIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
 [[gnu::used]] static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
     return canvas->GetScreenPosition(position, *screenPosition) != 0;
 }
 
-void FileRead_ctor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *FileRead_dtor(void *reader); // lint: void_ptr (external symbol; mangling must match lib)
 
-int Station_getTextureIndex(void *station); // lint: void_ptr (external symbol; mangling must match lib)
 
-void *SystemPathFinder_ctor(void *finder); // lint: void_ptr (external symbol; mangling must match lib)
 
 StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         : scratchVector(), scratchVector2() {

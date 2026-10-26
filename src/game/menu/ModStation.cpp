@@ -225,7 +225,6 @@ static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0
 
 
 
-void ChoiceWindow_setFee_frag(ChoiceWindow *cw, int credits, int templateId);
 
 // Mission reward replacing an out-of-range reward, campaign missions 55..61.
 static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666, 6666, 50000};
@@ -264,11 +263,8 @@ static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xfffff
 
 
 
-void ChoiceWindow_setNotice_frag(ChoiceWindow *cw, int textStr);
 
-void ChoiceWindow_set6_frag(ChoiceWindow *cw, int a, int b, int yesNo, int c, int d, int e);
 
-int Status_holder_frag();
 
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
 

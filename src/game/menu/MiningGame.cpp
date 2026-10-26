@@ -41,21 +41,16 @@ static inline int MiningGame_Achievements_getValue(Achievements *achievements, i
 
 static inline void MiningGame_Hud_hudEventMedal(Hud *hud, int medal, int value) { hud->hudEventMedal(medal, value); }
 
-Ship *MiningGame_Status_getShip(Status * status);
 
-Item *MiningGame_Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 
 static inline int MiningGame_Item_getAttribute(Item *item, int attribute) { return item->getAttribute(attribute); }
 
 static inline int MiningGame_Status_getCurrentCampaignMission(Status *status) { return status->getCurrentCampaignMission(); }
 
-float MiningGame_Layout_getPulseValue(Layout *layout, float value);
 
-Ship *MiningGame_Status_getShip_render(Status * status);
 
 static inline int MiningGame_Ship_getFreeSpace(Ship *ship) { return ship->getFreeSpace(); }
 
-int MiningGame_Status_getCurrentCampaignMission_render(Status * status);
 
 static inline float &F(Layout *p, unsigned off) { return *(float *) ((char *) p + off); }
 
