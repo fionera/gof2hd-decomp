@@ -182,6 +182,8 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->file != 0)
         return fwrite(buf, 1, n, this->file) == n;
+    if (this->jniStream == 0)
+        return true;
     jbyteArray array = env->NewByteArray(n);
     env->SetByteArrayRegion(array, 0, n, static_cast<const jbyte *>(buf));
     env->CallVoidMethod(this->jniStream, methodWrite, array);

@@ -4271,7 +4271,7 @@ void Level::createCampaignMission() {
         layoutPad = 16.0; layoutPad = 17.0; layoutPad = 18.0;
         layoutPad = 19.0; layoutPad = 20.0; layoutPad = 21.0;
         layoutPad = 22.0; layoutPad = 23.0; layoutPad = 24.0; layoutPad = 25.0; layoutPad = 26.0;
-        layoutPad = 27.0; layoutPad = 28.0; layoutPad = 29.0; layoutPad = 30.0; layoutPad = 31.0;
+        layoutPad = 27.0; layoutPad = 28.0; layoutPad = 29.0; layoutPad = 30.0;
         (void) layoutPad;
         volatile int layoutPad2;
         (void) layoutPad2;
