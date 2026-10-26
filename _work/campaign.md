@@ -2,6 +2,12 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w676`: `Hud::drawOrbitInformation` 94.4% -> **100.0% linked-exact**
+  (608/608B). Calling `hasNoOwner()` through a bool-returning member pointer lets clang
+  fold `!= 1` to the original `cbnz` while keeping x in its original stack slot.
+- Harvested `w685`: `ModStation::OnInitialize` 80.5% -> **81.1%** (6396/6352B)
+  by restoring the integer jump-drive/fuel guard and the original bitwise-OR condition.
+  `linked_exact` 4455 -> **4456**; remaining non-linked functions: **67**.
 - Harvested `w633`: `Status::moveWanted` 75.5% -> **76.0%** (856/860B) by
   reordering locals and using the original systems/pathFinder init guard; a documented
   12-byte `missionCompleted` case-0xa3 anchor keeps the TU `.text` size and `byte_exact 1352`.
@@ -39,7 +45,7 @@
 - Fleet now has **40 live `codex exec -p dsv41` workers**, including new data-layout
   (`w677`), `.rodata` (`w678`), Mesh (`w679`), and remaining-ModStation (`w680`) workers.
   Every launch uses the `-p dsv41` profile (sglang, `deepseek-v4.1-flash`, high reasoning).
-- Current gate: **byte_exact 1352, linked_exact 4455, avg 99.73, stubs 0, missing/extra 0,
+- Current gate: **byte_exact 1352, linked_exact 4456, avg 99.73, stubs 0, missing/extra 0,
   imports 207, data 843/843** (`RATCHET PASS`). `.rodata` delta is now **-960** after the
   CubeMapping shader pass.
 - Harvested `w622`: `Hud::drawOrbitInformation()` 72.4% -> **94.4%** (608/608B) by
