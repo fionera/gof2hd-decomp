@@ -48,14 +48,6 @@
    "usize": 1892
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 61.5,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9728
-  },
-  {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
    "pct": 61.6,
    "byte": false,
@@ -182,6 +174,14 @@
    "linked": false,
    "osize": 968,
    "usize": 980
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 72.6,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9724
   },
   {
    "name": "_ZN5Level11createSceneEv",

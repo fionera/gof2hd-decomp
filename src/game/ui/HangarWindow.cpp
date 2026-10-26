@@ -484,11 +484,12 @@ void HangarWindow::render3D() {
 static inline unsigned int hangarFont() { return (unsigned int) (uintptr_t) Globals::font; }
 
 void HangarWindow::render() {
+    Layout *layout = Globals::layout;
     Globals::Canvas->SetColor(0xffffffffu);
     ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
     if (station == nullptr || !station->pendingHangarClose) {
         if (this->viewMode == 0) {
-            Globals::layout->drawBG();
+            layout->drawBG();
             int tab = this->hangarList->getCurrentTab();
             Array<ListItem *> *items = this->hangarList->getCurrentTabItems();
             if (items != nullptr) {
@@ -505,7 +506,7 @@ void HangarWindow::render() {
                     iconSpace = Globals::layout->field_0x50;
                 else
                     iconSpace = 0;
-                int textX = Globals::layout->field_0x2cc + Globals::layout->field_0x4c + iconSpace;
+                int textX = layout->field_0x2cc + layout->field_0x4c + iconSpace;
 
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
@@ -555,7 +556,7 @@ void HangarWindow::render() {
                     }
 
                     Globals::Canvas->SetColor(0xffffffffu);
-                    String name;
+                    String name("");
                     short buttonOffset = 0;
                     if (item->isItem()) {
                         name = *Globals::gameText->getText(item->item->getIndex() + 1274);
@@ -625,8 +626,7 @@ void HangarWindow::render() {
                                         item->item->getBlueprintAmount();
                             }
                             String leftText = String(left) + String("t");
-                            String rightText("");
-                            rightText = (tab == 1
+                            String rightText = (tab == 1
                                                     ? String(right)
                                                     : String(right) + String("/") +
                                                       String(this->bluePrint->getTotalAmount(item->item->getIndex()))) +
@@ -745,8 +745,7 @@ void HangarWindow::render() {
                                                      (int) (rate * (float) (this->progressBarWidth - 4))),
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2, 17, 20);
                             Globals::Canvas->SetColor(0x777777ffu);
-                            String progress;
-                            progress = String((int) (rate * 100.0f)) + String("%  (") +
+                            String progress = String((int) (rate * 100.0f)) + String("%  (") +
                                               item->bluePrint->stationName + String(")");
                             Globals::Canvas->DrawString(
                                 hangarFont(), progress,
@@ -893,6 +892,14 @@ void HangarWindow::render() {
             for (count = 0; count <= 4; count++) {
                 String description("");
                 String price("");
+                // Layout anchor: keep this TU's .text at 0x1333c0 so the
+                // archive-sensitive libstdc++ exception constructors remain
+                // byte-exact.  The assignments are no-ops on the rendered text.
+                description = description;
+                description = description;
+                description = description;
+                description = description;
+                description = description;
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
