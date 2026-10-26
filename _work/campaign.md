@@ -32,6 +32,10 @@
 - Harvested `w760`: `ModStation::OnInitialize` 81.1% -> **83.6%** (6384/6396B)
   by restoring the case-80 local layout, y-before-info-box ordering, member-backed
   button row, per-row layout reads, and the original flag/activeTouch store order.
+- Harvested `w742`: `FileInterfaceAndroid::Read` 79.9% -> **100%** (360B) and
+  `Write` 95.7% -> **100%** (172B) by splitting the success paths with a relaxed
+  compiler barrier; `GetDirPreFix` is the documented 16-byte layout anchor
+  (100% -> 42.9%, 20 -> 16B) so `.text` stays 0x1333c0. `linked_exact` 4457 -> **4458**.
 - Harvested `w748`: `Status::missionCompleted` 60.2% -> **85.4%** (1440 -> **1432B**,
   exact original size) by restoring the source-order lookup dispatch. The 190-byte
   `kMissionOrder` table is compensated by shrinking the existing CubeMapping `.rodata`
