@@ -6,7 +6,11 @@
   imports 207, data 843/843** (`RATCHET PASS`).
 - Harvested the unlanded `w595` Hud pass: `Hud::draw` 68.2% -> **68.3%** (9216 -> 9212B),
   zero-initialising the time string and collapsing the cargo concatenation. Gate unchanged.
-- Fleet expanded to **27 live `codex exec -p dsv41` workers**. New disjoint targets:
+- Harvested `w629`: `Generator::getShipBuyList` 90.9% -> **93.7%** (2252/2244B) by
+  simplifying the forced/fixed selection; the extra 8B is a documented defensive clamp that
+  keeps the Generator TU `.text` at the archive-sensitive size. `createMission` stays 65.1%.
+- Fleet now has **37 live `codex exec -p dsv41` workers**: 27 primary targets plus 10
+  second-opinion workers (`w647..w656`) on the hardest non-linked functions. New disjoint targets:
   `w639` HangarWindow, `w640` MGame::OnTouchEnd, `w641` SpaceLounge::OnTouchEnd,
   `w642` RocketGun::update, `w643` Level::createShip, `w644` Level::assignGuns/createMission,
   `w645` Status::missionCompleted. Every launch uses the `-p dsv41` profile
