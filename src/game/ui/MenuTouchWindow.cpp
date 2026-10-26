@@ -1386,16 +1386,15 @@ void MenuTouchWindow::draw() {
         case 2: {
             // Load / save game.
             Globals::layout->drawBG();
-            String title12(*Globals::gameText->getText(this->menuState == 2 ? 30 : 29));
-            Globals::layout->drawHeader(title12, false);
+            Globals::layout->drawHeader(String(*Globals::gameText->getText(this->menuState == 2 ? 30 : 29)), false);
             this->drawLoadSaveMenu(false);
             break;
         }
         case 0: {
             // Main menu.
             if (this->backgroundEnabled != 0) {
-                String title(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171));
-                Globals::layout->drawHeader(title, false);
+                Globals::layout->drawHeader(String(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171)),
+                                            false);
             } else {
                 Globals::Canvas->SetColor(0xffffffffu);
                 if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
@@ -1591,6 +1590,15 @@ void MenuTouchWindow::draw() {
 
             // Graphics.
             y = y + this->sliderRowHeight + Globals::layout->field_0x2fc;
+            if (!Globals::iPadLargePossible) {
+                layout = Globals::layout;
+                layout->drawBox(0, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, layout->field_0x1c,
+                                String(*Globals::gameText->getText(502)));
+                layout = Globals::layout;
+                y = y + layout->field_0x2c_rowHeight + layout->field_0x1c;
+                layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
+                                String(""));
+            }
             if (Globals::iPadLargePossible) {
                 layout = Globals::layout;
                 layout->drawBox(0, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, layout->field_0x1c,
@@ -1619,13 +1627,6 @@ void MenuTouchWindow::draw() {
                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String("2048x1536")),
                     y + (this->sliderRowHeight - sliderLabelOffset), false);
             } else {
-                layout = Globals::layout;
-                layout->drawBox(0, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, layout->field_0x1c,
-                                String(*Globals::gameText->getText(502)));
-                layout = Globals::layout;
-                y = y + layout->field_0x2c_rowHeight + layout->field_0x1c;
-                layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->sliderRowHeight,
-                                String(""));
                 Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(503),
                                             this->listTopY + Globals::layout->buttonInsetX + 10,
                                             y + (this->sliderSpacing / 2 -
@@ -1648,8 +1649,6 @@ void MenuTouchWindow::draw() {
                                                       *Globals::gameText->getText(515)),
                     y + (this->sliderRowHeight - sliderLabelOffset), false);
             }
-            Globals::Canvas->SetColor(0xffffffffu);
-            (*this->sliders)[5]->getWidth();
             for (unsigned int i = 1; i < this->sliders->size() - 1; i++) {
                 if (i == 5 && !Globals::layout->field_0x284_sliderSlot5Enabled)
                     continue;
@@ -1834,10 +1833,10 @@ void MenuTouchWindow::draw() {
                     layout->field_0x2c_rowHeight + this->sliderSpacing / 2 -
                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
                 false);
+            String volume((int) ((*this->sliders)[0]->getValue() * 100.0f));
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font,
-                *Globals::gameText->getText(499) + String(" [") +
-                    String(String((int) ((*this->sliders)[0]->getValue() * 100.0f))) + String("]"),
+                *Globals::gameText->getText(499) + String(" [") + volume + String("]"),
                 Globals::layout->buttonInsetX + this->listEntryHeight + Globals::layout->field_0x2c_rowHeight + 10,
                 this->listEntryWidth + Globals::layout->field_0xc_leftMargin +
                     Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->field_0x20_top + this->sliderSpacing +
