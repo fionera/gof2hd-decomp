@@ -20,6 +20,12 @@
 - Harvested `w726`: `HangarWindow::render` 61.5% -> **72.6%** (9728 -> 9724B) by
   keeping the Layout pointer live, default-initialising the row name, and constructing
   `rightText`/`progress` directly; `OnTouchEnd` stays 80.5% (5832B). Gate unchanged.
+- Launched a second 20-worker wave `w749..w768`, all with the `-p dsv41` profile:
+  second opinions on Layout, LevelScript::process, Gun::calcCharacterCollision,
+  Radar::draw, MenuTouchWindow draw/ctor/OnTouchEnd, Level createMission/createShip/
+  createScene, Hud draw/drawMenu, PlayerEgo update/calcCollision/checkForTurret,
+  StarMap::draw, ModStation::OnInitialize, RocketGun::update, MGame::OnTouchEnd,
+  and SpaceLounge::OnTouchEnd. The original wave30 workers remain live.
 - Harvested `w748`: `Status::missionCompleted` 60.2% -> **85.4%** (1440 -> **1432B**,
   exact original size) by restoring the source-order lookup dispatch. The 190-byte
   `kMissionOrder` table is compensated by shrinking the existing CubeMapping `.rodata`
