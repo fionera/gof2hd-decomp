@@ -411,8 +411,9 @@ int ModStation::OnInitialize() {
             int field24 = Globals::layout->field_0x24;
             int rowHeight = Globals::layout->field_0x30_rowHeight;
             int field34 = Globals::layout->field_0x34;
+            int h = Globals::h;
             this->infoBoxW = Globals::layout->field_0xcc;
-            this->infoBoxH = Globals::h - Globals::layout->field_0xc_leftMargin - rightMargin;
+            this->infoBoxH = h - Globals::layout->field_0xc_leftMargin - rightMargin;
             this->infoBoxY = Globals::layout->field_0xc_leftMargin;
             this->infoBoxX = 0;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
@@ -1100,9 +1101,6 @@ static int modStationTouchEndPad(int value) {
     int sum = value + a + b + (b & 7) + (a * 3);
     for (int i = 0; i < (value & 3); i++) {
         sum += (a << i) ^ (b >> i);
-    }
-    for (int i = 0; i < (b & 3); i++) {
-        sum ^= (b << i) + (a >> i);
     }
     return sum + (a & 31) + (b & 63) + (a - 1);
 }
@@ -2349,8 +2347,8 @@ void ModStation::OnUpdate() {
             int beaconStation = Globals::status->getStation()->getIndex();
             int beacon = beaconStation == 94 ? 3 : beaconStation - 90;
             Globals::sound->play(1561 + beacon, nullptr, nullptr, 0.0f);
-            bool firstVoice = (beacon == 0) != (beacon == 2);
             int textId = 2716 + beacon;
+            bool firstVoice = (textId == 2716) | (textId == 2718);
             int face = 58;
             if (textId == 2717) {
                 face = 57;
