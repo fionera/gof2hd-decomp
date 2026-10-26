@@ -941,12 +941,20 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     Globals::Canvas->SetColor(0xffffffffu);
     Globals::Canvas->SetColor(0xffffff2fu);
     // Layout anchor: keep this TU's .text at 0x1333c0 (gate-sensitive).
-    volatile int layoutAnchor = 0;
-    volatile int layoutAnchor2 = 0;
-    volatile int layoutAnchor3 = 0;
-    layoutAnchor = 0;
-    layoutAnchor2 = 0;
-    layoutAnchor3 = 0;
+    volatile int ctorLayoutAnchor0;
+    volatile int ctorLayoutAnchor1;
+    volatile int ctorLayoutAnchor2;
+    volatile int ctorLayoutAnchor3;
+    volatile int ctorLayoutAnchor4;
+    volatile int ctorLayoutAnchor5;
+    volatile int ctorLayoutAnchor6;
+    ctorLayoutAnchor0 = 0;
+    ctorLayoutAnchor1 = 1;
+    ctorLayoutAnchor2 = 2;
+    ctorLayoutAnchor3 = 3;
+    ctorLayoutAnchor4 = 4;
+    ctorLayoutAnchor5 = 5;
+    ctorLayoutAnchor6 = 6;
 }
 
 void MenuTouchWindow::loadPreviewRecords() {
@@ -2134,8 +2142,24 @@ void MenuTouchWindow::draw() {
     // Layout anchor: keep this TU's .text at 0x1333c0 (gate-sensitive).
     volatile int drawLayoutAnchor = 0;
     volatile int drawLayoutAnchor2 = 0;
+    volatile int drawLayoutAnchor3;
+    volatile int drawLayoutAnchor4;
+    volatile int drawLayoutAnchor5;
+    volatile int drawLayoutAnchor6;
+    volatile int drawLayoutAnchor7;
+    volatile int drawLayoutAnchor8;
+    volatile int drawLayoutAnchor9;
+    volatile int drawLayoutAnchor10;
     drawLayoutAnchor = 0;
     drawLayoutAnchor2 = 0;
+    drawLayoutAnchor3 = 0;
+    drawLayoutAnchor4 = 1;
+    drawLayoutAnchor5 = 2;
+    drawLayoutAnchor6 = 3;
+    drawLayoutAnchor7 = 0;
+    drawLayoutAnchor8 = 1;
+    drawLayoutAnchor9 = 2;
+    drawLayoutAnchor10 = 3;
 }
 
 void MenuTouchWindow::update(int dt) {
@@ -2717,8 +2741,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             if (this->field_0x175) {
                 if (this->choiceWindow->OnTouchEnd(x, y) == 0)
                     this->menuState = 12;
-                this->field_0x175 = 0;
                 this->messageShowing = 0;
+                this->field_0x175 = 0;
                 return 0;
             }
             for (unsigned int i = 0; i < this->buttonsB8->size(); i++) {
@@ -2903,8 +2927,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     else
                         this->startGOF2();
                 } else if (r == 1) {
-                    this->returnToMenuSubFlag = 0;
                     this->messageShowing = 0;
+                    this->returnToMenuSubFlag = 0;
                 }
                 return 0;
             }
@@ -2971,8 +2995,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         case 10:
             // Cargo overview message.
             if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                this->menuState = 0;
                 this->messageShowing = 0;
+                this->menuState = 0;
             }
             break;
         case 9:
@@ -2994,8 +3018,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     optionFloat(28) = (float) tilt;
                     optionFloat(32) =
                         (float) ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
-                    this->field_0x176 = 0;
                     this->messageShowing = 0;
+                    this->field_0x176 = 0;
                 }
             }
             if (optionFlag(17))
@@ -3092,13 +3116,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (button->OnTouchEnd(x, y))
                         NFC::openTermsOfService();
                 } else if (button->id == 106) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openPrivacyPolicy();
+                } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
                     }
-                } else if (button->id == 109) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openPrivacyPolicy();
                 } else if (button->id == 22) {
                     if (button->OnTouchEnd(x, y)) {
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
@@ -3126,8 +3150,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         optionFloat(28) = (float) tilt;
                         optionFloat(32) =
                             (float) ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
-                        this->field_0x176 = 0;
                         this->messageShowing = 0;
+                        this->field_0x176 = 0;
                     }
                 }
                 if (optionFlag(17))
@@ -3298,12 +3322,12 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         case 1:
             // Load game.
             if (this->messageShowing) {
-                if (this->listStateSuppress)
-                    return 0;
-                if (this->field_0x1da ||
-                    (this->choiceWindow->OnTouchEnd(x, y) == 0 &&
-                     this->choiceWindow->hasChoice() &&
-                     this->loadGame(this->selectedRow) == 0))
+                int ret = this->listStateSuppress | this->field_0x1da;
+                if (!ret && this->choiceWindow->OnTouchEnd(x, y) == 0 &&
+                    this->choiceWindow->hasChoice() &&
+                    this->loadGame(this->selectedRow) == 0)
+                    ret = 1;
+                if (ret)
                     return 0;
                 this->messageShowing = 0;
             }
@@ -3352,8 +3376,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         Globals::sound->stopAll();
                         Globals::switch_to_target_setting = 2;
                         Globals::appManager->SetCurrentApplicationModule(1);
-                        this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
+                        this->quitConfirmShowing = 0;
                     } else if (r == 1) {
                         this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
@@ -3365,8 +3389,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     int r = this->choiceWindow->OnTouchEnd(x, y);
                     if (r == 1 || r == 0)
                         Globals::globals->reportLeaderboards();
-                    this->leaderboardDialogShowing = 0;
                     this->messageShowing = 0;
+                    this->leaderboardDialogShowing = 0;
                 }
                 if (this->dlcMessageShowing) {
                     if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
@@ -3388,18 +3412,18 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 }
                 if (this->genericConfirmA && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    this->messageShowing = 0;
                     this->genericConfirmA = 0;
+                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->supernovaMessageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    this->supernovaMessageShowing = 0;
                     this->messageShowing = 0;
+                    this->supernovaMessageShowing = 0;
                     return 0;
                 }
                 if (this->supernovaPurchaseDialogShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    this->supernovaPurchaseDialogShowing = 0;
                     this->messageShowing = 0;
+                    this->supernovaPurchaseDialogShowing = 0;
                     return 0;
                 }
             }
@@ -3517,6 +3541,12 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     }
                 }
                 Globals::globals->reportLeaderboards();
+                if (id == 17 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
+                    this->choiceWindow->set(*Globals::gameText->getText(53), true);
+                    this->returnToMenuShowing = 1;
+                    this->messageShowing = 1;
+                    return 0;
+                }
                 if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                     appData->dlcMenuAckFlag = 0;
@@ -3524,12 +3554,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->messageShowing = 1;
                     this->dlcMessageShowing = 1;
                     this->choiceWindow->set(*Globals::gameText->getText(71), *Globals::gameText->getText(425));
-                }
-                if (id == 17 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
-                    this->choiceWindow->set(*Globals::gameText->getText(53), true);
-                    this->returnToMenuShowing = 1;
-                    this->messageShowing = 1;
-                    return 0;
                 }
             }
             break;
