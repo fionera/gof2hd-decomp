@@ -151,8 +151,14 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) { //
 }
 
 bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
-    if (this->zipFile != 0)
-        return zip_fread(this->zipFile, buf, n) == n;
+    if (this->zipFile != 0) {
+        if (zip_fread(this->zipFile, buf, n) == n) {
+            // Compiler barrier: keep the success return out of the shared epilogue.
+            std::atomic_thread_fence(std::memory_order_relaxed);
+            return true;
+        }
+        return false;
+    }
 
     uint32_t ok = 0;
     if (this->file != 0) {
@@ -180,11 +186,12 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: void_ptr virtual override param (FileInterface byte buffer)
     if (this->file != 0) {
-        bool ok = fwrite(buf, 1, n, this->file) == n;
-        // Compiler barrier: keeps the fwrite success path out of the shared
-        // JNI epilogue, matching the original's early return.
-        std::atomic_thread_fence(std::memory_order_acquire);
-        return ok;
+        if (fwrite(buf, 1, n, this->file) == n) {
+            // Compiler barrier: keep the success return out of the shared JNI epilogue.
+            std::atomic_thread_fence(std::memory_order_relaxed);
+            return true;
+        }
+        return false;
     }
     if (this->jniStream == 0)
         return true;
@@ -201,7 +208,6 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: voi
     env->DeleteLocalRef(array);
     return ok;
 }
-
 
 uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
     if (n == 0)
