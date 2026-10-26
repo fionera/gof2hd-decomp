@@ -1991,14 +1991,15 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             } else if (!mission->isEmpty() && (mission->getType() == 184 || mission->getType() == 168)
                        && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 2) {
                 int delivered = this->dockTransferedAmount;
+                int total = this->dockTotalAmount;
                 if (delivered != this->dockTotalAmount) {
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1500.0f);
-                    if (this->dockTotalAmount <= this->dockTransferedAmount) {
+                    if (total <= this->dockTransferedAmount) {
                         if (delivered < this->dockTransferedAmount)
                             hud->hudEvent(mission->getType() == 184 || mission->getType() == 168 ? 36 : 40, this, 0);
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
-                    if (this->dockTransferedAmount > delivered)
+                    if (total > delivered)
                         Globals::status->field_178 += this->dockTransferedAmount - delivered;
                 }
             } else if (campaign != nullptr && !campaign->isEmpty()
