@@ -49,10 +49,9 @@ namespace {
     };
 
     // Byte offset of an Arabic letter's row in kArabicForms. This unused helper is kept out of
-    // line as a 12-byte .text anchor; the 4-byte reduction compensates GetDirPreFix's restored
-    // 20-byte body so the archive/link layout stays stable.
+    // line as a 16-byte .text anchor so the archive/link layout stays stable.
     [[gnu::used]] unsigned int arabicFormRow(unsigned int code) {
-        return code * 20 + 1;
+        return (code - 0x621) * 20;
     }
 
     // Letters that never join to the following letter.

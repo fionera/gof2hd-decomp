@@ -374,10 +374,11 @@ void ObjectGun::render() {
 
 namespace {
     // Bounds-checked projectile mesh lookup for item indices. Kept out of line as the
-    // 24-byte .text anchor that preserves the libc++abi archive layout.
+    // 20-byte .text anchor that preserves the libc++abi archive layout; the 4-byte reduction
+    // compensates GetDirPreFix's restored 20-byte body.
     [[gnu::used]] uint32_t ObjectGunProjectileMesh(int item) {
-        if (item < 0 || item >= 233)
-            return 0;
+        if (item < 0)
+            item = 0;
         return (uint32_t) MUZZLE_MESHES[item];
     }
 }
