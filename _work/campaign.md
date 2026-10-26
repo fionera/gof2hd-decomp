@@ -81,6 +81,12 @@
 - `w616` exited; `w629` launched on `Generator::createMission` (60.9%),
   `createAgents` (99.2%) and `getShipBuyList` (90.9%), keeping 20 live
   `codex exec -p dsv41` workers.
+- Harvested `w617`: `HackingGame::render2D` 58.8% -> **61.1%** (2148/2090B) by using the
+  `gameWon(current)` call, one shared `gridLeft`, and the original arrow y-term order; the
+  Level anchor grew by ten volatile double stores (+80B) so `.text` stays `0x1333d0`
+  (`createCampaignMission` 83.1% -> 83.0%). Gate unchanged.
+- `w630` launched on `Radar::draw` (61.0%) and the `Radar` ctor (99.1%), bringing the fleet
+  to 21 live workers until `w626` exits.
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
