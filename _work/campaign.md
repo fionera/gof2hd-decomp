@@ -87,6 +87,11 @@
   (`createCampaignMission` 83.1% -> 83.0%). Gate unchanged.
 - `w630` launched on `Radar::draw` (61.0%) and the `Radar` ctor (99.1%), bringing the fleet
   to 21 live workers until `w626` exits.
+- Harvested `w626`: `HangarWindow::render` 61.479% -> **61.534%** (9728/9700B) by removing the
+  `hangarWindowDivide` helper, restoring the natural five-entry credit table, inlining the
+  division, and matching the `textX` load order; `OnTouchEnd` stays 80.486%. Gate unchanged.
+- `w626` exited; the fleet is back to 20 live workers (w590, w597, w599, w602, w603, w605,
+  w607, w614, w617, w618, w619, w620, w621, w622, w623, w624, w625, w627, w629, w630).
 - `w601` was harvested and exited; `w623` replaced it on StarMap (`draw` 89.2%,
   `update` 91.5%, `drawOnScreenInfo` 93.0%), keeping 20 live `codex exec -p dsv41` workers.
 - `w595` completed its Hud pass; `w622` replaced it on the remaining Hud long tail
