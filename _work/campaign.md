@@ -2,6 +2,9 @@
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 
+- Harvested `w649`: `Gun::calcCharacterCollision` 59.4% -> **59.7%** (1892/1984B)
+  by restoring the original bomb-first explosive/explode-on-contact branch shape;
+  `shootAt` preserved at 88.9% (1788B exact).
 - Harvested `w681`: `Globals::getInAppPurchaseArrayIndex` 76.0% -> **100.0% linked-exact**
   (716/716B) by restoring the original do/while search with explicit out-of-range and null-entry
   exits. `linked_exact` 4454 -> **4455**; avg 99.73. Remaining non-linked functions: **68**.
