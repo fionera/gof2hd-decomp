@@ -3420,11 +3420,6 @@ void MGame::OnUpdate() {
         this->applicationManager->SetCurrentApplicationModule(2);
         this->active = 0;
     }
-    {
-        volatile int layoutPad[6];
-        layoutPad[0] = 1; layoutPad[1] = 2; layoutPad[2] = 3;
-        layoutPad[3] = 4; layoutPad[4] = 5; layoutPad[5] = 6;
-    }
 }
 
 bool MGame::updateJumpScene() {
