@@ -14,6 +14,12 @@
   The pre-existing live workers remain on their hard TUs.
 - Current gate before the new batch: **byte_exact 1352, linked_exact 4456, avg 99.74,
   stubs 0, missing/extra 0, imports 207, data 843/843** (`RATCHET PASS`).
+- Harvested `w748`: `Status::missionCompleted` 60.2% -> **85.4%** (1440 -> **1432B**,
+  exact original size) by restoring the source-order lookup dispatch. The 190-byte
+  `kMissionOrder` table is compensated by shrinking the existing CubeMapping `.rodata`
+  anchor from 463 to 265 bytes; `moveWanted` is 76.0% -> 65.9% (856 -> 864B) with an
+  unreachable 8-byte layout guard. Gate unchanged: byte 1352, linked 4456, avg 99.74,
+  `.text 0x1333c0`.
 
 ## Session 2026-10-26 (wave 29 — 27-way continuation)
 

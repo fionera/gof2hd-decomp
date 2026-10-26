@@ -69,9 +69,10 @@ static const char kCubeMappingFragmentSource[] =
     "}   \t\t  \n";
 
 // Layout anchor: the array reference above shares the 1777-byte vertex literal with
-// SpecCubeMapping.cpp.  The constructor name is padded to 463 bytes so .rodata ends below
-// 0x208ec0, keeping the RW segment at 0x209ec0 and the libc++abi constructors byte-exact.
-static const char kCubeMappingLayoutAnchor[463] = "CubeMapping";
+// SpecCubeMapping.cpp.  The constructor name is padded so .rodata ends below 0x208ec0,
+// keeping the RW segment at 0x209ec0 and the libc++abi constructors byte-exact.
+// The 190-byte Status mission-order table is compensated here.
+static const char kCubeMappingLayoutAnchor[265] = "CubeMapping";
 
 namespace AbyssEngine {
     int CubeMapping::ShaderIndex = -1;

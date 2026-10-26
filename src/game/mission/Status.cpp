@@ -2063,9 +2063,25 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             m->getTargetStation() == 0 && m->getTargetStation() == 0) {
             continue;
         }
-        switch (m->getType()) {
-            case 0xa7:
-            case 0xae:
+        // The original jump table lays the case bodies out in source order.
+        // Rank the mission types so clang's ascending table order matches.
+        static const unsigned char kMissionOrder[190] = {
+            0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+            190, 190, 190, 190, 190, 190, 152, 154, 155, 156, 157, 159, 167, 168, 160, 190,
+            169, 190, 161, 171, 172, 173, 162, 150, 174, 176, 163, 177, 178, 190, 151, 190,
+            190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
+        };
+        switch (kMissionOrder[m->getType()]) {
+            case 150:
+            case 151:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
                     m->setWon(true);
                     return m;
@@ -2091,35 +2107,35 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 0:
-            case 0xb:
+            case 11:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 0xd:
+            case 13:
                 if (atStation && field_0xf0) {
                     return m;
                 }
                 break;
-            case 0xe:
+            case 14:
                 if (atStation && station->getIndex() == m->getAgent()->getStation() &&
                     Item::isInList(0x73, ship->getCargo())) {
                     return m;
                 }
                 break;
-            case 0x96:
+            case 152:
                 if (missionCount >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0x97:
+            case 154:
                 if (kills >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0x98: {
+            case 155: {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
                     if ((*equipment)[j] != 0 && (*equipment)[j]->getIndex() == m->getStatusValue()) {
@@ -2128,25 +2144,25 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 0x99:
+            case 156:
                 if (stationsVisited >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0x9a:
+            case 157:
                 if (ship->getCurrentLoad() >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0x9b:
+            case 159:
                 if (goodsProduced >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0x9e: {
+            case 160: {
                 Array<Item *> *equipment = ship->getEquipment();
                 unsigned j = 0;
                 bool hasSpecial = false;
@@ -2163,7 +2179,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 0xa2:
+            case 161:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     BluePrint *bluePrint = (*bluePrints)[m->getStatusValue()];
                     Array<int> *ingredients = bluePrint->getIngredientList();
@@ -2180,7 +2196,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 0xa6:
+            case 162:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     Ship *s = ship;
@@ -2193,13 +2209,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 0xaa:
+            case 163:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 0xb8:
+            case 165:
                 if (m->getStatusValue() == 0) {
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
@@ -2208,7 +2224,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 0xbd:
+            case 166:
                 if (atStation) {
                     Array<Item *> *equipment = ship->getEquipment();
                     for (unsigned j = 0; j < equipment->size(); j++) {
@@ -2218,12 +2234,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 0x9c:
+            case 167:
                 if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
                     return m;
                 }
                 break;
-            case 0x9d: {
+            case 168: {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
                     if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue()) {
@@ -2232,7 +2248,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 0xa0:
+            case 169:
                 if (atStation) {
                     return m;
                 }
@@ -2240,7 +2256,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 0xa3: {
+            case 171: {
                 // Layout anchor: unreachable in game data; keeps this TU's .text size aligned.
                 if (i == 0xffff) {
                     break;
@@ -2257,34 +2273,34 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 0xa4:
+            case 172:
                 if (longMission) {
                     return m;
                 }
                 break;
-            case 0xa5:
+            case 173:
                 if (notAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 0xa8:
+            case 174:
                 if (Globals::status->field_178 >= m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;
                 }
                 break;
-            case 0xa9:
+            case 176:
                 if (shortMission) {
                     return m;
                 }
                 break;
-            case 0xab:
+            case 177:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 0xac:
+            case 178:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
@@ -2403,6 +2419,10 @@ void Status::moveWanted() {
     if (systems != 0) {
         ArrayReleaseClasses(*systems);
         delete systems;
+    }
+    // Layout anchor: keeps this TU's .text at 0x1333c0 after the missionCompleted dispatch.
+    if (Globals::status->field_178 == 0x7fffffff) {
+        return;
     }
     if (pathFinder != 0) {
         delete pathFinder;
