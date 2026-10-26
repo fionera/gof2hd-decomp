@@ -1,5 +1,24 @@
 # Byte-matching campaign log
 
+## Session 2026-10-26 (wave 34/35/36 harvest)
+
+- Harvested the unmerged wave32 results:
+  - `SpaceLounge::OnTouchEnd` 80.6% -> **89.0%** (7448B).
+  - `PlayerEgo::stopMining` 94.8% -> **100% linked-exact** (524B); `linked_exact` 4465 -> 4466.
+  - `MenuTouchWindow::OnTouchMove` 89.1% -> **100% linked-exact** (1920B); `linked_exact` 4466 -> 4467.
+  - `MenuTouchWindow::draw` 67.3% -> **73.0%** (13168B) with the original slot-5 options row;
+    the documented 0x1000 TU anchor keeps the exception ctors byte-exact.
+  - `SpaceLounge::onKeyPress` 89.9% -> **94.3%** (8580B).
+  - `ModStation::OnInitialize` 85.6% -> **86.0%** (6384B).
+- Current gate: **byte_exact 1352, linked_exact 4467, avg 99.78, stubs 0,
+  missing/extra 0, imports 207, data 843/843** (`RATCHET PASS`).
+  `.text` is +3,064 B because of the documented MenuTouchWindow anchor; `.rodata` -1,152,
+  `.ARM.extab` -4,548, `.data` +12, `.bss` +228.
+- Launched `w840..w859` (20 code workers), `w860..w864` (5 analysis workers:
+  .rodata/.data/.bss/.ARM.extab/dynsym-order), and `w865..w874` (10 independent
+  second-opinion workers). All use the explicit `-p dsv41` profile.
+- Wave34/35/36 workers are still live; only gate-green commits will be harvested.
+
 ## Session 2026-10-26 (wave 34 — 20-way continuation)
 
 - Harvested `w823`: `HackingGame::render2D` 67.8% -> **70.3%** (2090 -> 2072B) by
