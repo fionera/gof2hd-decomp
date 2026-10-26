@@ -510,8 +510,8 @@ int ModStation::OnInitialize() {
                         Agent *agent = new Agent(0, String(""), 0, 0, 2, true, 0, 0, 0, 0);
                         Globals::sound->play(Globals::globals->getDialogueSoundId(434, agent), nullptr, nullptr, 0.0f);
                         delete agent;
-                        this->flag_0x101 = 0;
                         this->flag_0x69 = 1;
+                        this->flag_0x101 = 0;
                     }
                 } else if (Globals::status->getCurrentCampaignMission() != 48 &&
                            !Globals::status->inBlackMarketSystem() &&
@@ -547,8 +547,8 @@ int ModStation::OnInitialize() {
                                                         Globals::layout->formatCredits(this->field_0xd4),
                                                         String("#C"));
                     this->choiceWindow->set(text, true);
-                    this->flag_0x63 = 1;
                     this->flag_0x6b = 1;
+                    this->flag_0x63 = 1;
                     this->flag_0x101 = 0;
                 }
             }
@@ -569,9 +569,11 @@ int ModStation::OnInitialize() {
             if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
                 Globals::status->getShip()->removeCargo(131);
             }
-            if (Globals::status->getCurrentCampaignMission() == 43 && stationIndex == 10) {
-                this->flag_0xd9 = 1;
-            } else if (Globals::status->getCurrentCampaignMission() == 44 && stationIndex == 10) {
+            if (Globals::status->getCurrentCampaignMission() == 43) {
+                if (stationIndex == 10) {
+                    this->flag_0xd9 = 1;
+                }
+            } else if (stationIndex == 10 && Globals::status->getCurrentCampaignMission() == 44) {
                 this->flag_0xd9 = 1;
             }
             if (Globals::status->gameWon() && stationIndex == 10 &&
@@ -1101,7 +1103,7 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (b & 7) + (a * 3) + (a >> 1);
+    return value + a + b + (b % 8);
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
