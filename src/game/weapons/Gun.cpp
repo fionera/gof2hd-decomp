@@ -345,7 +345,6 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         return true;
     }
     bool fired = false;
-    bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
     for (unsigned i = 0; i < this->positions.count; ++i) {
         int lifetime = this->lifetimes[i];
         if (lifetime > (isRocketLike(this->weaponType) ? -2000 : 0)) {
@@ -361,9 +360,8 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->currentProjectile = i;
         this->positions.data()[i] = AbyssEngine::AEMath::MatrixGetPosition(m);
 
-        Vector direction;
-        direction = Vector{0, 0, 0};
-        if (this->offset != direction && this->weaponType != ITEM_SORT_SHOCK_BLAST) {
+        if (this->offset != Vector{0, 0, 0}) {
+          if (this->weaponType != ITEM_SORT_SHOCK_BLAST) {
             if (!this->field_0xa5 && !this->field_0xa4_b0) {
                 this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->offset);
             } else {
@@ -385,7 +383,9 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
                     this->positions.data()[i] += AbyssEngine::AEMath::MatrixRotateVector(m, this->targetDir);
                 }
             }
+          }
         }
+        Vector direction = {0, 0, 0};
         if (this->weaponType == ITEM_SORT_MINE) {
             direction = AbyssEngine::AEMath::MatrixGetDir(m) + AbyssEngine::AEMath::MatrixGetUp(m);
             Array<Vector *> *wobble = reinterpret_cast<Array<Vector *> *>(this->wobbleOffsets);
@@ -418,8 +418,9 @@ bool Gun::shootAt(Matrix m, int n, Player *p, bool b) {
         this->velocities.data()[i] *= this->pitchRate;
         this->lifetimes[i] = this->weaponType == ITEM_SORT_SENTRY_GUN ? 0 : this->initialLifetime;
 
+        bool cluster = this->weaponType == ITEM_SORT_CLUSTER_MISSILE;
         bool keepAmmo = true;
-        if (!this->friendGun && ammo != nullptr && this->ammoCount >= 1 && ammo->getType() == 1) {
+        if (!this->friendGun && this->ammoCount >= 1 && ammo->getType() == 1) {
             keepAmmo = false;
             if (this->itemIndex == 179) {
                 Globals::status->field_144 = 0;
@@ -580,8 +581,13 @@ void Gun::calcCharacterCollision() {
     } else {
         scatter = weaponType == ITEM_SORT_SCATTER_GUN;
         mine = weaponType == ITEM_SORT_MINE;
-        explosive = weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE ||
-                    weaponType == ITEM_SORT_CLUSTER_MISSILE;
+        if (weaponType == ITEM_SORT_ROCKET || weaponType == ITEM_SORT_MISSILE) {
+            explosive = 1;
+        } else if (weaponType == ITEM_SORT_CLUSTER_MISSILE) {
+            explosive = 1;
+        } else {
+            explosive = 0;
+        }
     }
     const bool explodeOnContact =
             weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
@@ -598,7 +604,7 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            Vector position = this->positions.data()[i];
+            const Vector &position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition =
                     AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
