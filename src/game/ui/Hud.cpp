@@ -282,8 +282,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                       this->field_0x440, armorBarY);
     }
     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
-                                                    Globals::status->getCurrentCampaignMission()) > 0.0f &&
-        dividerOffset >= 0) {
+                                                    Globals::status->getCurrentCampaignMission()) > 0.0f) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
@@ -335,7 +334,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         this->field_0x4b4 = 300;
     if (this->field_0x4ac >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4ac * 255 / 300));
-        Globals::Canvas->DrawImage2D(sideImage, (Globals::w / 2) - ego->field_0x14->imageWidth, Globals::h >> 1,
+        Globals::Canvas->DrawImage2D(sideImage, (Globals::w >> 1) - ego->field_0x14->imageWidth, Globals::h >> 1,
                                      Globals::Canvas->GetImage2DWidth(sideImage),
                                      Globals::Canvas->GetImage2DHeight(sideImage), 0x11, 0x41, 1);
         this->field_0x4ac -= dt;
@@ -379,8 +378,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Mission status panel (top right).
     if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 12) {
-        String kills;
-        kills = String(ego->level->killCountB) + String(" : ") + String(ego->level->killCountA);
+        String kills = String(ego->level->killCountB) + String(" : ") + String(ego->level->killCountA);
         Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
@@ -524,6 +522,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         }
     }
 
+    if (pad_ < 0)
+        Globals::Canvas->SetColor(savedColor);
     // Autopilot button.
     if (!ego->radioRef->isShowingMessage()) {
         if ((!ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
@@ -810,8 +810,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                     Globals::layout->field_0x2c_rowHeight + this->field_0x3e2, false);
         Globals::Canvas->SetColor(0xffffffff);
     }
-    if (pad_ < 0)
-        Globals::Canvas->SetColor(savedColor);
     Globals::Canvas->SetColor(savedColor);
 }
 
