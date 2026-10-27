@@ -2838,7 +2838,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(0.0f, lift * (float) delta, 0.0f);
                     if (m_nScriptTimerA >= 8001) {
                         m_nScriptTimerB = 0;
-                        m_nScriptTimerA = 0;
                         m_nState = 4;
                     }
                 } else if (m_nState == 4) {
