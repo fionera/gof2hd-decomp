@@ -32,7 +32,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,262,528 | **+3,064** | the remaining 54 non-linked exported functions plus the documented MenuTouchWindow 0x1000 layout anchor; local-code gaps are bracketed by the same neighbours. |
+| **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 53 non-linked exported functions plus the documented MenuTouchWindow layout anchor and RocketGun GOT pad; local-code gaps are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 267,671 | **−1,488** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact, the CubeMapping 75-byte anchor is gone, and the PulseShader named-array pad is gone. |
 | .ARM.extab | 156,312 | 151,764 | −4,548 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
@@ -44,7 +44,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 1. **53 non-linked exported functions.** 4470 of 4523 compared functions are linked-exact; the
    remaining 53 are the long tail (22 in 90–99%, 10 in 80–89%, 13 in 70–79%, 5 in 60–69%,
-   3 below 60%). The `.text` total is +3,064 B because of the documented
+   3 below 60%). The `.text` total is +3,080 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
 2. **Anonymous data layout.** `.rodata` is 1,488 B smaller, `.data` 76 B larger, and `.bss` 228 B larger than the original;

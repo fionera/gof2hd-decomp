@@ -81,6 +81,15 @@
 - Harvested `w1115`: `ModStation::OnInitialize` 87.4% -> **87.5%** (6412 B) by
   restoring the case-40 `newWanted` order and moving the anchor to the case-40
   tail.
+- Harvested `w1164`: `MenuTouchWindow::draw` 82.7% -> **85.5%** (13052 B exact)
+  by restoring the language-switch flag arithmetic.
+- Harvested `w1166`: `Level::createMission` 74.0% -> **75.7%** (17168 B) by
+  moving `stationIndex` after the freelance block and selecting the fighter type
+  per branch in the case-15 convoy loop.
+- Harvested `w1155`: `RocketGun::update` 82.5% -> **83.1%** (1908 B exact) by
+  deferring `dt`, copying the barrel vector, and restoring the trail data
+  access. The 16-byte `.data` trail-table pad moves the GOT to 0x2109e0, so the
+  canonical `.text` size is now **0x1343d0** (+3,080 B vs the original).
 - Launched `w1150..w1169` (20 workers) as wave 51: MeshReadData, a fifth Layout
   ctor angle (store-order), Level::createShip, MGame::OnTouchEnd,
   Status::moveWanted, RocketGun::update, SpaceLounge::OnTouchEnd/startChat/
