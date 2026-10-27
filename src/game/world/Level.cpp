@@ -3629,28 +3629,16 @@ void Level::createCampaignMission() {
             int coords[3] = {0, 0, 50000};
             this->enemyRoute = new Route(coords, 3);
             unsigned char weakDevice = Globals::isRunningHDonWeakDevice;
-            unsigned enemyCount;
-            if (weakDevice)
-                enemyCount = 8;
-            else
-                enemyCount = 12;
+            unsigned enemyCount = !weakDevice ? 12 : 8;
             this->enemies = new Array<KIPlayer *>();
-            unsigned total;
-            if (weakDevice)
-                total = 11;
-            else
-                total = 19;
+            unsigned total = !weakDevice ? 19 : 11;
             ArraySetLength(total, *this->enemies);
             for (unsigned i = 0; i < enemyCount; i++) {
                 (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
                                                        this->enemyRoute->getWaypoint(0), true, false);
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
             }
-            unsigned friendEnd;
-            if (weakDevice)
-                friendEnd = 11;
-            else
-                friendEnd = 16;
+            unsigned friendEnd = !weakDevice ? 16 : 11;
             for (unsigned i = enemyCount; i < friendEnd; i++) {
                 (*this->enemies)[i] = this->createShip(2, 0, Globals::globals->getRandomEnemyFighter(2),
                                                        this->enemyRoute->getWaypoint(0), true, false);
@@ -3733,8 +3721,13 @@ void Level::createCampaignMission() {
             (*stops)[2] = (*this->enemies)[1];
             Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
             convoyRoute->setLoop(true);
-            for (int i = 2; i < 6; i++)
-                (*this->enemies)[i]->setRoute(i == 2 ? convoyRoute : convoyRoute->clone());
+            for (int i = 2; i < 6; i++) {
+                KIPlayer *escort = (*this->enemies)[i];
+                if (i == 2)
+                    escort->setRoute(convoyRoute);
+                else
+                    escort->setRoute(convoyRoute->clone());
+            }
             for (int i = 6; i < 10; i++) {
                 (*this->enemies)[i] = this->createShip(10, 0, 44, escortWp, true, false);
                 (*this->enemies)[i]->setPosition(Vector{1000000.0f, 1000000.0f, 1000000.0f});
