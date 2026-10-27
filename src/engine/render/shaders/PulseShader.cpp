@@ -5,33 +5,7 @@
 #include "engine/render/Engine.h"
 #include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
-
-extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-float sinf(float x);
-}
-
-
-static const char kPulseShaderVertexSource[] =
-    "attribute highp vec4 a_position;   \n"
-    "attribute mediump vec2 a_texCoord;   \n"
-    "varying mediump vec2 v_texCoord;     \n"
-    "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
-    "void main()                  \n"
-    "{                            \n"
-    "   gl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
-    "   v_texCoord = a_texCoord;  \n"
-    "}                            \n";
-
-static const char kPulseShaderFragmentSource[] =
-    "precision lowp float;\n"
-    "varying mediump vec2 v_texCoord;\n"
-    "uniform sampler2D  s_texture;\n"
-    "uniform highp float u_timevalue;\n"
-    "void main()\n"
-    "{\n"
-    "\tvec4 textureColor = texture2D(  s_texture, v_texCoord );\n"
-    "\tgl_FragColor = textureColor * vec4(vec3( u_timevalue ), 1.0); // * vec4(4.0,4.0,4.0,1.0);\n"
-    "}\n";
+#include <cmath>
 
 namespace AbyssEngine {
     int PulseShader::ShaderIndex = -1;
@@ -50,7 +24,25 @@ namespace AbyssEngine {
     }
 
     void PulseShader::Init(Engine *) {
-        int program = this->ES2LoadProgram(kPulseShaderVertexSource, kPulseShaderFragmentSource);
+        int program = this->ES2LoadProgram(
+            "attribute highp vec4 a_position;   \n"
+            "attribute mediump vec2 a_texCoord;   \n"
+            "varying mediump vec2 v_texCoord;     \n"
+            "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
+            "void main()                  \n"
+            "{                            \n"
+            "   gl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
+            "   v_texCoord = a_texCoord;  \n"
+            "}                            \n",
+            "precision lowp float;\n"
+            "varying mediump vec2 v_texCoord;\n"
+            "uniform sampler2D  s_texture;\n"
+            "uniform highp float u_timevalue;\n"
+            "void main()\n"
+            "{\n"
+            "\tvec4 textureColor = texture2D(  s_texture, v_texCoord );\n"
+            "\tgl_FragColor = textureColor * vec4(vec3( u_timevalue ), 1.0); // * vec4(4.0,4.0,4.0,1.0);\n"
+            "}\n");
         this->program = program;
 
         this->aPositionLoc = glGetAttribLocation(program, "a_position");
@@ -96,7 +88,7 @@ namespace AbyssEngine {
             if (this->uSpecularColorLoc >= 0)
                 glUniform4fv(this->uSpecularColorLoc, 1, engine->materialSpecular);
 
-            float pulse = sinf((float) engine->appManager->GetCurrentTimeMillis() / 1000.0f) + 2.0f;
+            float pulse = std::sinf((float) engine->appManager->GetCurrentTimeMillis() / 1000.0f) + 2.0f;
             glUniform1f(this->uTimevalueLoc, pulse);
             this->dirty = 0;
         }
