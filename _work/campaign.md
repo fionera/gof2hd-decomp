@@ -56,6 +56,15 @@
   Status::missionCompleted, ModStation::OnInitialize, SpaceLounge::OnTouchEnd,
   StarMap::draw, PlayerStation ctor, PlayerEgo::update, SpaceLounge::onKeyPress,
   Hud::drawChallengeModeScore, Globals ctor, and MenuTouchWindow::draw.
+- Harvested `w1085`: `Hud::draw` 68.4% -> **69.5%** (9328 B) by integrating
+  the split kills/load shape; retuned `mtwTextLayoutAnchor` by -0x70 to hold
+  `.text 0x1343c0`.
+- Harvested `w1054`: `Radar::draw` 62.1% -> **62.2%** (9592 B) by unifying the
+  off-screen enemy image selection.
+- Combined-anchor fix: the two independently-green harvests together overshot
+  `.text` by 8 B (`0x1343c8`); removed two volatile stores from
+  `mtwTextLayoutAnchor`. Final gate: byte 1352, linked 4469, avg 99.8,
+  `.text 0x1343c0`, lint CLEAN, drift 0.
 
 ## Session 2026-10-26 (wave 41 — third 20-way finisher fleet)
 
