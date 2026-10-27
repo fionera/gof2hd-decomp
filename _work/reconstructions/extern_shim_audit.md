@@ -428,7 +428,7 @@ distinct mangled symbols, not a duplicate.
 
 - **No inline asm** in `src/` (no `asm`, `__asm`, `__asm__`, `asm volatile`).
 - **No `__attribute__` or `__declspec`** in `src/`.
-- **8 `[[gnu::used]]` sites** (C++11 GNU attribute spelling; lint does not flag it, but it is the
+- **7 `[[gnu::used]]` sites** (C++11 GNU attribute spelling; lint does not flag it, but it is the
   only attribute mechanism in the tree):
 
 | file:line | symbol | purpose |
@@ -437,7 +437,6 @@ distinct mangled symbols, not a duplicate.
 | `src/game/world/StarSystem.cpp:133` | `starSystemLayoutAnchor` | layout anchor |
 | `src/game/mission/Generator.cpp:53` | `generatorShipListLayoutAnchor` | layout anchor |
 | `src/game/mission/RecordHandler.cpp:1417` | `mixRecordStoreSlot` | layout anchor |
-| `src/game/ui/StatusWindow.cpp:19` | `statusWindowClamp` | layout anchor |
 | `src/game/weapons/RocketGun.cpp:40` | `kRocketTrailSets[4]` | data-table anchor |
 | `src/engine/file/AEFile.cpp:8` | `pakExtension[8]` | `.aezdata` anchor |
 | `src/engine/math/Transform.cpp:16` | `g_transform_matrix_flag[80]` | `.aezdata` anchor |

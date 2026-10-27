@@ -70,6 +70,18 @@
 - Harvested anchor removals `w1013` (ObjectGun) and `w1014` (GameText): both
   replaced dead `[[gnu::used]]` padding with real hidden helpers used at the
   original call sites; `.text` stayed 0x1343c0 and the gate stayed green.
+- Harvested `w959` follow-up: `MenuTouchWindow::OnTouchEnd` 68.7% -> **68.8%**
+  (8152B) by source-ordering the DLC id compare chains and pending-store order.
+- Harvested `w1016`: removed the StatusWindow `statusWindowClamp` anchor and
+  replaced it with the real hidden medal-row height helper used by both ctor
+  branches; `.text` unchanged.
+- Harvested `w1041`: `VertexColorShader` layout verified and the fragment GLSL
+  literal corrected from double-encoded mojibake to UTF-8 `benötigt`; the
+  shared shader GLSL exact prefix grew from 0x507 to 0x730 bytes.
+- Harvested `w1031`: `MeshReadData` 70.7% -> **71.1%** (2592B) by restoring the
+  original normal/tangent frame call order and the unclamped-z upper clamp.
+- Harvested `w1047`: pinned the authoritative ParticleSettings `0xa0` set
+  stride and `0x1e00` table size with static_asserts; no layout change needed.
 
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
