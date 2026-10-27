@@ -98,8 +98,8 @@ HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmo
     this->type = type;
     // Each hacking-game type has its own set of six tiles plus their highlighted versions.
     for (int i = 0; i != 6; ++i) {
-        Globals::Canvas->Image2DCreate((uint16_t) (i + 8010), *(unsigned int *) &this->tileImages[type * 12 + i]);
-        Globals::Canvas->Image2DCreate((uint16_t) (i + 8016), *(unsigned int *) &this->tileImages[type * 12 + 6 + i]);
+        Globals::Canvas->Image2DCreate((uint16_t) (i + 8010), *(unsigned int *) &this->tileImages[type][i]);
+        Globals::Canvas->Image2DCreate((uint16_t) (i + 8016), *(unsigned int *) &this->tileImages[type][6 + i]);
     }
     Globals::Canvas->Image2DCreate((uint16_t) 8008, *(unsigned int *) &this->bottomImage);
     Globals::Canvas->Image2DCreate((uint16_t) 8009, *(unsigned int *) &this->topImage);
@@ -124,8 +124,8 @@ HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmo
 void HackingGame::render2D() {
     Globals::Canvas->SetColor(0xffffffffu);
     bool solved = gameWon(this->current);
-    int tileWidth = Globals::Canvas->GetImage2DWidth(this->tileImages[this->type * 12]);
-    int tileHeight = Globals::Canvas->GetImage2DHeight(this->tileImages[this->type * 12]);
+    int tileWidth = Globals::Canvas->GetImage2DWidth(this->tileImages[this->type][0]);
+    int tileHeight = Globals::Canvas->GetImage2DHeight(this->tileImages[this->type][0]);
 
     // Pixel offsets of the tiles that are currently sliding.
     int offset[6][2];
@@ -177,18 +177,18 @@ void HackingGame::render2D() {
                                      1);
     }
 
-    float gridLeft = (float) tileWidth * 3.0f / 2.0f;
+    float gridLeft = (float) tileWidth * 1.5f;
     for (unsigned char i = 0; i != 6; i++) {
         if (solved && (this->wonTimer / 200 & 1) == 0) {
-            int row = i / 3;
-            unsigned char col = i - row * 3;
             int image = this->current[i];
-            Globals::Canvas->DrawImage2D(this->tileImages[this->type * 12 + 6 + image], (int) ((float) (Globals::w / 2) + (float) ((unsigned char) col * tileWidth) - gridLeft + (float) offset[i][0]), (row - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
+            int row = i / 3;
+            unsigned char col = i % 3;
+            Globals::Canvas->DrawImage2D(this->tileImages[this->type][6 + image], (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) col * tileWidth) + (float) offset[i][0]), tileHeight * row + (-tileHeight - tileHeight) + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
         } else {
-            int row = i / 3;
-            unsigned char col = i - row * 3;
             int image = this->current[i];
-            Globals::Canvas->DrawImage2D(this->tileImages[this->type * 12 + image], (int) ((float) (Globals::w / 2) + (float) ((unsigned char) col * tileWidth) - gridLeft + (float) offset[i][0]), (row - 2) * tileHeight + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
+            int row = i / 3;
+            unsigned char col = i % 3;
+            Globals::Canvas->DrawImage2D(this->tileImages[this->type][image], (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) col * tileWidth) + (float) offset[i][0]), tileHeight * row + (-tileHeight - tileHeight) + Globals::h / 2 - Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 + Globals::layout->field_0x310 + offset[i][1]);
         }
     }
     if (this->rotatingLeft)
@@ -221,7 +221,7 @@ void HackingGame::render2D() {
     // The target arrangement below.
     for (unsigned char i = 0; i != 6; i++) {
         Globals::Canvas->DrawImage2D(
-                this->tileImages[this->type * 12 + this->target[i]],
+                this->tileImages[this->type][this->target[i]],
                 (int) ((float) (Globals::w / 2) - gridLeft + (float) ((unsigned char) (i % 3) * tileWidth)),
                 tileHeight * (i / 3) + Globals::h / 2 + Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 +
                 Globals::layout->field_0x318);
@@ -232,9 +232,6 @@ void HackingGame::render2D() {
     Globals::Canvas->DrawImage2D(this->markImage,
                                  Globals::w / 2 + tileWidth / 2 - Globals::Canvas->GetImage2DWidth(this->markImage) / 2,
                                  tileHeight + Globals::h / 2 + (Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 - Globals::Canvas->GetImage2DHeight(this->markImage) / 2) + Globals::layout->field_0x318);
-
-    // Layout anchor: keep this TU's .text at the original 0x1333c0 size.
-    (void) *(volatile int *) &offset[0][0];
 }
 
 void HackingGame::reInit() {

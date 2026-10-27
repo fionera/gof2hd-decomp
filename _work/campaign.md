@@ -65,6 +65,12 @@
   `.text` by 8 B (`0x1343c8`); removed two volatile stores from
   `mtwTextLayoutAnchor`. Final gate: byte 1352, linked 4469, avg 99.8,
   `.text 0x1343c0`, lint CLEAN, drift 0.
+- Harvested `w1030`: `HackingGame::render2D` 71.4% -> **100.0%** (2090 B exact)
+  by modelling `tileImages` as the original `int[4][12]` and restoring the
+  original tile draw order/arithmetic. Kept `reInit` at 100% (420 B) instead of
+  w1030's anchor variant; reclaimed the 16-byte `.text` growth from
+  `mtwTextLayoutAnchor`. Gate: byte 1352, linked **4470**, avg **99.81**,
+  `.text 0x1343c0`.
 
 ## Session 2026-10-26 (wave 41 — third 20-way finisher fleet)
 

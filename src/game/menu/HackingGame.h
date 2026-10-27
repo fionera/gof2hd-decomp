@@ -42,7 +42,7 @@ public:
     int target[6];
     int current[6];
     int working[6];
-    int tileImages[48];
+    int tileImages[4][12];
     int topImage;
     int mainImage;
     int bottomImage;
