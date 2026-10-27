@@ -2305,7 +2305,7 @@ bool SpaceLounge::OnTouchEnd(int x, int y) {
                     this->chatScroll = 0;
                 } else {
                     this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
-                    if (__builtin_expect(this->starMap != 0, 0)) { // lint: arm_builtin
+                    if (this->starMap != 0) {
                         this->starMap->init(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);
                     } else {
                         StarMap *map = new StarMap(true, (*this->agents)[this->selectedAgent]->getMission(), false, -1);

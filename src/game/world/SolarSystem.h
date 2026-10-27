@@ -80,9 +80,9 @@ public:
 
     void setVisible(bool v);
 
-    int stationIsInSystem(Station *station);
+    bool stationIsInSystem(Station *station);
 
-    int stationIsInSystem(int idx);
+    bool stationIsInSystem(int idx);
 
     bool systemIsInSystemRoutes(int sys);
 };

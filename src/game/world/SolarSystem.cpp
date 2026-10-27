@@ -89,7 +89,7 @@ int SolarSystem::hasPirateBase() {
     return 0;
 }
 
-int SolarSystem::stationIsInSystem(int idx) {
+bool SolarSystem::stationIsInSystem(int idx) {
     Array<int> *arr = this->stationIds;
     uint32_t n = arr->size();
     for (uint32_t i = 0; i < n; i++) {
@@ -126,7 +126,7 @@ bool SolarSystem::currentOrbitHasWarpGate() {
     return orbit == st->getIndex();
 }
 
-int SolarSystem::stationIsInSystem(Station *station) {
+bool SolarSystem::stationIsInSystem(Station *station) {
     if (station == nullptr)
         return 0;
     return stationIsInSystem(station->getIndex());
