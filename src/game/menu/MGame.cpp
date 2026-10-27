@@ -2765,7 +2765,6 @@ void MGame::OnUpdate() {
         }
 
         if (this->elapsedTime > 5000) {
-            Level *levelLocal = this->level;
             AbyssEngine::AERandom *rndLocal = Globals::rnd;
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
                 // Story contacts that call in when the player idles for an hour.
@@ -2807,15 +2806,14 @@ void MGame::OnUpdate() {
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
-                } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
-                           Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
+                } else if (__builtin_expect((unsigned) (Globals::status->getCurrentCampaignMission() - 122) <= 2 && !this->player->isMining() && // lint: arm_builtin
                            Globals::status->getMission()->isEmpty() &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
-                           !this->jumpDriveActive && !this->usingJumpDrive) {
+                           !this->jumpDriveActive && !this->usingJumpDrive, 0)) {
                     int radioIndex = Globals::rnd->nextInt(2);
                     int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
-                    levelLocal->createRadioMessage(28, radioIndex + radioBase);
+                    this->level->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
@@ -2852,8 +2850,7 @@ void MGame::OnUpdate() {
                     if (this->choiceWindow == nullptr) {
                         this->choiceWindow = new ChoiceWindow();
                     }
-                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
-                    this->choiceWindow->set(hint);
+                    this->choiceWindow->set(Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590)));
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
                     this->pauseOpen = 1;
@@ -2936,8 +2933,7 @@ void MGame::OnUpdate() {
                         this->choiceWindow = new ChoiceWindow();
                     }
                     String hint(*Globals::gameText->getText(1725), false);
-                    hint = Globals::globals->replaceKeyBindingTokens(hint);
-                    this->choiceWindow->set(hint);
+                    this->choiceWindow->set(Globals::globals->replaceKeyBindingTokens(hint));
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
                     this->field_0x1e5 = 1;
@@ -3119,10 +3115,11 @@ void MGame::OnUpdate() {
                         this->dialogueWindow = nullptr;
                     }
                     this->dialogueWindow = new DialogueWindow();
-                    this->dialogueWindow->set(new Mission(160, 0, -1), 1, 46);
+                    Mission *followUpMission = new Mission(160, 0, -1);
+                    this->dialogueWindow->set(followUpMission, 1, 46);
+                    hints[38] = 1;
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
-                    hints[38] = 1;
                     Globals::status->nextCampaignMission(true);
                     Globals::status->nextCampaignMission(true);
                     return;
@@ -3137,17 +3134,17 @@ void MGame::OnUpdate() {
                         this->dialogueWindow = nullptr;
                     }
                     this->dialogueWindow = new DialogueWindow();
-                    this->dialogueWindow->set(new Mission(160, 0, -1), 1, 85);
+                    Mission *followUpMission = new Mission(160, 0, -1);
+                    this->dialogueWindow->set(followUpMission, 1, 85);
+                    hints[49] = 1;
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
-                    hints[49] = 1;
                     Globals::status->nextCampaignMission(true);
                     Globals::status->nextCampaignMission(true);
                     return;
                 }
                 // Black market: offer to buy the whole cargo.
-                Status *status = Globals::status;
-                if (status->inBlackMarketSystem() && !status->field_110 && !status->field_0x111 &&
+                if (Globals::status->inBlackMarketSystem() && !Globals::status->field_110 && !Globals::status->field_0x111 &&
                     !this->field_0xd4 && this->level->getMessages() != nullptr &&
                     (*this->level->getMessages())[0]->isOver()) {
                     this->pauseOpen = 1;
@@ -3156,7 +3153,7 @@ void MGame::OnUpdate() {
                         this->choiceWindow = new ChoiceWindow();
                     }
                     this->choiceItemCount = 0;
-                    Array<Item *> *cargo = status->getShip()->getCargo();
+                    Array<Item *> *cargo = Globals::status->getShip()->getCargo();
                     if (cargo != nullptr) {
                         for (unsigned i = 0; i < cargo->size(); i++) {
                             if ((*cargo)[i] != nullptr) {
@@ -3177,10 +3174,10 @@ void MGame::OnUpdate() {
                         share = difficulty == 1.0f ? 0.1f : 0.2f;
                     }
                     this->choiceItemCount = (int) (share * (float) this->choiceItemCount);
-                    String offer = status->replaceHash(String(*Globals::gameText->getText(448), false),
+                    String offer = Globals::status->replaceHash(String(*Globals::gameText->getText(448), false),
                                                                 Globals::layout->formatCredits(this->choiceItemCount),
                                                                 String("#C"));
-                    offer = status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
+                    offer = Globals::status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
                                                 String("#P"));
                     this->choiceWindow->set(offer, true);
                     this->choiceWindowOpen = 1;
