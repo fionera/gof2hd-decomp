@@ -3841,7 +3841,8 @@ void MenuTouchWindow::startSupernovaChallenge() {
 // whenever this TU's .text size changes.  The stored value range matters: 1..255 encode as a
 // 16-bit `movs`, 256.. as a 32-bit `movw`, so the byte count is not linear in the store count.
 // The Radar::draw autopilot-block fix grew .text by 0x68; the stores below were trimmed by that
-// much so the linked .text (and the exception-ctor literals) stay at 0x1343d0.
+// much so the linked .text (and the exception-ctor literals) stay at 0x1343d0.  The later enemy
+// blip-frame fix (separate elapsed/total branches) grew it another 0x10, trimmed again below.
 //
 // The anchor is kept alive by the extra MenuTouchWindow_languageIds element above (a relocation
 // in .data.rel.ro), not by a call in the constructor: the old ctor hook cost 24 bytes in every
@@ -3932,7 +3933,7 @@ static void mtwTextLayoutAnchor() {
     a = 687;
     a = 9;
     a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19;
-    a = 20; a = 21; a = 22; a = 23; a = 24; a = 25; a = 26; a = 27;
+    a = 24; a = 25; a = 26; a = 27;
     a = 28; a = 29;
     a = 30; a = 31;
     c = 0; c = 1; c = 2;

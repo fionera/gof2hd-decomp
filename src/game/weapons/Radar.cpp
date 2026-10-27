@@ -371,8 +371,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
         if (this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet()) {
-            KIPlayer *autoPilotTarget = (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget();
-            Array<KIPlayer *> *targets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+            int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
+            Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -605,8 +605,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
         }
         if (!alienOrbit) {
-            KIPlayer *autoPilotTarget = (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget();
-            Array<KIPlayer *> *targets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+            int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
+            Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -918,15 +918,20 @@ enemies:
                     if (this->dockNavPtr != current) {
                         Sprite *blip = this->blipSprite;
                         float frames = (float) (blip->getRawFrameCount() - 1);
+                        int elapsedInt = this->enemyLockTimer;
                         float elapsed;
-                        float total;
                         if (navWreck || this->dockNavPtr->field_0x24) {
-                            elapsed = (float) (this->enemyLockTimer - 500);
-                            total = (float) (this->field_0x1b4 - 500);
+                            elapsed = (float) (elapsedInt - 500);
                         } else {
-                            elapsed = (float) this->enemyLockTimer;
-                            total = (float) this->field_0x1b8;
+                            elapsed = (float) elapsedInt;
                         }
+                        int totalInt;
+                        if (navWreck || this->dockNavPtr->field_0x24) {
+                            totalInt = this->field_0x1b4 - 500;
+                        } else {
+                            totalInt = this->field_0x1b8;
+                        }
+                        float total = (float) totalInt;
                         blip->setFrame((int) (elapsed / total * frames));
                         this->blipSprite->setRefPixelPosition((int) PlayerEgo::crosshairPos.x,
                                                               (int) PlayerEgo::crosshairPos.y);
