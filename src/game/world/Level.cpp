@@ -3337,7 +3337,8 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->setRoute(this->enemyRoute->clone());
             this->spawnPosition = start + (target - start) / 4.0f;
             (*this->enemies)[0]->setPosition(this->spawnPosition);
-            (*this->enemies)[0]->geometry->setDirection(VectorNormalize(target - start), Vector{0.0f, 1.0f, 0.0f});
+            Vector dir = VectorNormalize(target - start);
+            (*this->enemies)[0]->geometry->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
             Player *p = (*this->enemies)[0]->player;
             p->setHitpoints((int) ((float) p->getMaxHitpoints() * 2.5f));
             this->objectivesA = new Objective(1, 0, this);
@@ -3421,7 +3422,7 @@ void Level::createCampaignMission() {
             Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
             for (int k = 0; k < 12; k++) {
-                ArrayAdd(this->createStaticObject(nullptr, kCarrierTurrets[k][0] == 1.0f ? 14365 : 14363, true),
+                ArrayAdd(this->createStaticObject(nullptr, ((2547 >> k) & 1) ? 14363 : 14365, true),
                          *this->enemies);
                 KIPlayer *turret = (*this->enemies)[k + 1];
                 turret->player->setMaxHitpoints(turretHitpoints);
