@@ -14,6 +14,9 @@
   byte_exact 1352, linked_exact 4469.
 - Harvested `w1061`: `HackingGame::render2D` 70.3% -> **71.4%** (2072 B) by
   matching the grid arithmetic and reducing the layout anchor to a 2-byte read.
+- Harvested `w1075`: `ModStation::OnInitialize` 87.0% -> **87.4%** (6408 B) by
+  naming the case-80 infoBox geometry and moving the existing layout anchor into
+  that block. Gate: byte 1352, linked 4469, `.text 0x1343c0`.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
