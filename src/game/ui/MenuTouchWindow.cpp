@@ -568,7 +568,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 Globals::layout->field_0x30_rowHeight,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
         this->cinematicTextWindow =
-            new ScrollTouchWindow(Globals::w / 2 - Globals::layout->field_0x304 / 2,
+            new ScrollTouchWindow((Globals::w >> 1) - Globals::layout->field_0x304 / 2,
                                   Globals::layout->field_0x300 + Globals::layout->windowTopInset,
                                   Globals::layout->field_0x304, Globals::layout->choiceWindowTitleHeight, false);
         this->cinematicTextWindow->setText(String(""), *Globals::gameText->getText(495));
@@ -773,11 +773,11 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         } else {
             (*this->sliders)[4]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
-                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6) +
-                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
+                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2) +
+                       (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
@@ -843,14 +843,14 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::recordHandler->saveOptions();
         ((uint8_t *) appData)[108] = 0;
         this->choiceWindow->set(*Globals::gameText->getText(74));
-        this->genericConfirmA = 1;
         this->messageShowing = 1;
+        this->genericConfirmA = 1;
     } else if (Globals::iPadLargePossible && !Globals::options[65]) {
         Globals::options[65] = 1;
         Globals::recordHandler->saveOptions();
         this->choiceWindow->set(*Globals::gameText->getText(123));
-        this->genericConfirmA = 1;
         this->messageShowing = 1;
+        this->genericConfirmA = 1;
     }
 
     this->missionsWindow = 0;
@@ -881,6 +881,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->storeInitDialogShowing = 0;
     this->purchaseRestorePending = 0;
     this->scrollOffset = 0;
+    this->field_0x1de = 0;
     this->field_0x1da = this->listStateSuppress = this->field_0x1dc = this->field_0x1dd = 0;
     this->dragLastX = 0;
     this->field_0x210 = 0;
