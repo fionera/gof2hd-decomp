@@ -81,6 +81,19 @@
 - Harvested `w1115`: `ModStation::OnInitialize` 87.4% -> **87.5%** (6412 B) by
   restoring the case-40 `newWanted` order and moving the anchor to the case-40
   tail.
+- Harvested `w1130`: `MenuTouchWindow` ctor 74.1% -> **77.7%** (9600 B exact)
+  by hoisting the slider Y locals, fixing `sliderRowHeight*3`, and restoring
+  the 0x1da zero store.
+- Harvested `w1152`: `Level::createShip` 68.1% -> **69.9%** (2780 B) by
+  placement-new for fighter/fixed and wz/wy/wx locals.
+- Harvested `w1099`: `MenuTouchWindow::OnTouchEnd` 69.5% -> **69.7%**
+  (8132 B exact) by restoring the DLC/`genericConfirmA` store order.
+- Harvested `w1112`: `MGame::OnUpdate` 85.5% -> **85.6%** (11400 B) by binding
+  level/rnd locals in the idle elapsed block.
+- Harvested `w1123`: `Layout` ctor n9 `field_0x8c` float literal 57.6f
+  (45.43%, 6636 B).
+- Harvested `w1124`: `Radar::draw` 65.2% -> **65.3%** (9820 B); `bossSeen` is
+  an int.
 - Harvested `w1160`: `PlayerFighter::update` 98.3% -> **99.9%** (10376 B) by
   moving docking case 8 next to case 0 and simplifying the dock up vector.
 - Harvested `w1166` (second pass): `Level::createMission` 75.7% -> **76.7%**
