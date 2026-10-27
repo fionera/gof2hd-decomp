@@ -516,16 +516,15 @@ bool LevelScript::process(int delta) {
                         Globals::layout->startFade(true, 255, 5000);
                         m_nState = 16;
                     }
+                    if (!Globals::layout->isFading() && m_nState == 16) {
+                        Globals::layout->enableFillScreen(true);
+                        Globals::status->nextCampaignMission(true);
+                        Globals::switch_to_target_setting = 1;
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        Level::initStreamOutPosition = 0;
+                        return 0;
+                    }
                     break;
-                }
-                // default: the intro is over once the fade-out finishes.
-                if (m_nState == 16 && !Globals::layout->isFading()) {
-                    Globals::layout->enableFillScreen(true);
-                    Globals::status->nextCampaignMission(true);
-                    Globals::switch_to_target_setting = 1;
-                    Globals::appManager->SetCurrentApplicationModule(2);
-                    Level::initStreamOutPosition = 0;
-                    return 0;
                 }
             }
         }
