@@ -402,6 +402,7 @@ int ModStation::OnInitialize() {
             this->flag_0xdf = 0;
             this->savedPostEffect = false;
             this->pendingHangarClose = 0;
+            this->flag_0x63 = 0;
 
             Layout *layout = Globals::layout;
             int infoBoxW = layout->field_0xcc;
@@ -410,9 +411,9 @@ int ModStation::OnInitialize() {
             int right = layout->field_0x10_rightMargin;
             int inset = layout->buttonInsetX;
             int f4c = layout->field_0x4c;
+            this->infoBoxH = Globals::h - left - right;
             this->infoBoxY = left;
             this->infoBoxX = 0;
-            this->infoBoxH = Globals::h - left - right;
             int y = infoBoxW - f4c - inset;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
@@ -420,9 +421,7 @@ int ModStation::OnInitialize() {
             this->buttonRow = reinterpret_cast<int *>(new Array<TouchButton *>());
             ArraySetLength<TouchButton *>(5, *reinterpret_cast<Array<TouchButton *> *>(this->buttonRow));
 
-            int field24 = Globals::layout->field_0x24;
-            int rowHeight = Globals::layout->field_0x30_rowHeight;
-            int x = Globals::h - Globals::layout->field_0x10_rightMargin - field24 - 5 * rowHeight - 4 * Globals::layout->field_0x34;
+            int x = Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 - 5 * Globals::layout->field_0x30_rowHeight - 4 * Globals::layout->field_0x34;
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[0] =
                 new TouchButton(*Globals::gameText->getText(167), 0, Globals::layout->buttonInsetX, x, y, 17, 1);
             (*reinterpret_cast<Array<TouchButton *> *>(this->buttonRow))[1] =
