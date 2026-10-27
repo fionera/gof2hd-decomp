@@ -37,7 +37,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | .ARM.extab | 156,312 | 151,764 | −4,548 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
-| .data | 10,604 | 10,680 | **+76** | anonymous initialised-data layout still differs; the Transform 72-byte local data block is now in .data and the DialogueWindow last face row is 4 ints. |
+| .data | 10,604 | 10,680 | **+76** | anonymous initialised-data layout still differs; the Transform 72-byte local data block is now in .data and the DialogueWindow last face row is the original 5-int descriptor. |
 | .bss | 27,052 | 27,280 | **+228** | anonymous zero-initialised-data layout still differs; includes the 190-byte Status mission-order table. |
 
 ## The four real gaps (in priority/size order)

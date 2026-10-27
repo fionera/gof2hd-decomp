@@ -96,6 +96,16 @@
   in drawMenu/drawChallengeModeScore trade those two scores for `.text` size.
   A dedicated `w1048` worker is recovering the missing 56 B of real Hud::draw
   code so the `/2` shapes and byte_exact 1352 can coexist.
+- Harvested `w952`: `Level::createMission` 71.0% -> **72.1%** (17188 -> 17172B,
+  size now exact) by nesting the security/options/raid guard and restoring five
+  store orders; the TU anchor was retuned by two volatile stores.
+- Harvested `w982`: `StarSystem` ctor C1/C2 93.9% -> **95.8%** (2900B) by
+  collapsing the usedSlots store, reloading the volatile rnd pointer, and
+  hoisting `kTwoPi`.
+- Harvested `w1046`: corrected the DialogueWindow last speaker-face row from
+  4 to the original 5-int descriptor `{0,10,2,9,4}`.
+- Harvested `w1026`: restored the original flat add association in the
+  MenuTouchWindow option-button y arguments (C1/C2 stay 68.5%, 9600B).
 
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
