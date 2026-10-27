@@ -286,7 +286,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     }
     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
                                                     Globals::status->getCurrentCampaignMission()) > 0.0f) {
-        int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
+        int gammaY = this->field_0x444 + this->field_0x444 - this->field_0x442;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
         short gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
