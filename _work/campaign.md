@@ -74,6 +74,18 @@
   star-map chain before the wingman block.
 - Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
   testing the projected collision vector and restoring the surface lifetime.
+- Harvested `w1055`: `Gun::calcCharacterCollision` 64.8% -> **66.3%** (1920 B)
+  by restoring the bomb/mine flag OR shape and the scatter-before-mine order.
+- Harvested `w1114`: `Status::missionCompleted` mission-type case table restored
+  (86.3% unchanged; replaces the zero placeholder table).
+- Harvested `w1051`: `LevelScript::process` 47.4% -> **47.9%** (57156 B) by
+  restoring the mission-0 state switch, the case-68 body and the camera negate
+  forms; keeps w1021's mission-78 hide-target and gamma-restore fixes and
+  rebalances the layout anchor around the `KIPlayer::setVisible` GOT slot.
+- Harvested `w1104`: `MenuTouchWindow` ctor 73.9% -> **74.2%** (9596 B) by
+  fixing the non-iPad slider row arithmetic.
+- Harvested `w1137`: `StarSystem` ctor 95.8% -> **97.2%** (2900 B) by
+  recovering the i/slot register order.
 - Harvested `w1095`: `Radar::draw` 62.2% -> **64.6%** (9788 B) by restoring the
   planet auto-pilot target block after the planet loop.
 - Harvested `w1072`: `MGame::OnUpdate` 84.6% -> **85.5%** (11444 B) by dropping
