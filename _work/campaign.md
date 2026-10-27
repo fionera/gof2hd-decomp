@@ -74,6 +74,20 @@
   star-map chain before the wingman block.
 - Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
   testing the projected collision vector and restoring the surface lifetime.
+- Harvested `w1101`: `Level::createMission` 72.1% -> **74.0%** (17168 B) by
+  modelling `pirateFortress` as the original 4-byte int.
+- Harvested `w1100`: `Hud::draw` 73.9% -> **75.3%** (9328 B) by restoring the
+  non-nested load string and the gamma-divider guard.
+- Harvested `w1097`: `Generator::createMission` 65.7% -> **67.8%** (1992 B) by
+  unfolding the type choice into an if-chain and splitting the from-system index.
+- Harvested `w1125`: `MenuTouchWindow::OnTouchEnd` 69.1% -> **69.5%** (8148 B) by
+  hoisting the case-11 option bases into locals.
+- Harvested `w1129`: `MenuTouchWindow::draw` 81.7% -> **82.7%** (13056 B) by
+  using `field_0x15c` for the options row height in cases 3/8.
+- Harvested `w1131`: `HangarWindow::render` 73.9% -> **74.5%** (9740 B) by
+  folding the tab-2 blueprint check into the else-if.
+- Harvested `w1135`: `HangarWindow::OnTouchEnd` 94.3% -> **98.2%** (5828 B) by
+  merging the DLC tail and restoring the store order.
 - Harvested `w1134`: `PlayerEgo::update` 94.2% -> **96.9%** (8852 B) by
   splitting the dock-transfer branches, reloading the field, using the original
   320-byte hacking storage and restoring the mouse gate.
