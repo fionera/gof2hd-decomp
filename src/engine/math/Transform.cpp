@@ -6,15 +6,10 @@
 #include "engine/render/Engine.h"
 
 namespace {
-    // The original keeps 72 bytes of pre-.got data for this TU; the libc++ exception
-    // constructors encode the .text-to-.got distance as a PC-relative literal, so that
-    // distance must not move.  Our linker places .got after .data, so the anchor lives in
-    // .aezdata (the existing pre-.got writable anchor section) instead of .data.  Moving
-    // it out of .data frees the 72-byte block plus 8 bytes of .data tail padding, hence
-    // the 80-byte anchor: .got and .bss keep their addresses while .data stays natural.
-#pragma clang section data=".aezdata"
-    [[gnu::used]] char g_transform_matrix_flag[80] = {1};
-#pragma clang section data=""
+    // Original Transform.cpp local data: a 72-byte block that the compiler keeps in
+    // .data.  Its size fixes the distance from .text to .got, which the libc++ exception
+    // constructors encode as a PC-relative literal.
+    [[gnu::used]] char g_transform_matrix_flag[72] = {1};
 }
 
 namespace AbyssEngine {
