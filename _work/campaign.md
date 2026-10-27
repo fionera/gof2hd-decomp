@@ -17,6 +17,9 @@
 - Harvested `w1075`: `ModStation::OnInitialize` 87.0% -> **87.4%** (6408 B) by
   naming the case-80 infoBox geometry and moving the existing layout anchor into
   that block. Gate: byte 1352, linked 4469, `.text 0x1343c0`.
+- Harvested `w1077`: `StarMap::draw` 89.7% -> **92.0%** (2644 B exact) by
+  restoring the else-branch `Globals::Canvas` reload and shrinking the
+  `StarMap_GetScreenPosition` anchor from 16 B to 8 B.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
