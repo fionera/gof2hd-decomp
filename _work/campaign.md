@@ -3248,3 +3248,22 @@ Wave 32 near-100 batch:
 - `64879cca` SpaceLounge::OnTouchEnd 80.6 -> 80.7%
 - `4ae1a504` StarMap::update 91.7 -> 100% (linked 4460 -> 4461)
 Current gate: **byte_exact 1352, linked_exact 4461, avg 99.76%, .text 0x1333c0, lint CLEAN**; remaining non-linked **62**.
+
+## Session 2026-10-27 (wave 52 harvest — worst-first fleet, 27 workers)
+
+Launched wave 52 (w1201-w1227) exclusively on the worst-matching functions, all bound to
+`.text 0x1343d0`, gate byte 1352 / linked 4470. Landed and pushed:
+
+- `3bab2fd8` Hud::draw 75.3 -> 75.6% (hoist field_0x4d4 into textY)
+- `3d1c3895` Level::createMission 76.7 -> 78.4% (select alien turret table before indexing)
+- `97c6f2ea`/`e17e4056` Radar::draw 65.3 -> 66.1% (docking branch, notTurretMode int)
+- `4b4d2448` MenuTouchWindow ctor 77.7 -> 78.4%
+- `6bbf4500` MenuTouchWindow::OnTouchEnd 71.7 -> 71.9%
+- `79d3659e` Hud::drawChallengeModeScore 74.7 -> 76.8%
+- `f6d22c0f` HangarWindow::render 75.6 -> 76.3%
+- `c5efc5d0` ModStation::OnInitialize 87.0 -> 89.8%
+- `6d7bb261` Level::createCampaignMission 85.1 -> 88.4%
+- `b60e1b40` StarMap::draw 92.0 -> 92.2%
+
+Gate after batch: **byte_exact 1352, linked_exact 4470, avg 99.82%, .text 0x1343d0, lint CLEAN,
+drift 0, RATCHET PASS**. No baseline change needed.
