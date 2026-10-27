@@ -2690,14 +2690,14 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (!(*this->buttonsB8)[i]->OnTouchEnd(x, y))
                     continue;
                 this->field_0x234 = i;
-                if ((i & 0x7fffffffu) == 2) {
-                    if (!optionFlag(55)) {
-                        NFC::iap_buy_dlc_supernova();
-                        return 0;
-                    }
-                } else if ((i & 0x7fffffffu) == 1) {
+                if ((i & 0x7fffffffu) == 1) {
                     if (!optionFlag(53)) {
                         NFC::iap_buy_dlc_valkyrie();
+                        return 0;
+                    }
+                } else if ((i & 0x7fffffffu) == 2) {
+                    if (!optionFlag(55)) {
+                        NFC::iap_buy_dlc_supernova();
                         return 0;
                     }
                 } else {
@@ -2737,8 +2737,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (button->OnTouchEnd(x, y)) {
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
-                        this->messageShowing = 0;
                         this->purchaseRestorePending = 1;
+                        this->messageShowing = 0;
                     }
                 }
                 if (button->id == 52) {
@@ -3051,9 +3051,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
+                if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 } else if (button->id == 106) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
@@ -3062,11 +3064,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y))
                         NFC::openPrivacyPolicy();
-                } else if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
+                } else if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
                 }
             }
             break;
