@@ -244,8 +244,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->hasCloak) {
         if (!this->field_0x476 && !ego->isCloaked() && !ego->isRechargingCloak()) {
             this->field_0x476 = 1;
-            this->field_0x498 = 2000;
             this->field_0x49c = 80;
+            this->field_0x498 = 2000;
         } else {
             this->field_0x476 = !ego->isCloaked() && !ego->isRechargingCloak();
         }
