@@ -2102,8 +2102,8 @@ void Level::createMission() {
     }
     this->friendCount = (introSystem ? Globals::rnd->nextInt(2) : security) + extraFriend + this->field_168 / 4;
     if (raid && Globals::status->getCurrentCampaignMission() >= 32 && Globals::rnd->nextInt(100) <= 7) {
-        this->friendCount = 9;
         this->hostileCount = 9;
+        this->friendCount = 9;
     }
     unsigned stationPirates = Globals::status->getStation()->stationHasPirateBase();
     int pirateEscorts = (int) (stationPirates ? 5.0f + (*(float *) &Globals::options[44] - 0.5f) * 5.0f : 0.0f);
