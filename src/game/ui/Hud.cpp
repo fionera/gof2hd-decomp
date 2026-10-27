@@ -188,6 +188,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                unsigned int fireImageIndex) {
     (void) letterbox;
     int dt = (int) frameTime;
+    int pad_ = this->field_0x470;
     bool mining = ego->isMining();
     if (!mining && this->eventQueueDirty && !this->hackingGameActive) {
         this->updateQueue(dt);
@@ -423,8 +424,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, count,
                                         this->field_0x438 + Globals::layout->field_0x200, this->field_0x43a + 5, false);
         } else {
-            String load = String(String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
-                                 String(Globals::status->getShip()->getMaxLoad()) + String("t"), false);
+            String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                          String(Globals::status->getShip()->getMaxLoad()) + String("t");
             int shift = 0;
             if (Globals::status->getShip()->getCurrentLoad() >= 101)
                 shift = -2 * Globals::layout->field_0x2c_rowHeight;
@@ -807,6 +808,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                     Globals::layout->field_0x2c_rowHeight + this->field_0x3e2, false);
         Globals::Canvas->SetColor(0xffffffff);
     }
+    if (pad_ == 0x7ffffffe)
+        Globals::Canvas->SetColor(savedColor);
     Globals::Canvas->SetColor(savedColor);
 }
 
