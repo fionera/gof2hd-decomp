@@ -1102,7 +1102,9 @@ bool LevelScript::process(int delta) {
     } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr &&
                messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
         goto wormholeExitBody;
-    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr &&
+    } else if (messages != nullptr && Globals::status->getCurrentCampaignMission() == 51 &&
+               // NB: the null test comes first here (but not for mission 50 above) because the
+               // original evaluates `cmp messages,#0` before `cmp mission,#51` at 0x138772/0x13877c.
                messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
