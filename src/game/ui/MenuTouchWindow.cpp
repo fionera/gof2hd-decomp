@@ -3050,11 +3050,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
+                if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
                 } else if (button->id == 106) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
@@ -3063,9 +3061,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y))
                         NFC::openPrivacyPolicy();
-                } else if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
+                } else if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 }
             }
             break;
