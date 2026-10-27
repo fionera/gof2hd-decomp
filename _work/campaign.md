@@ -74,6 +74,9 @@
   star-map chain before the wingman block.
 - Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
   testing the projected collision vector and restoring the surface lifetime.
+- Harvested `w1134`: `PlayerEgo::update` 94.2% -> **96.9%** (8852 B) by
+  splitting the dock-transfer branches, reloading the field, using the original
+  320-byte hacking storage and restoring the mouse gate.
 - Harvested `w1055`: `Gun::calcCharacterCollision` 64.8% -> **66.3%** (1920 B)
   by restoring the bomb/mine flag OR shape and the scatter-before-mine order.
 - Harvested `w1114`: `Status::missionCompleted` mission-type case table restored
