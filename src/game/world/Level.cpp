@@ -1633,8 +1633,8 @@ void Level::createMission() {
                 ((PlayerFixedObject *) (*this->enemies)[8])->setName(*Globals::gameText->getText(3208));
                 (*this->enemies)[8]->player->setAlwaysFriend(true);
                 (*this->enemies)[8]->geometry->rotate(Vector{0.0f, -2.3561945f, 0.0f});
-                (*this->enemies)[8]->shipGroup = 10;
                 (*this->enemies)[8]->field_0x74 = 1;
+                (*this->enemies)[8]->shipGroup = 10;
                 delete (*this->enemies)[8]->cargo;
                 (*this->enemies)[8]->cargo = nullptr;
                 Waypoint *dockWp = new Waypoint(-70000, -5000, -35000, nullptr);
@@ -1645,8 +1645,8 @@ void Level::createMission() {
                 ((PlayerFixedObject *) (*this->enemies)[9])->setDockingType(1);
                 (*this->enemies)[9]->player->setAlwaysFriend(true);
                 (*this->enemies)[9]->player->setHitpoints(9999999);
-                (*this->enemies)[9]->shipGroup = 10;
                 (*this->enemies)[9]->field_0x74 = 1;
+                (*this->enemies)[9]->shipGroup = 10;
                 delete (*this->enemies)[9]->cargo;
                 (*this->enemies)[9]->cargo = nullptr;
                 int convoyCoords[9] = {-1, -1, -1, 30000, 1000, 40000, -1, -1, -1};
@@ -2084,8 +2084,12 @@ void Level::createMission() {
                                     (*(float *) &Globals::options[44] - 0.5f) * (float) this->hostileCount);
         this->hostileCount += Globals::status->getLevel() / 4;
     }
-    if (security == 3 && raid && *(float *) &Globals::options[44] < 1.0f)
-        this->hostileCount = Globals::rnd->nextInt(2) + 1;
+    if (security == 3) {
+        if (*(float *) &Globals::options[44] < 1.0f) {
+            if (raid)
+                this->hostileCount = Globals::rnd->nextInt(2) + 1;
+        }
+    }
     int extraFriend;
     if (stationIndex == 78) {
         this->field_164 = 0;
@@ -2214,8 +2218,8 @@ void Level::createMission() {
     }
     if (Globals::status->getStation()->getIndex() == 108) {
         if (Globals::status->field_114 == 0) {
-            this->friendCount = 0;
             this->field_288 = 1;
+            this->friendCount = 0;
             this->hostileCount = Globals::status->hardCoreMode() ? 8 : 6;
             this->field_164 = 0;
             this->field_168 = 0;
@@ -2443,8 +2447,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = localRace;
+            gun->cargo = nullptr;
         }
     }
     if (pirateFortress) {
@@ -2462,8 +2466,8 @@ void Level::createMission() {
             v = MatrixRotateVector(rotation, Vector{kBaseTurrets[k][0], kBaseTurrets[k][1], kBaseTurrets[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
-            gun->cargo = nullptr;
             gun->shipGroup = 1;
+            gun->cargo = nullptr;
         }
     }
     int guns = alienGuns + fortressGuns;
@@ -7236,6 +7240,6 @@ static void levelTextAnchor() {
     volatile double layoutPad;
     layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
     layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
-    layoutPad = 11.0;  layoutPad = 12.0;
+    layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;
     (void) layoutPad;
 }
