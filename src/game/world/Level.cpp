@@ -1658,7 +1658,9 @@ void Level::createMission() {
                 Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
                 convoyRoute->setLoop(true);
                 for (int i = 10; i < 14; i++) {
-                    Vector offset;
+                    // Plain float[3]: a Vector local would emit the default-ctor zero stores
+                    // even though every component is overwritten by the switch below.
+                    float offset[3];
                     (*this->enemies)[i] = this->createShip(0, 0, 51, convoyRoute->getWaypoint(0), true, false);
                     (*this->enemies)[i]->setRoute(convoyRoute->clone());
                     (*this->enemies)[i]->player->setAlwaysFriend(true);
@@ -1666,27 +1668,27 @@ void Level::createMission() {
                     ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                     switch (i - 10) {
                         case 0:
-                            offset.x = 20000.0f;
-                            offset.y = -3000.0f;
-                            offset.z = -50000.0f;
+                            offset[0] = 20000.0f;
+                            offset[1] = -3000.0f;
+                            offset[2] = -50000.0f;
                             break;
                         case 1:
-                            offset.x = 10000.0f;
-                            offset.y = -7000.0f;
-                            offset.z = -30000.0f;
+                            offset[0] = 10000.0f;
+                            offset[1] = -7000.0f;
+                            offset[2] = -30000.0f;
                             break;
                         case 2:
-                            offset.x = 25000.0f;
-                            offset.y = 0.0f;
-                            offset.z = -36000.0f;
+                            offset[0] = 25000.0f;
+                            offset[1] = 0.0f;
+                            offset[2] = -36000.0f;
                             break;
                         default:
-                            offset.x = 12000.0f;
-                            offset.y = 6000.0f;
-                            offset.z = -45000.0f;
+                            offset[0] = 12000.0f;
+                            offset[1] = 6000.0f;
+                            offset[2] = -45000.0f;
                             break;
                     }
-                    (*this->enemies)[i]->setPosition(offset);
+                    (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
                 }
                 this->player->setPosition(-30000.0f, 5000.0f, -100000.0f);
                 this->stationPosition = this->player->getPosition();
