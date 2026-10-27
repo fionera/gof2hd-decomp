@@ -4,7 +4,7 @@
 
 - Harvested `w985`: `Level::assignGuns` 87.8% -> **88.8%** (2948 B exact) by
   restoring the top-tested do/break loop and per-branch `weaponType` stores.
-  Gate: byte 1352, linked 4469, avg 99.79, `.text 0x1343c0`.
+  Gate: byte 1352, linked 4469, avg 99.8, `.text 0x1343c0`.
 - Harvested `w1015`: `RecordHandler` 30-byte `mixRecordStoreSlot` anchor replaced
   by the real hidden libc++abi `is_equal(type_info*, type_info*, bool)` helper.
   Gate unchanged; no `[[gnu::used]]` anchor remains in that TU.
@@ -22,6 +22,12 @@
   `StarMap_GetScreenPosition` anchor from 16 B to 8 B.
 - Harvested `w1065`: `HangarWindow::render` 72.6% -> **72.9%** (9732 B) by
   restoring the original `unsigned int` tab-button loop index.
+- Harvested `w1058`: `MenuTouchWindow` ctor C1/C2 68.5% -> **73.9%** (9600 B)
+  by caching the `fontLangSelect` address, using bool option flags, and hoisting
+  the loop counter.
+- Harvested `w1083`: `MenuTouchWindow::draw` 74.3% -> **81.7%** (13080 B) by
+  restoring the case-3 slider loop, case-11 coordinate locals, case-14 bool
+  switch flag, and case-15 scroll-entry order. `avg` 99.79 -> **99.8**.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
