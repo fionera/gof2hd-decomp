@@ -509,7 +509,7 @@ void HangarWindow::render() {
                     iconSpace = Globals::layout->field_0x50;
                 else
                     iconSpace = 0;
-                int textX = layout->field_0x2cc + layout->field_0x4c + iconSpace;
+                int textX = Globals::layout->field_0x2cc + Globals::layout->field_0x4c + iconSpace;
 
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
@@ -559,8 +559,8 @@ void HangarWindow::render() {
                     }
 
                     Globals::Canvas->SetColor(0xffffffffu);
-                    String name("");
-                    short buttonOffset = 0;
+                    String name;
+                    int buttonOffset;
                     if (item->isItem()) {
                         name = *Globals::gameText->getText(item->item->getIndex() + 1274);
                         if (tab == 4 || tab == 1) {
@@ -591,6 +591,8 @@ void HangarWindow::render() {
                                     }
                                     buttonOffset = (*this->buttons)[9]->getWidth() +
                                                    Globals::layout->field_0x2c_rowHeight;
+                                } else {
+                                    buttonOffset = 0;
                                 }
                                 Globals::Canvas->SetColor(0xffffffffu);
                                 if (tab == 1) {
@@ -618,6 +620,8 @@ void HangarWindow::render() {
                                         Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(271)) / 2,
                                         y + 2, false);
                                 }
+                            } else {
+                                buttonOffset = 0;
                             }
                             int left, right;
                             if (tab == 1) {
@@ -650,6 +654,8 @@ void HangarWindow::render() {
                                     Globals::Canvas->GetTextWidth(hangarFont(), rightText),
                                     y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
                             }
+                        } else {
+                            buttonOffset = 0;
                         }
                         if (tab == 1)
                             Globals::Canvas->SetColor(item->item->getSinglePrice() > Globals::status->getCredits()
@@ -719,6 +725,7 @@ void HangarWindow::render() {
                                                         Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX,
                                                         this->iconOffsetY + y);
                         Globals::Canvas->SetColor(0xffffffffu);
+                        buttonOffset = 0;
                     } else if (item->isSlot()) {
                         name = *Globals::gameText->getText(174);
                         if (tab == 4 && i == items->size() - 1) {
@@ -729,6 +736,7 @@ void HangarWindow::render() {
                             (*this->buttons)[23]->draw();
                             name = String("");
                         }
+                        buttonOffset = 0;
                     } else if (item->isBluePrint()) {
                         name = *Globals::gameText->getText(item->bluePrint->getIndex() + 1274);
                         if (item->bluePrint->getCompletionRate() > 0.0f) {
@@ -764,6 +772,7 @@ void HangarWindow::render() {
                                                         this->iconOffsetY + y);
                         if (item->craftable)
                             Globals::Canvas->SetColor(0x00ed00ffu);
+                        buttonOffset = 0;
                     } else if (item->isPendingProduct()) {
                         name = (item->pendingProduct->quantity >= 2
                                     ? String(item->pendingProduct->quantity) + String("x ")
@@ -780,6 +789,7 @@ void HangarWindow::render() {
                             item->pendingProduct->blueprintIndex,
                             (*Globals::items)[item->pendingProduct->blueprintIndex]->getType(),
                             Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
+                        buttonOffset = 0;
                     } else if (item->isMoveToCargoButton()) {
                         (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
                         (*this->buttons)[6]->setVisible(true);
@@ -895,11 +905,14 @@ void HangarWindow::render() {
             for (count = 0; count <= 4; count++) {
                 String description("");
                 String price("");
-                // Layout anchor: keep this TU's .text at 0x1333c0 so the
+                // Layout anchor: keep this TU's .text at 0x1343c0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  The six self-assignments are no-ops on the
-                // rendered text; one is needed because OnTouchEnd is now the
-                // original 5828 bytes instead of the old 5832-byte stub.
+                // byte-exact.  The nine self-assignments are no-ops on the
+                // rendered text; render's real body is 32 bytes smaller than
+                // the original's 9700-byte body after the shape fixes.
+                description = description;
+                description = description;
+                description = description;
                 description = description;
                 description = description;
                 description = description;
@@ -1023,8 +1036,13 @@ void HangarWindow::render() {
         int row = 0;
         for (int i = 0; i < 5; i++) {
             TouchButton *button = (*this->buttons)[18 + i];
-            bool visible = !(i == 0 || (i == 1 && Globals::options[73]) || (i == 2 && Globals::options[74]) ||
-                             (i == 3 && Globals::options[75]) || (i == 4 && Globals::options[76]));
+            bool visible;
+            if (i == 0 || (i == 1 && Globals::options[73]) || (i == 2 && Globals::options[74]) ||
+                (i == 3 && Globals::options[75])) {
+                visible = false;
+            } else {
+                visible = i != 4 || !Globals::options[76];
+            }
             button->setVisible(visible);
             int y = (Globals::layout->field_0x30_rowHeight + Globals::layout->field_0x34) * row + baseY;
             button->setPosition(baseX, y);
