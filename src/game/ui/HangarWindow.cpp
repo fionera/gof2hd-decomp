@@ -907,14 +907,10 @@ void HangarWindow::render() {
                 String price("");
                 // Layout anchor: keep this TU's .text at 0x1343d0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  The nine self-assignments are no-ops on the
-                // rendered text; they pad render to the original 9700-byte
-                // body while OnTouchEnd keeps its exact 5828-byte shape.
-                description = description;
-                description = description;
-                description = description;
-                description = description;
-                description = description;
+                // byte-exact.  Four self-assignments are no-ops on the rendered
+                // text but steer codegen to the original 9700-byte body while
+                // OnTouchEnd keeps its exact 5828-byte shape; the remaining
+                // 32 bytes of the layout live in Gun::calcCharacterCollision.
                 description = description;
                 description = description;
                 description = description;
