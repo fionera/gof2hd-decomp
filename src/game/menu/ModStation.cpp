@@ -411,10 +411,10 @@ int ModStation::OnInitialize() {
             int right = layout->field_0x10_rightMargin;
             int inset = layout->buttonInsetX;
             int f4c = layout->field_0x4c;
-            this->infoBoxH = Globals::h - left - right;
+            this->infoBoxH = Globals::h - layout->field_0xc_leftMargin - layout->field_0x10_rightMargin;
             this->infoBoxY = left;
             this->infoBoxX = 0;
-            int y = infoBoxW - f4c - inset;
+            int y = infoBoxW - inset - f4c;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
                                                   Globals::w - this->buttonLaunch->getWidth(), Globals::h, 34);
