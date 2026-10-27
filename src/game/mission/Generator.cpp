@@ -763,7 +763,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
-    int guard = 999;
+    int8_t guard = 999;
     bool selected = false;
     int type = 0;
     Array<bool> *used = Globals::status->field_50;
