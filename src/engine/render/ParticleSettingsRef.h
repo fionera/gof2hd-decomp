@@ -21,4 +21,9 @@ public:
     static ParticleSettings init;
 };
 
+// The original exports both tables as 0x1e00-byte .bss objects (nm:
+// ParticleSettingsRef::cur / ::init), immediately followed by pCounter and assertInit.
+static_assert(sizeof(ParticleSettingsRef::cur) == 0x1e00, "cur table must be 0x1e00");
+static_assert(sizeof(ParticleSettingsRef::init) == 0x1e00, "init table must be 0x1e00");
+
 #endif
