@@ -76,6 +76,10 @@ static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::tr
 // +0 = station greeter, +5 = mission-23 contact, +10 = planet landing refusal / mission 24.
 static int gMGameFaces[15] = {4, 2, 0, 2, 2, 0, 2, 3, 3, 10, 10, 0, 0, 1, 0};
 
+// Padding that keeps the .got distance from .text on its original 16-byte quantum: the
+// libstdc++ exception constructors encode that distance as a PC-relative literal.
+[[gnu::used]] static int gMGameDataPad[4] = {0, 0, 0, 1};
+
 static const int gShipRace[64] = {
     3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
     2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
@@ -2765,7 +2769,6 @@ void MGame::OnUpdate() {
         }
 
         if (this->elapsedTime > 5000) {
-            AbyssEngine::AERandom *rndLocal = Globals::rnd;
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
                 // Story contacts that call in when the player idles for an hour.
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
@@ -2778,7 +2781,7 @@ void MGame::OnUpdate() {
                         delete this->dialogueWindow;
                         this->dialogueWindow = nullptr;
                     }
-                    int variant = rndLocal->nextInt(2);
+                    int variant = Globals::rnd->nextInt(2);
                     int textId = variant == 0 ? 533 : 534;
                     DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
                                                                   Globals::gameText->getText(1602), gMGameFaces + 5);
@@ -2813,8 +2816,9 @@ void MGame::OnUpdate() {
                            3600000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
                     int radioIndex = Globals::rnd->nextInt(2);
+                    Level *levelLocal = this->level;
                     int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
-                    this->level->createRadioMessage(28, radioIndex + radioBase);
+                    levelLocal->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
