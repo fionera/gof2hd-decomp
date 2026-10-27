@@ -2583,6 +2583,8 @@ void Level::createMission() {
     }
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
+    void (*volatile anchorFn)() = levelTextAnchor;
+    anchorFn();
 }
 
 void Level::createAsteroids() {
@@ -6910,7 +6912,6 @@ static const int kHangarSpotsKhador[3][3] = {{-1961, 0, 8512}, {-1961, 0, 5562},
 static const int kHangarSpotsDefault[2][3] = {{4096, 0, 0}, {4096, 0, 4096}};
 
 void Level::createScene() {
-    levelTextAnchor();
     static const int kBarChildCounts[4] = {11, 0, 10, 12};
     static const int kBarChildMeshes[4] = {14380, -1, 14403, 14391};
     static const int kBarCounterMeshes[4] = {14281, 14282, 14283, 14284};
@@ -7239,7 +7240,6 @@ static void levelTextAnchor() {
     layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
     layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;
     layoutPad = 15.0;  layoutPad = 16.0;  layoutPad = 17.0;  layoutPad = 18.0;
-    layoutPad = 19.0;  layoutPad = 20.0;  layoutPad = 21.0;  layoutPad = 22.0;
-    layoutPad = 23.0;  layoutPad = 24.0;
+    layoutPad = 19.0;
     (void) layoutPad;
 }
