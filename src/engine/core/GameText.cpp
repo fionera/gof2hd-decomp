@@ -48,38 +48,22 @@ namespace {
         {0x0005, 0xfef5, 0xfef6, 0xfef6, 0xfef5},
     };
 
-    // Byte offset of an Arabic letter's row in kArabicForms. This unused helper is kept out of
-    // line as a 16-byte .text anchor so the archive/link layout stays stable.
-    [[gnu::used]] unsigned int arabicFormRow(unsigned int code) {
-        return (code - 0x621) * 20;
-    }
-
     // Letters that never join to the following letter.
     const unsigned int kNonJoiningAfter[10] = {
         0x062f, 0x0630, 0x0631, 0x0632, 0x0648, 0x0627, 0x0622, 0x0623, 0x0624, 0x0625
     };
 }
 
+// Byte offset of an Arabic letter's row in kArabicForms. The two call sites inline this
+// arithmetic; hidden linkage keeps the out-of-line body out of the export set.
+[[gnu::visibility("hidden")]] unsigned int arabicFormOffset(unsigned int code) {
+    return (code - 0x621) * 20;
+}
+
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
 // Kept as a macro: at -Oz an inline helper is not inlined and changes convertStringFromArabic's
 // 728-byte code shape.
 #define IS_ARABIC_JOINING(c) ((c) >= 0x600 && (c) != 0x61f && (c) != 0x60c)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 String GameText::getRegionCode() {
     return String("gb");
@@ -130,7 +114,8 @@ String GameText::convertStringFromArabic(String in) {
             }
             if (afterNonJoiner) {
                 for (int r = 0; r <= 40; ++r) {
-                    const unsigned int *row = kArabicForms[r];
+                    const unsigned int *row = reinterpret_cast<const unsigned int *>(
+                        reinterpret_cast<const char *>(kArabicForms) + arabicFormOffset(r + 0x621));
                     if (row[0] == buf[i]) {
                         int form = 1;
                         if (i < last && IS_ARABIC_JOINING(buf[i + 1]))
@@ -144,7 +129,8 @@ String GameText::convertStringFromArabic(String in) {
         }
 
         for (int r = 0; r < 41; ++r) {
-            const unsigned int *row = kArabicForms[r];
+            const unsigned int *row = reinterpret_cast<const unsigned int *>(
+                reinterpret_cast<const char *>(kArabicForms) + arabicFormOffset(r + 0x621));
             if (row[0] != buf[i])
                 continue;
             int form;
