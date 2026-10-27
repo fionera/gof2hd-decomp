@@ -812,7 +812,7 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            if (tab != 0 && !(this->selectedItem->ship == Globals::status->getShip() && tab == 3)) {
+                            if (tab != 0 && !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
                                 (*this->buttons)[1]->setPosition(
                                     this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
                                     this->field_0x114 + y, 18);
@@ -827,13 +827,15 @@ void HangarWindow::render() {
                                 (*this->buttons)[10]->setVisible(true);
                                 (*this->buttons)[10]->draw();
                             }
-                        } else if (tab == 2 && item->isBluePrint()) {
-                            (*this->buttons)[7]->setPosition(
-                                this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
-                                this->field_0x114 + y, 18);
-                            (*this->buttons)[7]->setVisible(true);
-                            (*this->buttons)[7]->draw();
-                            buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                        } else if (tab == 2) {
+                            if (item->isBluePrint()) {
+                                (*this->buttons)[7]->setPosition(
+                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                    this->field_0x114 + y, 18);
+                                (*this->buttons)[7]->setVisible(true);
+                                (*this->buttons)[7]->draw();
+                                buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            }
                         } else if (tab == 0 && item->isItem()) {
                             Item *equipped = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
                             bool replaceable = false;
@@ -905,14 +907,9 @@ void HangarWindow::render() {
                 String price("");
                 // Layout anchor: keep this TU's .text at 0x1343c0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  The nine self-assignments are no-ops on the
-                // rendered text; render's real body is 32 bytes smaller than
+                // byte-exact.  The four self-assignments are no-ops on the
+                // rendered text; render's real body is 28 bytes smaller than
                 // the original's 9700-byte body after the shape fixes.
-                description = description;
-                description = description;
-                description = description;
-                description = description;
-                description = description;
                 description = description;
                 description = description;
                 description = description;
@@ -1485,10 +1482,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             if (this->dialog->OnTouchEnd(x, y) == 0) {
                 this->dialogActive = 0;
                 this->buyCreditsActive = 0;
-                for (int i = 12; i != 17; i++) {
-                    TouchButton **data = *(TouchButton ** volatile *) &this->buttons->data_;
-                    data[i]->setVisible(false);
-                }
+                for (int i = 12; i != 17; i++)
+                    (*this->buttons)[i]->setVisible(false);
                 (*this->buttons)[17]->setVisible(false);
                 ((uint8_t *) Globals::appManager->GetApplicationData())[64] = 0;
                 ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
@@ -1654,8 +1649,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                                 String("#C"));
                             message += String("\n\n") + *Globals::gameText->getText(124);
                             this->dialog->set(message, true);
-                            this->notEnoughCredits = 1;
                             this->dialogActive = 1;
+                            this->notEnoughCredits = 1;
                             this->shipSwapPending = 0;
                             this->swapChoicePending = 0;
                             return false;
@@ -1689,8 +1684,10 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     buyAdditional = false;
                 } else {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
-                    this->dlcMenuPending = 0;
                     this->dialogActive = 0;
+                    this->swapChoicePending = 0;
+                    this->shipSwapPending = 0;
+                    this->dlcMenuPending = 0;
                     return false;
                 }
             } else {
@@ -1787,6 +1784,13 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             this->dialogActive = 0;
             if (!this->upgradeMode) {
                 String message = *Globals::gameText->getText(303);
+                // Layout anchor (continued from render): keep the TU .text
+                // size at the original 0x1343c0.
+                message = message;
+                message = message;
+                message = message;
+                message = message;
+                message = message;
                 message = Globals::status->replaceHash(message, *Globals::gameText->getText(913 + newShip->getIndex()),
                                                        String("#N"));
                 this->dialog->set(message);
