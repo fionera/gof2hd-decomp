@@ -568,7 +568,6 @@ void Gun::ignite() {
     }
 }
 void Gun::calcCharacterCollision() {
-    volatile int pad0;
     volatile int explosive;
     volatile int explodeOnContact;
     if (this->enemies == nullptr) {
@@ -747,70 +746,6 @@ void Gun::calcCharacterCollision() {
             }
         }
     }
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
-    // .text anchor shared with HangarWindow::render: the archive-sensitive libstdc++
-    // exception constructors only compare byte-exact when the object .text ends at
-    // 0x1343d0, so this TU carries the remaining 32 bytes of that layout.
-    pad0 = 0;
 }
 void Gun::calcLevelCollision() {
 }
