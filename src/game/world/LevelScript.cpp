@@ -1101,8 +1101,12 @@ bool LevelScript::process(int delta) {
         }
     } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr &&
                messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
+        goto wormholeExitBody;
+    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr &&
+               messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
+    wormholeExitBody:
         for (unsigned int i = 0; i < enemies->count; ++i) {
             if (!(*enemies)[i]->isWingMan()) {
                 (*enemies)[i]->player->setAlwaysFriend(false);
@@ -1112,17 +1116,6 @@ bool LevelScript::process(int delta) {
         }
         ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
         m_nState = 1; // 0x1381aa -> switch guard 0x13879e
-    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr &&
-               messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
-        for (unsigned int i = 0; i < enemies->count; ++i) {
-            if (!(*enemies)[i]->isWingMan()) {
-                (*enemies)[i]->player->setAlwaysFriend(false);
-                (*enemies)[i]->player->setAlwaysEnemy(true);
-                (*enemies)[i]->player->turnEnemy();
-            }
-        }
-        ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
-        m_nState = 1;
     }
     // DEFERRED (pass 2): further pre-switch specials -- mission 50 (disasm 0x1383e4) and mission 51
     // (disasm 0x13876c) share the exit-wormhole cutscene body at 0x139ac2.
@@ -4442,11 +4435,14 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB =
                             (long long) ((float) delta * 0.05f +
                                          (float) m_nScriptTimerB);
-                    for (int i = 2; i < 5; ++i) {
-                        (*enemies)[i]->geometry->moveForward(
-                                i == 2 ? (float) ((double) delta * 2.5)
-                                       : (i == 3 ? (float) delta * 2.4f
-                                                 : (float) delta * 2.3f));
+                    for (unsigned int i = 2; i != 5; ++i) {
+                        // disasm 0x1426c4: -Oz hoists all three (double)delta*{2.5,2.4,2.3}
+                        // products and selects among the converted floats with a compare ladder.
+                        switch (i) {
+                            case 2: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.5)); break;
+                            case 3: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.4)); break;
+                            case 4: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.3)); break;
+                        }
                     }
                     {
                         AEGeometry *geo = (*enemies)[2]->geometry;
