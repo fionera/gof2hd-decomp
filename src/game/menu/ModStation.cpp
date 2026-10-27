@@ -685,17 +685,19 @@ int ModStation::OnInitialize() {
             }
             int newWanted = Globals::status->activateNewWanted();
             bool &flag63 = this->flag_0x63;
+            GameText *gameText = Globals::gameText;
             if (newWanted >= 1 && !flag63) {
                 if (newWanted == 1) {
-                    this->choiceWindow->set(*Globals::gameText->getText(3230));
+                    this->choiceWindow->set(*gameText->getText(3230));
                 } else {
-                    String text(*Globals::gameText->getText(3231), false);
+                    String text(*gameText->getText(3231), false);
                     text = Globals::status->replaceHash(String(text, false), String(String(newWanted), false),
                                                         String("#N"));
                     this->choiceWindow->set(text);
                 }
                 flag63 = 1;
             }
+            this->field_0x5c = modStationTouchEndPad(this->dt);
             this->state = 20;
             break;
         }
@@ -1114,7 +1116,7 @@ static int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (b & 3);
+    return value + a + b;
 }
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
