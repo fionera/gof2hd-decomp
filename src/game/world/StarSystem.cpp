@@ -230,6 +230,7 @@ StarSystem::StarSystem(int mode) {
         for (int k = 0; k < 24; ++k) {
             usedSlots[k] = 0;
         }
+        const float kTwoPi = 6.2831855f;
         int sunSlot = 0;
         int slot = 0;
         for (i = 0; i < this->planetsArray->size(); ++i) {
@@ -284,7 +285,6 @@ StarSystem::StarSystem(int mode) {
                     this->sunStreak = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
                     this->sunStreak->setScaling(Vector{30000.0f / 65536.0f, 3000.0f / 65536.0f, 15000.0f / 65536.0f});
                 }
-                usedSlots[slot] = 1;
                 flip = 0x8000;
                 sunSlot = slot;
             } else {
@@ -327,10 +327,11 @@ StarSystem::StarSystem(int mode) {
                     (*this->playerTargets)[i - 1] = new PlayerStatic(0, (*this->planetsArray)[i], 0.0f, 0.0f, 0.0f);
                     bool placed = false;
                     while (!placed) {
-                        slot = Globals::rnd->nextInt(11) + 7;
+                        AERandom *rnd = *(AERandom *volatile *) &Globals::rnd;
+                        slot = rnd->nextInt(11) + 7;
                         placed = false;
                         if (abs(slot - sunSlot) >= 3) {
-                            placed = usedSlots[slot] < 1;
+                            placed = usedSlots[slot] == 0;
                         }
                     }
                     float scale = (float) ((0.8f + 0.01 * Globals::rnd->nextInt(40)) * (2300.0 / 65536.0));
@@ -340,10 +341,9 @@ StarSystem::StarSystem(int mode) {
                         flip = 0x8000;
                     }
                 }
-                usedSlots[slot] = 1;
             }
+            usedSlots[slot] = 1;
 
-            const float kTwoPi = 6.2831855f;
             if (slot == sunSlot && i != 0) {
                 (*this->planetsArray)[i]->setRotation(Vector{0.0f, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f});
             } else if (i > 0 && stations->data()[i - 1] == Globals::status->getStation()->getIndex()) {
@@ -356,7 +356,6 @@ StarSystem::StarSystem(int mode) {
                 Vector rotation{tilt, (float) (slot * 2730) * (1.0f / 65536.0f) * kTwoPi, 0.0f};
                 planet->setRotation(rotation);
             }
-            usedSlots[slot] |= 1;
             (*this->planetsArray)[i]->moveForward(-20000.0f);
             if (i == 0) {
                 this->lightDirection = (*this->planetsArray)[0]->getDirection();
