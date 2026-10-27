@@ -654,7 +654,7 @@ namespace AbyssEngine {
                         float cz = (double) z < -1.0 ? -1.0 : z;
                         if (x > 1.0f) cx = 1.0f;
                         if (y > 1.0f) cy = 1.0f;
-                        if (cz > 1.0f) cz = 1.0f;
+                        if (z > 1.0f) cz = 1.0f;
                         (*slot)->normals[i] = cx;
                         (*slot)->normals[i + 1] = cy;
                         (*slot)->normals[i + 2] = cz;
@@ -703,13 +703,12 @@ namespace AbyssEngine {
                     const float *nf = (const float *) (*slot)->normals + v * 3;
                     Vector normal(nf[0], nf[1], nf[2]);
                     Vector tangent = accum[v];
-                    Vector projected = tangent - normal * AEMath::VectorDot(tangent, normal);
-                    Vector unit = AEMath::VectorNormalize(projected);
+                    Vector unit = AEMath::VectorNormalize(tangent - normal * AEMath::VectorDot(normal, tangent));
                     Vector *outTangent = (Vector *) (*slot)->tangents + v;
                     outTangent->x = unit.x;
                     outTangent->y = unit.y;
                     outTangent->z = unit.z;
-                    Vector binormal = AEMath::VectorCross(projected, normal);
+                    Vector binormal = AEMath::VectorCross(normal, unit);
                     Vector *outBinormal = (Vector *) (*slot)->binormals + v;
                     outBinormal->x = binormal.x;
                     outBinormal->y = binormal.y;
