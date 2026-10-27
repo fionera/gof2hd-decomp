@@ -770,9 +770,11 @@ void SpaceLounge::startChat() {
             } else if (agent->getOffer() == 9) {
                 // Premium item.
                 float factor = Globals::options[56] ? 1.0f : 2.0f;
-                if (agent->field_0x28 == -1)
-                    agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                message = *Globals::gameText->getText(agent->field_0x28);
+                int textId = agent->field_0x28;
+                if (textId == -1)
+                    textId = 874 + Globals::rnd->nextInt(2);
+                agent->field_0x28 = textId;
+                message = *Globals::gameText->getText(textId);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 int detailText = agent->field_0x2c;
                 if (detailText == -1)
@@ -809,9 +811,11 @@ void SpaceLounge::startChat() {
                     return;
                 }
                 float factor = Globals::options[56] ? 1.0f : 2.0f;
-                if (agent->field_0x28 == -1)
-                    agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                message = *Globals::gameText->getText(agent->field_0x28);
+                int textId = agent->field_0x28;
+                if (textId == -1)
+                    textId = 874 + Globals::rnd->nextInt(2);
+                agent->field_0x28 = textId;
+                message = *Globals::gameText->getText(textId);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 if (agent->field_0x2c == -1)
                     agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
