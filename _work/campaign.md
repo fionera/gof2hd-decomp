@@ -28,6 +28,9 @@
 - Harvested `w1083`: `MenuTouchWindow::draw` 74.3% -> **81.7%** (13080 B) by
   restoring the case-3 slider loop, case-11 coordinate locals, case-14 bool
   switch flag, and case-15 scroll-entry order. `avg` 99.79 -> **99.8**.
+- Harvested `w1073`: `Level::createCampaignMission` 85.1% -> **85.3%** (29676 B)
+  by naming the normalized direction temp and selecting carrier turret ids from
+  the original bitmask 2547 instead of the table's `isLarge` column.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
