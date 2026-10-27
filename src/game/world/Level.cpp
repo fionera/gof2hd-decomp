@@ -2768,7 +2768,7 @@ void Level::createCampaignMission() {
                 KIPlayer *enemy = (*this->enemies)[i];
                 ((PlayerFighter *) enemy)->crateCaptured() = 0;
                 enemy->cargo = nullptr;
-                (*this->enemies)[i]->player->setHitpoints(150);
+                enemy->player->setHitpoints(150);
                 if (i <= 2)
                     ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
             }
@@ -3417,7 +3417,7 @@ void Level::createCampaignMission() {
             Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
             for (int k = 0; k < 12; k++) {
-                ArrayAdd(this->createStaticObject(nullptr, ((2547 >> k) & 1) ? 14363 : 14365, true),
+                ArrayAdd(this->createStaticObject(nullptr, ((2547u >> k) & 1) ? 14363 : 14365, true),
                          *this->enemies);
                 KIPlayer *turret = (*this->enemies)[k + 1];
                 turret->player->setMaxHitpoints(turretHitpoints);
