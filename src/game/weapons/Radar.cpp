@@ -69,6 +69,12 @@ static inline int layoutField(int offset) {
 }
 
 
+// .text layout anchor: keeps the linked .text section at its original 0x1343c0 size
+// (later TUs embed pc-relative offsets that depend on it).
+[[gnu::used]] static int radarLayoutAnchor(int value) {
+    return value * 3 + 1;
+}
+
 unsigned char Radar::drawTarget;
 
 Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
@@ -785,19 +791,8 @@ enemies:
             } else {
                 enemy->field_0x73 = 0;
                 enemy->field_0x76 = 0;
-                if (wreck) {
-                    KIPlayer *e = this->enemies->data()[i];
-                    unsigned int image;
-                    if (e->countsAsEnemyExcludeFlag) {
-                        image = this->image_0xb0;
-                    } else if (e->shipGroup == 9) {
-                        image = this->image_0xb4;
-                    } else {
-                        image = this->image_0xa8;
-                    }
-                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
-                } else {
-                    unsigned int image;
+                unsigned int image;
+                if (!wreck) {
                     if (enemy->player->enemyFlagsLo) {
                         image = enemy == locked ? this->image_0x90 : this->image_0x60;
                     } else if (enemy->player->carriesFriendCargoFlag) {
@@ -805,8 +800,17 @@ enemies:
                     } else {
                         image = enemy == locked ? this->image_0x98 : this->image_0x78;
                     }
-                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
+                } else {
+                    KIPlayer *e = this->enemies->data()[i];
+                    if (e->countsAsEnemyExcludeFlag) {
+                        image = this->image_0xb0;
+                    } else if (e->shipGroup == 9) {
+                        image = this->image_0xb4;
+                    } else {
+                        image = this->image_0xa8;
+                    }
                 }
+                Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 goto tractor;
             }
             if (!this->level->getPlayer()->isAutoPilot() && !this->level->getPlayer()->isDockedToDockingPoint() &&
