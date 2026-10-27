@@ -1473,7 +1473,7 @@ void MenuTouchWindow::draw() {
                 this->listTopY + Globals::layout->buttonInsetX + 10,
                 y + this->field_0x15c + Globals::layout->field_0x2c_rowHeight + 10, false);
             (*this->sliders)[0]->draw();
-            this->optBtnCC->setPosition(Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight - 10,
+            this->optBtnCC->setPosition(this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
                                         y + this->field_0x15c / 2);
             this->optBtnCC->draw();
             this->optBtnD0->setPosition(this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
@@ -1481,10 +1481,10 @@ void MenuTouchWindow::draw() {
                                         y + this->field_0x15c / 2);
             this->optBtnD0->draw();
             layout = Globals::layout;
-            this->scrollUpButton->setPosition(this->listBottomY + this->listTopY - layout->buttonInsetX -
+            this->scrollUpButton->setPosition(this->listTopY + this->listBottomY - layout->buttonInsetX -
                                                   this->listEntryHeight / 2,
-                                              y + this->field_0x15c / 2 + layout->field_0x2c_rowHeight +
-                                                  this->field_0x15c);
+                                              y + this->field_0x15c + layout->field_0x2c_rowHeight +
+                                                  this->field_0x15c / 2);
             this->scrollUpButton->draw();
 
             // Sound.
@@ -1542,7 +1542,7 @@ void MenuTouchWindow::draw() {
                 layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
                                 String(*Globals::gameText->getText(502)));
                 layout = Globals::layout;
-                y = y + layout->field_0x2c_rowHeight + layout->field_0x1c;
+                y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
                 layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
                                 String(""));
             }
@@ -1551,7 +1551,7 @@ void MenuTouchWindow::draw() {
                 layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
                                 String(*Globals::gameText->getText(502)));
                 layout = Globals::layout;
-                y = y + layout->field_0x2c_rowHeight + layout->field_0x1c;
+                y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
                 layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
                                 String(""));
                 Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
