@@ -169,23 +169,6 @@ static inline float bitsToFloat(int bits) {
     return f;
 }
 
-struct PlayerEgoPolymorphic;
-
-struct PlayerEgoVtable {
-    void (*slot[7])();
-
-    void (*placeAtStation)(PlayerEgoPolymorphic *self, int stationStack);
-};
-
-struct PlayerEgoPolymorphic {
-    PlayerEgoVtable *vtable;
-};
-
-#if __SIZEOF_POINTER__ == 4
-static_assert(__builtin_offsetof(PlayerEgoVtable, placeAtStation) == 0x1c,
-              "PlayerEgo vtable placeAtStation slot offset");
-#endif
-
 static inline void levelSpawnFar(Level *self, int *kiPlayer);
 
 
