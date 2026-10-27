@@ -759,7 +759,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int32_t type = 0;
-    int guard = 999;
+    short guard = 999;
     bool selected = false;
     Array<bool> *used = Globals::status->field_50;
     for (; !selected; --guard) {
@@ -914,11 +914,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         reward *= 1.2f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
-    } else if (type == 3 || type == 5) {
+    } else if (type == 3) {
         reward *= 2.0f;
     } else if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
+    } else if (type == 5) {
+        reward *= 2.0f;
     }
 
     int level = Globals::status->getLevel();
