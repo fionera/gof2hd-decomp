@@ -776,7 +776,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                        (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6) +
-                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
+                                this->sliderRowHeight + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
@@ -816,7 +816,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowA->setTextCentered(true);
 
     TouchButton *credits;
-    if (Globals::iPadAssetsWithLowerRes || !Globals::iPad) {
+    if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
         credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
                                   Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     } else {
@@ -1344,7 +1344,7 @@ void MenuTouchWindow::draw() {
                                             false);
             } else {
                 Globals::Canvas->SetColor(0xffffffffu);
-                if (Globals::iPadAssetsWithLowerRes || !Globals::iPad) {
+                if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
                     int logoTop = Globals::layout->field_0xc_leftMargin;
                     int logoWidth = Globals::Canvas->GetImage2DWidth(this->field_0x120);
                     int logoHeight = Globals::Canvas->GetImage2DHeight(this->field_0x120);
@@ -1441,22 +1441,22 @@ void MenuTouchWindow::draw() {
 
             layout = Globals::layout;
             y = y + this->listEntryWidth + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->listEntryHeight, this->sliderSpacing,
+            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->listEntryHeight, this->field_0x15c,
                             String(""));
             layout = Globals::layout;
             layout->drawBox(5,
                             this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
                                 1,
-                            y, this->listEntryHeight, this->sliderSpacing, String(""));
+                            y, this->listEntryHeight, this->field_0x15c, String(""));
             layout = Globals::layout;
-            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y + this->sliderSpacing + layout->field_0x2c_rowHeight,
-                            this->listEntryHeight, this->sliderSpacing, String(""));
+            layout->drawBox(5, layout->buttonInsetX + this->listTopY, y + this->field_0x15c + layout->field_0x2c_rowHeight,
+                            this->listEntryHeight, this->field_0x15c, String(""));
             layout = Globals::layout;
             layout->drawBox(5,
                             this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
                                 1,
-                            y + layout->field_0x2c_rowHeight + this->sliderSpacing, this->listEntryHeight,
-                            this->sliderSpacing, String(""));
+                            y + layout->field_0x2c_rowHeight + this->field_0x15c, this->listEntryHeight,
+                            this->field_0x15c, String(""));
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500),
                                         this->listTopY + Globals::layout->buttonInsetX + 10,
                                         y + (this->field_0x15c / 2 -
@@ -1486,7 +1486,7 @@ void MenuTouchWindow::draw() {
 
             // Sound.
             layout = Globals::layout;
-            y = y + this->sliderSpacing * 2 + layout->field_0x2c_rowHeight + layout->field_0x2fc;
+            y = y + this->field_0x15c * 2 + layout->field_0x2c_rowHeight + layout->field_0x2fc;
             int toggleY = y + 7;
             this->optBtnD4->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
                                         toggleY + layout->field_0x2c_rowHeight + layout->field_0x1c);
@@ -1779,24 +1779,24 @@ void MenuTouchWindow::draw() {
             layout->drawBox(5, layout->buttonInsetX,
                             layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth +
                                 layout->field_0x2c_rowHeight,
-                            this->listEntryHeight, this->sliderSpacing, String(""));
+                            this->listEntryHeight, this->field_0x15c, String(""));
             layout = Globals::layout;
             layout->drawBox(5,
                             layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight + 1,
                             layout->field_0xc_leftMargin + layout->field_0x2c_rowHeight + layout->field_0x20_top +
                                 this->listEntryWidth,
-                            this->listEntryHeight, this->sliderSpacing, String(""));
+                            this->listEntryHeight, this->field_0x15c, String(""));
             layout = Globals::layout;
             layout->drawBox(5,
                             layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight + 1,
                             layout->field_0xc_leftMargin + layout->field_0x2c_rowHeight * 2 + layout->field_0x20_top +
-                                this->listEntryWidth + this->sliderSpacing,
-                            this->listEntryHeight, this->sliderSpacing, String(""));
+                                this->listEntryWidth + this->field_0x15c,
+                            this->listEntryHeight, this->field_0x15c, String(""));
             layout = Globals::layout;
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500), layout->buttonInsetX + 10,
                 layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth +
-                    layout->field_0x2c_rowHeight + this->sliderSpacing / 2 -
+                    layout->field_0x2c_rowHeight + this->field_0x15c / 2 -
                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
                 false);
             Globals::Canvas->DrawString(
@@ -1805,7 +1805,7 @@ void MenuTouchWindow::draw() {
                     String(String((int) ((*this->sliders)[0]->getValue() * 100.0f)), false) + String("]"),
                 Globals::layout->buttonInsetX + this->listEntryHeight + Globals::layout->field_0x2c_rowHeight + 10,
                 this->listEntryWidth + Globals::layout->field_0xc_leftMargin +
-                    Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->field_0x20_top + this->sliderSpacing +
+                    Globals::layout->field_0x2c_rowHeight * 2 + Globals::layout->field_0x20_top + this->field_0x15c +
                     10,
                 false);
             (*this->sliders)[0]->draw();
@@ -1936,7 +1936,7 @@ void MenuTouchWindow::draw() {
                 bool latinButton = ((*this->buttonsB0)[i]->id == 33 || (*this->buttonsB0)[i]->id == 36 ||
                                     (*this->buttonsB0)[i]->id == 37) &&
                                    GameText::getLanguage() == 9;
-                bool switchScript = latinButton | arabicButton;
+                bool switchScript = arabicButton | latinButton;
                 if (switchScript)
                     Globals::Canvas->field_0x1c = !arabicButton;
                 (*this->buttonsB0)[i]->draw();
@@ -2038,7 +2038,7 @@ void MenuTouchWindow::draw() {
                 notOwned = false;
             else if (optionFlag(57) && selected == 4)
                 notOwned = false;
-            else if (optionFlag(57) && (selected == 0 || selected == 2))
+            else if (optionFlag(57) && (selected | 2) == 2)
                 notOwned = false;
             if (notOwned)
                 notOwned = (optionFlag(53) == 0 || selected != 4) || optionFlag(55) == 0;
@@ -2082,8 +2082,7 @@ void MenuTouchWindow::draw() {
     if (this->menuState != 11 && (this->backgroundEnabled != 0 || this->menuState != 0) && this->menuState != 4 &&
         this->menuState != 13 && this->menuState != 15)
         Globals::layout->drawEmptyFooter(true);
-    if (Globals::layout->field_0x285 && (this->backgroundEnabled == 0 || this->backgroundEnabled == 2) &&
-        this->menuState == 0) {
+    if (Globals::layout->field_0x285 && (this->backgroundEnabled | 2) == 2 && this->menuState == 0) {
         for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
             if ((*this->scrollEntries)[i]->id == 17)
                 (*this->scrollEntries)[i]->draw();
@@ -2912,15 +2911,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     float controlSize = optionFloat(68);
                     optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
                     optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
-                    int fireBase = optionInt(88);
-                    int steerBase = optionInt(84);
-                    Globals::globals->setCoordsFire(fireBase, Globals::Canvas->GetImage2DWidth(this->fireImageA),
+                    Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
                                                     this->fireImageA, this->fireImageB, this->fireSize_0x74,
                                                     this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
                                                     this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a,
                                                     this->fireCoord_0x6c, this->fireCoord_0x6e, this->fireCoord_0x70,
                                                     this->fireCoord_0x72, this->fireCoord_0x4c, this->fireCoord_0x4e);
-                    Globals::globals->setCoordsSteer(steerBase, Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                    Globals::globals->setCoordsSteer(optionInt(84), Globals::Canvas->GetImage2DWidth(this->steerImageA),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageC),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageB),
                                                      this->steerCoord_0x2e, this->steerCoord_0x30,
@@ -3854,7 +3851,7 @@ static void mtwTextLayoutAnchor() {
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6;
     volatile char c;
     c = 0; c = 1; c = 2;
-    a = 9; a = 10;
+    a = 9; a = 10; a = 11; a = 12;
     a = 17; a = 18; a = 19; a = 20; a = 21; a = 22; a = 23; a = 24;
     a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
     a = 33; a = 34; a = 35; a = 36; a = 37; a = 38; a = 39; a = 40;
