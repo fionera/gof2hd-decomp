@@ -369,6 +369,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     bool goingToPlanet = this->level->getPlayer()->goingToPlanet();
     if (alienOrbit) {
         this->field_0x1a8 = goingToPlanet && !this->level->getPlayer()->isDockingToPlanet();
+    } else if (goingToPlanet && !this->level->getPlayer()->isDockingToPlanet()) {
+        // the auto-pilot target is compared against the planet targets below
+        this->field_0x1a8 = false;
+    } else {
+        this->field_0x1a8 = false;
     }
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY - this->imageHeight, 1);
@@ -399,7 +404,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         otherLock = 1;
     }
     bool notOtherLock = !otherLock;
-    bool notTurretMode = !turretMode;
+    int notTurretMode = !turretMode;
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
