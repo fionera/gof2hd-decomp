@@ -2712,8 +2712,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (this->choiceWindow->OnTouchEnd(x, y) != 0)
                     return 0;
                 ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                this->messageShowing = 0;
                 this->dlcMessageShowing = 0;
+                this->messageShowing = 0;
                 return 0;
             }
             if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
@@ -2736,8 +2736,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (button->OnTouchEnd(x, y)) {
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
-                        this->purchaseRestorePending = 1;
                         this->messageShowing = 0;
+                        this->purchaseRestorePending = 1;
                     }
                 }
                 if (button->id == 52) {
@@ -2878,14 +2878,14 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 optionFloat(44) = difficulty;
                 if (i != 0) {
                     this->choiceWindow->set(*Globals::gameText->getText(26), true);
-                    this->returnToMenuSubFlag = 1;
                     this->messageShowing = 1;
+                    this->returnToMenuSubFlag = 1;
                     return 0;
                 }
                 if (Globals::status->getPlayingTime() < 1) {
                     this->choiceWindow->set(*Globals::gameText->getText(52), true);
-                    this->returnToMenuSubFlag = 1;
                     this->messageShowing = 1;
+                    this->returnToMenuSubFlag = 1;
                 } else {
                     if (this->field_0x234 == 1)
                         this->startValkyrie();
@@ -2913,15 +2913,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     float controlSize = optionFloat(68);
                     optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
                     optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
-                    int fireBase = optionInt(88);
-                    int steerBase = optionInt(84);
-                    Globals::globals->setCoordsFire(fireBase, Globals::Canvas->GetImage2DWidth(this->fireImageA),
+                    Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
                                                     this->fireImageA, this->fireImageB, this->fireSize_0x74,
                                                     this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
                                                     this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a,
                                                     this->fireCoord_0x6c, this->fireCoord_0x6e, this->fireCoord_0x70,
                                                     this->fireCoord_0x72, this->fireCoord_0x4c, this->fireCoord_0x4e);
-                    Globals::globals->setCoordsSteer(steerBase, Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                    Globals::globals->setCoordsSteer(optionInt(84), Globals::Canvas->GetImage2DWidth(this->steerImageA),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageC),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageB),
                                                      this->steerCoord_0x2e, this->steerCoord_0x30,
@@ -2994,8 +2992,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             }
             if (this->optBtnD0->OnTouchEnd(x, y)) {
                 this->choiceWindow->set(*Globals::gameText->getText(493));
-                this->field_0x176 = 1;
                 this->messageShowing = 1;
+                this->field_0x176 = 1;
             }
             (*this->sliders)[0]->OnTouchEnd(x, y);
             break;
@@ -3052,11 +3050,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
+                if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
                 } else if (button->id == 106) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
@@ -3065,9 +3061,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y))
                         NFC::openPrivacyPolicy();
-                } else if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
+                } else if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 }
             }
             break;
@@ -3126,8 +3124,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->optBtnD0->OnTouchEnd(x, y)) {
                     this->choiceWindow->set(*Globals::gameText->getText(493));
-                    this->field_0x176 = 1;
                     this->messageShowing = 1;
+                    this->field_0x176 = 1;
                 }
                 (*this->sliders)[0]->OnTouchEnd(x, y);
 
@@ -3254,8 +3252,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 }
                 this->choiceWindow->set(*Globals::gameText->getText(49), true);
-                this->saveDialogShowing = 1;
                 this->messageShowing = 1;
+                this->saveDialogShowing = 1;
                 return 0;
             }
             break;
@@ -3301,11 +3299,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     int r = this->choiceWindow->OnTouchEnd(x, y);
                     if (r == 0) {
                         g_android_link_game_gp = 1;
-                        this->messageShowing = 0;
                         this->genericConfirmB = 0;
+                        this->messageShowing = 0;
                     } else if (r == 1) {
-                        this->messageShowing = 0;
                         this->genericConfirmB = 0;
+                        this->messageShowing = 0;
                     }
                     return 0;
                 }
@@ -3319,8 +3317,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         this->quitConfirmShowing = 0;
                         goto clearMessage;
                     } else if (r == 1) {
-                        this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
+                        this->quitConfirmShowing = 0;
                         this->returnToMenuSubFlag = 0;
                     }
                     return 0;
@@ -3333,11 +3331,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->leaderboardDialogShowing = 0;
                 }
                 if (this->dlcMessageShowing) {
-                    if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                        this->messageShowing = 0;
-                        this->dlcMessageShowing = 0;
-                    }
+                    if (this->choiceWindow->OnTouchEnd(x, y) != 0)
+                        return 0;
+                    ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
+                    this->dlcMessageShowing = 0;
+                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
@@ -3347,13 +3345,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 }
                 if (this->loadFailedDialogShowing) {
-                    this->messageShowing = 0;
                     this->loadFailedDialogShowing = 0;
+                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->genericConfirmA && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    this->messageShowing = 0;
                     this->genericConfirmA = 0;
+                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->supernovaMessageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
@@ -3397,8 +3395,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         break;
                     case 6:
                         this->choiceWindow->set(*Globals::gameText->getText(523), true);
-                        this->quitConfirmShowing = 1;
                         this->messageShowing = 1;
+                        this->quitConfirmShowing = 1;
                         break;
                     case 10:
                         this->menuState = 9;
@@ -3483,16 +3481,16 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 Globals::globals->reportLeaderboards();
                 if (id == 17 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     this->choiceWindow->set(*Globals::gameText->getText(53), true);
-                    this->returnToMenuShowing = 1;
                     this->messageShowing = 1;
+                    this->returnToMenuShowing = 1;
                     return 0;
                 }
                 if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                     appData->dlcMenuAckFlag = 0;
                     ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMenuRequestFlag = 1;
-                    this->messageShowing = 1;
                     this->dlcMessageShowing = 1;
+                    this->messageShowing = 1;
                     this->choiceWindow->set(*Globals::gameText->getText(71), *Globals::gameText->getText(425));
                 }
             }
@@ -3527,7 +3525,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 newState = Globals::iPad ? 0 : 3;
                 break;
             case 11:
-                return 1;
+                return 0;
             case 12:
                 break;
             default:
