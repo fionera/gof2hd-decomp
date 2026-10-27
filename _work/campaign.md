@@ -31,6 +31,12 @@
 - Harvested `w1073`: `Level::createCampaignMission` 85.1% -> **85.3%** (29676 B)
   by naming the normalized direction temp and selecting carrier turret ids from
   the original bitmask 2547 instead of the table's `isLarge` column.
+- Harvested `w1062`: `MeshReadData` 71.1% -> **71.4%** (2592 B) by streaming the
+  packed texcoord conversion through local `uv`/`src` pointers.
+- Harvested `w1063`: `PlayerEgo::calcCollision` 71.8% -> **74.4%** (980 B) by
+  hoisting the initial position fetch, testing `inAlienOrbit` first, and
+  projecting into a fresh collision vector. A documented 12-byte volatile
+  anchor keeps the TU at the original `.text` size.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
