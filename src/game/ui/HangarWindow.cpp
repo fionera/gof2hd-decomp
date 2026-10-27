@@ -1485,8 +1485,10 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             if (this->dialog->OnTouchEnd(x, y) == 0) {
                 this->dialogActive = 0;
                 this->buyCreditsActive = 0;
-                for (int i = 12; i != 17; i++)
-                    (*this->buttons)[i]->setVisible(false);
+                for (int i = 12; i != 17; i++) {
+                    TouchButton **data = *(TouchButton ** volatile *) &this->buttons->data_;
+                    data[i]->setVisible(false);
+                }
                 (*this->buttons)[17]->setVisible(false);
                 ((uint8_t *) Globals::appManager->GetApplicationData())[64] = 0;
                 ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
@@ -1652,8 +1654,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                                 String("#C"));
                             message += String("\n\n") + *Globals::gameText->getText(124);
                             this->dialog->set(message, true);
-                            this->dialogActive = 1;
                             this->notEnoughCredits = 1;
+                            this->dialogActive = 1;
                             this->shipSwapPending = 0;
                             this->swapChoicePending = 0;
                             return false;
@@ -1687,10 +1689,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     buyAdditional = false;
                 } else {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
-                    this->dialogActive = 0;
-                    this->swapChoicePending = 0;
-                    this->shipSwapPending = 0;
                     this->dlcMenuPending = 0;
+                    this->dialogActive = 0;
                     return false;
                 }
             } else {
