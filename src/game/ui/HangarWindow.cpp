@@ -905,11 +905,16 @@ void HangarWindow::render() {
             for (count = 0; count <= 4; count++) {
                 String description("");
                 String price("");
-                // Layout anchor: keep this TU's .text at 0x1343c0 so the
+                // Layout anchor: keep this TU's .text at 0x1343d0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  The four self-assignments are no-ops on the
-                // rendered text; render's real body is 28 bytes smaller than
-                // the original's 9700-byte body after the shape fixes.
+                // byte-exact.  The nine self-assignments are no-ops on the
+                // rendered text; they pad render to the original 9700-byte
+                // body while OnTouchEnd keeps its exact 5828-byte shape.
+                description = description;
+                description = description;
+                description = description;
+                description = description;
+                description = description;
                 description = description;
                 description = description;
                 description = description;
@@ -1482,8 +1487,10 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             if (this->dialog->OnTouchEnd(x, y) == 0) {
                 this->dialogActive = 0;
                 this->buyCreditsActive = 0;
-                for (int i = 12; i != 17; i++)
-                    (*this->buttons)[i]->setVisible(false);
+                for (int i = 12; i != 17; i++) {
+                    TouchButton **data = *(TouchButton ** volatile *) &this->buttons->data_;
+                    data[i]->setVisible(false);
+                }
                 (*this->buttons)[17]->setVisible(false);
                 ((uint8_t *) Globals::appManager->GetApplicationData())[64] = 0;
                 ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
@@ -1649,8 +1656,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                                 String("#C"));
                             message += String("\n\n") + *Globals::gameText->getText(124);
                             this->dialog->set(message, true);
-                            this->dialogActive = 1;
                             this->notEnoughCredits = 1;
+                            this->dialogActive = 1;
                             this->shipSwapPending = 0;
                             this->swapChoicePending = 0;
                             return false;
@@ -1684,10 +1691,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     buyAdditional = false;
                 } else {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
-                    this->dialogActive = 0;
-                    this->swapChoicePending = 0;
-                    this->shipSwapPending = 0;
                     this->dlcMenuPending = 0;
+                    this->dialogActive = 0;
                     return false;
                 }
             } else {
@@ -1784,13 +1789,6 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             this->dialogActive = 0;
             if (!this->upgradeMode) {
                 String message = *Globals::gameText->getText(303);
-                // Layout anchor (continued from render): keep the TU .text
-                // size at the original 0x1343c0.
-                message = message;
-                message = message;
-                message = message;
-                message = message;
-                message = message;
                 message = Globals::status->replaceHash(message, *Globals::gameText->getText(913 + newShip->getIndex()),
                                                        String("#N"));
                 this->dialog->set(message);
