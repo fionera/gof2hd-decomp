@@ -316,9 +316,10 @@ void RocketGun::update(int elapsed) {
                 }
                 if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
                     // Cluster rockets corkscrew around their flight path, phase-shifted per rocket.
+                    const int life = gun->lifetimes[i];
                     const uint32_t total = (uint32_t) gun->initialLifetime;
                     const float phase = (float) ((total * i) / gun->positions.count);
-                    const float s = Sinf((phase + (float) (int) (total - gun->lifetimes[i])) * 0.003f);
+                    const float s = Sinf((phase + (float) (int) (total - life)) * 0.003f);
                     const float c = Cosf((phase + (float) (this->gun->initialLifetime - this->gun->lifetimes[i])) * 0.003f);
                     const Vector cross = VectorCross(this->gun->velocities.data()[i],
                                                      this->gun->upVectors.data()[i]);
