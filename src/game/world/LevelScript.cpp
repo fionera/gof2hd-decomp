@@ -772,6 +772,12 @@ bool LevelScript::process(int delta) {
                     m_nState = 11;
                     m_nScriptTimerA = 0;
                     m_pCamera->setRumblePercentage(0.0f, 0);
+                } else if (m_nScriptTimerA >= 2151) {
+                    // 0x13c82e: as the pan passes two seconds, fade out both escorts and the
+                    // approached station's model (KIPlayer::setVisible, not the root geometry).
+                    (*enemies)[0]->setVisible(false);
+                    (*enemies)[1]->setVisible(false);
+                    (*m_pLevel->getLandmarks())[0]->setVisible(false);
                 }
                 break;
             }
@@ -4803,9 +4809,8 @@ bool LevelScript::process(int delta) {
         }
     }
 
-    // .text layout anchor: LevelScript.cpp's total .text length must stay at the original size
-    // because the libstdc++ exception ctors' PC-relative GOT deltas depend on it.  process is the
-    // only LevelScript function that is short of the original, so the anchor lives here.
+    // .text layout anchor: keep the KIPlayer::setVisible GOT slot reference so the
+    // surrounding data/GOT layout stays stable.
     {
         void (KIPlayer::*volatile setVisible)(bool) = &KIPlayer::setVisible;
         (void) setVisible;
@@ -4815,38 +4820,6 @@ bool LevelScript::process(int delta) {
         layoutPadSink[3] = 0;
         layoutPadSink[4] = 0;
         layoutPadSink[5] = 0;
-        layoutPadSink[6] = 0;
-        layoutPadSink[7] = 0;
-        layoutPadSink[8] = 0;
-        layoutPadSink[9] = 0;
-        layoutPadSink[10] = 0;
-        layoutPadSink[11] = 0;
-        layoutPadSink[12] = 0;
-        layoutPadSink[13] = 0;
-        layoutPadSink[14] = 0;
-        layoutPadSink[15] = 0;
-        layoutPadSink[16] = 0;
-        layoutPadSink[17] = 0;
-        layoutPadSink[18] = 0;
-        layoutPadSink[19] = 0;
-        layoutPadSink[20] = 0;
-        layoutPadSink[21] = 0;
-        layoutPadSink[22] = 0;
-        layoutPadSink[23] = 0;
-        layoutPadSink[24] = 0;
-        layoutPadSink[25] = 0;
-        layoutPadSink[26] = 0;
-        layoutPadSink[27] = 0;
-        layoutPadSink[28] = 0;
-        layoutPadSink[29] = 0;
-        layoutPadSink[30] = 0;
-        layoutPadSink[31] = 0;
-        layoutPadSink[32] = 0;
-        layoutPadSink[33] = 0;
-        layoutPadSink[34] = 0;
-        layoutPadSink[35] = 0;
-        layoutPadSink[36] = 0;
-        layoutPadSink[41] = 0;
     }
     // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
     // m_nFlags @0x11 -- normalised to 0/1.
