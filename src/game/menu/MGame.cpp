@@ -76,10 +76,6 @@ static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::tr
 // +0 = station greeter, +5 = mission-23 contact, +10 = planet landing refusal / mission 24.
 static int gMGameFaces[15] = {4, 2, 0, 2, 2, 0, 2, 3, 3, 10, 10, 0, 0, 1, 0};
 
-// Padding that keeps the .got distance from .text on its original 16-byte quantum: the
-// libstdc++ exception constructors encode that distance as a PC-relative literal.
-[[gnu::used]] static int gMGameDataPad[4] = {0, 0, 0, 1};
-
 static const int gShipRace[64] = {
     3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
     2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
