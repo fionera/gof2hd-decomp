@@ -2879,8 +2879,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 optionFloat(44) = difficulty;
                 if (i != 0) {
                     this->choiceWindow->set(*Globals::gameText->getText(26), true);
-                    this->returnToMenuSubFlag = 1;
                     this->messageShowing = 1;
+                    this->returnToMenuSubFlag = 1;
                     return 0;
                 }
                 if (Globals::status->getPlayingTime() < 1) {
@@ -3161,7 +3161,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 optionFloat(8) = (*this->sliders)[3]->getValue();
                 optionFloat(36) = (*this->sliders)[4]->getValue();
                 optionFloat(40) = (*this->sliders)[5]->getValue();
-                for (unsigned int i = 1; i < this->sliders->size(); i++) {
+                for (int i = 1; i < (int) this->sliders->size(); i++) {
                     if (!(*this->sliders)[i]->OnTouchEnd(x, y))
                         continue;
                     switch (i) {
