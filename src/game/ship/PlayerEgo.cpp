@@ -2011,12 +2011,16 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                 if (delivered != this->dockTotalAmount) {
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / 1500.0f);
                     if (total <= this->dockTransferedAmount) {
-                        if (delivered < this->dockTransferedAmount)
-                            hud->hudEvent(mission->getType() == 184 || mission->getType() == 168 ? 36 : 40, this, 0);
+                        if (delivered < this->dockTransferedAmount) {
+                            if (mission->getType() == 184 || mission->getType() == 168)
+                                hud->hudEvent(36, this, 0);
+                            else
+                                hud->hudEvent(40, this, 0);
+                        }
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
-                    if (total > delivered)
-                        Globals::status->field_178 += this->dockTransferedAmount - delivered;
+                    if (this->dockTotalAmount > delivered)
+                        Globals::status->field_178 += this->dockTotalAmount - delivered;
                 }
             } else if (campaign != nullptr && !campaign->isEmpty()
                        && (campaign->getType() == 167 || campaign->getType() == 174) && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
@@ -2041,7 +2045,15 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                         dockIndex = i;
                 }
                 int campaignMission = Globals::status->getCurrentCampaignMission();
-                this->hackingGame = (int) (intptr_t) new HackingGame(0, campaignMission == 91 ? 1 : 4, -1, -1, dockIndex);
+                struct HackingGameStorage {
+                    char data[320];
+                    HackingGameStorage(int a, int b, int c, int d, int e) {
+                        new (data) HackingGame(a, b, c, d, e);
+                    }
+                };
+                HackingGameStorage *storage =
+                    new HackingGameStorage(0, campaignMission == 91 ? 1 : 4, -1, -1, dockIndex);
+                this->hackingGame = (int) (intptr_t) storage;
                 hud->setHackingGameActive(true);
             }
             this->field_0x35c += this->shakeIntensity;
@@ -2310,8 +2322,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     }
     // Free mouse aiming is off when the cursor is hidden/locked, the autopilot steers (unless in
     // control mode 1; evaluated without short-circuit, the binary ORs both flags) or in mode 3.
-    if (!Globals::mouseCursorActivated || mouseLocked || !(!this->autoPilot | (controlMode == 1))
-        || controlMode == 3) {
+    if (!(Globals::mouseCursorActivated && !mouseLocked && (!this->autoPilot || controlMode == 1)
+          && controlMode != 3)) {
         Vector aimTarget = aimPosition + 22000.0f * AbyssEngine::AEMath::VectorNormalize(aimDirection);
         Globals::Canvas->GetScreenPosition(aimTarget, crosshairPos);
         crosshairPos = crosshairPos.z > 0.0f ? crosshairPos
