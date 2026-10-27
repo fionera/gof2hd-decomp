@@ -712,9 +712,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->optBtnD4->setAlwaysPressed(optionFlag(13));
     (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
-                                     (this->sliderSpacing + (Globals::layout->field_0xc_leftMargin +
-                                                             Globals::layout->field_0x20_top) +
-                                      Globals::layout->field_0x1c) +
+                                     (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                      this->sliderSpacing + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
     this->optBtnD8->setAlwaysPressed(optionFlag(12));
