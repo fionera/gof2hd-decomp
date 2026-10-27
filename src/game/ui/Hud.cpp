@@ -188,7 +188,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                unsigned int fireImageIndex) {
     (void) letterbox;
     int dt = (int) frameTime;
-    int pad_ = this->field_0x470;
     bool mining = ego->isMining();
     if (!mining && this->eventQueueDirty && !this->hackingGameActive) {
         this->updateQueue(dt);
@@ -251,6 +250,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     // Shield / armour / gamma bars.
     int dividerOffset = Globals::layout->field_0x1e8;
     Globals::Canvas->SetColor(0xffffffff);
+    int pad_ = this->field_0x470;
     int armorY;
     int armorBarY;
     if (this->hasShieldBar) {
@@ -281,7 +281,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                       this->field_0x440, armorBarY);
     }
     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
-                                                    Globals::status->getCurrentCampaignMission()) > 0.0f) {
+                                                    Globals::status->getCurrentCampaignMission()) > 0.0f &&
+        dividerOffset >= 0) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
@@ -808,7 +809,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                     Globals::layout->field_0x2c_rowHeight + this->field_0x3e2, false);
         Globals::Canvas->SetColor(0xffffffff);
     }
-    if (pad_ == 0x7ffffffe)
+    if (pad_ < 0)
         Globals::Canvas->SetColor(savedColor);
     Globals::Canvas->SetColor(savedColor);
 }
