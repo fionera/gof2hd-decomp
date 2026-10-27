@@ -190,7 +190,7 @@ ordering file.
 | 5 | `src/game/weapons/ObjectGun.cpp:35-40` | **removed** (was `_ZN12_GLOBAL__N_123ObjectGunProjectileMeshEi` anchor); now a real hidden helper used by the ctor/update | 20 B anchor replaced by 16 B real helper | all 12 ObjectGun functions size-exact | commit `c902617a`; `.text` unchanged |
 | 6 | `src/engine/core/GameText.cpp:51-55` | **removed** (was `_ZN12_GLOBAL__N_113arabicFormRowEj` anchor); now a real hidden `arabicFormOffset` used by both lookups | 16 B anchor replaced by real helper | all 14 GameText functions size-exact | commit `19e43d05`; `.text` unchanged |
 | 7 | `src/game/ui/StatusWindow.cpp:16-23` | **removed** (was `_ZL17statusWindowClampiii` anchor); now a real hidden medal-row height helper | 16 B anchor replaced by 18 B real helper | all 13 StatusWindow functions size-exact | commit `6c78ad36`; `.text` unchanged |
-| 8 | `src/game/mission/RecordHandler.cpp:1415-1425` | `_ZN12_GLOBAL__N_118mixRecordStoreSlotEi`; unused hash | `0x1e` = 30 B | all 32 RecordHandler functions size-exact | object symbol `0x1e`; `section_order.txt:2428` |
+| 8 | `src/game/mission/RecordHandler.cpp:1415-1425` | **removed** (was `_ZN12_GLOBAL__N_118mixRecordStoreSlotEi` anchor); now a real hidden libc++abi `is_equal(type_info*, type_info*, bool)` helper | 30 B anchor replaced by 32 B real helper | all 32 RecordHandler functions size-exact | commit `0a8cdbe6`; `.text` unchanged |
 | 9 | `src/game/world/StarMap.cpp:55-57` | `_ZL25StarMap_GetScreenPosition...`; unused wrapper around `GetScreenPosition` | `0x10` = 16 B | `draw -8` | object symbol `0x10`; `section_order.txt:2383` |
 | 10 | `src/game/menu/ModStation.cpp:50,863,1102-1109` | `_ZL21modStationTouchEndPadi`; recursive Fibonacci-like helper; called in `OnUpdate` and stored into `field_0x5c` | `0x3e` = 62 B | `OnInitialize -12`; `OnUpdate` size-exact | object symbol `0x3e`; call site `0x828`..`0x82c`; `section_order.txt:2538` |
 | 11 | `src/game/world/Level.cpp:1601,2598-2599,7247-7256` | `_ZL15levelTextAnchorv`; 12 volatile double stores; unconditional call at end of `createMission` | `0x84` = 132 B | `createMission +16` | object symbol `0x84`; linked `0x84040`; call site `0x40e0`..`0x40e8`; `section_order.txt:887` |
@@ -377,17 +377,18 @@ unambiguous.
 **Risk:** low-to-medium; one function, but the 16 B recovery must be real code, not a new
 `volatile` store.
 
-### Rank 3 — small pure-dead-code cluster (mechanical, 120 B)
+### Rank 3 — small pure-dead-code cluster (mechanical, 90 B)
 
-**Why third:** all seven helpers are unused `[[gnu::used]]` functions and their owning
-functions are size-exact except `Generator::createMission -4` and `StarMap::draw -8`.
-This is the easiest batch to audit mechanically.
+**Why third:** the remaining unused `[[gnu::used]]` helpers are size-exact except
+`Generator::createMission -4` and `StarMap::draw -8`; `RecordHandler`'s 30 B anchor has
+already been replaced by a real hidden libc++abi helper. This is the easiest batch to audit
+mechanically.
 
 **Proper source-shape fix**
 
 - Remove the unused helpers:
   `StarSystem` 14 B, `Generator` 8 B, `ObjectGun` 20 B, `GameText` 16 B,
-  `StatusWindow` 16 B, `RecordHandler` 30 B, `StarMap` 16 B.
+  `StatusWindow` 16 B, `StarMap` 16 B.  (`RecordHandler` 30 B is already gone.)
 - Recover the 4 B in `Generator::createMission` and 8 B in `StarMap::draw`; the other
   owning functions are already exact, so the original TU likely has a missing local
   helper/rodata block or alignment, not a missing exported body.
@@ -506,8 +507,8 @@ Check:
    bounded one-function fix.
 
 3. **Most remaining anchors are pure padding or semantic no-ops.**
-   The small dead-code cluster is 120 B (`StarSystem` 14, `Generator` 8, `ObjectGun` 20,
-   `GameText` 16, `StatusWindow` 16, `RecordHandler` 30, `StarMap` 16); the semantic inline
+   The small dead-code cluster is 90 B (`StarSystem` 14, `Generator` 8, `ObjectGun` 20,
+   `GameText` 16, `StatusWindow` 16, `StarMap` 16); the semantic inline
    anchors add about 234 B (`Level` 132+8 call, `ModStation` 62+8 call, `HackingGame` 6,
    `LevelScript` 4, `Status` 14); the remaining data anchors add 484 B (`CubeMapping` removed;
    `Status` 190, `Transform` 80, `RocketGun` 16, `AEFile` 8). The hard target is not

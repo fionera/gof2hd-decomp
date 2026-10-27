@@ -1,5 +1,23 @@
 # Byte-matching campaign log
 
+## Session 2026-10-27 (wave 47 — worst-first continuation)
+
+- Harvested `w985`: `Level::assignGuns` 87.8% -> **88.8%** (2948 B exact) by
+  restoring the top-tested do/break loop and per-branch `weaponType` stores.
+  Gate: byte 1352, linked 4469, avg 99.79, `.text 0x1343c0`.
+- Harvested `w1015`: `RecordHandler` 30-byte `mixRecordStoreSlot` anchor replaced
+  by the real hidden libc++abi `is_equal(type_info*, type_info*, bool)` helper.
+  Gate unchanged; no `[[gnu::used]]` anchor remains in that TU.
+- Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
+  `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
+  Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
+  Level::createShip, MenuTouchWindow ctor, Hud::draw, MenuTouchWindow::OnTouchEnd,
+  HackingGame::render2D, MeshReadData, PlayerEgo::calcCollision,
+  Level::createMission, HangarWindow::render, Level::createScene,
+  MGame::OnTouchEnd, Status::moveWanted, Mesh::ReadEnhancedDataFromFile, and
+  RocketGun::update. Each worker is gate-bound to byte >= 1352, linked >= 4469,
+  `.text 0x1343c0`, lint CLEAN, drift 0.
+
 ## Session 2026-10-26 (wave 41 — third 20-way finisher fleet)
 
 - Launched `w950..w969` (20 `codex exec -p dsv41` workers) from master

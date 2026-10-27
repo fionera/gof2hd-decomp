@@ -360,7 +360,7 @@ These are intentionally gate-sensitive. They are not necessarily bugs, but they 
 | `src/game/world/StarSystem.cpp:130-135` | 14-byte `starSystemLayoutAnchor` | absorbs section-alignment slack | keep; `StarSystem::StarSystem` is 93.9% |
 | `src/game/mission/Generator.cpp:51-55` | 8-byte `generatorShipListLayoutAnchor` | keeps Generator TU `.text` size | keep; separate from F2c table fix |
 | `src/game/ui/StatusWindow.cpp:16-23` | **removed** (was `statusWindowClamp`) | real hidden medal-row height helper now used by both ctor branches | `6c78ad36`; `.text` unchanged |
-| `src/game/mission/RecordHandler.cpp:1415-1424` | `mixRecordStoreSlot` | local `.text` padding | keep |
+| `src/game/mission/RecordHandler.cpp:1415-1424` | **removed** (was `mixRecordStoreSlot`) | real hidden libc++abi `is_equal` helper | `0a8cdbe6`; `.text` unchanged |
 | `src/game/world/StarMap.cpp:55-57` | `[[gnu::used]] StarMap_GetScreenPosition` | `.text` anchor | keep |
 | `src/game/ui/MenuTouchWindow.cpp:328-334,3898+` | never-taken `anchorFn` hook + huge `mtwTextLayoutAnchor` store body | keeps TU on `0x1333c0 + k*0x1000`; libstdc++ exception ctors depend on it | high risk; re-tune with `tools/verify/verify.py --show _ZNSt9bad_allocC1Ev` |
 | `src/game/world/Level.cpp:2598-2599,7247-7255` | never-taken `anchorFn` + `levelTextAnchor` volatile double stores | keeps Level TU `.text` size | keep |
