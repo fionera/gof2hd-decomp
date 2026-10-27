@@ -289,7 +289,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, gammaY + dividerOffset);
-        int gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
+        short gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
         Globals::Canvas->DrawImage2D(this->image_0x2cc, this->field_0x440, gammaBarY);
         int gammaW = (int) ((float) ego->player->getGammaHP() / 100.0f * (float) this->field_0x446);
         Globals::Canvas->DrawRegion2D(this->barDividerImage, 0, 0, gammaW, this->field_0x44c, 0.0f, 0, 0,
@@ -525,7 +525,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         }
     }
 
-    if (pad_ < 0)
+    if (pad_ != 0)
         Globals::Canvas->SetColor(savedColor);
     // Autopilot button.
     if (!ego->radioRef->isShowingMessage()) {
@@ -779,7 +779,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int top = this->field_0x3e2;
