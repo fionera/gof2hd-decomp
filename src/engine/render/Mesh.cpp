@@ -700,7 +700,8 @@ namespace AbyssEngine {
                     accum[i2] += tangent;
                 }
                 for (unsigned int v = 0; v < vertices; v++) {
-                    Vector normal = ((const Vector *) (*slot)->normals)[v];
+                    const float *nf = (const float *) (*slot)->normals + v * 3;
+                    Vector normal(nf[0], nf[1], nf[2]);
                     Vector tangent = accum[v];
                     Vector projected = tangent - normal * AEMath::VectorDot(tangent, normal);
                     Vector unit = AEMath::VectorNormalize(projected);
