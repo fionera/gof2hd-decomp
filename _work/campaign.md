@@ -81,6 +81,16 @@
 - Harvested `w1115`: `ModStation::OnInitialize` 87.4% -> **87.5%** (6412 B) by
   restoring the case-40 `newWanted` order and moving the anchor to the case-40
   tail.
+- Harvested `w1160`: `PlayerFighter::update` 98.3% -> **99.9%** (10376 B) by
+  moving docking case 8 next to case 0 and simplifying the dock up vector.
+- Harvested `w1166` (second pass): `Level::createMission` 75.7% -> **76.7%**
+  (17180 B) by modelling `convoy` as an int and trimming the anchor pad.
+- Harvested `w1161`: `LevelScript::process` 47.9% -> **48.0%** (57156 B) by
+  restoring the mission-78 escort/station fade arm.
+- Harvested `w1157`: `SpaceLounge::startChat` 97.26% -> **97.30%** (14450 B) by
+  caching the agent text id across the offer 9/10 branches.
+- Re-applied the `MenuTouchWindow` ctor (74.1%) and `OnTouchEnd` (69.5%)
+  improvements after the draw rewrite replaced the whole file.
 - Harvested `w1164`: `MenuTouchWindow::draw` 82.7% -> **85.5%** (13052 B exact)
   by restoring the language-switch flag arithmetic.
 - Harvested `w1166`: `Level::createMission` 74.0% -> **75.7%** (17168 B) by
