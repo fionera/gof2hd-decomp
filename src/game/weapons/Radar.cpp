@@ -1125,6 +1125,8 @@ asteroids:
                                                  this->screenX, this->screenY, 17, 68);
                     int x = this->screenX;
                     int y = this->screenY;
+                    unsigned int image = this->image_0xac;
+                    PaintCanvas *canvas = Globals::Canvas;
                     if (this->field_0x11d && !this->field_0x11f && !this->field_0x120) {
                         x += 11;
                     } else if (this->field_0x11e && !this->field_0x11f && !this->field_0x120) {
@@ -1134,7 +1136,7 @@ asteroids:
                     } else if (this->field_0x120) {
                         y -= 11;
                     }
-                    Globals::Canvas->DrawImage2D(this->image_0xac, x, y, 17, 68);
+                    canvas->DrawImage2D(image, x, y, 17, 68);
                 }
                 if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
                     this->dockNavPtr = asteroid;
@@ -1189,19 +1191,21 @@ asteroids:
                 } else {
                     this->asteroidLockTimer += mode;
                     if (this->asteroidLockTimer > this->field_0x1b8 - 200) {
-                        if (candidateWreck) {
-                            if (this->hasTractor13) {
-                                this->field_0x1c = this->field_0x10;
+                        if (!candidateWreck) {
+                            if (!this->hasScanner19) {
+                                hud->hudEvent(20, this->level->getPlayer(), 0);
                             } else {
-                                hud->hudEvent(9, this->level->getPlayer(), 0);
+                                if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
+                                    Globals::sound->play(26, nullptr, nullptr, 0.0f);
+                                }
+                                this->lockedAsteroid = this->field_0x10;
                             }
-                        } else if (this->hasScanner19) {
-                            if (!this->lockConfirmed && !Globals::sound->isPlaying(0)) {
-                                Globals::sound->play(26, nullptr, nullptr, 0.0f);
-                            }
-                            this->lockedAsteroid = this->field_0x10;
                         } else {
-                            hud->hudEvent(20, this->level->getPlayer(), 0);
+                            if (!this->hasTractor13) {
+                                hud->hudEvent(9, this->level->getPlayer(), 0);
+                            } else {
+                                this->field_0x1c = this->field_0x10;
+                            }
                         }
                     }
                     if (this->asteroidLockTimer > 500) {
