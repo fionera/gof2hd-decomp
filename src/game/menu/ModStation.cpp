@@ -559,7 +559,6 @@ int ModStation::OnInitialize() {
             }
 
             int stationIndex = Globals::status->getStation()->getIndex();
-            bool atLab = stationIndex == 100;
             Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             if (Globals::status->getCurrentCampaignMission() == 20 && campaign->getTargetStation() == stationIndex) {
                 Array<Item *> *items = Globals::status->getStation()->getItems();
@@ -575,11 +574,13 @@ int ModStation::OnInitialize() {
             if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
                 Globals::status->getShip()->removeCargo(131);
             }
+            bool d9 = false;
             if (Globals::status->getCurrentCampaignMission() == 43) {
-                if (stationIndex == 10) {
-                    this->flag_0xd9 = 1;
-                }
+                d9 = stationIndex == 10;
             } else if (stationIndex == 10 && Globals::status->getCurrentCampaignMission() == 44) {
+                d9 = true;
+            }
+            if (d9) {
                 this->flag_0xd9 = 1;
             }
             if (Globals::status->gameWon() && stationIndex == 10 &&
@@ -613,6 +614,7 @@ int ModStation::OnInitialize() {
                     delete generator;
                 }
             }
+            bool atLab = stationIndex == 100;
             if (atLab && (Globals::status->dlc1Won() || Globals::status->getCurrentCampaignMission() == 80 ||
                           Globals::status->getCurrentCampaignMission() == 81 ||
                           Globals::status->getCurrentCampaignMission() == 82 ||
