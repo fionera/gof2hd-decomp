@@ -376,7 +376,7 @@ static int g_dw_speakerFaceParts[61][5] = {
     {2, 1, 4, 2, 0},
     {0, 0, 4, 3, 5},
 };
-static int g_dw_lastSpeakerFaceParts[4] = {0, 10, 2, 9};
+static int g_dw_lastSpeakerFaceParts[5] = {0, 10, 2, 9, 4};
 static int *const g_dw_speakerFaces[63] = {
     g_dw_playerFace,
     g_dw_speakerFaceParts[0],
