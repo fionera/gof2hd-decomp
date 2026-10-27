@@ -74,6 +74,20 @@
   star-map chain before the wingman block.
 - Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
   testing the projected collision vector and restoring the surface lifetime.
+- Harvested `w1103`: `HangarWindow::render` 74.5% -> **75.6%** (9700 B exact)
+  by restoring the per-tab ship guard order and per-branch `buttonOffset`.
+- Harvested `w1124`: `Radar::draw` 64.6% -> **65.2%** (9820 B) by restoring the
+  asteroid/gas/station marker and lock blocks.
+- Harvested `w1115`: `ModStation::OnInitialize` 87.4% -> **87.5%** (6412 B) by
+  restoring the case-40 `newWanted` order and moving the anchor to the case-40
+  tail.
+- Launched `w1150..w1169` (20 workers) as wave 51: MeshReadData, a fifth Layout
+  ctor angle (store-order), Level::createShip, MGame::OnTouchEnd,
+  Status::moveWanted, RocketGun::update, SpaceLounge::OnTouchEnd/startChat/
+  drawLounge, PlayerStation ctor, PlayerFighter::update, plus second/third
+  angles on LevelScript::process, Radar::draw, Hud::draw, MenuTouchWindow
+  draw/ctor, Level::createMission, createCampaignMission, HangarWindow::render
+  and Generator::createMission.
 - Harvested `w1101`: `Level::createMission` 72.1% -> **74.0%** (17168 B) by
   modelling `pirateFortress` as the original 4-byte int.
 - Harvested `w1100`: `Hud::draw` 73.9% -> **75.3%** (9328 B) by restoring the
