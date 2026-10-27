@@ -789,13 +789,12 @@ void PlayerFighter::update(int dt) {
                                                 MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
                                         Vector dockDir = VectorNormalize(MatrixRotateVector(
                                                 this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->direction));
-                                        Vector navPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position);
-                                        Vector dockPos = MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
-                                        Vector diff = navPos - dockPos;
-                                        Vector up = VectorNormalize(diff);
+                                        Vector up = VectorNormalize(
+                                                MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), nav->position) -
+                                                MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position));
                                         Vector right = VectorNormalize(VectorCross(up, dockDir));
                                         Matrix dockMatrix;
-                                        Matrix result = MatrixSetRotation(dockMatrix, right, up, dockDir);
+                                        MatrixSetRotation(dockMatrix, right, up, dockDir);
                                         this->easeMatrix = new AbyssEngine::EaseInOutMatrix(this->player->transform, dockMatrix, 3000);
                                     }
                                 }
@@ -1002,6 +1001,33 @@ void PlayerFighter::update(int dt) {
             case 0:
                 this->state = 1;
                 return;
+            case 8: {
+                // easing into the docking point
+                KIPlayer *dock = this->KIPlayer::route->getDockingTarget();
+                SpacePoint *dockPoint = dock->getNearestDockingPoint(
+                        this->KIPlayer::route->getDockingTarget()->getPosition() +
+                        MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
+                this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
+                                      MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
+                if ((int) VectorLength(this->auxVector - this->getPosition()) < kShipDockRadius[this->type]) {
+                    this->setExhaustVisible(false);
+                    this->dockTimer = 0;
+                    this->passengersMoved = 0;
+                    this->state = 9;
+                    if (this->smoking) {
+                        this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
+                        this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
+                    }
+                    return;
+                }
+                float step = (float) dt;
+                this->easeMatrix->Increase(step);
+                Matrix eased = this->easeMatrix->GetValue();
+                MatrixSetTranslation(eased, this->getPosition() + (this->auxVector - this->getPosition()) * step * 0.0006f);
+                this->geometry->setMatrix(eased);
+                this->player->transform = eased;
+                return;
+            }
             case 1:
             case 7: {
                 this->handleCloaking();
@@ -1397,33 +1423,6 @@ void PlayerFighter::update(int dt) {
                     this->setDead();
                 }
                 return;
-            case 8: {
-                // easing into the docking point
-                KIPlayer *dock = this->KIPlayer::route->getDockingTarget();
-                SpacePoint *dockPoint = dock->getNearestDockingPoint(
-                        this->KIPlayer::route->getDockingTarget()->getPosition() +
-                        MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), this->spacePoint->position));
-                this->auxVector = this->KIPlayer::route->getDockingTarget()->getPosition() +
-                                      MatrixRotateVector(this->KIPlayer::route->getDockingTarget()->geometry->getMatrix(), dockPoint->position);
-                if ((int) VectorLength(this->auxVector - this->getPosition()) < kShipDockRadius[this->type]) {
-                    this->setExhaustVisible(false);
-                    this->dockTimer = 0;
-                    this->passengersMoved = 0;
-                    this->state = 9;
-                    if (this->smoking) {
-                        this->level->particleEmitBoolPtr->enableSystemEmit(this->field_0x80, false);
-                        this->level->particleRenderBoolPtr->enableSystemEmit(this->field_0x84, false);
-                    }
-                    return;
-                }
-                float step = (float) dt;
-                this->easeMatrix->Increase(step);
-                Matrix eased = this->easeMatrix->GetValue();
-                MatrixSetTranslation(eased, this->getPosition() + (this->auxVector - this->getPosition()) * step * 0.0006f);
-                this->geometry->setMatrix(eased);
-                this->player->transform = eased;
-                return;
-            }
             case 9: {
                 // docked: unload passengers, then undock after the docking time
                 Mission *mission = Globals::status->getMission();
