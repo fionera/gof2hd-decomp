@@ -2046,9 +2046,24 @@ campaignDone:
 }
 
 // Layout anchor: the original 190-byte mission-order table lives in .bss so
-// the .rodata/.data page boundary stays fixed. TODO(decomp): initialize with
-// the original values; the zero table preserves the original codegen only.
+// the .rodata/.data page boundary stays fixed.
 static volatile unsigned char kMissionOrder[190];
+// Mission type -> case label. The original jump table lays the case bodies out
+// in source order; ranking the types keeps clang's ascending table order aligned.
+static const unsigned char kMissionCase[190] = {
+    190, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 152, 154, 155, 156, 157, 159, 167, 168, 160, 190,
+    169, 190, 161, 171, 172, 173, 162, 150, 174, 176, 163, 177, 182, 190, 151, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
+};
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
@@ -2069,7 +2084,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             continue;
         }
         // The original jump table lays the case bodies out in source order.
-        switch (kMissionOrder[m->getType()]) {
+        switch (kMissionCase[m->getType()]) {
             case 150:
             case 151:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
