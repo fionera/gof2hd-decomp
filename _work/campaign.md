@@ -60,6 +60,16 @@
   `extern "C" sinf` shim; the original literals now sit directly in
   `ES2LoadProgram` and `<cmath>`/`std::sinf` is used. `.rodata` shrank by the
   16-byte alignment pad; gate unchanged.
+- Harvested `w950`: `MenuTouchWindow::draw` 73.0% -> **74.3%** (13168 -> 13160B)
+  by inlining the SetColor ternaries, splitting the owned-check tail, and
+  retuning the documented anchor.
+- Harvested `w953`: `MeshReadData` 70.7% -> **71.0%** (2596B) by building the
+  per-vertex normal from three explicit float loads.
+- Harvested `w956`: `Globals` ctor C1/C2 70.8% -> **73.5%** (612B) by matching
+  the original late zero-init and `shortAt60` store schedule.
+- Harvested anchor removals `w1013` (ObjectGun) and `w1014` (GameText): both
+  replaced dead `[[gnu::used]]` padding with real hidden helpers used at the
+  original call sites; `.text` stayed 0x1343c0 and the gate stayed green.
 
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**

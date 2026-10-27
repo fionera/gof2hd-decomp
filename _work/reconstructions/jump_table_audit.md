@@ -355,8 +355,8 @@ These are intentionally gate-sensitive. They are not necessarily bugs, but they 
 |---|---|---|---|
 | `src/engine/math/Transform.cpp:15-17` | `#pragma clang section data=".aezdata"` + 80-byte `g_transform_matrix_flag` | keeps pre-`.got` data distance stable for libc++ exception ctors | do not remove without full relink; `.got`/`.bss` shift |
 | `src/engine/file/AEFile.cpp:7-9` | `.aezdata` 8-byte `pakExtension` | same class of pre-`.got` anchor | keep; document |
-| `src/engine/core/GameText.cpp:51-55` | `[[gnu::used]] arabicFormRow` (16-byte `.text`) | keeps archive/link layout stable | keep until real missing code is found |
-| `src/game/weapons/ObjectGun.cpp:375-383` | `[[gnu::used]] ObjectGunProjectileMesh` (20-byte `.text`) | compensates `GetDirPreFix` body size | keep; re-check if `GetDirPreFix` changes |
+| `src/engine/core/GameText.cpp:51-55` | **removed** (was `[[gnu::used]] arabicFormRow`, 16-byte `.text`) | real hidden `arabicFormOffset` now used by both lookups | `19e43d05`; `.text` unchanged |
+| `src/game/weapons/ObjectGun.cpp:35-40` | **removed** (was `[[gnu::used]] ObjectGunProjectileMesh`, 20-byte `.text`) | real hidden helper now used by ctor/update | `c902617a`; `.text` unchanged |
 | `src/game/world/StarSystem.cpp:130-135` | 14-byte `starSystemLayoutAnchor` | absorbs section-alignment slack | keep; `StarSystem::StarSystem` is 93.9% |
 | `src/game/mission/Generator.cpp:51-55` | 8-byte `generatorShipListLayoutAnchor` | keeps Generator TU `.text` size | keep; separate from F2c table fix |
 | `src/game/ui/StatusWindow.cpp:16-23` | `statusWindowClamp` | keeps `.text` in the window where libstdc++ exception ctors are exact | keep |
