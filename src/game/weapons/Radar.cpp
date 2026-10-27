@@ -657,7 +657,7 @@ enemies:
         otherLock = false;
         this->dockNavPtr = nullptr;
     }
-    bool bossSeen = false;
+    int bossSeen = 0;
     bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
