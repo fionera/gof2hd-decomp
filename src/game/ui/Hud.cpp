@@ -230,10 +230,11 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         this->field_0x474 = 1;
         this->field_0x484 = 2000;
         this->field_0x488 = 80;
+        int textY = this->field_0x4d4;
         if (this->field_0x48c >= 0)
-            this->field_0x47c = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) + this->field_0x4d4;
+            this->field_0x47c = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) + textY;
         else
-            this->field_0x47c = this->field_0x4d4;
+            this->field_0x47c = textY;
     } else {
         this->field_0x474 = ego->getBoostRate() == 1.0f;
     }
