@@ -404,13 +404,18 @@ int ModStation::OnInitialize() {
             this->pendingHangarClose = 0;
             this->flag_0x63 = 0;
 
-            int infoBoxW = Globals::layout->field_0xcc;
+            Layout *layout = Globals::layout;
+            int infoBoxW = layout->field_0xcc;
             this->infoBoxW = infoBoxW;
-            this->infoBoxH = Globals::h - Globals::layout->field_0xc_leftMargin -
-                             Globals::layout->field_0x10_rightMargin;
-            this->infoBoxY = Globals::layout->field_0xc_leftMargin;
+            int left = layout->field_0xc_leftMargin;
+            int right = layout->field_0x10_rightMargin;
+            int inset = layout->buttonInsetX;
+            int f4c = layout->field_0x4c;
+            this->infoBoxY = left;
             this->infoBoxX = 0;
-            int y = infoBoxW - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
+            this->infoBoxH = Globals::h - left - right;
+            this->field_0x5c = modStationTouchEndPad(this->dt);
+            int y = infoBoxW - inset - f4c;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
                                                   Globals::w - this->buttonLaunch->getWidth(), Globals::h, 34);
@@ -865,7 +870,6 @@ int ModStation::OnInitialize() {
                 Globals::sub_menu_button_count =
                     reinterpret_cast<Array<TouchButton *> *>(this->buttonRow)->size();
             }
-            this->field_0x5c = modStationTouchEndPad(this->dt);
             return 0;
         }
     }
