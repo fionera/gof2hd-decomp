@@ -2419,8 +2419,9 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         Vector surface = this->geometry->getPosition();
         if (object == nullptr)
             continue;
-        if (i == 0 && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f
-            && !Globals::status->inAlienOrbit() && object->field_0x71)
+        if (i == 0 && !Globals::status->inAlienOrbit()
+            && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f
+            && object->field_0x71)
             this->collidesWithStationFlag = 1;
         surface = this->geometry->getPosition();
         if (!object->outerCollide(surface))
@@ -2481,7 +2482,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             continue;
         Vector collision = object->projectCollisionOnSurface(surface);
         if (collision != Vector{0.0f, 0.0f, 0.0f}) {
-            this->geometry->setPosition(collision);
+            this->geometry->setPosition(surface);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
@@ -2491,7 +2492,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         this->hitCamera();
     }
     // Layout anchor: the reconstructed body is 968 B (the original size); these
-    // volatile reads keep this function at 980 B so the TU .text stays at 0x1343c0
+    // volatile reads keep this function at 980 B so the TU .text stays at 0x1343d0
     // and the trailing libstdc++ exception ctors remain byte-exact.
     volatile double layoutAnchor[3];
     (void) layoutAnchor[0];
