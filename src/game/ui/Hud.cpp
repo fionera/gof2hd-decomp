@@ -1735,27 +1735,27 @@ void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
     int digitW, overlap, y, digitH, screenW;
     int step;
-    int half, left;
+    int half, halfStep, left;
     Globals::Canvas->SetColor(0xffffffff);
     digitW = this->digitSprite->getFrameWidth();
     overlap = Globals::layout->field_0x2c_rowHeight;
-    y = Globals::layout->field_0x2c_rowHeight;
     digitH = this->digitSprite->getFrameHeight();
+    y = Globals::layout->field_0x2c_rowHeight;
     screenW = Globals::w;
     String score(Globals::status->field_0x184);
     if (score.size() < 7) {
         int pad = 7 - score.size();
-        for (int i = 0; i < pad; i++)
+        for (int i = pad; i != 0; i--)
             score = String("0") + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
-    left = half - step * 7 / 2;
+    halfStep = step * 7 / 2;
+    left = half - halfStep;
     int x = left;
-    unsigned int scoreLen = score.size();
-    for (unsigned int i = 0; i < scoreLen; i++) {
-        int frame = score.SubString(i, i + 1).ValueOf();
+    for (unsigned int i = 1; i < score.size() + 1; i++) {
+        int frame = score.SubString(i - 1, i).ValueOf();
         this->digitSprite->setFrame(frame);
         this->digitSprite->setPosition(x, y);
         this->digitSprite->draw(1.0f, 1.0f);
@@ -1785,8 +1785,8 @@ void Hud::drawChallengeModeScore(int unused) {
         float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
         String multiplier(Globals::status->field_0x18c);
-        int mx = half + rowGap - (step * 7 >> 1);
-        for (unsigned int i = 1; i <= multiplier.size(); i++) {
+        int mx = half + rowGap - halfStep;
+        for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
             int frame = multiplier.SubString(i - 1, i).ValueOf();
             this->digitSprite->setFrame(frame);
             this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
