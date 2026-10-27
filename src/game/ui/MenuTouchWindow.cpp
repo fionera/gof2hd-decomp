@@ -2912,8 +2912,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->menuState = 3;
                 if (this->cinematicBtnB->OnTouchEnd(x, y)) {
                     float controlSize = optionFloat(68);
-                    optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
                     optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
+                    optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
                     Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
                                                     this->fireImageA, this->fireImageB, this->fireSize_0x74,
                                                     this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
@@ -3491,8 +3491,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                     appData->dlcMenuAckFlag = 0;
-                    ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMenuRequestFlag = 1;
                     this->dlcMessageShowing = 1;
+                    ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMenuRequestFlag = 1;
                     this->messageShowing = 1;
                     this->choiceWindow->set(*Globals::gameText->getText(71), *Globals::gameText->getText(425));
                 }
