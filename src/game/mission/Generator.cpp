@@ -48,11 +48,6 @@ static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
 static const int
 kaamoSpecialItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 
-// Layout anchor: the original Generator TU is 8 bytes larger than the
-// reconstructed getShipBuyList body; keep the archive-sensitive .text size.
-[[gnu::used]] static int generatorShipListLayoutAnchor(int value) {
-    return value + 1 + (value >> 3);
-}
 
 Generator::Generator() {
 }
@@ -763,14 +758,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
+    int32_t type = 0;
     int8_t guard = 999;
     bool selected = false;
-    int type = 0;
     Array<bool> *used = Globals::status->field_50;
-    while (!selected) {
+    for (; !selected; --guard) {
         selected = guard < 1;
         short pick = Globals::rnd->nextInt(15);
-        --guard;
         type = pick;
         if (pick == 8) {
             continue;
