@@ -7057,7 +7057,7 @@ void Level::createScene() {
                 for (int i = 0; i < 7; i++)
                     seatUsed[i] = 0;
                 for (int i = 0; i < agentCount; i++) {
-                    int look = (*agents)[i]->getRace();
+                    unsigned short look = (*agents)[i]->getRace();
                     if (look == 3)
                         look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
                     int mesh = kAgentMeshes[look];
