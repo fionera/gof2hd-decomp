@@ -587,7 +587,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         Globals::Canvas->DrawString(
                                 radarFont(),
                                 *((Array<String *> *) (intptr_t) Globals::status->getPlanetNames())->data()[i],
-                                this->screenX + (marked ? textOffset + 14 : textOffset), this->screenY - 10, false);
+                                this->screenX + textOffset + (marked ? 14 : 0), this->screenY - 10, false);
                     }
                 }
             }
@@ -1128,11 +1128,14 @@ asteroids:
                     PaintCanvas *canvas = Globals::Canvas;
                     if (this->field_0x11d && !this->field_0x11f && !this->field_0x120) {
                         x += 11;
-                    } else if (this->field_0x11e && !this->field_0x11f && !this->field_0x120) {
-                        x -= 11;
+                    } else if (this->field_0x11e && !this->field_0x11f) {
+                        if (!this->field_0x120) {
+                            x -= 11;
+                        }
                     } else if (this->field_0x11f) {
                         y += 11;
-                    } else if (this->field_0x120) {
+                    }
+                    if (!this->field_0x11f && this->field_0x120) {
                         y -= 11;
                     }
                     canvas->DrawImage2D(image, x, y, 17, 68);
