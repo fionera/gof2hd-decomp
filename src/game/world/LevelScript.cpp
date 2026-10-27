@@ -196,7 +196,6 @@ void LevelScript::skipCutscene() {
     }
 }
 
-static volatile int layoutPadSink[38];
 
 bool LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
@@ -806,7 +805,7 @@ bool LevelScript::process(int delta) {
             case 11: { // s11 @0x13bd2c: the wingmen swarm past, then the camera hands off to the tail ship.
                 // Drift the camera, then once 3s elapse push every trailing wingman forward and reframe
                 // the camera onto the ship ten slots from the end (the mission's designated tail ship).
-                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) delta * 3.0f); // 0.7 @0x13b944
+                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) delta * 3.0f); // 0.7 @0x13b944
                 m_nScriptTimerA += delta;
                 if (m_nScriptTimerA < 3001) {
                     break;
@@ -1083,7 +1082,7 @@ bool LevelScript::process(int delta) {
 
     // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
     // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
-    if (Globals::status->getCurrentCampaignMission() == 5) {
+    else if (Globals::status->getCurrentCampaignMission() == 5) {
         // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
         if (m_nState == 0) {
             Vector *scratch = &m_tempVec; // LevelScript tempVec @0x28
@@ -1100,8 +1099,7 @@ bool LevelScript::process(int delta) {
             Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
             ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
-    } else if ((Globals::status->getCurrentCampaignMission() == 50 ||
-                Globals::status->getCurrentCampaignMission() == 51) && messages != nullptr &&
+    } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr &&
                messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
@@ -1114,6 +1112,17 @@ bool LevelScript::process(int delta) {
         }
         ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
         m_nState = 1; // 0x1381aa -> switch guard 0x13879e
+    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr &&
+               messages->count >= 3 && ((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 0) {
+        for (unsigned int i = 0; i < enemies->count; ++i) {
+            if (!(*enemies)[i]->isWingMan()) {
+                (*enemies)[i]->player->setAlwaysFriend(false);
+                (*enemies)[i]->player->setAlwaysEnemy(true);
+                (*enemies)[i]->player->turnEnemy();
+            }
+        }
+        ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
+        m_nState = 1;
     }
     // DEFERRED (pass 2): further pre-switch specials -- mission 50 (disasm 0x1383e4) and mission 51
     // (disasm 0x13876c) share the exit-wormhole cutscene body at 0x139ac2.
@@ -1792,7 +1801,7 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 68: {
+            case 67: {
                 // The smuggler freighter: stop it, scan it, then follow it through the pirates.
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
                     m_nState = 1;
@@ -2104,7 +2113,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(-3000.0f, -2000.0f, 12000.0f);
                     Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     (*enemies)[0]->player->StopEngineSound();
-                    m_nScriptTimerA = 0;
                 } else if (m_nState == 2) {
                     (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
@@ -4691,11 +4699,9 @@ bool LevelScript::process(int delta) {
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
-                    m_nScriptTimerA = 0;
                     m_nState = 3;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
                 } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
-                    m_nScriptTimerA = 0;
                     m_nState = 4;
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     (*m_pLevel->getLandmarks())[3]->setVisible(true);
@@ -4813,18 +4819,6 @@ bool LevelScript::process(int delta) {
         }
     }
 
-    // .text layout anchor: keep the KIPlayer::setVisible GOT slot reference so the
-    // surrounding data/GOT layout stays stable.
-    {
-        void (KIPlayer::*volatile setVisible)(bool) = &KIPlayer::setVisible;
-        (void) setVisible;
-        layoutPadSink[0] = 0;
-        layoutPadSink[1] = 0;
-        layoutPadSink[2] = 0;
-        layoutPadSink[3] = 0;
-        layoutPadSink[4] = 0;
-        layoutPadSink[5] = 0;
-    }
     // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
     // m_nFlags @0x11 -- normalised to 0/1.
     return m_bCinematicBreak != 0;
