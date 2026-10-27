@@ -2757,10 +2757,6 @@ void Level::createCampaignMission() {
         {0.0f, -29726.7f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
     };
     Vector playerPos = this->player->geometry->getPosition();
-    // The reference frame is 0x1d0 (ours would be 0x1c8): reserve the 8-byte slot below
-    // playerPos.  A volatile read keeps the slot without the zero stores the reference lacks.
-    volatile double framePad;
-    (void) framePad;
 
     switch (Globals::status->getCurrentCampaignMission()) {
         case 0:
@@ -3377,7 +3373,7 @@ void Level::createCampaignMission() {
             break;
         }
         case 78: {
-            Matrix rotation;
+            alignas(16) Matrix rotation;
             Vector v = {0.0f, 0.0f, 0.0f};
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(22, *this->enemies);
@@ -3418,7 +3414,7 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->setPosition(carrierPos);
             ((PlayerStation *) (*this->enemies)[0])->rootGeometry->setRotation(Vector{0.0f, 0.0f, 0.0f});
             delete station;
-            Matrix rotation;
+            alignas(16) Matrix rotation;
             MatrixSetRotation(rotation, 0.0f, 3.1415927f, 0.0f);
             Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
@@ -3851,7 +3847,7 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(1667) + String(" 2"));
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
-            Matrix rotation;
+            alignas(16) Matrix rotation;
             Vector v = {0.0f, 0.0f, 0.0f};
             int slot = 0;
             for (int i = 2; i < 12; i++) {
