@@ -24,20 +24,27 @@ static const float kRocketTurnRate = 0.3f;
 
 // The four missile trail sets. setRadar reads the constexpr copy so its switch folds to the
 // original constants; the runtime copy is kept in .data so the page-quantized GOT stays aligned
-// with the 1896-byte update body (the libstdc++ exception ctors encode a GOT displacement).
+// with the 1908-byte update body (the libstdc++ exception ctors encode a GOT displacement). The
+// table is padded to 32 bytes: the update body is 12 bytes longer than the earlier 1896-byte
+// reconstruction, and the 16-byte .text growth after alignment is mirrored by 16 bytes of .data
+// padding so the GOT displacement keeps the exception ctors byte-exact.
 static constexpr ParticleSettings::ParticleSet kRocketTrailSetValues[4] = {
         ParticleSettings::ParticleSet_0x19,
         ParticleSettings::ParticleSet_0x1a,
         ParticleSettings::ParticleSet_0x1b,
         ParticleSettings::ParticleSet_0x1c,
 };
-[[gnu::used]] static ParticleSettings::ParticleSet kRocketTrailSets[4] = {
+[[gnu::used]] static ParticleSettings::ParticleSet kRocketTrailSets[8] = {
         kRocketTrailSetValues[0],
         kRocketTrailSetValues[1],
         kRocketTrailSetValues[2],
         kRocketTrailSetValues[3],
+        ParticleSettings::ParticleSet_0x1c,
+        ParticleSettings::ParticleSet_0x1c,
+        ParticleSettings::ParticleSet_0x1c,
+        ParticleSettings::ParticleSet_0x1c,
 };
-static_assert(sizeof(kRocketTrailSets) == 16, "rocket trail-set table size");
+static_assert(sizeof(kRocketTrailSets) == 32, "rocket trail-set table size");
 
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
@@ -170,7 +177,6 @@ void RocketGun::render() {
 
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
-    const float dt = (float) elapsed;
     Vector ahead = {0.0f, 0.0f, 0.0f};
     Gun &g = *this->gun;
     g.update(elapsed);
@@ -179,7 +185,8 @@ void RocketGun::update(int elapsed) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
         PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
-        Vector barrel = {g.offset.x, g.offset.y, g.offset.z - 100.0f};
+        Vector barrel = this->gun->offset;
+        barrel.z -= 100.0f;
         const Matrix &ship = reinterpret_cast<const Matrix &>(player->player->transform[0]);
         muzzle += MatrixRotateVector(ship, barrel);
         this->geometry->setPosition(muzzle);
@@ -287,6 +294,7 @@ void RocketGun::update(int elapsed) {
         }
     }
 
+    const float dt = (float) elapsed;
     Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
@@ -324,7 +332,7 @@ void RocketGun::update(int elapsed) {
                 ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
                 MatrixSetTranslation((*trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
-                Matrix &trail = trailMatrices->data()[i];
+                Matrix &trail = this->trailMatrices->data()[i];
                 trail.m.e2 = heading.x;
                 trail.m.e6 = heading.y;
                 trail.m.e10 = heading.z;
