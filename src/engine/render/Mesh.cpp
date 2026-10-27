@@ -123,104 +123,77 @@ namespace AbyssEngine {
 
         {
             short type;
-            unsigned short count;
-            // Two scratch slots shared by every track: packed tracks read (time, xyz), per-axis
-            // tracks read (time, value) into them the other way around.
-            float scalar;
-            float vec[3];
 
-            // Translation track: either packed xyz keys or one track per axis (y/z swapped, z negated).
+            // Translation track.
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) goto fail;
-                for (unsigned int i = 0; i < count; i++) {
-                    if (AEFile::Read(4, &scalar, file) == 0) goto fail;
-                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
-                    if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
-                    anim->InsertKeyFrame(vec, 7, (int) scalar);
-                }
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int i = 0; i < count; i++) {
+                        float time;
+                        if (AEFile::Read(4, &time, file) == 0) goto fail;
+                        if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                        float vec[3];
+                        if (AEFile::Read(12, vec, file) == 0) goto fail;
+                        anim->InsertKeyFrame(vec, 7, (int) time);
+                    }
                     break;
                 }
                 case 0: {
-                for (unsigned int axis = 0; axis < 3; axis++) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) goto fail;
-                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
-                        if (AEFile::Read(4, &scalar, file) == 0) goto fail;
-                        switch (axis) {
-                            case 0:
-                                anim->InsertKeyFrame(&scalar, 1, (int) vec[0]);
-                                break;
-                            case 1:
-                                scalar = -scalar;
-                                anim->InsertKeyFrame(&scalar, 4, (int) vec[0]);
-                                break;
-                            case 2:
-                                anim->InsertKeyFrame(&scalar, 2, (int) vec[0]);
-                                break;
+                    for (unsigned int axis = 0; axis < 3; axis++) {
+                        unsigned short count;
+                        if (AEFile::Read(2, &count, file) == 0) goto fail;
+                        for (unsigned int i = 0; i < count; i++) {
+                            float time;
+                            if (AEFile::Read(4, &time, file) == 0) goto fail;
+                            if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                            float value;
+                            if (AEFile::Read(4, &value, file) == 0) goto fail;
+                            switch (axis) {
+                                case 0: anim->InsertKeyFrame(&value, 1, (int) time); break;
+                                case 1: value = -value; anim->InsertKeyFrame(&value, 4, (int) time); break;
+                                case 2: anim->InsertKeyFrame(&value, 2, (int) time); break;
+                            }
                         }
                     }
-                }
                     break;
                 }
             }
 
             // Rotation track.
-            if (AEFile::Read(2, &type, file) == 0) {
-                delete anim;
-                return -1;
-            }
+            if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) {
-                    delete anim;
-                    return -1;
-                }
-                for (unsigned int i = 0; i < count; i++) {
-                    if (AEFile::Read(4, &scalar, file) == 0) {
-                        delete anim;
-                        return -1;
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int i = 0; i < count; i++) {
+                        float time;
+                        if (AEFile::Read(4, &time, file) == 0) goto fail;
+                        if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                        float vec[3];
+                        if (AEFile::Read(12, vec, file) == 0) goto fail;
+                        anim->InsertKeyFrame(vec, 0x1c0, (int) time);
                     }
-                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
-                    if (AEFile::Read(12, vec, file) == 0) {
-                        delete anim;
-                        return -1;
-                    }
-                    anim->InsertKeyFrame(vec, 0x1c0, (int) scalar);
-                }
                     break;
                 }
                 case 0: {
-                for (unsigned int axis = 0; axis < 3; axis++) {
-                    if (AEFile::Read(2, &count, file) == 0) {
-                        delete anim;
-                        return -1;
-                    }
-                    for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) {
-                            delete anim;
-                            return -1;
-                        }
-                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
-                        if (AEFile::Read(4, &scalar, file) == 0) {
-                            delete anim;
-                            return -1;
-                        }
-                        switch (axis) {
-                            case 0:
-                                anim->InsertKeyFrame(&scalar, 0x40, (int) vec[0]);
-                                break;
-                            case 1:
-                                anim->InsertKeyFrame(&scalar, 0x80, (int) vec[0]);
-                                break;
-                            case 2:
-                                anim->InsertKeyFrame(&scalar, 0x100, (int) vec[0]);
-                                break;
+                    for (unsigned int axis = 0; axis < 3; axis++) {
+                        unsigned short count;
+                        if (AEFile::Read(2, &count, file) == 0) goto fail;
+                        for (unsigned int i = 0; i < count; i++) {
+                            float time;
+                            if (AEFile::Read(4, &time, file) == 0) goto fail;
+                            if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                            float value;
+                            if (AEFile::Read(4, &value, file) == 0) goto fail;
+                            switch (axis) {
+                                case 0: anim->InsertKeyFrame(&value, 0x40, (int) time); break;
+                                case 1: anim->InsertKeyFrame(&value, 0x80, (int) time); break;
+                                case 2: anim->InsertKeyFrame(&value, 0x100, (int) time); break;
+                            }
                         }
                     }
-                }
                     break;
                 }
             }
@@ -229,35 +202,35 @@ namespace AbyssEngine {
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             switch (type) {
                 case 1: {
-                if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
-                for (unsigned int i = 0; i < count; i++) {
-                    if (AEFile::Read(4, &scalar, file) == 0) { delete anim; return -1; }
-                    if (scalar > 0.0f && AbyssEngine::timeBetweenFrames > scalar) AbyssEngine::timeBetweenFrames = scalar;
-                    if (AEFile::Read(12, vec, file) == 0) { delete anim; return -1; }
-                    anim->InsertKeyFrame(vec, 0x38, (int) scalar);
-                }
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int i = 0; i < count; i++) {
+                        float time;
+                        if (AEFile::Read(4, &time, file) == 0) goto fail;
+                        if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                        float vec[3];
+                        if (AEFile::Read(12, vec, file) == 0) goto fail;
+                        anim->InsertKeyFrame(vec, 0x38, (int) time);
+                    }
                     break;
                 }
                 case 0: {
-                for (unsigned int axis = 0; axis < 3; axis++) {
-                    if (AEFile::Read(2, &count, file) == 0) goto fail;
-                    for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) goto fail;
-                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
-                        if (AEFile::Read(4, &scalar, file) == 0) goto fail;
-                        switch (axis) {
-                            case 0:
-                                anim->InsertKeyFrame(&scalar, 8, (int) vec[0]);
-                                break;
-                            case 1:
-                                anim->InsertKeyFrame(&scalar, 0x10, (int) vec[0]);
-                                break;
-                            case 2:
-                                anim->InsertKeyFrame(&scalar, 0x20, (int) vec[0]);
-                                break;
+                    for (unsigned int axis = 0; axis < 3; axis++) {
+                        unsigned short count;
+                        if (AEFile::Read(2, &count, file) == 0) goto fail;
+                        for (unsigned int i = 0; i < count; i++) {
+                            float time;
+                            if (AEFile::Read(4, &time, file) == 0) goto fail;
+                            if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                            float value;
+                            if (AEFile::Read(4, &value, file) == 0) goto fail;
+                            switch (axis) {
+                                case 0: anim->InsertKeyFrame(&value, 8, (int) time); break;
+                                case 1: anim->InsertKeyFrame(&value, 0x10, (int) time); break;
+                                case 2: anim->InsertKeyFrame(&value, 0x20, (int) time); break;
+                            }
                         }
                     }
-                }
                     break;
                 }
             }
@@ -266,69 +239,48 @@ namespace AbyssEngine {
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if ((unsigned short) type == 2) {
-                    if (AEFile::Read(2, &count, file) == 0) { delete anim; return -1; }
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
                     for (unsigned int i = 0; i < count; i++) {
-                        if (AEFile::Read(4, vec, file) == 0) {
-                            delete anim;
-                            return -1;
-                        }
-                        if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
-                        if (AEFile::Read(4, &scalar, file) == 0) {
-                            delete anim;
-                            return -1;
-                        }
-                        anim->InsertKeyFrame(&scalar, 0x200, (int) vec[0]);
+                        float time;
+                        if (AEFile::Read(4, &time, file) == 0) goto fail;
+                        if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                        float value;
+                        if (AEFile::Read(4, &value, file) == 0) goto fail;
+                        anim->InsertKeyFrame(&value, 0x200, (int) time);
                     }
                 }
             }
 
             // Material/shader animation tracks.
             if (materialFlags != 0) {
-                if (AEFile::Read(2, &count, file) == 0) {
-                    delete anim;
-                    return -1;
-                }
+                unsigned short count;
+                if (AEFile::Read(2, &count, file) == 0) goto fail;
                 if (count != 0) {
                     short keys;
-                    for (unsigned int channel = 0; channel < 7; channel++) {
-                        if (AEFile::Read(2, &keys, file) == 0) {
-                            delete anim;
-                            return -1;
-                        }
+                    unsigned int channel;
+                    for (channel = 0; channel < 7; channel++) {
+                        if (AEFile::Read(2, &keys, file) == 0) goto fail;
                         for (int i = 0; i < keys; i++) {
-                            if (AEFile::Read(4, vec, file) == 0) {
-                                delete anim;
-                                return -1;
-                            }
-                            if (vec[0] > 0.0f && AbyssEngine::timeBetweenFrames > vec[0]) AbyssEngine::timeBetweenFrames = vec[0];
-                            if (AEFile::Read(4, &scalar, file) == 0) {
-                                delete anim;
-                                return -1;
-                            }
-                            scalar = scalar / 100.0f;
+                            float time;
+                            if (AEFile::Read(4, &time, file) == 0) goto fail;
+                            if (time > 0.0f && AbyssEngine::timeBetweenFrames > time) AbyssEngine::timeBetweenFrames = time;
+                            float value;
+                            if (AEFile::Read(4, &value, file) == 0) goto fail;
+                            value = value / 100.0f;
                             int channelFlags;
                             switch (channel) {
-                                case 0:
-                                    channelFlags = 0x400;
-                                    break;
-                                case 1:
-                                    channelFlags = 0x800;
-                                    break;
-                                case 2:
-                                    channelFlags = 0x2000;
-                                    break;
-                                case 3:
-                                    channelFlags = 0x4000;
-                                    break;
+                                case 0: channelFlags = 0x400; break;
+                                case 1: channelFlags = 0x800; break;
+                                case 2: channelFlags = 0x2000; break;
+                                case 3: channelFlags = 0x4000; break;
                                 case 6:
-                                    scalar = scalar * 6.2831855f / 360.0f;
+                                    value = value * 6.2831855f / 360.0f;
                                     channelFlags = 0x40000;
                                     break;
-                                default:
-                                    channelFlags = 0;
-                                    break;
+                                default: channelFlags = 0; break;
                             }
-                            anim->InsertKeyFrame(&scalar, channelFlags, (int) vec[0]);
+                            anim->InsertKeyFrame(&value, channelFlags, (int) time);
                             this->hasAnimation = 1;
                         }
                     }
