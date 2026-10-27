@@ -680,14 +680,14 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                  this->sliderSpacing * 2,
                              *(float *) &Globals::options[8]),
              *this->sliders);
-    ArrayAdd(new TouchSlider(2, this->metricC + Globals::layout->buttonInsetX,
+    ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
                              (int) ((double) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                               Globals::layout->field_0x1c * 3 +
                                               Globals::layout->field_0x2c_rowHeight * 6) +
                                     (double) this->sliderSpacing * 2.5 + (double) sliderTop),
                              *(float *) &Globals::options[36]),
              *this->sliders);
-    ArrayAdd(new TouchSlider(2, this->metricC + Globals::layout->buttonInsetX,
+    ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
                              (int) ((double) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                               Globals::layout->field_0x1c * 3 +
                                               Globals::layout->field_0x2c_rowHeight * 8) +
