@@ -402,7 +402,6 @@ int ModStation::OnInitialize() {
             this->flag_0xdf = 0;
             this->savedPostEffect = false;
             this->pendingHangarClose = 0;
-            this->flag_0x63 = 0;
 
             Layout *layout = Globals::layout;
             int infoBoxW = layout->field_0xcc;
@@ -414,7 +413,6 @@ int ModStation::OnInitialize() {
             this->infoBoxY = left;
             this->infoBoxX = 0;
             this->infoBoxH = Globals::h - left - right;
-            this->field_0x5c = modStationTouchEndPad(this->dt);
             int y = infoBoxW - inset - f4c;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
@@ -556,7 +554,6 @@ int ModStation::OnInitialize() {
                     this->flag_0x63 = 1;
                     this->flag_0x101 = 0;
                 }
-            }
 
             int stationIndex = Globals::status->getStation()->getIndex();
             Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
@@ -574,14 +571,14 @@ int ModStation::OnInitialize() {
             if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
                 Globals::status->getShip()->removeCargo(131);
             }
-            bool d9 = false;
             if (Globals::status->getCurrentCampaignMission() == 43) {
-                d9 = stationIndex == 10;
-            } else if (stationIndex == 10 && Globals::status->getCurrentCampaignMission() == 44) {
-                d9 = true;
-            }
-            if (d9) {
-                this->flag_0xd9 = 1;
+                if (stationIndex == 10) {
+                    this->flag_0xd9 = 1;
+                }
+            } else if (Globals::status->getCurrentCampaignMission() == 44) {
+                if (stationIndex == 10) {
+                    this->flag_0xd9 = 1;
+                }
             }
             if (Globals::status->gameWon() && stationIndex == 10 &&
                 !Globals::status->getShip()->hasEquipment(85, 1) && !Globals::status->getShip()->hasCargo(85, 1) &&
@@ -687,12 +684,11 @@ int ModStation::OnInitialize() {
             }
             int newWanted = Globals::status->activateNewWanted();
             bool &flag63 = this->flag_0x63;
-            GameText *gameText = Globals::gameText;
             if (newWanted >= 1 && !flag63) {
                 if (newWanted == 1) {
-                    this->choiceWindow->set(*gameText->getText(3230));
+                    this->choiceWindow->set(*Globals::gameText->getText(3230));
                 } else {
-                    String text(*gameText->getText(3231), false);
+                    String text(*Globals::gameText->getText(3231), false);
                     text = Globals::status->replaceHash(String(text, false), String(String(newWanted), false),
                                                         String("#N"));
                     this->choiceWindow->set(text);
@@ -700,6 +696,7 @@ int ModStation::OnInitialize() {
                 flag63 = 1;
             }
             this->field_0x5c = modStationTouchEndPad(this->dt);
+            }
             this->state = 20;
             break;
         }
