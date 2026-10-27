@@ -868,7 +868,7 @@ void HangarWindow::render() {
                 }
             }
             Globals::layout->drawHeader(*Globals::gameText->getText(167));
-            for (unsigned short i = 0; i < this->tabButtons->size(); i++)
+            for (unsigned int i = 0; i < this->tabButtons->size(); i++)
                 (*this->tabButtons)[i]->draw();
         }
     }
