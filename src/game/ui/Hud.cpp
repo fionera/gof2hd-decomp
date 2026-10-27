@@ -1754,7 +1754,7 @@ void Hud::drawChallengeModeScore(int unused) {
     String score(scoreValue);
     if (score.size() < 7) {
         int pad = 7 - score.size();
-        for (int i = pad; i != 0; i--)
+        for (int i = 0; i != pad; i++)
             score = String(ndkEntrance) + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
