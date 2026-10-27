@@ -683,37 +683,35 @@ Globals::Globals() {
     settings->flagAt4e = 0;
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
-
-    this->soundResources = 0;
-    Globals::instantActionType = -1;
-    Globals::items = 0;
-    Globals::achievements = 0;
-    Globals::galaxy = 0;
-    Globals::instantActionScore = 0;
-    Globals::instantActionWave = 0;
-    Globals::status = 0;
-    Globals::instantActionPlayerName = 0;
-    Globals::ships = 0;
-
     Globals::gameLoaded = 0;
-    Globals::gameSaving = 0;
-    Globals::initMemoryWarning = 0;
     Globals::lastSpaceMusicPlayed = -1;
-    Globals::lastStationMusicPlayed = -1;
-    Globals::lastCampaignMissionFailed = -1;
-    Globals::lastCampaignMissionFailCount = 0;
+    Globals::instantActionType = -1;
+    Globals::gameSaving = 0;
 
     float fv = settings->qualityLevel;
     int v54 = 0x247;
     if (1.0f <= fv) v54 = 0x33e;
     if (fv <= 0.0f) v54 = 0x19f;
     settings->resWidth = v54;
-
     int v58 = 0x201;
     if (1.0f <= fv) v58 = 0x2da;
     if (fv <= 0.0f) v58 = 0x16d;
     settings->resHeight = v58;
+
+    Globals::initMemoryWarning = 0;
+    Globals::achievements = 0;
+    Globals::galaxy = 0;
+    Globals::instantActionScore = 0;
+    Globals::lastStationMusicPlayed = -1;
+    Globals::status = 0;
+    Globals::instantActionPlayerName = 0;
+    Globals::items = 0;
+    Globals::ships = 0;
+    Globals::instantActionWave = 0;
+    Globals::lastCampaignMissionFailed = -1;
+    this->soundResources = 0;
     settings->shortAt60 = 0x100;
+    Globals::lastCampaignMissionFailCount = 0;
 }
 
 Globals::~Globals() {
