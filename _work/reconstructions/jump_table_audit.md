@@ -364,7 +364,7 @@ These are intentionally gate-sensitive. They are not necessarily bugs, but they 
 | `src/game/world/StarMap.cpp:55-57` | `[[gnu::used]] StarMap_GetScreenPosition` | `.text` anchor | keep |
 | `src/game/ui/MenuTouchWindow.cpp:328-334,3898+` | never-taken `anchorFn` hook + huge `mtwTextLayoutAnchor` store body | keeps TU on `0x1333c0 + k*0x1000`; libstdc++ exception ctors depend on it | high risk; re-tune with `tools/verify/verify.py --show _ZNSt9bad_allocC1Ev` |
 | `src/game/world/Level.cpp:2598-2599,7247-7255` | never-taken `anchorFn` + `levelTextAnchor` volatile double stores | keeps Level TU `.text` size | keep |
-| `src/game/menu/HackingGame.cpp:236-238` | `volatile int *anchor = &offset[0][0]; *anchor += 1;` | local `.text` padding; `offset` is a local array, so the increment is dead | keep or replace with a smaller real body; harmless semantically |
+| `src/game/menu/HackingGame.cpp:236-238` | `(void) *(volatile int *) &offset[0][0];` | reduced to a 2-byte read; `render2D` is 71.4% | `4387760e`; keep only until the real body is recovered |
 | `src/game/world/LevelScript.cpp:4805-4812` | `volatile char layoutPad` | `.text` size | keep |
 | `src/game/ui/HangarWindow.cpp:898-905` | repeated `description = description;` | `.text` size; no-op on rendered text | keep |
 | `src/game/mission/Status.cpp:2330-2333` | `if (reinterpret_cast<intptr_t>(this) == 1) return;` | unreachable `.text` anchor in `moveWanted` | keep until F1 is settled; it is coupled to the TU size |

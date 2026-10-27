@@ -195,7 +195,7 @@ ordering file.
 | 10 | `src/game/menu/ModStation.cpp:50,863,1102-1109` | `_ZL21modStationTouchEndPadi`; recursive Fibonacci-like helper; called in `OnUpdate` and stored into `field_0x5c` | `0x3e` = 62 B | `OnInitialize -12`; `OnUpdate` size-exact | object symbol `0x3e`; call site `0x828`..`0x82c`; `section_order.txt:2538` |
 | 11 | `src/game/world/Level.cpp:1601,2598-2599,7247-7256` | `_ZL15levelTextAnchorv`; 12 volatile double stores; unconditional call at end of `createMission` | `0x84` = 132 B | `createMission +16` | object symbol `0x84`; linked `0x84040`; call site `0x40e0`..`0x40e8`; `section_order.txt:887` |
 | 12 | `src/game/world/LevelScript.cpp:4805-4812` | `volatile char layoutPad = 0` store inside `process` | 4 B store | `process -80` | linked store `0x1491e0` (`strb.w r8,[r2]`) |
-| 13 | `src/game/menu/HackingGame.cpp:236-238` | `volatile int *anchor = &offset[0][0]; *anchor = *anchor + 1;` | 6 B store | `render2D -18` | linked `0x152fe8` (`ldr/adds/str` on `[sp,#52]`) |
+| 13 | `src/game/menu/HackingGame.cpp:236-238` | `(void) *(volatile int *) &offset[0][0];` | 2 B read | `render2D -18` | commit `4387760e`; reduced from the old 6 B store |
 | 14 | `src/game/mission/Status.cpp:2250-2253` | unreachable `if (i == 0xffff) break;` in `missionCompleted` case 171 | 8 B | `missionCompleted` size-exact | linked `0xaed54`: `movw r0,#0xffff; cmp fp,r0; beq` |
 | 15 | `src/game/mission/Status.cpp:2330-2333` | unreachable `if ((intptr_t)this == 1) return;` in `moveWanted` | 6 B | `moveWanted` size-exact | linked `0xac030`: `cmp r0,#1; beq.w` |
 
@@ -246,7 +246,7 @@ back to `.data` (`2d3a2a9b`). The original has no `.aezdata`; ours still has 28 
 | `-92` | 1892/1984 | 64.1 | `_ZN3Gun22calcCharacterCollisionEv` |
 | `-80` | 57152/57232 | 47.4 | `_ZN11LevelScript7processEi` |
 | `-32` | 2600/2632 | 70.8 | `_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE` |
-| `-18` | 2072/2090 | 70.3 | `_ZN11HackingGame8render2DEv` |
+| `-18` | 2072/2090 | 71.4 | `_ZN11HackingGame8render2DEv` |
 | `-12` | 1896/1908 | 82.5 | `_ZN9RocketGun6updateEi` |
 | `-12` | 6384/6396 | 86.0 | `_ZN10ModStation12OnInitializeEv` |
 | `-8` | 2636/2644 | 89.7 | `_ZN7StarMap4drawEv` |
@@ -413,7 +413,7 @@ therefore require real-body recovery.
 - `ModStation.cpp:50,863,1102-1109`: replace `modStationTouchEndPad(this->dt)` with the
   original `field_0x5c` assignment/body. The call site is 8 B (`0x828..0x82c`); `OnUpdate`
   is size-exact, so the replacement must keep its 3652-byte size.
-- `HackingGame.cpp:236-238`: remove the 6-byte `offset[0][0]++` store; `render2D` is `-18`,
+- `HackingGame.cpp:236-238`: the 6-byte `offset[0][0]++` store is now a 2-byte volatile read; `render2D` is `-18`,
   so recover 24 B of real body.
 - `LevelScript.cpp:4805-4812`: remove the 4-byte `layoutPad` store; `process` is `-80`, so
   recover 84 B of real body.
@@ -509,7 +509,7 @@ Check:
 3. **Most remaining anchors are pure padding or semantic no-ops.**
    The small dead-code cluster is 90 B (`StarSystem` 14, `Generator` 8, `ObjectGun` 20,
    `GameText` 16, `StatusWindow` 16, `StarMap` 16); the semantic inline
-   anchors add about 234 B (`Level` 132+8 call, `ModStation` 62+8 call, `HackingGame` 6,
+   anchors add about 230 B (`Level` 132+8 call, `ModStation` 62+8 call, `HackingGame` 2,
    `LevelScript` 4, `Status` 14); the remaining data anchors add 484 B (`CubeMapping` removed;
    `Status` 190, `Transform` 80, `RocketGun` 16, `AEFile` 8). The hard target is not
    simply deleting `3,064` B of `.text`; it includes the 22 size-mismatched functions
