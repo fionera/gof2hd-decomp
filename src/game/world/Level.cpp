@@ -169,6 +169,23 @@ static inline float bitsToFloat(int bits) {
     return f;
 }
 
+struct PlayerEgoPolymorphic;
+
+struct PlayerEgoVtable {
+    void (*slot[7])();
+
+    void (*placeAtStation)(PlayerEgoPolymorphic *self, int stationStack);
+};
+
+struct PlayerEgoPolymorphic {
+    PlayerEgoVtable *vtable;
+};
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(PlayerEgoVtable, placeAtStation) == 0x1c,
+              "PlayerEgo vtable placeAtStation slot offset");
+#endif
+
 static inline void levelSpawnFar(Level *self, int *kiPlayer);
 
 
@@ -6311,7 +6328,8 @@ void Level::assignGuns() {
     unsigned int i = 0;
     // Pre-test preserves the empty-array case while keeping the original loop's
     // increment/continue shape.
-    if (i < enemies->size()) do {
+    do {
+        if (i >= enemies->size()) break;
         if ((*enemies)[i] == nullptr) {
             i++;
             continue;
@@ -6443,11 +6461,12 @@ void Level::assignGuns() {
                         player->setMaxHitpoints((int) (player->getMaxHitpoints() * 5.0f));
                     }
                 } else {
-                    gun->weaponType = ITEM_SORT_BLASTER;
                     if ((*enemies)[i]->shipGroup == 1) {
+                        gun->weaponType = ITEM_SORT_BLASTER;
                         gun->setIndex(15);
                         mesh = 6791;
                     } else {
+                        gun->weaponType = ITEM_SORT_BLASTER;
                         gun->setIndex(20);
                         mesh = 6796;
                     }
