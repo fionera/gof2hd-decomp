@@ -956,9 +956,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
     int costRem = costs % 50;
-    costs += costRem;
-    if (costs % 50 != 0) {
-        costs -= costRem * 2;
+    if ((costs + costRem) % 50 == 0) {
+        costs += costRem;
+    } else {
+        costs -= costRem;
     }
     mission->setCosts(costs);
     mission->setProductionGoods(itemId, amount);
