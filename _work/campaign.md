@@ -3297,3 +3297,29 @@ Wave 53/54 continued the same worst-first sweep (Layout ctor still the single wo
 
 Gate after wave 53: **byte_exact 1352, linked_exact 4470, avg 99.83%, .text 0x1343d0, lint CLEAN,
 drift 0, RATCHET PASS** (baseline locked at 99.83).
+
+## Session 2026-10-27 (waves 54-57 — continued worst-first sweep)
+
+Fully-linked gains: `Status::moveWanted` 79.5 -> 100%, `AbyssEngine::Mesh::ReadEnhancedDataFromFile`
+80.4 -> 100%, `SpaceLounge::OnTouchEnd` 89.2 -> 100% (linked 4470 -> 4473).
+
+Other landed passes: Hud::draw 75.6 -> 82.3, MGame::OnUpdate 85.6 -> 97.0,
+ModStation::OnInitialize 87.0 -> 96.0, Level::createCampaignMission 85.1 -> 90.9,
+MenuTouchWindow::draw 85.5 -> 86.3, MenuTouchWindow ctor 77.7 -> 82.1,
+RocketGun::update 83.1 -> 83.7, StarMap::draw 92.0 -> 92.5, Hud::drawMenu 89.3 -> 94.3,
+Level::createScene 77.8 -> 81.6, Level::createMission 76.7 -> 79.8, Level::assignGuns 88.8 -> 93.8,
+Generator::createMission 67.8 -> 69.8, Gun::calcCharacterCollision 66.3 -> 66.7,
+Radar::draw 65.3 -> 67.3, MenuTouchWindow::OnTouchEnd 71.7 -> 72.3,
+HangarWindow::render 75.6 -> 76.7, PlayerEgo::calcCollision 75.5 -> 76.1,
+Globals ctor 79.6 -> 80.1, MeshReadData 71.4 -> 72.4.
+
+Gate: **byte_exact 1352, linked_exact 4473, avg 99.85%, .text 0x1343d0, lint CLEAN, drift 0**.
+
+Notes for future passes:
+- `MGame::OnUpdate`'s `[[gnu::used]] gMGameDataPad` was removed again: the Level anchor now
+  holds `.text 0x1343d0`, so `.got` stays at 0x2109e0 and no `.data` pad is needed. If a pass
+  changes `.text` by a non-multiple of 16, adjust `levelTextAnchor` in `Level.cpp` (each
+  `layoutPad = N;` store is ~8 B) instead of adding data pads.
+- `levelTextAnchor` is called through a `volatile` function pointer at the end of
+  `Level::createMission`; do not move that call into `createScene` (inlining it there cost
+  createScene 7.9 points).
