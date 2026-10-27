@@ -6951,12 +6951,15 @@ void Level::createScene() {
     if (this->missionPtr == 23) {
         {
             int sceneRace;
-            if (Globals::status->getStation()->getIndex() == 101)
-                sceneRace = 8;
-            else if (Globals::status->getStation()->getIndex() == 100)
-                sceneRace = 7;
-            else
-                sceneRace = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            {
+                Status *status = Globals::status;
+                if (status->getStation()->getIndex() == 101)
+                    sceneRace = 8;
+                else if (status->getStation()->getIndex() == 100)
+                    sceneRace = 7;
+                else
+                    sceneRace = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
+            }
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(1, *this->enemies);
             int shipIndex = Globals::status->getShip()->getIndex();
@@ -6985,11 +6988,11 @@ void Level::createScene() {
                 }
                 ArrayAdd((KIPlayer *) hangarPart, *this->enemies);
             }
-            bool ownHangar = Globals::status->getStation()->getIndex() == 108 &&
-                            Globals::status->field_114 == 3;
+            Status *ownStatus = Globals::status;
+            bool ownHangar = ownStatus->getStation()->getIndex() == 108 && ownStatus->field_114 == 3;
             int shipCount = Globals::rnd->nextInt(capacity + 1);
             if (ownHangar) {
-                Array<Ship *> *ships = Globals::status->voidStation->getShips();
+                Array<Ship *> *ships = ownStatus->voidStation->getShips();
                 shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
@@ -7060,7 +7063,7 @@ void Level::createScene() {
                 for (int i = 0; i < 7; i++)
                     seatUsed[i] = 0;
                 for (int i = 0; i < agentCount; i++) {
-                    unsigned short look = (*agents)[i]->getRace();
+                    int look = (*agents)[i]->getRace();
                     if (look == 3)
                         look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
                     int mesh = kAgentMeshes[look];
