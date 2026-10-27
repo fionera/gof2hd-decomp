@@ -579,12 +579,12 @@ void Gun::calcCharacterCollision() {
                       weaponType == ITEM_SORT_SHOCK_BLAST || weaponType == ITEM_SORT_IONIZING_MISSILE);
     bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
     bool mine = weaponType == ITEM_SORT_MINE;
-    explosive = 1;
-    if (!bomb && !isRocketLike(weaponType)) {
-        explosive = 0;
+    explosive = 0;
+    if (bomb || isRocketLike(weaponType)) {
+        explosive = 1;
     }
-    explodeOnContact = 0;
-    if (bomb || mine) {
+    explodeOnContact = mine;
+    if (bomb) {
         explodeOnContact = 1;
     }
 
@@ -643,7 +643,7 @@ void Gun::calcCharacterCollision() {
                 }
                 enemy->setBombForce(0.0f);
                 if (explosive) {
-                    enemy->damage(9999, false, itemIndex);
+                    enemy->damage(9999, false, this->itemIndex);
                     if (!Globals::achievements->hasMedal(41, 1) &&
                         (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
                         int count = ++Globals::status->field_12c;
