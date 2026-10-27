@@ -13,15 +13,12 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
-// Local clamp helper for the status-window layout arithmetic.  Kept as a
-// real out-of-line function so this TU's .text size stays in the window where
-// the linked image's libstdc++ exception ctors are byte-exact.
-[[gnu::used]] static int statusWindowClamp(int value, int min, int max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
+// Height of the medal tab's scroll content: one row of medals plus the
+// layout's fixed padding.  The constructor inlines this helper at both call
+// sites; hidden linkage keeps the out-of-line copy out of the export set.
+[[gnu::visibility("hidden")]] int statusWindowMedalRowsHeight(int medalCount, int rowHeight) {
+    return medalCount / 3 * rowHeight + 10;
 }
-
 
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
@@ -659,9 +656,9 @@ StatusWindow::StatusWindow() {
                           (layout->field_0x4 + layout->field_0x2c_rowHeight) * 6;
     if (Globals::iPad != 0)
         this->tabHeights[1] = layout->field_0x1c + layout->field_0x2c_rowHeight +
-                              this->medalCount / 3 * this->medalRowHeight + 10;
+                              statusWindowMedalRowsHeight(this->medalCount, this->medalRowHeight);
     else
-        this->tabHeights[1] = this->medalCount / 3 * this->medalRowHeight + 10;
+        this->tabHeights[1] = statusWindowMedalRowsHeight(this->medalCount, this->medalRowHeight);
     this->contentHeight = this->tabHeights[this->activeTab];
     this->viewportHeight = Globals::h - layout->field_0x10_rightMargin - layout->field_0xc_leftMargin -
                            layout->field_0x20_top - layout->field_0x24;
