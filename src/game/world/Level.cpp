@@ -2442,7 +2442,7 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
-            const float *t = bigAlienWave ? kAlienStationTurrets[k] : kAlienOutpostTurrets[k];
+            const float *t = (bigAlienWave ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
             v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
