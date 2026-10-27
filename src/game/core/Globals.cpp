@@ -673,19 +673,19 @@ Globals::Globals() {
     settings->intAt50 = 0;
     settings->flagAt39 = 0;
     settings->intAt35 = 0;
-    settings->intAt31 = 0;
-    secondary->slot1 = 0;
-    secondary->flagAt13 = 0;
-
-    settings->flagAt3f = 0;
     settings->intAt3b = 0;
-    secondary->slot0 = 0;
     settings->flagAt4e = 0;
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
-    Globals::gameLoaded = 0;
+    settings->intAt31 = 0;
+    secondary->slot1 = 0;
+    secondary->flagAt13 = 0;
+    secondary->slot0 = 0;
+    settings->flagAt3f = 0;
+
     Globals::lastSpaceMusicPlayed = -1;
     Globals::instantActionType = -1;
+    Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
 
     float fv = settings->qualityLevel;
@@ -713,7 +713,6 @@ Globals::Globals() {
     settings->shortAt60 = 0x100;
     Globals::lastCampaignMissionFailCount = 0;
 }
-
 Globals::~Globals() {
     if (Globals::recordHandler != nullptr)
         Globals::recordHandler->saveOptions();
