@@ -776,7 +776,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                        (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6) +
-                                this->sliderRowHeight + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
+                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
@@ -3849,7 +3849,7 @@ void MenuTouchWindow::startSupernovaChallenge() {
 static void mtwTextLayoutAnchor() {
     volatile int a;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6;
-    a = 9; a = 10; a = 11;
+    a = 9; a = 10; a = 11; a = 12;
     volatile char c;
     c = 0; c = 1; c = 2;
     a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
