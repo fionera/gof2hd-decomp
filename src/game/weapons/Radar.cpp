@@ -403,10 +403,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         otherLock = 1;
     }
     bool landmarkHit = false;
+    int notOtherLock = !otherLock;
+    int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
         (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93)) {
-        for (int i = 0; i < this->landmarks->size(); ++i) {
+        Array<KIPlayer *> *landmarks = this->landmarks;
+        for (int i = 0; i < landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
             }
@@ -415,7 +418,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && !otherLock && i != 3 && !turretMode) {
+                if (!landmarkHit && notTurretMode && i != 3 && notOtherLock) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
