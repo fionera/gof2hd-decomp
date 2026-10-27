@@ -439,13 +439,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             // Phone: two columns; iPad: one centred column.
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
-            int y = (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1) +
-                    (Globals::w / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap);
+            int y = (Globals::w / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap) +
+                    (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1);
             if (Globals::iPad) {
                 x = Globals::w / 2 - this->buttonWidth / 2;
-                y = (rowHeight + Globals::layout->field_0x30_rowHeight) * i +
-                    (Globals::w / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
-                     Globals::layout->field_0x30_rowHeight);
+                y = (Globals::w / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
+                     Globals::layout->field_0x30_rowHeight) +
+                    (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
             }
             bool special = (i | 1) == 9;
             int spacing = Globals::Canvas->FontGetSpacing(
@@ -513,8 +513,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         windowHeight -= Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c) * 2;
     this->scrollWindowB = new ScrollTouchWindow(
         Globals::w - Globals::layout->buttonInsetX - this->slotTextWidth,
-        Globals::layout->field_0x2c_rowHeight +
-            (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->slotMarkerHeight),
+        (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->slotMarkerHeight) +
+            Globals::layout->field_0x2c_rowHeight,
         this->slotTextWidth, windowHeight, false);
     this->scrollWindowB->setText(String(""), *Globals::gameText->getText(87 + this->field_0x1e0));
 
@@ -600,20 +600,20 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->optBtnD0 = new TouchButton(
         *Globals::gameText->getText(492), 0,
         this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
-        Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin + this->listEntryWidth +
-            Globals::layout->field_0x20_top + this->field_0x15c / 2,
+        Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth +
+            Globals::layout->field_0x2c_rowHeight + this->field_0x15c / 2,
         this->listEntryHeight - 20, 68, 4);
     this->optBtnCC = new TouchButton(String(""), 13,
                                      this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
-                                     Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
-                                         this->listEntryWidth + Globals::layout->field_0x20_top +
+                                     Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                         this->listEntryWidth + Globals::layout->field_0x2c_rowHeight +
                                          this->field_0x15c / 2,
                                      66);
     this->scrollExtraButton = new TouchButton(
         String(""), 13, this->listTopY + this->listBottomY - 25 - Globals::layout->buttonInsetX,
-        Globals::layout->field_0x2c_rowHeight * 5 +
-            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c * 3 +
-             this->listEntryWidth) +
+        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c * 3 +
+         this->listEntryWidth) +
+            Globals::layout->field_0x2c_rowHeight * 5 +
             this->sliderRowHeight + this->sliderRowHeight / 2 +
             (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
              this->sliderRowHeight) * 2,
@@ -625,9 +625,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
             this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
-            Globals::layout->field_0x2c_rowHeight + (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
-                                                                             Globals::layout->field_0x20_top)) +
-                this->field_0x15c / 2,
+            (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
+                                     Globals::layout->field_0x20_top)) +
+                Globals::layout->field_0x2c_rowHeight + this->field_0x15c / 2,
             this->listEntryHeight - 20, 68, 4);
     }
 
@@ -637,8 +637,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
 
     // Control scheme selection.
     this->buttonsB8 = new Array<TouchButton *>();
-    unsigned int pressedImage = 0xffffffffu;
     unsigned int image = 0xffffffffu;
+    unsigned int pressedImage = 0xffffffffu;
     for (i = 0; i < 3; i++) {
         Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][0], image);
         Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][1], pressedImage);
@@ -705,24 +705,24 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                          Globals::layout->field_0x20_top + Globals::layout->field_0x1c +
                                          Globals::layout->field_0x2c_rowHeight);
     this->optBtnD4 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
-                                     Globals::layout->field_0x2c_rowHeight +
-                                         (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
-                                          Globals::layout->field_0x1c),
+                                     (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                      Globals::layout->field_0x1c) +
+                                         Globals::layout->field_0x2c_rowHeight,
                                      18);
     this->optBtnD4->setAlwaysPressed(optionFlag(13));
     (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
-                                     Globals::layout->field_0x2c_rowHeight * 3 +
-                                         (this->sliderSpacing + (Globals::layout->field_0xc_leftMargin +
-                                                                 Globals::layout->field_0x20_top) +
-                                          Globals::layout->field_0x1c),
+                                     (this->sliderSpacing + (Globals::layout->field_0xc_leftMargin +
+                                                             Globals::layout->field_0x20_top) +
+                                      Globals::layout->field_0x1c) +
+                                         Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
     this->optBtnD8->setAlwaysPressed(optionFlag(12));
     (*this->sliders)[2]->setHalfTransparent(!optionFlag(14));
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
-                                     Globals::layout->field_0x2c_rowHeight * 5 +
-                                         (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
-                                          this->sliderSpacing * 2 + Globals::layout->field_0x1c),
+                                     (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                                      this->sliderSpacing * 2 + Globals::layout->field_0x1c) +
+                                         Globals::layout->field_0x2c_rowHeight * 5,
                                      18);
     this->optBtnDC->setAlwaysPressed(optionFlag(14));
     (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
@@ -736,39 +736,39 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                             Globals::layout->field_0x1c + this->listEntryWidth +
                             Globals::layout->field_0x2c_rowHeight * 3 + this->field_0x15c * 2) -
                    (Globals::iPadHD ? 35.15625f : (Globals::iPadLarge ? 50.0f : 25.0f))));
-        int slider1Y = (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
-                              (float) (Globals::layout->field_0x2fc +
+        int slider1Y = (int) ((float) (Globals::layout->field_0x2fc +
                                        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                         this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
-                                       (this->field_0x15c + Globals::layout->field_0x1c) * 2));
+                                       (this->field_0x15c + Globals::layout->field_0x1c) * 2) +
+                              (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)));
         (*this->sliders)[1]->setPosition(
             Globals::layout->buttonInsetX + this->listTopY + this->metricC, slider1Y);
-        int slider2Y = (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
-                              (float) (Globals::layout->field_0x2fc +
+        int slider2Y = (int) ((float) (Globals::layout->field_0x2fc +
                                        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                         this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 3) +
                                        this->sliderRowHeight +
                                        (this->field_0x15c + Globals::layout->field_0x1c +
                                         Globals::layout->field_0x2c_rowHeight) *
-                                           2));
+                                           2) +
+                              (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)));
         (*this->sliders)[2]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC, slider2Y);
         (*this->sliders)[3]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
-                   (float) (Globals::layout->field_0x2fc +
+            (int) ((float) (Globals::layout->field_0x2fc +
                             (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                              this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 6) +
-                            (this->field_0x15c + Globals::layout->field_0x1c + this->sliderRowHeight) * 2)));
+                            (this->field_0x15c + Globals::layout->field_0x1c + this->sliderRowHeight) * 2) +
+                   (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         if (Globals::iPadLargePossible) {
             (*this->sliders)[4]->setPosition(-100000, -100000);
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
-                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 7) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2)));
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
+                       (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setValue(*(float *) &Globals::options[68]);
         } else {
             (*this->sliders)[4]->setPosition(
@@ -780,11 +780,11 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-                (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
-                       (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 7) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2)));
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
+                       (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
         }
         Globals::Canvas->Image2DCreate(1700, this->scrollbarImageId);
         this->listX = Globals::iPadAssetsWithLowerRes ? 50 : (int) ((float) Globals::w * 0.2f);
@@ -807,7 +807,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
 
     // About text.
     String version = ((Engine *) Globals::appManager->GetEngine())->str_0x3c;
-    if (version.length >= 3)
+    if (version.size() >= 3)
         version = String(" v") + version;
     else
         version = String("");
