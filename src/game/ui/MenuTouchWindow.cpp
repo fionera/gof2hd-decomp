@@ -1733,9 +1733,9 @@ void MenuTouchWindow::draw() {
                     y + (this->sliderRowHeight - sliderLabelOffset), false);
             }
             for (unsigned int i = 1; i < this->sliders->size() - 1; i++) {
-                if (i == 5 && !Globals::layout->field_0x284_sliderSlot5Enabled)
-                    continue;
-                (*this->sliders)[i]->draw();
+                if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
+                    (*this->sliders)[i]->draw();
+                }
             }
             this->optBtnD4->draw();
             this->optBtnD8->draw();
