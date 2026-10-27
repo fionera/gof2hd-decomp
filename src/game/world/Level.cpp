@@ -2026,11 +2026,12 @@ void Level::createMission() {
                 shuttleRoute->setLoop(true);
                 Route *shuttleRoute2 = shuttleRoute->clone();
                 for (int i = this->miningPlant + raiderCount; i < this->miningPlant + raiderCount + 2; i++) {
-                    int type = Globals::globals->getRandomEnemyFighter(clientRace);
                     if (i == this->miningPlant + raiderCount) {
+                        int type = Globals::globals->getRandomEnemyFighter(clientRace);
                         (*this->enemies)[i] = this->createShip(clientRace, 0, type, shuttleRoute->getWaypoint(0), true, false);
                         (*this->enemies)[i]->setRoute(shuttleRoute);
                     } else {
+                        int type = Globals::globals->getRandomEnemyFighter(clientRace);
                         (*this->enemies)[i] = this->createShip(clientRace, 0, type, shuttleRoute2->getWaypoint(0), true, false);
                         (*this->enemies)[i]->setRoute(shuttleRoute2);
                     }
@@ -2053,9 +2054,9 @@ void Level::createMission() {
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15 &&
         Globals::status->getCurrentCampaignMission() < 16)
         introSystem = true;
-    int stationIndex = Globals::status->getStation()->getIndex();
     int raidRoll = Globals::rnd->nextInt(100);
     Mission *freelance = Globals::status->getFreelanceMission();
+    int stationIndex = Globals::status->getStation()->getIndex();
     int pirates = 0;
     if (freelance != nullptr && (freelance->getType() == 0 || freelance->getType() == 11 || freelance->getType() == 15))
         pirates = (int) ((float) freelance->getDifficulty() / 10.0f * 5.0f);
