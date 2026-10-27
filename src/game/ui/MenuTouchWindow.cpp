@@ -2911,13 +2911,15 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     float controlSize = optionFloat(68);
                     optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
                     optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
-                    Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
+                    int fireBase = optionInt(88);
+                    int steerBase = optionInt(84);
+                    Globals::globals->setCoordsFire(fireBase, Globals::Canvas->GetImage2DWidth(this->fireImageA),
                                                     this->fireImageA, this->fireImageB, this->fireSize_0x74,
                                                     this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
                                                     this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a,
                                                     this->fireCoord_0x6c, this->fireCoord_0x6e, this->fireCoord_0x70,
                                                     this->fireCoord_0x72, this->fireCoord_0x4c, this->fireCoord_0x4e);
-                    Globals::globals->setCoordsSteer(optionInt(84), Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                    Globals::globals->setCoordsSteer(steerBase, Globals::Canvas->GetImage2DWidth(this->steerImageA),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageC),
                                                      Globals::Canvas->GetImage2DWidth(this->steerImageB),
                                                      this->steerCoord_0x2e, this->steerCoord_0x30,
@@ -3849,7 +3851,7 @@ void MenuTouchWindow::startSupernovaChallenge() {
 static void mtwTextLayoutAnchor() {
     volatile int a;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6;
-    a = 9; a = 10; a = 11; a = 12;
+    a = 9; a = 10; a = 11; a = 12; a = 13; a = 14;
     volatile char c;
     c = 0; c = 1; c = 2;
     a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
