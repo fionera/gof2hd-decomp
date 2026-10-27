@@ -535,8 +535,8 @@ void HangarWindow::render() {
                 }
 
                 for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (Globals::layout->field_0x70_rowHeight + this->field_0x100.d) * i + this->scrollOffset +
-                            Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin;
+                    int y = (Globals::layout->field_0x70_rowHeight + this->field_0x100.d) * i +
+                            (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) + this->scrollOffset;
                     if (y < 0 || y > Globals::h)
                         continue;
                     ListItem *item = (*items)[i];
@@ -642,7 +642,7 @@ void HangarWindow::render() {
                             if (left > 0) {
                                 Globals::Canvas->DrawString(
                                     hangarFont(), leftText,
-                                    this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a +
+                                    Globals::layout->buttonInsetX + this->hintOffsetX + this->field_0x100.a +
                                     this->field_0x100.c - Globals::Canvas->GetTextWidth(hangarFont(), leftText),
                                     y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
                             }
@@ -801,7 +801,7 @@ void HangarWindow::render() {
                         (*this->buttons)[5]->draw();
                         continue;
                     } else {
-                        Globals::layout->drawBox(0, this->hintOffsetX + Globals::layout->buttonInsetX,
+                        Globals::layout->drawBox(0, Globals::layout->buttonInsetX + this->hintOffsetX,
                                                  y + Globals::layout->field_0x70_rowHeight - Globals::layout->field_0x1c,
                                                  listWidth, Globals::layout->field_0x1c, *item->name);
                         continue;
@@ -873,7 +873,7 @@ void HangarWindow::render() {
                 if (barHeight > 0 || barPos > 0) {
                     Globals::layout->drawScrollBar(Globals::w - Globals::layout->field_0x48 -
                                                    Globals::layout->buttonInsetX - this->hintOffsetX,
-                                                   Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin,
+                                                   Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
                                                    this->visibleHeight, barPos, barHeight);
                 }
             }
@@ -1027,8 +1027,8 @@ void HangarWindow::render() {
                                     Globals::Canvas->GetTextHeight(hangarFont()) * 2);
         }
     } else if (this->freeCreditsActive) {
-        int baseX = Globals::layout->buttonInsetX + this->dialog->x;
-        int baseY = this->dialog->y + Globals::layout->windowTopInset + Globals::layout->field_0x2c_rowHeight * 2;
+        int baseX = this->dialog->x + Globals::layout->buttonInsetX;
+        int baseY = Globals::layout->windowTopInset + this->dialog->y + Globals::layout->field_0x2c_rowHeight * 2;
         int row = 0;
         for (int i = 0; i < 5; i++) {
             TouchButton *button = (*this->buttons)[18 + i];
