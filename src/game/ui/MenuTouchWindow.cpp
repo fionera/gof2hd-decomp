@@ -736,22 +736,23 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                             Globals::layout->field_0x1c + this->listEntryWidth +
                             Globals::layout->field_0x2c_rowHeight * 3 + this->field_0x15c * 2) -
                    (Globals::iPadHD ? 35.15625f : (Globals::iPadLarge ? 50.0f : 25.0f))));
+        int slider1Y = (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
+                              (float) (Globals::layout->field_0x2fc +
+                                       (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                                        this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
+                                       (this->field_0x15c + Globals::layout->field_0x1c) * 2));
         (*this->sliders)[1]->setPosition(
-            Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
-                   (float) (Globals::layout->field_0x2fc +
-                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
-                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
-                            (this->field_0x15c + Globals::layout->field_0x1c) * 2)));
+            Globals::layout->buttonInsetX + this->listTopY + this->metricC, slider1Y);
+        int slider2Y = (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
+                              (float) (Globals::layout->field_0x2fc +
+                                       (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                                        this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 3) +
+                                       this->sliderRowHeight +
+                                       (this->field_0x15c + Globals::layout->field_0x1c +
+                                        Globals::layout->field_0x2c_rowHeight) *
+                                           2));
         (*this->sliders)[2]->setPosition(
-            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-            (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
-                   (float) (Globals::layout->field_0x2fc +
-                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
-                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 3) +
-                            this->sliderRowHeight +
-                            (this->field_0x15c + Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight) *
-                                2)));
+            this->listTopY + Globals::layout->buttonInsetX + this->metricC, slider2Y);
         (*this->sliders)[3]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC,
             (int) ((Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)) +
@@ -880,6 +881,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->storeInitDialogShowing = 0;
     this->purchaseRestorePending = 0;
     this->scrollOffset = 0;
+    this->field_0x1da = this->listStateSuppress = this->field_0x1dc = this->field_0x1dd = 0;
     this->dragLastX = 0;
     this->field_0x210 = 0;
     this->dragVelocity = 0;
