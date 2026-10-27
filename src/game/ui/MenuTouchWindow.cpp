@@ -776,7 +776,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                        (float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6) +
-                                this->sliderRowHeight + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
+                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2)));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f)) +
@@ -3852,6 +3852,7 @@ static void mtwTextLayoutAnchor() {
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6;
     volatile char c;
     c = 0; c = 1; c = 2;
+    a = 9; a = 10;
     a = 17; a = 18; a = 19; a = 20; a = 21; a = 22; a = 23; a = 24;
     a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
     a = 33; a = 34; a = 35; a = 36; a = 37; a = 38; a = 39; a = 40;
