@@ -579,12 +579,12 @@ void Gun::calcCharacterCollision() {
                       weaponType == ITEM_SORT_SHOCK_BLAST || weaponType == ITEM_SORT_IONIZING_MISSILE);
     bool scatter = weaponType == ITEM_SORT_SCATTER_GUN;
     bool mine = weaponType == ITEM_SORT_MINE;
-    explosive = 0;
-    if (bomb || isRocketLike(weaponType)) {
-        explosive = 1;
+    explosive = 1;
+    if (!bomb && !isRocketLike(weaponType)) {
+        explosive = 0;
     }
-    explodeOnContact = mine;
-    if (bomb) {
+    explodeOnContact = 0;
+    if (bomb || mine) {
         explodeOnContact = 1;
     }
 
