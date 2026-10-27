@@ -1414,14 +1414,11 @@ void MenuTouchWindow::draw() {
             y = layout->field_0x1c + y + layout->field_0x2c_rowHeight;
             layout->drawBox(5, layout->buttonInsetX + this->listTopY, y, this->optionsWidth, this->listEntryWidth,
                             String(""));
-            unsigned int color = optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu;
-            Globals::Canvas->SetColor(color);
+            Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x110,
                                          Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight / 2,
                                          y + arrowOffset * 2, 17, 20);
-            if (optionFlag(17) && !this->downButtonPressed)
-                color = 0x2f4455ffu;
-            Globals::Canvas->SetColor(color);
+            Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
                                          this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
                                              this->listEntryHeight / 2,
@@ -1752,15 +1749,12 @@ void MenuTouchWindow::draw() {
             Layout *layout = Globals::layout;
             layout->drawBox(5, layout->buttonInsetX, layout->field_0x20_top + layout->field_0xc_leftMargin,
                             this->optionsWidth, this->listEntryWidth, String(""));
-            unsigned int color = optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu;
-            Globals::Canvas->SetColor(color);
+            Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             layout = Globals::layout;
             Globals::Canvas->DrawImage2D(this->optionsImage_0x110, layout->buttonInsetX + this->listEntryHeight / 2,
                                          layout->field_0xc_leftMargin + arrowOffset * 2 + layout->field_0x20_top, 17,
                                          20);
-            if (optionFlag(17) && !this->downButtonPressed)
-                color = 0x2f4455ffu;
-            Globals::Canvas->SetColor(color);
+            Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
             layout = Globals::layout;
             Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
                                          Globals::w - layout->buttonInsetX - this->listEntryHeight / 2,
@@ -2033,7 +2027,7 @@ void MenuTouchWindow::draw() {
             }
             this->scrollWindowB->draw();
             int selected = this->field_0x1e0;
-            bool notOwned;
+            bool notOwned = true;
             if (selected == 0 && optionFlag(53))
                 notOwned = false;
             else if (selected == 1 && optionFlag(54))
@@ -2044,9 +2038,11 @@ void MenuTouchWindow::draw() {
                 notOwned = false;
             else if (selected == 4 && optionFlag(57))
                 notOwned = false;
-            else if ((selected == 0 || selected == 2) && optionFlag(57))
+            else if (selected == 0 && optionFlag(57))
                 notOwned = false;
-            else
+            else if (selected == 2 && optionFlag(57))
+                notOwned = false;
+            if (notOwned)
                 notOwned = (optionFlag(53) == 0 || selected != 4) || optionFlag(55) == 0;
             Globals::Canvas->DisableClip();
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
@@ -3857,7 +3853,7 @@ static void mtwTextLayoutAnchor() {
     volatile int a;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6;
     volatile char c;
-    c = 0; c = 1;
+    c = 0; c = 1; c = 2;
     a = 9; a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16;
     a = 17; a = 18; a = 19; a = 20; a = 21; a = 22; a = 23; a = 24;
     a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
