@@ -65,6 +65,10 @@
   `.text` by 8 B (`0x1343c8`); removed two volatile stores from
   `mtwTextLayoutAnchor`. Final gate: byte 1352, linked 4469, avg 99.8,
   `.text 0x1343c0`, lint CLEAN, drift 0.
+- Harvested `w1027`: `Hud::draw` 69.5% -> **73.9%** (9328 B) by using the
+  original non-nested load-string construction on top of the w1085 split body.
+- Harvested `w1021`: `LevelScript::process` mission-78 hide target and gamma
+  restore (47.4% unchanged; semantic fix from the original disassembly).
 - Harvested `w1030`: `HackingGame::render2D` 71.4% -> **100.0%** (2090 B exact)
   by modelling `tileImages` as the original `int[4][12]` and restoring the
   original tile draw order/arithmetic. Kept `reInit` at 100% (420 B) instead of
