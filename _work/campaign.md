@@ -37,6 +37,11 @@
   hoisting the initial position fetch, testing `inAlienOrbit` first, and
   projecting into a fresh collision vector. A documented 12-byte volatile
   anchor keeps the TU at the original `.text` size.
+- Harvested `w1082`: `Globals` ctor C1/C2 73.5% -> **79.6%** (612 B exact) by
+  restoring the original late zero-init schedule and `shortAt60` placement.
+- Harvested `w1084`: `Hud::drawChallengeModeScore` 70.2% -> **74.7%** (944 B
+  exact) by using a 1-based score loop, reusing `halfStep`, and decrementing the
+  zero-pad loop.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
