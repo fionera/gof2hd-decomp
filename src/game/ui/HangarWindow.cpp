@@ -827,15 +827,13 @@ void HangarWindow::render() {
                                 (*this->buttons)[10]->setVisible(true);
                                 (*this->buttons)[10]->draw();
                             }
-                        } else if (tab == 2) {
-                            if (item->isBluePrint()) {
-                                (*this->buttons)[7]->setPosition(
-                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
-                                    this->field_0x114 + y, 18);
-                                (*this->buttons)[7]->setVisible(true);
-                                (*this->buttons)[7]->draw();
-                                buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                            }
+                        } else if (tab == 2 && item->isBluePrint()) {
+                            (*this->buttons)[7]->setPosition(
+                                this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                this->field_0x114 + y, 18);
+                            (*this->buttons)[7]->setVisible(true);
+                            (*this->buttons)[7]->draw();
+                            buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
                         } else if (tab == 0 && item->isItem()) {
                             Item *equipped = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
                             bool replaceable = false;
