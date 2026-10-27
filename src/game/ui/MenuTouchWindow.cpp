@@ -283,6 +283,7 @@ static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14,
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
 
 MenuTouchWindow::MenuTouchWindow(int menuType) {
+    unsigned int i;
     this->buttonWidth = Globals::layout->field_0x294_buttonWidth;
     this->buttonYBias = Globals::layout->field_0x298_buttonYBias;
     this->buttonRowGap = Globals::layout->field_0x29c_buttonRowGap;
@@ -431,9 +432,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(25, *Globals::gameText->getText(0), 2, this->optionsButtons, 0);
         // Language selection.
         this->buttonsB0 = new Array<TouchButton *>();
+        int *specialFontPtr = &Globals::fontLangSelect;
         int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
-        for (unsigned int i = 0; i < 10; i++) {
+        for (i = 0; i < 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
@@ -447,13 +449,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             }
             bool special = (i | 1) == 9;
             int spacing = Globals::Canvas->FontGetSpacing(
-                special ? (unsigned int) Globals::fontLangSelect : (unsigned int) (uintptr_t) Globals::font);
+                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
             TouchButton *language = new TouchButton(
                 *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
-                special ? (unsigned int) Globals::fontLangSelect : (unsigned int) (uintptr_t) Globals::font, spacing);
+                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font, spacing);
             language->id = MenuTouchWindow_languageIds[i];
             if (special)
-                language->fontId = Globals::fontLangSelect;
+                language->fontId = *specialFontPtr;
             ArrayAdd(language, *this->buttonsB0);
         }
     }
@@ -499,7 +501,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollSlots = new Array<TouchButton *>();
     ArraySetLength(5, *this->scrollSlots);
     this->slotSpacing = Globals::layout->field_0x2c_rowHeight;
-    for (unsigned int i = 0; i < this->scrollSlots->size(); i++) {
+    for (i = 0; i < this->scrollSlots->size(); i++) {
         (*this->scrollSlots)[i] = new TouchButton(this->heapBufA[i], 16, this->slotX,
                                                   (this->slotSpacing + this->contentHeightCache) * i + this->slotY, 17);
         (*this->scrollSlots)[i]->id = 54 + i;
@@ -616,9 +618,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
              this->sliderRowHeight) * 2,
         66);
-    this->optBtnD0->setHalfTransparent(Globals::options[17]);
-    this->optBtnCC->setAlwaysPressed(Globals::options[16]);
-    this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
+    this->optBtnD0->setHalfTransparent(optionFlag(17));
+    this->optBtnCC->setAlwaysPressed(optionFlag(16));
+    this->scrollExtraButton->setAlwaysPressed(optionFlag(64));
     if (Globals::iPad) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
@@ -637,7 +639,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->buttonsB8 = new Array<TouchButton *>();
     unsigned int pressedImage = 0xffffffffu;
     unsigned int image = 0xffffffffu;
-    for (int i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
         Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][0], image);
         Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][1], pressedImage);
         int imageWidth = Globals::Canvas->GetImage2DWidth(image);
@@ -707,23 +709,23 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                          (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                           Globals::layout->field_0x1c),
                                      18);
-    this->optBtnD4->setAlwaysPressed(Globals::options[13]);
-    (*this->sliders)[1]->setHalfTransparent(!Globals::options[13]);
+    this->optBtnD4->setAlwaysPressed(optionFlag(13));
+    (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      Globals::layout->field_0x2c_rowHeight * 3 +
                                          (this->sliderSpacing + (Globals::layout->field_0xc_leftMargin +
                                                                  Globals::layout->field_0x20_top) +
                                           Globals::layout->field_0x1c),
                                      18);
-    this->optBtnD8->setAlwaysPressed(Globals::options[12]);
-    (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
+    this->optBtnD8->setAlwaysPressed(optionFlag(12));
+    (*this->sliders)[2]->setHalfTransparent(!optionFlag(14));
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      Globals::layout->field_0x2c_rowHeight * 5 +
                                          (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                           this->sliderSpacing * 2 + Globals::layout->field_0x1c),
                                      18);
-    this->optBtnDC->setAlwaysPressed(Globals::options[14]);
-    (*this->sliders)[3]->setHalfTransparent(!Globals::options[14]);
+    this->optBtnDC->setAlwaysPressed(optionFlag(14));
+    (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
     (*this->sliders)[5]->setFixedScale(1);
     (*this->sliders)[6]->setFixedScale(1);
 
