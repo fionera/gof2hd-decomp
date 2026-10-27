@@ -69,6 +69,24 @@
   original non-nested load-string construction on top of the w1085 split body.
 - Harvested `w1021`: `LevelScript::process` mission-78 hide target and gamma
   restore (47.4% unchanged; semantic fix from the original disassembly).
+- Harvested `w1080`: `SpaceLounge::onKeyPress` 94.3% -> **99.8%** (8580 B
+  exact) by comparing the station-in-system result against 1 and placing the
+  star-map chain before the wingman block.
+- Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
+  testing the projected collision vector and restoring the surface lifetime.
+- Launched `w1090..w1115` (26 `codex exec -p dsv41` workers) as wave 49,
+  worst-first: Layout ctor (3 angles), LevelScript::process (2), Radar::draw,
+  Gun::calcCharacterCollision, Generator::createMission, Level::createShip,
+  MenuTouchWindow::OnTouchEnd, Hud::draw, Level::createMission (2),
+  HangarWindow::render, MenuTouchWindow ctor, PlayerEgo::calcCollision,
+  Level::createScene, MGame::OnTouchEnd, Status::moveWanted,
+  Mesh::ReadEnhancedDataFromFile, MenuTouchWindow::draw, RocketGun::update,
+  MGame::OnUpdate, createCampaignMission, Status::missionCompleted,
+  ModStation::OnInitialize.
+- Launched `w1120..w1139` (20 workers) as wave 50: second angles on the
+  biggest losses plus SpaceLounge::startChat, SpaceLounge::OnTouchEnd,
+  PlayerEgo::update, HangarWindow::OnTouchEnd, PlayerFighter::update,
+  StarSystem ctor, SpaceLounge::drawLounge and PlayerStation ctor.
 - Harvested `w1030`: `HackingGame::render2D` 71.4% -> **100.0%** (2090 B exact)
   by modelling `tileImages` as the original `int[4][12]` and restoring the
   original tile draw order/arithmetic. Kept `reInit` at 100% (420 B) instead of
