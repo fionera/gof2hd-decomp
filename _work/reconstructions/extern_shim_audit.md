@@ -439,7 +439,7 @@ distinct mangled symbols, not a duplicate.
 | `src/game/mission/RecordHandler.cpp:1417` | `mixRecordStoreSlot` | layout anchor |
 | `src/game/weapons/RocketGun.cpp:40` | `kRocketTrailSets[4]` | data-table anchor |
 | `src/engine/file/AEFile.cpp:8` | `pakExtension[8]` | `.aezdata` anchor |
-| `src/engine/math/Transform.cpp:16` | `g_transform_matrix_flag[80]` | `.aezdata` anchor |
+| `src/engine/math/Transform.cpp:12` | `g_transform_matrix_flag[72]` | natural `.data` block (was `.aezdata` anchor) |
 
 ### 5.2 Manually linked data / sections
 

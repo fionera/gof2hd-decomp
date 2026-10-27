@@ -353,7 +353,7 @@ These are intentionally gate-sensitive. They are not necessarily bugs, but they 
 
 | Site | Construct | Why it exists | Risk / next step |
 |---|---|---|---|
-| `src/engine/math/Transform.cpp:15-17` | `#pragma clang section data=".aezdata"` + 80-byte `g_transform_matrix_flag` | keeps pre-`.got` data distance stable for libc++ exception ctors | do not remove without full relink; `.got`/`.bss` shift |
+| `src/engine/math/Transform.cpp:8-13` | 72-byte `g_transform_matrix_flag` in natural `.data` (was 80 B in `.aezdata`) | keeps pre-`.got` data distance stable for libc++ exception ctors | `2d3a2a9b`; `.got` unchanged |
 | `src/engine/file/AEFile.cpp:7-9` | `.aezdata` 8-byte `pakExtension` | same class of pre-`.got` anchor | keep; document |
 | `src/engine/core/GameText.cpp:51-55` | **removed** (was `[[gnu::used]] arabicFormRow`, 16-byte `.text`) | real hidden `arabicFormOffset` now used by both lookups | `19e43d05`; `.text` unchanged |
 | `src/game/weapons/ObjectGun.cpp:35-40` | **removed** (was `[[gnu::used]] ObjectGunProjectileMesh`, 20-byte `.text`) | real hidden helper now used by ctor/update | `c902617a`; `.text` unchanged |

@@ -82,6 +82,20 @@
   original normal/tangent frame call order and the unclamped-z upper clamp.
 - Harvested `w1047`: pinned the authoritative ParticleSettings `0xa0` set
   stride and `0x1e00` table size with static_asserts; no layout change needed.
+- Harvested `w962`: `Gun::calcCharacterCollision` 64.3% -> **64.8%** (1888B) by
+  hoisting the volatile explosive/explodeOnContact slots ahead of the
+  `enemies == nullptr` guard.
+- Harvested `w977`: `StarMap::drawOnScreenInfo` 97.1% -> **98.1%** (3488B) by
+  matching the campaign target-station branch shape and `== -1` test.
+- Harvested `w1011`: moved the Transform 80-byte `.aezdata` anchor back to the
+  original 72-byte `.data` block; `.data` 0x2978 -> 0x29c8, `.aezdata`
+  0x58 -> 0x8, `.got` unchanged.
+- Harvested `w1044`: pinned the authoritative EnergyShield 0x20-0x5c
+  uniform/attrib offsets with static_asserts; no reorder needed.
+- Note: `w957`'s Hud::draw pass raised Hud::draw to 68.6% but its `>>1` changes
+  in drawMenu/drawChallengeModeScore trade those two scores for `.text` size.
+  A dedicated `w1048` worker is recovering the missing 56 B of real Hud::draw
+  code so the `/2` shapes and byte_exact 1352 can coexist.
 
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**

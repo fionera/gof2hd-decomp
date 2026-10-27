@@ -213,12 +213,12 @@ padding, giving the observed one-page (`0x1000`) shift from `0x1333c0` to `0x134
 |---|---|---|---:|---|---|
 | 16 | `src/engine/render/shaders/CubeMapping.cpp:71-75,82` | **removed** (was `kCubeMappingLayoutAnchor[75] = "CubeMapping"`) | 75 B removed | `.rodata` -0x30; `String("CubeMapping", false)` restored | commit `1ed51c3c`; `.rodata` 0x415d7 -> 0x415a7, gate unchanged |
 | 17 | `src/game/mission/Status.cpp:2048-2051,2072` | `static volatile unsigned char kMissionOrder[190]` zero table used in `switch` | `0xbe` = 190 B | `.bss`; original 190-byte table lives in `.bss` | object symbol `0xbe`; `.bss` section size `0xbe` |
-| 18 | `src/engine/math/Transform.cpp:8-17` | `g_transform_matrix_flag[80] = {1}` in `.aezdata` | 80 B | `.aezdata`; moves `.got`/`.bss` without changing `.data` | object `.aezdata` size `0x50`; original has no `.aezdata` |
+| 18 | `src/engine/math/Transform.cpp:8-17` | **moved** to the original 72-byte `g_transform_matrix_flag` block in `.data` (was 80 B in `.aezdata`) | 72 B in `.data` | `.data` +72; `.aezdata` now 8 B (AEFile only); `.got` unchanged | commit `2d3a2a9b`; `.data` 0x2978 -> 0x29c8 |
 | 19 | `src/game/weapons/RocketGun.cpp:31-46` | unused runtime `kRocketTrailSets[4]` copy in `.data` | 16 B | `.data`; page-quantized GOT alignment | object `.data` size `0x10`; `kRocketTrailSetValues` constexpr is the used copy |
 | 20 | `src/engine/file/AEFile.cpp:7-9` | unused `pakExtension[8] = ".aez"` in `.aezdata` | 8 B | `.aezdata`; second component of the 0x58 section | object `.aezdata` size `0x8`; actual `.aez` literal is at `AEFile.cpp:443` |
 
-Observed `.aezdata` total is `0x58` = 88 B = Transform 80 + AEFile 8. The original has no
-`.aezdata`; ours has 28 sections instead of 27.
+Observed `.aezdata` total is now `0x8` = 8 B (AEFile only); the Transform 72-byte block moved
+back to `.data` (`2d3a2a9b`). The original has no `.aezdata`; ours still has 28 sections.
 
 ### 4.3 Non-anchors / stale comments
 
@@ -434,8 +434,8 @@ coordinated layout pass.
   the real `"CubeMapping"` literal is used directly.
 - `Status.cpp:2048-2051`: recover the original 190-byte table values/initialization; the
   table is a real `.bss` object, not just padding.
-- `Transform.cpp:8-17`: restore the original 72-byte pre-`.got` data in `.data` (or its
-  original TU) and remove the 80-byte `.aezdata` anchor.
+- `Transform.cpp:8-17`: **done** (`2d3a2a9b`); the original 72-byte block is back in `.data`,
+  the `.aezdata` pragma is gone, and `.got` is unchanged.
 - `RocketGun.cpp:31-46`: remove the unused runtime `kRocketTrailSets[4]` copy; keep the
   `constexpr` values. Recover 16 B of real `.data` if the original TU has it.
 - `AEFile.cpp:7-9`: remove the unused `pakExtension[8]` and the `.aezdata` pragma; the real
