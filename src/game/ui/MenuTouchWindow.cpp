@@ -1347,11 +1347,12 @@ void MenuTouchWindow::draw() {
             } else {
                 Globals::Canvas->SetColor(0xffffffffu);
                 if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
+                    PaintCanvas *canvas = Globals::Canvas;
                     int logoTop = Globals::layout->field_0xc_leftMargin;
-                    int logoWidth = Globals::Canvas->GetImage2DWidth(this->field_0x120);
-                    int logoHeight = Globals::Canvas->GetImage2DHeight(this->field_0x120);
-                    Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, logoTop / 4, logoWidth / 2,
-                                                 logoHeight / 2, 17, 20, 0);
+                    int logoWidth = canvas->GetImage2DWidth(this->field_0x120);
+                    int logoHeight = canvas->GetImage2DHeight(this->field_0x120);
+                    canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, logoTop / 4, logoWidth / 2,
+                                        logoHeight / 2, 17, 20, 0);
                 } else {
                     Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
                 }
