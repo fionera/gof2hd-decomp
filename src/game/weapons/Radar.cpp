@@ -69,12 +69,6 @@ static inline int layoutField(int offset) {
 }
 
 
-// .text layout anchor: keeps the linked .text section at its original 0x1343c0 size
-// (later TUs embed pc-relative offsets that depend on it).
-[[gnu::used]] static int radarLayoutAnchor(int value) {
-    return value * 3 + 1;
-}
-
 unsigned char Radar::drawTarget;
 
 Radar::Radar(Level *level) : radarPos(), playerPos(), egoPos(), targetPos() {
@@ -350,6 +344,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     Mission *mission = Globals::status->getMission();
     bool missionBlocksPlanets = false;
+    int alwaysEnemySeen = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
@@ -357,13 +352,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
     bool alienOrbit = Globals::status->inAlienOrbit();
+    int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
     this->route = this->level->getPlayerRoute();
     this->asteroids = this->level->getAsteroids();
     this->gasClouds = this->level->getGasClouds();
     this->planetTargets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
-    int campaign = Globals::status->getCurrentCampaignMission();
 
     this->transform = *(Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent());
     this->cameraX = this->transform.m[3];
@@ -374,13 +369,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     if (alienOrbit) {
         this->field_0x1a8 =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
-    } else {
-        this->field_0x1a8 = this->level->getPlayer()->goingToPlanet() &&
-                            !this->level->getPlayer()->isDockingToPlanet() &&
-                            (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget() ==
-                                    ((Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets())
-                                            ->data()[((SolarSystem *) (intptr_t) Globals::status->getSystem())
-                                                             ->getStationEnumIndex(((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())->data()[this->planetDockIndex])];
     }
 
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
@@ -406,10 +394,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (this->lockedAsteroid != nullptr || this->lockedGasCloud != nullptr || this->field_0x1c != nullptr) {
-        otherLock = 1;
-    } else {
+    if (this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && this->field_0x1c == nullptr) {
         otherLock = this->field_0x14 != 0;
+    } else {
+        otherLock = 1;
     }
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
@@ -603,6 +591,18 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 }
             }
         }
+        if (!alienOrbit) {
+            KIPlayer *autoPilotTarget = (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget();
+            Array<KIPlayer *> *targets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+            SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+            int stationIndex = system->getStationEnumIndex(
+                    ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
+                            ->data()[this->planetDockIndex]);
+            this->field_0x1a8 = this->level->getPlayer()->goingToPlanet() &&
+                                !this->level->getPlayer()->isDockingToPlanet() &&
+                                autoPilotTarget == targets->data()[stationIndex];
+        }
+
         if (!turretMode && !landmarkHit) {
             if (this->field_0x14 != 0) {
                 if (this->field_0x14 == this->field_0x18) {
@@ -659,12 +659,12 @@ enemies:
     }
     bool bossSeen = false;
     bool enemyHit = false;
-    int alwaysEnemySeen = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
-            if (!(enemy->player->isActive() && (!enemy->isDying() || enemy->hasCargo) && !enemy->field_0x74)) {
+            if (!enemy->player->isActive() ||
+                ((enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74)) {
                 if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
                     this->field_0x1bc++;
                     if (enemy->shipGroup == 10) {
@@ -674,7 +674,14 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            bool wreck;
+            if (enemy->hasCargo == 0) {
+                wreck = false;
+            } else if (enemy->isDead()) {
+                wreck = true;
+            } else {
+                wreck = enemy->isDying();
+            }
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -791,17 +798,9 @@ enemies:
             } else {
                 enemy->field_0x73 = 0;
                 enemy->field_0x76 = 0;
-                unsigned int image;
-                if (!wreck) {
-                    if (enemy->player->enemyFlagsLo) {
-                        image = enemy == locked ? this->image_0x90 : this->image_0x60;
-                    } else if (enemy->player->carriesFriendCargoFlag) {
-                        image = enemy == locked ? this->image_0x94 : this->image_0x68;
-                    } else {
-                        image = enemy == locked ? this->image_0x98 : this->image_0x78;
-                    }
-                } else {
+                if (wreck) {
                     KIPlayer *e = this->enemies->data()[i];
+                    unsigned int image;
                     if (e->countsAsEnemyExcludeFlag) {
                         image = this->image_0xb0;
                     } else if (e->shipGroup == 9) {
@@ -809,8 +808,18 @@ enemies:
                     } else {
                         image = this->image_0xa8;
                     }
+                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
+                } else {
+                    unsigned int image;
+                    if (enemy->player->enemyFlagsLo) {
+                        image = enemy == locked ? this->image_0x90 : this->image_0x60;
+                    } else if (enemy->player->carriesFriendCargoFlag) {
+                        image = enemy == locked ? this->image_0x94 : this->image_0x68;
+                    } else {
+                        image = enemy == locked ? this->image_0x98 : this->image_0x78;
+                    }
+                    Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 }
-                Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
                 goto tractor;
             }
             if (!this->level->getPlayer()->isAutoPilot() && !this->level->getPlayer()->isDockedToDockingPoint() &&
@@ -1003,8 +1012,8 @@ enemies:
                     }
                 }
             } else if (Globals::status->getShip()->getFirstEquipmentOfSort(33)->getAttribute(58) == 1) {
-                cloud->field_0x73 = 0;
                 cloud->field_0x76 = 0;
+                cloud->field_0x73 = 0;
                 Globals::Canvas->DrawImage2D(this->image_0xc0, this->screenX, this->screenY, 17, 68);
             }
         }
@@ -1074,7 +1083,14 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                bool wreck;
+                if (asteroid->hasCargo == 0) {
+                    wreck = false;
+                } else if (asteroid->isDead()) {
+                    wreck = true;
+                } else {
+                    wreck = asteroid->isDying();
+                }
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
@@ -1131,16 +1147,15 @@ asteroids:
             int bestDistance = 999999;
             for (int k = 0; k != 5; ++k) {
                 int index = this->asteroidSlots[k];
-                if (index < 0) {
-                    continue;
-                }
-                this->radarPos = this->asteroids->data()[index]->getPosition();
-                this->playerPos = player->getPosition();
-                this->radarPos -= this->playerPos;
-                int distance = (int) AbyssEngine::AEMath::VectorLength(this->radarPos);
-                if (distance < bestDistance) {
-                    best = index;
-                    bestDistance = distance;
+                if (index >= 0) {
+                    this->radarPos = this->asteroids->data()[index]->getPosition();
+                    this->playerPos = player->getPosition();
+                    this->radarPos -= this->playerPos;
+                    int distance = (int) AbyssEngine::AEMath::VectorLength(this->radarPos);
+                    if (distance < bestDistance) {
+                        best = index;
+                        bestDistance = distance;
+                    }
                 }
             }
             if (best > -1) {
@@ -1220,6 +1235,7 @@ asteroids:
         }
     }
 
+asteroids_done:
     int current = Globals::sound->currentMusicEvent;
     if (current == 143) {
         return;
@@ -1229,37 +1245,34 @@ asteroids:
         if ((uint32_t) (current - 136) > 15 || ((1 << (current - 136)) & 0xe071) == 0 ||
             (current != 151 && alwaysEnemySeen)) {
             Globals::sound->stop(current);
-            int music;
             if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens() ||
                 Globals::status->getCurrentCampaignMission() == 16) {
-                music = 136;
-            } else if (this->field_0x1bc <= 2) {
+                Globals::sound->play(136, nullptr, nullptr, 0.0f);
+            } else if (this->field_0x1bc < 3) {
                 if (alwaysEnemySeen) {
-                    music = 151;
+                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
-                    music = 149;
+                    Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
-                    music = 140;
+                    Globals::sound->play(140, nullptr, nullptr, 0.0f);
                 }
-            } else if (this->field_0x1bc <= 4) {
+            } else if (this->field_0x1bc < 5) {
                 if (alwaysEnemySeen) {
-                    music = 151;
+                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
-                    music = 149;
+                    Globals::sound->play(149, nullptr, nullptr, 0.0f);
                 } else {
-                    music = 141;
+                    Globals::sound->play(141, nullptr, nullptr, 0.0f);
                 }
             } else {
                 if (alwaysEnemySeen) {
-                    music = 151;
+                    Globals::sound->play(151, nullptr, nullptr, 0.0f);
                 } else if (bossSeen) {
-                    music = 150;
+                    Globals::sound->play(150, nullptr, nullptr, 0.0f);
                 } else {
-                    music = 142;
+                    Globals::sound->play(142, nullptr, nullptr, 0.0f);
                 }
             }
-            float volume = 0.0f;
-            Globals::sound->play(music, nullptr, nullptr, volume);
         }
     } else {
         this->field_0x54 = 0;
@@ -1278,37 +1291,36 @@ asteroids:
             }
             if (!ambient) {
                 Globals::sound->stop(current);
-                float volume = 0.0f;
                 if (Globals::status->inAlienOrbit() || Globals::status->getStation()->isAttackedByAliens()) {
-                    Globals::sound->play(145, nullptr, nullptr, volume);
+                    Globals::sound->play(145, nullptr, nullptr, 0.0f);
                 } else if (Globals::status->getCurrentCampaignMission() == 1) {
-                    Globals::sound->play(143, nullptr, nullptr, volume);
+                    Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 } else {
                     int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-                    int music;
                     if (Globals::status->getStation()->getIndex() == 108) {
-                        music = 146;
+                        Globals::sound->play(146, nullptr, nullptr, 0.0f);
                     } else if (Globals::status->getStation()->getIndex() == 101) {
-                        music = 147;
+                        Globals::sound->play(147, nullptr, nullptr, 0.0f);
                     } else if (Globals::status->inSupernovaSystem()) {
                         if (Globals::status->getMission() != nullptr && !Globals::status->getMission()->isEmpty() &&
                             Globals::status->getMission()->getTargetStation() ==
                                     Globals::status->getStation()->getIndex()) {
-                            music = Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242;
+                            Globals::sound->play(Globals::status->getCurrentCampaignMission() < 106 ? 2241 : 2242,
+                                                 nullptr, nullptr, 0.0f);
                         } else {
-                            music = 148;
+                            Globals::sound->play(148, nullptr, nullptr, 0.0f);
                         }
                     } else if (Globals::status->inDeepScienceOrbit()) {
-                        music = 152;
+                        Globals::sound->play(152, nullptr, nullptr, 0.0f);
                     } else {
-                        music = kRaceMusic[race];
+                        Globals::sound->play(kRaceMusic[race], nullptr, nullptr, 0.0f);
                     }
-                    Globals::sound->play(music, nullptr, nullptr, volume);
                 }
             }
         }
     }
     this->field_0x1bc = 0;
+
 }
 String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
     // positions are halved first so the squared 64-bit sum stays in range
