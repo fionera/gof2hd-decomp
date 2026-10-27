@@ -6300,19 +6300,11 @@ void Level::assignGuns() {
     ArraySetLength(slots, *enemyGuns);
 
     int boostedBase = power == 0 ? 3 : power + 2;
-    int baseDamage = boostedBase;
-    if (campaignMission == 4) {
-        baseDamage = 1;
-    }
+    int baseDamage = campaignMission == 4 ? 1 : boostedBase;
 
     unsigned int gunIndex = 0;
-    unsigned int i = 0;
-    // Pre-test preserves the empty-array case while keeping the original loop's
-    // increment/continue shape.
-    do {
-        if (i >= enemies->size()) break;
+    for (unsigned int i = 0; i < enemies->size(); i++) {
         if ((*enemies)[i] == nullptr) {
-            i++;
             continue;
         }
         if ((*enemies)[i]->field_0x25) {
@@ -6474,7 +6466,7 @@ void Level::assignGuns() {
                     gun->setIndex(214);
                     gun->damage *= 2;
                     mesh = 14240;
-                } else if ((mission == 157 || mission == 158) && group == 49) {
+                } else if (__builtin_expect((mission == 157 || mission == 158) && group == 49, 1)) { // lint: arm_builtin
                     gun->weaponType = ITEM_SORT_LASER;
                     gun->setIndex(7);
                     gun->damage *= 3;
@@ -6504,8 +6496,8 @@ void Level::assignGuns() {
             (*enemies)[i]->addGun(gun, 0);
             Globals::globals->addSoundResourceToList((*enemies)[i]->shipGroup == 9 ? 62 : 61);
 
-            if (wanted != nullptr && (*enemies)[i]->field_0x42
-                && (*enemies)[i]->shipGroupFlag >= 45 && (*enemies)[i]->shipGroupFlag <= 48) {
+            if ((unsigned int) ((*enemies)[i]->shipGroupFlag - 45) <= 3
+                && wanted != nullptr && (*enemies)[i]->field_0x42) {
                 Gun *rocket = new Gun(0, damage * 4, 4, -1, 10000, 3000, 8.0f,
                                       Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
                 rocket->setFriendGun(true);
@@ -6554,8 +6546,7 @@ void Level::assignGuns() {
             Globals::globals->addSoundResourceToList(74);
             gunIndex++;
         }
-        i++;
-    } while (i < enemies->size());
+    }
 }
 
 void Level::createGasClouds() {
@@ -7246,7 +7237,6 @@ static void levelTextAnchor() {
     volatile double layoutPad;
     layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
     layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
-    layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;  layoutPad = 15.0;
-    layoutPad = 16.0;  layoutPad = 17.0;  layoutPad = 18.0;
+    layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;
     (void) layoutPad;
 }
