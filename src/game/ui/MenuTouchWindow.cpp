@@ -1621,11 +1621,8 @@ void MenuTouchWindow::draw() {
                                                       *Globals::gameText->getText(509)),
                     slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
             }
-            for (unsigned int i = 1; i < this->sliders->size() - 1; i++) {
-                if (i == 5 && !Globals::layout->field_0x284_sliderSlot5Enabled)
-                    continue;
+            for (unsigned int i = 1; i < this->sliders->size() - 1; i++)
                 (*this->sliders)[i]->draw();
-            }
             this->optBtnD4->draw();
             this->optBtnD8->draw();
             this->optBtnDC->draw();
@@ -1826,9 +1823,12 @@ void MenuTouchWindow::draw() {
             int barWidth = Globals::Canvas->GetImage2DWidth(this->fireImage_0x54);
             int segmentHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x50);
             int arrowHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x5c);
-            int steerX = this->steerCoord_0x40 - barWidth / 2 +
-                         Globals::Canvas->GetImage2DWidth(this->steerImageA) / 2;
-            int fireX = this->fireCoord_0x60 - barWidth / 2 + Globals::Canvas->GetImage2DWidth(this->fireSize_0x74) / 2;
+            int steerCoordX = this->steerCoord_0x40;
+            int steerX = Globals::Canvas->GetImage2DWidth(this->steerImageA) / 2 +
+                         (steerCoordX - barWidth / 2);
+            int fireCoordX = this->fireCoord_0x60;
+            int fireX = Globals::Canvas->GetImage2DWidth(this->fireSize_0x74) / 2 +
+                        (fireCoordX - barWidth / 2);
             int steerY = this->steerCoord_0x42 + Globals::Canvas->GetImage2DHeight(this->steerImageA) / 2;
             int fireY = this->fireCoord_0x62 + Globals::Canvas->GetImage2DHeight(this->fireSize_0x74) / 2;
             int segmentY = (int) ((float) (Globals::Canvas->GetImage2DHeight(this->fireImage_0x54) + 100) -
@@ -1936,7 +1936,7 @@ void MenuTouchWindow::draw() {
                 bool latinButton = ((*this->buttonsB0)[i]->id == 33 || (*this->buttonsB0)[i]->id == 36 ||
                                     (*this->buttonsB0)[i]->id == 37) &&
                                    GameText::getLanguage() == 9;
-                int switchScript = latinButton | arabicButton;
+                bool switchScript = latinButton | arabicButton;
                 if (switchScript)
                     Globals::Canvas->field_0x1c = !arabicButton;
                 (*this->buttonsB0)[i]->draw();
@@ -1982,8 +1982,8 @@ void MenuTouchWindow::draw() {
                                                       layout->field_0x20_top + layout->field_0xc_leftMargin +
                                                       this->scrollOffset);
                 (*this->scrollSlots)[i]->draw();
-                if ((i == 0 && optionFlag(53)) || (i == 1 && optionFlag(54)) || (i == 2 && optionFlag(55)) ||
-                    (i == 3 && optionFlag(56)) || (i == 4 && ((optionFlag(53) && optionFlag(55)) || optionFlag(57)))) {
+                if ((optionFlag(53) && i == 0) || (optionFlag(54) && i == 1) || (optionFlag(55) && i == 2) ||
+                    (optionFlag(56) && i == 3) || (i == 4 && ((optionFlag(53) && optionFlag(55)) || optionFlag(57)))) {
                     // Already owned: tick mark.
                     Globals::Canvas->DrawImage2D(
                         this->scrollImage_0x144,
@@ -2028,30 +2028,28 @@ void MenuTouchWindow::draw() {
             this->scrollWindowB->draw();
             int selected = this->field_0x1e0;
             bool notOwned = true;
-            if (selected == 0 && optionFlag(53))
+            if (optionFlag(53) && selected == 0)
                 notOwned = false;
-            else if (selected == 1 && optionFlag(54))
+            else if (optionFlag(54) && selected == 1)
                 notOwned = false;
-            else if (selected == 2 && optionFlag(55))
+            else if (optionFlag(55) && selected == 2)
                 notOwned = false;
-            else if (selected == 3 && optionFlag(56))
+            else if (optionFlag(56) && selected == 3)
                 notOwned = false;
-            else if (selected == 4 && optionFlag(57))
+            else if (optionFlag(57) && selected == 4)
                 notOwned = false;
-            else if (selected == 0 && optionFlag(57))
-                notOwned = false;
-            else if (selected == 2 && optionFlag(57))
+            else if (optionFlag(57) && (selected == 0 || selected == 2))
                 notOwned = false;
             if (notOwned)
                 notOwned = (optionFlag(53) == 0 || selected != 4) || optionFlag(55) == 0;
             Globals::Canvas->DisableClip();
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 60) {
-                    button->draw();
-                } else if (button->id == 52) {
+                if (button->id == 52) {
                     button->setVisible(notOwned);
                     button->setText(*Globals::gameText->getText(98));
+                    button->draw();
+                } else if (button->id == 60) {
                     button->draw();
                 }
             }
@@ -3940,6 +3938,8 @@ static void mtwTextLayoutAnchor() {
     a = 673; a = 674; a = 675; a = 676; a = 677; a = 678; a = 679; a = 680;
     a = 681; a = 682; a = 683; a = 684; a = 685; a = 686; a = 687;
     a = 1; a = 2; a = 3; a = 4; a = 5; a = 6; a = 7; a = 8; a = 9;
+    a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19;
+    a = 20; a = 21; a = 22; a = 23; a = 24; a = 25; a = 26; a = 27;
     c = 0; c = 1; c = 2;
     (void) a;
     if (a == -1)
