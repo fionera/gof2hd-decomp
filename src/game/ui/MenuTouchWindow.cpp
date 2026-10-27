@@ -598,15 +598,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->optBtnD0 = new TouchButton(
         *Globals::gameText->getText(492), 0,
         this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
-        Globals::layout->field_0x2c_rowHeight + (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
-                                                                         Globals::layout->field_0x20_top)) +
-            this->field_0x15c / 2,
+        Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin + this->listEntryWidth +
+            Globals::layout->field_0x20_top + this->field_0x15c / 2,
         this->listEntryHeight - 20, 68, 4);
     this->optBtnCC = new TouchButton(String(""), 13,
                                      this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
-                                     Globals::layout->field_0x2c_rowHeight +
-                                         (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
-                                                                  Globals::layout->field_0x20_top)) +
+                                     Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0xc_leftMargin +
+                                         this->listEntryWidth + Globals::layout->field_0x20_top +
                                          this->field_0x15c / 2,
                                      66);
     this->scrollExtraButton = new TouchButton(
