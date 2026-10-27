@@ -469,8 +469,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                         Globals::Canvas->GetImage2DHeight(this->image_0x334),
                                     false);
     } else {
-        String load = String(Globals::status->getShip()->getCurrentLoad()) +
-                      (String(" / ") + String(Globals::status->getShip()->getMaxLoad()) + String("t"));
+        String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                      String(Globals::status->getShip()->getMaxLoad()) + String("t");
         int shift = 0;
         if (Globals::status->getShip()->getCurrentLoad() >= 101)
             shift = -2 * Globals::layout->field_0x2c_rowHeight;
@@ -647,7 +647,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->SetColor(0xffffffff);
         Globals::Canvas->DrawImage2D(this->image_0x358, Globals::w >> 1, Globals::h, 0x11, 0x24);
         String label = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 1274) +
-                       String(String(" (") + String(this->currentSecondaryWeapon->getAmount()) + String(")"), false);
+                       String(String(" (") + String(this->currentSecondaryWeapon->getAmount()) + String(")"));
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, label,
             (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, label) >> 1),
@@ -1499,7 +1499,7 @@ void Hud::drawMenu(int unused) {
     Globals::Canvas->DrawImage2D(this->quickMenuTopImage, this->field_0x3c4 + this->field_0x4cc,
                                  this->field_0x4d0 + this->menuOriginY);
     Globals::Canvas->DrawImage2D(this->image_0x35c, this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2,
-                                 this->menuOriginY + this->field_0x4d0 + (this->menuRowHeight >> 1) -
+                                 this->menuOriginY + this->field_0x4d0 + this->menuRowHeight / 2 -
                                      Globals::layout->quickMenuHeaderLift,
                                  0x11, 0x44);
     int y = this->menuOriginY + this->field_0x4d0 + this->menuRowHeight;
@@ -1518,8 +1518,8 @@ void Hud::drawMenu(int unused) {
         return;
     if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
         String label = String("X ") + String(this->fuelGaugeValue);
-        int gx = this->field_0x4cc + this->field_0x3d4 + (this->field_0x3dc >> 1);
-        int gy = Globals::layout->field_0x288 + (y + (Globals::layout->field_0x30_rowHeight >> 1));
+        int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+        int gy = Globals::layout->field_0x288 + (y + Globals::layout->field_0x30_rowHeight / 2);
         Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
         Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
                                      Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
@@ -1750,8 +1750,8 @@ void Hud::drawChallengeModeScore(int unused) {
     }
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
-    half = screenW >> 1;
-    left = half - (step * 7 >> 1);
+    half = screenW / 2;
+    left = half - step * 7 / 2;
     int x = left;
     unsigned int scoreLen = score.size();
     for (unsigned int i = 0; i < scoreLen; i++) {
@@ -1775,7 +1775,7 @@ void Hud::drawChallengeModeScore(int unused) {
             for (unsigned int i = 0; i < bonus.size(); i++) {
                 int frame = bonus.SubString(i, i + 1).ValueOf();
                 this->digitSprite->setFrame(frame);
-                this->digitSprite->setPosition((Globals::w >> 1) - bonus.size() * step / 2 + offset,
+                this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
                                                bonusY + Globals::layout->field_0x2c_rowHeight);
                 offset += step;
                 this->digitSprite->draw(1.0f, 1.0f);
