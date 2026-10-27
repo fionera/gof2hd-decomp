@@ -2321,7 +2321,7 @@ void Level::createMission() {
                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation();
     bool alienWave = false;
     bool bigAlienWave = false;
-    bool pirateFortress = false;
+    int pirateFortress = 0;
     if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
@@ -7247,6 +7247,6 @@ static void levelTextAnchor() {
     volatile double layoutPad;
     layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;
     layoutPad = 6.0;  layoutPad = 7.0;  layoutPad = 8.0;  layoutPad = 9.0;  layoutPad = 10.0;
-    layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;
+    layoutPad = 11.0;  layoutPad = 12.0;  layoutPad = 13.0;  layoutPad = 14.0;  layoutPad = 15.0;
     (void) layoutPad;
 }
