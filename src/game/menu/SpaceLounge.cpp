@@ -1371,7 +1371,7 @@ int SpaceLounge::onKeyPress(int key) {
                         this->mode = 2;
                         this->chatScroll = 0;
                     } else if (((SolarSystem *) Globals::status->getSystem())
-                                   ->stationIsInSystem(key_agent(this)->getMission()->getTargetStation())) {
+                                   ->stationIsInSystem(key_agent(this)->getMission()->getTargetStation()) == 1) {
                         this->scrollWindow->setText(agent->getName(), *Globals::gameText->getText(806));
                         this->mode = 2;
                         this->chatScroll = 0;
