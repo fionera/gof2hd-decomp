@@ -351,7 +351,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
-    bool alienOrbit = Globals::status->inAlienOrbit();
+    int alienOrbit = Globals::status->inAlienOrbit();
     int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
@@ -366,15 +366,14 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     this->cameraZ = this->transform.m[11];
     this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
 
-    bool goingToPlanet = this->level->getPlayer()->goingToPlanet();
     if (alienOrbit) {
-        this->field_0x1a8 = goingToPlanet && !this->level->getPlayer()->isDockingToPlanet();
-    } else if (goingToPlanet && !this->level->getPlayer()->isDockingToPlanet()) {
-        // the auto-pilot target is compared against the planet targets below
-        this->field_0x1a8 = false;
+        this->field_0x1a8 =
+                this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
-        this->field_0x1a8 = false;
+        this->field_0x1a8 =
+                this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     }
+
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY - this->imageHeight, 1);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY, 2);
@@ -403,8 +402,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     } else {
         otherLock = 1;
     }
-    bool notOtherLock = !otherLock;
-    int notTurretMode = !turretMode;
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
@@ -418,7 +415,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && notOtherLock && i != 3 && notTurretMode) {
+                if (!landmarkHit && !otherLock && i != 3 && !turretMode) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -461,13 +458,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if (i == 3) {
-                Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
-            } else if (i == 1) {
-                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
+            } else if (i == 1 || i == 3) {
+                Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8, this->screenX,
+                                             this->screenY, 17, 68);
             }
         }
-        if (notTurretMode) {
+        if (!turretMode) {
             if (this->lockedStation != nullptr) {
                 if (this->lockedStation->isDead()) {
                     this->lockedStation = nullptr;
@@ -546,8 +542,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 }
                 if (Globals::status->getCurrentCampaignMission() == 116 &&
                     (uint32_t) (stations->data()[i] - 90) <= 4 &&
-                    ((1 << (stations->data()[i] - 90)) &
-                     ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()) == 0) {
+                    ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() &
+                      (1 << (stations->data()[i] - 90))) == 0)) {
                     Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
                     marked = true;
                 } else if (Globals::status->getCurrentCampaignMission() == 120 && stations->data()[i] == 93) {
@@ -575,7 +571,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
                 int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
                 int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
-                planetHit = false;
                 if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
                     this->screenY < top + size) {
                     if ((int) i == StarSystem::orbitPlanetIndex) {
@@ -673,9 +668,7 @@ enemies:
                 ((enemy->isDying() && !enemy->hasCargo) || enemy->field_0x74)) {
                 if (enemy->shipGroup == 10 && enemy->player->isActive() && !enemy->isDead() && !enemy->isDying()) {
                     this->field_0x1bc++;
-                    if (enemy->shipGroup == 10) {
-                        bossSeen = true;
-                    }
+                    bossSeen = true;
                 }
                 continue;
             }
