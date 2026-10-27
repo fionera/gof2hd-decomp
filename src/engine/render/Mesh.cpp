@@ -600,13 +600,16 @@ namespace AbyssEngine {
                     delete[] (unsigned char *) raw;
                     return -1;
                 }
-                Mesh *mesh = *slot;
-                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
-                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 1); i += 2) {
-                    ((float *) mesh->texCoords)[i] = (float) ((double) raw[i] * (1.0 / 4096.0));
-                    double v = (double) raw[i + 1] * (1.0 / 4096.0);
-                    ((float *) mesh->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
+                float *uv = (float *) (*slot)->texCoords;
+                short *src = raw;
+                float *end = uv + ((*slot)->vertexCount << 1);
+                for (float *p = uv; p < end; p += 2) {
+                    p[0] = (float) ((double) src[0] * (1.0 / 4096.0));
+                    double v = (double) src[1] * (1.0 / 4096.0);
+                    p[1] = (float) (flipV ? 1.0 - v : v);
+                    src += 2;
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
