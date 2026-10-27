@@ -20,6 +20,8 @@
 - Harvested `w1077`: `StarMap::draw` 89.7% -> **92.0%** (2644 B exact) by
   restoring the else-branch `Globals::Canvas` reload and shrinking the
   `StarMap_GetScreenPosition` anchor from 16 B to 8 B.
+- Harvested `w1065`: `HangarWindow::render` 72.6% -> **72.9%** (9732 B) by
+  restoring the original `unsigned int` tab-button loop index.
 - Launched `w1050..w1070` (21 `codex exec -p dsv41` workers) from master
   `b0738f65` as a worst-first fleet: Layout ctor (2), LevelScript::process (2),
   Radar::draw (2), Gun::calcCharacterCollision, Generator::createMission,
