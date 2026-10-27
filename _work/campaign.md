@@ -53,6 +53,14 @@
   MGame::OnTouchEnd, and Status::moveWanted. The prompt prioritizes real
   control-flow/struct/TU root causes over one-point instruction nudging.
 
+- Harvested `w961` follow-up: `MenuTouchWindow` ctor C1/C2 68.4% -> **68.5%**
+  (9600B) by matching the original `!iPadAssetsWithLowerRes && iPad` guard
+  evaluation order at the border-image and credits sites.
+- Harvested `w1017`: removed the named PulseShader GLSL arrays and the local
+  `extern "C" sinf` shim; the original literals now sit directly in
+  `ES2LoadProgram` and `<cmath>`/`std::sinf` is used. `.rodata` shrank by the
+  16-byte alignment pad; gate unchanged.
+
 
 - Harvested `w947` follow-up: `ModStation::OnInitialize` 86.3% -> **86.4%**
   (6400B, original 6396B) by reloading `this->buttonRow` after each
