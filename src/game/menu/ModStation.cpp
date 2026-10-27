@@ -413,7 +413,7 @@ int ModStation::OnInitialize() {
             this->infoBoxY = left;
             this->infoBoxX = 0;
             this->infoBoxH = Globals::h - left - right;
-            int y = infoBoxW - inset - f4c;
+            int y = infoBoxW - f4c - inset;
             this->buttonLaunch = new TouchButton(String(""), 12, Globals::w, Globals::h, 34);
             this->buttonCredits = new TouchButton(Globals::layout->formatCredits(Globals::status->getCredits()), 11,
                                                   Globals::w - this->buttonLaunch->getWidth(), Globals::h, 34);
