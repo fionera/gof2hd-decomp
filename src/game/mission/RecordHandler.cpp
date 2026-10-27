@@ -24,6 +24,8 @@
 #include <openssl/sha.h>
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
+#include <typeinfo>
 
 namespace {
     // Byte-addressed flag view of a GameRecord's packed toggle bytes.
@@ -1412,17 +1414,17 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 
 
 
-namespace {
-    // Mix a record-store slot into a stable hash; kept local to this TU.
-    [[gnu::used]] int mixRecordStoreSlot(int value) {
-        value = value * 3 + 0x1000;
-        value ^= 0x2000;
-        value -= 0x3000;
-        value = value * 3 + 0x1111;
-        value ^= 0x2101;
-        return value;
+// libc++abi's type_info equality helper (private_typeinfo.cpp), linked out of line
+// in the original. The NDK archive emits its copy after the game TUs; keeping this
+// one here holds the original .text page alignment.
+#pragma GCC visibility push(hidden)
+bool is_equal(const std::type_info *lhs, const std::type_info *rhs, bool compareNames) {
+    if (!compareNames) {
+        return lhs == rhs;
     }
+    return strcmp(lhs->name(), rhs->name()) == 0;
 }
+#pragma GCC visibility pop
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
