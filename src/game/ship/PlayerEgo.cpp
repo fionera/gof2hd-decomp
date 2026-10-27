@@ -1979,8 +1979,12 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                     float transferTime = mission->getType() == 184 ? 1500.0f : 1000.0f;
                     this->dockTransferedAmount = (int) ((float) this->field_0x35c / transferTime);
                     if (this->dockTotalAmount <= this->dockTransferedAmount) {
-                        if (delivered < this->dockTransferedAmount)
-                            hud->hudEvent(mission->getType() == 184 ? 38 : 42, this, 0);
+                        if (delivered < this->dockTransferedAmount) {
+                            if (mission->getType() == 184)
+                                hud->hudEvent(38, this, 0);
+                            else
+                                hud->hudEvent(42, this, 0);
+                        }
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
                     if (this->dockTotalAmount > delivered) {
