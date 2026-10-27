@@ -534,9 +534,10 @@ void HangarWindow::render() {
                         (*this->buttons)[b]->setVisible(false);
                 }
 
-                for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (Globals::layout->field_0x70_rowHeight + this->field_0x100.d) * i +
-                            (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) + this->scrollOffset;
+                unsigned int i;
+                for (i = 0; i < items->size(); i++) {
+                    int baseY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->scrollOffset;
+                    int y = (Globals::layout->field_0x70_rowHeight + this->field_0x100.d) * i + baseY;
                     if (y < 0 || y > Globals::h)
                         continue;
                     ListItem *item = (*items)[i];
@@ -584,7 +585,7 @@ void HangarWindow::render() {
                                     }
                                     if (right > 0) {
                                         (*this->buttons)[9]->setPosition(
-                                            this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                            Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                             this->field_0x114 + y, 18);
                                         (*this->buttons)[9]->setVisible(true);
                                         (*this->buttons)[9]->draw();
@@ -730,7 +731,7 @@ void HangarWindow::render() {
                         name = *Globals::gameText->getText(174);
                         if (tab == 4 && i == items->size() - 1) {
                             (*this->buttons)[23]->setPosition(
-                                this->hintOffsetX + Globals::layout->buttonInsetX + listWidth / 2,
+                                Globals::layout->buttonInsetX + this->hintOffsetX + listWidth / 2,
                                 this->field_0x114 + y, 20);
                             (*this->buttons)[23]->setVisible(true);
                             (*this->buttons)[23]->draw();
@@ -814,7 +815,7 @@ void HangarWindow::render() {
                         if (item->isShip()) {
                             if (tab != 0 && !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
                                 (*this->buttons)[1]->setPosition(
-                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                     this->field_0x114 + y, 18);
                                 (*this->buttons)[1]->setVisible(true);
                                 (*this->buttons)[1]->draw();
@@ -862,7 +863,7 @@ void HangarWindow::render() {
                         }
                         if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
                             (*this->buttons)[0]->setPosition(
-                                this->hintOffsetX + Globals::layout->buttonInsetX + (listWidth - buttonOffset),
+                                Globals::layout->buttonInsetX + this->hintOffsetX + (listWidth - buttonOffset),
                                 this->field_0x114 + y, 18);
                             (*this->buttons)[0]->setVisible(true);
                             (*this->buttons)[0]->draw();
