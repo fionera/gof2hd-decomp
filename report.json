@@ -65,27 +65,11 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 67.9,
+   "pct": 68.1,
    "byte": false,
    "linked": false,
    "osize": 2764,
    "usize": 2764
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 68.4,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 68.4,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
@@ -94,6 +78,22 @@
    "linked": false,
    "osize": 9332,
    "usize": 9212
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 68.5,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 68.5,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
@@ -121,27 +121,11 @@
   },
   {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 70.7,
+   "pct": 71.0,
    "byte": false,
    "linked": false,
    "osize": 2632,
    "usize": 2596
-  },
-  {
-   "name": "_ZN7GlobalsC1Ev",
-   "pct": 70.8,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
-   "name": "_ZN7GlobalsC2Ev",
-   "pct": 70.8,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
   },
   {
    "name": "_ZN5Level13createMissionEv",
@@ -168,12 +152,28 @@
    "usize": 9732
   },
   {
+   "name": "_ZN7GlobalsC1Ev",
+   "pct": 73.5,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
+  },
+  {
+   "name": "_ZN7GlobalsC2Ev",
+   "pct": 73.5,
+   "byte": false,
+   "linked": false,
+   "osize": 612,
+   "usize": 612
+  },
+  {
    "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 73.0,
+   "pct": 74.3,
    "byte": false,
    "linked": false,
    "osize": 13052,
-   "usize": 13168
+   "usize": 13160
   },
   {
    "name": "_ZN5Level11createSceneEv",
