@@ -290,7 +290,7 @@ namespace AbyssEngine {
                 }
                 if (count != 0) {
                     short keys;
-                    for (unsigned short channel = 0; channel < 7; channel++) {
+                    for (unsigned int channel = 0; channel < 7; channel++) {
                         if (AEFile::Read(2, &keys, file) == 0) {
                             delete anim;
                             return -1;
@@ -603,13 +603,10 @@ namespace AbyssEngine {
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
                 float *uv = (float *) (*slot)->texCoords;
-                short *src = raw;
-                float *end = uv + ((*slot)->vertexCount << 1);
-                for (float *p = uv; p < end; p += 2) {
-                    p[0] = (float) ((double) src[0] * (1.0 / 4096.0));
-                    double v = (double) src[1] * (1.0 / 4096.0);
-                    p[1] = (float) (flipV ? 1.0 - v : v);
-                    src += 2;
+                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 1); i += 2) {
+                    uv[i] = (float) ((double) raw[i] * (1.0 / 4096.0));
+                    double v = (double) raw[i + 1] * (1.0 / 4096.0);
+                    uv[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
