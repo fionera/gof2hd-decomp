@@ -3051,9 +3051,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
+                if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 } else if (button->id == 106) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
@@ -3062,11 +3064,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y))
                         NFC::openPrivacyPolicy();
-                } else if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
+                } else if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
                 }
             }
             break;
@@ -3261,13 +3261,15 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
         case 1:
             // Load game.
             if (this->messageShowing) {
-                int ret = this->listStateSuppress | this->field_0x1da;
-                if (!ret && this->choiceWindow->OnTouchEnd(x, y) == 0 &&
-                    this->choiceWindow->hasChoice() &&
-                    this->loadGame(this->selectedRow) == 0)
-                    ret = 1;
-                if (ret)
+                if (this->listStateSuppress)
                     return 0;
+                if (this->field_0x1da)
+                    return 0;
+                if (__builtin_expect(this->choiceWindow->OnTouchEnd(x, y) == 0, 1)) { // lint: arm_builtin
+                    if (this->choiceWindow->hasChoice() &&
+                        this->loadGame(this->selectedRow) == 0)
+                        return 0;
+                }
                 this->messageShowing = 0;
             }
             if (this->okButton->OnTouchEnd(x, y)) {
