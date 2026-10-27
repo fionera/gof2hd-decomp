@@ -2765,6 +2765,8 @@ void MGame::OnUpdate() {
         }
 
         if (this->elapsedTime > 5000) {
+            Level *levelLocal = this->level;
+            AbyssEngine::AERandom *rndLocal = Globals::rnd;
             if (this->levelScript->m_nScriptTime > 5000 && !this->jumpDriveActive && !this->cutsceneActive) {
                 // Story contacts that call in when the player idles for an hour.
                 if (Globals::status->getCurrentCampaignMission() == 23 && !this->player->isMining() &&
@@ -2777,19 +2779,14 @@ void MGame::OnUpdate() {
                         delete this->dialogueWindow;
                         this->dialogueWindow = nullptr;
                     }
-                    int variant = Globals::rnd->nextInt(2);
-                    int textId = 534;
-                    int soundId = 465;
-                    if (variant == 0) {
-                        textId = 533;
-                        soundId = 464;
-                    }
+                    int variant = rndLocal->nextInt(2);
+                    int textId = variant == 0 ? 533 : 534;
                     DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
                                                                   Globals::gameText->getText(1602), gMGameFaces + 5);
                     this->dialogueWindow = dialogue;
-                    Globals::sound->play(soundId, nullptr, nullptr, 0.0f);
-                    this->needsRedraw = 1;
+                    Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
                     this->cutsceneActive = 1;
+                    this->needsRedraw = 1;
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
                            Globals::status->getMission()->isEmpty() &&
@@ -2801,7 +2798,7 @@ void MGame::OnUpdate() {
                         delete this->dialogueWindow;
                         this->dialogueWindow = nullptr;
                     }
-                    int variant = Globals::rnd->nextInt(2);
+                    int variant = rndLocal->nextInt(2);
                     int textId = variant == 0 ? 535 : 536;
                     DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
                                                                   Globals::gameText->getText(1603), gMGameFaces + 10);
@@ -2818,7 +2815,7 @@ void MGame::OnUpdate() {
                            !this->jumpDriveActive && !this->usingJumpDrive) {
                     int radioIndex = Globals::rnd->nextInt(2);
                     int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
-                    this->level->createRadioMessage(28, radioIndex + radioBase);
+                    levelLocal->createRadioMessage(28, radioIndex + radioBase);
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (!Globals::status->inAlienOrbit() && Globals::status->field_0x17c &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
