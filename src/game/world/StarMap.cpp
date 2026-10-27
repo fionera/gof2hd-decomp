@@ -877,14 +877,15 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
 // Security level colours (RGB) for the system info line.
 
 void StarMap::draw() {
+    bool in = this->transitionIn;
     this->alpha = this->mode == 0 ? 255 : 0;
-    if (this->transitionIn != this->transitionOut) {
+    if (in != this->transitionOut) {
         float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
                   (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
         this->alpha = (int) ((this->transitionIn ? 1.0f - t : t) * 255.0f);
     }
 
-    if (this->mode != 3 || this->transitionIn || this->transitionOut) {
+    if (this->mode != 3 || in || this->transitionOut) {
         // Galaxy: faint route network.
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha < 34 ? this->alpha : 34));
         for (uint32_t i = 0; i < this->systemGeoms->size(); i++) {
