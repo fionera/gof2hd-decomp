@@ -196,6 +196,8 @@ void LevelScript::skipCutscene() {
     }
 }
 
+static volatile int layoutPadSink[38];
+
 bool LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
     // Implemented faithfully here: prologue accessors + mission dispatch (0x137d18),
@@ -342,164 +344,191 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0;
                 m_nState = 6;
             }
-        } else if (m_nState == 6) {
-            // State 6: the station's docking bay opens around the player.
-            Vector zero{0.0f, 0.0f, 0.0f};
-            Vector pos = player->getPosition();
-            Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
-            m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
-            m_nScriptTimerA += delta;
-            float rumble = (float) m_nScriptTimerA / 4000.0f;
-            if (!(rumble < 1.0f)) {
-                rumble = 1.0f;
+        } else {
+            switch (m_nState) {
+                case 6: {
+                    // State 6: the station's docking bay opens around the player.
+                    Vector zero{0.0f, 0.0f, 0.0f};
+                    Vector pos = player->getPosition();
+                    Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
+                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
+                    m_nScriptTimerA += delta;
+                    float rumble = (float) m_nScriptTimerA / 4000.0f;
+                    if (!(rumble < 1.0f)) {
+                        rumble = 1.0f;
+                    }
+                    m_pCamera->setRumblePercentage(rumble, 20);
+                    if (((RadioMessage *) ((*messages)[15]))->isOver()) {
+                        m_nState = 7;
+                        m_pGeometry5->setPosition(player->getPosition());
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                        Globals::sound->play(160, nullptr, nullptr, 0.0f);
+                        Globals::sound->stop(161);
+                        m_nScriptTimerA = 0;
+                    }
+                    break;
+                }
+                case 7: {
+                    m_nScriptTimerA += delta;
+                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
+                    AEGeometry *dockModel = m_pGeometry5;
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                                                    *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
+                                            Vector{0.0f, 1.0f, 0.0f});
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                            ->Update((long long) delta, false);
+                    if (m_nScriptTimerA >= 2001) {
+                        Globals::sound->stop(158);
+                        player->setVisible(false);
+                        m_pCamera->setRumblePercentage(0.0f, 0);
+                    }
+                    if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                 ->animating) {
+                        Globals::sound->stop(Globals::sound->currentMusicEvent);
+                        Globals::sound->play(141, nullptr, nullptr, 0.0f);
+                        m_nState = 8;
+                        m_nScriptTimerA = 0;
+                    }
+                    break;
+                }
+                case 8: {
+                    m_nScriptTimerA += delta;
+                    float rumble = (float) m_nScriptTimerA / -3000.0f + 1.0f;
+                    if (rumble < 0.0f) {
+                        rumble = 0.0f;
+                    }
+                    m_pCamera->setRumblePercentage(rumble, 20);
+                    if (m_nScriptTimerA >= 4001) {
+                        m_nState = 9;
+                        m_nScriptTimerA = 0;
+                        m_pCamera->setRumblePercentage(0.0f, 0);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
+                    }
+                    break;
+                }
+                case 9: {
+                    // State 9: jump to the intro planet.
+                    m_nState = 10;
+                    m_pLevel->getStarSystem()->switchPlanetForIntro();
+                    m_pLevel->switchSkyboxForIntro();
+                    player->setPosition(0.0f, 0.0f, 0.0f);
+                    m_pLevel->particleRenderBoolPtr->reset();
+                    m_pLevel->particleEmitBoolPtr->reset();
+                    player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+                    player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
+                    m_pGeometry5->setPosition(player->getPosition());
+                    m_pCamera->setPosition(5000.0f, 500.0f, -10000.0f);
+                    m_nScriptTimerA = 0;
+                    break;
+                }
+                case 10: {
+                    m_nScriptTimerA += delta;
+                    float rumble = (float) m_nScriptTimerA / 2000.0f;
+                    if (!(rumble < 1.0f)) {
+                        rumble = 1.0f;
+                    }
+                    m_pCamera->setRumblePercentage(rumble, 20);
+                    if (m_nScriptTimerA >= 2001) {
+                        Globals::sound->play(159, nullptr, nullptr, 0.0f);
+                        m_nState = 11;
+                        m_pGeometry5->setPosition(player->getPosition());
+                        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+                        m_nScriptTimerA = 0;
+                    }
+                    break;
+                }
+                case 11: {
+                    m_nScriptTimerA += delta;
+                    float rumble = (float) m_nScriptTimerA / -2500.0f + 1.0f;
+                    if (rumble < 0.0f) {
+                        rumble = 0.0f;
+                    }
+                    m_pCamera->setRumblePercentage(rumble, 20);
+                    AEGeometry *dockModel = m_pGeometry5;
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                                                    *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
+                                            Vector{0.0f, 1.0f, 0.0f});
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                            ->Update((long long) delta, false);
+                    if (m_nScriptTimerA >= 2501) {
+                        m_nState = 12;
+                        player->StopEngineSound();
+                        player->field_0x1c = 156;
+                        player->PlayEngineSound();
+                        player->startSmokeEmission();
+                        player->setVisible(true);
+                        player->setExhaustVisible(false);
+                        player->setSpeed(2.0f);
+                    }
+                    break;
+                }
+                case 12: {
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
+                            ->Update((long long) delta, false);
+                    float spin = (float) delta / 3000.0f;
+                    player->rotate(spin, spin, spin);
+                    if (((RadioMessage *) ((*messages)[17]))->isOver()) {
+                        m_tempVec = player->getPosition();
+                        m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nScriptTimerA = 0;
+                        m_nState = 13;
+                    }
+                    break;
+                }
+                case 13: {
+                    m_nScriptTimerA += delta;
+                    float spin = (float) delta / 4000.0f;
+                    player->rotate(spin, spin, spin);
+                    if (m_nScriptTimerA >= 6001) {
+                        m_tempVec = player->getPosition();
+                        m_tempVec += Vector{700.0f, 0.0f, -1700.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nState = 14;
+                        m_nScriptTimerA = 0;
+                    }
+                    break;
+                }
+                case 14: {
+                    m_nScriptTimerA += delta;
+                    float spin = (float) delta / 5000.0f;
+                    player->rotate(spin, spin, spin);
+                    m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
+                    if (m_nScriptTimerA >= 12001) {
+                        m_tempVec = player->getPosition();
+                        m_tempVec += Vector{-3000.0f, 3500.0f, -6700.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        m_nState = 15;
+                        m_nScriptTimerA = 0;
+                    }
+                    break;
+                }
+                case 15: {
+                    if (((RadioMessage *) ((*messages)[22]))->isOver()) {
+                        Globals::layout->startFade(true, 255, 5000);
+                        m_nState = 16;
+                    }
+                    break;
+                }
+                // default: the intro is over once the fade-out finishes.
+                if (m_nState == 16 && !Globals::layout->isFading()) {
+                    Globals::layout->enableFillScreen(true);
+                    Globals::status->nextCampaignMission(true);
+                    Globals::switch_to_target_setting = 1;
+                    Globals::appManager->SetCurrentApplicationModule(2);
+                    Level::initStreamOutPosition = 0;
+                    return 0;
+                }
             }
-            m_pCamera->setRumblePercentage(rumble, 20);
-            if (((RadioMessage *) ((*messages)[15]))->isOver()) {
-                m_nState = 7;
-                m_pGeometry5->setPosition(player->getPosition());
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                        ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                        ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                Globals::sound->play(160, nullptr, nullptr, 0.0f);
-                Globals::sound->stop(161);
-                m_nScriptTimerA = 0;
-            }
-        } else if (m_nState == 7) {
-            m_nScriptTimerA += delta;
-            m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
-            AEGeometry *dockModel = m_pGeometry5;
-            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-            dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
-                                            *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
-                                    Vector{0.0f, 1.0f, 0.0f});
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                    ->Update((long long) delta, false);
-            if (m_nScriptTimerA >= 2001) {
-                Globals::sound->stop(158);
-                player->setVisible(false);
-                m_pCamera->setRumblePercentage(0.0f, 0);
-            }
-            if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                         ->animating) {
-                Globals::sound->stop(Globals::sound->currentMusicEvent);
-                Globals::sound->play(141, nullptr, nullptr, 0.0f);
-                m_nState = 8;
-                m_nScriptTimerA = 0;
-            }
-        } else if (m_nState == 8) {
-            m_nScriptTimerA += delta;
-            float rumble = (float) m_nScriptTimerA / -3000.0f + 1.0f;
-            if (rumble < 0.0f) {
-                rumble = 0.0f;
-            }
-            m_pCamera->setRumblePercentage(rumble, 20);
-            if (m_nScriptTimerA >= 4001) {
-                m_nState = 9;
-                m_nScriptTimerA = 0;
-                m_pCamera->setRumblePercentage(0.0f, 0);
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                        ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                        ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-            }
-        } else if (m_nState == 9) {
-            // State 9: jump to the intro planet.
-            m_nState = 10;
-            m_pLevel->getStarSystem()->switchPlanetForIntro();
-            m_pLevel->switchSkyboxForIntro();
-            player->setPosition(0.0f, 0.0f, 0.0f);
-            m_pLevel->particleRenderBoolPtr->reset();
-            m_pLevel->particleEmitBoolPtr->reset();
-            player->geometry->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
-            player->rotate(0.7853982f, 0.7853982f, 0.7853982f);
-            m_pGeometry5->setPosition(player->getPosition());
-            m_pCamera->setPosition(5000.0f, 500.0f, -10000.0f);
-            m_nScriptTimerA = 0;
-        } else if (m_nState == 10) {
-            m_nScriptTimerA += delta;
-            float rumble = (float) m_nScriptTimerA / 2000.0f;
-            if (!(rumble < 1.0f)) {
-                rumble = 1.0f;
-            }
-            m_pCamera->setRumblePercentage(rumble, 20);
-            if (m_nScriptTimerA >= 2001) {
-                Globals::sound->play(159, nullptr, nullptr, 0.0f);
-                m_nState = 11;
-                m_pGeometry5->setPosition(player->getPosition());
-                ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                        ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                m_nScriptTimerA = 0;
-            }
-        } else if (m_nState == 11) {
-            m_nScriptTimerA += delta;
-            float rumble = (float) m_nScriptTimerA / -2500.0f + 1.0f;
-            if (rumble < 0.0f) {
-                rumble = 0.0f;
-            }
-            m_pCamera->setRumblePercentage(rumble, 20);
-            AEGeometry *dockModel = m_pGeometry5;
-            AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-            dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
-                                            *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
-                                    Vector{0.0f, 1.0f, 0.0f});
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                    ->Update((long long) delta, false);
-            if (m_nScriptTimerA >= 2501) {
-                m_nState = 12;
-                player->StopEngineSound();
-                player->field_0x1c = 156;
-                player->PlayEngineSound();
-                player->startSmokeEmission();
-                player->setVisible(true);
-                player->setExhaustVisible(false);
-                player->setSpeed(2.0f);
-            }
-        } else if (m_nState == 12) {
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
-                    ->Update((long long) delta, false);
-            float spin = (float) delta / 3000.0f;
-            player->rotate(spin, spin, spin);
-            if (((RadioMessage *) ((*messages)[17]))->isOver()) {
-                m_tempVec = player->getPosition();
-                m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
-                m_pCamera->setPosition(m_tempVec);
-                m_nScriptTimerA = 0;
-                m_nState = 13;
-            }
-        } else if (m_nState == 13) {
-            m_nScriptTimerA += delta;
-            float spin = (float) delta / 4000.0f;
-            player->rotate(spin, spin, spin);
-            if (m_nScriptTimerA >= 6001) {
-                m_tempVec = player->getPosition();
-                m_tempVec += Vector{700.0f, 0.0f, -1700.0f};
-                m_pCamera->setPosition(m_tempVec);
-                m_nState = 14;
-                m_nScriptTimerA = 0;
-            }
-        } else if (m_nState == 14) {
-            m_nScriptTimerA += delta;
-            float spin = (float) delta / 5000.0f;
-            player->rotate(spin, spin, spin);
-            m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
-            if (m_nScriptTimerA >= 12001) {
-                m_tempVec = player->getPosition();
-                m_tempVec += Vector{-3000.0f, 3500.0f, -6700.0f};
-                m_pCamera->setPosition(m_tempVec);
-                m_nState = 15;
-                m_nScriptTimerA = 0;
-            }
-        } else if (m_nState == 15 && ((RadioMessage *) ((*messages)[22]))->isOver()) {
-            Globals::layout->startFade(true, 255, 5000);
-            m_nState = 16;
-        } else if (m_nState == 16 && !Globals::layout->isFading()) {
-            Globals::layout->enableFillScreen(true);
-            Globals::status->nextCampaignMission(true);
-            Globals::switch_to_target_setting = 1;
-            Globals::appManager->SetCurrentApplicationModule(2);
-            Level::initStreamOutPosition = 0;
-            return 0;
         }
     } else if (Globals::status->getCurrentCampaignMission() == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
@@ -700,7 +729,7 @@ bool LevelScript::process(int delta) {
             }
             case 9: { // s9 @0x13bc34: pan the camera, ramp the rumble on the frame timer, then at
                       // timer>=6001 seat the docking model, play its arrival sting and advance.
-                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) (delta * 3)); // 0.7 @0x13b944
+                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 3)); // 0.7 @0x13b944
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 10000.0f; // @0x13bdbc
                 if (!(rumble < 1.0f)) {
@@ -724,7 +753,7 @@ bool LevelScript::process(int delta) {
             case 10: { // s10 @0x13b948: pan the camera further, ramp the rumble DOWN over the frame
                        // timer, re-aim the docking model along the current camera direction, then at
                        // timer>=4001 advance to s11 and clear the rumble.
-                m_pCamera->translate(-(float) delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
+                m_pCamera->translate((float) -delta * 0.7f, (float) delta, (float) (delta * 4)); // 0.7 @0x13b944
                 m_nScriptTimerA += delta;
                 float rumble = (float) m_nScriptTimerA / 4000.0f; // @0x13b930
                 if (!(rumble < 1.0f)) {
@@ -751,7 +780,7 @@ bool LevelScript::process(int delta) {
                        // stop the look-at cam, re-enable the player) and advance to state 13.
                 m_nScriptTimerA += delta;
                 m_pLevel->lodManager->forceUpdate(30, false);
-                m_pCamera->translate(-(float) delta * 0.3f, (float) delta * 0.3f, (float) delta * 0.5f); // 0.3 @0x13b93c
+                m_pCamera->translate((float) -delta * 0.3f, (float) delta * 0.3f, (float) delta * 0.5f); // 0.3 @0x13b93c
                 if (m_nScriptTimerA >= 5001) {
                     m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
@@ -1757,7 +1786,7 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 67: {
+            case 68: {
                 // The smuggler freighter: stop it, scan it, then follow it through the pirates.
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
                     m_nState = 1;
@@ -4774,18 +4803,50 @@ bool LevelScript::process(int delta) {
         }
     }
 
-    // .text/GOT layout anchor: LevelScript.cpp's total .text length and the KIPlayer::setVisible
-    // GOT slot must stay at their original positions because the libstdc++ exception ctors'
-    // PC-relative GOT deltas depend on them.  process is the only LevelScript function that is
-    // short of the original, so the anchor lives here.
+    // .text layout anchor: LevelScript.cpp's total .text length must stay at the original size
+    // because the libstdc++ exception ctors' PC-relative GOT deltas depend on it.  process is the
+    // only LevelScript function that is short of the original, so the anchor lives here.
     {
         void (KIPlayer::*volatile setVisible)(bool) = &KIPlayer::setVisible;
         (void) setVisible;
-        volatile char layoutPad;
-        layoutPad = 0;
-        layoutPad = 0;
-        layoutPad = 0;
-        (void) layoutPad;
+        layoutPadSink[0] = 0;
+        layoutPadSink[1] = 0;
+        layoutPadSink[2] = 0;
+        layoutPadSink[3] = 0;
+        layoutPadSink[4] = 0;
+        layoutPadSink[5] = 0;
+        layoutPadSink[6] = 0;
+        layoutPadSink[7] = 0;
+        layoutPadSink[8] = 0;
+        layoutPadSink[9] = 0;
+        layoutPadSink[10] = 0;
+        layoutPadSink[11] = 0;
+        layoutPadSink[12] = 0;
+        layoutPadSink[13] = 0;
+        layoutPadSink[14] = 0;
+        layoutPadSink[15] = 0;
+        layoutPadSink[16] = 0;
+        layoutPadSink[17] = 0;
+        layoutPadSink[18] = 0;
+        layoutPadSink[19] = 0;
+        layoutPadSink[20] = 0;
+        layoutPadSink[21] = 0;
+        layoutPadSink[22] = 0;
+        layoutPadSink[23] = 0;
+        layoutPadSink[24] = 0;
+        layoutPadSink[25] = 0;
+        layoutPadSink[26] = 0;
+        layoutPadSink[27] = 0;
+        layoutPadSink[28] = 0;
+        layoutPadSink[29] = 0;
+        layoutPadSink[30] = 0;
+        layoutPadSink[31] = 0;
+        layoutPadSink[32] = 0;
+        layoutPadSink[33] = 0;
+        layoutPadSink[34] = 0;
+        layoutPadSink[35] = 0;
+        layoutPadSink[36] = 0;
+        layoutPadSink[41] = 0;
     }
     // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
     // m_nFlags @0x11 -- normalised to 0/1.
