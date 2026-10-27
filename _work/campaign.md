@@ -3267,3 +3267,33 @@ Launched wave 52 (w1201-w1227) exclusively on the worst-matching functions, all 
 
 Gate after batch: **byte_exact 1352, linked_exact 4470, avg 99.82%, .text 0x1343d0, lint CLEAN,
 drift 0, RATCHET PASS**. No baseline change needed.
+
+## Session 2026-10-27 (waves 52-54 — worst-first fleets)
+
+Wave 52 (27 workers) targeted only the worst-matching functions. Landed:
+Radar::draw 65.3 -> 66.8, Gun::calcCharacterCollision 66.3 -> 66.5,
+Generator::createMission 67.8 -> 67.9, Level::createShip 68.1 -> 69.9,
+MenuTouchWindow ctor 77.7 -> 82.0, MenuTouchWindow::OnTouchEnd 71.7 -> 72.0,
+Hud::draw 75.3 -> 81.1, Hud::drawChallengeModeScore 74.7 -> 76.8,
+HangarWindow::render 75.6 -> 76.3, MGame::OnTouchEnd 78.0 -> 78.2,
+Level::createMission 76.7 -> 78.4, Level::createScene 77.8 -> 79.5,
+Level::createCampaignMission 85.1 -> 90.2, Level::assignGuns 88.8 -> 93.8,
+ModStation::OnInitialize 87.0 -> 93.2, MGame::OnUpdate 85.6 -> 91.2,
+StarMap::draw 92.0 -> 92.2, MeshReadData 71.4 -> 72.1,
+Hud::drawMenu 89.3 -> 94.3, Status::missionCompleted unchanged.
+
+Wave 53/54 continued the same worst-first sweep (Layout ctor still the single worst at 45.5%).
+
+**Collateral-regression lessons (gate does not catch per-function fuzzy drops):**
+- `fe40755b` (HangarWindow::render) silently dropped `HangarWindow::OnTouchEnd` 98.2 -> 91.1
+  by replacing its volatile `buttons->data_` loop and reordering stores. Restoring the loop and
+  store order while keeping the render shape recovers 98.2; the TU pad now lives in
+  `Level::levelTextAnchor` (24 -> 19 stores), so render stays 76.3 and Gun 66.5.
+- `27a46a4f` moved the Level text-anchor call from `createMission` into `createScene`, which
+  inlined the 196-byte anchor into createScene and silently dropped it 79.6 -> 71.7. The call is
+  back at the end of `createMission` through a `volatile` function pointer (keeps the anchor in
+  its own section); createScene is 79.5/2252 again.
+- Always diff the *whole TU's* function rows after a harvest, not just the target row.
+
+Gate after wave 53: **byte_exact 1352, linked_exact 4470, avg 99.83%, .text 0x1343d0, lint CLEAN,
+drift 0, RATCHET PASS** (baseline locked at 99.83).
