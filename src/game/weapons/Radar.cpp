@@ -366,11 +366,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     this->cameraZ = this->transform.m[11];
     this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
 
+    bool goingToPlanet = this->level->getPlayer()->goingToPlanet();
     if (alienOrbit) {
-        this->field_0x1a8 =
-                this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
+        this->field_0x1a8 = goingToPlanet && !this->level->getPlayer()->isDockingToPlanet();
     }
-
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY - this->imageHeight, 1);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY, 2);
@@ -399,6 +398,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     } else {
         otherLock = 1;
     }
+    bool notOtherLock = !otherLock;
+    bool notTurretMode = !turretMode;
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
         Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
@@ -412,7 +413,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && !otherLock && i != 3 && !turretMode) {
+                if (!landmarkHit && notOtherLock && i != 3 && notTurretMode) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -461,7 +462,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
             }
         }
-        if (!turretMode) {
+        if (notTurretMode) {
             if (this->lockedStation != nullptr) {
                 if (this->lockedStation->isDead()) {
                     this->lockedStation = nullptr;
