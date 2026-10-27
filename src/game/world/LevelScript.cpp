@@ -1534,7 +1534,7 @@ bool LevelScript::process(int delta) {
                         enemy->geometry->moveForward((float) (m_nScriptTimerA * delta) * 0.001f);
                     }
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
-                    if (m_nScriptTimerA > 9999) {
+                    if (m_nScriptTimerA > 10000) {
                         m_pLevel->field_74->enableSystemEmit(m_pLevel->field_54, false);
                         for (int i = 0; i < 13; i++) {
                             (*enemies)[i]->setActive(false);
@@ -2499,11 +2499,15 @@ bool LevelScript::process(int delta) {
                     player->deleteHackingGame();
                     m_nState++;
                     if (m_nState == 6) {
+                        int xOff = 25000;
+                        int yOff = 2300;
                         for (int i = 6; i < 8; i++) {
                             (*enemies)[i]->awake();
                             KIPlayer *guard = (*enemies)[i];
                             guard->setPosition(player->getPosition()
-                                               + Vector{(float) (i * 1000 + 19000), (float) (i * 50 + 2000), 25000.0f});
+                                               + Vector{(float) xOff, (float) yOff, 25000.0f});
+                            xOff += 1000;
+                            yOff += 50;
                         }
                     }
                 }
