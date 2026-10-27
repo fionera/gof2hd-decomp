@@ -3840,6 +3840,8 @@ void MenuTouchWindow::startSupernovaChallenge() {
 //   tools/verify/verify.py --show _ZNSt9bad_allocC1Ev
 // whenever this TU's .text size changes.  The stored value range matters: 1..255 encode as a
 // 16-bit `movs`, 256.. as a 32-bit `movw`, so the byte count is not linear in the store count.
+// The Radar::draw autopilot-block fix grew .text by 0x68; the stores below were trimmed by that
+// much so the linked .text (and the exception-ctor literals) stay at 0x1343d0.
 //
 // The anchor is kept alive by the extra MenuTouchWindow_languageIds element above (a relocation
 // in .data.rel.ro), not by a call in the constructor: the old ctor hook cost 24 bytes in every
@@ -3849,10 +3851,9 @@ void MenuTouchWindow::startSupernovaChallenge() {
 static void mtwTextLayoutAnchor() {
     volatile int a;
     a = 1; a = 2;
-    a = 9; a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19; a = 20; a = 21; a = 22; a = 23; a = 24; a = 25; a = 26;
     volatile char c;
     c = 0; c = 1; c = 2;
-    a = 25; a = 26; a = 27; a = 28; a = 29; a = 30; a = 31; a = 32;
+    a = 28; a = 29; a = 30; a = 31; a = 32;
     a = 33; a = 34; a = 35; a = 36; a = 37; a = 38; a = 39; a = 40;
     a = 41; a = 42; a = 43; a = 44; a = 45; a = 46; a = 47; a = 48;
     a = 49; a = 50; a = 51; a = 52; a = 53; a = 54; a = 55; a = 56;
@@ -3928,7 +3929,7 @@ static void mtwTextLayoutAnchor() {
     a = 625; a = 626; a = 627; a = 628; a = 629; a = 630; a = 631; a = 632;
     a = 633; a = 634; a = 635; a = 636; a = 637; a = 638; a = 639; a = 640;
     a = 641; a = 642; a = 643; a = 644; a = 645; a = 646; a = 647; a = 648;
-    a = 686; a = 687;
+    a = 687;
     a = 9;
     a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19;
     a = 20; a = 21; a = 22; a = 23; a = 24; a = 25; a = 26; a = 27;

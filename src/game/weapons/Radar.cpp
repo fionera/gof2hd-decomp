@@ -370,8 +370,17 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         this->field_0x1a8 =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
-        this->field_0x1a8 =
-                this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
+        if (this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet()) {
+            KIPlayer *autoPilotTarget = (KIPlayer *) (intptr_t) this->level->getPlayer()->getAutoPilotTarget();
+            Array<KIPlayer *> *targets = (Array<KIPlayer *> *) this->level->getStarSystem()->getPlanetTargets();
+            SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
+            int stationIndex = system->getStationEnumIndex(
+                    ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
+                            ->data()[this->planetDockIndex]);
+            this->field_0x1a8 = autoPilotTarget == targets->data()[stationIndex];
+        } else {
+            this->field_0x1a8 = false;
+        }
     }
 
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
