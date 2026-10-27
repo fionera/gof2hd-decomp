@@ -1746,9 +1746,10 @@ void Hud::drawChallengeModeScore(int unused) {
     digitW = this->digitSprite->getFrameWidth();
     overlap = Globals::layout->field_0x2c_rowHeight;
     digitH = this->digitSprite->getFrameHeight();
+    int scoreValue = Globals::status->field_0x184;
     y = Globals::layout->field_0x2c_rowHeight;
     screenW = Globals::w;
-    String score(Globals::status->field_0x184);
+    String score(scoreValue);
     if (score.size() < 7) {
         int pad = 7 - score.size();
         for (int i = pad; i != 0; i--)
