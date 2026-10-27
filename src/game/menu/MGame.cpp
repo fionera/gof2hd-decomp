@@ -2778,13 +2778,18 @@ void MGame::OnUpdate() {
                         this->dialogueWindow = nullptr;
                     }
                     int variant = Globals::rnd->nextInt(2);
-                    int textId = variant == 0 ? 533 : 534;
+                    int textId = 534;
+                    int soundId = 465;
+                    if (variant == 0) {
+                        textId = 533;
+                        soundId = 464;
+                    }
                     DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
                                                                   Globals::gameText->getText(1602), gMGameFaces + 5);
                     this->dialogueWindow = dialogue;
-                    Globals::sound->play(variant == 0 ? 464 : 465, nullptr, nullptr, 0.0f);
-                    this->cutsceneActive = 1;
+                    Globals::sound->play(soundId, nullptr, nullptr, 0.0f);
                     this->needsRedraw = 1;
+                    this->cutsceneActive = 1;
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
                 } else if (Globals::status->getCurrentCampaignMission() == 24 && !this->player->isMining() &&
                            Globals::status->getMission()->isEmpty() &&
@@ -3155,7 +3160,7 @@ void MGame::OnUpdate() {
                     }
                     this->choiceItemCount = 0;
                     Array<Item *> *cargo = status->getShip()->getCargo();
-                    if (cargo != nullptr && !cargo->empty()) {
+                    if (cargo != nullptr) {
                         for (unsigned i = 0; i < cargo->size(); i++) {
                             if ((*cargo)[i] != nullptr) {
                                 this->choiceItemCount += (*cargo)[i]->getAmount() * (*cargo)[i]->getSinglePrice();
@@ -3178,11 +3183,8 @@ void MGame::OnUpdate() {
                     String offer = status->replaceHash(String(*Globals::gameText->getText(448), false),
                                                                 Globals::layout->formatCredits(this->choiceItemCount),
                                                                 String("#C"));
-                    {
-                        String previousOffer(offer, false);
-                        offer = status->replaceHash(previousOffer, String((int) (share * 100.0f)),
-                                                    String("#P"));
-                    }
+                    offer = status->replaceHash(String(offer, false), String((int) (share * 100.0f)),
+                                                String("#P"));
                     this->choiceWindow->set(offer, true);
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
