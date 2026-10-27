@@ -2797,7 +2797,7 @@ void MGame::OnUpdate() {
                         delete this->dialogueWindow;
                         this->dialogueWindow = nullptr;
                     }
-                    int variant = rndLocal->nextInt(2);
+                    int variant = Globals::rnd->nextInt(2);
                     int textId = variant == 0 ? 535 : 536;
                     DialogueWindow *dialogue = new DialogueWindow(Globals::gameText->getText(textId),
                                                                   Globals::gameText->getText(1603), gMGameFaces + 10);
@@ -2806,11 +2806,12 @@ void MGame::OnUpdate() {
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
                     reinterpret_cast<long long &>(Globals::status->field_0x100) = Globals::status->getPlayingTime();
-                } else if (__builtin_expect((unsigned) (Globals::status->getCurrentCampaignMission() - 122) <= 2 && !this->player->isMining() && // lint: arm_builtin
+                } else if (Globals::status->getCurrentCampaignMission() >= 122 &&
+                           Globals::status->getCurrentCampaignMission() <= 124 && !this->player->isMining() &&
                            Globals::status->getMission()->isEmpty() &&
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            3600000 &&
-                           !this->jumpDriveActive && !this->usingJumpDrive, 0)) {
+                           !this->jumpDriveActive && !this->usingJumpDrive) {
                     int radioIndex = Globals::rnd->nextInt(2);
                     int radioBase = Globals::status->getCurrentCampaignMission() == 122 ? 3164 : 3166;
                     this->level->createRadioMessage(28, radioIndex + radioBase);
@@ -2850,7 +2851,8 @@ void MGame::OnUpdate() {
                     if (this->choiceWindow == nullptr) {
                         this->choiceWindow = new ChoiceWindow();
                     }
-                    this->choiceWindow->set(Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590)));
+                    String hint = Globals::globals->replaceKeyBindingTokens(*Globals::gameText->getText(590));
+                    this->choiceWindow->set(hint);
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
                     this->pauseOpen = 1;
@@ -2933,7 +2935,8 @@ void MGame::OnUpdate() {
                         this->choiceWindow = new ChoiceWindow();
                     }
                     String hint(*Globals::gameText->getText(1725), false);
-                    this->choiceWindow->set(Globals::globals->replaceKeyBindingTokens(hint));
+                    hint = Globals::globals->replaceKeyBindingTokens(hint);
+                    this->choiceWindow->set(hint);
                     this->choiceWindowOpen = 1;
                     this->needsRedraw = 1;
                     this->field_0x1e5 = 1;
@@ -3117,9 +3120,9 @@ void MGame::OnUpdate() {
                     this->dialogueWindow = new DialogueWindow();
                     Mission *followUpMission = new Mission(160, 0, -1);
                     this->dialogueWindow->set(followUpMission, 1, 46);
-                    hints[38] = 1;
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
+                    hints[38] = 1;
                     Globals::status->nextCampaignMission(true);
                     Globals::status->nextCampaignMission(true);
                     return;
@@ -3136,9 +3139,9 @@ void MGame::OnUpdate() {
                     this->dialogueWindow = new DialogueWindow();
                     Mission *followUpMission = new Mission(160, 0, -1);
                     this->dialogueWindow->set(followUpMission, 1, 85);
-                    hints[49] = 1;
                     this->cutsceneActive = 1;
                     this->needsRedraw = 1;
+                    hints[49] = 1;
                     Globals::status->nextCampaignMission(true);
                     Globals::status->nextCampaignMission(true);
                     return;
