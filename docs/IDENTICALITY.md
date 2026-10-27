@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1352, linked_exact 4469, avg 99.8%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1352, linked_exact 4470, avg 99.81%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1352, linked_exact 4469, avg 99.8%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1352, linked_exact 4470, avg 99.81%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -42,9 +42,9 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 ## The four real gaps (in priority/size order)
 
-1. **54 non-linked exported functions.** 4469 of 4523 compared functions are linked-exact; the
-   remaining 54 are the long tail (20 in 90–99%, 11 in 80–89%, 10 in 70–79%, 10 in 60–69%,
-   3 below 50%). The `.text` total is +3,064 B because of the documented
+1. **53 non-linked exported functions.** 4470 of 4523 compared functions are linked-exact; the
+   remaining 53 are the long tail (22 in 90–99%, 10 in 80–89%, 13 in 70–79%, 5 in 60–69%,
+   3 below 60%). The `.text` total is +3,064 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
 2. **Anonymous data layout.** `.rodata` is 1,488 B smaller, `.data` 76 B larger, and `.bss` 228 B larger than the original;
@@ -73,8 +73,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1352 byte_exact,
-4469 linked_exact, 4502 size_match of 4523; pct buckets {100:4469, 90-99:21, 80-89:10, 70-79:12,
-60-69:8, <50:3}. 21 functions size-MISMATCH (need restructuring); 24 size-match >=80%
+4470 linked_exact, 4504 size_match of 4523; pct buckets {100:4470, 90-99:22, 80-89:10, 70-79:13,
+60-69:5, <60:3}. 19 functions size-MISMATCH (need restructuring); 25 size-match >=80%
 not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):

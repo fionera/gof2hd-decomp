@@ -74,6 +74,17 @@
   star-map chain before the wingman block.
 - Harvested `w1034`: `PlayerEgo::calcCollision` 74.4% -> **75.5%** (980 B) by
   testing the projected collision vector and restoring the surface lifetime.
+- Harvested `w1095`: `Radar::draw` 62.2% -> **64.6%** (9788 B) by restoring the
+  planet auto-pilot target block after the planet loop.
+- Harvested `w1072`: `MGame::OnUpdate` 84.6% -> **85.5%** (11444 B) by dropping
+  the cargo empty check, splitting hint text/sound ids, and restoring the
+  needsRedraw/cutscene store order.
+- Harvested `w1079`: `PlayerEgo::update` 94.1% -> **94.2%** (8852 B) by
+  splitting the dock-transfer hud event ternary into if/else.
+- Harvested `w1037`: `Level::createScene` 76.6% -> **77.8%** (2248 B) by
+  restoring the scene setup order.
+- Harvested `w1064`: `Level::createMission` 72.12% -> **72.14%** (17172 B) by
+  emitting the raid count stores hostile-before-friend.
 - Launched `w1090..w1115` (26 `codex exec -p dsv41` workers) as wave 49,
   worst-first: Layout ctor (3 angles), LevelScript::process (2), Radar::draw,
   Gun::calcCharacterCollision, Generator::createMission, Level::createShip,
