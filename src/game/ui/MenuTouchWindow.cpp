@@ -816,7 +816,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowA->setTextCentered(true);
 
     TouchButton *credits;
-    if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
+    if (Globals::iPadAssetsWithLowerRes || !Globals::iPad) {
         credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
                                   Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     } else {
