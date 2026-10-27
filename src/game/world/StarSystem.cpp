@@ -235,7 +235,7 @@ StarSystem::StarSystem(int mode) {
         int slot = 0;
         for (i = 0; i < this->planetsArray->size(); ++i) {
             (*this->planetsArray)[i] = new AEGeometry((uint16_t) 6768, Globals::Canvas, false);
-            if (!this->abstractSystem &&
+            if (__builtin_expect(!this->abstractSystem, 1) && // lint: arm_builtin
                 ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() >= 15 &&
                 ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->IsPostEffectActivated()) {
                 reinterpret_cast<float &>(Globals::Canvas->MeshGetPointer((*this->planetsArray)[i]->meshId)->materialId) =
@@ -330,7 +330,7 @@ StarSystem::StarSystem(int mode) {
                         AERandom *rnd = *(AERandom *volatile *) &Globals::rnd;
                         slot = rnd->nextInt(11) + 7;
                         placed = false;
-                        if (abs(slot - sunSlot) >= 3) {
+                        if (__builtin_expect(abs(slot - sunSlot) >= 3, 1)) { // lint: arm_builtin
                             placed = usedSlots[slot] == 0;
                         }
                     }
