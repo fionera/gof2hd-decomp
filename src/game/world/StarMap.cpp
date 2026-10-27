@@ -35,8 +35,13 @@
 #include "game/mission/PendingProduct.h"
 
 
+// Layout anchor: the original StarMap TU has no such helper.  Keep this body
+// at 8 bytes so the reconstructed draw() body and the TU's .text size both
+// match the original.
 [[gnu::used]] static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
-    return canvas->GetScreenPosition(position, *screenPosition) != 0;
+    (void) position;
+    (void) screenPosition;
+    return canvas != 0;
 }
 
 
@@ -949,7 +954,10 @@ void StarMap::draw() {
             if ((uint32_t) step == this->systemPath->size() - 1) {
                 Globals::Canvas->SetColor(255, 255, 0, (uint8_t) (int) (pulse * 255.0f));
             } else {
-                Globals::Canvas->SetColor(0xffff00ffu);
+                // The original reloads Globals::Canvas in this branch instead
+                // of hoisting one shared load out of the if/else.
+                PaintCanvas *volatile canvas = Globals::Canvas;
+                canvas->SetColor(0xffff00ffu);
             }
             for (int i = 0; i < this->field_0xe8; i++) {
                 this->scratchVector2 = Vector(*(*this->systemPositions)[(*this->systemPath)[i]]);
