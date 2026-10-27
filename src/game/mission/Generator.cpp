@@ -803,23 +803,18 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     if (Globals::status->getCurrentCampaignMission() < 16 || (type == 15 && !Globals::options[0x37])) {
-        switch (Globals::rnd->nextInt(5)) {
-            case 0:
-                type = 11;
-                break;
-            case 1:
-                type = 0;
-                break;
-            case 2:
-                type = 7;
-                break;
-            case 3:
-                type = 4;
-                break;
-            case 4:
-                type = 12;
-                targetStation = agent->getStation();
-                break;
+        int choice = Globals::rnd->nextInt(5);
+        if (choice == 0) {
+            type = 11;
+        } else if (choice == 1) {
+            type = 0;
+        } else if (choice == 2) {
+            type = 7;
+        } else if (choice == 3) {
+            type = 4;
+        } else if (choice == 4) {
+            type = 12;
+            targetStation = agent->getStation();
         }
     } else if (type == 12) {
         targetStation = agent->getStation();
@@ -912,11 +907,12 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = 10;
     }
 
-    SolarSystem *fromSystem = systems->data()[Globals::status->getStation()->getSystem()];
     Galaxy *galaxy = Globals::galaxy;
+    int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *toSystem =
             systems->data()[((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem()];
-    float reward = (galaxy->distance(fromSystem, toSystem) / 1200.0f + 1.0f) *
+    SolarSystem *fromSystemPtr = systems->data()[fromSystem];
+    float reward = (galaxy->distance(fromSystemPtr, toSystem) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
         reward *= 0.7f;
