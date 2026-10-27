@@ -1683,8 +1683,12 @@ void Level::createMission() {
                             offset[2] = -36000.0f;
                             break;
                         default:
-                            offset[0] = 12000.0f;
+                            // Store order deliberately differs from the three cases above:
+                            // identical store sequences in all four blocks let SimplifyCFG hoist
+                            // them and rewrite the switch as a lookup table, but the original
+                            // keeps the branchy form.
                             offset[1] = 6000.0f;
+                            offset[0] = 12000.0f;
                             offset[2] = -45000.0f;
                             break;
                     }
