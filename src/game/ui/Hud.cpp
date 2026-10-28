@@ -258,7 +258,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     int armorY;
     int armorBarY;
     if (this->hasShieldBar) {
-        if (pad_) Globals::Canvas->SetColor(savedColor);
+        Globals::Canvas->SetColor(savedColor);
         Globals::Canvas->DrawImage2D(ego->player->getShieldHP() >= 2 && this->shieldHitFlash ? this->shieldFrameHitImage
                                                                                                : this->shieldFrameImage,
                                      this->field_0x43c, this->field_0x442);
@@ -604,6 +604,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         else
             Globals::Canvas->DrawImage2D(this->image_0x318, this->field_0x3fe, this->field_0x400);
     } else if (this->secondaryLabelTimer >= 1) {
+        int labelY = this->field_0x418;
         int labelH = Globals::Canvas->GetImage2DHeight(this->image_0x354);
         int labelGap = Globals::layout->field_0x20c;
         int textGap = Globals::layout->field_0x210;
@@ -611,16 +612,15 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         int alpha = (int) ((float) this->secondaryLabelTimer / 2000.0f * 255.0f);
         if (alpha > 255)
             alpha = 254 - alpha;
+        int labelX = this->field_0x3ec;
         unsigned int color = Globals::Canvas->GetColor();
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
-        int labelY = this->field_0x418 - labelH - labelGap;
+        labelY = labelY - labelH - labelGap;
         Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3ec, labelY);
         Globals::Canvas->DrawString(
             (unsigned int) (uintptr_t) Globals::font, this->field_0x51c,
-            this->field_0x3ec +
-                (canvasW - this->field_0x3ec -
-                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x51c)) /
-                    2,
+            this->field_0x3ec + (canvasW - labelX -
+                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x51c)) / 2,
             labelY + textGap, false);
         Globals::Canvas->SetColor(color);
         this->secondaryLabelTimer += dt;
@@ -722,7 +722,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Jump drive / cloak / docking transfer progress bars.
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
-        short barOffset = 0;
+        int barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
             int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
@@ -740,8 +740,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            short top = this->field_0x3e2;
-            short barYOffset = Globals::layout->field_0x218;
+            unsigned short top = this->field_0x3e2;
+            int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
@@ -785,15 +785,17 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float fade = (float) this->field_0x464 / 1000.0f;
             int top = this->field_0x3e2;
             int y = barOffset + top * 2;
-            short barYOffset = Globals::layout->field_0x218;
+            int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor(fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
             float filled = progress * (float) halfW;
             Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
                                           barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
-            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
-                                        (int) ((float) y + (float) barH * 2.5f), false);
+            Globals::Canvas->DrawString(
+                (unsigned int) (uintptr_t) Globals::font, text,
+                (Globals::w >> 1) -
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
+                (int) ((float) y + (float) barH * 2.5f), false);
         }
     }
 
