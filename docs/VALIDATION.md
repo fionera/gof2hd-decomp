@@ -38,7 +38,14 @@ This is a **single, plain link** — no second pass, no `--version-script`, no `
 `asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
 reproduces the original's interleaved .text function order from the original's symbol addresses;
 local functions, absent from the original's .dynsym, are slotted after their predecessor in their
-own object, i.e. source order — the original was a plain input-order link)
+own object, i.e. source order — the original was a plain input-order link; three groups are
+listed explicitly because an ordering file disables gold's default `.text.startup`-first sort:
+`.text.startup` (the three `_GLOBAL__sub_I_*` ctors) and crtbegin's renamed `.text.crtbegin`
+come first, and the plain `.text` group (libcrypto's sha256/armv4cpuid objects, libgcc) is
+placed at the original's block start (one ZIP TU earlier, so the following 32-byte-aligned
+libc++abi section needs no padding). A trailing `*` keeps archive-local sections that the
+original's `.dynsym` cannot name after the listed ones; without it gold gives them ordering
+index 0 and they sort to the front of `.text`),
 and `--unresolved-symbols=ignore-all` (undecompiled engine internals import as shims; the import
 set is pinned by the ratchet, so a typo'd callee cannot slip in as a silent new import).
 `--allow-multiple-definition` was removed after it was found masking a real triplicate definition
@@ -206,7 +213,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4523** compared): **byte_exact 1353, linked_exact 4485, avg 99.87%**
+Current numbers (of **4523** compared): **byte_exact 1361, linked_exact 4485, avg 99.87%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

@@ -54,6 +54,22 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 set(_so "${CMAKE_BINARY_DIR}/libgof2hdaa.so")
 set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
 
+# crtbegin_so.o's code lives in a plain `.text` section.  The original (linked without an ordering
+# file) places it directly after the `.text.startup` group, before the first app function; a plain
+# `.text` entry in the ordering file would instead group it with every archive's plain `.text`
+# (libcrypto, libgcc, ...).  Rename it to a unique section so the ordering file can place it
+# exactly where the original has it.
+set(_crtbegin "${CMAKE_BINARY_DIR}/crtbegin_so_renamed.o")
+if(GOF2_MATCH_LAYOUT)
+    add_custom_command(OUTPUT "${_crtbegin}"
+        COMMAND ${GOF2_NDK_GCC_BINDIR}/objcopy
+                --rename-section .text=.text.crtbegin ${_libdir}/crtbegin_so.o "${_crtbegin}"
+        DEPENDS ${_libdir}/crtbegin_so.o
+        COMMENT "Renaming crtbegin .text -> .text.crtbegin for the section-ordering file")
+else()
+    set(_crtbegin "${_libdir}/crtbegin_so.o")
+endif()
+
 # Generate the section-ordering file from the original's function-symbol addresses, then feed it to
 # gold so our per-function sections are laid out in the original's exact order.
 set(_order "${CMAKE_BINARY_DIR}/section_order.txt")
@@ -91,7 +107,7 @@ add_custom_command(OUTPUT "${_so}"
             --exclude-libs=libgcc.a
             ${_order_flag}
             -o "${_so}"
-            ${_libdir}/crtbegin_so.o -L ${_libdir}
+            ${_crtbegin} -L ${_libdir}
             @${_linkorder}
             ${_openssl_out}
             --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
@@ -110,7 +126,8 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_linkorder} ${_openssl_out} ${_libzip_out} ${_zlib_out}
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_linkorder} ${_crtbegin}
+            ${_openssl_out} ${_libzip_out} ${_zlib_out}
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")

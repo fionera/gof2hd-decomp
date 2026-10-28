@@ -7252,5 +7252,5 @@ int Level::r_min;
 // original 17172 bytes).
 static void levelTextAnchor() {
     volatile int layoutPad;
-    layoutPad = 1;  layoutPad = 2;
+    layoutPad = 1;  layoutPad = 2;  layoutPad = 3;
 }
