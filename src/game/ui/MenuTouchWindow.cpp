@@ -696,7 +696,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                              *(float *) &Globals::options[40]),
              *this->sliders);
     ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
-                             Globals::layout->field_0xc_leftMargin + sliderTop + Globals::layout->field_0x20_top +
+                             Globals::layout->field_0xc_leftMargin + sliderTop2 + Globals::layout->field_0x20_top +
                                  Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight,
                              *(float *) &Globals::options[44]),
              *this->sliders);
