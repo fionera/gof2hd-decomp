@@ -3842,6 +3842,9 @@ void MenuTouchWindow::startSupernovaChallenge() {
 // much so the linked .text (and the exception-ctor literals) stay at 0x1343d0.  The later enemy
 // blip-frame fix (separate elapsed/total branches) grew it another 0x10, trimmed again below.
 //
+// Layout::Layout() is now the original 7072 bytes (it was 436 short), so the stores below were
+// trimmed by 0x1c0 to keep the linked .text at 0x1343d0.
+//
 // The anchor is kept alive by the extra MenuTouchWindow_languageIds element above (a relocation
 // in .data.rel.ro), not by a call in the constructor: the old ctor hook cost 24 bytes in every
 // C1/C2 body.  The unreachable self-call below keeps this helper out of line and is also a small
@@ -3919,23 +3922,14 @@ static void mtwTextLayoutAnchor() {
     a = 545; a = 546; a = 547; a = 548; a = 549; a = 550; a = 551; a = 552;
     a = 553; a = 554; a = 555; a = 556; a = 557; a = 558; a = 559; a = 560;
     a = 561; a = 562; a = 563; a = 564; a = 565; a = 566; a = 567; a = 568;
-    a = 569; a = 570; a = 571; a = 572; a = 573; a = 574; a = 575; a = 576;
-    a = 577; a = 578; a = 579; a = 580; a = 581; a = 582; a = 583; a = 584;
-    a = 585; a = 586; a = 587; a = 588; a = 589; a = 590; a = 591; a = 592;
-    a = 593; a = 594; a = 595; a = 596; a = 597; a = 598; a = 599; a = 600;
-    a = 601; a = 602; a = 603; a = 604; a = 605; a = 606; a = 607; a = 608;
-    a = 609; a = 610; a = 611; a = 612; a = 613; a = 614; a = 615; a = 616;
-    a = 617; a = 618; a = 619; a = 620; a = 621; a = 622; a = 623; a = 624;
-    a = 625; a = 626; a = 627; a = 628; a = 629; a = 630; a = 631; a = 632;
-    a = 633; a = 634; a = 635; a = 636; a = 637; a = 638; a = 639; a = 640;
-    a = 641; a = 642; a = 643; a = 644; a = 645; a = 646; a = 647; a = 648;
-    a = 687;
+    a = 569; a = 570; a = 571; a = 572; a = 573; a = 574; a = 575;
     a = 9;
     a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19;
     a = 24; a = 25; a = 26; a = 27;
     a = 28; a = 29;
     a = 30; a = 31; a = 32; a = 33; a = 34;
     c = 0; c = 1; c = 2;
+    a = 687;
     (void) a;
     if (a == -1)
         mtwTextLayoutAnchor();
