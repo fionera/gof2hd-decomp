@@ -2820,8 +2820,9 @@ void MGame::OnUpdate() {
                            Globals::status->getPlayingTime() - reinterpret_cast<long long &>(Globals::status->field_0x100) >
                            12000 &&
                            !this->jumpDriveActive && !this->usingJumpDrive) {
+                    int i = 0;
                     int messageIndex = -1;
-                    for (int i = 0; i < 3; i++) {
+                    for (; i < 3; i++) {
                         if (Globals::status->getCurrentCampaignMission() >= gWingmenRadioMissions[i]) {
                             messageIndex++;
                         }
