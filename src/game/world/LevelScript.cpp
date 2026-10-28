@@ -1601,8 +1601,8 @@ bool LevelScript::process(int delta) {
                 m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
                 if (m_nState == 1) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_pCamera->setTarget(m_pGeometry4);
                     m_nState = 2;
+                    m_pCamera->setTarget(m_pGeometry4);
                 } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                         m_nScriptTimerA = 0;
