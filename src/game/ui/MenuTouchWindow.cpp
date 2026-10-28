@@ -1398,12 +1398,11 @@ void MenuTouchWindow::draw() {
             int edgeWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
             int edgeHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
             int edgeCount = Globals::h / edgeHeight;
-            int edgeY = 0;
-            for (int i = 0; i <= edgeCount; i++) {
+            for (int i = 0, edgeY = 0; i <= edgeCount; i++) {
                 Globals::Canvas->DrawImage2D(this->scrollbarImageId,
-                                             Globals::layout->buttonInsetX + this->listTopY - edgeWidth, edgeY, 1);
+                                             this->listTopY + Globals::layout->buttonInsetX - edgeWidth, edgeY, 1);
                 Globals::Canvas->DrawImage2D(this->scrollbarImageId,
-                                             Globals::layout->buttonInsetX + this->listTopY + this->listBottomY, edgeY,
+                                             this->listTopY + Globals::layout->buttonInsetX + this->listBottomY, edgeY,
                                              0);
                 edgeY += edgeHeight;
             }
@@ -1419,7 +1418,7 @@ void MenuTouchWindow::draw() {
                             String(""));
             Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x110,
-                                         Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight / 2,
+                                         this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2,
                                          y + arrowOffset * 2, 17, 20);
             Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
@@ -1429,7 +1428,7 @@ void MenuTouchWindow::draw() {
             Globals::Canvas->SetColor(optionFlag(17) ? 0xffffffffu : 0xffffff2fu);
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(490),
-                Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight / 2 -
+                this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2 -
                     Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
                                                   *Globals::gameText->getText(490)) / 2,
                 y + (this->listEntryWidth - labelOffset), false);
@@ -2005,10 +2004,10 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                         *Globals::gameText->getText(this->field_0x1e0 + 82),
-                                        this->slotBorderWidth + layout->buttonInsetX + this->slotListWidth +
-                                            layout->field_0x2c_rowHeight,
-                                        layout->field_0xc_leftMargin + layout->field_0x2c_rowHeight +
-                                            layout->field_0x20_top + layout->field_0x1c,
+                                        layout->field_0x2c_rowHeight + this->slotListWidth +
+                                            layout->buttonInsetX + this->slotBorderWidth,
+                                        layout->field_0x2c_rowHeight + layout->field_0x20_top +
+                                            layout->field_0xc_leftMargin + layout->field_0x1c,
                                         false);
             Globals::Canvas->SetColor(0x7aa35bffu);
             if (appData->prices != 0 && appData->prices->size() != 0) {
