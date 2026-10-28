@@ -3385,7 +3385,7 @@ void Level::createCampaignMission() {
         }
         case 78: {
             alignas(16) Matrix rotation;
-            Vector v = {0.0f, 0.0f, 0.0f};
+            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(22, *this->enemies);
             for (int k = 0; k < 2; k++) {
@@ -3427,7 +3427,7 @@ void Level::createCampaignMission() {
             delete station;
             alignas(16) Matrix rotation;
             MatrixSetRotation(rotation, 0.0f, 3.1415927f, 0.0f);
-            Vector v = {0.0f, 0.0f, 0.0f};
+            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
             for (int k = 0; k < 12; k++) {
                 ArrayAdd(this->createStaticObject(nullptr, ((2547u >> k) & 1) ? 14363 : 14365, true),
@@ -3852,7 +3852,7 @@ void Level::createCampaignMission() {
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
             alignas(16) Matrix rotation;
-            Vector v = {0.0f, 0.0f, 0.0f};
+            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
             int slot = 0;
             for (int i = 2; i < 12; i++) {
                 (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
