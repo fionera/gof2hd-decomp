@@ -373,8 +373,8 @@ Layout::Layout() {
     this->field_0x286 = Globals::n9 ? 0 : 1;
     this->field_0x288 = Globals::n9 ? 20 : 0;
     this->field_0x1dc = Globals::iPadHD ? 10 * 1.40625f : (Globals::n9 ? 14 : (Globals::retinaDisplay ? 20 : 10));
-    this->field_0x28c = Globals::n9 ? -19 : 0;
     this->field_0x290 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3);
+    this->field_0x28c = Globals::n9 ? -19 : 0;
     this->field_0x284_sliderSlot5Enabled = Globals::n9 ? 0 : 1;
     this->field_0x2f4 = Globals::iPadHD ? 112 : (Globals::iPadLarge ? 160 : (Globals::iPad ? 80 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30))));
     this->field_0x2f8 = Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : (Globals::iPad ? 200.0f : (Globals::n9 ? 150.0f : (Globals::retinaDisplay ? 200.0f : 100.0f))));
