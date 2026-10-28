@@ -2883,10 +2883,9 @@ bool LevelScript::process(int delta) {
                                     offset.x = 120000.0f;
                                     (*enemies)[i]->translate(offset);
                                 } else {
-                                    Vector offset;
-                                    offset.y = (float) (Globals::rnd->nextInt(6000) - 3000);
-                                    offset.z = (float) (Globals::rnd->nextInt(6000) - 7000);
-                                    offset.x = 20000.0f;
+                                    Vector offset(20000.0f,
+                                                  (float) (Globals::rnd->nextInt(6000) - 3000),
+                                                  (float) (Globals::rnd->nextInt(6000) - 7000));
                                     (*enemies)[i]->translate(offset);
                                 }
                             }
@@ -2927,19 +2926,21 @@ bool LevelScript::process(int delta) {
                         player->setFreeze(true);
                         m_pCamera->setLookAtCam(true);
                         KIPlayer *chaser = (*enemies)[chaserIndex];
+                        KIPlayer *stationShip = (*enemies)[stationIndex];
                         m_pCamera->setTarget(chaser->geometry);
-                        m_tempVec = (*enemies)[stationIndex]->getPosition();
+                        m_tempVec = stationShip->getPosition();
                         m_tempVec += Vector{45000.0f, 2000.0f, 11000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         chaser->setPosition(m_tempVec + Vector{15000.0f, -200.0f, 1000.0f});
                         chaser->geometry->setDirection(
-                                AbyssEngine::AEMath::VectorNormalize((*enemies)[stationIndex]->getPosition()
+                                AbyssEngine::AEMath::VectorNormalize(stationShip->getPosition()
                                                                      - chaser->getPosition()),
                                 Vector{0.0f, 1.0f, 0.0f});
                         chaser->setVisible(true);
                         chaser->setActive(true);
-                        (*enemies)[fighterIndex]->player->setVulnerable(false);
-                        ((PlayerFighter *) (*enemies)[fighterIndex])->field_0x140 = 0;
+                        KIPlayer *fighterShip = (*enemies)[fighterIndex];
+                        fighterShip->player->setVulnerable(false);
+                        ((PlayerFighter *) fighterShip)->field_0x140 = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_nState = 6;
@@ -3563,11 +3564,12 @@ bool LevelScript::process(int delta) {
                     ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
                     for (unsigned int i = 0; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroup == 9) {
-                            AEGeometry *ship = (*enemies)[i]->geometry;
+                            KIPlayer *enemy = (*enemies)[i];
+                            AEGeometry *ship = enemy->geometry;
                             ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
-                                                       m_pLevel->getPlayer()->getPosition() - (*enemies)[i]->getPosition()),
+                                                       m_pLevel->getPlayer()->getPosition() - enemy->getPosition()),
                                                Vector{0.0f, 1.0f, 0.0f});
-                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                            ((PlayerFighter *) enemy)->setAIDisabled(true);
                         }
                     }
                     (*enemies)[1]->field_0x70 = 1;
