@@ -575,7 +575,7 @@ namespace AbyssEngine {
                 }
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 short *rawY = (short *) raw + 1;
-                for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
+                for (int i = 0; i + 3 <= ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
                     float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
