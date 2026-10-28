@@ -415,8 +415,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     int notOtherLock = !otherLock;
     int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
-        Globals::status->getStation()->getIndex() != 109 && Globals::status->getStation()->getIndex() != 110 &&
-        (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93)) {
+        (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93) &&
+        Globals::status->getStation()->getIndex() != 110 && Globals::status->getStation()->getIndex() != 109) {
         Array<KIPlayer *> *landmarks = this->landmarks;
         for (int i = 0; i < landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
@@ -427,7 +427,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
-                if (!landmarkHit && notOtherLock && notTurretMode && i != 3) {
+                if (!landmarkHit && i != 3 && notTurretMode && notOtherLock) {
                     int size = this->field_0x124;
                     int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
@@ -470,9 +470,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if (i == 1 || i == 3) {
-                Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8, this->screenX,
-                                             this->screenY, 17, 68);
+            } else if ((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3) {
+                Globals::Canvas->DrawImage2D((i & 0x7fffffff) == 1 ? this->image_0xbc : this->image_0xb8,
+                                             this->screenX, this->screenY, 17, 68);
             }
         }
         if (!turretMode) {
@@ -712,9 +712,9 @@ enemies:
                 enemy->field_0x76 = 1;
                 this->egoPos = player->getPosition();
                 this->targetPos = enemy->player->getPosition();
-                if (this->egoPos.x - this->targetPos.x <= 24000.0f && this->egoPos.x - this->targetPos.x >= -24000.0f &&
-                    this->egoPos.y - this->targetPos.y <= 24000.0f && this->egoPos.y - this->targetPos.y >= -24000.0f &&
-                    this->egoPos.z - this->targetPos.z <= 24000.0f && this->egoPos.z - this->targetPos.z >= -24000.0f &&
+                if (this->egoPos.x - this->targetPos.x >= -24000.0f && this->egoPos.x - this->targetPos.x <= 24000.0f &&
+                    this->egoPos.y - this->targetPos.y >= -24000.0f && this->egoPos.y - this->targetPos.y <= 24000.0f &&
+                    this->egoPos.z - this->targetPos.z >= -24000.0f && this->egoPos.z - this->targetPos.z <= 24000.0f &&
                     enemy->getType() != 16917) {
                     if (wreck) {
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
@@ -793,9 +793,9 @@ enemies:
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
                     bool inSight = false;
-                    if (AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f &&
-                        this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
-                        this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124) {
+                    if (this->screenX > cx - this->field_0x124 && this->screenY > cy - this->field_0x124 &&
+                        this->screenX < cx + this->field_0x124 && this->screenY < cy + this->field_0x124 &&
+                        AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f) {
                         inSight = true;
                     }
                     enemy->field_0x73 = inSight;
