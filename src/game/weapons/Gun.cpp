@@ -596,11 +596,10 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            enemy = this->enemies->data()[e];
             Vector position = this->positions.data()[i];
+            enemy = this->enemies->data()[e];
             Vector velocity = this->velocities.data()[i];
-            Vector enemyPosition =
-                    AbyssEngine::AEMath::MatrixGetPosition(reinterpret_cast<Matrix &>(enemy->transform[0]));
+            Vector enemyPosition = AbyssEngine::AEMath::MatrixGetPosition(enemy->transform);
             Level *level = (Level *) this->level;
             int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
             if (mine) {
@@ -682,14 +681,18 @@ void Gun::calcCharacterCollision() {
             if (this->empDamage != kNoAttribute) {
                 enemy->damageEmp(this->empDamage, this->friendGun);
             }
-            int amount = this->damage;
+            int amount;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     amount = (int) ((float) this->damage * 3.0f * 0.25f);
+                } else {
+                    amount = this->damage;
                 }
             } else if (enemy->egoFlag) {
                 amount = (int) ((float) this->damage * 0.2f);
+            } else {
+                amount = this->damage;
             }
             enemy->damage(amount, this->friendGun, itemIndex);
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
