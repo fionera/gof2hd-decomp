@@ -3470,3 +3470,17 @@ Generator::createMission x2, MeshReadData x2, HangarWindow::render, MGame::OnTou
 Globals ctor, Level::createMission). Workers are gate-bound to byte_exact >= 1386,
 linked_exact >= 4485 and `.text 0x1343d0`; they must retune the mtw anchor for any
 size change before MenuTouchWindow.
+
+### Wave 71 harvest (worst-first)
+
+- **Layout::Layout C1/C2 size-exact 7072 B** (`0d19c6b4`): hill-climbed store order from the
+  original branch tree, retuned mtw anchor. Fuzzy 46.0 -> 36.4, but the last -436 B exported
+  size deficit is gone; gate held at byte 1386 / linked 4485.
+- **Gun::calcCharacterCollision 68.9 -> 72.2%** (`08786e11`): cold inactive/dead-enemy skips via
+  same-line `arm_builtin` hints, itemIndex moved with the loop locals. Size unchanged at 1964 B.
+- **Radar::draw 70.0 -> 70.7%** (`197b321c`): autopilot and lock fast-path hints, size exact 9908 B.
+
+Remaining exported size differences after this batch: Generator::createMission -4,
+Level::createMission +4, PlayerStation C1/C2 +4, Gun::calcCharacterCollision -20.
+The wave-71 Layout worker `w1802` also has an unharvested 6792 B / 50.3% variant; it is
+fuzzier but not size-exact, so the size-exact 7072 B form is the committed one.
