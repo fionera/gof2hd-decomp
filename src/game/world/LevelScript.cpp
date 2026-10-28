@@ -3181,8 +3181,8 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
-                        Globals::switch_to_target_setting = 1;
                         Level::initStreamOutPosition = 1;
+                        Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
                     }
                 }
