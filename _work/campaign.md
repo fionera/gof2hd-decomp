@@ -3352,3 +3352,26 @@ PlayerEgo::calcCollision 80.8 (anchor kept in calcCollision: moving it to update
 
 Gate: **byte_exact 1352, linked_exact 4473, avg 99.86%, .text 0x1343d0, lint CLEAN, drift 0**.
 Remaining non-linked functions: 50.
+
+## Session 2026-10-28 (waves 62-63 — worst-first, 20+20 workers)
+
+Landed: MenuTouchWindow::draw 92.4 -> 92.7 (logo image id kept in a register),
+Level::createScene 83.5 -> 87.2 (spots ternary, direct Globals::rnd race rolls),
+PlayerEgo::calcCollision 80.8 -> 83.2 (local 12 B anchor removed; .text pad moved to
+`levelTextAnchor`), Level::createMission 80.3 -> 80.4 (bigAlienWave before alienWave).
+
+No-win investigations (documented by the workers, worktrees left clean):
+- MenuTouchWindow::OnTouchEnd 72.3 — size-tuned local optimum; case-4 About chain and the
+  case-15 id60/id52 loop are the remaining structural gaps.
+- HangarWindow::render 77.0 — `Globals::layout` is loaded twice by the original; the
+  ship-price branch is semantically inverted in our source; fixing either alone loses more
+  than it gains because of the 9700 B size alignment.
+- MenuTouchWindow ctor 84.5 — prologue differs only in two stack slots; language loop swaps
+  i/y between r8 and fp.
+- RocketGun::update 85.7 — only the elapsed/player register pair and the elapsed spill slot
+  differ; anchors are load-bearing.
+- ModStation::OnInitialize 99.5 — one `str` spill moved by 0xb4 bytes; all 10 mismatches
+  follow from that.
+
+Gate: **byte_exact 1352, linked_exact 4473, avg 99.86%, .text 0x1343d0, lint CLEAN, drift 0**.
+Remaining non-linked functions: 50.
