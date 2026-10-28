@@ -403,8 +403,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 4001) {
                         m_nState = 9;
-                        m_nScriptTimerA = 0;
                         m_pCamera->setRumblePercentage(0.0f, 0);
+                        m_nScriptTimerA = 0;
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 0, nullptr);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
