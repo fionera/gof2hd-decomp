@@ -1,5 +1,12 @@
 # .text frontier map — exported functions in original address order
 
+> **Current frontier (2026-10-28, after wave 71 harvests):** `MeshReadData`, `LevelScript::process`,
+> `Level::createMission`, `Layout::Layout` C1/C2 and `Radar::draw` are now size-exact. The remaining
+> exported size differences are `Generator::createMission` (-4 B), `Level::createMission` (+4 B),
+> `PlayerStation` C1/C2 (+4 B) and `Gun::calcCharacterCollision` (-20 B). `Layout::Layout` is
+> 7072 B exact (fuzzy 36.4%). The detailed table below is the wave-69 snapshot and is retained
+> for address-order history; use the size-diff list above for the current queue.
+
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by
 walking the common `.dynsym` function symbols of both binaries in original-address order.
 Ground truth: `../_work/bins/android_2.0.16_libgof2hdaa.so` (image base `0x10000`).
