@@ -815,9 +815,9 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->awake();                                  // vtable+0xc
                 }
                 KIPlayer *tailShip = (*enemies)[enemies->count - 10];
-                m_pCamera->setTarget(tailShip->parentGeometry);
+                m_pCamera->setTarget(tailShip->geometry);
                 Vector *camPos = &m_tempVec; // LevelScript tempVec @0x28
-                *camPos = tailShip->parentGeometry->getPosition();
+                *camPos = tailShip->geometry->getPosition();
                 *camPos += Vector{2000.0f, 500.0f, -20000.0f}; // @0x13bdd0/d4/d8
                 m_pCamera->setPosition(*camPos);
                 m_pLevel->lodManager->forceUpdate(30, false);
