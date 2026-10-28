@@ -257,7 +257,7 @@ bool Player::isAlwaysFriend() {
     return this->alwaysFriend;
 }
 
-bool Player::isAlwaysEnemy() {
+unsigned char Player::isAlwaysEnemy() {
     return this->alwaysEnemy;
 }
 

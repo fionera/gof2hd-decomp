@@ -95,7 +95,7 @@ public:
     uint8_t pad_e1[3];
     int32_t empData;
     int32_t empTimer;
-    bool alwaysEnemy;
+    uint8_t alwaysEnemy;
     bool alwaysFriend;
     bool neverAttack;
     uint8_t pad_ef;
@@ -171,7 +171,7 @@ public:
 
     bool isActive();
 
-    bool isAlwaysEnemy();
+    unsigned char isAlwaysEnemy();
 
     bool isAlwaysFriend();
 
