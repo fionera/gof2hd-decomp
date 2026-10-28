@@ -3851,9 +3851,9 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(1667) + String(" 2"));
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
-            alignas(16) Matrix rotation;
-            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
             int slot = 0;
+            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
+            alignas(16) Matrix rotation;
             for (int i = 2; i < 12; i++) {
                 (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
                 KIPlayer *turret = (*this->enemies)[i];
@@ -3865,8 +3865,8 @@ void Level::createCampaignMission() {
                 turret->setPosition(Vector{base->getPosition().x + v.x, base->getPosition().y + v.y,
                                            base->getPosition().z + v.z});
                 ((PlayerTurret *) turret)->setScaling(6.0f);
-                turret->cargo = nullptr;
                 turret->shipGroup = 1;
+                turret->cargo = nullptr;
                 if (++slot == 5)
                     slot -= 5;
             }
