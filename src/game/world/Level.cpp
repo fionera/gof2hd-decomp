@@ -1795,8 +1795,8 @@ void Level::createMission() {
                 this->enemyRoute = new Route(coords, 6);
                 int goods = mission->getProductionGoodAmount();
                 int escorts = (int) ((float) mission->getDifficulty() / 10.0f * 4.0f);
-                this->enemies = new Array<KIPlayer *>();
                 int convoyEnd = escorts + 2;
+                this->enemies = new Array<KIPlayer *>();
                 int total = convoyEnd + goods;
                 ArraySetLength(total, *this->enemies);
                 int offset = 0;
