@@ -1892,15 +1892,16 @@ void MenuTouchWindow::draw() {
                                             false);
             } else {
                 Globals::Canvas->SetColor(0xffffffffu);
+                int logoCenterX = Globals::w >> 1;
                 if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
                     PaintCanvas *canvas = Globals::Canvas;
                     int logoTop = Globals::layout->field_0xc_leftMargin;
                     int logoWidth = canvas->GetImage2DWidth(this->field_0x120);
                     int logoHeight = canvas->GetImage2DHeight(this->field_0x120);
-                    canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, logoTop / 4, logoWidth / 2,
+                    canvas->DrawImage2D(this->field_0x120, logoCenterX, logoTop / 4, logoWidth / 2,
                                         logoHeight / 2, 17, 20, 0);
                 } else {
-                    Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
+                    Globals::Canvas->DrawImage2D(this->field_0x120, logoCenterX, 80, 17, 20);
                 }
             }
             for (unsigned int i = 0; i < this->buttons->size(); i++)
@@ -2064,11 +2065,11 @@ void MenuTouchWindow::draw() {
                 bool latinButton = ((*this->buttonsB0)[i]->id == 33 || (*this->buttonsB0)[i]->id == 36 ||
                                     (*this->buttonsB0)[i]->id == 37) &&
                                    GameText::getLanguage() == 9;
-                bool switchScript = (arabicButton + latinButton) & 1;
+                bool switchScript = arabicButton | latinButton;
                 if (switchScript)
                     Globals::Canvas->field_0x1c = !arabicButton;
                 (*this->buttonsB0)[i]->draw();
-                if (switchScript)
+                if (*(volatile bool *) &switchScript)
                     Globals::Canvas->field_0x1c = arabicButton;
             }
             break;
