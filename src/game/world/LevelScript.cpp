@@ -2524,7 +2524,7 @@ bool LevelScript::process(int delta) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
                         m_nScriptTimerA = 0;
-                        Vector ref = (*enemies)[3]->geometry->getPosition();
+                        Vector ref = (*enemies)[3]->getPosition();
                         (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[1]->setPosition(ref + Vector{-79000.0f, 4900.0f, 7500.0f});
                         (*enemies)[2]->setPosition(ref + Vector{-79000.0f, 4900.0f, 2500.0f});
@@ -2551,8 +2551,8 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
-                        m_pCamera->setTarget(leader);
                         m_pRadar->enabled = 0;
+                        m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
                         m_dirVec = leader->getDirection();
                         m_tempVec += m_dirVec * 7000.0f;
