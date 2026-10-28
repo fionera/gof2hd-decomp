@@ -3337,3 +3337,18 @@ the iOS 1.1.4 armv7 binary has the true source order (204 stores, one per field,
 The Android gap is scheduling, not constants: original 86 `vld1`/81 `vst1` vs ours 59/58;
 the non-HD path is missing ~25 vector stores. A full adjacent-statement hill climb and a
 ±1..±4 move search over the first 40 statements found no single move above 45.8%.
+
+## Session 2026-10-28 (waves 60-61 — final worst-first harvest)
+
+Landed: MenuTouchWindow::draw 87.5 -> 92.2, MenuTouchWindow ctor 82.3 -> 84.5,
+LevelScript::process 49.6 -> 50.3, ModStation::OnInitialize 96.7 -> 99.5,
+Level::createCampaignMission 91.0 -> 91.6, StarMap::draw 92.8 -> 92.9,
+RocketGun::update 84.8 -> 85.7, Generator::createMission 72.0 -> 73.8,
+MeshReadData 74.8 -> 76.2, Radar::draw 68.9 -> 69.1, Layout ctor 46.0,
+Level::createShip 71.8, Level::createMission 80.3, Level::createScene 83.5,
+Hud::draw 84.2, Hud::drawChallengeModeScore 81.5, MenuTouchWindow::OnTouchEnd 72.3,
+HangarWindow::render 77.0, MGame::OnTouchEnd 78.2, Globals ctor 80.1,
+PlayerEgo::calcCollision 80.8 (anchor kept in calcCollision: moving it to update is a net loss).
+
+Gate: **byte_exact 1352, linked_exact 4473, avg 99.86%, .text 0x1343d0, lint CLEAN, drift 0**.
+Remaining non-linked functions: 50.
