@@ -469,7 +469,7 @@ namespace AbyssEngine {
 
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        bool enhanced = flags & 0x1a;
+        bool enhanced = (flags & 0x1a) != 0;
         float minimum[3];
         float maximum[3];
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
@@ -586,19 +586,19 @@ namespace AbyssEngine {
                 mesh->normals = new float[mesh->vertexCount * 3];
                 short *rawY = raw + 1;
                 for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
-                    float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
+                    float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
-                    // The original re-reads (*slot)->normals for every store, so keep the
-                    // member access inline instead of caching a float* base pointer.
+                    // The original loads (*slot)->normals once per iteration and stores the
+                    // clamped components through a single base pointer.
                     if (length == 0.0f) {
+                        (*slot)->normals[i + 2] = 0.0f;
                         (*slot)->normals[i + 1] = 1.0f;
                         (*slot)->normals[i] = 0.0f;
-                        (*slot)->normals[i + 2] = 0.0f;
                     } else {
-                        x /= length;
                         y /= length;
+                        x /= length;
                         z /= length;
                         float cx = (double) x < -1.0 ? -1.0 : x;
                         float cy = (double) y < -1.0 ? -1.0 : y;
@@ -606,9 +606,10 @@ namespace AbyssEngine {
                         if (x > 1.0f) cx = 1.0f;
                         if (y > 1.0f) cy = 1.0f;
                         if (z > 1.0f) cz = 1.0f;
-                        (*slot)->normals[i] = cx;
-                        (*slot)->normals[i + 1] = cy;
-                        (*slot)->normals[i + 2] = cz;
+                        float *nrm = (*slot)->normals + i;
+                        nrm[0] = cx;
+                        nrm[1] = cy;
+                        nrm[2] = cz;
                     }
                 }
                 delete[] (unsigned char *) raw;
