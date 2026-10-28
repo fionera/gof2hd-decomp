@@ -1139,21 +1139,31 @@ asteroids:
                 } else if (wreck) {
                     Globals::Canvas->DrawImage2D(reinterpret_cast<unsigned int &>(this->reservationDirty),
                                                  this->screenX, this->screenY, 17, 68);
-                    int x = this->screenX;
-                    int y = this->screenY;
-                    unsigned int image = this->image_0xac;
                     PaintCanvas *canvas = Globals::Canvas;
+                    unsigned int image = this->image_0xac;
+                    int x;
+                    int y;
                     if (this->field_0x11d && !this->field_0x11f && !this->field_0x120) {
-                        x += 11;
+                        x = this->screenX + 11;
                     } else if (this->field_0x11e && !this->field_0x11f) {
+                        x = this->screenX;
                         if (!this->field_0x120) {
                             x -= 11;
                         }
+                    } else if (this->field_0x11e && this->field_0x11f) {
+                        x = this->screenX;
+                        y = this->screenY + 11;
                     } else if (this->field_0x11f) {
-                        y += 11;
+                        x = this->screenX;
+                        y = this->screenY + 11;
+                    } else {
+                        x = this->screenX;
                     }
-                    if (!this->field_0x11f && this->field_0x120) {
-                        y -= 11;
+                    if (!this->field_0x11f) {
+                        y = this->screenY;
+                        if (this->field_0x120) {
+                            y -= 11;
+                        }
                     }
                     canvas->DrawImage2D(image, x, y, 17, 68);
                 }
