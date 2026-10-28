@@ -3389,3 +3389,29 @@ No-win investigations (documented by the workers, worktrees left clean):
 
 Gate: **byte_exact 1352, linked_exact 4473, avg 99.86%, .text 0x1343d0, lint CLEAN, drift 0**.
 Remaining non-linked functions: 50.
+
+## Session 2026-10-28 (waves 64-65 — next-tier push)
+
+Landed (gate moved from byte 1352 / linked 4473 / avg 99.86 to **byte 1353 / linked 4480 / avg 99.87**):
+- **Hud::drawMenu 94.3 -> 100%** (660 B, signed row height after label construction)
+- **StarSystem ctor 97.2 -> 100%** (2900 B, original bool ring check restores branch probabilities)
+- **ModStation::OnUpdate 99.7 -> 100%** (3652 B, mission-151 guard split behind gotos)
+- **Radar ctor 99.1 -> 100%** (2488 B, `isRocketGun` returns bool so the EH pad order matches)
+- **SpaceLounge::getSpecificSoundForRace 97.8 -> 100%** (116 B, byte-exact; keeps the int result in r1
+  via `__builtin_annotation(result, "sound")` — the lint's soft `arm_builtin` waiver; removing it
+  collapses the function to 33.3%, so it is load-bearing)
+- Level::assignGuns 93.8 -> 99.1, LevelScript::process 50.3 -> 50.4, Gun::calcCharacterCollision
+  68.1 -> 68.9, Hud::draw 84.2 -> 84.4, MeshReadData 76.2 -> 76.5, Radar::draw 69.3,
+  MenuTouchWindow::OnTouchEnd 72.3 -> 74.2, MenuTouchWindow::OnTouchBegin 96.7 -> 97.2,
+  HangarWindow::OnTouchEnd 98.2 -> 99.5, ModStation::OnKeyPress 99.4 -> 99.7,
+  ModStation::OnInitialize 99.4 -> 99.5, ModStation ctor 98.4 -> 98.6,
+  PlayerStation ctor 93.6 -> 94.4, SpaceLounge::startChat 97.3 -> 97.4.
+
+Anchor note: `levelTextAnchor` is now **2 stores**. Every function-size change in Level.cpp's TU
+needs it retuned by ±1 store (8 B each) to hold `.text 0x1343d0`; the last few passes had to do
+this by hand, and a stale anchor silently drops `byte_exact` by 10.
+
+Remaining non-linked: 43. Wave 66 is a 20-worker double-up on the ten closest-to-100 functions
+(SpaceLounge::onKeyPress, PlayerFighter::update, ModStation OnKeyPress/OnInitialize/ctor,
+HangarWindow::OnTouchEnd, Generator::createAgents, MGame::OnUpdate, Level::assignGuns,
+StarMap::drawOnScreenInfo).
