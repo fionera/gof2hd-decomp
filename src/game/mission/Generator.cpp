@@ -759,7 +759,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int32_t type = 0;
-    short guard = 999;
+    int guard = 999;
     bool selected = false;
     Array<bool> *used = Globals::status->field_50;
     for (; !selected; --guard) {
@@ -798,19 +798,25 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     if (Globals::status->getCurrentCampaignMission() < 16 || (type == 15 && !Globals::options[0x37])) {
         int choice = Globals::rnd->nextInt(5);
-        if (choice == 0) {
-            type = 11;
-        } else if (choice == 1) {
-            type = 0;
-        } else if (choice == 2) {
-            type = 7;
-        } else if (choice == 3) {
-            type = 4;
-        } else if (choice == 4) {
-            type = 12;
-            targetStation = agent->getStation();
+        switch (choice) {
+            case 0:
+                type = 11;
+                break;
+            case 1:
+                type = 0;
+                break;
+            case 2:
+                type = 7;
+                break;
+            case 3:
+                type = 4;
+                break;
+            case 4:
+                type = 12;
+                break;
         }
-    } else if (type == 12) {
+    }
+    if (type == 12) {
         targetStation = agent->getStation();
     }
 
@@ -903,9 +909,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
-    SolarSystem *toSystem =
-            systems->data()[((Station *) (intptr_t) galaxy->getStation(targetStation))->getSystem()];
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
+    Station *toStation = galaxy->getStation(targetStation);
+    SolarSystem *toSystem = systems->data()[toStation->getSystem()];
     float reward = (galaxy->distance(fromSystemPtr, toSystem) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
@@ -914,11 +920,11 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         reward *= 1.2f;
     } else if (type == 8) {
         reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
-    } else if (type == 3) {
-        reward *= 2.0f;
     } else if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
+    } else if (type == 3) {
+        reward *= 2.0f;
     } else if (type == 5) {
         reward *= 2.0f;
     }
