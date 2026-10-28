@@ -3448,3 +3448,25 @@ first address divergence is `MeshReadData` (ours 2624 B vs the original 2632 B),
 after it is shifted. Fixing function *sizes* in address order is the highest-leverage work for
 byte-exactness — a size-exact function unlocks byte-exactness for every later function whose
 PC-relative operands depend on it.
+
+## Session 2026-10-28 (wave 70 harvest + wave 71 worst-first)
+
+Landed:
+- **LevelScript::process size-exact 57232 B** (`46e311a5`, harvested as `69aedb4b`): mission
+  106/50-51/145 dispatch reconstruction. Fuzzy dipped 50.4 -> 49.4, but retuning
+  `mtwTextLayoutAnchor` back to `.text 0x1343d0` raised **byte_exact 1379 -> 1386**.
+  This removes the last +20 B export-size divergence in the LevelScript TU.
+- **MGame::OnTouchEnd 78.2 -> 78.3** (`f83df05a`, harvested as `f666c111`): set
+  `hudMenuOpen` before the `closeHudMenu` guard. Gate unchanged.
+
+Current gate: **byte_exact 1386, linked_exact 4485, avg 99.87%, .text 0x1343d0,
+lint CLEAN, drift 0**. Remaining exported size differences: Generator::createMission -4,
+Level::createMission +4, Layout C1/C2 -436, PlayerStation C1/C2 +4,
+Gun::calcCharacterCollision -20.
+
+Wave 71 is a 20-worker worst-first fleet (Layout x3, LevelScript::process x3,
+Level::createShip x2, Gun::calcCharacterCollision x2, Radar::draw x2,
+Generator::createMission x2, MeshReadData x2, HangarWindow::render, MGame::OnTouchEnd,
+Globals ctor, Level::createMission). Workers are gate-bound to byte_exact >= 1386,
+linked_exact >= 4485 and `.text 0x1343d0`; they must retune the mtw anchor for any
+size change before MenuTouchWindow.
