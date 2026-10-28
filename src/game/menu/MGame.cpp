@@ -2617,8 +2617,8 @@ void MGame::OnUpdate() {
             String text = *Globals::gameText->getText(290) + String("\n");
             int fee = Globals::status->hardCoreMode() ? 100 : 30;
             text = Globals::status->replaceHash(String(text, false), String(fee), String("#"));
-            Array<Item *> *cargo = Globals::status->getShip()->getCargo();
             bool hasOre = false;
+            Array<Item *> *cargo = Globals::status->getShip()->getCargo();
             if (cargo != nullptr) {
                 for (unsigned i = 0; i < cargo->size(); i++) {
                     Item *item = (*cargo)[i];
@@ -2847,7 +2847,7 @@ void MGame::OnUpdate() {
                     hints[23] = 1;
                     return;
                 }
-                if (!hints[33] && Globals::status->getShip()->hasJumpDrive() == 1) {
+                if (!hints[33] && Globals::status->getShip()->hasJumpDrive()) {
                     if (this->choiceWindow == nullptr) {
                         this->choiceWindow = new ChoiceWindow();
                     }

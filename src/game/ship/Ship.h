@@ -187,7 +187,7 @@ public:
 
     bool hasCloakIntegrated();
 
-    unsigned int hasJumpDrive();
+    bool hasJumpDrive();
 
     unsigned int hasJumpDriveIntegrated();
 

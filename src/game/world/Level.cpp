@@ -7248,5 +7248,6 @@ int Level::r_min;
 static void levelTextAnchor() {
     volatile double layoutPad;
     layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;  layoutPad = 6.0;
+    layoutPad = 1.0;  layoutPad = 1.0;
     (void) layoutPad;
 }

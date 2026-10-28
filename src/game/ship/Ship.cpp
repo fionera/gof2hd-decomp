@@ -321,15 +321,15 @@ bool Ship::hasSecondaryWeapons() {
     return false;
 }
 
-unsigned int Ship::hasJumpDrive() {
+bool Ship::hasJumpDrive() {
     if (this->hasJumpDriveFlag != 0) {
-        return 1;
+        return true;
     }
     unsigned int v = (unsigned int) this->index - 0x25u;
     if (v < 4) {
-        return 0xbu >> (v & 0xf) & 1;
+        return (0xbu >> (v & 0xf) & 1) != 0;
     }
-    return 0;
+    return false;
 }
 
 unsigned int Ship::hasJumpDriveIntegrated() {
