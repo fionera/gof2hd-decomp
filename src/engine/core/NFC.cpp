@@ -2,6 +2,12 @@
 #include "game/core/Globals.h"
 #include "platform/android/NdkHooks.h"
 
+const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";
+
+namespace {
+extern const char *deviceInfoPath;
+}
+
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     g_android_back_button_pressed = 1;
 }
@@ -206,7 +212,7 @@ void NFC::openTermsOfService() {
 }
 
 bool NFC::isPad() {
-    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jclass cls = g_pEnv->FindClass(deviceInfoPath);
     jmethodID method = g_pEnv->GetStaticMethodID(cls, "isPad", "()Z");
     jboolean value = g_pEnv->CallStaticBooleanMethod(cls, method);
     clearPendingException(g_pEnv);
@@ -214,7 +220,7 @@ bool NFC::isPad() {
 }
 
 int NFC::getWidth() {
-    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jclass cls = g_pEnv->FindClass(deviceInfoPath);
     jmethodID method = g_pEnv->GetStaticMethodID(cls, "getDisplayWidth", "()I");
     jint value = g_pEnv->CallStaticIntMethod(cls, method);
     clearPendingException(g_pEnv);
@@ -223,11 +229,14 @@ int NFC::getWidth() {
 
 
 int NFC::getHeight() {
-    jclass cls = g_pEnv->FindClass("net/fishlabs/ow_utils/DeviceInfo");
+    jclass cls = g_pEnv->FindClass(deviceInfoPath);
     jmethodID method = g_pEnv->GetStaticMethodID(cls, "getDisplayHeight", "()I");
     jint value = g_pEnv->CallStaticIntMethod(cls, method);
     clearPendingException(g_pEnv);
     return value;
 }
 
-const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";
+
+namespace {
+const char *deviceInfoPath = "net/fishlabs/ow_utils/DeviceInfo";
+}

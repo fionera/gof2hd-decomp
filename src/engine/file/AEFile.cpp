@@ -105,10 +105,6 @@ uint32_t AENormalFile::GetFileSize() {
     return 0;
 }
 
-FileInterface *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
-    return nullptr;
-}
-
 void AEFile::SetInterface(FileInterface *fileInterface) {
     if (fileInterface == nullptr || fileInterface->enabled == 0) {
         return;
@@ -145,6 +141,30 @@ void AEFile::Release() {
         delete AEFile::pakFileEntryList;
         AEFile::pakFileEntryList = nullptr;
     }
+}
+
+void AEFile::collectPakFiles(const String &path) {
+    if (AEFile::fileInterface == nullptr || AEFile::fileInterface->enabled == 0) {
+        return;
+    }
+
+    char *pathChars = path.GetAEChar();
+    // FileEnumInit is declared uint32_t here, but the original returns bool;
+    // call it through a bool-returning member pointer so the branch keeps the
+    // original's 50/50 probability (and hence register allocation).
+    typedef bool (FileInterface::*FileEnumInitFn)(char *, bool);
+    FileEnumInitFn fileEnumInit = reinterpret_cast<FileEnumInitFn>(&FileInterface::FileEnumInit);
+    if ((AEFile::fileInterface->*fileEnumInit)(pathChars, false)) {
+        String entry;
+        while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
+            String entryCopy(entry);
+            if (entry.IndexOf(String(".aez")) != 0xffffffffu) {
+                collectFilesInPakFiles(entryCopy);
+            }
+        }
+    }
+    delete[] pathChars;
+    sortPakFileEntryList();
 }
 
 uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
@@ -422,30 +442,6 @@ uint32_t AEFile::GetFileSize(uint32_t handle) {
 
 void AEFile::RegisterPakFile(String path) {
     collectFilesInPakFiles(path);
-    sortPakFileEntryList();
-}
-
-void AEFile::collectPakFiles(const String &path) {
-    if (AEFile::fileInterface == nullptr || AEFile::fileInterface->enabled == 0) {
-        return;
-    }
-
-    char *pathChars = path.GetAEChar();
-    // FileEnumInit is declared uint32_t here, but the original returns bool;
-    // call it through a bool-returning member pointer so the branch keeps the
-    // original's 50/50 probability (and hence register allocation).
-    typedef bool (FileInterface::*FileEnumInitFn)(char *, bool);
-    FileEnumInitFn fileEnumInit = reinterpret_cast<FileEnumInitFn>(&FileInterface::FileEnumInit);
-    if ((AEFile::fileInterface->*fileEnumInit)(pathChars, false)) {
-        String entry;
-        while (AEFile::fileInterface->FileGetNextEnum(entry) != 0) {
-            String entryCopy(entry);
-            if (entry.IndexOf(String(".aez")) != 0xffffffffu) {
-                collectFilesInPakFiles(entryCopy);
-            }
-        }
-    }
-    delete[] pathChars;
     sortPakFileEntryList();
 }
 

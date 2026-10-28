@@ -33,6 +33,10 @@ char *loge(char *message) {
     return message;
 }
 
+FileInterface *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
+    return nullptr;
+}
+
 FileInterfaceAndroid::FileInterfaceAndroid() {
     this->enabled = 1;
     this->appRootDir = 0;

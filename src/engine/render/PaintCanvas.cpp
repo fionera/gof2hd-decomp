@@ -983,46 +983,6 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
     }
 }
 
-static const char g_gla_nl_8c4c0[] = "\n";
-
-void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str, int width,
-                               ::Array<AbyssEngine::String *> *outArray) {
-    AbyssEngine::String *line = new AbyssEngine::String();
-    AbyssEngine::String text(str, false);
-    text += AbyssEngine::String(g_gla_nl_8c4c0, false);
-
-    // First pass: count the wrapped lines.
-    unsigned int count = 0;
-    for (int pos = 0; pos < (int) text.size(); count++) {
-        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
-        this->GetLine(font, rest, width, line);
-        pos += (int) line->size();
-    }
-    delete line;
-
-    ArraySetLength<AbyssEngine::String *>(count, *outArray);
-    for (unsigned int i = 0; i < count; i++) {
-        outArray->data_[i] = new AbyssEngine::String();
-    }
-
-    // Second pass: fill each line and trim surrounding blanks.
-    int pos = 0;
-    for (unsigned int i = 0; i < count; i++) {
-        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
-        this->GetLine(font, rest, width, outArray->data_[i]);
-        int end = (int) outArray->data_[i]->size();
-        pos += end;
-        int start = 0;
-        while (*(*outArray->data_[i])[start] == ' ') {
-            start++;
-        }
-        while (*(*outArray->data_[i])[end - 1] == ' ') {
-            end--;
-        }
-        *outArray->data_[i] = outArray->data_[i]->SubString((unsigned int) start, (unsigned int) end);
-    }
-}
-
 void PaintCanvas::AddResource(AbyssEngine::Resource *resource) {
     return ArrayAdd(resource, this->resources);
 }
@@ -2836,10 +2796,6 @@ void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
     }
 }
 
-static const char g_dsc_tag_sep[] = "c"; // colour-tag separator (orig .rodata 0x1ca491)
-
-static const char g_dsc_fmt_882ee[] = "%x";
-
 
 void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String &text,
                                   int x, int y, bool b) {
@@ -2852,7 +2808,7 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
 
     // "c"-separated segments alternate between text and a hex colour ("" restores the colour).
     AbyssEngine::String str(text, false);
-    ::Array<AbyssEngine::String *> *parts = str.SplitTags(AbyssEngine::String(g_dsc_tag_sep, false));
+    ::Array<AbyssEngine::String *> *parts = str.SplitTags(AbyssEngine::String("c", false));
     if (parts != 0) {
         bool draw = true;
         for (unsigned int i = 0; i < parts->count; i++) {
@@ -2864,7 +2820,7 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
                 this->SetColor(savedColor);
             } else {
                 unsigned int color = 0;
-                sscanf(parts->data_[i]->GetAEChar(), g_dsc_fmt_882ee, &color);
+                sscanf(parts->data_[i]->GetAEChar(), "%x", &color);
                 this->SetColor(color);
             }
             draw = !draw;
@@ -3410,6 +3366,44 @@ PaintCanvas::TransformGet2DPickedTextureRegion(Transform *transform, int x, int 
     none.u = -1.0f;
     none.v = -1.0f;
     return none;
+}
+
+void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str, int width,
+                               ::Array<AbyssEngine::String *> *outArray) {
+    AbyssEngine::String *line = new AbyssEngine::String();
+    AbyssEngine::String text(str, false);
+    text += AbyssEngine::String("\n", false);
+
+    // First pass: count the wrapped lines.
+    unsigned int count = 0;
+    for (int pos = 0; pos < (int) text.size(); count++) {
+        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
+        this->GetLine(font, rest, width, line);
+        pos += (int) line->size();
+    }
+    delete line;
+
+    ArraySetLength<AbyssEngine::String *>(count, *outArray);
+    for (unsigned int i = 0; i < count; i++) {
+        outArray->data_[i] = new AbyssEngine::String();
+    }
+
+    // Second pass: fill each line and trim surrounding blanks.
+    int pos = 0;
+    for (unsigned int i = 0; i < count; i++) {
+        AbyssEngine::String rest = text.SubString((unsigned int) pos, text.size());
+        this->GetLine(font, rest, width, outArray->data_[i]);
+        int end = (int) outArray->data_[i]->size();
+        pos += end;
+        int start = 0;
+        while (*(*outArray->data_[i])[start] == ' ') {
+            start++;
+        }
+        while (*(*outArray->data_[i])[end - 1] == ' ') {
+            end--;
+        }
+        *outArray->data_[i] = outArray->data_[i]->SubString((unsigned int) start, (unsigned int) end);
+    }
 }
 
 void PaintCanvas::DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *viewMatrix) {

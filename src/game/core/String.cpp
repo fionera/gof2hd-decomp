@@ -373,6 +373,25 @@ void String::ConvertFromUTF8() {
     delete[] wide;
 }
 
+void String::Set(float v) {
+    int exponent;
+    int negative;
+    unsigned short *digits = computeFloatString(v, 10, &exponent, &negative, 1);
+    String result;
+    if (exponent <= 0) {
+        result.Set("0.");
+        for (int i = 0; i > exponent; i--)
+            result += String("0");
+    }
+    result += String(digits, false);
+    if (exponent >= 1)
+        result = result.SubString(0, exponent) + String(".") + result.SubString(exponent, result.length);
+    if (negative != 0)
+        result = String("-") + result;
+    delete[] digits;
+    Set(result.data);
+}
+
 Array<String *> *String::SplitTags(String tag) {
     if (this->data != nullptr && this->length != 0 && tag.length != 0) {
         tag = String("<") + tag + String(":");
@@ -403,25 +422,6 @@ Array<String *> *String::SplitTags(String tag) {
     return nullptr;
 }
 
-
-void String::Set(float v) {
-    int exponent;
-    int negative;
-    unsigned short *digits = computeFloatString(v, 10, &exponent, &negative, 1);
-    String result;
-    if (exponent <= 0) {
-        result.Set("0.");
-        for (int i = 0; i > exponent; i--)
-            result += String("0");
-    }
-    result += String(digits, false);
-    if (exponent >= 1)
-        result = result.SubString(0, exponent) + String(".") + result.SubString(exponent, result.length);
-    if (negative != 0)
-        result = String("-") + result;
-    delete[] digits;
-    Set(result.data);
-}
 
 int String::StrLen(const unsigned short *s) {
     if (s == 0)
