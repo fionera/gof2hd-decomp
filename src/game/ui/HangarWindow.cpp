@@ -1472,7 +1472,7 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             }
         } else if (this->notEnoughCredits) {
             int choice = this->dialog->OnTouchEnd(x, y);
-            if (choice == 0) {
+            if (__builtin_expect(choice == 0, 0)) { // lint: arm_builtin
                 Globals::options[78] = 1;
                 Globals::recordHandler->saveOptions();
                 this->showCreditsBuyWindow();
@@ -1690,6 +1690,8 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                     ((ModStation *) Globals::appManager->GetApplicationModule(5))->showDlcMenu();
                     this->dlcMenuPending = 0;
                     this->dialogActive = 0;
+                    this->shipSwapPending = 0;
+                    this->swapChoicePending = 0;
                     return false;
                 }
             } else {
@@ -1808,7 +1810,28 @@ common:
         bool buying = this->buyMode;
         int choice = this->dialog->OnTouchEnd(x, y);
         if (buying) {
-            if (choice == 1) {
+            switch (choice) {
+            case 0:
+                if (!this->routeWarningPending) {
+                    this->dialogActive = 0;
+                    if (this->autoEquipped) {
+                        for (unsigned int i = 0; i < this->tabButtons->size(); i++)
+                            (*this->tabButtons)[i]->resetTouch();
+                    } else {
+                        this->buyMode = 1;
+                    }
+                    return false;
+                }
+                {
+                HangarList *list = this->hangarList;
+                this->dialogActive = 0;
+                this->routeWarningPending = 0;
+                this->buyMode = 0;
+                this->selectedItem = 0;
+                list->setCurrentItemIndex(-1);
+                return false;
+                }
+            case 1: {
                 HangarList *list = this->hangarList;
                 this->buyMode = 0;
                 this->dialogActive = 0;
@@ -1816,25 +1839,9 @@ common:
                 list->setCurrentItemIndex(-1);
                 return false;
             }
-            if (choice != 0)
-                return false;
-            if (!this->routeWarningPending) {
-                this->dialogActive = 0;
-                if (this->autoEquipped) {
-                    for (unsigned int i = 0; i < this->tabButtons->size(); i++)
-                        (*this->tabButtons)[i]->resetTouch();
-                } else {
-                    this->buyMode = 1;
-                }
+            default:
                 return false;
             }
-            HangarList *list = this->hangarList;
-            this->dialogActive = 0;
-            this->routeWarningPending = 0;
-            this->buyMode = 0;
-            this->selectedItem = 0;
-            list->setCurrentItemIndex(-1);
-            return false;
         }
         if (choice != 0)
             return false;
