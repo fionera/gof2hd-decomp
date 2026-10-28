@@ -639,16 +639,16 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->buttonsB8 = new Array<TouchButton *>();
     unsigned int image = 0xffffffffu;
     unsigned int pressedImage = 0xffffffffu;
-    for (i = 0; i < 3; i++) {
-        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][0], image);
-        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[i][1], pressedImage);
+    for (int controlIndex = 0; controlIndex < 3; controlIndex++) {
+        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[controlIndex][0], image);
+        Globals::Canvas->Image2DCreate(MenuTouchWindow_controlImages[controlIndex][1], pressedImage);
         int imageWidth = Globals::Canvas->GetImage2DWidth(image);
         int imageHeight = Globals::Canvas->GetImage2DHeight(image);
         int x;
-        if (i == 0)
+        if (controlIndex == 0)
             x = 0 - imageWidth / 2 - imageWidth + Globals::w / 2;
         else
-            x = (i == 1 ? 0 - imageWidth / 2 : imageWidth / 2) + Globals::w / 2;
+            x = (controlIndex == 1 ? 0 - imageWidth / 2 : imageWidth / 2) + Globals::w / 2;
         ArrayAdd(new TouchButton(image, pressedImage, 19, x, Globals::h / 2 - imageHeight / 2, 1), *this->buttonsB8);
     }
 
