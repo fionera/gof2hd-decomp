@@ -1827,7 +1827,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
 }
 
 int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) {
-    short result = soundId;
+    int result = soundId;
     switch (race) {
         case 0:
         case 5: {
@@ -1870,7 +1870,7 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
     }
     result = -1;
 done:
-    return result;
+    return __builtin_annotation(result, "sound"); // lint: arm_builtin
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
