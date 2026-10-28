@@ -483,15 +483,13 @@ void SpaceLounge::startChat() {
         float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
         float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
         float chosen = top < bottom ? top : bottom;
-        float resultTop = top;
-        float resultBottom = bottom;
-        if (chosen < minTop) {
-            resultTop = minTop;
-            resultBottom = resultTop;
-        }
-        if (top < bottom)
-            resultTop = resultBottom;
-        this->panelY = (int) resultTop;
+        float result = bottom;
+        float tmp = top;
+        if (chosen < minTop)
+            tmp = minTop;
+        if (chosen < minTop || top < bottom)
+            result = tmp;
+        this->panelY = (int) result;
         delete this->scrollWindow;
         this->scrollWindow = 0;
         this->scrollWindow = new ScrollTouchWindow(
