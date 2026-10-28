@@ -469,7 +469,7 @@ namespace AbyssEngine {
 
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        bool enhanced = (flags & 0x1a) != 0;
+        unsigned int enhanced = flags & 0x1a;
         float minimum[3];
         float maximum[3];
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
