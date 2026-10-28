@@ -3415,3 +3415,19 @@ Remaining non-linked: 43. Wave 66 is a 20-worker double-up on the ten closest-to
 (SpaceLounge::onKeyPress, PlayerFighter::update, ModStation OnKeyPress/OnInitialize/ctor,
 HangarWindow::OnTouchEnd, Generator::createAgents, MGame::OnUpdate, Level::assignGuns,
 StarMap::drawOnScreenInfo).
+
+## Session 2026-10-28 (wave 66 — double-up on the closest-to-100 functions)
+
+Landed (gate **byte 1353 / linked 4485 / avg 99.87**):
+- **PlayerFighter::update 99.9 -> 100%** (10376 B, drop the field_0x42 expect hint, integer lockedEnemy compare)
+- **Generator::createAgents 99.2 -> 100%** (1464 B, campaign read inside the offer==9 branch, bool Station::hasShip)
+- **HangarWindow::OnTouchEnd 99.5 -> 100%** (5828 B, bool helpPressed, plain notEnoughCredits if, tail after readyToClose)
+- **Level::assignGuns 99.1 -> 100%** (2948 B, drop the artificial arm_builtin anchor)
+- **SpaceLounge::onKeyPress 99.9 -> linked 100%** (8580 B, case 7 at the head of the offer switch, hoisted case-9 loop index)
+- MGame::OnUpdate 99.07 -> 99.74 (field_0xe0 low-bit hint guard) then 42 -> 40 mismatched insns
+  (hoisted wingmen-radio loop counter)
+- ModStation ctor: gHangarCamPitch/gHangarCamYaw moved to the original rodata order (score-neutral)
+
+Note: two different PlayerFighter::update variants both reached 100% on their own base but the second
+regressed the first (99.9); the second was reverted. Always re-verify the target after stacking two
+workers' fixes to the same function.
