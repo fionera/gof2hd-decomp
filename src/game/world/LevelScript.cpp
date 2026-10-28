@@ -3830,8 +3830,8 @@ bool LevelScript::process(int delta) {
                         (*m_pLevel->getEnemies())[j]->player->setEnemies(nullptr);
                     }
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_bCinematicBreak = 1; // field_0x11 (cinematic break) = 1
                     m_nState = 1; // shared tail 0x1438d6 -> post-switch tail (0x144e36)
+                    m_bCinematicBreak = 1; // field_0x11 (cinematic break) = 1
                     break;
                 }
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1) {
@@ -4690,9 +4690,8 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0;
-                        m_nScriptTimerA = 0;
                         m_nState = 2;
+                        m_bCinematicBreak = 0;
                     }
                 } else if (m_nState == 2 && m_nScriptTime >= 20001) {
                     m_nState = 3;
