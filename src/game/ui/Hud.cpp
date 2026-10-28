@@ -257,8 +257,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     int pad_ = this->field_0x470;
     int armorY;
     int armorBarY;
-    if (pad_) Globals::Canvas->SetColor(savedColor);
     if (this->hasShieldBar) {
+        if (pad_) Globals::Canvas->SetColor(savedColor);
         Globals::Canvas->DrawImage2D(ego->player->getShieldHP() >= 2 && this->shieldHitFlash ? this->shieldFrameHitImage
                                                                                                : this->shieldFrameImage,
                                      this->field_0x43c, this->field_0x442);
