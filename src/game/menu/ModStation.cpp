@@ -2317,21 +2317,28 @@ void ModStation::OnUpdate() {
             }
             if (completed != nullptr) {
                 if (this->flag_0x65 && this->spaceLounge->introFinished() &&
-                    Globals::status->getCurrentCampaignMission() > 147 &&
-                    Globals::status->getCurrentCampaignMission() <= 150 && stationIndex == 96) {
-                    Globals::status->setCurrentCampaignMission(151);
-                    this->dialogueWindow = new DialogueWindow();
-                    this->dialogueMission = completed;
-                    this->dialogueWindow->set(completed, 1, 151);
-                    this->flag_0x69 = 1;
-                    checkHints();
-                    goto afterMissions;
-                }
+                    Globals::status->getCurrentCampaignMission() > 147)
+                    goto checkMission151;
             } else if (this->flag_0x65 && this->spaceLounge->introFinished() &&
                        Globals::status->getCurrentCampaignMission() >= 148 &&
                        Globals::status->getCurrentCampaignMission() <= 150 &&
-                       (stationIndex == 9 || stationIndex == 55 || stationIndex == 66) &&
-                       !(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() & visitBit)) {
+                       (stationIndex == 9 || stationIndex == 55 || stationIndex == 66)) {
+                goto visitStation;
+            }
+            goto afterMission151;
+        checkMission151:
+            if (Globals::status->getCurrentCampaignMission() <= 150 && stationIndex == 96) {
+                Globals::status->setCurrentCampaignMission(151);
+                this->dialogueWindow = new DialogueWindow();
+                this->dialogueMission = completed;
+                this->dialogueWindow->set(completed, 1, 151);
+                this->flag_0x69 = 1;
+                checkHints();
+                goto afterMissions;
+            }
+            goto afterMission151;
+        visitStation:
+            if (!(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() & visitBit)) {
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())
                     ->setStatusValue(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue() |
                                      visitBit);
@@ -2348,6 +2355,7 @@ void ModStation::OnUpdate() {
                 checkHints();
                 goto afterMissions;
             }
+        afterMission151:;
         }
 
         if (reachedBeacon) {
