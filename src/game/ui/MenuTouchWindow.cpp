@@ -1331,56 +1331,123 @@ void MenuTouchWindow::draw() {
         Globals::layout->drawBG();
 
     switch (this->menuState) {
+        case 15: {
+            // DLC store.
+            Globals::layout->drawBG();
+            Globals::layout->drawHeader(String(*Globals::gameText->getText(97)), false);
+            Globals::Canvas->SetColor(0x255d8dffu);
+            Globals::layout->drawEmptyFooter(true);
+            Layout *layout = Globals::layout;
+            int listHeight = Globals::h - layout->field_0xc_leftMargin - layout->field_0x10_rightMargin -
+                             layout->field_0x20_top - layout->field_0x24;
+            layout->drawBox(5, layout->buttonInsetX, layout->field_0x20_top + layout->field_0xc_leftMargin,
+                            this->slotListWidth, listHeight, String(""));
+            layout = Globals::layout;
+            layout->drawBox(5, layout->buttonInsetX + this->slotListWidth + this->slotBorderWidth,
+                            layout->field_0xc_leftMargin + layout->field_0x20_top, this->slotTextWidth, listHeight,
+                            String(""));
+            layout = Globals::layout;
+            Globals::Canvas->EnableClip(0, layout->field_0xc_leftMargin + layout->field_0x20_top, Globals::w,
+                                        Globals::h - (layout->field_0xc_leftMargin + layout->field_0x20_top) -
+                                            layout->field_0x10_rightMargin - layout->field_0x24);
+            this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
+            MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
+            for (int i = 0; i != 5; i++) {
+                if (i == this->field_0x1e0) {
+                    if (!Globals::iPad && !Globals::iPadAssetsWithLowerRes)
+                        Globals::Canvas->DrawImage2D(this->scrollImage_0x13c,
+                                                     Globals::layout->field_0x2c_rowHeight + this->slotImageWidth +
+                                                         this->slotX,
+                                                     (this->slotSpacing + this->contentHeightCache) * i +
+                                                         this->scrollOffset + this->slotY);
+                    (*this->scrollSlots)[i]->setAlwaysPressed(true);
+                } else {
+                    (*this->scrollSlots)[i]->setAlwaysPressed(false);
+                }
+                layout = Globals::layout;
+                (*this->scrollSlots)[i]->setYPosition((layout->field_0x2c_rowHeight + this->contentHeightCache) * i +
+                                                      layout->field_0x20_top + layout->field_0xc_leftMargin +
+                                                      this->scrollOffset);
+                (*this->scrollSlots)[i]->draw();
+                if ((optionFlag(53) && i == 0) || (optionFlag(54) && i == 1) || (optionFlag(55) && i == 2) ||
+                    (optionFlag(56) && i == 3) || (i == 4 && ((optionFlag(53) && optionFlag(55)) || optionFlag(57)))) {
+                    // Already owned: tick mark.
+                    Globals::Canvas->DrawImage2D(
+                        this->scrollImage_0x144,
+                        (int) ((*this->scrollSlots)[i]->getPosition().x + (float) this->slotImageWidth),
+                        (int) ((*this->scrollSlots)[i]->getPosition().y + (float) this->contentHeightCache), 17, 34);
+                }
+            }
+            layout = Globals::layout;
+            layout->drawBox(0, this->slotListWidth + layout->buttonInsetX + this->slotBorderWidth,
+                            layout->field_0x20_top + layout->field_0xc_leftMargin,
+                            this->slotTextWidth - layout->field_0x2c_rowHeight - this->slotMarkerWidth,
+                            layout->field_0x1c, String(*Globals::gameText->getText(this->field_0x1e0 + 77)));
+            layout = Globals::layout;
+            Globals::Canvas->DrawImage2D(this->heapBufB[this->field_0x1e0], Globals::w - layout->buttonInsetX,
+                                         layout->field_0xc_leftMargin + layout->field_0x20_top, 17, 18);
+            layout = Globals::layout;
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                        *Globals::gameText->getText(this->field_0x1e0 + 82),
+                                        layout->field_0x2c_rowHeight + this->slotListWidth +
+                                            layout->buttonInsetX + this->slotBorderWidth,
+                                        layout->field_0x2c_rowHeight + layout->field_0x20_top +
+                                            layout->field_0xc_leftMargin + layout->field_0x1c,
+                                        false);
+            Globals::Canvas->SetColor(0x7aa35bffu);
+            if (appData->prices != 0 && appData->prices->size() != 0) {
+                int priceIndex = Globals::globals->getInAppPurchaseArrayIndex(this->field_0x1e0, appData->productIds);
+                if (priceIndex != -1) {
+                    String *price = (*appData->prices)[priceIndex];
+                    layout = Globals::layout;
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *price,
+                        this->slotListWidth + layout->buttonInsetX + this->slotBorderWidth +
+                            layout->field_0x2c_rowHeight * 2 +
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                          *Globals::gameText->getText(132) + String(":")),
+                        Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+                            Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight +
+                            Globals::layout->field_0x4,
+                        false);
+                }
+            }
+            this->scrollWindowB->draw();
+            int selected = this->field_0x1e0;
+            bool notOwned = true;
+            if (optionFlag(53) && selected == 0)
+                notOwned = false;
+            else if (optionFlag(54) && selected == 1)
+                notOwned = false;
+            else if (optionFlag(55) && selected == 2)
+                notOwned = false;
+            else if (optionFlag(56) && selected == 3)
+                notOwned = false;
+            else if (optionFlag(57) && selected == 4)
+                notOwned = false;
+            else if (optionFlag(57) && (selected | 2) == 2)
+                notOwned = false;
+            if (notOwned)
+                notOwned = (optionFlag(53) == 0 || selected != 4) || optionFlag(55) == 0;
+            Globals::Canvas->DisableClip();
+            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+                TouchButton *button = (*this->scrollEntries)[i];
+                if (button->id == 52) {
+                    button->setVisible(notOwned);
+                    button->setText(*Globals::gameText->getText(98));
+                    button->draw();
+                } else if (button->id == 60) {
+                    button->draw();
+                }
+            }
+            break;
+        }
         case 1:
         case 2: {
             // Load / save game.
             Globals::layout->drawBG();
             Globals::layout->drawHeader(String(*Globals::gameText->getText(this->menuState == 2 ? 30 : 29)), false);
             this->drawLoadSaveMenu(false);
-            break;
-        }
-        case 0: {
-            // Main menu.
-            if (this->backgroundEnabled != 0) {
-                Globals::layout->drawHeader(String(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171)),
-                                            false);
-            } else {
-                Globals::Canvas->SetColor(0xffffffffu);
-                if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
-                    PaintCanvas *canvas = Globals::Canvas;
-                    int logoTop = Globals::layout->field_0xc_leftMargin;
-                    int logoWidth = canvas->GetImage2DWidth(this->field_0x120);
-                    int logoHeight = canvas->GetImage2DHeight(this->field_0x120);
-                    canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, logoTop / 4, logoWidth / 2,
-                                        logoHeight / 2, 17, 20, 0);
-                } else {
-                    Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
-                }
-            }
-            for (unsigned int i = 0; i < this->buttons->size(); i++)
-                (*this->buttons)[i]->draw();
-            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-                int id = (int) (*this->scrollEntries)[i]->id;
-                if (id == 53) {
-                    (*this->scrollEntries)[i]->draw();
-                    if (Globals::inAppPurchaseSupported && !optionFlag(59)) {
-                        // Spinning "new" badge on the DLC button.
-                        int badgeSize = Globals::Canvas->GetImage2DWidth(this->image_0x124);
-                        int inset = (int) ((float) (*this->scrollEntries)[i]->getWidth() * 0.25f);
-                        if (Globals::retinaDisplay)
-                            inset -= 5;
-                        else if (Globals::iPadHD)
-                            inset -= 4;
-                        long long now = (long long) Globals::appManager->GetCurrentTimeMillis();
-                        Globals::Canvas->DrawRegion2D(this->image_0x124, 0, 0, badgeSize, badgeSize, (float) now * 0.004f,
-                                                      (int) ((float) badgeSize * 0.5f), (int) ((float) badgeSize * 0.5f),
-                                                      (int) ((*this->scrollEntries)[i]->getPosition().x - (float) inset),
-                                                      (int) ((*this->scrollEntries)[i]->getPosition().y - (float) inset));
-                    }
-                } else if (id == 23 || id == 24) {
-                    (*this->scrollEntries)[i]->draw();
-                }
-            }
             break;
         }
         case 3: {
@@ -1630,18 +1697,21 @@ void MenuTouchWindow::draw() {
             this->optBtnDC->draw();
             break;
         }
-        case 4:
-            // About.
-            Globals::layout->drawBG();
-            Globals::layout->drawHeader(String(*Globals::gameText->getText(43)), false);
-            this->scrollWindowA->draw();
-            Globals::layout->drawEmptyFooter(true);
-            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-                long long id = (*this->scrollEntries)[i]->id;
-                if (id == 106 || id == 109 || id == 110 || id == 22)
-                    (*this->scrollEntries)[i]->draw();
-            }
+        case 17: {
+            // Campaign selection.
+            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
+                Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
+            Globals::layout->drawHeader(String(*Globals::gameText->getText(103)), false);
+            for (unsigned int i = 0; i < this->buttonsB8->size(); i++)
+                (*this->buttonsB8)[i]->draw();
+            Vector pos = (*this->buttonsB8)[0]->getPosition();
+            Globals::Canvas->DrawImage2D(
+                this->image_0x128,
+                (int) (pos.x + (float) (*this->buttonsB8)[0]->getWidth() -
+                       (float) (Globals::layout->field_0x2c_rowHeight * 20)),
+                (int) (pos.y + (float) (Globals::layout->field_0x2c_rowHeight * 5)), 68);
             break;
+        }
         case 7: {
             // Sound options.
             Globals::layout->drawBG();
@@ -1815,6 +1885,62 @@ void MenuTouchWindow::draw() {
             this->optBtnD0->draw();
             break;
         }
+        case 0: {
+            // Main menu.
+            if (this->backgroundEnabled != 0) {
+                Globals::layout->drawHeader(String(*Globals::gameText->getText(this->backgroundEnabled == 1 ? 40 : 171)),
+                                            false);
+            } else {
+                Globals::Canvas->SetColor(0xffffffffu);
+                if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
+                    PaintCanvas *canvas = Globals::Canvas;
+                    int logoTop = Globals::layout->field_0xc_leftMargin;
+                    int logoWidth = canvas->GetImage2DWidth(this->field_0x120);
+                    int logoHeight = canvas->GetImage2DHeight(this->field_0x120);
+                    canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, logoTop / 4, logoWidth / 2,
+                                        logoHeight / 2, 17, 20, 0);
+                } else {
+                    Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
+                }
+            }
+            for (unsigned int i = 0; i < this->buttons->size(); i++)
+                (*this->buttons)[i]->draw();
+            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+                int id = (int) (*this->scrollEntries)[i]->id;
+                if (id == 53) {
+                    (*this->scrollEntries)[i]->draw();
+                    if (Globals::inAppPurchaseSupported && !optionFlag(59)) {
+                        // Spinning "new" badge on the DLC button.
+                        int badgeSize = Globals::Canvas->GetImage2DWidth(this->image_0x124);
+                        int inset = (int) ((float) (*this->scrollEntries)[i]->getWidth() * 0.25f);
+                        if (Globals::retinaDisplay)
+                            inset -= 5;
+                        else if (Globals::iPadHD)
+                            inset -= 4;
+                        long long now = (long long) Globals::appManager->GetCurrentTimeMillis();
+                        Globals::Canvas->DrawRegion2D(this->image_0x124, 0, 0, badgeSize, badgeSize, (float) now * 0.004f,
+                                                      (int) ((float) badgeSize * 0.5f), (int) ((float) badgeSize * 0.5f),
+                                                      (int) ((*this->scrollEntries)[i]->getPosition().x - (float) inset),
+                                                      (int) ((*this->scrollEntries)[i]->getPosition().y - (float) inset));
+                    }
+                } else if (id == 23 || id == 24) {
+                    (*this->scrollEntries)[i]->draw();
+                }
+            }
+            break;
+        }
+        case 4:
+            // About.
+            Globals::layout->drawBG();
+            Globals::layout->drawHeader(String(*Globals::gameText->getText(43)), false);
+            this->scrollWindowA->draw();
+            Globals::layout->drawEmptyFooter(true);
+            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+                long long id = (*this->scrollEntries)[i]->id;
+                if (id == 106 || id == 109 || id == 110 || id == 22)
+                    (*this->scrollEntries)[i]->draw();
+            }
+            break;
         case 9:
             this->missionsWindow->draw();
             break;
@@ -1946,117 +2072,6 @@ void MenuTouchWindow::draw() {
                     Globals::Canvas->field_0x1c = arabicButton;
             }
             break;
-        case 15: {
-            // DLC store.
-            Globals::layout->drawBG();
-            Globals::layout->drawHeader(String(*Globals::gameText->getText(97)), false);
-            Globals::Canvas->SetColor(0x255d8dffu);
-            Globals::layout->drawEmptyFooter(true);
-            Layout *layout = Globals::layout;
-            int listHeight = Globals::h - layout->field_0xc_leftMargin - layout->field_0x10_rightMargin -
-                             layout->field_0x20_top - layout->field_0x24;
-            layout->drawBox(5, layout->buttonInsetX, layout->field_0x20_top + layout->field_0xc_leftMargin,
-                            this->slotListWidth, listHeight, String(""));
-            layout = Globals::layout;
-            layout->drawBox(5, layout->buttonInsetX + this->slotListWidth + this->slotBorderWidth,
-                            layout->field_0xc_leftMargin + layout->field_0x20_top, this->slotTextWidth, listHeight,
-                            String(""));
-            layout = Globals::layout;
-            Globals::Canvas->EnableClip(0, layout->field_0xc_leftMargin + layout->field_0x20_top, Globals::w,
-                                        Globals::h - (layout->field_0xc_leftMargin + layout->field_0x20_top) -
-                                            layout->field_0x10_rightMargin - layout->field_0x24);
-            this->contentHeightCache = Globals::Canvas->GetImage2DHeight(this->heapBufA[0]);
-            MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
-            for (int i = 0; i != 5; i++) {
-                if (i == this->field_0x1e0) {
-                    if (!Globals::iPad && !Globals::iPadAssetsWithLowerRes)
-                        Globals::Canvas->DrawImage2D(this->scrollImage_0x13c,
-                                                     Globals::layout->field_0x2c_rowHeight + this->slotImageWidth +
-                                                         this->slotX,
-                                                     (this->slotSpacing + this->contentHeightCache) * i +
-                                                         this->scrollOffset + this->slotY);
-                    (*this->scrollSlots)[i]->setAlwaysPressed(true);
-                } else {
-                    (*this->scrollSlots)[i]->setAlwaysPressed(false);
-                }
-                layout = Globals::layout;
-                (*this->scrollSlots)[i]->setYPosition((layout->field_0x2c_rowHeight + this->contentHeightCache) * i +
-                                                      layout->field_0x20_top + layout->field_0xc_leftMargin +
-                                                      this->scrollOffset);
-                (*this->scrollSlots)[i]->draw();
-                if ((optionFlag(53) && i == 0) || (optionFlag(54) && i == 1) || (optionFlag(55) && i == 2) ||
-                    (optionFlag(56) && i == 3) || (i == 4 && ((optionFlag(53) && optionFlag(55)) || optionFlag(57)))) {
-                    // Already owned: tick mark.
-                    Globals::Canvas->DrawImage2D(
-                        this->scrollImage_0x144,
-                        (int) ((*this->scrollSlots)[i]->getPosition().x + (float) this->slotImageWidth),
-                        (int) ((*this->scrollSlots)[i]->getPosition().y + (float) this->contentHeightCache), 17, 34);
-                }
-            }
-            layout = Globals::layout;
-            layout->drawBox(0, this->slotListWidth + layout->buttonInsetX + this->slotBorderWidth,
-                            layout->field_0x20_top + layout->field_0xc_leftMargin,
-                            this->slotTextWidth - layout->field_0x2c_rowHeight - this->slotMarkerWidth,
-                            layout->field_0x1c, String(*Globals::gameText->getText(this->field_0x1e0 + 77)));
-            layout = Globals::layout;
-            Globals::Canvas->DrawImage2D(this->heapBufB[this->field_0x1e0], Globals::w - layout->buttonInsetX,
-                                         layout->field_0xc_leftMargin + layout->field_0x20_top, 17, 18);
-            layout = Globals::layout;
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
-                                        *Globals::gameText->getText(this->field_0x1e0 + 82),
-                                        layout->field_0x2c_rowHeight + this->slotListWidth +
-                                            layout->buttonInsetX + this->slotBorderWidth,
-                                        layout->field_0x2c_rowHeight + layout->field_0x20_top +
-                                            layout->field_0xc_leftMargin + layout->field_0x1c,
-                                        false);
-            Globals::Canvas->SetColor(0x7aa35bffu);
-            if (appData->prices != 0 && appData->prices->size() != 0) {
-                int priceIndex = Globals::globals->getInAppPurchaseArrayIndex(this->field_0x1e0, appData->productIds);
-                if (priceIndex != -1) {
-                    String *price = (*appData->prices)[priceIndex];
-                    layout = Globals::layout;
-                    Globals::Canvas->DrawString(
-                        (unsigned int) (uintptr_t) Globals::font, *price,
-                        this->slotListWidth + layout->buttonInsetX + this->slotBorderWidth +
-                            layout->field_0x2c_rowHeight * 2 +
-                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                          *Globals::gameText->getText(132) + String(":")),
-                        Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
-                            Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight +
-                            Globals::layout->field_0x4,
-                        false);
-                }
-            }
-            this->scrollWindowB->draw();
-            int selected = this->field_0x1e0;
-            bool notOwned = true;
-            if (optionFlag(53) && selected == 0)
-                notOwned = false;
-            else if (optionFlag(54) && selected == 1)
-                notOwned = false;
-            else if (optionFlag(55) && selected == 2)
-                notOwned = false;
-            else if (optionFlag(56) && selected == 3)
-                notOwned = false;
-            else if (optionFlag(57) && selected == 4)
-                notOwned = false;
-            else if (optionFlag(57) && (selected | 2) == 2)
-                notOwned = false;
-            if (notOwned)
-                notOwned = (optionFlag(53) == 0 || selected != 4) || optionFlag(55) == 0;
-            Globals::Canvas->DisableClip();
-            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-                TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 52) {
-                    button->setVisible(notOwned);
-                    button->setText(*Globals::gameText->getText(98));
-                    button->draw();
-                } else if (button->id == 60) {
-                    button->draw();
-                }
-            }
-            break;
-        }
         case 16:
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 long long id = (*this->scrollEntries)[i]->id;
@@ -2064,21 +2079,6 @@ void MenuTouchWindow::draw() {
                     (*this->scrollEntries)[i]->draw();
             }
             break;
-        case 17: {
-            // Campaign selection.
-            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
-                Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
-            Globals::layout->drawHeader(String(*Globals::gameText->getText(103)), false);
-            for (unsigned int i = 0; i < this->buttonsB8->size(); i++)
-                (*this->buttonsB8)[i]->draw();
-            Vector pos = (*this->buttonsB8)[0]->getPosition();
-            Globals::Canvas->DrawImage2D(
-                this->image_0x128,
-                (int) (pos.x + (float) (*this->buttonsB8)[0]->getWidth() -
-                       (float) (Globals::layout->field_0x2c_rowHeight * 20)),
-                (int) (pos.y + (float) (Globals::layout->field_0x2c_rowHeight * 5)), 68);
-            break;
-        }
     }
 
     if (this->menuState != 11 && (this->backgroundEnabled != 0 || this->menuState != 0) && this->menuState != 4 &&
