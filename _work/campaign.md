@@ -3323,3 +3323,17 @@ Notes for future passes:
 - `levelTextAnchor` is called through a `volatile` function pointer at the end of
   `Level::createMission`; do not move that call into `createScene` (inlining it there cost
   createScene 7.9 points).
+
+## Session 2026-10-28 (waves 58-60 — worst-first continues)
+
+Landed: Hud::draw 82.3 -> 84.2, Level::createScene 81.6 -> 83.5, Level::createMission 79.8 -> 80.2,
+MenuTouchWindow::draw 86.3 -> 87.5, StarMap::draw 92.5 -> 92.8, Level::createCampaignMission 90.9 -> 91.0,
+Radar::draw 67.6 -> 68.9, Gun::calcCharacterCollision 66.7 -> 67.1, Generator::createMission 70.9 -> 72.0,
+MeshReadData 73.0 -> 74.8, PlayerEgo::calcCollision 80.8 (anchor kept in place on purpose),
+LevelScript::process 49.5 -> 49.6, Layout ctor 45.8 (local optimum for statement order).
+
+Layout ctor analysis (committed as `_work/reconstructions/layout_ctor/ios_source_order.md`):
+the iOS 1.1.4 armv7 binary has the true source order (204 stores, one per field, no calls).
+The Android gap is scheduling, not constants: original 86 `vld1`/81 `vst1` vs ours 59/58;
+the non-HD path is missing ~25 vector stores. A full adjacent-statement hill climb and a
+±1..±4 move search over the first 40 statements found no single move above 45.8%.
