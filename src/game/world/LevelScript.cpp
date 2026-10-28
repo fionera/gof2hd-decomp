@@ -4437,22 +4437,14 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB =
                             (long long) ((float) delta * 0.05f +
                                          (float) m_nScriptTimerB);
-                    float step2 = (float) ((double) delta * 2.5);
-                    float step3 = (float) ((double) delta * 2.4);
-                    float step4 = (float) ((double) delta * 2.3);
                     for (unsigned int i = 2; i != 5; ++i) {
                         // disasm 0x1426c4: -Oz hoists all three (double)delta*{2.5,2.4,2.3}
-                        // products, converts them to float once, and selects among them with a
-                        // compare ladder; the moveForward call is shared by all three.
-                        float step;
-                        if (i == 4) {
-                            step = step4;
-                        } else if (i == 3) {
-                            step = step3;
-                        } else if (i == 2) {
-                            step = step2;
+                        // products and selects among the converted floats with a compare ladder.
+                        switch (i) {
+                            case 2: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.5)); break;
+                            case 3: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.4)); break;
+                            case 4: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.3)); break;
                         }
-                        (*enemies)[i]->geometry->moveForward(step);
                     }
                     {
                         AEGeometry *geo = (*enemies)[2]->geometry;
