@@ -2328,8 +2328,8 @@ void Level::createMission() {
                   ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 &&
                   Globals::status->getStation()->getIndex() ==
                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation();
-    int alienWave = 0;
     bool bigAlienWave = false;
+    int alienWave = 0;
     int pirateFortress = 0;
     if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
