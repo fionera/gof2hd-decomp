@@ -3350,8 +3350,22 @@ Hud::draw 84.2, Hud::drawChallengeModeScore 81.5, MenuTouchWindow::OnTouchEnd 72
 HangarWindow::render 77.0, MGame::OnTouchEnd 78.2, Globals ctor 80.1,
 PlayerEgo::calcCollision 80.8 (anchor kept in calcCollision: moving it to update is a net loss).
 
+Wave 63 (20 workers, worst-first, all on the current worst list) landed:
+- Radar::draw 69.1 -> 69.3 (explicit per-branch blip x/y offsets in the asteroid wreck block)
+- MenuTouchWindow::OnTouchEnd 72.3 -> 74.2 (About id-chain order, leaderboard r==1/r==0 split,
+  case-7 && operand order, loadFailed tail-merge)
+- Gun::calcCharacterCollision 67.1 -> 68.1 (non-volatile flags, per-projectile enemy reload,
+  direct level reload; 1952 B, closer to the original 1984 B)
+- LevelScript::process 50.3 (semantic fix: mission 0x4e case 11 tail ship uses
+  KIPlayer::geometry at offset 8, not parentGeometry; fuzzy unchanged)
+- Hud::draw 84.2 -> 84.4 was **reverted**: it dropped Hud::drawChallengeModeScore 81.5 -> 75.1
+  in the same TU (the gate does not catch per-function fuzzy drops — always diff the TU).
+
 Gate: **byte_exact 1352, linked_exact 4473, avg 99.86%, .text 0x1343d0, lint CLEAN, drift 0**.
-Remaining non-linked functions: 50.
+Remaining non-linked functions: 50. The worst ones are now local optima: Layout ctor 46.0
+(needs the missing ~25 vector stores, not statement reordering), LevelScript::process 50.3,
+Gun::calcCharacterCollision 68.1, Radar::draw 69.3, Level::createShip 71.8,
+MeshReadData 76.2, MGame::OnTouchEnd 78.2.
 
 ## Session 2026-10-28 (waves 62-63 — worst-first, 20+20 workers)
 
