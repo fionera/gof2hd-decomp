@@ -32,25 +32,27 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 48 non-linked exported functions plus the documented MenuTouchWindow layout anchor and RocketGun GOT pad; local-code gaps are bracketed by the same neighbours. |
-| **.rodata** | 269,159 | 267,671 | **−1,488** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact, the CubeMapping 75-byte anchor is gone, and the PulseShader named-array pad is gone. |
-| .ARM.extab | 156,312 | 151,764 | −4,548 | smaller EH tables in the remaining non-exact functions. |
+| **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 38 non-linked exported functions plus the documented MenuTouchWindow layout anchor; local-code gaps are bracketed by the same neighbours. |
+| **.rodata** | 269,159 | 267,831 | **−1,328** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
+| .ARM.extab | 156,312 | 151,740 | −4,572 | smaller EH tables in the remaining non-exact functions. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
-| .data | 10,604 | 10,680 | **+76** | anonymous initialised-data layout still differs; the Transform 72-byte local data block is now in .data and the DialogueWindow last face row is the original 5-int descriptor. |
-| .bss | 27,052 | 27,280 | **+228** | anonymous zero-initialised-data layout still differs; includes the 190-byte Status mission-order table. |
+| .data.rel.ro | 12,264 | 12,296 | **+32** | anonymous read-only-relocated data layout still differs. |
+| .data | 10,604 | 10,712 | **+108** | anonymous initialised-data layout still differs. |
+| .bss | 27,052 | 27,088 | **+36** | anonymous zero-initialised-data layout still differs. |
+| .got | 17,164 | 17,164 | 0 | same slot count; slot order still follows our link order. |
 
 ## The four real gaps (in priority/size order)
 
-1. **48 non-linked exported functions.** 4475 of 4523 compared functions are linked-exact; the
-   remaining 48 are the long tail (26 in 90–99%, 11 in 80–89%, 6 in 70–79%, 2 in 60–69%,
+1. **38 non-linked exported functions.** 4485 of 4523 compared functions are linked-exact; the
+   remaining 38 are the long tail (16 in 90–99%, 11 in 80–89%, 6 in 70–79%, 2 in 60–69%,
    3 below 60%). The `.text` total is +3,080 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 1,488 B smaller, `.data` 76 B larger, and `.bss` 228 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 1,328 B smaller, `.data` 108 B larger, and `.bss` 36 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is 4,548 B smaller, following the remaining function-size/EH-layout
+3. **EH tables.** `.ARM.extab` is 4,572 B smaller, following the remaining function-size/EH-layout
    differences.
 4. **Link metadata.** `.dynsym`/`.dynstr` sizes now match exactly; dynamic-symbol order and the GNU
    build-id are content hashes that converge only when everything else does.
