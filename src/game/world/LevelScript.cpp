@@ -1976,8 +1976,8 @@ bool LevelScript::process(int delta) {
                         camPos.z += -1000.0f;
                         m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
+                        m_nState = 2;
                     }
                 }
                 break;
@@ -2292,8 +2292,8 @@ bool LevelScript::process(int delta) {
                         m_tempVec = m_pGeometry1->getPosition();
                         m_tempVec += Vector{-4000.0f, 5000.0f, -6000.0f};
                         m_pExplosion->start(m_tempVec, Vector{0.0f, 0.0f, 0.0f});
-                        m_nScriptTimerA = 0;
                         m_nState = 12;
+                        m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 12) {
                     m_nScriptTimerA += delta;
@@ -2523,7 +2523,6 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 1) {
                     if (Globals::status->field_178 == 0) {
                         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->setType(4);
-                        m_nScriptTimerA = 0;
                         Vector ref = (*enemies)[3]->geometry->getPosition();
                         (*enemies)[0]->setPosition(ref + Vector{-76000.0f, 5000.0f, 5000.0f});
                         (*enemies)[1]->setPosition(ref + Vector{-79000.0f, 4900.0f, 7500.0f});
@@ -2563,8 +2562,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
-                        m_nScriptTimerA = 0;
                         m_nState++;
+                        m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
                     for (int i = 0; i < 3; i++) {
@@ -2909,9 +2908,9 @@ bool LevelScript::process(int delta) {
                     }
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerB >= 25001) {
-                        m_nScriptTimerB = 0;
                         PlayerFighter *fighter = (PlayerFighter *) (*enemies)[fighterIndex];
                         fighter->field_0x140 = !fighter->field_0x140;
+                        m_nScriptTimerB = 0;
                     }
                     if ((destroyed >= 9 && m_nScriptTime > 200000)
                         || (*enemies)[fighterIndex]->player->getHitpoints()
@@ -3525,8 +3524,8 @@ bool LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
-                        m_nScriptTimerA = 0;
                         m_nState++;
+                        m_nScriptTimerA = 0;
                     }
                 }
                 break;
