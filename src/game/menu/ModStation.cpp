@@ -2009,8 +2009,8 @@ void ModStation::OnKeyPress(long long key, long long) {
                             this->flag_0x63 = 1;
                             return;
                         }
-                        if (Globals::status->getCurrentCampaignMission() == 77 &&
-                            Globals::status->getShip()->getIndex() != 37) {
+                        if (__builtin_expect(Globals::status->getCurrentCampaignMission() == 77 && // lint: arm_builtin
+                            Globals::status->getShip()->getIndex() != 37, 0)) {
                             this->choiceWindow->set(*Globals::gameText->getText(326));
                             this->flag_0x63 = 1;
                             return;
