@@ -257,6 +257,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     int pad_ = this->field_0x470;
     int armorY;
     int armorBarY;
+    if (pad_) Globals::Canvas->SetColor(savedColor);
     if (this->hasShieldBar) {
         Globals::Canvas->DrawImage2D(ego->player->getShieldHP() >= 2 && this->shieldHitFlash ? this->shieldFrameHitImage
                                                                                                : this->shieldFrameImage,
@@ -429,7 +430,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         } else {
             String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
                           String(Globals::status->getShip()->getMaxLoad()) + String("t");
-            int shift = 0;
+            short shift = 0;
             if (Globals::status->getShip()->getCurrentLoad() >= 101)
                 shift = -2 * Globals::layout->field_0x2c_rowHeight;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
@@ -739,10 +740,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            int top = this->field_0x3e2 * 2;
+            int top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
-            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top, 0x11, 0x14);
+            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
                                           (Globals::w >> 1) - barW / 2, barYOffset + top);
             int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
@@ -779,13 +780,13 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
-            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor(fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff);
-            int y = barOffset + top * 2;
+            short y = barOffset + top * 2;
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
             float filled = progress * (float) halfW;
             Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
