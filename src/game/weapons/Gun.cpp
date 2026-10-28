@@ -574,7 +574,6 @@ void Gun::calcCharacterCollision() {
         return;
     }
     const int weaponType = this->weaponType;
-    const int itemIndex = this->itemIndex;
     const bool bomb = (weaponType == ITEM_SORT_EMP_BOMB || weaponType == ITEM_SORT_NUKE ||
                       weaponType == ITEM_SORT_SHOCK_BLAST || weaponType == ITEM_SORT_IONIZING_MISSILE);
     bool mine = weaponType == ITEM_SORT_MINE;
@@ -585,6 +584,7 @@ void Gun::calcCharacterCollision() {
     }
 
     this->lastHitKIPlayer = 0;
+    const int itemIndex = this->itemIndex;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
@@ -592,8 +592,8 @@ void Gun::calcCharacterCollision() {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
         }
-        if (!enemy->isActive()) continue;
-        if (enemy->getHitpoints() < 1) continue;
+        if (__builtin_expect(!enemy->isActive(), 0)) continue;  // lint: arm_builtin
+        if (__builtin_expect(enemy->getHitpoints() < 1, 0)) continue;  // lint: arm_builtin
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
             Vector position = this->positions.data()[i];
