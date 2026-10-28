@@ -6502,8 +6502,8 @@ void Level::assignGuns() {
             (*enemies)[i]->addGun(gun, 0);
             Globals::globals->addSoundResourceToList((*enemies)[i]->shipGroup == 9 ? 62 : 61);
 
-            if ((unsigned int) ((*enemies)[i]->shipGroupFlag - 45) <= 3
-                && wanted != nullptr && (*enemies)[i]->field_0x42) {
+            if ((*enemies)[i]->field_0x42 && wanted != nullptr
+                && (unsigned int) ((*enemies)[i]->shipGroupFlag - 45) <= 3) {
                 Gun *rocket = new Gun(0, damage * 4, 4, -1, 10000, 3000, 8.0f,
                                       Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
                 rocket->setFriendGun(true);
@@ -6516,7 +6516,7 @@ void Level::assignGuns() {
                 Globals::globals->addSoundResourceToList(84);
             }
 
-            if ((mission == 157 || mission == 158) && (*enemies)[i]->shipGroupFlag == 49) {
+            if ((*enemies)[i]->shipGroupFlag == 49 && (mission == 157 || mission == 158)) {
                 Gun *cluster = new Gun(0, damage, 4, -1, 3000,
                                        600 - 2 * (Globals::status->gameWon()
                                                       ? 45
@@ -6539,6 +6539,9 @@ void Level::assignGuns() {
             gunIndex++;
         }
 
+        if ((*enemies)[i] == nullptr) {
+            continue;
+        }
         if ((*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x25) {
             Gun *gun = new Gun(18, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(true);
@@ -7243,7 +7246,6 @@ int Level::r_min;
 // alive while the padding stays in its own section (createMission itself is now the
 // original 17172 bytes).
 static void levelTextAnchor() {
-    volatile double layoutPad;
-    layoutPad = 1.0;  layoutPad = 2.0;
-    (void) layoutPad;
+    volatile int layoutPad;
+    layoutPad = 1;  layoutPad = 2;
 }
