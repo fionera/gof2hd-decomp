@@ -2728,7 +2728,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
                 if (button->id == 60) {
-                    if (button->OnTouchEnd(x, y)) {
+                    if (__builtin_expect(button->OnTouchEnd(x, y), 0)) { // lint: arm_builtin
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
                         this->messageShowing = 0;
@@ -2861,7 +2861,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         this->startGOF2();
                 } else if (r == 1) {
                     this->returnToMenuSubFlag = 0;
-                    goto clearMessage;
+                    this->messageShowing = 0;
+                    return 0;
                 }
                 return 0;
             }
@@ -3026,7 +3027,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             optionFloat(36) = (*this->sliders)[4]->getValue();
             optionFloat(40) = (*this->sliders)[5]->getValue();
             for (unsigned int i = 1; i < this->sliders->size(); i++) {
-                if (i == 5 && !Globals::layout->field_0x284_sliderSlot5Enabled)
+                if (!Globals::layout->field_0x284_sliderSlot5Enabled && i == 5)
                     continue;
                 if (!(*this->sliders)[i]->OnTouchEnd(x, y))
                     continue;
@@ -3045,9 +3046,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowA->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
+                if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
                 } else if (button->id == 106) {
                     if (button->OnTouchEnd(x, y)) {
                         NFC::rateGame();
@@ -3056,11 +3059,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 } else if (button->id == 109) {
                     if (button->OnTouchEnd(x, y))
                         NFC::openPrivacyPolicy();
-                } else if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
+                } else if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
                 }
             }
             break;
@@ -3318,7 +3319,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->leaderboardDialogShowing) {
                     int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 1 || r == 0)
+                    if (r == 1)
+                        Globals::globals->reportLeaderboards();
+                    if (r == 0)
                         Globals::globals->reportLeaderboards();
                     this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
@@ -3339,8 +3342,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->loadFailedDialogShowing) {
                     this->loadFailedDialogShowing = 0;
-                    this->messageShowing = 0;
-                    return 0;
+                    goto clearMessage;
                 }
                 if (this->genericConfirmA && this->choiceWindow->OnTouchEnd(x, y) == 0) {
                     this->genericConfirmA = 0;
