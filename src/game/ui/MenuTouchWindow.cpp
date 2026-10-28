@@ -574,15 +574,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->cinematicTextWindow->setText(String(""), *Globals::gameText->getText(495));
         this->cinematicTouchIdA = 0;
         this->cinematicTouchIdB = 0;
-        float entryWidth;
-        if (Globals::iPadHD) {
-            this->listBottomY = 703;
-            entryWidth = 175.78125f;
-        } else {
-            this->listBottomY = Globals::iPadLarge ? 1000 : 500;
-            entryWidth = Globals::iPadLarge ? 250.0f : 125.0f;
-        }
-        this->listTopY = (Globals::w - this->listBottomY) / 2;
+        int bottomY = Globals::iPadHD ? 703 : (Globals::iPadLarge ? 1000 : 500);
+        float entryWidth = Globals::iPadHD ? 175.78125f : (Globals::iPadLarge ? 250.0f : 125.0f);
+        this->listBottomY = bottomY;
+        this->listTopY = (Globals::w - bottomY) / 2;
         this->listEntryWidth = (int) entryWidth;
     } else {
         this->listTopY = 0;
