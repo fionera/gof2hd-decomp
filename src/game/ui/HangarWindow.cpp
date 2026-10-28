@@ -791,15 +791,15 @@ void HangarWindow::render() {
                             (*Globals::items)[item->pendingProduct->blueprintIndex]->getType(),
                             Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
                         buttonOffset = 0;
-                    } else if (item->isMoveToCargoButton()) {
-                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
-                        (*this->buttons)[6]->setVisible(true);
-                        (*this->buttons)[6]->draw();
-                        continue;
                     } else if (item->isSellButton()) {
                         (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
                         (*this->buttons)[5]->setVisible(true);
                         (*this->buttons)[5]->draw();
+                        continue;
+                    } else if (item->isMoveToCargoButton()) {
+                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[6]->setVisible(true);
+                        (*this->buttons)[6]->draw();
                         continue;
                     } else {
                         Globals::layout->drawBox(0, Globals::layout->buttonInsetX + this->hintOffsetX,
@@ -828,38 +828,39 @@ void HangarWindow::render() {
                                 (*this->buttons)[10]->setVisible(true);
                                 (*this->buttons)[10]->draw();
                             }
-                        } else if (tab == 2) {
-                            if (item->isBluePrint()) {
+                        } else {
+                            if (tab == 0 && item->isItem()) {
+                                Item *equipped = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
+                                bool replaceable = false;
+                                bool sameWeapon = false;
+                                if (equipped != nullptr) {
+                                    replaceable = !item->item->canBeInstalledMultipleTimes();
+                                    sameWeapon = equipped->getType() == 3 &&
+                                                 equipped->getIndex() == item->item->getIndex();
+                                }
+                                if (item->inTabIndex > -1 ||
+                                    ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
+                                      replaceable) &&
+                                     (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
+                                    int b = item->inTabIndex < 0 ? 4 : 3;
+                                    (*this->buttons)[b]->setPosition(
+                                        this->hintOffsetX + Globals::layout->buttonInsetX + listWidth -
+                                        2 * Globals::layout->field_0x2c_rowHeight,
+                                        this->field_0x114 + y, 18);
+                                    (*this->buttons)[b]->setVisible(true);
+                                    (*this->buttons)[b]->draw();
+                                    buttonOffset = (*this->buttons)[b]->getWidth() +
+                                                   2 * Globals::layout->field_0x2c_rowHeight;
+                                }
+                            }
+                        }
+                        if (tab == 2 && item->isBluePrint()) {
                                 (*this->buttons)[7]->setPosition(
                                     this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
                                     this->field_0x114 + y, 18);
                                 (*this->buttons)[7]->setVisible(true);
                                 (*this->buttons)[7]->draw();
                                 buttonOffset = (*this->buttons)[7]->getWidth() + Globals::layout->field_0x2c_rowHeight;
-                            }
-                        } else if (tab == 0 && item->isItem()) {
-                            Item *equipped = Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
-                            bool replaceable = false;
-                            bool sameWeapon = false;
-                            if (equipped != nullptr) {
-                                replaceable = !item->item->canBeInstalledMultipleTimes();
-                                sameWeapon = equipped->getType() == 3 &&
-                                             equipped->getIndex() == item->item->getIndex();
-                            }
-                            if (item->inTabIndex > -1 ||
-                                ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
-                                  replaceable) &&
-                                 (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
-                                int b = item->inTabIndex < 0 ? 4 : 3;
-                                (*this->buttons)[b]->setPosition(
-                                    this->hintOffsetX + Globals::layout->buttonInsetX + listWidth -
-                                    2 * Globals::layout->field_0x2c_rowHeight,
-                                    this->field_0x114 + y, 18);
-                                (*this->buttons)[b]->setVisible(true);
-                                (*this->buttons)[b]->draw();
-                                buttonOffset = (*this->buttons)[b]->getWidth() +
-                                               2 * Globals::layout->field_0x2c_rowHeight;
-                            }
                         }
                         if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
                             (*this->buttons)[0]->setPosition(
@@ -908,14 +909,10 @@ void HangarWindow::render() {
                 String price("");
                 // Layout anchor: keep this TU's .text at 0x1343d0 so the
                 // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  Four self-assignments are no-ops on the rendered
+                // byte-exact.  Three self-assignments are no-ops on the rendered
                 // text but steer codegen to the original 9700-byte body while
                 // OnTouchEnd keeps its exact 5828-byte shape; the remaining
                 // 32 bytes of the layout live in Gun::calcCharacterCollision.
-                description = description;
-                description = description;
-                description = description;
-                description = description;
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
@@ -955,6 +952,9 @@ void HangarWindow::render() {
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
+                    description = description;
+                    description = description;
+                    description = description;
                     Globals::Canvas->DrawImage2D(
                         this->scrollHintImageA,
                         (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
