@@ -3315,8 +3315,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         this->quitConfirmShowing = 0;
                         goto clearMessage;
                     } else if (r == 1) {
-                        this->quitConfirmShowing = 0;
                         this->returnToMenuSubFlag = 0;
+                        this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
                     }
                     return 0;
