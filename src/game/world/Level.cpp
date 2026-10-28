@@ -6397,7 +6397,12 @@ void Level::assignGuns() {
             int mission = Globals::status->getCurrentCampaignMission();
             if ((*enemies)[i]->field_0x3e) {
                 KIPlayer *host = ((PlayerTurret *) (*enemies)[i])->getHost();
-                if (host != nullptr && (host->shipGroupFlag == 45 || host->shipGroupFlag == 51)) {
+                if (host != nullptr && host->shipGroupFlag == 51) {
+                    gun->weaponType = ITEM_SORT_AUTO_CANNON;
+                    gun->setIndex(22);
+                    gun->damage = (int) (gun->damage * 0.5);
+                    mesh = 6798;
+                } else if (host != nullptr && host->shipGroupFlag == 45) {
                     gun->weaponType = ITEM_SORT_AUTO_CANNON;
                     gun->setIndex(22);
                     gun->damage = (int) (gun->damage * 0.5);
