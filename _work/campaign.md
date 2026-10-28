@@ -3431,3 +3431,20 @@ Landed (gate **byte 1353 / linked 4485 / avg 99.87**):
 Note: two different PlayerFighter::update variants both reached 100% on their own base but the second
 regressed the first (99.9); the second was reverted. Always re-verify the target after stacking two
 workers' fixes to the same function.
+
+## Session 2026-10-28 (waves 67-69 — layout frontier)
+
+Landed: MenuTouchWindow::OnTouchEnd 74.2 -> 80.9, Hud::draw 84.4 -> 87.3,
+LevelScript::process 50.386 -> 50.430, plus two layout passes:
+- `RODATA_LAYOUT`: NFC/AEFile/String/PaintCanvas literal order fixed; the .rodata prefix now
+  matches the original for the first 0xa20 bytes (was 0).
+- `TEXT_LAYOUT`: `tools/gen_section_order.py` now emits `.text.startup`, `.text.crtbegin`
+  (renamed with objcopy), the address-sorted dynsym list, the plain `.text` group at the first
+  original address, and a trailing `*` catch-all. `.text` now starts byte-for-byte like the
+  original and `Java_..._BackButtonPressed` is at 0x69578. **byte_exact 1353 -> 1361.**
+
+The frontier is now explicit (see `_work/reconstructions/text-layout-startup-order.md`): the
+first address divergence is `MeshReadData` (ours 2624 B vs the original 2632 B), so everything
+after it is shifted. Fixing function *sizes* in address order is the highest-leverage work for
+byte-exactness — a size-exact function unlocks byte-exactness for every later function whose
+PC-relative operands depend on it.
