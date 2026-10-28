@@ -1532,7 +1532,7 @@ void MenuTouchWindow::draw() {
                 *Globals::gameText->getText(499) + String(" [") +
                     String(String((int) ((*this->sliders)[0]->getValue() * 100.0f)), false) + String("]"),
                 this->listTopY + Globals::layout->buttonInsetX + 10,
-                y + this->field_0x15c + Globals::layout->field_0x2c_rowHeight + 10, false);
+                Globals::layout->field_0x2c_rowHeight + y + this->field_0x15c + 10, false);
             (*this->sliders)[0]->draw();
             this->optBtnCC->setPosition(this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
                                         y + this->field_0x15c / 2);
