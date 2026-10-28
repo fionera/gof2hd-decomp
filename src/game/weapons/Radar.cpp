@@ -1456,6 +1456,7 @@ void Radar::drawCurrentLock(Hud *) {
 
     String text;
     int x;
+    const String *label;
     if (target->name.length != 0 &&
         (target->name.Compare(*Globals::gameText->getText(1611)) == 0 ||
          target->name.Compare(*Globals::gameText->getText(1663)) == 0 || target->field_0x42)) {
@@ -1470,7 +1471,6 @@ void Radar::drawCurrentLock(Hud *) {
                                     this->field_0x214 + layoutField(0xc4), false);
         Globals::Canvas->SetColor(0xffffffff);
     } else {
-        const String *label;
         if (target == station) {
             label = &title;
         } else if (target->name.length == 0) {
