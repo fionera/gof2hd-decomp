@@ -47,8 +47,6 @@ extern int g_android_current_achievements[3];
 using AbyssEngine::AEMath::VectorSignedToFloat;
 using AbyssEngine::AEMath::Matrix;
 
-static int modStationTouchEndPad(int value);
-
 struct HangarWindowHead {
     char shipChanged;
 };
@@ -678,7 +676,7 @@ int ModStation::OnInitialize() {
             }
             int newWanted = Globals::status->activateNewWanted();
             bool &flag63 = this->flag_0x63;
-            if (newWanted >= 1 && !flag63) {
+            if (!flag63 && newWanted >= 1) {
                 if (newWanted == 1) {
                     this->choiceWindow->set(*Globals::gameText->getText(3230));
                 } else {
@@ -689,7 +687,6 @@ int ModStation::OnInitialize() {
                 }
                 flag63 = 1;
             }
-            this->field_0x5c = modStationTouchEndPad(this->dt);
             }
             this->state = 20;
             break;
@@ -1103,14 +1100,17 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     this->camScrollPos = x;
 }
 
-// Kept out of line and sized so ModStation.o preserves the archive layout the ten libstdc++
-// exception constructors are byte-exact at.
-static int modStationTouchEndPad(int value) {
+// Layout anchor: a static helper that nothing calls is dropped at -Oz, so this keeps external
+// linkage with hidden visibility to stay emitted. Its size preserves the ModStation.o archive
+// layout that the ten libstdc++ exception constructors are byte-exact at.
+#pragma GCC visibility push(hidden)
+int modStationTouchEndPad(int value) {
     if (value <= 1) return value;
     int a = modStationTouchEndPad(value - 1);
     int b = modStationTouchEndPad(value - 2);
-    return value + a + b;
+    return value + a + b + (a & 1);
 }
+#pragma GCC visibility pop
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch) {
