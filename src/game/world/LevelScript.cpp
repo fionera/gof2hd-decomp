@@ -1403,8 +1403,8 @@ bool LevelScript::process(int delta) {
                 for (unsigned int i = 0; i < enemies->count; ++i) {
                     KIPlayer *enemy = (*enemies)[i];
                     if (enemy->shipGroup == 8 && enemy->isDead()) {
-                        Vector playerPos = player->getPosition();
                         (*enemies)[i]->revive();          // vtable+0x18
+                        Vector playerPos = player->getPosition();
                         (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                         (*enemies)[i]->player->setEnemy(player->player);
                         delete (*enemies)[i]->cargo;
@@ -1596,13 +1596,13 @@ bool LevelScript::process(int delta) {
             }
             case 144: {
                 // Departure: follow the marker out while the cloaked escorts slip away.
-                m_pGeometry4->moveForward((float) (delta * 5));
                 m_bCinematicBreak = 1;
+                m_pGeometry4->moveForward((float) (delta * 5));
                 m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
                 if (m_nState == 1) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_nState = 2;
                     m_pCamera->setTarget(m_pGeometry4);
+                    m_nState = 2;
                 } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                         m_nScriptTimerA = 0;
@@ -2789,7 +2789,6 @@ bool LevelScript::process(int delta) {
                     m_pGeometry4 = new AEGeometry(Globals::Canvas);
                     m_pGeometry4->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
                     m_pGeometry4->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-                    m_nScriptTimerA = 0;
                     m_nState = 1;
                 }
                 if (m_nState == 1 && ((RadioMessage *) ((*messages)[0]))->isOver()) {
@@ -3031,8 +3030,8 @@ bool LevelScript::process(int delta) {
                                                                      - fighter->getPosition());
                     fighter->geometry->setDirection(m_tempVec, Vector{0.0f, 1.0f, 0.0f});
                     if (((RadioMessage *) ((*messages)[13]))->isOver() && m_pExplosion == nullptr) {
-                        m_pExplosion->addFireStreaks();
                         m_pExplosion = new Explosion(0);
+                        m_pExplosion->addFireStreaks();
                         m_pExplosion->setScaling(5.0f);
                         m_pExplosion->start((*enemies)[stationIndex]->getPosition() + Vector{-2000.0f, 1000.0f, -8000.0f},
                                             Vector{0.0f, 0.0f, 0.0f});
@@ -3105,6 +3104,7 @@ bool LevelScript::process(int delta) {
                             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
                                     ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                             m_nScriptTimerA = 0;
+                            m_pRadar->lockedEnemy = nullptr;
                             m_nState++;
                         }
                     }
