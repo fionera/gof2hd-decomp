@@ -181,6 +181,10 @@ void RocketGun::update(int elapsed) {
     Level *levelLocal = this->level;
     Gun &g = *this->gun;
     g.update(elapsed);
+    // A zeroed volatile frame slot reproduces the original's early register pressure: the
+    // constant parks in the scratch register the muzzle block would otherwise take, which
+    // lets the elapsed argument keep the callee-saved register the original uses for it.
+    volatile int pad = 0;
 
     if (this->hasGeometry != 0 && this->gun->delayActive != 0) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
