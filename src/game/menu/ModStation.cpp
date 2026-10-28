@@ -570,14 +570,9 @@ int ModStation::OnInitialize() {
             if (Globals::status->getCurrentCampaignMission() == 27 && campaign->getTargetStation() == stationIndex) {
                 Globals::status->getShip()->removeCargo(131);
             }
-            if (Globals::status->getCurrentCampaignMission() == 43) {
-                if (stationIndex == 10) {
-                    this->flag_0xd9 = 1;
-                }
-            } else if (Globals::status->getCurrentCampaignMission() == 44) {
-                if (stationIndex == 10) {
-                    this->flag_0xd9 = 1;
-                }
+            if ((Globals::status->getCurrentCampaignMission() == 43 ||
+                 Globals::status->getCurrentCampaignMission() == 44) && stationIndex == 10) {
+                this->flag_0xd9 = 1;
             }
             if (Globals::status->gameWon() && stationIndex == 10 &&
                 !Globals::status->getShip()->hasEquipment(85, 1) && !Globals::status->getShip()->hasCargo(85, 1) &&
