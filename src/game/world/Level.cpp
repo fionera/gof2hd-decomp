@@ -2328,14 +2328,14 @@ void Level::createMission() {
                   ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 &&
                   Globals::status->getStation()->getIndex() ==
                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation();
-    bool alienWave = false;
+    int alienWave = 0;
     bool bigAlienWave = false;
     int pirateFortress = 0;
     if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
-            alienWave = true;
+            alienWave = 1;
         }
     } else if (localRace == 1 && this->field_168 >= 1 && Globals::rnd->nextInt(100) <= 29) {
         pirateFortress = Globals::status->getCurrentCampaignMission() > 140;
@@ -2343,7 +2343,7 @@ void Level::createMission() {
     if (Globals::status->inSupernovaSystem()) {
         this->friendCount = 0;
         this->field_164 = 0;
-        alienWave = false;
+        alienWave = 0;
         this->field_168 = 0;
         this->hostileCount = 0;
         raid = false;
@@ -2358,7 +2358,7 @@ void Level::createMission() {
                    *this->enemies);
     for (int i = 0; i < this->friendCount; i++) {
         if (i == 0 && hasWanted) {
-            int race = wanted->getRace() <= 3 ? wanted->getRace() : 8;
+            int race = wanted->getRace() <= 3u ? wanted->getRace() : 8;
             (*this->enemies)[0] = this->createShip(race, 0, wanted->getShip(), wingRoute->getWaypoint(), true, false);
             int hp = wanted->getHitpoints() + (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 15 +
                      (Globals::status->gameWon() ? 45 : Globals::status->getCurrentCampaignMission()) * 4;
