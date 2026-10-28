@@ -470,7 +470,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if ((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3) {
+            } else if (i == 1 || i == 3) {
                 Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8,
                                              this->screenX, this->screenY, 17, 68);
             }
@@ -583,6 +583,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 int size = (int) i == StarSystem::orbitPlanetIndex ? this->field_0x128 : this->field_0x124;
                 int left = (int) (PlayerEgo::crosshairPos.x - (float) (size >> 1));
                 int top = (int) (PlayerEgo::crosshairPos.y - (float) (size >> 1));
+                planetHit = false;
                 if (this->screenX > left && this->screenX < left + size && this->screenY > top &&
                     this->screenY < top + size) {
                     if ((int) i == StarSystem::orbitPlanetIndex) {
@@ -606,14 +607,15 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
         if (!alienOrbit) {
             int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
-            Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
             this->field_0x1a8 = this->level->getPlayer()->goingToPlanet() &&
                                 !this->level->getPlayer()->isDockingToPlanet() &&
-                                autoPilotTarget == targets->data()[stationIndex];
+                                autoPilotTarget ==
+                                        ((Array<int> *) this->level->getStarSystem()->getPlanetTargets())
+                                                ->data()[stationIndex];
         }
 
         if (!turretMode && !landmarkHit) {
