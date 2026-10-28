@@ -7244,10 +7244,6 @@ int Level::r_min;
 // original 17172 bytes).
 static void levelTextAnchor() {
     volatile double layoutPad;
-    layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;  layoutPad = 5.0;  layoutPad = 6.0;
-    layoutPad = 1.0;  layoutPad = 1.0;
-    // PlayerEgo::calcCollision is now its exact 968 B (its local 12-byte anchor is
-    // gone), so the TU needs 12 B more here to hold .text.
-    layoutPad = 7.0;  layoutPad = 8.0;
+    layoutPad = 1.0;  layoutPad = 2.0;  layoutPad = 3.0;  layoutPad = 4.0;
     (void) layoutPad;
 }
