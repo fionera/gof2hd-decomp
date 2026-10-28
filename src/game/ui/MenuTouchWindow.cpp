@@ -726,38 +726,35 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     if (Globals::iPad) {
         (*this->sliders)[0]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + 10,
-            (int) ((float) (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+            (int) ((float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                             Globals::layout->field_0x1c + this->listEntryWidth +
                             Globals::layout->field_0x2c_rowHeight * 3 + this->field_0x15c * 2) -
                    (Globals::iPadHD ? 35.15625f : (Globals::iPadLarge ? 50.0f : 25.0f))));
-        int slider1Y = (int) ((float) (Globals::layout->field_0x2fc +
-                                       (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
-                                        this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
-                                       (this->field_0x15c + Globals::layout->field_0x1c) * 2) +
-                              (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)));
         (*this->sliders)[1]->setPosition(
-            Globals::layout->buttonInsetX + this->listTopY + this->metricC, slider1Y);
-        int slider2Y = (int) ((float) (Globals::layout->field_0x2fc +
-                                       (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
-                                        this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 3) +
-                                       this->sliderRowHeight +
-                                       (this->field_0x15c + Globals::layout->field_0x1c +
-                                        Globals::layout->field_0x2c_rowHeight) *
-                                           2) +
-                              (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f)));
+            Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+            (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
+                            Globals::layout->field_0x2fc +
+                            (this->field_0x15c + Globals::layout->field_0x1c) * 2) +
+                   (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         (*this->sliders)[2]->setPosition(
-            this->listTopY + Globals::layout->buttonInsetX + this->metricC, slider2Y);
+            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+            (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+                             this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 5) +
+                            Globals::layout->field_0x2fc + this->sliderRowHeight +
+                            this->field_0x15c * 2 + Globals::layout->field_0x1c * 2) +
+                   (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         (*this->sliders)[3]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-            (int) ((float) (Globals::layout->field_0x2fc +
-                            (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+            (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                              this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 6) +
+                            Globals::layout->field_0x2fc +
                             (this->field_0x15c + Globals::layout->field_0x1c + this->sliderRowHeight) * 2) +
                    (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         if (Globals::iPadLargePossible) {
             (*this->sliders)[4]->setPosition(-100000, -100000);
             (*this->sliders)[5]->setPosition(
-                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+                this->listTopY + Globals::layout->buttonInsetX + this->metricC,
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 7) +
@@ -837,16 +834,17 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::recordHandler->saveOptions();
         ((uint8_t *) appData)[108] = 0;
         this->choiceWindow->set(*Globals::gameText->getText(74));
-        this->messageShowing = 1;
-        this->genericConfirmA = 1;
     } else if (Globals::iPadLargePossible && !Globals::options[65]) {
         Globals::options[65] = 1;
         Globals::recordHandler->saveOptions();
         this->choiceWindow->set(*Globals::gameText->getText(123));
-        this->messageShowing = 1;
-        this->genericConfirmA = 1;
+    } else {
+        goto initState;
     }
+    this->messageShowing = 1;
+    this->genericConfirmA = 1;
 
+initState:
     this->missionsWindow = 0;
     this->recordRows = 0;
     this->menuState = 0;
