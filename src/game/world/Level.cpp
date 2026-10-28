@@ -1657,7 +1657,8 @@ void Level::createMission() {
                 (*stops)[2] = (*this->enemies)[8];
                 Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
                 convoyRoute->setLoop(true);
-                for (int i = 10; i < 14; i++) {
+                for (int k = 0; k < 4; k++) {
+                    int i = 10 + k;
                     // Plain float[3]: a Vector local would emit the default-ctor zero stores
                     // even though every component is overwritten by the switch below.
                     float offset[3];
@@ -1666,7 +1667,7 @@ void Level::createMission() {
                     (*this->enemies)[i]->player->setAlwaysFriend(true);
                     ((PlayerFighter *) (*this->enemies)[i])->field_0x13d = 0;
                     ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
-                    switch (i - 10) {
+                    switch (k) {
                         case 0:
                             offset[0] = 20000.0f;
                             offset[1] = -3000.0f;
