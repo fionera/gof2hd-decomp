@@ -2295,39 +2295,14 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
             this->okButton->OnTouchBegin(x, y);
         break;
     }
-    case 3:
-        // Options.
-        if (Globals::iPad) {
-            this->scrollUpButton->OnTouchBegin(x, y);
-                this->upButtonPressed = 0;
-                this->downButtonPressed = 0;
-                if (x > this->listTopY + Globals::layout->buttonInsetX &&
-                    x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
-                    y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                    y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
-                    this->upButtonPressed = 1;
-                    Globals::sound->play(124, 0, 0, 0.0f);
-                }
-                if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
-                    x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
-                    y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                    y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
-                    this->downButtonPressed = 1;
-                    Globals::sound->play(124, 0, 0, 0.0f);
-                }
-            this->optBtnCC->OnTouchBegin(x, y);
-            this->optBtnD0->OnTouchBegin(x, y);
-            (*this->sliders)[0]->OnTouchBegin(x, y);
-            this->optBtnD4->OnTouchBegin(x, y);
-            this->optBtnD8->OnTouchBegin(x, y);
-            this->optBtnDC->OnTouchBegin(x, y);
-            for (unsigned int i = 1; i < this->sliders->size(); i++)
+    case 7:
+        this->optBtnD4->OnTouchBegin(x, y);
+        this->optBtnD8->OnTouchBegin(x, y);
+        this->optBtnDC->OnTouchBegin(x, y);
+        for (unsigned int i = 1; i < this->sliders->size(); i++) {
+            if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
                 (*this->sliders)[i]->OnTouchBegin(x, y);
-            if (Globals::iPadLargePossible && this->scrollExtraButton != 0)
-                this->scrollExtraButton->OnTouchBegin(x, y);
-        } else {
-            for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
-                (*this->optionsButtons)[i]->OnTouchBegin(x, y);
+            }
         }
         break;
     case 4:
@@ -2430,14 +2405,39 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
     case 6:
     case 13:
         break;
-    case 7:
-        this->optBtnD4->OnTouchBegin(x, y);
-        this->optBtnD8->OnTouchBegin(x, y);
-        this->optBtnDC->OnTouchBegin(x, y);
-        for (unsigned int i = 1; i < this->sliders->size(); i++) {
-            if ((i != 5) | (Globals::layout->field_0x284_sliderSlot5Enabled != 0)) {
+    case 3:
+        // Options.
+        if (Globals::iPad) {
+            this->scrollUpButton->OnTouchBegin(x, y);
+                this->upButtonPressed = 0;
+                this->downButtonPressed = 0;
+                if (x > this->listTopY + Globals::layout->buttonInsetX &&
+                    x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                    y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
+                    y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+                    this->upButtonPressed = 1;
+                    Globals::sound->play(124, 0, 0, 0.0f);
+                }
+                if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
+                    x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
+                    y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
+                    y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+                    this->downButtonPressed = 1;
+                    Globals::sound->play(124, 0, 0, 0.0f);
+                }
+            this->optBtnCC->OnTouchBegin(x, y);
+            this->optBtnD0->OnTouchBegin(x, y);
+            (*this->sliders)[0]->OnTouchBegin(x, y);
+            this->optBtnD4->OnTouchBegin(x, y);
+            this->optBtnD8->OnTouchBegin(x, y);
+            this->optBtnDC->OnTouchBegin(x, y);
+            for (unsigned int i = 1; i < this->sliders->size(); i++)
                 (*this->sliders)[i]->OnTouchBegin(x, y);
-            }
+            if (Globals::iPadLargePossible && this->scrollExtraButton != 0)
+                this->scrollExtraButton->OnTouchBegin(x, y);
+        } else {
+            for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
+                (*this->optionsButtons)[i]->OnTouchBegin(x, y);
         }
         break;
     case 17:
