@@ -478,8 +478,7 @@ namespace AbyssEngine {
         if ((*slot)->vertexFormat & 0x10) {
             if (AEFile::Read(2, &(*slot)->indexCount, handle) == 0)
                 return -1;
-            Mesh *mesh = *slot;
-            mesh->indices = new unsigned char[mesh->indexCount << 1];
+            (*slot)->indices = new unsigned char[(*slot)->indexCount << 1];
             if (AEFile::Read((*slot)->indexCount << 1, (*slot)->indices, handle) == 0)
                 return -1;
         }
@@ -493,20 +492,17 @@ namespace AbyssEngine {
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
         if ((flags & 4) != 0) {
-            Mesh *mesh = *slot;
-            short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
-            if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+            short *raw = (short *) new unsigned char[(*slot)->vertexCount * 6];
+            if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0) {
                 delete[] (unsigned char *) raw;
                 return -1;
             }
-            mesh = *slot;
-            mesh->positions = new float[mesh->vertexCount * 3];
-            mesh = *slot;
-            unsigned int count = mesh->vertexCount * 3;
+            (*slot)->positions = new float[(*slot)->vertexCount * 3];
+            unsigned int count = (*slot)->vertexCount * 3;
             for (int i = 0; i != count; i++) {
                 unsigned int axis = i % 3;
                 float value = raw[i];
-                ((float *) mesh->positions)[i] = value;
+                ((float *) (*slot)->positions)[i] = value;
                 if (minimum[axis] > value)
                     minimum[axis] = value;
                 if (maximum[axis] < value)
@@ -514,19 +510,17 @@ namespace AbyssEngine {
             }
             delete[] (unsigned char *) raw;
         } else if ((flags & 3) != 0) {
-            Mesh *mesh = *slot;
-            int *raw = (int *) new unsigned char[mesh->vertexCount * 12];
-            if (AEFile::Read(mesh->vertexCount * 12, raw, handle) == 0) {
+            int *raw = (int *) new unsigned char[(*slot)->vertexCount * 12];
+            if (AEFile::Read((*slot)->vertexCount * 12, raw, handle) == 0) {
                 delete[] (unsigned char *) raw;
                 return -1;
             }
-            mesh->positions = new float[mesh->vertexCount * 3];
-            mesh = *slot;
-            unsigned int count = mesh->vertexCount * 3;
+            (*slot)->positions = new float[(*slot)->vertexCount * 3];
+            unsigned int count = (*slot)->vertexCount * 3;
             for (int i = 0; i != count; i++) {
                 unsigned int axis = i % 3;
                 float value = raw[i];
-                ((float *) mesh->positions)[i] = value;
+                ((float *) (*slot)->positions)[i] = value;
                 if (minimum[axis] > value)
                     minimum[axis] = value;
                 if (maximum[axis] < value)
@@ -534,8 +528,7 @@ namespace AbyssEngine {
             }
             delete[] (unsigned char *) raw;
         } else if ((flags & 0x18) != 0) {
-            Mesh *mesh = *slot;
-            mesh->positions = new float[mesh->vertexCount * 3];
+            (*slot)->positions = new float[(*slot)->vertexCount * 3];
             if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
                 return -1;
         }
@@ -561,14 +554,12 @@ namespace AbyssEngine {
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                Mesh *mesh = *slot;
-                mesh->texCoords = new unsigned char[mesh->vertexCount * 8];
+                (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 if (AEFile::Read((*slot)->vertexCount * 8, (*slot)->texCoords, handle) == 0)
                     return -1;
                 if (Engine::enableShader != 0) {
-                    mesh = *slot;
-                    for (int i = 0; i < (mesh->vertexCount << 1); i += 2) {
-                        float *v = (float *) mesh->texCoords + i + 1;
+                    for (int i = 0; i < ((*slot)->vertexCount << 1); i += 2) {
+                        float *v = (float *) (*slot)->texCoords + i + 1;
                         *v = 1.0f - *v;
                     }
                 }
@@ -577,13 +568,12 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 4) {
             if ((flags << 29) != 0) {
-                Mesh *mesh = *slot;
-                signed char *raw = (signed char *) new unsigned char[mesh->vertexCount * 6];
-                if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
+                signed char *raw = (signed char *) new unsigned char[(*slot)->vertexCount * 6];
+                if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0) {
                     delete[] raw;
                     return -1;
                 }
-                mesh->normals = new float[mesh->vertexCount * 3];
+                (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 short *rawY = (short *) raw + 1;
                 for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
@@ -593,9 +583,10 @@ namespace AbyssEngine {
                     // The original loads (*slot)->normals once per iteration and stores the
                     // clamped components through a single base pointer.
                     if (length == 0.0f) {
-                        (*slot)->normals[i + 2] = 0.0f;
-                        (*slot)->normals[i + 1] = 1.0f;
-                        (*slot)->normals[i] = 0.0f;
+                        float *nrm = (*slot)->normals + i;
+                        nrm[1] = 1.0f;
+                        nrm[0] = 0.0f;
+                        nrm[2] = 0.0f;
                     } else {
                         y /= length;
                         x /= length;
@@ -614,27 +605,22 @@ namespace AbyssEngine {
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
-                Mesh *mesh = *slot;
-                mesh->normals = new float[mesh->vertexCount * 3];
+                (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
                     return -1;
             }
 
             if (Engine::enableShader != 0) {
                 // Per-vertex tangent frames from the UV gradients of the triangle list.
-                Mesh *mesh = *slot;
-                mesh->tangents = new unsigned char[mesh->vertexCount * 12];
-                mesh = *slot;
-                mesh->binormals = new unsigned char[mesh->vertexCount * 12];
-                mesh = *slot;
-                unsigned int triangles = mesh->indexCount / 3;
-                unsigned int vertices = mesh->vertexCount;
+                (*slot)->tangents = new unsigned char[(*slot)->vertexCount * 12];
+                (*slot)->binormals = new unsigned char[(*slot)->vertexCount * 12];
+                unsigned int triangles = (*slot)->indexCount / 3;
+                unsigned int vertices = (*slot)->vertexCount;
                 Vector *accum = new Vector[vertices]();
                 for (unsigned int t = 0; t < triangles; t++) {
-                    mesh = *slot;
-                    const Vector *pos = (const Vector *) mesh->positions;
-                    const float *uv = (const float *) mesh->texCoords;
-                    const unsigned short *index = (const unsigned short *) mesh->indices + t * 3;
+                    const Vector *pos = (const Vector *) (*slot)->positions;
+                    const float *uv = (const float *) (*slot)->texCoords;
+                    const unsigned short *index = (const unsigned short *) (*slot)->indices + t * 3;
                     unsigned int i0 = index[0];
                     unsigned int i1 = index[1];
                     unsigned int i2 = index[2];
