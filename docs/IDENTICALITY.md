@@ -34,7 +34,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 38 non-linked exported functions plus the documented MenuTouchWindow layout anchor; local-code gaps are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 267,831 | **−1,328** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
-| .ARM.extab | 156,312 | 151,740 | −4,572 | smaller EH tables in the remaining non-exact functions. |
+| .ARM.extab | 156,312 | 156,280 | −32 | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,296 | **+32** | anonymous read-only-relocated data layout still differs. |
@@ -52,8 +52,10 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 2. **Anonymous data layout.** `.rodata` is 1,328 B smaller, `.data` 108 B larger, and `.bss` 36 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is 4,572 B smaller, following the remaining function-size/EH-layout
-   differences.
+3. **EH tables.** `.ARM.extab` is only 32 B smaller now (was 4,572 B): the app and vendored C
+   objects were missing `-funwind-tables`. The residual is the net unwind-length difference of nine
+   non-exact functions (`HangarWindow::render` −48, `Level::createShip` −20,
+   `RecordHandler::recordStoreWrite` −16, ...).
 4. **Link metadata.** `.dynsym`/`.dynstr` sizes now match exactly; dynamic-symbol order and the GNU
    build-id are content hashes that converge only when everything else does.
 

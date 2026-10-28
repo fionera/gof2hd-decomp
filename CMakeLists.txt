@@ -32,7 +32,7 @@ add_library(gof2 OBJECT ${_srcs})
 # human-style source while letting the linker place functions in the original's exact sequence.
 option(GOF2_MATCH_LAYOUT "Reproduce the original .text function order via section ordering" ON)
 if(GOF2_MATCH_LAYOUT)
-    target_compile_options(gof2 PRIVATE -ffunction-sections)
+    target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 endif()
 
 # =================================================================================================

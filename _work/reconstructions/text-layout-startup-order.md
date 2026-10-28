@@ -61,3 +61,80 @@ grown by one volatile store (0x28 -> 0x2c) the total is exactly 0x1343d0 again.
 
 Gate after the change: byte_exact 1353 -> 1361, linked_exact 4485, .text 0x1343d0,
 lint CLEAN, drift 0.
+
+## EXTAB_LAYOUT pass: missing `-funwind-tables`
+
+### Symptom
+
+`.ARM.extab` was 4,572 B smaller than the original (orig `0x26298`, ours `0x250b4`).
+`.ARM.exidx` was 552 entries short (orig 3,566, ours 3,014). The task's EXTAB_LAYOUT
+report was 0% at 151,740/156,312 B.
+
+### Entry-by-entry method
+
+`readelf -SW` gives the two section ranges. Each `.ARM.exidx` entry is
+`(prel31 function, word2)`; `word2 == 1` is `cantunwind`, `word2 & 0x80000000` is the
+compact model (personality 0 carries its unwind bytes in the exidx word itself and
+consumes no `.ARM.extab`), and `word2 & 0x80000000 == 0` is a prel31 reference into
+`.ARM.extab` (base = the address of `word2`). Mapping each entry to its `.dynsym`
+function (exact start, or nearest preceding export for locals) gives the per-function
+table.
+
+Before the fix the split was:
+
+| binary | exidx entries | cantunwind | compact0 | prel31 -> extab |
+|---|---:|---:|---:|---:|
+| original | 3,566 | 272 | 856 | 2,438 |
+| ours (before) | 3,014 | 566 | 384 | 2,064 |
+
+The prel31 counts were already close, but the *locations* were wrong: whole TUs had
+`cantunwind` where the original had real unwind. The largest cluster was the vendored
+zlib/libzip C objects (203 original extab entries, ours 1). The rest was the app C++
+tree: the project compile line had `-ffunction-sections` but not `-funwind-tables`, so
+clang emitted `cantunwind` for functions whose original build had unwind data.
+
+### Fix
+
+Add `-funwind-tables` in both compile flag sets:
+
+* `CMakeLists.txt`: `target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)`
+* `third_party/build_match_lib.cmake`: add `-funwind-tables` to `CC_BASE` (zlib/libzip;
+  libcrypto is GCC 4.9 and already carries its own EH tables).
+
+This changes only EH metadata; `.text` stays exactly `0x1343d0`.
+
+### Result
+
+| binary | exidx entries | cantunwind | compact0 | prel31 -> extab | `.ARM.extab` |
+|---|---:|---:|---:|---:|---:|
+| original | 3,566 | 272 | 856 | 2,438 | 156,312 |
+| ours (after) | 3,290 | 6 | 843 | 2,441 | 156,280 |
+
+The extab gap is now **32 B (99.98%)**, down from 4,572 B.
+
+The remaining 276-entry exidx gap is almost entirely duplicate `cantunwind`/`compact0`
+entries at shared addresses: the original emits an extra entry per C1/C2 alias (and a
+few other shared-start functions), e.g. `NFC::NFC()`, all the shader constructors, and
+the zlib entry points. Those entries carry no `.ARM.extab` payload, so they do not
+affect the extab size; reproducing them is an alias/duplicate-emission question, not an
+unwind-data question.
+
+The residual 32 B is the net of nine non-exact functions' unwind-table lengths:
+
+| function | orig extab B | ours extab B | delta |
+|---|---:|---:|---:|
+| `HangarWindow::render()` | 948 | 900 | -48 |
+| `Level::createShip(int,int,int,Waypoint*,bool,bool)` | 336 | 316 | -20 |
+| `RecordHandler::recordStoreWrite(int)` | 656 | 640 | -16 |
+| `Level::createMission()` | 956 | 952 | -4 |
+| `Hud::draw(long,long,Player*,unsigned char,bool,unsigned int,bool,unsigned int)` | 476 | 492 | +16 |
+| `SpaceLounge::startChat()` | 2636 | 2644 | +8 |
+| `StarMap::draw()` | 116 | 120 | +4 |
+| `LevelScript::process(int)` | 348 | 352 | +4 |
+| `Generator::createMission(Agent*,Array<SolarSystem*>*)` | 172 | 176 | +4 |
+
+These are the same functions that still differ in code size; fixing their bodies will
+move the last 32 B.
+
+Gate after the change: byte_exact 1361, linked_exact 4485, `.text` 0x1343d0, lint CLEAN,
+drift 0.

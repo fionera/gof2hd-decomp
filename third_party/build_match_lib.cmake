@@ -24,7 +24,7 @@ set(CC_BASE
     --sysroot=${SYSROOT}
     -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include
     -isystem ${GOF2_NDK_ROOT}/sysroot/usr/include/arm-linux-androideabi
-    -fPIC -ffunction-sections -Wno-everything)
+    -fPIC -ffunction-sections -funwind-tables -Wno-everything)
 
 # ---- helpers -----------------------------------------------------------------------------
 function(ensure_source dir url)
