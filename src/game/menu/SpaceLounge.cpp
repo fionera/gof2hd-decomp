@@ -964,6 +964,10 @@ int SpaceLounge::onKeyPress(int key) {
                 String message = *Globals::gameText->getText(850 + Globals::rnd->nextInt(3));
                 Agent *agent = key_agent(this);
                 switch (agent->getOffer()) {
+                case 7:
+                    ((Standing *) (intptr_t) Globals::status->getStanding())->rehabilitate(agent->getRace());
+                    Globals::status->changeCredits(-agent->getCosts());
+                    break;
                 case 0:
                 case 5:
                     if (Globals::status->hardCoreMode()) {
@@ -1089,10 +1093,6 @@ int SpaceLounge::onKeyPress(int key) {
                         Globals::status->changeCredits(-agent->getCosts());
                     break;
                 }
-                case 7:
-                    ((Standing *) (intptr_t) Globals::status->getStanding())->rehabilitate(agent->getRace());
-                    Globals::status->changeCredits(-agent->getCosts());
-                    break;
                 case 8:
                     Globals::status->changeCredits(Globals::options[56] ? -agent->getSellItemPrice() * 1.0f
                                                                            : -agent->getSellItemPrice() * 2.0f);
