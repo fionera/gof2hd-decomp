@@ -955,9 +955,10 @@ void StarMap::draw() {
                 Globals::Canvas->SetColor(255, 255, 0, (uint8_t) (int) (pulse * 255.0f));
             } else {
                 // The original reloads Globals::Canvas in this branch instead
-                // of hoisting one shared load out of the if/else.
-                PaintCanvas *volatile canvas = Globals::Canvas;
-                canvas->SetColor(0xffff00ffu);
+                // of hoisting one shared load out of the if/else; the volatile
+                // store keeps the load inside the branch.
+                volatile char reloadCanvas = 0;
+                Globals::Canvas->SetColor(0xffff00ffu);
             }
             for (int i = 0; i < this->field_0xe8; i++) {
                 this->scratchVector2 = Vector(*(*this->systemPositions)[(*this->systemPath)[i]]);
