@@ -2017,11 +2017,7 @@ void MenuTouchWindow::draw() {
                 this->field_0x1c4 = 0;
                 this->field_0x188 = 0;
                 this->storeInitDialogShowing = 0;
-            } else if (this->screenshotState < 0) {
-                if (!((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotPending &&
-                    !((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag)
-                    Globals::layout->drawEmptyFooter(true);
-            } else {
+            } else if (this->screenshotState >= 0) {
                 if (this->field_0x188) {
                     // Caption for the shared screenshot: ship, station, system.
                     GameData *data = (GameData *) Globals::appManager->GetApplicationData();
@@ -2043,6 +2039,10 @@ void MenuTouchWindow::draw() {
                     this->field_0x188 = 1;
                     this->field_0x1c4 = 1;
                 }
+            } else {
+                if (!((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotPending &&
+                    !((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag)
+                    Globals::layout->drawEmptyFooter(true);
             }
             this->screenshotState--;
             break;
