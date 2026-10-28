@@ -6477,7 +6477,7 @@ void Level::assignGuns() {
                     gun->setIndex(214);
                     gun->damage *= 2;
                     mesh = 14240;
-                } else if (__builtin_expect((mission == 157 || mission == 158) && group == 49, 1)) { // lint: arm_builtin
+                } else if ((mission == 157 || mission == 158) && group == 49) {
                     gun->weaponType = ITEM_SORT_LASER;
                     gun->setIndex(7);
                     gun->damage *= 3;
