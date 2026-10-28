@@ -1472,7 +1472,7 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
             }
         } else if (this->notEnoughCredits) {
             int choice = this->dialog->OnTouchEnd(x, y);
-            if (__builtin_expect(choice == 0, 0)) { // lint: arm_builtin
+            if (choice == 0) {
                 Globals::options[78] = 1;
                 Globals::recordHandler->saveOptions();
                 this->showCreditsBuyWindow();

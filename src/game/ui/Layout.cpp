@@ -97,7 +97,7 @@ Layout::~Layout() {
     this->choiceWindow = nullptr;
 }
 
-uint8_t Layout::helpPressed() {
+bool Layout::helpPressed() {
     return this->helpPressedFlag;
 }
 

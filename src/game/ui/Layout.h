@@ -296,7 +296,7 @@ public:
     TouchButton *backButton;
     TouchButton *secondaryButton;
     TouchButton *helpButton;
-    uint8_t helpPressedFlag;
+    bool helpPressedFlag;
     uint8_t _pad_0x3c1[3];
     ChoiceWindow *choiceWindow;
     Array<String *> *tipLines;
@@ -391,7 +391,7 @@ public:
 
     float getPulseValue(float speed);
 
-    uint8_t helpPressed();
+    bool helpPressed();
 
     void initHelpWindow(String text);
 
