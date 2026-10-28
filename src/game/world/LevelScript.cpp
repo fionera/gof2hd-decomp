@@ -389,8 +389,8 @@ bool LevelScript::process(int delta) {
                                  ->animating) {
                         Globals::sound->stop(Globals::sound->currentMusicEvent);
                         Globals::sound->play(141, nullptr, nullptr, 0.0f);
-                        m_nState = 8;
                         m_nScriptTimerA = 0;
+                        m_nState = 8;
                     }
                     break;
                 }
@@ -743,8 +743,8 @@ bool LevelScript::process(int delta) {
                             Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
                     t->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     Globals::sound->play(160, nullptr, nullptr, 0.0f);
-                    m_nState = 10;
                     m_nScriptTimerA = 0;
+                    m_nState = 10;
                 }
                 break;
             }
@@ -4292,8 +4292,8 @@ bool LevelScript::process(int delta) {
                                     + player->geometry->getRightVector() * 0.2f) * 0.4f * (float) delta;
                     m_pCamera->translate(drift.x, drift.y, drift.z);
                     if (m_nScriptTimerA >= 13001) {
-                        m_nState = 2;
                         m_nScriptTimerA = 0;
+                        m_nState = 2;
                     }
                 } else if (m_nState == 2) {
                     Vector drift = (player->geometry->getDirection() * 6.08f
