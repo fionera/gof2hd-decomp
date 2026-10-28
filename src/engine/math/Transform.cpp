@@ -5,13 +5,6 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 
-namespace {
-    // Original Transform.cpp local data: a 72-byte block that the compiler keeps in
-    // .data.  Its size fixes the distance from .text to .got, which the libc++ exception
-    // constructors encode as a PC-relative literal.
-    [[gnu::used]] char g_transform_matrix_flag[72] = {1};
-}
-
 namespace AbyssEngine {
     bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
                                     AEMath::Matrix *matrix, Camera *camera);

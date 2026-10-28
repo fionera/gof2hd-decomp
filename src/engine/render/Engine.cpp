@@ -7,18 +7,52 @@ extern "C" void glClientActiveTexture(GLenum texture); // lint: extern_c (GLES1 
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-AbyssEngine::Engine *gEngine = nullptr;
 
+float AbyssEngine::Engine::lodBiasDiffuse = -1.0f;
+
+// .data objects, in the original Engine.cpp definition order.
+unsigned char AbyssEngine::Engine::enableReverseFlag = 1;
+int AbyssEngine::Engine::switchBloom = 3;
+int AbyssEngine::Engine::switchGlow = 3;
+bool AbyssEngine::Engine::EnablePostEffect = true;
+unsigned char AbyssEngine::Engine::UseAdvancedShader = 1;
+float AbyssEngine::Engine::LodDistShader = 5000.0f;
+unsigned int AbyssEngine::Engine::countryCode = 0xffffffff;
+bool AbyssEngine::BiasErrorOutputFlag = true;
+int AbyssEngine::currentUsedShaderIndex = -1;
+namespace { int g_Engine_postEffectCounter = 1; }
+
+// .bss objects, in the original Engine.cpp definition order.
+int AbyssEngine::Engine::SwapCounter;
+float AbyssEngine::Engine::lodBiasNormal = 0.0f;
 bool AbyssEngine::Engine::vboSupported = false;
 bool AbyssEngine::Engine::clampTextures = false;
 bool AbyssEngine::Engine::vfc = false;
-float AbyssEngine::Engine::lodBiasDiffuse = -1.0f;
-float AbyssEngine::Engine::lodBiasNormal = 0.0f;
-unsigned int AbyssEngine::Engine::countryCode = 0xffffffff;
-bool AbyssEngine::Engine::EnablePostEffect = true;
+unsigned char AbyssEngine::Engine::enableShader;
+unsigned char AbyssEngine::Engine::backupSaveGames;
+int AbyssEngine::Engine::tv_w;
+int AbyssEngine::Engine::tv_h;
+Array<int> AbyssEngine::Engine::tv_modes;
+unsigned char AbyssEngine::Engine::TVEnable;
 bool AbyssEngine::Engine::CheckForOrientationChange;
+unsigned char AbyssEngine::Engine::DrawFBO;
+unsigned char AbyssEngine::Engine::EnableGlow;
+unsigned char AbyssEngine::Engine::EnableRefract;
+int AbyssEngine::Engine::MultiSampleValue;
+float AbyssEngine::Engine::AnisotropyValue;
+unsigned char AbyssEngine::Engine::DEBUGKEY;
+int AbyssEngine::Engine::ImageCount;
+int AbyssEngine::Engine::vboSize;
+unsigned char AbyssEngine::Engine::KeepRawMeshData;
+unsigned char AbyssEngine::Engine::WireFrame;
+float AbyssEngine::Engine::nearPlane;
+float AbyssEngine::Engine::farPlane;
 bool AbyssEngine::Engine::fogEnabled = false;
-bool AbyssEngine::PostEffectFlag;
+unsigned char AbyssEngine::Engine::DisableRefract;
+AbyssEngine::String AbyssEngine::Engine::renderer;
+AbyssEngine::String AbyssEngine::Engine::vendor;
+float AbyssEngine::currentLODBias;
+unsigned char AbyssEngine::ShaderSet;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
@@ -87,7 +121,6 @@ namespace {
     const uint32_t kPostEffectBlur = 0x1400001;
     const uint32_t kPostEffectBW = 0x1400002;
     unsigned char g_Engine_postEffectFlag;
-    int g_Engine_postEffectCounter = 1;
 
 }
 
@@ -1771,30 +1804,3 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     return this->ShaderUpdate();
 }
 
-unsigned char AbyssEngine::Engine::EnableGlow;
-int AbyssEngine::Engine::ImageCount;
-int AbyssEngine::Engine::switchGlow = 3;
-int AbyssEngine::Engine::SwapCounter;
-int AbyssEngine::Engine::switchBloom = 3;
-unsigned char AbyssEngine::Engine::enableShader;
-unsigned char AbyssEngine::Engine::EnableRefract;
-float AbyssEngine::Engine::LodDistShader = 5000.0f;
-unsigned char AbyssEngine::Engine::DisableRefract;
-float AbyssEngine::Engine::AnisotropyValue;
-unsigned char AbyssEngine::Engine::KeepRawMeshData;
-unsigned char AbyssEngine::Engine::backupSaveGames;
-int AbyssEngine::Engine::MultiSampleValue;
-unsigned char AbyssEngine::Engine::UseAdvancedShader = 1;
-unsigned char AbyssEngine::Engine::enableReverseFlag = 1;
-int AbyssEngine::Engine::tv_h;
-int AbyssEngine::Engine::tv_w;
-Array<int> AbyssEngine::Engine::tv_modes;
-unsigned char AbyssEngine::Engine::DrawFBO;
-int AbyssEngine::Engine::vboSize;
-unsigned char AbyssEngine::Engine::DEBUGKEY;
-unsigned char AbyssEngine::Engine::TVEnable;
-float AbyssEngine::Engine::farPlane;
-AbyssEngine::String AbyssEngine::Engine::renderer;
-AbyssEngine::String AbyssEngine::Engine::vendor;
-unsigned char AbyssEngine::Engine::WireFrame;
-float AbyssEngine::Engine::nearPlane;

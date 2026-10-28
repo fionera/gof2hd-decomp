@@ -101,7 +101,7 @@ static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::s
 
 
 // Portrait part descriptors of the story characters (5 ints per face).
-static int gStoryFaces[61][5] = {
+static int gStoryFaces[60][5] = {
     {0, 8, 8, 1, 8},
     {2, 1, 1, 1, 1},
     {0, 9, 9, 8, 9},
@@ -161,10 +161,9 @@ static int gStoryFaces[61][5] = {
     {2, 3, 1, 1, 4},
     {2, 1, 4, 2, 0},
     {0, 0, 4, 3, 5},
-    {0, 10, 2, 9, 4},
-    {2, 0, 0, 0, 0}};
+    {0, 10, 2, 9, 4}};
 // Pirate portrait parts: the plain face, immediately followed by its greeting variant.
-// The original's gStoryFaces[60] aliases gPirateFace, so the last gStoryFaces row repeats it.
+// The original's gStoryFaces has 60 rows; the out-of-range row gStoryFaces[60] aliases gPirateFace.
 static int gPirateFace[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
 static int gPirateGreetingFaceB[5];
 // Face of the story character speaking a given story dialogue.

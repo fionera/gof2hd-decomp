@@ -18,6 +18,10 @@
 #include <cstdint>
 #include <cstring>
 
+namespace AbyssEngine {
+    float timeBetweenFrames = 1000000.0f;
+}
+
 extern "C" { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 void glVertexPointer(int size, unsigned int type, int stride, const void *ptr); // lint: void_ptr (OpenGL ABI signature)
 

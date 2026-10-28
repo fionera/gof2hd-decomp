@@ -24,6 +24,26 @@ namespace AbyssEngine {
                                     AELoadedTexture *outTex, bool flag);
 }
 
+namespace AbyssEngine {
+    float debugTouch[4];
+    long long performanceFrameCounter;
+    long long performanceOverallModulSwitches;
+    long long performanceModulSwitches;
+    long long triDrawn;
+    long long performanceTime;
+    unsigned char performanceTest;
+    unsigned char performanceTestEnded;
+    int orientationChangeTimer;
+    int fpsTimer;
+    int fpsCounter;
+    int currentFps;
+    int SwapCounter;
+    int loadTexture;
+    int loadMesh;
+    bool PostEffectFlag;
+    int debugModusIndex;
+}
+
 
 static bool update_orientation_timer(ApplicationManager *self) {
     AbyssEngine::orientationChangeTimer += (int) (self->frameTimeMs - self->previousFrameTimeMs);

@@ -119,6 +119,7 @@ static const char kBloomFinalFragmentSource[] =
 
 namespace AbyssEngine {
     int BloomShader::ShaderIndex = -1;
+    unsigned char firstRender = 1;
 
     void BloomShader::Init(Engine *) {
         const char *vertex = kBloomVertexSource;

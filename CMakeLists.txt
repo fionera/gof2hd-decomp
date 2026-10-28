@@ -78,7 +78,7 @@ if(GOF2_MATCH_LAYOUT)
     add_custom_command(OUTPUT "${_order}"
         COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
-                $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out} ${GOF2_NDK_LIBCXXABI_A}
+                $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_zlib_out} ${_libzip_out} ${GOF2_NDK_LIBCXXABI_A}
                 ${GOF2_NDK_ANDROID_SUPPORT_A} ${GOF2_NDK_LIBGCC_A}
         DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
                 gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out}
@@ -110,7 +110,7 @@ add_custom_command(OUTPUT "${_so}"
             ${_crtbegin} -L ${_libdir}
             @${_linkorder}
             ${_openssl_out}
-            --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
+            --whole-archive ${_zlib_out} ${_libzip_out} --no-whole-archive
             -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
             ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
             ${GOF2_NDK_LIBCXXABI_A}

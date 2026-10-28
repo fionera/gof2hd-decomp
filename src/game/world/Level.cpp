@@ -1536,7 +1536,7 @@ void Level::updateAlienAttackers(int dt) {
     }
 }
 
-static int g_tommyFace[5] = {4, 2, 0, 2, 2};
+static int g_tommyFace[8] = {4, 2, 0, 2, 2};
 
 // Station turret hardpoints per race: {race, position.xyz, rotation.xyz}.
 static const float kStationTurrets[4][2][7] = {

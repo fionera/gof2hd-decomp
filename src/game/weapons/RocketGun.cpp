@@ -23,28 +23,13 @@ namespace AbyssEngine {
 static const float kRocketTurnRate = 0.3f;
 
 // The four missile trail sets. setRadar reads the constexpr copy so its switch folds to the
-// original constants; the runtime copy is kept in .data so the page-quantized GOT stays aligned
-// with the 1908-byte update body (the libstdc++ exception ctors encode a GOT displacement). The
-// table is padded to 32 bytes: the update body is 12 bytes longer than the earlier 1896-byte
-// reconstruction, and the 16-byte .text growth after alignment is mirrored by 16 bytes of .data
-// padding so the GOT displacement keeps the exception ctors byte-exact.
+// original constants.
 static constexpr ParticleSettings::ParticleSet kRocketTrailSetValues[4] = {
         ParticleSettings::ParticleSet_0x19,
         ParticleSettings::ParticleSet_0x1a,
         ParticleSettings::ParticleSet_0x1b,
         ParticleSettings::ParticleSet_0x1c,
 };
-[[gnu::used]] static ParticleSettings::ParticleSet kRocketTrailSets[8] = {
-        kRocketTrailSetValues[0],
-        kRocketTrailSetValues[1],
-        kRocketTrailSetValues[2],
-        kRocketTrailSetValues[3],
-        ParticleSettings::ParticleSet_0x1c,
-        ParticleSettings::ParticleSet_0x1c,
-        ParticleSettings::ParticleSet_0x1c,
-        ParticleSettings::ParticleSet_0x1c,
-};
-static_assert(sizeof(kRocketTrailSets) == 32, "rocket trail-set table size");
 
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)

@@ -5,8 +5,8 @@
 
 class AEFile { public: static const char *GetAppRootDir(); };
 
-char *property_name_pause = (char *) "pause";
 char *property_name_purge = (char *) "purge";
+char *property_name_pause = (char *) "pause";
 
 
 

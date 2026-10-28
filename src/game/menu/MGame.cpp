@@ -74,7 +74,7 @@ static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::tr
 
 // Portrait descriptors used by MGame dialogues, 5 ints per face:
 // +0 = station greeter, +5 = mission-23 contact, +10 = planet landing refusal / mission 24.
-static int gMGameFaces[15] = {4, 2, 0, 2, 2, 0, 2, 3, 3, 10, 10, 0, 0, 1, 0};
+alignas(16) static int gMGameFaces[15] = {4, 2, 0, 2, 2, 0, 2, 3, 3, 10, 10, 0, 0, 1, 0};
 
 static const int gShipRace[64] = {
     3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,

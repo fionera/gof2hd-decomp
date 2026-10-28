@@ -97,6 +97,8 @@ int currentstate;
 int stateChanged;
 int sound_off;
 
+AbyssEngine::Engine *gEngine = nullptr;
+
 namespace {
     // Key/mouse state of the virtual input layer.
     struct InputState {

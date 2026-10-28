@@ -178,6 +178,10 @@ def main() -> int:
         order.extend(after.get(s, []))
     if not inserted:
         order.append(".text")
+    order.append(".data")
+    order.append(".data.__cxa_terminate_handler")
+    order.append(".data.__cxa_unexpected_handler")
+    order.append(".data._ZL5cause")
     order.append("*")          # keep unlisted sections after the listed ones, not before
     with open(out, "w") as f:
         f.write("\n".join(order) + "\n")

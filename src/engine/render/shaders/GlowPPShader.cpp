@@ -92,6 +92,7 @@ static const char kGlowPPCombineFragmentSource[] =
 
 namespace AbyssEngine {
     int GlowPPShader::ShaderIndex = -1;
+    unsigned char firstRenderGlow = 1;
 
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);

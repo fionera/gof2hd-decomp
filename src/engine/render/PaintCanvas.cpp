@@ -20,6 +20,14 @@
 
 namespace AbyssEngine { class Engine; class Mesh; void MeshDraw(Engine*, Mesh*); void MeshRelease(Engine*, Mesh**); void ImageFontRelease(Engine*, ImageFont**); void Image2DRelease(Engine*, Image2D**); void SpriteSystemRelease(Engine*, SpriteSystem**); void SpriteSystemSetAllSize(short, SpriteSystem*); int MeshConvertToVBO(Mesh*); }
 namespace AbyssEngine {
+    float i_fov = -1.0f;
+    int lauf;
+    int CubeMapSetIndex;
+    float i_zNear;
+    float i_zFar;
+}
+
+namespace AbyssEngine {
     int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, ImageUserData user, unsigned int *outIds, bool flag, float scale);
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, ImageUserData user, unsigned int *outIds, float scale, AELoadedTexture *outTex, bool flag);
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triangleCount,
