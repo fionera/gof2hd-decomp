@@ -1817,8 +1817,9 @@ void Level::createMission() {
                     (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                     asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                     (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
-                    (*this->enemies)[convoyEnd + j]->cargo = nullptr;
-                    ((PlayerFighter *) (*this->enemies)[convoyEnd + j])->crateCaptured() = 0;
+                    KIPlayer *convoyShip = (*this->enemies)[convoyEnd + j];
+                    convoyShip->cargo = nullptr;
+                    ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
                     (*this->enemies)[convoyEnd + j]->setSpeed(0.0f);
                     (*this->enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
                     Player *p = (*this->enemies)[convoyEnd + j]->player;
@@ -2429,7 +2430,10 @@ void Level::createMission() {
             delete (*this->enemies)[i]->cargo;
             (*this->enemies)[i]->cargo = nullptr;
         } else {
-            int race = Globals::rnd->nextInt(100) > 29 ? localRace : (localRace == 0 ? 2 : stationRace);
+            bool alienRace = Globals::rnd->nextInt(100) > 29;
+            int race = alienRace ? localRace : 2;
+            if (!alienRace && localRace != 0)
+                race = stationRace;
             (*this->enemies)[i] = this->createShip(race, 1, race == 1 ? 13 : 15, nullptr, true, false);
             ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(true);
             KIPlayer *station = (*this->enemies)[i];
