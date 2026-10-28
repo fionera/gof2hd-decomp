@@ -4435,7 +4435,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerB =
                             (long long) ((float) delta * 0.05f +
                                          (float) m_nScriptTimerB);
-                    for (unsigned int i = 2; i != 5; ++i) {
+                    for (int i = 2; i < 5; ++i) {
                         // disasm 0x1426c4: -Oz hoists all three (double)delta*{2.5,2.4,2.3}
                         // products and selects among the converted floats with a compare ladder.
                         switch (i) {
