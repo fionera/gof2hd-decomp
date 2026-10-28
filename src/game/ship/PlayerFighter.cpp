@@ -534,7 +534,7 @@ void PlayerFighter::update(int dt) {
     }
 
     // bounty targets switch between their primary and secondary weapons every 20 s
-    if (__builtin_expect(this->field_0x42, 1)) { // lint: arm_builtin
+    if (this->field_0x42) {
         this->gunSwitchTimer += dt;
         if (this->gunSwitchTimer > 20000) {
             this->gunSwitchTimer = 0;
@@ -545,7 +545,7 @@ void PlayerFighter::update(int dt) {
 
         // Locking a bounty target makes it hostile and uncovers its wanted entry.
         if (!this->player->isAlwaysEnemy() && this->level->getPlayer() &&
-            this->level->getPlayer()->field_0x14->lockedEnemy == this && !this->reviveLockFlag) {
+            (intptr_t) this->level->getPlayer()->field_0x14->lockedEnemy == (intptr_t) this && !this->reviveLockFlag) {
             this->player->setAlwaysEnemy(true);
             this->level->uncoverWanted(this->field_0x48);
         }
