@@ -199,8 +199,6 @@ static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
 
 
 
-static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
-static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
 
 
 
@@ -253,7 +251,9 @@ static const int gHangarCamPosIPad[30] = {725, 899, -2271, 1630, 1199, -1933, -2
 static const int gHangarCamPos[30] = {1076, 900, -2273, 1787, 1086, -1632, -2247, 1010, -1845, 1800,
                                       800, -1778, 0, 0, 0, 0, 0, 0, 0, 0,
                                       0, 1200, 800, -2678, 2200, 800, -1678, 0, 0, 0};
+static const float gHangarCamPitch[10] = {-0.27f, -0.3f, -0.18f, -0.2f, 0.0f, 0.0f, 0.0f, -0.2f, -0.2f, 0.0f};
 static const float gHangarCamYawIPad[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.35f, 0.0f};
+static const float gHangarCamYaw[10] = {-3.36f, -3.75f, -2.05f, 2.57f, 0.0f, 0.0f, 0.0f, 3.0f, 2.5f, 0.0f};
 // Station background image resource per race.
 static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xffffffff, 0xffffffff,
                                                  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
