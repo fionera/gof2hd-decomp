@@ -6954,13 +6954,12 @@ void Level::createScene() {
         {
             int sceneRace;
             {
-                Status *status = Globals::status;
-                if (status->getStation()->getIndex() == 101)
+                if (Globals::status->getStation()->getIndex() == 101)
                     sceneRace = 8;
-                else if (status->getStation()->getIndex() == 100)
+                else if (Globals::status->getStation()->getIndex() == 100)
                     sceneRace = 7;
                 else
-                    sceneRace = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
+                    sceneRace = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
             }
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(1, *this->enemies);
@@ -6972,7 +6971,6 @@ void Level::createScene() {
             ((PlayerFighter *) (*this->enemies)[0])->setExhaustVisible(false);
             (*this->enemies)[0]->setToSleep();
             (*this->enemies)[0]->player->setAlwaysFriend(true);
-            int capacity = kHangarCapacity[sceneRace];
             bool plainHangar = sceneRace == 1 || sceneRace > 3;
             for (int k = 0; k < 4; k++) {
                 int mesh = kHangarMeshes[sceneRace][k];
@@ -6990,39 +6988,38 @@ void Level::createScene() {
                 }
                 ArrayAdd((KIPlayer *) hangarPart, *this->enemies);
             }
-            Status *ownStatus = Globals::status;
-            bool ownHangar = ownStatus->getStation()->getIndex() == 108 && ownStatus->field_114 == 3;
+            bool ownHangar = false;
+            if (Globals::status->getStation()->getIndex() == 108)
+                ownHangar = Globals::status->field_114 == 3;
+            int capacity = kHangarCapacity[sceneRace];
             int shipCount = Globals::rnd->nextInt(capacity + 1);
             if (ownHangar) {
-                Array<Ship *> *ships = ownStatus->voidStation->getShips();
+                Array<Ship *> *ships = Globals::status->voidStation->getShips();
                 shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
+            AbyssEngine::AERandom *rnd = Globals::rnd;
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
-            const int *spots;
-            if (sceneRace == 7)
-                spots = kHangarSpotsKhador[0];
-            else
-                spots = kHangarSpotsDefault[0];
+            const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
-                if (Globals::rnd->nextInt(100) <= 29) {
+                if (rnd->nextInt(100) <= 29) {
                     race = Globals::rnd->nextInt(4);
                     if (Globals::rnd->nextInt(100) < 30)
                         race = 8;
                 }
                 int type = Globals::globals->getRandomEnemyFighter(race);
                 if (Globals::status->getStation()->getIndex() == 100) {
-                    int pick = Globals::rnd->nextInt(3);
+                    int pick = rnd->nextInt(3);
                     type = pick == 0 ? 37 : pick == 1 ? 38 : 40;
                 }
                 if (ownHangar)
                     type = (*Globals::status->voidStation->getShips())[i]->getIndex();
                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
-                int spot = Globals::rnd->nextInt(capacity);
+                int spot = rnd->nextInt(capacity);
                 for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
-                    spot = Globals::rnd->nextInt(capacity);
+                    spot = rnd->nextInt(capacity);
                 spotUsed[spot] = 1;
                 const int *table;
                 switch (sceneRace) {
@@ -7046,7 +7043,7 @@ void Level::createScene() {
                                   (float) table[spot * 3 + 2]);
                 ship->player->setAlwaysFriend(true);
                 ship->setToSleep();
-                ship->geometry->setRotation(0.0f, (float) Globals::rnd->nextInt(300) / 100.0f, 0.0f);
+                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
                 ((PlayerFighter *) ship)->setExhaustVisible(false);
                 ArrayAdd(ship, *this->enemies);
             }
