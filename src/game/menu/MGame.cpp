@@ -2112,10 +2112,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             resumeSounds();
         }
         if (this->hudTouchFlags == 0) {
+            this->hudMenuOpen = 0;
             if (this->hud != nullptr) {
                 this->hud->closeHudMenu();
             }
-            this->hudMenuOpen = 0;
             this->touch0Id = nullptr;
             this->touch1Id = nullptr;
             this->pauseOpen = 0;
