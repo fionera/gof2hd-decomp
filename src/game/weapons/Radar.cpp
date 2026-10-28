@@ -370,7 +370,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         this->field_0x1a8 =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
-        if (this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet()) {
+        if (__builtin_expect(this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin
             int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
             Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
@@ -406,7 +406,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && this->field_0x1c == nullptr) {
+    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin
+                                 this->field_0x1c == nullptr,
+                         0)) {
         otherLock = this->field_0x14 != 0;
     } else {
         otherLock = 1;
