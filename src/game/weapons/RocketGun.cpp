@@ -296,6 +296,9 @@ void RocketGun::update(int elapsed) {
     }
 
     const float dt = (float) elapsed;
+    // Keep the frame time in a stack slot for the loop; the original reloads it from the
+    // frame in the launch block rather than holding it in a callee-saved register.
+    volatile int unused = elapsed;
     Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
