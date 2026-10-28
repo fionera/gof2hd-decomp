@@ -722,7 +722,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Jump drive / cloak / docking transfer progress bars.
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
-        int barOffset = 0;
+        short barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
             int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
@@ -740,8 +740,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            int top = this->field_0x3e2;
-            int barYOffset = Globals::layout->field_0x218;
+            short top = this->field_0x3e2;
+            short barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
@@ -784,9 +784,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int top = this->field_0x3e2;
-            int barYOffset = Globals::layout->field_0x218;
+            int y = barOffset + top * 2;
+            short barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor(fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff);
-            short y = barOffset + top * 2;
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
             float filled = progress * (float) halfW;
             Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
