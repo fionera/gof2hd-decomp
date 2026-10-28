@@ -2727,8 +2727,16 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->scrollWindowB->OnTouchEnd(x, y);
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
-                if (__builtin_expect(button->id == 52, 0)) { // lint: arm_builtin
+                if (__builtin_expect(button->id == 60, 0)) { // lint: arm_builtin
                     if (__builtin_expect(button->OnTouchEnd(x, y), 0)) { // lint: arm_builtin
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
+                        this->messageShowing = 0;
+                        this->purchaseRestorePending = 1;
+                    }
+                }
+                if (button->id == 52) {
+                    if (button->OnTouchEnd(x, y)) {
                         switch (this->field_0x1e0) {
                             case 0:
                                 if (!optionFlag(53))
@@ -2753,14 +2761,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         }
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = this->field_0x1e0;
                         this->messageShowing = 0;
-                    }
-                }
-                if (button->id == 60) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
-                        this->messageShowing = 0;
-                        this->purchaseRestorePending = 1;
                     }
                 }
             }
@@ -3069,6 +3069,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             // Options.
             if (Globals::iPad) {
                 // The iPad layout shows the control and the sound options on one page.
+                unsigned char *options = Globals::options;
                 if (this->scrollUpButton->OnTouchEnd(x, y))
                     this->menuState = 11;
 
@@ -3081,24 +3082,24 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                                 ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] = 1.0;
                             tilt = 1.0 - ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] + 1.0;
                         }
-                        optionFloat(28) = (float) tilt;
-                        optionFloat(32) =
+                        *(float *) &options[28] = (float) tilt;
+                        *(float *) &options[32] =
                             (float) ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
                         this->messageShowing = 0;
                         this->field_0x176 = 0;
                     }
                 }
-                if (optionFlag(17))
-                    optionFloat(20) = (*this->sliders)[0]->getValue();
+                if (options[17])
+                    *(float *) &options[20] = (*this->sliders)[0]->getValue();
                 else
-                    optionFloat(24) = (*this->sliders)[0]->getValue();
+                    *(float *) &options[24] = (*this->sliders)[0]->getValue();
                 if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
                     x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                     y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                     y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
-                    optionFlag(17) = 1;
+                    options[17] = 1;
                     this->optBtnD0->setHalfTransparent(true);
-                    (*this->sliders)[0]->setValue(optionFloat(20));
+                    (*this->sliders)[0]->setValue(*(float *) &options[20]);
                     Globals::sound->play(123, 0, 0, 0.0f);
                 }
                 if (this->downButtonPressed &&
@@ -3106,16 +3107,16 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
                     y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
                     y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
-                    optionFlag(17) = 0;
+                    options[17] = 0;
                     this->optBtnD0->setHalfTransparent(false);
-                    (*this->sliders)[0]->setValue(optionFloat(24));
+                    (*this->sliders)[0]->setValue(*(float *) &options[24]);
                     Globals::sound->play(123, 0, 0, 0.0f);
                 }
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
                 if (this->optBtnCC->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(16);
-                    optionFlag(16) = on;
+                    bool on = !options[16];
+                    options[16] = on;
                     this->optBtnCC->setAlwaysPressed(on);
                 }
                 if (this->optBtnD0->OnTouchEnd(x, y)) {
@@ -3130,32 +3131,32 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     break;
                 }
                 if (this->optBtnD4->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(13);
-                    optionFlag(13) = on;
+                    bool on = !options[13];
+                    options[13] = on;
                     this->optBtnD4->setAlwaysPressed(on);
-                    (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
-                    Globals::sound->enableCategory(1, optionFlag(13));
+                    (*this->sliders)[1]->setHalfTransparent(!options[13]);
+                    Globals::sound->enableCategory(1, options[13]);
                 }
                 if (this->optBtnD8->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(12);
-                    optionFlag(12) = on;
+                    bool on = !options[12];
+                    options[12] = on;
                     this->optBtnD8->setAlwaysPressed(on);
-                    (*this->sliders)[2]->setHalfTransparent(!optionFlag(12));
-                    Globals::sound->enableCategory(2, optionFlag(12));
+                    (*this->sliders)[2]->setHalfTransparent(!options[12]);
+                    Globals::sound->enableCategory(2, options[12]);
                     Globals::sound->play(126, 0, 0, 0.0f);
                 }
                 if (this->optBtnDC->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(14);
-                    optionFlag(14) = on;
+                    bool on = !options[14];
+                    options[14] = on;
                     this->optBtnDC->setAlwaysPressed(on);
-                    (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
-                    Globals::sound->enableCategory(3, optionFlag(14));
+                    (*this->sliders)[3]->setHalfTransparent(!options[14]);
+                    Globals::sound->enableCategory(3, options[14]);
                 }
-                optionFloat(0) = (*this->sliders)[1]->getValue();
-                optionFloat(4) = (*this->sliders)[2]->getValue();
-                optionFloat(8) = (*this->sliders)[3]->getValue();
-                optionFloat(36) = (*this->sliders)[4]->getValue();
-                optionFloat(40) = (*this->sliders)[5]->getValue();
+                *(float *) &options[0] = (*this->sliders)[1]->getValue();
+                *(float *) &options[4] = (*this->sliders)[2]->getValue();
+                *(float *) &options[8] = (*this->sliders)[3]->getValue();
+                *(float *) &options[36] = (*this->sliders)[4]->getValue();
+                *(float *) &options[40] = (*this->sliders)[5]->getValue();
                 for (int i = 1; i < (int) this->sliders->size(); i++) {
                     if (!(*this->sliders)[i]->OnTouchEnd(x, y))
                         continue;
@@ -3168,7 +3169,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                             if (Globals::iPadLargePossible) {
                                 this->choiceWindow->set(*Globals::gameText->getText(122));
                                 this->messageShowing = 1;
-                                optionFloat(68) = quality <= 0.33f ? 0.0f : (quality <= 0.66f ? 0.5f : 1.0f);
+                                *(float *) &options[68] = quality <= 0.33f ? 0.0f : (quality <= 0.66f ? 0.5f : 1.0f);
                                 Globals::recordHandler->saveOptions();
                             } else {
                                 this->choiceWindow->set(*Globals::gameText->getText(
@@ -3181,9 +3182,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (Globals::iPadLargePossible && this->scrollExtraButton != 0 &&
                     this->scrollExtraButton->OnTouchEnd(x, y)) {
-                    optionFlag(64) = !optionFlag(64);
+                    options[64] = !options[64];
                     Globals::recordHandler->saveOptions();
-                    this->scrollExtraButton->setAlwaysPressed(optionFlag(64));
+                    this->scrollExtraButton->setAlwaysPressed(options[64]);
                     this->choiceWindow->set(*Globals::gameText->getText(122));
                     this->messageShowing = 1;
                 }
@@ -3288,8 +3289,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (r == 0) {
                         Globals::appManager->Quit();
                     } else if (r == 1) {
-                        this->messageShowing = 0;
                         this->returnToMenuShowing = 0;
+                        goto clearMessage;
                     }
                     return 0;
                 }
