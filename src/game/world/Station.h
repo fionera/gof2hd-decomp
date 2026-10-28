@@ -43,7 +43,7 @@ public:
 
     uint32_t hasItem(int index);
 
-    uint32_t hasShip(int index);
+    bool hasShip(int index);
 
     int getIndex();
 

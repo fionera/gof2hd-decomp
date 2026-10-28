@@ -594,8 +594,8 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             continue;
         }
         result->data()[out++] = existing->data()[i];
-        int campaign = Globals::status->getCurrentCampaignMission();
         if (existing->data()[i]->getOffer() == 9) {
+            int campaign = Globals::status->getCurrentCampaignMission();
             int index = campaign >= 142 ? Globals::rnd->nextInt(9) : Globals::rnd->nextInt(7) + 2;
             int itemId = kAgentOfferItems[index];
             existing->data()[i]->setSellItemData(itemId, (uint32_t) (index - 3) < 2 ? 10 : 1,

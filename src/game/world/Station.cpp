@@ -189,7 +189,7 @@ uint32_t Station::hasItem(int index) {
     return 0;
 }
 
-uint32_t Station::hasShip(int index) {
+bool Station::hasShip(int index) {
     if (ships != nullptr) {
         for (uint32_t i = 0; i < ships->size(); i++) {
             Ship *sh = (*ships)[i];
