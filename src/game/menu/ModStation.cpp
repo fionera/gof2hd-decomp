@@ -101,7 +101,7 @@ static inline int FModSound_tryToStopMusicForBGMusic() { return (int)(Globals::s
 
 
 // Portrait part descriptors of the story characters (5 ints per face).
-static int gStoryFaces[62][5] = {
+static int gStoryFaces[61][5] = {
     {0, 8, 8, 1, 8},
     {2, 1, 1, 1, 1},
     {0, 9, 9, 8, 9},
@@ -162,16 +162,17 @@ static int gStoryFaces[62][5] = {
     {2, 1, 4, 2, 0},
     {0, 0, 4, 3, 5},
     {0, 10, 2, 9, 4},
-    {2, 0, 0, 0, 0},
-    {4, 2, 0, 2, 2}};
-static int gPirateFace[5] = {2, 0, 0, 0, 0};
+    {2, 0, 0, 0, 0}};
+// Pirate portrait parts: the plain face, immediately followed by its greeting variant.
+// The original's gStoryFaces[60] aliases gPirateFace, so the last gStoryFaces row repeats it.
+static int gPirateFace[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
 static int gPirateGreetingFaceB[5];
 // Face of the story character speaking a given story dialogue.
-static int *const gStoryFaceTable[63] = {
-    gPirateGreetingFaceB, gStoryFaces[0], gStoryFaces[1], gStoryFaces[2], gStoryFaces[61], gStoryFaces[3],
+static int *const gStoryFaceTable[62] = {
+    gStoryFaces[0], gStoryFaces[1], gStoryFaces[2], gPirateFace + 5, gStoryFaces[3],
     gStoryFaces[4], gStoryFaces[5], gStoryFaces[6], gStoryFaces[7], gStoryFaces[8], gStoryFaces[9],
     gStoryFaces[10], gStoryFaces[11], gStoryFaces[12], gStoryFaces[13], gStoryFaces[14], gStoryFaces[15],
-    gStoryFaces[16], gStoryFaces[17], gStoryFaces[18], gStoryFaces[19], gStoryFaces[60], gStoryFaces[20],
+    gStoryFaces[16], gStoryFaces[17], gStoryFaces[18], gStoryFaces[19], gPirateFace, gStoryFaces[20],
     gStoryFaces[21], gStoryFaces[22], gStoryFaces[23], gStoryFaces[24], gStoryFaces[25], gStoryFaces[26],
     gStoryFaces[27], gStoryFaces[28], gStoryFaces[29], gStoryFaces[30], gStoryFaces[31], gStoryFaces[32],
     gStoryFaces[33], gStoryFaces[34], gStoryFaces[35], gStoryFaces[36], gStoryFaces[37], gStoryFaces[38],
@@ -632,7 +633,7 @@ int ModStation::OnInitialize() {
                 delete this->dialogueWindow;
                 this->dialogueWindow = nullptr;
                 Mission *mission = new Mission(-1, String(*Globals::gameText->getText(1601), false),
-                                               gStoryFaces[61], 4, 0, 108, 0);
+                                               gPirateFace + 5, 4, 0, 108, 0);
                 mission->setWon(true);
                 Globals::status->field_114 = 2;
                 this->dialogueWindow = new DialogueWindow(mission, nullptr, 0);
