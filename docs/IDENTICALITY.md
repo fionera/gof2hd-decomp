@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1353, linked_exact 4480, avg 99.86%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1353, linked_exact 4480, avg 99.87%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1353, linked_exact 4480, avg 99.86%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1353, linked_exact 4480, avg 99.87%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
