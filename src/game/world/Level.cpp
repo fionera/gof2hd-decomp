@@ -4061,7 +4061,7 @@ void Level::createCampaignMission() {
             unsigned char weakDevice = Globals::isRunningHDonWeakDevice;
             int fighters = weakDevice ? 5 : 10;
             int docks = weakDevice ^ 1;
-            ArraySetLength(((weakDevice ? 10 : 20) | docks) + 3, *this->enemies);
+            ArraySetLength(((weakDevice == 0 ? 20 : 10) | docks) + 3, *this->enemies);
             Vector stationPos = {-120000.0f, 0.0f, 20000.0f};
             Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(101);
             int friendEnd = fighters + docks;
