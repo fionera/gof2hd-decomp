@@ -24,7 +24,7 @@ public:
 
     virtual void replaceGun(unsigned int mesh, int unused) = 0;
 
-    virtual int isRocketGun() { return 0; }
+    virtual bool isRocketGun() { return 0; }
 
     virtual int isBombGun() { return 0; }
 
