@@ -315,6 +315,7 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     int pitchBits = *(const volatile int *) &gHangarCamPitch[race];
     int yawBits = *(const volatile int *) &yawTable[race];
     MatrixSetRotation(nearKey, *(const float *) &pitchBits, *(const float *) &yawBits, 0.0f,
