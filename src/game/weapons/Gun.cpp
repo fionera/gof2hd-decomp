@@ -568,8 +568,8 @@ void Gun::ignite() {
     }
 }
 void Gun::calcCharacterCollision() {
-    volatile int explosive;
-    volatile int explodeOnContact = 0;
+    int explosive;
+    int explodeOnContact = 0;
     if (this->enemies == nullptr) {
         return;
     }
@@ -596,6 +596,7 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
+            enemy = this->enemies->data()[e];
             Vector position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition =
@@ -683,8 +684,8 @@ void Gun::calcCharacterCollision() {
             }
             int amount = this->damage;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
-                if (enemy->egoFlag && level->getPlayer() != nullptr &&
-                    level->getPlayer()->isDockedToDockingPoint()) {
+                if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
+                    ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     amount = (int) ((float) this->damage * 3.0f * 0.25f);
                 }
             } else if (enemy->egoFlag) {
