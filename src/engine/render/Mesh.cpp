@@ -547,9 +547,9 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 2) {
             if ((flags << 29) != 0) {
-                short *raw = (short *) new unsigned char[(*slot)->vertexCount * 4];
+                signed char *raw = (signed char *) new unsigned char[(*slot)->vertexCount * 4];
                 if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
-                    delete[] (unsigned char *) raw;
+                    delete[] raw;
                     return -1;
                 }
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
@@ -578,13 +578,13 @@ namespace AbyssEngine {
         if ((*slot)->vertexFormat & 4) {
             if ((flags << 29) != 0) {
                 Mesh *mesh = *slot;
-                short *raw = (short *) new unsigned char[mesh->vertexCount * 6];
+                signed char *raw = (signed char *) new unsigned char[mesh->vertexCount * 6];
                 if (AEFile::Read(mesh->vertexCount * 6, raw, handle) == 0) {
-                    delete[] (unsigned char *) raw;
+                    delete[] raw;
                     return -1;
                 }
                 mesh->normals = new float[mesh->vertexCount * 3];
-                short *rawY = raw + 1;
+                short *rawY = (short *) raw + 1;
                 for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
                     float x = (float) ((double) raw[i] * (1.0 / 32768.0));
                     float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
