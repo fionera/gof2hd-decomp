@@ -351,7 +351,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     bool turretMode = this->level->getPlayer()->isInTurretMode();
-    int alienOrbit = Globals::status->inAlienOrbit();
+    bool alienOrbit = Globals::status->inAlienOrbit();
     int campaign = Globals::status->getCurrentCampaignMission();
     this->enemies = this->level->getEnemies();
     this->landmarks = this->level->getLandmarks();
@@ -470,8 +470,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if ((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3) {
-                Globals::Canvas->DrawImage2D((i & 0x7fffffff) == 1 ? this->image_0xbc : this->image_0xb8,
+            } else if (i == 1 || i == 3) {
+                Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8,
                                              this->screenX, this->screenY, 17, 68);
             }
         }
