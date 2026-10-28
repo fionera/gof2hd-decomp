@@ -36,7 +36,7 @@ void Status::incMissionCount() { missionCount = missionCount + 1; }
 
 void Status::incPlayingTime(int64_t delta) { playingTime = playingTime + delta; }
 
-uint32_t Status::orbitHasPlanetRing(int index) {
+bool Status::orbitHasPlanetRing(int index) {
     unsigned t = index - 0x78U;
     if (((t >> 1) | (t << 0x1f)) < 7) {
         return 0x69U >> (((index - 0x78U) >> 1) & 0x7f) & 1;

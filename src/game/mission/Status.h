@@ -276,7 +276,7 @@ public:
 
     uint32_t inPlanetRingOrbit();
 
-    uint32_t orbitHasPlanetRing(int index);
+    bool orbitHasPlanetRing(int index);
 
     bool inStormOrbit();
 
