@@ -55,9 +55,9 @@ PlayerStation::PlayerStation(Station *station)
             root->addChild(part2->transform);
             delete part1;
             delete part2;
-            reader = new FileRead();
-            collision = reader->loadStationCollision(1000);
-            delete reader;
+            FileRead *r1000 = new FileRead();
+            collision = r1000->loadStationCollision(1000);
+            delete r1000;
         } else if (Globals::status->dlc1Won()) {
             AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x4220, Globals::Canvas, false);
@@ -90,9 +90,9 @@ PlayerStation::PlayerStation(Station *station)
             root->addChild(part2->transform);
             delete part1;
             delete part2;
-            reader = new FileRead();
-            collision = reader->loadStationCollision(1001);
-            delete reader;
+            FileRead *r1001 = new FileRead();
+            collision = r1001->loadStationCollision(1001);
+            delete r1001;
         }
     }
 
@@ -181,17 +181,16 @@ PlayerStation::PlayerStation(Station *station)
             uint16_t mesh2 = mission == 80 ? 0x3820 : (dlcWon ? 0x3824 : 0x4224);
             uint16_t mesh3 = mission == 80 ? 0x3821 : (dlcWon ? 0x3825 : 0x4225);
             this->rootGeometry = new AEGeometry(rootMesh, Globals::Canvas, false);
-            uint32_t t0, t2, t1;
-            t0 = 0xffffffff;
+            uint32_t t0 = 0xffffffff;
             Globals::Canvas->TransformCreate(t0);
             Globals::Canvas->TransformAddMesh(t0, mesh1, false);
             this->rootGeometry->addChild(t0);
             this->meshTransform = t0;
-            t1 = 0xffffffff;
+            uint32_t t1 = 0xffffffff;
             Globals::Canvas->TransformCreate(t1);
             Globals::Canvas->TransformAddMesh(t1, mesh2, false);
             this->rootGeometry->addChild(t1);
-            t2 = 0xffffffff;
+            uint32_t t2 = 0xffffffff;
             Globals::Canvas->TransformCreate(t2);
             Globals::Canvas->TransformAddMesh(t2, mesh3, false);
             this->rootGeometry->addChild(t2);
