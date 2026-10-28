@@ -819,7 +819,7 @@ int ModStation::OnInitialize() {
                 int hasFuel = Globals::status->getShip()->hasCargo(85, 1);
                 if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRoutes() == nullptr) {
                     int mission = Globals::status->getCurrentCampaignMission();
-                    if (!(hasJumpDrive | hasFuel) && mission >= 17) {
+                    if ((mission >= 17) && !(hasJumpDrive | hasFuel)) {
                         this->choiceWindow->set(*Globals::gameText->getText(335), true);
                         this->flag_0x63 = 1;
                         this->flag_0x6d = 1;
