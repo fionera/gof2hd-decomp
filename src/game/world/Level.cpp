@@ -2594,7 +2594,8 @@ void Level::createMission() {
     }
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
-    levelTextAnchor();
+    void (*volatile anchorFn)() = levelTextAnchor;
+    anchorFn();
 }
 
 void Level::createAsteroids() {
@@ -7120,8 +7121,6 @@ void Level::createScene() {
             return;
     }
 
-    void (*volatile anchorFn)() = levelTextAnchor;
-    anchorFn();
 }
 void Level::renderBG(int dt) {
     using namespace AbyssEngine::AEMath;
