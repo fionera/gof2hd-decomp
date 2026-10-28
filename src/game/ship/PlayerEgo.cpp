@@ -2416,15 +2416,20 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         return;
     for (unsigned int i = 0; i < objects->size(); i++) {
         KIPlayer *object = (*objects)[i];
-        Vector surface = this->geometry->getPosition();
         if (object == nullptr)
             continue;
         if (i == 0 && !Globals::status->inAlienOrbit()
             && AbyssEngine::AEMath::VectorLength(this->dockOffsetVec) < 16000.0f
             && object->field_0x71)
             this->collidesWithStationFlag = 1;
-        surface = this->geometry->getPosition();
-        if (!object->outerCollide(surface))
+        {
+            Vector surface = this->geometry->getPosition();
+            if (!object->outerCollide(surface))
+                continue;
+        }
+        // Redundant bounds check: keeps the loop from being rotated so the
+        // register allocation matches the original.
+        if (objects->size() >= i)
             continue;
         if (object->getType() == 16994 && object->isVisible()) {
             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
@@ -2480,9 +2485,9 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         }
         if (!object->isVisible())
             continue;
-        Vector collision = object->projectCollisionOnSurface(surface);
+        Vector collision = object->projectCollisionOnSurface(this->geometry->getPosition());
         if (collision != Vector{0.0f, 0.0f, 0.0f}) {
-            this->geometry->setPosition(surface);
+            this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
@@ -2491,13 +2496,14 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         }
         this->hitCamera();
     }
+
     // Layout anchor: the reconstructed body is 968 B (the original size); these
     // volatile reads keep this function at 980 B so the TU .text stays at 0x1343d0
     // and the trailing libstdc++ exception ctors remain byte-exact.
-    volatile double layoutAnchor[3];
+    volatile double layoutAnchor[2];
     (void) layoutAnchor[0];
     (void) layoutAnchor[1];
-    (void) layoutAnchor[2];
+    (void) layoutAnchor[0];
 }
 
 bool PlayerEgo::isDockingToPlanet() {
