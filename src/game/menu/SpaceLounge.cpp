@@ -1103,11 +1103,12 @@ int SpaceLounge::onKeyPress(int key) {
                     Globals::status->changeCredits(Globals::options[56] ? -agent->getSellItemPrice() * 1.0f
                                                                            : -agent->getSellItemPrice() * 2.0f);
                     Item *item = (*Globals::items)[agent->getSellItemIndex()]->makeItem(agent->getSellItemQuantity());
+                    unsigned int i;
                     bool merged = false;
                     if (item->getType() == 1) {
                         Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
                         if (equipment != 0) {
-                            for (unsigned int i = 0; i < equipment->size(); i++) {
+                            for (i = 0; i < equipment->size(); i++) {
                                 if ((*equipment)[i] != 0 && (*equipment)[i]->getIndex() == item->getIndex()) {
                                     (*equipment)[i]->changeAmount(item->getAmount());
                                     merged = true;
