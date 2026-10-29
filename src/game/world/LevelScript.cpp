@@ -934,22 +934,10 @@ bool LevelScript::process(int delta) {
         return 1;
     } else if (Globals::status->getCurrentCampaignMission() == 106) {
         // Chain A, mission 106: the cloaked fighter reveals itself and jumps away (0x138c7a).
-        // disasm 0xf6e: the original lays the state-1 body out inline as the dispatch fall-through,
-        // so it is written first here; the remaining branches keep the original's compare order
-        // (3, 2, 4, 6, 5).
-        if (m_nState == 1) {
-            m_pCamera->translate((float) -delta * 0.3f, (float) -delta * 0.05f, (float) delta * 0.1f);
-            if (((RadioMessage *) ((*messages)[2]))->isOver()) {
-                m_nScriptTimerA = 0;
-                m_nState = 2;
-                (*enemies)[0]->awake();
-                (*enemies)[0]->setVisible(true);
-                ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(false);
-                ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
-            }
-        } else if (m_nState == 3 && ((RadioMessage *) ((*messages)[4]))->isTriggered()) {
-            m_nState = 4;
-        } else if (m_nState == 2) {
+        // The original dispatch at 0x138c86 compares 3, then 2, then 1 with the state-2 body as
+        // the fall-through, so the state-2 body is written first here; the remaining branches
+        // follow in the original's layout order (1, 3, 4, 6, 5).
+        if (m_nState == 2) {
             m_nScriptTimerA += delta;
             m_pLevel->lodManager->forceUpdate(0, false);
             if (m_nScriptTimerA >= 3001) {
@@ -965,6 +953,18 @@ bool LevelScript::process(int delta) {
             } else {
                 m_pCamera->translate((float) -delta * 0.1f, (float) -delta * 0.1f, (float) delta * 0.4f);
             }
+        } else if (m_nState == 1) {
+            m_pCamera->translate((float) -delta * 0.3f, (float) -delta * 0.05f, (float) delta * 0.1f);
+            if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                m_nScriptTimerA = 0;
+                m_nState = 2;
+                (*enemies)[0]->awake();
+                (*enemies)[0]->setVisible(true);
+                ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(false);
+                ((PlayerFighter *) (*enemies)[0])->setAIDisabled(true);
+            }
+        } else if (m_nState == 3 && ((RadioMessage *) ((*messages)[4]))->isTriggered()) {
+            m_nState = 4;
         } else if (m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()) {
             m_pCamera->setFixed(true);
             ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
