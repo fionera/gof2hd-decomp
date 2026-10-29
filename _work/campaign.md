@@ -3624,3 +3624,8 @@ mtw anchor for any size change before MenuTouchWindow.
   stores in the original order and read the DLC purchase flags as raw option bytes.
 - **Hud::draw 87.58 -> 87.59%** (`dc91d9f6`, w1945): hoist the canvas local in the shield branch.
   Size stays 9332 B.
+
+### Wave 77 (worst-match wave 6, in progress)
+
+- **MeshReadData 76.3 -> 77.0%** (`901f38c2`, w1957): merge the animation bounds before the
+  empty-children early-out and shrink the cold anchor to one store. Size stays 2632 B.
