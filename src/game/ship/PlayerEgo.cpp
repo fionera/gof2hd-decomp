@@ -2073,10 +2073,10 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             if (target == nullptr || this->dockedToStream) {
                 this->setAutoPilot(nullptr);
             } else {
-                Vector position = target->getPosition();
-                this->moveTarget = position;
+                this->moveTarget = target->getPosition();
                 if ((int) AbyssEngine::AEMath::VectorLength(this->moveTarget - this->getPosition()) <= 19999)
                     this->aboutToReachAutoTargetFlag = 1;
+                AbyssEngine::AEMath::Vector position = this->moveTarget;
                 float speed = 4.0f;
                 if (Globals::status->getShip()->getHandling() + 2.7f < 4.0f)
                     speed = Globals::status->getShip()->getHandling() + 2.7f;
@@ -2086,7 +2086,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             }
         }
     } else if (!this->field_0x145) {
-        if (this->turretActive || this->field_0x1a1) {
+        if (this->turretActive || __builtin_expect(this->field_0x1a1, 0)) { // lint: arm_builtin
             this->handleTurretView(dt);
         } else {
             this->roll(this->shakeIntensity);
