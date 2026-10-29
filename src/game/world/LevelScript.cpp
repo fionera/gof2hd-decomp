@@ -1510,6 +1510,48 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
+            case 144: {
+                // Departure: follow the marker out while the cloaked escorts slip away.
+                m_bCinematicBreak = 1;
+                m_pGeometry4->moveForward((float) (delta * 5));
+                m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
+                if (m_nState == 1) {
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->setTarget(m_pGeometry4);
+                    m_nState = 2;
+                } else if (m_nState == 2) {
+                    if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        m_nScriptTimerA = 0;
+                        m_nState = 3;
+                    }
+                } else if (m_nState == 3) {
+                    m_nScriptTimerA += delta;
+                    for (unsigned int i = 1; i < enemies->count; i++) {
+                        if ((*enemies)[i]->shipGroupFlag == 44) {
+                            if (Globals::rnd->nextInt(100) <= 9 && !((PlayerFighter *) (*enemies)[i])->field_0x13c) {
+                                ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
+                                ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
+                            }
+                            (*enemies)[i]->geometry->moveForward((float) m_nScriptTimerA * 0.05f);
+                        }
+                    }
+                    if (m_nScriptTimerA > 4000) {
+                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
+                        if (m_nScriptTimerA >= 7001) {
+                            m_nState = 4;
+                            Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation(Globals::status->getStation());
+                            Globals::status->departStation(Globals::status->getStation());
+                            if (Level::initStreamOutPositionAfterCutscene) {
+                                Level::initStreamOutPositionAfterCutscene = 0;
+                                Level::initStreamOutPosition = 1;
+                            }
+                            Globals::appManager->SetCurrentApplicationModule(2);
+                        }
+                    }
+                }
+                break;
+            }
             case 135: { // 0x1391c0
                 if (m_nState == 0) {
                     // state 0 (0x13c50e): once the player has docked (or the 64-bit script counter
@@ -1575,11 +1617,19 @@ bool LevelScript::process(int delta) {
             }
             case 142: {
                 // Collect the plot cargo from a sparking gas cloud while the freighter waits.
-                if (m_nState <= 1) {
+                Ship *ship = Globals::status->getShip();
+                if (m_nState < 2) {
                     if (AbyssEngine::AEMath::VectorLength(
                                 (*enemies)[0]->getPosition() - (*enemies)[0]->getRoute()->getWaypoint(0)->getPosition())
                         < 3000.0f) {
                         (*enemies)[0]->setSpeed(0.0f);
+                    }
+                    if (m_nState == 0) {
+                        if (player->getRoute() != 0
+                            && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
+                            m_nState = 1;
+                            break;
+                        }
                     }
                     if (m_nState == 1) {
                         if (m_pLevel->getGasClouds() != nullptr) {
@@ -1588,59 +1638,16 @@ bool LevelScript::process(int delta) {
                                     m_nState = 2;
                                 }
                             }
+                            break;
                         }
-                    } else if (player->getRoute() != 0
-                               && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
-                        m_nState = 1;
                     }
-                } else if (m_nState == 2
-                           && (Globals::status->getShip()->hasCargo(201, 1) || Globals::status->getShip()->hasCargo(202, 1)
-                               || Globals::status->getShip()->hasCargo(203, 1)
-                               || Globals::status->getShip()->hasCargo(204, 1)
-                               || Globals::status->getShip()->hasCargo(205, 1))) {
-                    (*enemies)[0]->setSpeed(2.1f);
-                    m_nState = 3;
                 }
-                break;
-            }
-            case 144: {
-                // Departure: follow the marker out while the cloaked escorts slip away.
-                m_bCinematicBreak = 1;
-                m_pGeometry4->moveForward((float) (delta * 5));
-                m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
-                if (m_nState == 1) {
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_pCamera->setTarget(m_pGeometry4);
-                    m_nState = 2;
-                } else if (m_nState == 2) {
-                    if (((RadioMessage *) ((*messages)[3]))->isOver()) {
-                        m_nScriptTimerA = 0;
+                if (m_nState == 2) {
+                    KIPlayer *enemy0 = (*enemies)[0];
+                    if (ship->hasCargo(201, 1) || ship->hasCargo(202, 1) || ship->hasCargo(203, 1)
+                        || ship->hasCargo(204, 1) || Globals::status->getShip()->hasCargo(205, 1)) {
+                        enemy0->setSpeed(2.1f);
                         m_nState = 3;
-                    }
-                } else if (m_nState == 3) {
-                    m_nScriptTimerA += delta;
-                    for (unsigned int i = 1; i < enemies->count; i++) {
-                        if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (Globals::rnd->nextInt(100) <= 9 && !((PlayerFighter *) (*enemies)[i])->field_0x13c) {
-                                ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
-                                ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
-                            }
-                            (*enemies)[i]->geometry->moveForward((float) m_nScriptTimerA * 0.05f);
-                        }
-                    }
-                    if (m_nScriptTimerA > 4000) {
-                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
-                        if (m_nScriptTimerA >= 7001) {
-                            m_nState = 4;
-                            Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation(Globals::status->getStation());
-                            Globals::status->departStation(Globals::status->getStation());
-                            if (Level::initStreamOutPositionAfterCutscene) {
-                                Level::initStreamOutPositionAfterCutscene = 0;
-                                Level::initStreamOutPosition = 1;
-                            }
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                        }
                     }
                 }
                 break;
