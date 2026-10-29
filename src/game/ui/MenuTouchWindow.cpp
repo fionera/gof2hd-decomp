@@ -3092,7 +3092,10 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         this->field_0x176 = 0;
                     }
                 }
-                optionFloat(optionFlag(17) ? 20 : 24) = (*this->sliders)[0]->getValue();
+                if (optionFlag(17))
+                    optionFloat(20) = (*this->sliders)[0]->getValue();
+                else
+                    optionFloat(24) = (*this->sliders)[0]->getValue();
                 if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
                     x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
                     y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
