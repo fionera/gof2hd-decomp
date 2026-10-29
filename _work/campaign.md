@@ -3633,3 +3633,7 @@ mtw anchor for any size change before MenuTouchWindow.
   mission-135 in the switch so the TBH/case body order matches the original. Size stays 57256 B.
 - **Hud::draw 87.59 -> 88.2%** (`fb7d38f6`, w1971): hoist the docking-bar font/w locals, zero-test
   `hints[17]`, and evaluate `w` before the text width. Size stays 9332 B.
+- **LevelScript::process size-exact 57232 B** (`30e1bc22`, w1979): remove the non-existent
+  mission-145 case 6 and restructure mission 142's state-0/state-1 nesting to the original shape.
+  Fuzzy 51.6 -> 50.7% on the current base, but the +24 B size delta is gone and the gate still
+  holds (byte 1411 / linked 4485 / `.text` 0x1343d0).

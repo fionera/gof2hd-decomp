@@ -1507,7 +1507,6 @@ bool LevelScript::process(int delta) {
                     }
                     break;
                 }
-                case 6: m_nState = 2; break;
                 }
                 break;
             }
@@ -1582,15 +1581,17 @@ bool LevelScript::process(int delta) {
                         < 3000.0f) {
                         (*enemies)[0]->setSpeed(0.0f);
                     }
-                }
-                if (m_nState == 0 && player->getRoute() != 0
-                    && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
-                    m_nState = 1;
-                } else if (m_nState == 1 && m_pLevel->getGasClouds() != nullptr) {
-                    for (unsigned int i = 0; i < m_pLevel->getGasClouds()->count; i++) {
-                        if (((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr) {
-                            m_nState = 2;
+                    if (m_nState == 1) {
+                        if (m_pLevel->getGasClouds() != nullptr) {
+                            for (unsigned int i = 0; i < m_pLevel->getGasClouds()->count; i++) {
+                                if (((PlayerGasCloud *) (*m_pLevel->getGasClouds())[i])->getSparks() != nullptr) {
+                                    m_nState = 2;
+                                }
+                            }
                         }
+                    } else if (player->getRoute() != 0
+                               && (uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
+                        m_nState = 1;
                     }
                 } else if (m_nState == 2
                            && (Globals::status->getShip()->hasCargo(201, 1) || Globals::status->getShip()->hasCargo(202, 1)

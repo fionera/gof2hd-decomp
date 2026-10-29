@@ -3936,7 +3936,7 @@ static void mtwTextLayoutAnchor() {
     a = 28; a = 29;
     c = 0; c = 1; c = 2;
     a = 42;
-    a = 687; a = 688;
+    a = 687; a = 688; a = 689; a = 690; a = 691; a = 692;
     (void) a;
     if (a == -1)
         mtwTextLayoutAnchor();

@@ -3,11 +3,11 @@
 > **Current frontier (2026-10-29, wave 74 complete):** `MeshReadData`, `Level::createMission`,
 > `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2, `Level::createScene`,
 > `Globals` ctor, `MenuTouchWindow` ctor and `StarMap::draw` are size-exact. Remaining exported
-> size differences: `Layout::Layout` -280 B (50.5% store-order body; the size-exact 7072 B form is
-> 36.7% and is kept in commit `daffb1e7`) and `LevelScript::process` +24 B (51.6%, after the
-> `Status::field_90` semantic fix and the mission-78/145 source-order fixes). The detailed table
-> below is the wave-69 snapshot and is retained for address-order history; use the size-diff list
-> above for the current queue.
+> size difference: `Layout::Layout` -280 B (50.5% store-order body; the size-exact 7072 B form is
+> 36.7% and is kept in commit `daffb1e7`). `LevelScript::process` is now size-exact at 57232 B
+> (50.7%, after the mission-142/145 state-flow fix). The detailed table below is the wave-69
+> snapshot and is retained for address-order history; use the size-diff list above for the current
+> queue.
 
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by
 walking the common `.dynsym` function symbols of both binaries in original-address order.
