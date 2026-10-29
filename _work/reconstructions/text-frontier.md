@@ -1,13 +1,12 @@
 # .text frontier map — exported functions in original address order
 
-> **Current frontier (2026-10-29, wave 73):** `MeshReadData`, `LevelScript::process`,
-> `Level::createMission`, `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2 and
-> `Level::createScene` are size-exact. `Layout::Layout` C1/C2 are the 50.3%-match 6792-byte body
-> (280 B short of the original 7072); the mtw anchor keeps `.text` at 0x1343d0 and the gate at
-> byte 1411 / linked 4485. Remaining exported size differences: `Layout::Layout` -280 B,
-> `StarMap::draw` +4 B (increment-then-clamp form) and `Level::createMission` +4 B (one extra EH
-> landing-pad trampoline). The detailed table below is the wave-69 snapshot and is retained for
-> address-order history; use the size-diff list above for the current queue.
+> **Current frontier (2026-10-29, wave 74):** `MeshReadData`, `Level::createMission`,
+> `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2, `Level::createScene`,
+> `Globals` ctor and `MenuTouchWindow` ctor are size-exact. Remaining exported size differences:
+> `Layout::Layout` -280 B (50.4% store-order body), `LevelScript::process` -48 B (after the
+> `Status::field_90` semantic fix), `StarMap::draw` +4 B (increment-then-clamp form) and
+> `Level::createMission` +4 B. The detailed table below is the wave-69 snapshot and is retained
+> for address-order history; use the size-diff list above for the current queue.
 
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by
 walking the common `.dynsym` function symbols of both binaries in original-address order.
