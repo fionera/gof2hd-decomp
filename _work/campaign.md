@@ -3629,3 +3629,5 @@ mtw anchor for any size change before MenuTouchWindow.
 
 - **MeshReadData 76.3 -> 77.0%** (`901f38c2`, w1957): merge the animation bounds before the
   empty-children early-out and shrink the cold anchor to one store. Size stays 2632 B.
+- **LevelScript::process 51.3 -> 51.6%** (`51f3c37e`, w1952): move the mission-145 case ahead of
+  mission-135 in the switch so the TBH/case body order matches the original. Size stays 57256 B.
