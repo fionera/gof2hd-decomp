@@ -944,13 +944,20 @@ void StarMap::draw() {
         // Animated planned route.
         if (this->mode == 0 && !this->transitionIn && !this->transitionOut && this->systemPath != 0) {
             float pulse = (float) (101 - Globals::status->getPlayingTime() / 10 % 99) / 100.0f;
-            if (pulse > *(float *) &this->field_0xec) {
-                this->field_0xe8++;
-                if ((uint32_t) this->field_0xe8 >= this->systemPath->size())
-                    this->field_0xe8 = 0;
-            }
             int step = this->field_0xe8;
+            if (pulse > *(float *) &this->field_0xec) {
+                step++;
+                this->field_0xe8 = step;
+                step = (uint32_t) step < this->systemPath->size() ? step : 0;
+                this->field_0xe8 = step;
+            }
             *(float *) &this->field_0xec = pulse;
+            // Block-placement barrier: the original keeps the route colour
+            // selection out of line (after the header block), which fixes the
+            // literal-pool order.  This otherwise-unused field store makes the
+            // compiler take the same outlining decision.
+            int &routeBarrier = this->field_0x190;
+            routeBarrier = 0;
             if ((uint32_t) step == this->systemPath->size() - 1) {
                 uint8_t a = (uint8_t) (int) (pulse * 255.0f);
                 Globals::Canvas->SetColor(255, 255, 0, a);
