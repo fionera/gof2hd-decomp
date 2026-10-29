@@ -20,6 +20,10 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 
+// Platform-provided "0" pointer (NdkHooks.cpp). Referencing it keeps the zero-pad
+// reload inside the loop, matching the original's per-iteration .rodata "0" load.
+extern const char *ndkEntrance;
+
 
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
@@ -1759,8 +1763,8 @@ void Hud::drawChallengeModeScore(int unused) {
     String score(scoreValue);
     if (score.size() < 7) {
         int pad = 7 - score.size();
-        for (int i = pad; i != 0; i--)
-            score = String("0") + score;
+        for (int i = 0; i != pad; i++)
+            score = String(ndkEntrance) + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
@@ -1768,8 +1772,8 @@ void Hud::drawChallengeModeScore(int unused) {
     halfStep = step * 7 / 2;
     left = half - halfStep;
     int x = left;
-    for (unsigned int i = 1; i < (score.size() + 1); i++) {
-        int frame = score.SubString(i - 1, i).ValueOf();
+    for (unsigned int i = 0; i < score.size(); i++) {
+        int frame = score.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
         this->digitSprite->setPosition(x, y);
         this->digitSprite->draw(1.0f, 1.0f);
