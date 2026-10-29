@@ -3697,3 +3697,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Hud::drawChallengeModeScore 75.0 -> 76.8%, 944 B** (`97c3862e`, w2112): on the corrected
   literal/loop source, count the zero-pad loop down from `pad` and bound the digit loop at
   `size() + 1`.
+- **MenuTouchWindow::OnTouchEnd semantic fix** (w2115): store `field_0x1dc` before `selectedRow` in
+  the record cases so clang emits the original's `selectedRow`-first order. 82.6%, 8132 B, no
+  metric change. (Removing the `(int) sliders->size()` cast is also correct but shrinks the body to
+  8128 B and costs 28 byte-exact functions, so it is deferred.)
