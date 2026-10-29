@@ -3710,3 +3710,8 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Hud::drawChallengeModeScore 76.8 -> 81.5%, 944 B** (`5a449076`, w2208): pad the score from 0
   through the exported "0" pointer and index the digit loop from 0, recovering the original score
   while keeping the direct literal.
+- **Level::createCampaignMission 94.3 -> 96.7%, 29676 B** (`4f1aef3c`, w2311): remove the
+  `alignas(16)` frame anchor, reload `setHitpoints` through the enemies array, and keep only
+  `escortWp` volatile.
+- **MenuTouchWindow::draw 93.83 -> 93.98%, 13052 B** (`c3f7afab`, w2312): fix the DLC store
+  `drawBox`/`DrawString` operand order and the screenshot flag store order.

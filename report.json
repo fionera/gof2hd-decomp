@@ -193,19 +193,11 @@
   },
   {
    "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 93.8,
+   "pct": 94.0,
    "byte": false,
    "linked": false,
    "osize": 13052,
    "usize": 13052
-  },
-  {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 94.3,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 29676
   },
   {
    "name": "_ZN7StarMap4drawEv",
@@ -246,6 +238,14 @@
    "linked": false,
    "osize": 3440,
    "usize": 3440
+  },
+  {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 96.7,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 29676
   },
   {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
