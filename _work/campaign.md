@@ -3726,3 +3726,6 @@ mtw anchor for any size change before MenuTouchWindow.
   expressions and the iPad scroll width.
 - **Status::missionCompleted 86.3 -> 86.7%, 1432 B** (`9a670281`, w2308): fix the type-0 rank and
   reorder the mission case ranks for a closer TBH layout.
+- **MenuTouchWindow::OnTouchEnd 82.8 -> 84.9%, 8132 B** (`662b7059`, w2408): split the
+  `optionFloat` 20/24 store so the flag test precedes `getValue`, matching the original's
+  options-first order.
