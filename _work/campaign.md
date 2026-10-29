@@ -3564,3 +3564,11 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createCampaignMission 91.62 -> 91.63%** (`7832fde4`, w1886): case-157 two-counter loop.
 - **MenuTouchWindow ctor 84.85 -> 84.88%** (`e7a9a82f`, w1881): hoist the next-row local above
   `addButton(3)` so the store order matches the original.
+- **Globals ctor 80.1 -> 80.5%** (`749fe6de`, w1861): hoist `status` and sink
+  `imageFactory`/`instantActionType` to match the original late-cluster store order. 612 B exact.
+- **LevelScript::process 50.8 -> 51.0%** (`94bf705b` + `7a30242f`, w1872): the post-switch
+  "mission failed" tail walks `Globals::status->field_90` (an `Array<int>*`), not
+  `m_pLevel->field_90` (a `ParticleSystemManager*`) - the old cast read the wrong object. Mission
+  81's alien-station handoff is then bound to a local so clang does not tail-merge it with
+  mission 78's identical tail. The semantic fix shortens the body to 57184 B (-48), so the
+  function is no longer size-exact; the missing 48 B is real code still to reconstruct.
