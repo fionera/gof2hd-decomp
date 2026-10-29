@@ -3115,8 +3115,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
                 if (this->optBtnCC->OnTouchEnd(x, y)) {
-                    bool on = !options[16];
-                    options[16] = on;
+                    bool on = !optionFlag(16);
+                    optionFlag(16) = on;
                     this->optBtnCC->setAlwaysPressed(on);
                 }
                 if (this->optBtnD0->OnTouchEnd(x, y)) {
@@ -3131,8 +3131,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     break;
                 }
                 if (this->optBtnD4->OnTouchEnd(x, y)) {
-                    bool on = !options[13];
-                    options[13] = on;
+                    bool on = !optionFlag(13);
+                    optionFlag(13) = on;
                     this->optBtnD4->setAlwaysPressed(on);
                     (*this->sliders)[1]->setHalfTransparent(!options[13]);
                     Globals::sound->enableCategory(1, options[13]);
@@ -3182,9 +3182,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (Globals::iPadLargePossible && this->scrollExtraButton != 0 &&
                     this->scrollExtraButton->OnTouchEnd(x, y)) {
-                    options[64] = !options[64];
+                    optionFlag(64) = !optionFlag(64);
                     Globals::recordHandler->saveOptions();
-                    this->scrollExtraButton->setAlwaysPressed(options[64]);
+                    this->scrollExtraButton->setAlwaysPressed(optionFlag(64));
                     this->choiceWindow->set(*Globals::gameText->getText(122));
                     this->messageShowing = 1;
                 }
