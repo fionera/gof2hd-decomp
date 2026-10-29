@@ -3371,15 +3371,15 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         break;
                     case 1:
                         this->loadPreviewRecords();
-                        this->selectedRow = 0;
                         this->field_0x1dc = 0;
+                        this->selectedRow = 0;
                         this->createRecordButtons(false);
                         this->menuState = 1;
                         break;
                     case 2:
                         this->loadPreviewRecords();
-                        this->selectedRow = 0;
                         this->field_0x1dc = 0;
+                        this->selectedRow = 0;
                         this->createRecordButtons(true);
                         this->menuState = 2;
                         break;
