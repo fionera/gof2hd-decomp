@@ -250,14 +250,15 @@ PlayerStation::PlayerStation(Station *station)
         Vector extent = {0.0f, 0.0f, 0.0f};
         this->boundingVolumes = new BoundingVolumeList();
         ArraySetLength(count, *(BoundingVolumeList *) this->boundingVolumes);
-        for (int i = 0, cursor = 1; i < count; i++) {
+        for (int cursor = 1, i = 0; i < count; i++) {
             BoundingVolume *volume;
-            switch ((*collision)[cursor++]) {
+            float x, y, z;
+            switch (collision->data_[cursor++]) {
                 case 0: {
-                    float x = (float) -(*collision)[cursor];
-                    float z = (float) (*collision)[cursor + 1];
-                    float y = (float) (*collision)[cursor + 2];
-                    extent.x = (float) (*collision)[cursor + 3];
+                    x = (float) -collision->data_[cursor];
+                    z = (float) collision->data_[cursor + 1];
+                    y = (float) collision->data_[cursor + 2];
+                    extent.x = (float) collision->data_[cursor + 3];
                     cursor += 4;
                     if (alienOrbit) {
                         extent *= 0.4f;
@@ -271,12 +272,12 @@ PlayerStation::PlayerStation(Station *station)
                     break;
                 }
                 case 1: {
-                    float z = (float) (*collision)[cursor + 1];
-                    float y = (float) (*collision)[cursor + 2];
-                    float x = (float) -(*collision)[cursor];
-                    extent.x = (float) (*collision)[cursor + 3];
-                    extent.z = (float) (*collision)[cursor + 4];
-                    extent.y = (float) (*collision)[cursor + 5];
+                    z = (float) collision->data_[cursor + 1];
+                    y = (float) collision->data_[cursor + 2];
+                    x = (float) -collision->data_[cursor];
+                    extent.x = (float) collision->data_[cursor + 3];
+                    extent.z = (float) collision->data_[cursor + 4];
+                    extent.y = (float) collision->data_[cursor + 5];
                     cursor += 6;
                     if (alienOrbit) {
                         extent *= 0.9f;
