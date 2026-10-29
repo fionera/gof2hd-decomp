@@ -3585,3 +3585,7 @@ mtw anchor for any size change before MenuTouchWindow.
   and use `int x` so the local order matches the original. Size stays 2764 B.
 - **Hud::draw 87.54 -> 87.58%** (`0ce60acd`, w1902): express the shield-frame image selection as
   an if/else instead of a nested ternary. Size stays 9332 B.
+- **Layout::Layout 50.4 -> 50.5%** (`81d58d6b`, w1891): reorder the 0x114/0x128 and 0x180/0x1a0
+  store pairs and move 0x2c0 after 0x1d8. Still 6792 B.
+- **Radar::draw 70.8 -> 71.3%** (`cef752e0`, w1894): reuse the cached station id and mark the
+  off-screen landmark icon branch cold. Size stays 9908 B.
