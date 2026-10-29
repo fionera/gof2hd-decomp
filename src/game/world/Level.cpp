@@ -1830,27 +1830,6 @@ void Level::createMission() {
                 this->objectivesB = new Objective(18, convoyEnd, total, this);
                 return;
             }
-            case 4: {
-                if (Globals::rnd->nextInt(2) != 0) {
-                    this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
-                } else {
-                    int coords[3] = {(int) this->stationPosition.x, (int) this->stationPosition.y,
-                                     (int) this->stationPosition.z};
-                    this->playerRoute = new Route(coords, 3);
-                }
-                float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
-                int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(hunterCount, *this->enemies);
-                for (unsigned i = 0; i < this->enemies->size(); i++) {
-                    (*this->enemies)[i] = this->createShip(
-                            8, 0, Globals::globals->getRandomEnemyFighter(8),
-                            this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
-                    (*this->enemies)[i]->setToSleep();
-                }
-                this->objectivesA = new Objective(18, 0, hunterCount, this);
-                return;
-            }
             case 6: {
                 int coords[3];
                 coords[0] = (Globals::rnd->nextInt(80000) + 60000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1);
@@ -2049,11 +2028,19 @@ void Level::createMission() {
                 this->objectivesA = new Objective(28, mission->getProductionGoodAmount(), mission->getProductionGoodIndex(), this);
                 return;
             }
+            case 4: {
+                if (Globals::rnd->nextInt(2) != 0) {
+                    this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
+                    goto case4Tail;
+                }
+                goto case4Else;
+            }
             default:
                 return;
         }
     }
 
+    {
     Globals::rnd->reset();
     this->missionPtr = 0;
     this->createScene();
@@ -2598,8 +2585,34 @@ void Level::createMission() {
     }
     if (nameLeader)
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
+    }
+case4Else:
+    {
+    int coords[3] = {(int) this->stationPosition.x, (int) this->stationPosition.y,
+                     (int) this->stationPosition.z};
+    this->playerRoute = new Route(coords, 3);
+    }
+case4Tail:
+    {
+    float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
+    int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
+    this->enemies = new Array<KIPlayer *>();
+    ArraySetLength(hunterCount, *this->enemies);
+    for (unsigned i = 0; i < this->enemies->size(); i++) {
+        (*this->enemies)[i] = this->createShip(
+                8, 0, Globals::globals->getRandomEnemyFighter(8),
+                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
+        (*this->enemies)[i]->setToSleep();
+    }
+    this->objectivesA = new Objective(18, 0, hunterCount, this);
     void (*volatile anchorFn)() = levelTextAnchor;
     anchorFn();
+    volatile int pad;
+    pad = 1; pad = 2;
+    volatile char padChar;
+    padChar = 3;
+    }
+    return;
 }
 
 void Level::createAsteroids() {
