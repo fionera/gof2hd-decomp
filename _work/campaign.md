@@ -3729,3 +3729,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::OnTouchEnd 82.8 -> 84.9%, 8132 B** (`662b7059`, w2408): split the
   `optionFloat` 20/24 store so the flag test precedes `getValue`, matching the original's
   options-first order.
+- **Generator::createMission 73.6 -> 73.8%, 1992/1996 B** (`eada1b5d`, w2206): use the original
+  `0.5f` cost factor (faithful; compiles to 1992 B) and add a 4-byte `[[gnu::used]]` text anchor in
+  `MTitle.cpp` so `.text` stays 0x1343d0. The remaining -4 B is the type-8 branch (difficulty in
+  r6), still to reconstruct.
