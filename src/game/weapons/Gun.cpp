@@ -684,12 +684,12 @@ void Gun::calcCharacterCollision() {
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
-                    enemy->damage((int) ((float) this->damage * 3.0f * 0.25f), this->friendGun, itemIndex);
+                    enemy->damage((int) ((float) this->damage * 3.0f * 0.25f), this->friendGun, this->itemIndex);
                 } else {
                     enemy->damage(this->damage, this->friendGun, itemIndex);
                 }
             } else if (enemy->egoFlag) {
-                enemy->damage((int) ((float) this->damage * 0.2f), this->friendGun, itemIndex);
+                enemy->damage((int) ((float) this->damage * 0.2f), this->friendGun, this->itemIndex);
             } else {
                 enemy->damage(this->damage, this->friendGun, this->itemIndex);
             }
