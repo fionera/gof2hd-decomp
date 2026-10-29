@@ -187,8 +187,8 @@ void Layout::drawEmptyFooter(bool showBack) {
 Layout::Layout() {
     this->field_0x4 = Globals::iPadHD ? 15 * 1.40625f : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15));
     this->field_0x1c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
-    this->footerTextInset = Globals::iPadHD ? 22 * 1.40625f : (Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22));
     this->field_0xc_leftMargin = Globals::iPadHD ? 40 : (Globals::n9 ? 51 : (Globals::retinaDisplay ? 58 : 29));
+    this->footerTextInset = Globals::iPadHD ? 22 * 1.40625f : (Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22));
     this->field_0x10_rightMargin = Globals::iPadHD ? 52 : (Globals::n9 ? 58 : (Globals::retinaDisplay ? 74 : 37));
     this->headerTitleY = Globals::iPadHD ? 12 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 9));
     this->windowTopInset = Globals::iPadHD ? 30 * 1.40625f : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30));
