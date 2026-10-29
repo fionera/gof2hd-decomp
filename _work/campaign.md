@@ -3601,3 +3601,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **LevelScript::process 51.2 -> 51.3%** (`1df9c08a` + `5efcb6dc`, w1912/w1913): move the
   mission-125 route setup ahead of the waypoint check (state 0 before state 1) and match the
   programmed-station equals receiver. Size stays 57256 B.
+- **MeshReadData 75.8 -> 76.3%** (`8b44d8e2`, w1917): `unsigned int` colours loop, merged
+  `enhanced == 0 || ok == 0` epilogue, and an 8-byte cold-path layout anchor in the children
+  early-out so the body stays 2632 B.
