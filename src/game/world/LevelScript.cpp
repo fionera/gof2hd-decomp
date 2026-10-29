@@ -4807,7 +4807,7 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->player->damage(9999999);
                     }
                 }
-                Array<int> *stationList = reinterpret_cast<Array<int> *>(m_pLevel->field_90);
+                Array<int> *stationList = Globals::status->field_90;
                 for (unsigned int i = 0; i < stationList->count; ++i) {
                     if ((*stationList)[i] == Globals::status->getStation()->getIndex()) {
                         (*stationList)[i] = -1;
