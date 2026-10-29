@@ -257,13 +257,14 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     int armorY;
     int armorBarY;
     if (this->hasShieldBar) {
-        Globals::Canvas->SetColor(savedColor);
+        PaintCanvas *canvas = Globals::Canvas;
+        canvas->SetColor(savedColor);
         unsigned int shieldImage;
         if (ego->player->getShieldHP() >= 2 && this->shieldHitFlash)
             shieldImage = this->shieldFrameHitImage;
         else
             shieldImage = this->shieldFrameImage;
-        Globals::Canvas->DrawImage2D(shieldImage, this->field_0x43c, this->field_0x442);
+        canvas->DrawImage2D(shieldImage, this->field_0x43c, this->field_0x442);
         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, this->field_0x442 + dividerOffset);
         Globals::Canvas->DrawImage2D(this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
         int shieldW = (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446);
