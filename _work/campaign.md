@@ -3661,3 +3661,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `.rodata` literal `"0"` (the original loads `0x1ca483` via `ldr/add pc`, not a `Globals` pointer)
   and the original `i = 1; SubString(i-1, i)` score loop. Semantic fix; the old tuned form scored
   higher on fuzzy.
+- **MeshReadData 77.0 -> 77.1%, 2632 B** (`76963be8`, w2007): keep the signed-char packed-stream
+  shape and make the `children == 0` cold-path anchor a short store, dropping the trailing
+  pool-alignment nop. (The faithful `short*`/`ldrsh` form scores 71.3%; the allocator then keeps
+  `engine` in r8 and moves the shared epilogue.)
+- **MenuTouchWindow::draw 92.96 -> 93.00%, 13052 B** (`f4cfe7f1`, w2017): hoist the main-menu logo
+  `PaintCanvas*` local above the iPad branch so both arms use one load.
