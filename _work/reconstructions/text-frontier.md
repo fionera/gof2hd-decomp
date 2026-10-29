@@ -1,6 +1,6 @@
 # .text frontier map — exported functions in original address order
 
-> **Current frontier (2026-10-29, wave 74 complete):** `MeshReadData`, `Level::createMission`,
+> **Current frontier (2026-10-29, wave 77 harvest):** `MeshReadData`, `Level::createMission`,
 > `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2, `Level::createScene`,
 > `Globals` ctor, `MenuTouchWindow` ctor and `StarMap::draw` are size-exact. Remaining exported
 > size difference: `Layout::Layout` -280 B (50.5% store-order body; the size-exact 7072 B form is

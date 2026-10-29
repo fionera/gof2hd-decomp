@@ -3643,3 +3643,9 @@ mtw anchor for any size change before MenuTouchWindow.
 - **createCampaignMission 89.9 -> 91.6%, 29676 B** (`fc51e01b`, w1986): drop the volatile `cp`
   pad and add an 8-byte hidden anchor after `setPlayerEngineColor`, restoring the original size
   without moving any byte-exact function. `Level::createMission` stays size-exact 17172 B.
+- **LevelScript::process 50.7 -> 51.1%, size-exact 57232 B** (`bfba197f`, w1985): flatten the
+  mission-142 state flow to the original `bgt`-to-state-2 shape, cache `Ship*` across the cargo
+  chain (the all-fresh form compiles to 57244 B), and order the campaign cases
+  145/144/135/142/139. Size stays 57232 B.
+- **RocketGun::update 85.7 -> 85.8%** (`26d3e378`, w1964): pad the trail-timer launch branch to
+  steer block layout. Size stays 1908 B.
