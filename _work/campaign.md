@@ -3667,3 +3667,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `engine` in r8 and moves the shared epilogue.)
 - **MenuTouchWindow::draw 92.96 -> 93.00%, 13052 B** (`f4cfe7f1`, w2017): hoist the main-menu logo
   `PaintCanvas*` local above the iPad branch so both arms use one load.
+- **Layout::Layout 50.5 -> 50.7%, 6792 B** (`fb180275` + `65daa272`, w1950): retune the ctor store
+  order for the linked literal-pool schedule, then reorder the 0x2bc/0x1f0 stores. Still -280 B.
+- **Hud::draw 88.2 -> 88.3%, 9332 B** (`efc7d308`, w2012): evaluate `getFreeSpace()` before `amount`
+  in the mission-174 branch, matching the original's plain `add r1, r0`.
+- **MenuTouchWindow ctor 86.0 -> 86.1%, 9600 B** (`381927d3`, w2016): refactor the `sliders[2]`
+  y-expression into the original's grouped row sums (`D + 0x1c + rowHeight`, then `<<1`).

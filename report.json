@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 50.5,
+   "pct": 50.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 50.5,
+   "pct": 50.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -153,7 +153,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 86.0,
+   "pct": 86.1,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -161,7 +161,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 86.0,
+   "pct": 86.1,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -176,20 +176,20 @@
    "usize": 1432
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 88.2,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 88.2,
    "byte": false,
    "linked": false,
    "osize": 2252,
    "usize": 2252
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 88.3,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
   },
   {
    "name": "_ZN5Level21createCampaignMissionEv",
