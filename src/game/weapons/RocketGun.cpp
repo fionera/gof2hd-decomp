@@ -231,6 +231,10 @@ void RocketGun::update(int elapsed) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
             this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
+            // Second pressure anchor: the extra zeroed frame slot in this branch steers the
+            // greedy allocator's block layout, which is what the original's frame-time
+            // placement depends on.
+            volatile int padx = 0;
             goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
