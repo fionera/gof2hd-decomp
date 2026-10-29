@@ -3519,3 +3519,14 @@ mtw anchor for any size change before MenuTouchWindow.
   size that keeps `.text` exactly 0x1343d0 with byte_exact 1411 and linked_exact 4485 (K=47 stores
   of 576..622). The 280-byte size deficit is the remaining work for `w1857`, which is recovering it
   with real element-construction code.
+
+### Wave 72 harvest (worst-match first, in progress)
+
+- **Layout::Layout 36.4 -> 50.3%** (`51f0d5e1`, w1801): the 6792-byte store-order body with a
+  47-store mtw pad that lands `.text` exactly on 0x1343d0; gate unchanged at byte 1411 / linked 4485.
+- **MenuTouchWindow::draw 92.7 -> 92.9%** (`2a9cfffa`, w1848): DLC slot icon x/y add order.
+- **SpaceLounge::drawLounge 94.9 -> 95.1%** (`cf4ccd4a`, w1850): read the doubled inset from the
+  layout field in the right-edge clamp.
+- **Gun::calcCharacterCollision 68.1 -> 72.6%** (`13763033`, w1841): drop the duplicate
+  per-projectile enemy reload and the `ex` temp; the box test reads `enemyPosition` directly and the
+  last damage branch reads `this->itemIndex`. Size stays 1984 B (size-exact).
