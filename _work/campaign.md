@@ -3562,3 +3562,5 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Layout::Layout 50.3 -> 50.4%** (`983067e3`, w1871): order `leftMargin` before `footerTextInset`
   to match the iOS source order. Still 6792 B.
 - **Level::createCampaignMission 91.62 -> 91.63%** (`7832fde4`, w1886): case-157 two-counter loop.
+- **MenuTouchWindow ctor 84.85 -> 84.88%** (`e7a9a82f`, w1881): hoist the next-row local above
+  `addButton(3)` so the store order matches the original.
