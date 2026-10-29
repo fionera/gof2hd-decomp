@@ -3589,3 +3589,7 @@ mtw anchor for any size change before MenuTouchWindow.
   store pairs and move 0x2c0 after 0x1d8. Still 6792 B.
 - **Radar::draw 70.8 -> 71.3%** (`cef752e0`, w1894): reuse the cached station id and mark the
   off-screen landmark icon branch cold. Size stays 9908 B.
+- **LevelScript::process 51.0 -> 51.2%** (`6fcba74c`, w1892): match the mission-78 camera tail
+  (direct `m_tempVec` component adds), the wingman loop (bind `wingman` once) and the mission-145
+  shoot/timer order. The body grows to 57256 B (+24 from the original 57232), closer than the
+  previous -48.
