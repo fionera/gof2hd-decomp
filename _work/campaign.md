@@ -3617,3 +3617,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `Globals::rnd` and the rotation from the cached rnd. Size stays 2252 B.
 - **MenuTouchWindow::draw 92.92 -> 92.96%** (`58324c36`, w1949): order the DLC slot draw operands
   as in the binary. Size stays 13052 B.
+- **MenuTouchWindow ctor 84.9 -> 86.0%** (`0f46cdb5`, w1944): hoist the language list, read the row
+  y from `Globals::h`, use direct option bytes, and recover the 52-byte deficit so the body is
+  size-exact 9600 B again.
+- **MenuTouchWindow::OnTouchEnd 82.5 -> 82.6%** (`331584c2`, w1943): emit the Google+ confirm flag
+  stores in the original order and read the DLC purchase flags as raw option bytes.
