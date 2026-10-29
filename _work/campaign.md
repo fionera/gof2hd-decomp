@@ -3530,3 +3530,13 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Gun::calcCharacterCollision 68.1 -> 72.6%** (`13763033`, w1841): drop the duplicate
   per-projectile enemy reload and the `ex` temp; the box test reads `enemyPosition` directly and the
   last damage branch reads `this->itemIndex`. Size stays 1984 B (size-exact).
+- **Level::createScene 87.2 -> 88.1%** (`f16bbf6b`, w1831): take the pick and ship-rotation rolls
+  through `Globals::rnd` directly; size stays 2252 B.
+- **Hud::draw 87.3 -> 87.5%** (`4090a040`, w1845): move the `pad_` declaration down to the
+  gamma-ray block so the early stack-slot packing matches the original's spill layout.
+- **PlayerStation C1/C2 95.6 -> 96.3%, size-exact 3440 B** (`74bb6421`, w1849): read collision
+  data through `Array::data_` and hoist case locals so the switch shares one landing pad. This
+  removes the +4 B landing-pad excess; `Level::createMission` is now the only remaining exported
+  size difference (+4).
+- **PlayerEgo::update 96.9 -> 98.3%** (`6e779b7e`, w1852): copy `moveTarget` after the distance
+  check so `moveToPosition` keeps it in callee-saved registers, and hint the turret fallback cold.
