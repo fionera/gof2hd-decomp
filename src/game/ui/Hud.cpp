@@ -1759,7 +1759,7 @@ void Hud::drawChallengeModeScore(int unused) {
     String score(scoreValue);
     if (score.size() < 7) {
         int pad = 7 - score.size();
-        for (int i = 0; i != pad; i++)
+        for (int i = pad; i != 0; i--)
             score = String("0") + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
@@ -1768,7 +1768,7 @@ void Hud::drawChallengeModeScore(int unused) {
     halfStep = step * 7 / 2;
     left = half - halfStep;
     int x = left;
-    for (unsigned int i = 1; i - 1 < score.size(); i++) {
+    for (unsigned int i = 1; i < (score.size() + 1); i++) {
         int frame = score.SubString(i - 1, i).ValueOf();
         this->digitSprite->setFrame(frame);
         this->digitSprite->setPosition(x, y);
