@@ -4097,8 +4097,7 @@ void Level::createCampaignMission() {
             dir.y = 0.0f;
             dir = VectorNormalize(dir);
             Vector start = this->enemyRoute->getWaypoint(0)->getPosition();
-            for (int j = 0; friendEnd + j < enemyEnd; j++) {
-                int i = friendEnd + j;
+            for (int i = friendEnd, j = 0; i < enemyEnd; i++, j++) {
                 (*this->enemies)[i] = this->createShip(10, 0, 44, nullptr, true, false);
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setVisible(false);
