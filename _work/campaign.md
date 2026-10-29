@@ -3557,3 +3557,8 @@ mtw anchor for any size change before MenuTouchWindow.
 - **StarMap::draw 92.5 -> 92.9%** (`2b1b1deb`, w1887): restore the increment-then-clamp `if`
   shape for the planned-route step (two independent workers converged on this form). Size becomes
   2648 B (+4), so StarMap::draw is no longer size-exact.
+- **Level::createShip 68.3 -> 69.0%** (`7a2d6de7`, w1807): guard `setEmpData` with try/catch on
+  the parent placement-new shape. Size stays 2764 B.
+- **Layout::Layout 50.3 -> 50.4%** (`983067e3`, w1871): order `leftMargin` before `footerTextInset`
+  to match the iOS source order. Still 6792 B.
+- **Level::createCampaignMission 91.62 -> 91.63%** (`7832fde4`, w1886): case-157 two-counter loop.
