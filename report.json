@@ -72,20 +72,28 @@
    "usize": 1984
   },
   {
+   "name": "_ZN3Hud22drawChallengeModeScoreEi",
+   "pct": 75.0,
+   "byte": false,
+   "linked": false,
+   "osize": 944,
+   "usize": 944
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 75.9,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
    "pct": 77.0,
    "byte": false,
    "linked": false,
    "osize": 2632,
    "usize": 2632
-  },
-  {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -110,14 +118,6 @@
    "linked": false,
    "osize": 612,
    "usize": 612
-  },
-  {
-   "name": "_ZN3Hud22drawChallengeModeScoreEi",
-   "pct": 81.5,
-   "byte": false,
-   "linked": false,
-   "osize": 944,
-   "usize": 944
   },
   {
    "name": "_ZN5Level13createMissionEv",

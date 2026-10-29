@@ -3649,3 +3649,15 @@ mtw anchor for any size change before MenuTouchWindow.
   145/144/135/142/139. Size stays 57232 B.
 - **RocketGun::update 85.7 -> 85.8%** (`26d3e378`, w1964): pad the trail-timer launch branch to
   steer block layout. Size stays 1908 B.
+
+### Wave 78 (worst-match wave 7, in progress)
+
+- **HangarWindow::render 77.0 -> 75.9%, 9700 B** (`0d18b530`, w2006): fix the inverted ship-price
+  branch (original takes the full price when `tab != 1 && i < 2`, diff otherwise) and reorder the
+  item chain to `isPendingProduct -> isMoveToCartoButton(buttons[6]) -> isSellButton(buttons[5])`.
+  Semantic fix; the fuzzy drop is register allocation, and the 28-byte best-deal anchor is retained
+  because removing it costs 26 byte-exact functions.
+- **Hud::drawChallengeModeScore 81.5 -> 75.0%, 944 B** (`ce9a4f7c`, w2009): use the direct
+  `.rodata` literal `"0"` (the original loads `0x1ca483` via `ldr/add pc`, not a `Globals` pointer)
+  and the original `i = 1; SubString(i-1, i)` score loop. Semantic fix; the old tuned form scored
+  higher on fuzzy.
