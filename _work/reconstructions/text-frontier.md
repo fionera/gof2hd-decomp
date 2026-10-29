@@ -1,11 +1,12 @@
 # .text frontier map — exported functions in original address order
 
-> **Current frontier (2026-10-29, after wave 71 tail harvests):** `MeshReadData`,
-> `LevelScript::process`, `Level::createMission`, `Layout::Layout` C1/C2, `Radar::draw` and
-> `Gun::calcCharacterCollision` are now size-exact. The only remaining exported size differences
-> are `Level::createMission` (+4 B) and `PlayerStation` C1/C2 (+4 B). `Layout::Layout` is 7072 B
-> exact but still the worst fuzzy match in the tree (36.4%); wave 72 targets the worst fuzzy
-> functions first. The detailed table below is the wave-69 snapshot and is retained for
+> **Current frontier (2026-10-29, after the wave 72 Layout harvest):** `MeshReadData`,
+> `LevelScript::process`, `Level::createMission`, `Radar::draw` and `Gun::calcCharacterCollision`
+> are size-exact. `Layout::Layout` C1/C2 were landed as the 50.3%-match 6792-byte body (280 B short
+> of the original 7072) because the size-exact 7072-byte form only matched 36.4%; the mtw anchor was
+> retuned so `.text` is still 0x1343d0 and the gate is unchanged (byte 1411 / linked 4485).
+> Remaining exported size differences: `Layout::Layout` -280 B, `Level::createMission` +4 B and
+> `PlayerStation` C1/C2 +4 B. The detailed table below is the wave-69 snapshot and is retained for
 > address-order history; use the size-diff list above for the current queue.
 
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by

@@ -3513,3 +3513,9 @@ SpaceLounge::drawLounge, Radar::drawCurrentLock, PlayerEgo::update, MenuTouchWin
 SpaceLounge::startChat, StarMap::drawOnScreenInfo, ModStation ctor, Layout::Layout. Workers are
 gate-bound to byte_exact >= 1411, linked_exact >= 4485 and `.text 0x1343d0`; they must retune the
 mtw anchor for any size change before MenuTouchWindow.
+
+- **Layout::Layout 36.4 -> 50.3%** (`d3aadfb1`): land the 6792-byte store-order body from wave-71
+  worker `w1801` (`fc93d554`) instead of the size-exact 7072-byte form. A pad scan found the anchor
+  size that keeps `.text` exactly 0x1343d0 with byte_exact 1411 and linked_exact 4485 (K=47 stores
+  of 576..622). The 280-byte size deficit is the remaining work for `w1857`, which is recovering it
+  with real element-construction code.
