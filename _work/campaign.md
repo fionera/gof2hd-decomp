@@ -3540,3 +3540,8 @@ mtw anchor for any size change before MenuTouchWindow.
   size difference (+4).
 - **PlayerEgo::update 96.9 -> 98.3%** (`6e779b7e`, w1852): copy `moveTarget` after the distance
   check so `moveToPosition` keeps it in callee-saved registers, and hint the turret fallback cold.
+- **MenuTouchWindow::OnTouchEnd 81.2 -> 81.5%** (`95680fac`, w1825): use the existing
+  `optionFlag()` bool accessor at the iPad toggle sites instead of indexing `Globals::options`.
+- **Level::createMission 80.5 -> 80.6%** (`b4c6b95b`, w1844): load `hostileCount` into a temp
+  before `nextInt` so the black-market/pirate-loot doubling keeps it in a callee-saved register;
+  the case-4 route branch is inverted to match the original block order. Still 17176 B (+4).
