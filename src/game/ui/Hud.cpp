@@ -30,9 +30,6 @@
 
 static unsigned int g_Hud_heImportantMask = 0;
 
-// Reused as the zero-pad string; the original reloads the pointer inside the pad loop.
-extern const char *ndkEntrance;
-
 void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
                            unsigned int x, unsigned int y) {
     (void) t0;
@@ -1763,7 +1760,7 @@ void Hud::drawChallengeModeScore(int unused) {
     if (score.size() < 7) {
         int pad = 7 - score.size();
         for (int i = 0; i != pad; i++)
-            score = String(ndkEntrance) + score;
+            score = String("0") + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
@@ -1771,8 +1768,8 @@ void Hud::drawChallengeModeScore(int unused) {
     halfStep = step * 7 / 2;
     left = half - halfStep;
     int x = left;
-    for (unsigned int i = 0; i < score.size(); i++) {
-        int frame = score.SubString(i, i + 1).ValueOf();
+    for (unsigned int i = 1; i - 1 < score.size(); i++) {
+        int frame = score.SubString(i - 1, i).ValueOf();
         this->digitSprite->setFrame(frame);
         this->digitSprite->setPosition(x, y);
         this->digitSprite->draw(1.0f, 1.0f);
