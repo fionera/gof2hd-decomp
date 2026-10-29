@@ -704,7 +704,7 @@ void HangarWindow::render() {
                                 hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
                                 y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
-                        } else if (tab != 1 && i < 2) {
+                        } else if (tab == 1 || i > 1) {
                             Globals::Canvas->DrawString(
                                 hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
@@ -791,15 +791,15 @@ void HangarWindow::render() {
                             (*Globals::items)[item->pendingProduct->blueprintIndex]->getType(),
                             Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
                         buttonOffset = 0;
-                    } else if (item->isMoveToCargoButton()) {
-                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
-                        (*this->buttons)[6]->setVisible(true);
-                        (*this->buttons)[6]->draw();
-                        continue;
                     } else if (item->isSellButton()) {
                         (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
                         (*this->buttons)[5]->setVisible(true);
                         (*this->buttons)[5]->draw();
+                        continue;
+                    } else if (item->isMoveToCargoButton()) {
+                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[6]->setVisible(true);
+                        (*this->buttons)[6]->draw();
                         continue;
                     } else {
                         Globals::layout->drawBox(0, Globals::layout->buttonInsetX + this->hintOffsetX,
