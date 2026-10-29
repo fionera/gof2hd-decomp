@@ -3607,3 +3607,13 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createMission 80.6 -> 81.8%** (`dba9ca48`, w1920): move case 4 to the end of the
   switch and outline its else/hunters block with `goto case4Tail`/`goto case4Else`, matching the
   original's end-of-normal-flow placement. Size stays 17176 B (+4).
+
+### Wave 76 (worst-match wave 5, in progress)
+
+- **StarMap::draw 91.0 -> 92.5%** (`ab3aed1c`, w1947): reload `Globals::Canvas` for the
+  `GetTextWidth` call before taking the canvas local, matching the original's per-arm load.
+  Size stays 2644 B (size-exact).
+- **Level::createScene 88.1 -> 88.2%** (`994f56d2`, w1946): draw the initial spot from
+  `Globals::rnd` and the rotation from the cached rnd. Size stays 2252 B.
+- **MenuTouchWindow::draw 92.92 -> 92.96%** (`58324c36`, w1949): order the DLC slot draw operands
+  as in the binary. Size stays 13052 B.
