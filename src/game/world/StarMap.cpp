@@ -1034,8 +1034,8 @@ void StarMap::draw() {
         int left = layout->windowX;
         int width = layout->windowWidth;
         unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+        int textWidth = Globals::Canvas->GetTextWidth(font, line);
         PaintCanvas *canvas = Globals::Canvas;
-        int textWidth = canvas->GetTextWidth(font, line);
         canvas->DrawString(font, line,
                            left + width / 2 - textWidth / 2,
                            Globals::layout->windowY + Globals::layout->windowHeight -
