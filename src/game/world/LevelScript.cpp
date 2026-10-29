@@ -815,12 +815,12 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->translate(Vector{0.0f, 0.0f, -50000.0f}); // -50000 @0x13bdcc
                     (*enemies)[i]->awake();                                  // vtable+0xc
                 }
-                KIPlayer *tailShip = (*enemies)[enemies->count - 10];
-                m_pCamera->setTarget(tailShip->geometry);
-                Vector *camPos = &m_tempVec; // LevelScript tempVec @0x28
-                *camPos = tailShip->geometry->getPosition();
-                *camPos += Vector{2000.0f, 500.0f, -20000.0f}; // @0x13bdd0/d4/d8
-                m_pCamera->setPosition(*camPos);
+                m_pCamera->setTarget((*enemies)[enemies->count - 10]->geometry);
+                m_tempVec = (*enemies)[enemies->count - 10]->geometry->getPosition();
+                m_tempVec.x += 2000.0f;   // @0x13bdd0
+                m_tempVec.y += 500.0f;    // @0x13bdd4
+                m_tempVec.z += -20000.0f; // @0x13bdd8
+                m_pCamera->setPosition(m_tempVec);
                 m_pLevel->lodManager->forceUpdate(30, false);
                 m_nState = 12;
                 m_nScriptTimerA = 0;
@@ -1075,8 +1075,9 @@ bool LevelScript::process(int delta) {
             if (Globals::status->getWingmen() != 0) {
                 Array<KIPlayer *> *wingmen = m_pLevel->getEnemies();
                 for (unsigned int i = 0; i < wingmen->count; ++i) {
-                    if ((*wingmen)[i]->isWingMan()) {
-                        ((PlayerFighter *) (*wingmen)[i])->field_0x12d = 0;
+                    KIPlayer *wingman = (*wingmen)[i];
+                    if (wingman->isWingMan()) {
+                        ((PlayerFighter *) wingman)->field_0x12d = 0;
                     }
                 }
             }
@@ -3026,8 +3027,8 @@ bool LevelScript::process(int delta) {
                     KIPlayer *fighter = (*enemies)[fighterIndex];
                     ((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->moveForward((float) (-10 * delta));
                     fighter->geometry->moveForward((float) (2 * delta));
-                    m_nScriptTimerA += delta;
                     fighter->player->shoot(0, (long long) delta, false);
+                    m_nScriptTimerA += delta;
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerB < 9000 && m_nScriptTimerB + delta >= 9000) {
                         fighter->setPosition(*m_pCamera->getPosition() + Vector{4000.0f, -600.0f, -2000.0f});
