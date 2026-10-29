@@ -3148,9 +3148,10 @@ void Level::createCampaignMission() {
             break;
         case 50:
             {
-                Vector position;
-                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
-                this->spawnPosition = position;
+                if ((*this->landmarks)[1] != nullptr)
+                    this->spawnPosition = (*this->landmarks)[1]->getPosition();
+                else
+                    this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             }
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(4, *this->enemies);
@@ -3162,9 +3163,10 @@ void Level::createCampaignMission() {
             break;
         case 51: {
             {
-                Vector position;
-                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
-                this->spawnPosition = position;
+                if ((*this->landmarks)[1] != nullptr)
+                    this->spawnPosition = (*this->landmarks)[1]->getPosition();
+                else
+                    this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             }
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
@@ -3184,9 +3186,10 @@ void Level::createCampaignMission() {
         }
         case 52: {
             {
-                Vector position;
-                position = (*this->landmarks)[1] != nullptr ? (*this->landmarks)[1]->getPosition() : Vector{0.0f, 0.0f, 40000.0f};
-                this->spawnPosition = position;
+                if ((*this->landmarks)[1] != nullptr)
+                    this->spawnPosition = (*this->landmarks)[1]->getPosition();
+                else
+                    this->spawnPosition = Vector{0.0f, 0.0f, 40000.0f};
             }
             int coords[3] = {(int) this->spawnPosition.x, (int) this->spawnPosition.y, (int) this->spawnPosition.z};
             this->enemyRoute = new Route(coords, 3);
@@ -4118,7 +4121,8 @@ void Level::createCampaignMission() {
             dir.y = 0.0f;
             dir = VectorNormalize(dir);
             Vector start = this->enemyRoute->getWaypoint(0)->getPosition();
-            for (int i = friendEnd, j = 0; i < enemyEnd; i++, j++) {
+            for (int i = friendEnd; i < enemyEnd; i++) {
+                int j = i - friendEnd;
                 (*this->enemies)[i] = this->createShip(10, 0, 44, nullptr, true, false);
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setVisible(false);
