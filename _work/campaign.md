@@ -3486,3 +3486,7 @@ The wave-71 Layout worker `w1802` also has an unharvested 6792 B / 50.3% variant
 fuzzier but not size-exact, so the size-exact 7072 B form is the committed one.
 - **LevelScript::process 49.4 -> 50.5%** (`83bdbb6f`): restore the original mission-106 body
   order and fold mission-145's redundant `>= 2` guard. Size stays 57232 B, gate 1386/4485.
+- **LevelScript::process 50.5 -> 50.8%** (`eacd6b31`): replace the case-145 split
+  `if/else + nested switch` with the original single state switch (case 0 falls through into
+  case 1, case 6 tail keeps the 57232 B size). This supersedes the 50.5 mission-106 reorder,
+  which combined with the switch form grew the body to 57236 B and cost 7 byte-exact functions.
