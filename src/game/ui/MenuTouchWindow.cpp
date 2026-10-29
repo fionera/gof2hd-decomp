@@ -331,8 +331,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             row = 2;
         }
         this->addButton(1, *Globals::gameText->getText(29), row, this->buttons, mainButtonOffset);
-        this->addButton(3, *Globals::gameText->getText(31), row + 1, this->buttons, mainButtonOffset);
         int next = row + 2;
+        this->addButton(3, *Globals::gameText->getText(31), row + 1, this->buttons, mainButtonOffset);
         if (Globals::iPad) {
             this->addButton(25, *Globals::gameText->getText(0), row + 2, this->buttons, mainButtonOffset);
             next = row + 3;
