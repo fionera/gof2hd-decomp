@@ -622,8 +622,7 @@ bool LevelScript::process(int delta) {
                 Globals::layout->enableFillScreen(true);
                 Globals::status->nextCampaignMission(true);
                 Globals::switch_to_target_setting = 0;
-                Station *alienStation = (Station *) (intptr_t) Globals::galaxy->getStation(100);
-                Globals::status->departStation(alienStation);
+                Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
                 Globals::status->getStation()->setAttackedFriends(false);
                 Level::comingFromAlienWorld = 0;
                 Globals::appManager->SetCurrentApplicationModule(5);
@@ -848,10 +847,9 @@ bool LevelScript::process(int delta) {
                     m_tempVec.y += 500.0f;
                     (*m_pLevel->getEnemies())[0]->setPosition(m_tempVec);
                     (*m_pLevel->getEnemies())[0]->geometry->moveForward(-10000.0f);
-                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry6->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
-                    ((AbyssEngine::Transform *) canvas->TransformGetTransform(m_pGeometry6->transform))
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry6->transform))
                             ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                     m_pGeometry6->setDirection(-(*m_pLevel->getEnemies())[0]->geometry->getDirection(),
                                                Vector{0.0f, 1.0f, 0.0f});
@@ -4466,9 +4464,8 @@ bool LevelScript::process(int delta) {
                     }
                     {
                         AEGeometry *geo = (*enemies)[2]->geometry;
-                        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                         Matrix local = *reinterpret_cast<Matrix *>(
-                                canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+                                Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
                         Vector *acc = &m_tempVec;
                         Vector *tmp = &m_dirVec;
                         *acc = AbyssEngine::AEMath::MatrixGetPosition(local);
