@@ -622,7 +622,8 @@ bool LevelScript::process(int delta) {
                 Globals::layout->enableFillScreen(true);
                 Globals::status->nextCampaignMission(true);
                 Globals::switch_to_target_setting = 0;
-                Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
+                Station *alienStation = (Station *) (intptr_t) Globals::galaxy->getStation(100);
+                Globals::status->departStation(alienStation);
                 Globals::status->getStation()->setAttackedFriends(false);
                 Level::comingFromAlienWorld = 0;
                 Globals::appManager->SetCurrentApplicationModule(5);
