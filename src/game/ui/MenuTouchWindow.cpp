@@ -732,8 +732,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                             Globals::layout->field_0x2c_rowHeight * 3 + this->field_0x15c * 2) -
                    (Globals::iPadHD ? 35.15625f : (Globals::iPadLarge ? 50.0f : 25.0f))));
         (*this->sliders)[1]->setPosition(
-            Globals::layout->buttonInsetX + this->listTopY + this->metricC,
-            (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
+            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+            (int) ((float) ((Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                              this->listEntryWidth + Globals::layout->field_0x2c_rowHeight * 4) +
                             Globals::layout->field_0x2fc +
                             (this->field_0x15c + Globals::layout->field_0x1c) * 2) +
@@ -767,8 +767,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
-                                 Globals::layout->field_0x2c_rowHeight * 7) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
+                                 Globals::layout->field_0x2c_rowHeight * 6 + this->sliderRowHeight) +
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight) * 2) +
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
@@ -786,7 +786,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->scrollWindowA = new ScrollTouchWindow(
             Globals::layout->buttonInsetX + Globals::w / 4,
             Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
-            Globals::w / 2 - Globals::layout->buttonInsetX * 2,
+            (Globals::w >> 1) - Globals::layout->buttonInsetX * 2,
             Globals::h - (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) -
                 Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
             false);
