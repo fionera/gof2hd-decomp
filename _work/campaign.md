@@ -3549,3 +3549,11 @@ mtw anchor for any size change before MenuTouchWindow.
   extents as `size + size` instead of `2 * size`.
 - **MenuTouchWindow ctor 84.5 -> 84.9%** (`1edf44ba`, w1862): fix the `iPadLargePossible`
   `sliders[4]` y expression (the original uses the `h`-derived base).
+
+### Wave 73 (worst-match wave 2, in progress)
+
+- **MenuTouchWindow::OnTouchEnd 81.5 -> 82.5%** (`b6a5879c`, w1880): use a ternary option
+  offset for the iPad slider store instead of a duplicated branch.
+- **StarMap::draw 92.5 -> 92.9%** (`2b1b1deb`, w1887): restore the increment-then-clamp `if`
+  shape for the planned-route step (two independent workers converged on this form). Size becomes
+  2648 B (+4), so StarMap::draw is no longer size-exact.
