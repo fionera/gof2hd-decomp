@@ -696,7 +696,7 @@ namespace AbyssEngine {
         if (children == 0) {
             // Cold-path layout anchor: one volatile store keeps this early-out at the
             // original size so the following .text offsets do not move.
-            volatile int layoutAnchor;
+            volatile short layoutAnchor;
             layoutAnchor = 1;
             return 1;
         }
