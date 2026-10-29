@@ -2710,8 +2710,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (this->choiceWindow->OnTouchEnd(x, y) != 0)
                     return 0;
                 ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                this->dlcMessageShowing = 0;
                 this->messageShowing = 0;
+                this->dlcMessageShowing = 0;
                 return 0;
             }
             if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
@@ -3331,8 +3331,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (this->choiceWindow->OnTouchEnd(x, y) != 0)
                         return 0;
                     ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                    this->dlcMessageShowing = 0;
                     this->messageShowing = 0;
+                    this->dlcMessageShowing = 0;
                     return 0;
                 }
                 if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
@@ -3343,7 +3343,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->loadFailedDialogShowing) {
                     this->loadFailedDialogShowing = 0;
-                    goto clearMessage;
+                    this->messageShowing = 0;
+                    return 0;
                 }
                 if (this->genericConfirmA && this->choiceWindow->OnTouchEnd(x, y) == 0) {
                     this->genericConfirmA = 0;
