@@ -649,7 +649,7 @@ Globals::Globals() {
     Globals::layout = 0;
     Globals::appManager = 0;
     Globals::generator = 0;
-    Globals::imageFactory = 0;
+    Globals::status = 0;
 
     this->field_0x0 = 0;
 
@@ -673,18 +673,17 @@ Globals::Globals() {
     settings->intAt50 = 0;
     settings->flagAt39 = 0;
     settings->intAt35 = 0;
+    settings->intAt31 = 0;
     settings->intAt3b = 0;
     settings->flagAt4e = 0;
     settings->shortAt4c = 0;
     settings->intAt48 = 0;
-    settings->intAt31 = 0;
     secondary->slot1 = 0;
     secondary->flagAt13 = 0;
     secondary->slot0 = 0;
     settings->flagAt3f = 0;
 
     Globals::lastSpaceMusicPlayed = -1;
-    Globals::instantActionType = -1;
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
 
@@ -699,11 +698,12 @@ Globals::Globals() {
     settings->resHeight = v58;
 
     Globals::initMemoryWarning = 0;
+    Globals::imageFactory = 0;
     Globals::achievements = 0;
     Globals::galaxy = 0;
     Globals::instantActionScore = 0;
     Globals::lastStationMusicPlayed = -1;
-    Globals::status = 0;
+    Globals::instantActionType = -1;
     Globals::instantActionPlayerName = 0;
     Globals::items = 0;
     Globals::ships = 0;
