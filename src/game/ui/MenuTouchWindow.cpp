@@ -1376,7 +1376,7 @@ void MenuTouchWindow::draw() {
                 }
             }
             layout = Globals::layout;
-            layout->drawBox(0, this->slotListWidth + layout->buttonInsetX + this->slotBorderWidth,
+            layout->drawBox(0, layout->buttonInsetX + this->slotListWidth + this->slotBorderWidth,
                             layout->field_0x20_top + layout->field_0xc_leftMargin,
                             this->slotTextWidth - layout->field_0x2c_rowHeight - this->slotMarkerWidth,
                             layout->field_0x1c, String(*Globals::gameText->getText(this->field_0x1e0 + 77)));
@@ -1385,10 +1385,10 @@ void MenuTouchWindow::draw() {
                                          layout->field_0xc_leftMargin + layout->field_0x20_top, 17, 18);
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                         *Globals::gameText->getText(this->field_0x1e0 + 82),
-                                        Globals::layout->field_0x2c_rowHeight + this->slotListWidth +
-                                            Globals::layout->buttonInsetX + this->slotBorderWidth,
-                                        Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x20_top +
-                                            Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c,
+                                        Globals::layout->buttonInsetX + this->slotListWidth +
+                                            this->slotBorderWidth + Globals::layout->field_0x2c_rowHeight,
+                                        Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight +
+                                            Globals::layout->field_0x20_top + Globals::layout->field_0x1c,
                                         false);
             Globals::Canvas->SetColor(0x7aa35bffu);
             if (appData->prices != 0 && appData->prices->size() != 0) {
@@ -2040,8 +2040,8 @@ void MenuTouchWindow::draw() {
                     !((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotPending &&
                     !((MtwAppData *) Globals::appManager->GetApplicationData())->storeInitFlag) {
                     ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->field_0xff = 1;
-                    this->field_0x188 = 1;
                     this->field_0x1c4 = 1;
+                    this->field_0x188 = 1;
                 }
             } else {
                 if (!((MtwAppData *) Globals::appManager->GetApplicationData())->screenshotPending &&
