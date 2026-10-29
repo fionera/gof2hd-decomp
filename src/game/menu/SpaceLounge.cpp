@@ -1619,7 +1619,7 @@ void SpaceLounge::drawLounge() {
         if (x - pad < layout->buttonInsetX) {
             x = layout->buttonInsetX + pad;
         } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
-            x = Globals::w - layout->buttonInsetX - (width + pad + pad);
+            x = Globals::w - layout->buttonInsetX - (width + Globals::layout->field_0x94 * 2);
         }
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
