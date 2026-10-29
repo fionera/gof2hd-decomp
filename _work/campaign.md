@@ -3598,3 +3598,6 @@ mtw anchor for any size change before MenuTouchWindow.
 
 - **Gun::calcCharacterCollision 72.6 -> 74.0%** (`fee1e126`, w1916): read `this->itemIndex` in the
   docked and egoFlag damage branches instead of the hoisted local. Size stays 1984 B.
+- **LevelScript::process 51.2 -> 51.3%** (`1df9c08a` + `5efcb6dc`, w1912/w1913): move the
+  mission-125 route setup ahead of the waypoint check (state 0 before state 1) and match the
+  programmed-station equals receiver. Size stays 57256 B.
