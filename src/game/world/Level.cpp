@@ -1831,12 +1831,12 @@ void Level::createMission() {
                 return;
             }
             case 4: {
-                if (Globals::rnd->nextInt(2) == 0) {
+                if (Globals::rnd->nextInt(2) != 0) {
+                    this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
+                } else {
                     int coords[3] = {(int) this->stationPosition.x, (int) this->stationPosition.y,
                                      (int) this->stationPosition.z};
                     this->playerRoute = new Route(coords, 3);
-                } else {
-                    this->playerRoute = this->createRoute(Globals::rnd->nextInt(2) + 2);
                 }
                 float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
                 int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
@@ -2207,8 +2207,10 @@ void Level::createMission() {
         pirates = 0;
         this->friendCount = 0;
         this->hostileCount = Globals::rnd->nextInt(4) + 6;
-        if (Globals::status->hardCoreMode())
-            this->hostileCount = Globals::rnd->nextInt(3) + this->hostileCount * 2;
+        if (Globals::status->hardCoreMode()) {
+            int hc = this->hostileCount;
+            this->hostileCount = Globals::rnd->nextInt(3) + hc * 2;
+        }
         this->field_168 = 0;
         this->field_164 = 0;
         raid = true;
@@ -2218,8 +2220,10 @@ void Level::createMission() {
         pirates = 0;
         this->friendCount = 0;
         this->hostileCount = Globals::rnd->nextInt(4) + 10;
-        if (Globals::status->hardCoreMode())
-            this->hostileCount = Globals::rnd->nextInt(3) + this->hostileCount * 2;
+        if (Globals::status->hardCoreMode()) {
+            int hc = this->hostileCount;
+            this->hostileCount = Globals::rnd->nextInt(3) + hc * 2;
+        }
         this->field_168 = 0;
         this->field_164 = 0;
         raid = true;
