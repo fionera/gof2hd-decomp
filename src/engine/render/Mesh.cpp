@@ -690,17 +690,15 @@ namespace AbyssEngine {
         short children;
         if (AEFile::Read(2, &children, handle) == 0)
             return -1;
-        if (children == 0) {
-            // Cold-path layout anchor: two volatile stores pad this early-out to the
-            // original 8-byte block so MeshReadData stays size-exact and the .text
-            // offsets of the following functions do not move.
-            volatile int layoutAnchor;
-            layoutAnchor = 0;
-            layoutAnchor = 1;
-            return 1;
-        }
         if ((*slot)->animation != 0) {
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
+        }
+        if (children == 0) {
+            // Cold-path layout anchor: one volatile store keeps this early-out at the
+            // original size so the following .text offsets do not move.
+            volatile int layoutAnchor;
+            layoutAnchor = 1;
+            return 1;
         }
         for (unsigned int c = 0; c < (unsigned short) children; c++) {
             Mesh *child = new Mesh();
