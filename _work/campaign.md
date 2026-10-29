@@ -3637,3 +3637,6 @@ mtw anchor for any size change before MenuTouchWindow.
   mission-145 case 6 and restructure mission 142's state-0/state-1 nesting to the original shape.
   Fuzzy 51.6 -> 50.7% on the current base, but the +24 B size delta is gone and the gate still
   holds (byte 1411 / linked 4485 / `.text` 0x1343d0).
+- **Level::createMission size-exact 17172 B** (`644cdf92`, w1975): call the layout anchor directly
+  so the extra pool word disappears; compensate the 4-byte TU deficit in `createCampaignMission`
+  (91.6 -> 89.9%, 29684 B) instead of `createScene` (88.2%, unchanged). Fuzzy stays 81.8%.

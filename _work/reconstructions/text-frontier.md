@@ -3,9 +3,10 @@
 > **Current frontier (2026-10-29, wave 74 complete):** `MeshReadData`, `Level::createMission`,
 > `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2, `Level::createScene`,
 > `Globals` ctor, `MenuTouchWindow` ctor and `StarMap::draw` are size-exact. Remaining exported
-> size difference: `Layout::Layout` -280 B (50.5% store-order body; the size-exact 7072 B form is
-> 36.7% and is kept in commit `daffb1e7`). `LevelScript::process` is now size-exact at 57232 B
-> (50.7%, after the mission-142/145 state-flow fix). The detailed table below is the wave-69
+> size differences: `Layout::Layout` -280 B (50.5% store-order body; the size-exact 7072 B form is
+> 36.7% and is kept in commit `daffb1e7`) and `Level::createCampaignMission` +8 B (the layout pad
+> that keeps `Level::createMission` size-exact). `LevelScript::process` and `Level::createMission`
+> are now size-exact at 57232 B and 17172 B respectively. The detailed table below is the wave-69
 > snapshot and is retained for address-order history; use the size-diff list above for the current
 > queue.
 
