@@ -113,22 +113,22 @@ PlayerStation::PlayerStation(Station *station)
             Globals::Canvas->TransformCreate(base0);
             Globals::Canvas->TransformAddMesh(base0, 0x4221, false);
             root->addChild(base0);
+            uint32_t event1;
             uint32_t base1 = 0xffffffff;
             Globals::Canvas->TransformCreate(base1);
             Globals::Canvas->TransformAddMesh(base1, 0x4222, false);
             root->addChild(base1);
             if (Globals::status->getCurrentCampaignMission() == 157 &&
                 Globals::status->getStation()->getIndex() == 112) {
-                uint32_t event2;
                 uint32_t event0 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event0);
                 Globals::Canvas->TransformAddMesh(event0, 0x4950, false);
                 this->rootGeometry->addChild(event0);
-                uint32_t event1 = 0xffffffff;
+                event1 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event1);
                 Globals::Canvas->TransformAddMesh(event1, 0x4952, false);
                 this->rootGeometry->addChild(event1);
-                event2 = 0xffffffff;
+                uint32_t event2 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event2);
                 Globals::Canvas->TransformAddMesh(event2, 0x4951, false);
                 this->rootGeometry->addChild(event2);
