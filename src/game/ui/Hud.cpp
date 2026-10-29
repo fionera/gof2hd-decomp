@@ -254,7 +254,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     // Shield / armour / gamma bars.
     int dividerOffset = Globals::layout->field_0x1e8;
     Globals::Canvas->SetColor(0xffffffff);
-    int pad_ = this->field_0x470;
     int armorY;
     int armorBarY;
     if (this->hasShieldBar) {
@@ -285,6 +284,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
                                       this->field_0x440, armorBarY);
     }
+    int pad_ = this->field_0x470;
     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
                                                     Globals::status->getCurrentCampaignMission()) > 0.0f) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
