@@ -15,8 +15,9 @@
 
 // Height of the medal tab's scroll content: one row of medals plus the
 // layout's fixed padding.  The constructor inlines this helper at both call
-// sites; hidden linkage keeps the out-of-line copy out of the export set.
-[[gnu::visibility("hidden")]] int statusWindowMedalRowsHeight(int medalCount, int rowHeight) {
+// sites; `static inline` keeps the dead out-of-line copy from being emitted
+// (the original has no such function).
+[[gnu::visibility("hidden")]] static inline int statusWindowMedalRowsHeight(int medalCount, int rowHeight) {
     return medalCount / 3 * rowHeight + 10;
 }
 

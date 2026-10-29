@@ -600,6 +600,7 @@ void Gun::calcCharacterCollision() {
             enemy = this->enemies->data()[e];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition = AbyssEngine::AEMath::MatrixGetPosition(enemy->transform);
+            enemy = this->enemies->data()[e];
             Level *level = (Level *) this->level;
             int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
             if (mine) {
@@ -621,10 +622,11 @@ void Gun::calcCharacterCollision() {
                 continue;
             }
             bool outer = ki != nullptr && ki->field_0x40;
+            float ex = enemyPosition.x;
             if (!(outer && ki->outerCollide(position))) {
                 float r = (float) radius;
-                if (!(enemyPosition.x - position.x + velocity.x < r &&
-                      enemyPosition.x - position.x + velocity.x > (float) -radius &&
+                if (!(ex - position.x + velocity.x < r &&
+                      ex - position.x + velocity.x > (float) -radius &&
                       enemyPosition.y - position.y + velocity.y < r &&
                       enemyPosition.y - position.y + velocity.y > (float) -radius &&
                       enemyPosition.z - position.z + velocity.z < r &&
@@ -681,20 +683,18 @@ void Gun::calcCharacterCollision() {
             if (this->empDamage != kNoAttribute) {
                 enemy->damageEmp(this->empDamage, this->friendGun);
             }
-            int amount;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
-                    amount = (int) ((float) this->damage * 3.0f * 0.25f);
+                    enemy->damage((int) ((float) this->damage * 3.0f * 0.25f), this->friendGun, itemIndex);
                 } else {
-                    amount = this->damage;
+                    enemy->damage(this->damage, this->friendGun, itemIndex);
                 }
             } else if (enemy->egoFlag) {
-                amount = (int) ((float) this->damage * 0.2f);
+                enemy->damage((int) ((float) this->damage * 0.2f), this->friendGun, itemIndex);
             } else {
-                amount = this->damage;
+                enemy->damage(this->damage, this->friendGun, itemIndex);
             }
-            enemy->damage(amount, this->friendGun, itemIndex);
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
                 ((Level *) this->level)->field_30 = 1;
