@@ -1383,13 +1383,12 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             Globals::Canvas->DrawImage2D(this->heapBufB[this->field_0x1e0], Globals::w - layout->buttonInsetX,
                                          layout->field_0xc_leftMargin + layout->field_0x20_top, 17, 18);
-            layout = Globals::layout;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
                                         *Globals::gameText->getText(this->field_0x1e0 + 82),
-                                        layout->field_0x2c_rowHeight + this->slotListWidth +
-                                            layout->buttonInsetX + this->slotBorderWidth,
-                                        layout->field_0x2c_rowHeight + layout->field_0x20_top +
-                                            layout->field_0xc_leftMargin + layout->field_0x1c,
+                                        Globals::layout->field_0x2c_rowHeight + this->slotListWidth +
+                                            Globals::layout->buttonInsetX + this->slotBorderWidth,
+                                        Globals::layout->field_0x2c_rowHeight + Globals::layout->field_0x20_top +
+                                            Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c,
                                         false);
             Globals::Canvas->SetColor(0x7aa35bffu);
             if (appData->prices != 0 && appData->prices->size() != 0) {
