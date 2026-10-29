@@ -3490,3 +3490,26 @@ fuzzier but not size-exact, so the size-exact 7072 B form is the committed one.
   `if/else + nested switch` with the original single state switch (case 0 falls through into
   case 1, case 6 tail keeps the 57232 B size). This supersedes the 50.5 mission-106 reorder,
   which combined with the switch form grew the body to 57236 B and cost 7 byte-exact functions.
+
+### Wave 71 tail harvest (Gun size-exact, worst-first wave launched)
+
+- **Gun::calcCharacterCollision size-exact 1984 B** (`8d6ede38`): per-branch damage call,
+  post-`MatrixGetPosition` enemy reload and a `float ex` local reproduce the original body;
+  the dead out-of-line `statusWindowMedalRowsHeight` copy is inlined away, so the tail drift is
+  uniform again. Fuzzy 72.2 -> 68.1, but **byte_exact 1404 -> 1411**.
+- **PlayerStation C1/C2 94.4 -> 95.6%** (`1284e803`): hoist the `event1` transform id above
+  `base1` and scope `event2` to its use, matching the EH landing-pad table. Still 3444 B (+4).
+- **Level::createMission 80.4 -> 80.5%** (`3c7b1159`): hoist the case-2 enemy array allocation
+  before the convoy total. Still 17176 B (+4).
+
+Current gate: **byte_exact 1411, linked_exact 4485, avg 99.86%, .text 0x1343d0, lint CLEAN,
+drift 0**. Remaining exported size differences: Level::createMission +4, PlayerStation C1/C2 +4.
+Everything else exported is size-exact.
+
+Wave 72 is an 18-worker worst-match fleet (fuzzy-first, not size-first): Radar::draw,
+Gun::calcCharacterCollision, HangarWindow::render, MGame::OnTouchEnd, Level::createMission,
+Hud::draw, Level::createCampaignMission, StarMap::draw, MenuTouchWindow::draw, PlayerStation ctor,
+SpaceLounge::drawLounge, Radar::drawCurrentLock, PlayerEgo::update, MenuTouchWindow::OnTouchBegin,
+SpaceLounge::startChat, StarMap::drawOnScreenInfo, ModStation ctor, Layout::Layout. Workers are
+gate-bound to byte_exact >= 1411, linked_exact >= 4485 and `.text 0x1343d0`; they must retune the
+mtw anchor for any size change before MenuTouchWindow.
