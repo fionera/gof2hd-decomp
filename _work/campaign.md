@@ -3581,3 +3581,7 @@ mtw anchor for any size change before MenuTouchWindow.
   alpha into a local and drop the `volatile char reloadCanvas` barrier hack. The fuzzy drops but
   the function is size-exact again and the shortcut is gone; the real Canvas-load shape is still
   to be reconstructed.
+- **Level::createShip 69.0 -> 69.3%** (`e18eb356`, w1893): declare the waypoint locals `wz/wx/wy`
+  and use `int x` so the local order matches the original. Size stays 2764 B.
+- **Hud::draw 87.54 -> 87.58%** (`0ce60acd`, w1902): express the shield-frame image selection as
+  an if/else instead of a nested ternary. Size stays 9332 B.
