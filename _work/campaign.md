@@ -3577,3 +3577,7 @@ mtw anchor for any size change before MenuTouchWindow.
 
 - **MeshReadData 75.6 -> 75.8%** (`bed668ca`, w1877): `bool enhanced = (flags & 0x1a) != 0`, split
   the ok/enhanced epilogue returns, and use a `short` colour index. Size stays 2632 B.
+- **StarMap::draw 92.9 -> 91.0%, size-exact 2644 B** (`3360b839`, w1905): compute the route-pulse
+  alpha into a local and drop the `volatile char reloadCanvas` barrier hack. The fuzzy drops but
+  the function is size-exact again and the shortcut is gone; the real Canvas-load shape is still
+  to be reconstructed.
