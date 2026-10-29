@@ -3604,3 +3604,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MeshReadData 75.8 -> 76.3%** (`8b44d8e2`, w1917): `unsigned int` colours loop, merged
   `enhanced == 0 || ok == 0` epilogue, and an 8-byte cold-path layout anchor in the children
   early-out so the body stays 2632 B.
+- **Level::createMission 80.6 -> 81.8%** (`dba9ca48`, w1920): move case 4 to the end of the
+  switch and outline its else/hunters block with `goto case4Tail`/`goto case4Else`, matching the
+  original's end-of-normal-flow placement. Size stays 17176 B (+4).
