@@ -2685,12 +2685,12 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     continue;
                 this->field_0x234 = i;
                 if ((i & 0x7fffffffu) == 1) {
-                    if (!optionFlag(53)) {
+                    if (!Globals::options[53]) {
                         NFC::iap_buy_dlc_valkyrie();
                         return 0;
                     }
                 } else if ((i & 0x7fffffffu) == 2) {
-                    if (!optionFlag(55)) {
+                    if (!Globals::options[55]) {
                         NFC::iap_buy_dlc_supernova();
                         return 0;
                     }
@@ -2739,23 +2739,23 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     if (button->OnTouchEnd(x, y)) {
                         switch (this->field_0x1e0) {
                             case 0:
-                                if (!optionFlag(53))
+                                if (!Globals::options[53])
                                     NFC::iap_buy_dlc_valkyrie();
                                 break;
                             case 1:
-                                if (!optionFlag(54))
+                                if (!Globals::options[54])
                                     NFC::iap_buy_dlc_kaamo_club();
                                 break;
                             case 2:
-                                if (!optionFlag(55))
+                                if (!Globals::options[55])
                                     NFC::iap_buy_dlc_supernova();
                                 break;
                             case 3:
-                                if (!optionFlag(56))
+                                if (!Globals::options[56])
                                     NFC::iap_buy_dlc_vip();
                                 break;
                             case 4:
-                                if (!optionFlag(57))
+                                if (!Globals::options[57])
                                     NFC::iap_buy_dlc_full_package();
                                 break;
                         }
@@ -3455,8 +3455,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         } else {
                             this->choiceWindow->set(String("No link with Google+"),
                                                     *Globals::gameText->getText(3398), true);
-                            this->genericConfirmB = 1;
                             this->messageShowing = 1;
+                            this->genericConfirmB = 1;
                         }
                     }
                 } else if (id == 24) {
@@ -3466,8 +3466,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         } else {
                             this->choiceWindow->set(String("No link with Google+"),
                                                     *Globals::gameText->getText(3398), true);
-                            this->genericConfirmB = 1;
                             this->messageShowing = 1;
+                            this->genericConfirmB = 1;
                         }
                     }
                 }
