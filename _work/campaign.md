@@ -3688,3 +3688,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `spawnPosition` directly in cases 50/51/52 and derive `j` from `i` in case 157.
 - LevelScript::process `82ee1662` (w2104) was measured at 51.092% but drops `byte_exact`
   1412 -> 1403 on the current base, so it was not harvested.
+- **LevelScript::process 51.0873 -> 51.1458%, 57232 B** (`519b259d`, w2020): drop redundant
+  `Canvas`/`alienStation` temporaries.
+- **MenuTouchWindow::draw 93.0361 -> 93.8641%, 13052 B** (`df05afa9`, w2120): read the live
+  `Layout` in the DLC title draw instead of a hoisted copy.
+- Level::createShip `51df9053` (w2106) reaches 71.8% at 2788 B but shrinks `createRoute`
+  232 -> 208 B (100 -> 68.8%) and dips `linked_exact` to 4484, so it was not harvested.
