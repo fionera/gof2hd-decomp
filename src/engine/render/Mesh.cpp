@@ -473,7 +473,7 @@ namespace AbyssEngine {
 
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                      Material *mat) {
-        unsigned int enhanced = flags & 0x1a;
+        bool enhanced = (flags & 0x1a) != 0;
         float minimum[3];
         float maximum[3];
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
@@ -669,7 +669,7 @@ namespace AbyssEngine {
                 }
                 mesh->colors = new unsigned char[mesh->vertexCount * 16];
                 mesh = *slot;
-                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 2); i++)
+                for (short i = 0; i < (short) (mesh->vertexCount << 2); i++)
                     ((float *) mesh->colors)[i] = (float) raw[i] / 255.0f;
                 delete[] raw;
             } else if ((flags & 0x18) != 0) {
@@ -677,8 +677,10 @@ namespace AbyssEngine {
                 mesh->colors = new unsigned char[mesh->vertexCount * 16];
                 unsigned int ok = AEFile::Read((*slot)->vertexCount * 16, (*slot)->colors, handle);
                 int result = ok != 0 ? 1 : -1;
-                if (enhanced == 0 || ok == 0)
+                if (enhanced == 0)
                     return result;
+                if (ok == 0)
+                    return -1;
             }
         }
 
