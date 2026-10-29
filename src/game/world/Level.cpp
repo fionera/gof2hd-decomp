@@ -6120,7 +6120,7 @@ Array<BoundingVolume *> *Level::getBoundingVolume(int id, AEGeometry * /*geometr
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wy, wz, wx;
+    int wz, wy, wx;
     if (waypoint != nullptr) {
         wx = waypoint->x;
         wy = waypoint->y;
@@ -6133,6 +6133,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int jitterX = Globals::rnd->nextInt(40000);
     int jitterY = Globals::rnd->nextInt(40000);
     int jitterZ = Globals::rnd->nextInt(40000);
+    unsigned int x = wx + jitterX - 20000;
 
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
@@ -6165,14 +6166,14 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = wx + jitterX - 20000;
-    float y = (float) (wy + jitterY - 20000);
     float z = (float) (wz + jitterZ - 20000);
-    player->setEmpData(empPoints, empTime);
+    float y = (float) (wy + jitterY - 20000);
+    try { player->setEmpData(empPoints, empTime); } catch (...) { }
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+        PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter));
+        new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
@@ -6187,7 +6188,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
+        PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject));
+        new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
@@ -6237,8 +6239,6 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
                 fixed->setWreckedMeshId(0x477f);
                 break;
-            // The reference emits the race-3 hull boxes before the race-2 ones in the
-            // literal pool, so the source order is 3 then 2.
         }
         fixed->setBV(volumes);
         fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
