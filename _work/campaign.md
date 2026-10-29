@@ -3545,3 +3545,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createMission 80.5 -> 80.6%** (`b4c6b95b`, w1844): load `hostileCount` into a temp
   before `nextInt` so the black-market/pirate-loot doubling keeps it in a callee-saved register;
   the case-4 route branch is inverted to match the original block order. Still 17176 B (+4).
+- **Radar::draw 70.7 -> 70.8%** (`de7f202b`, w1840): express the landmark lock-rect doubled
+  extents as `size + size` instead of `2 * size`.
+- **MenuTouchWindow ctor 84.5 -> 84.9%** (`1edf44ba`, w1862): fix the `iPadLargePossible`
+  `sliders[4]` y expression (the original uses the `h`-derived base).
