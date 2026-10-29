@@ -3718,3 +3718,9 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createShip 67.7 -> 69.3%, 2764 B** (`f3239804`, w2204): keep the placement-new body and
   move `int x` next to the jitter computation, with the exception-table anchor restoring the
   original size/score. `createRoute` stays 100%.
+- **LevelScript::process 51.1 -> 51.2%, 57232 B** (`7e615d18`, w2301): reorder the mission-106
+  state chain to 2,1,3,4,6,5.
+- **MenuTouchWindow::OnTouchEnd 82.6 -> 82.8%, 8132 B** (`da2931e0`, w2305): reorder the DLC-ack
+  clears so case 15 joins the shared `clearMessage` tail, and inline the `loadFailed` clear.
+- **MenuTouchWindow ctor 86.1 -> 86.2%, 9600 B** (`56831fb5`, w2307): regroup the slider row
+  expressions and the iPad scroll width.
