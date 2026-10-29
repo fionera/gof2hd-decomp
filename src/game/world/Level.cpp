@@ -2803,10 +2803,11 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->setToSleep();
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f);
-                KIPlayer *enemy = (*this->enemies)[i];
+                Array<KIPlayer *> &enemies = *this->enemies;
+                KIPlayer *enemy = enemies[i];
                 ((PlayerFighter *) enemy)->crateCaptured() = 0;
                 enemy->cargo = nullptr;
-                enemy->player->setHitpoints(150);
+                enemies[i]->player->setHitpoints(150);
                 if (i <= 2)
                     ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
             }
@@ -3412,8 +3413,8 @@ void Level::createCampaignMission() {
             break;
         }
         case 78: {
-            alignas(16) Matrix rotation;
-            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
+            Matrix rotation;
+            Vector v = {0.0f, 0.0f, 0.0f};
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(22, *this->enemies);
             for (int k = 0; k < 2; k++) {
@@ -3453,9 +3454,9 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->setPosition(carrierPos);
             ((PlayerStation *) (*this->enemies)[0])->rootGeometry->setRotation(Vector{0.0f, 0.0f, 0.0f});
             delete station;
-            alignas(16) Matrix rotation;
+            Matrix rotation;
             MatrixSetRotation(rotation, 0.0f, 3.1415927f, 0.0f);
-            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
+            Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
             for (int k = 0; k < 12; k++) {
                 ArrayAdd(this->createStaticObject(nullptr, ((2547u >> k) & 1) ? 14363 : 14365, true),
@@ -3714,7 +3715,7 @@ void Level::createCampaignMission() {
                                    Globals::rnd->nextInt(140000) - 70000, 0, -500000,
                                    Globals::rnd->nextInt(140000) - 70000, 0, -70000};
             this->friendRoute = new Route(friendCoords, 9);
-            Waypoint *volatile dockWp = new Waypoint(-50000, 1000, 70000, nullptr);
+            Waypoint *dockWp = new Waypoint(-50000, 1000, 70000, nullptr);
             Waypoint *volatile escortWp = new Waypoint(20000, 10000, 10000, nullptr);
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(10, *this->enemies);
@@ -3742,9 +3743,9 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i] = this->createShip(0, 0, 51, escortWp, true, false);
                 KIPlayer *escort = (*this->enemies)[i];
                 if (i == 2)
-                    escort->setPosition(escortWp->getPosition() + Vector{10000.0f, 6000.0f, -20000.0f});
+                    escort->setPosition(dockWp->getPosition() + Vector{10000.0f, 6000.0f, -20000.0f});
                 else
-                    escort->setPosition(escortWp->getPosition() +
+                    escort->setPosition(dockWp->getPosition() +
                                         Vector{(float) (15000 + i * 5000), 8000.0f, (float) (-20000 - i * 5000)});
                 (*this->enemies)[i]->player->setAlwaysFriend(true);
                 ((PlayerFighter *) (*this->enemies)[i])->field_0x13d = 0;
@@ -3880,8 +3881,8 @@ void Level::createCampaignMission() {
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
             int slot = 0;
-            alignas(16) Vector v = {0.0f, 0.0f, 0.0f};
-            alignas(16) Matrix rotation;
+            Vector v = {0.0f, 0.0f, 0.0f};
+            Matrix rotation;
             for (int i = 2; i < 12; i++) {
                 (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
                 KIPlayer *turret = (*this->enemies)[i];
