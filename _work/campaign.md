@@ -3724,3 +3724,5 @@ mtw anchor for any size change before MenuTouchWindow.
   clears so case 15 joins the shared `clearMessage` tail, and inline the `loadFailed` clear.
 - **MenuTouchWindow ctor 86.1 -> 86.2%, 9600 B** (`56831fb5`, w2307): regroup the slider row
   expressions and the iPad scroll width.
+- **Status::missionCompleted 86.3 -> 86.7%, 1432 B** (`9a670281`, w2308): fix the type-0 rank and
+  reorder the mission case ranks for a closer TBH layout.
