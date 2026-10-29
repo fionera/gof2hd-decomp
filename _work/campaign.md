@@ -3694,3 +3694,6 @@ mtw anchor for any size change before MenuTouchWindow.
   `Layout` in the DLC title draw instead of a hoisted copy.
 - Level::createShip `51df9053` (w2106) reaches 71.8% at 2788 B but shrinks `createRoute`
   232 -> 208 B (100 -> 68.8%) and dips `linked_exact` to 4484, so it was not harvested.
+- **Hud::drawChallengeModeScore 75.0 -> 76.8%, 944 B** (`97c3862e`, w2112): on the corrected
+  literal/loop source, count the zero-pad loop down from `pad` and bound the digit loop at
+  `size() + 1`.
