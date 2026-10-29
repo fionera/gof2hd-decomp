@@ -3640,3 +3640,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createMission size-exact 17172 B** (`644cdf92`, w1975): call the layout anchor directly
   so the extra pool word disappears; compensate the 4-byte TU deficit in `createCampaignMission`
   (91.6 -> 89.9%, 29684 B) instead of `createScene` (88.2%, unchanged). Fuzzy stays 81.8%.
+- **createCampaignMission 89.9 -> 91.6%, 29676 B** (`fc51e01b`, w1986): drop the volatile `cp`
+  pad and add an 8-byte hidden anchor after `setPlayerEngineColor`, restoring the original size
+  without moving any byte-exact function. `Level::createMission` stays size-exact 17172 B.
