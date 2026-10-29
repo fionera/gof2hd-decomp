@@ -3631,3 +3631,5 @@ mtw anchor for any size change before MenuTouchWindow.
   empty-children early-out and shrink the cold anchor to one store. Size stays 2632 B.
 - **LevelScript::process 51.3 -> 51.6%** (`51f3c37e`, w1952): move the mission-145 case ahead of
   mission-135 in the switch so the TBH/case body order matches the original. Size stays 57256 B.
+- **Hud::draw 87.59 -> 88.2%** (`fb7d38f6`, w1971): hoist the docking-bar font/w locals, zero-test
+  `hints[17]`, and evaluate `w` before the text width. Size stays 9332 B.

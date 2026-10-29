@@ -750,23 +750,24 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
                                           (Globals::w >> 1) - barW / 2, barYOffset + top);
-            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+            unsigned int fontId = (unsigned int) (uintptr_t) Globals::font;
+            int halfW = Globals::w >> 1;
+            int textW = Globals::Canvas->GetTextWidth(fontId, text);
             float textY = (float) top + (float) barH * 2.5f;
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
-                                        (int) textY, false);
+            Globals::Canvas->DrawString(fontId, text, halfW - (textW >> 1), (int) textY, false);
             if (this->field_0x27a && Globals::status->getMission() != 0 &&
                 Globals::status->getMission()->getType() != 168)
                 Globals::Canvas->DrawImage2D(
                     this->image_0x380,
-                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
-                        (Globals::w >> 1),
+                    (Globals::w >> 1) +
+                        (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
                     (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
                     0x11, 0x41);
             if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174)
                 Globals::Canvas->DrawImage2D(
                     this->image_0x384,
-                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
-                        (Globals::w >> 1),
+                    (Globals::w >> 1) +
+                        (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
                     (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
                     0x11, 0x41);
         }
@@ -804,7 +805,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     }
 
     // First-flight steering hint.
-    if (!ego->isMining() && !Globals::hints[17] && Globals::status->getCurrentCampaignMission() == 2 &&
+    if (!ego->isMining() && Globals::hints[17] == 0 && Globals::status->getCurrentCampaignMission() == 2 &&
         ego->levelScript->m_nScriptTime > 12000 && !ego->isDockingToAsteroid() && !ego->isDockedToAsteroid()) {
         this->field_0x4c4 += dt;
         if (this->field_0x4c4 > 2000)
