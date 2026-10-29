@@ -453,7 +453,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
                                ->getAmount()
                          : 0;
-        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
+        String cargo = amount + String(" / ") + String(Globals::status->getShip()->getFreeSpace() + amount);
         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
         if (ego->hasVolatileGoods()) {
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
