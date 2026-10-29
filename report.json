@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.87,
+  "avg_match": 99.88,
   "byte_exact": 1412,
   "linked_exact": 4485,
   "fuzzy_perfect": 4485,
@@ -192,14 +192,6 @@
    "usize": 9332
   },
   {
-   "name": "_ZN7StarMap4drawEv",
-   "pct": 92.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2644,
-   "usize": 2644
-  },
-  {
    "name": "_ZN15MenuTouchWindow4drawEv",
    "pct": 93.8,
    "byte": false,
@@ -214,6 +206,14 @@
    "linked": false,
    "osize": 29676,
    "usize": 29676
+  },
+  {
+   "name": "_ZN7StarMap4drawEv",
+   "pct": 94.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2644,
+   "usize": 2644
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",

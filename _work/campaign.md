@@ -3704,3 +3704,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createShip order fix** (`0f172f71`, w2002): declare `y` before `z` in the real
   `setEmpData` body, matching the original's conversion order. 67.7%, size-exact 2764 B, no metric
   change.
+- **StarMap::draw 92.5 -> 94.7%, 2644 B (size-exact)** (`d3022690`, w2210): restore the original
+  step-increment shape and add a real block-placement barrier, avoiding the +4 B volatile variant
+  (93.7%, 2648 B). This also lifts the tree average to 99.88%.
