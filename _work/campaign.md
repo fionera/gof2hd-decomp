@@ -3593,3 +3593,8 @@ mtw anchor for any size change before MenuTouchWindow.
   (direct `m_tempVec` component adds), the wingman loop (bind `wingman` once) and the mission-145
   shoot/timer order. The body grows to 57256 B (+24 from the original 57232), closer than the
   previous -48.
+
+### Wave 75 (worst-match wave 4, in progress)
+
+- **Gun::calcCharacterCollision 72.6 -> 74.0%** (`fee1e126`, w1916): read `this->itemIndex` in the
+  docked and egoFlag damage branches instead of the hoisted local. Size stays 1984 B.
