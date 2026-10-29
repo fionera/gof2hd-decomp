@@ -3701,3 +3701,6 @@ mtw anchor for any size change before MenuTouchWindow.
   the record cases so clang emits the original's `selectedRow`-first order. 82.6%, 8132 B, no
   metric change. (Removing the `(int) sliders->size()` cast is also correct but shrinks the body to
   8128 B and costs 28 byte-exact functions, so it is deferred.)
+- **Level::createShip order fix** (`0f172f71`, w2002): declare `y` before `z` in the real
+  `setEmpData` body, matching the original's conversion order. 67.7%, size-exact 2764 B, no metric
+  change.
