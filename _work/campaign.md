@@ -3707,3 +3707,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **StarMap::draw 92.5 -> 94.7%, 2644 B (size-exact)** (`d3022690`, w2210): restore the original
   step-increment shape and add a real block-placement barrier, avoiding the +4 B volatile variant
   (93.7%, 2648 B). This also lifts the tree average to 99.88%.
+- **Hud::drawChallengeModeScore 76.8 -> 81.5%, 944 B** (`5a449076`, w2208): pad the score from 0
+  through the exported "0" pointer and index the digit loop from 0, recovering the original score
+  while keeping the direct literal.

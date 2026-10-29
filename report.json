@@ -72,14 +72,6 @@
    "usize": 1984
   },
   {
-   "name": "_ZN3Hud22drawChallengeModeScoreEi",
-   "pct": 76.8,
-   "byte": false,
-   "linked": false,
-   "osize": 944,
-   "usize": 944
-  },
-  {
    "name": "_ZN12HangarWindow6renderEv",
    "pct": 77.0,
    "byte": false,
@@ -118,6 +110,14 @@
    "linked": false,
    "osize": 612,
    "usize": 612
+  },
+  {
+   "name": "_ZN3Hud22drawChallengeModeScoreEi",
+   "pct": 81.5,
+   "byte": false,
+   "linked": false,
+   "osize": 944,
+   "usize": 944
   },
   {
    "name": "_ZN5Level13createMissionEv",
