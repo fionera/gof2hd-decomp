@@ -1349,9 +1349,9 @@ void MenuTouchWindow::draw() {
                 if (i == this->field_0x1e0) {
                     if (!Globals::iPad && !Globals::iPadAssetsWithLowerRes)
                         Globals::Canvas->DrawImage2D(this->scrollImage_0x13c,
-                                                     this->slotImageWidth + this->slotX +
+                                                     this->slotX + this->slotImageWidth +
                                                          Globals::layout->field_0x2c_rowHeight,
-                                                     this->scrollOffset + this->slotY +
+                                                     this->slotY + this->scrollOffset +
                                                          (this->slotSpacing + this->contentHeightCache) * i);
                     (*this->scrollSlots)[i]->setAlwaysPressed(true);
                 } else {
