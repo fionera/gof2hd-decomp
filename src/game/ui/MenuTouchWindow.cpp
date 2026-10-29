@@ -432,6 +432,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(25, *Globals::gameText->getText(0), 2, this->optionsButtons, 0);
         // Language selection.
         this->buttonsB0 = new Array<TouchButton *>();
+        Array<TouchButton *> *langList = this->buttonsB0;
         int *specialFontPtr = &Globals::fontLangSelect;
         int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
@@ -439,11 +440,11 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             // Phone: two columns; iPad: one centred column.
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
-            int y = (Globals::w / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap) +
+            int y = (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap) +
                     (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1);
             if (Globals::iPad) {
                 x = Globals::w / 2 - this->buttonWidth / 2;
-                y = (Globals::w / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
+                y = (Globals::h / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
                      Globals::layout->field_0x30_rowHeight) +
                     (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
             }
@@ -456,7 +457,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             language->id = MenuTouchWindow_languageIds[i];
             if (special)
                 language->fontId = *specialFontPtr;
-            ArrayAdd(language, *this->buttonsB0);
+            ArrayAdd(language, *langList);
         }
     }
 
@@ -558,12 +559,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::Canvas->Image2DCreate(1703, this->fireImage_0x58);
         Globals::Canvas->Image2DCreate(1704, this->fireImage_0x5c);
         this->cinematicBtnB = new TouchButton(
-            *Globals::gameText->getText(497), 0, Globals::w / 2,
+            *Globals::gameText->getText(497), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 * 2 -
                 Globals::layout->field_0x30_rowHeight * 2,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
         this->cinematicBtnA = new TouchButton(
-            *Globals::gameText->getText(496), 0, Globals::w / 2,
+            *Globals::gameText->getText(496), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 -
                 Globals::layout->field_0x30_rowHeight,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
@@ -613,9 +614,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
              this->sliderRowHeight) * 2,
         66);
-    this->optBtnD0->setHalfTransparent(optionFlag(17));
-    this->optBtnCC->setAlwaysPressed(optionFlag(16));
-    this->scrollExtraButton->setAlwaysPressed(optionFlag(64));
+    this->optBtnD0->setHalfTransparent(Globals::options[17]);
+    this->optBtnCC->setAlwaysPressed(Globals::options[16]);
+    this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
     if (Globals::iPad) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
@@ -704,22 +705,22 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight,
                                      18);
-    this->optBtnD4->setAlwaysPressed(optionFlag(13));
-    (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
+    this->optBtnD4->setAlwaysPressed(Globals::options[13]);
+    (*this->sliders)[1]->setHalfTransparent(!Globals::options[13]);
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                       this->sliderSpacing + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
-    this->optBtnD8->setAlwaysPressed(optionFlag(12));
-    (*this->sliders)[2]->setHalfTransparent(!optionFlag(14));
+    this->optBtnD8->setAlwaysPressed(Globals::options[12]);
+    (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                       this->sliderSpacing * 2 + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 5,
                                      18);
-    this->optBtnDC->setAlwaysPressed(optionFlag(14));
-    (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
+    this->optBtnDC->setAlwaysPressed(Globals::options[14]);
+    (*this->sliders)[3]->setHalfTransparent(!Globals::options[14]);
     (*this->sliders)[5]->setFixedScale(1);
     (*this->sliders)[6]->setFixedScale(1);
 
@@ -778,7 +779,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
         }
         Globals::Canvas->Image2DCreate(1700, this->scrollbarImageId);
-        this->listX = Globals::iPadAssetsWithLowerRes ? 50 : (int) ((float) Globals::w * 0.2f);
+        int listX = (int) ((float) Globals::w * 0.2f);
+        if (Globals::iPadAssetsWithLowerRes)
+            listX = 50;
+        this->listX = listX;
         this->scrollWindowA = new ScrollTouchWindow(
             Globals::layout->buttonInsetX + Globals::w / 4,
             Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
