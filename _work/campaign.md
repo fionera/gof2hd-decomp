@@ -3673,3 +3673,5 @@ mtw anchor for any size change before MenuTouchWindow.
   in the mission-174 branch, matching the original's plain `add r1, r0`.
 - **MenuTouchWindow ctor 86.0 -> 86.1%, 9600 B** (`381927d3`, w2016): refactor the `sliders[2]`
   y-expression into the original's grouped row sums (`D + 0x1c + rowHeight`, then `<<1`).
+- **PlayerEgo::calcCollision 83.2 -> 87.0%, 968 B** (`cb3d0626`, w1970): drop the redundant `i == 0`
+  term from the projection-flag guard, matching the original's anchor register allocation.

@@ -136,14 +136,6 @@
    "usize": 8132
   },
   {
-   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
-   "pct": 83.2,
-   "byte": false,
-   "linked": false,
-   "osize": 968,
-   "usize": 968
-  },
-  {
    "name": "_ZN9RocketGun6updateEi",
    "pct": 85.8,
    "byte": false,
@@ -174,6 +166,14 @@
    "linked": false,
    "osize": 1432,
    "usize": 1432
+  },
+  {
+   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
+   "pct": 87.0,
+   "byte": false,
+   "linked": false,
+   "osize": 968,
+   "usize": 968
   },
   {
    "name": "_ZN5Level11createSceneEv",
