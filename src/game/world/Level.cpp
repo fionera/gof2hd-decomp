@@ -7038,7 +7038,7 @@ void Level::createScene() {
                 if (ownHangar)
                     type = (*Globals::status->voidStation->getShips())[i]->getIndex();
                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
-                int spot = rnd->nextInt(capacity);
+                int spot = Globals::rnd->nextInt(capacity);
                 for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
                     spot = rnd->nextInt(capacity);
                 spotUsed[spot] = 1;
@@ -7064,7 +7064,7 @@ void Level::createScene() {
                                   (float) table[spot * 3 + 2]);
                 ship->player->setAlwaysFriend(true);
                 ship->setToSleep();
-                ship->geometry->setRotation(0.0f, (float) Globals::rnd->nextInt(300) / 100.0f, 0.0f);
+                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
                 ((PlayerFighter *) ship)->setExhaustVisible(false);
                 ArrayAdd(ship, *this->enemies);
             }
