@@ -952,12 +952,8 @@ void StarMap::draw() {
             int step = this->field_0xe8;
             *(float *) &this->field_0xec = pulse;
             if ((uint32_t) step == this->systemPath->size() - 1) {
-                // The original reloads Globals::Canvas inside each arm of this
-                // if/else instead of hoisting one shared load above the branch.
-                // The volatile store is a barrier that keeps the else-arm load
-                // from being hoisted out; it has no other effect.
-                volatile char reloadCanvas = 0;
-                Globals::Canvas->SetColor(255, 255, 0, (uint8_t) (int) (pulse * 255.0f));
+                uint8_t a = (uint8_t) (int) (pulse * 255.0f);
+                Globals::Canvas->SetColor(255, 255, 0, a);
             } else {
                 Globals::Canvas->SetColor(0xffff00ffu);
             }
