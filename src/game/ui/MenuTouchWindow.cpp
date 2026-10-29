@@ -766,8 +766,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
-                                 Globals::layout->field_0x2c_rowHeight * 6) +
-                                this->sliderRowHeight * 3 + (this->field_0x15c + Globals::layout->field_0x2fc) * 2) +
+                                 Globals::layout->field_0x2c_rowHeight * 7) +
+                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
