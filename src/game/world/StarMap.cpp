@@ -944,13 +944,12 @@ void StarMap::draw() {
         // Animated planned route.
         if (this->mode == 0 && !this->transitionIn && !this->transitionOut && this->systemPath != 0) {
             float pulse = (float) (101 - Globals::status->getPlayingTime() / 10 % 99) / 100.0f;
-            int step = this->field_0xe8;
             if (pulse > *(float *) &this->field_0xec) {
-                step++;
-                this->field_0xe8 = step;
-                step = (uint32_t) step < this->systemPath->size() ? step : 0;
-                this->field_0xe8 = step;
+                this->field_0xe8++;
+                if ((uint32_t) this->field_0xe8 >= this->systemPath->size())
+                    this->field_0xe8 = 0;
             }
+            int step = this->field_0xe8;
             *(float *) &this->field_0xec = pulse;
             if ((uint32_t) step == this->systemPath->size() - 1) {
                 // The original reloads Globals::Canvas inside each arm of this
