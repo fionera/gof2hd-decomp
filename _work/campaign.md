@@ -3679,3 +3679,12 @@ mtw anchor for any size change before MenuTouchWindow.
   phantom `try/catch` (the original has no `__cxa_begin_catch`), use plain `new`, and compute `x`
   after the `Player` ctor. The fuzzy drops but one neighbouring function becomes byte-exact, so the
   primary gate rises.
+- **HangarWindow::render 75.9 -> 77.0%, 9700 B** (`382c4b2f`, w2111): restore the original's
+  price-branch and item-chain source shapes on top of the wave-78 semantic fix, recovering the
+  fuzzy the old (logically inverted) form had.
+- **Hud::draw 88.2577 -> 88.2717%, 9332 B** (`c026bafe`, w2117): type the armour Y coordinate as
+  `short`.
+- **Level::createCampaignMission 91.6 -> 94.3%, 29676 B** (`5911ce02`, w2118): assign
+  `spawnPosition` directly in cases 50/51/52 and derive `j` from `i` in case 157.
+- LevelScript::process `82ee1662` (w2104) was measured at 51.092% but drops `byte_exact`
+  1412 -> 1403 on the current base, so it was not harvested.
