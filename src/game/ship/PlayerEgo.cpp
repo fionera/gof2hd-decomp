@@ -2491,7 +2491,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-            if (i == 0 && object->field_0x71)
+            if (object->field_0x71)
                 this->collidesWithStationFlag = 1;
         }
         this->hitCamera();
