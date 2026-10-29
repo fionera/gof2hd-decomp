@@ -3622,3 +3622,5 @@ mtw anchor for any size change before MenuTouchWindow.
   size-exact 9600 B again.
 - **MenuTouchWindow::OnTouchEnd 82.5 -> 82.6%** (`331584c2`, w1943): emit the Google+ confirm flag
   stores in the original order and read the DLC purchase flags as raw option bytes.
+- **Hud::draw 87.58 -> 87.59%** (`dc91d9f6`, w1945): hoist the canvas local in the shield branch.
+  Size stays 9332 B.
