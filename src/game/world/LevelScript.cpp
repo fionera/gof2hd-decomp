@@ -1062,7 +1062,7 @@ bool LevelScript::process(int delta) {
             m_pLevel->getPlayer()->setCollide(true);
 
             if (Level::programmedStation != 0) {
-                if (!Globals::status->getStation()->equals(Level::programmedStation)) {
+                if (!Level::programmedStation->equals(Globals::status->getStation())) {
                     m_pHud->hudEvent(5, m_pLevel->getPlayer(), 0);
                 }
             }
