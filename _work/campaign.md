@@ -3572,3 +3572,8 @@ mtw anchor for any size change before MenuTouchWindow.
   81's alien-station handoff is then bound to a local so clang does not tail-merge it with
   mission 78's identical tail. The semantic fix shortens the body to 57184 B (-48), so the
   function is no longer size-exact; the missing 48 B is real code still to reconstruct.
+
+### Wave 74 (worst-match wave 3, in progress)
+
+- **MeshReadData 75.6 -> 75.8%** (`bed668ca`, w1877): `bool enhanced = (flags & 0x1a) != 0`, split
+  the ok/enhanced epilogue returns, and use a `short` colour index. Size stays 2632 B.
