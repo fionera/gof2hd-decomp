@@ -472,7 +472,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if ((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3) {
+            } else if (__builtin_expect((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3, 0)) { // lint: arm_builtin
                 Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8,
                                              this->screenX, this->screenY, 17, 68);
             }
@@ -547,7 +547,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
-                bool isTarget = stations->data()[i] == campaignMission->getTargetStation();
+                bool isTarget = stationId == campaignMission->getTargetStation();
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
