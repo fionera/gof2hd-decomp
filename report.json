@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4523,
   "avg_match": 99.87,
-  "byte_exact": 1411,
+  "byte_exact": 1412,
   "linked_exact": 4485,
   "fuzzy_perfect": 4485,
   "stub_zero_size": 0,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 69.3,
+   "pct": 67.7,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -20698,7 +20698,7 @@
   {
    "name": "_ZN4Item27canBeInstalledMultipleTimesEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16

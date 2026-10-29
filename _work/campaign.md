@@ -3675,3 +3675,7 @@ mtw anchor for any size change before MenuTouchWindow.
   y-expression into the original's grouped row sums (`D + 0x1c + rowHeight`, then `<<1`).
 - **PlayerEgo::calcCollision 83.2 -> 87.0%, 968 B** (`cb3d0626`, w1970): drop the redundant `i == 0`
   term from the projection-flag guard, matching the original's anchor register allocation.
+- **Level::createShip 69.3 -> 67.7%, 2764 B, byte_exact 1411 -> 1412** (`5e108946`, w2001): drop the
+  phantom `try/catch` (the original has no `__cxa_begin_catch`), use plain `new`, and compute `x`
+  after the `Player` ctor. The fuzzy drops but one neighbouring function becomes byte-exact, so the
+  primary gate rises.
