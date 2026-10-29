@@ -2399,7 +2399,16 @@ bool LevelScript::process(int delta) {
             }
             case 125: {
                 // Pirate hideout: fly the route in, label the three docking ports, then ambush.
-                if (m_nState == 1) {
+                if (m_nState == 0) {
+                    if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                        m_nState++;
+                        int routePoints[3] = {-70000, 0, -130000};
+                        Route *route = new Route(routePoints, 3);
+                        m_pLevel->setPlayerRoute(route);
+                        player->setRoute(route);
+                        m_nScriptTimerA = 0;
+                    }
+                } else if (m_nState == 1) {
                     if (player->getRoute() != 0) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
@@ -2411,13 +2420,6 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                } else if (m_nState == 0 && ((RadioMessage *) ((*messages)[1]))->isTriggered()) {
-                    m_nState++;
-                    int routePoints[3] = {-70000, 0, -130000};
-                    Route *route = new Route(routePoints, 3);
-                    m_pLevel->setPlayerRoute(route);
-                    player->setRoute(route);
-                    m_nScriptTimerA = 0;
                 }
                 if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
