@@ -2051,7 +2051,7 @@ static volatile unsigned char kMissionOrder[190];
 // Mission type -> case label. The original jump table lays the case bodies out
 // in source order; ranking the types keeps clang's ascending table order aligned.
 static const unsigned char kMissionCase[190] = {
-    190, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
+    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
@@ -2060,8 +2060,8 @@ static const unsigned char kMissionCase[190] = {
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 152, 154, 155, 156, 157, 159, 167, 168, 160, 190,
-    169, 190, 161, 171, 172, 173, 162, 150, 174, 176, 163, 177, 182, 190, 151, 190,
+    190, 190, 190, 190, 190, 190, 152, 155, 154, 156, 157, 159, 167, 168, 160, 190,
+    169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
 };
 
@@ -2085,7 +2085,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         }
         // The original jump table lays the case bodies out in source order.
         switch (kMissionCase[m->getType()]) {
-            case 150:
+            case 163:
             case 151:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
                     m->setWon(true);
@@ -2134,13 +2134,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 154:
+            case 155:
                 if (kills >= m->getStatusValue()) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 155: {
+            case 154: {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
                     if ((*equipment)[j] != 0 && (*equipment)[j]->getIndex() == m->getStatusValue()) {
@@ -2214,7 +2214,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 163:
+            case 150:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
