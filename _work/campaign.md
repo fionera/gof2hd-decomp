@@ -3715,3 +3715,6 @@ mtw anchor for any size change before MenuTouchWindow.
   `escortWp` volatile.
 - **MenuTouchWindow::draw 93.83 -> 93.98%, 13052 B** (`c3f7afab`, w2312): fix the DLC store
   `drawBox`/`DrawString` operand order and the screenshot flag store order.
+- **Level::createShip 67.7 -> 69.3%, 2764 B** (`f3239804`, w2204): keep the placement-new body and
+  move `int x` next to the jitter computation, with the exception-table anchor restoring the
+  original size/score. `createRoute` stays 100%.
