@@ -145,7 +145,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 86.2,
+   "pct": 86.3,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -153,7 +153,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 86.2,
+   "pct": 86.3,
    "byte": false,
    "linked": false,
    "osize": 9600,

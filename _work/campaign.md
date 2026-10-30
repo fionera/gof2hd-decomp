@@ -3883,3 +3883,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createCampaignMission 97.0 -> 97.4%, 29676 B** (`54f1a3b2`, w2969): if/else base
   selection keeps `baseA` in r9 across `setName` and spills to `[sp,#40]` like the original.
   Residual: the shared switch exit shifts +4, flipping the jump-table default entries.
+- **MGame::OnUpdate 99.767 -> 99.793, 11440 B** (`196dab27`, w2976): name the wingmen loop bound
+  (`n = 3`) and tighten the guard to `< 3`.
+- **MenuTouchWindow ctor raw 86.2245 -> 86.2545, 9600 B** (`299b4c10`, w2979): move the quit/save
+  flag stores after the `strh` tail.
