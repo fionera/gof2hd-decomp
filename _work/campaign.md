@@ -3785,3 +3785,10 @@ mtw anchor for any size change before MenuTouchWindow.
   Case 139's `baseA` spill weight is the remaining dominant block.
 - **MenuTouchWindow ctor 86.2%, 9600 B** (`54e89f33`, w2921): store the 16-bit flag with `strh`
   like the original (fuzzy neutral, semantic fidelity).
+- **LevelScript::process 51.58 -> 51.94%, 57232 B** (`adaae338`, w2902): reorder the campaign
+  state bodies and restore `radar` before `resetCamera`, matching the original's case flow.
+- **MeshReadData 77.1 -> 78.1%, 2632 B** (`e619ed55`, w2907): hoist the tangent position deltas so
+  the two `ldr`/`sub` chains share the original's live ranges.
+- **MenuTouchWindow::draw 95.07 -> 96.2%, 13052 B** (`3b4c4c2a`, w2918): sum the slider row as
+  `sliderRowHeight + y + rowHeight` and use a half-height shift for the arrow X, matching the
+  original's `add`/`asr` sequence.

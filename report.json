@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 51.6,
+   "pct": 51.9,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -64,14 +64,6 @@
    "usize": 1996
   },
   {
-   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 77.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2632,
-   "usize": 2632
-  },
-  {
    "name": "_ZN12HangarWindow6renderEv",
    "pct": 77.1,
    "byte": false,
@@ -86,6 +78,14 @@
    "linked": false,
    "osize": 1984,
    "usize": 1984
+  },
+  {
+   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
+   "pct": 78.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2632,
+   "usize": 2632
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -209,7 +209,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 95.1,
+   "pct": 96.2,
    "byte": false,
    "linked": false,
    "osize": 13052,

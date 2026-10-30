@@ -2,7 +2,8 @@
 > (4523/4523). Gate: `byte_exact 1412`, `linked_exact 4485`, avg 99.88%,
 > `.text 0x1343d0`, lint CLEAN, drift 0. Wave 87 attacked the worst-match queue: Gun::calcCharacterCollision
 > 74.9 -> 77.2%, Layout::Layout 45.4 -> 45.5% (7072 B), Radar::draw 71.40 -> 71.43%,
-> createCampaignMission 96.9 -> 97.0%. The remaining work is fuzzy/register-allocation matching
+> createCampaignMission 96.9 -> 97.0%, LevelScript::process 51.6 -> 51.9%, MeshReadData
+> 77.1 -> 78.1%, MenuTouchWindow::draw 95.1 -> 96.2%. The remaining work is fuzzy/register-allocation matching
 > for the 38 non-linked-exact functions; the detailed table below is the wave-69 snapshot and is
 > retained for address-order history.
 >
