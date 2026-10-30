@@ -3792,3 +3792,5 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::draw 95.07 -> 96.2%, 13052 B** (`3b4c4c2a`, w2918): sum the slider row as
   `sliderRowHeight + y + rowHeight` and use a half-height shift for the arrow X, matching the
   original's `add`/`asr` sequence.
+- **Hud::drawChallengeModeScore 81.5 -> 83.8%, 944 B** (`0658baab`, w2910): pre-increment the
+  bonus-digit offset so the loop lays out test-first like the original.

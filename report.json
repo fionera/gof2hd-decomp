@@ -112,20 +112,20 @@
    "usize": 612
   },
   {
-   "name": "_ZN3Hud22drawChallengeModeScoreEi",
-   "pct": 81.5,
-   "byte": false,
-   "linked": false,
-   "osize": 944,
-   "usize": 944
-  },
-  {
    "name": "_ZN5Level13createMissionEv",
    "pct": 81.8,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN3Hud22drawChallengeModeScoreEi",
+   "pct": 83.8,
+   "byte": false,
+   "linked": false,
+   "osize": 944,
+   "usize": 944
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
