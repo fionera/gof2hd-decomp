@@ -3864,7 +3864,7 @@ static void mtwTextLayoutAnchor() {
     volatile char c;
     c = 0; c = 1; c = 2;
     a = 28; a = 29; a = 30; a = 31; a = 32;
-    a = 33; a = 34; a = 35; a = 36; a = 37; a = 38; a = 39; a = 40;
+    a = 33; a = 34; a = 35; a = 36;
     a = 41; a = 42; a = 43; a = 44; a = 45; a = 46; a = 47; a = 48;
     a = 49; a = 50; a = 51; a = 52; a = 53; a = 54; a = 55; a = 56;
     a = 59; a = 60; a = 61; a = 62; a = 63; a = 64;
