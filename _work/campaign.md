@@ -3904,3 +3904,13 @@ mtw anchor for any size change before MenuTouchWindow.
 - **LevelScript::process 52.0 -> 52.1%, 57248 B** (`240c37ae`, w3012): reload
   `status->getShip()` for every `hasCargo` test (5 call sites like the original; the hoist was
   wrong). The +16 B is absorbed by retuning `mtwTextLayoutAnchor`.
+- **ModStation::OnKeyPress 99.9 -> 100.0%, 2516 B, linked-exact** (`c1b31a13`, w3002):
+  `Station::stationHasPirateBase` returns bool; drop the m77 expect. **linked_exact 4490 -> 4491.**
+- **Level::createMission 81.8 -> 83.3%, 17172 B** (`331be3d9`, w2961): named coordinate structs for
+  the Route buffers.
+- **MenuTouchWindow::OnTouchEnd 83.4 -> 84.9%, 8132 B** (`7688e4a4`, w3023): size-exact
+  genericConfirmB/option-12 shape (keeps the r==1 path and recovers the allocation).
+- **MeshReadData 77.9 -> 78.1%, 2632 B** (`1c051976`, w3020): restore the halfword-indexed packed
+  UV stream.
+- **Layout::Layout 45.5 -> 50.7%, 6792 B** (`3a4b1d12`, w2998): restore the 50.7% store schedule,
+  drop the Item pad and retune the mtw anchor.
