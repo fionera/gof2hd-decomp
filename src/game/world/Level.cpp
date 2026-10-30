@@ -3887,9 +3887,9 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(1667) + String(" 2"));
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
-            int slot = 0;
-            Vector v = {0.0f, 0.0f, 0.0f};
             Matrix rotation;
+            Vector v = {0.0f, 0.0f, 0.0f};
+            int slot = 0;
             for (int i = 2; i < 12; i++) {
                 (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
                 KIPlayer *turret = (*this->enemies)[i];
@@ -3897,9 +3897,12 @@ void Level::createCampaignMission() {
                 v = MatrixRotateVector(rotation, Vector{kBaseTurrets[slot][3], kBaseTurrets[slot][4], kBaseTurrets[slot][5]});
                 turret->geometry->setRotation(v);
                 v = MatrixRotateVector(rotation, Vector{kBaseTurrets[slot][0], kBaseTurrets[slot][1], kBaseTurrets[slot][2]});
-                Waypoint *base = i < 7 ? baseA : baseB;
-                turret->setPosition(Vector{base->getPosition().x + v.x, base->getPosition().y + v.y,
-                                           base->getPosition().z + v.z});
+                if (i >= 7)
+                    turret->setPosition(Vector{baseB->getPosition().x + v.x, baseB->getPosition().y + v.y,
+                                               baseB->getPosition().z + v.z});
+                else
+                    turret->setPosition(Vector{baseA->getPosition().x + v.x, baseA->getPosition().y + v.y,
+                                               baseA->getPosition().z + v.z});
                 ((PlayerTurret *) turret)->setScaling(6.0f);
                 turret->shipGroup = 1;
                 turret->cargo = nullptr;
