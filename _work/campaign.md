@@ -3919,3 +3919,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createShip 69.3 -> 73.0%, 2764 B** (`455eaa61`, w3011): compute `x` after the `Player`
   ctor and make the phantom catch body a `__builtin_trap()` (the original has no `__cxa` catch
   calls; `udf` in the landing pad). Size stays 2764 B, so `createRoute` stays 232 B/linked-exact.
+- **Hud::draw 88.3 -> 87.8%, 9336 B** (`59665088`, w2965): 4-byte tail anchor realigns the
+  TouchButton/SpriteGun thunks byte-exact. **byte_exact 1412 -> 1415**; Hud::draw itself is now
+  4 B over (9336 vs 9332) — the anchor is the size knob for those three thunks.

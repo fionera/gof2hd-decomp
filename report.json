@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4523,
   "avg_match": 99.88,
-  "byte_exact": 1412,
+  "byte_exact": 1415,
   "linked_exact": 4491,
   "fuzzy_perfect": 4491,
   "stub_zero_size": 0,
@@ -176,20 +176,20 @@
    "usize": 968
   },
   {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 87.8,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9336
+  },
+  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 88.2,
    "byte": false,
    "linked": false,
    "osize": 2252,
    "usize": 2252
-  },
-  {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 88.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
   },
   {
    "name": "_ZN7StarMap4drawEv",
@@ -13194,7 +13194,7 @@
   {
    "name": "_ZN11TouchButton11setPositionEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -13234,7 +13234,7 @@
   {
    "name": "_ZN11TouchButton12setYPositionEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33722,7 +33722,7 @@
   {
    "name": "_ZN9SpriteGun6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
