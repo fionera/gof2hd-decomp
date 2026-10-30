@@ -3759,3 +3759,5 @@ mtw anchor for any size change before MenuTouchWindow.
   station before the index math.
 - **StarMap::drawOnScreenInfo 98.1 -> 98.2%, 3488 B** (`7cdd2c02`, w2707): use a fresh campaign
   mission and keep campaign live across the 120 arm.
+- **PlayerEgo::update 98.3 -> 98.6%, 8852 B** (`57177dbe`, w2708): the dock-transfer guard uses
+  the post-clamp amount and the `orr` dock index check.

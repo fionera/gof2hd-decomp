@@ -272,14 +272,6 @@
    "usize": 3488
   },
   {
-   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 98.3,
-   "byte": false,
-   "linked": false,
-   "osize": 8852,
-   "usize": 8852
-  },
-  {
    "name": "_ZN10ModStationC1Ev",
    "pct": 98.6,
    "byte": false,
@@ -294,6 +286,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
+  },
+  {
+   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
+   "pct": 98.6,
+   "byte": false,
+   "linked": false,
+   "osize": 8852,
+   "usize": 8852
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
