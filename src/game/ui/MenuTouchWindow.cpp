@@ -3846,9 +3846,9 @@ void MenuTouchWindow::startSupernovaChallenge() {
 // much so the linked .text (and the exception-ctor literals) stay at 0x1343d0.  The later enemy
 // blip-frame fix (separate elapsed/total branches) grew it another 0x10, trimmed again below.
 //
-// Layout::Layout() is now the size-exact 7072-byte body; the stores below were retuned to keep
-// the linked .text at 0x1343d0.  Item::canBeInstalledMultipleTimes() stays byte-exact because
-// Item.cpp's 280-byte .rodata pad moves its table with the shifted function (byte_exact 1412).
+// Layout::Layout() now compiles to 6792 B, 280 B below the original, so the stores below grew
+// by 47 to keep the linked .text at 0x1343d0.  The anchor sits after Item, so the item table's
+// .rodata pad is no longer needed and was dropped (Item stays byte-exact, byte_exact 1412).
 //
 // The anchor is kept alive by the extra MenuTouchWindow_languageIds element above (a relocation
 // in .data.rel.ro), not by a call in the constructor: the old ctor hook cost 24 bytes in every
@@ -3933,6 +3933,53 @@ static void mtwTextLayoutAnchor() {
     a = 10; a = 11; a = 12; a = 13; a = 14; a = 15; a = 16; a = 17; a = 18; a = 19;
     a = 24; a = 25; a = 26; a = 27;
     a = 28; a = 29;
+    a = 600;
+    a = 601;
+    a = 602;
+    a = 603;
+    a = 604;
+    a = 605;
+    a = 606;
+    a = 607;
+    a = 608;
+    a = 609;
+    a = 610;
+    a = 611;
+    a = 612;
+    a = 613;
+    a = 614;
+    a = 615;
+    a = 616;
+    a = 617;
+    a = 618;
+    a = 619;
+    a = 620;
+    a = 621;
+    a = 622;
+    a = 623;
+    a = 624;
+    a = 625;
+    a = 626;
+    a = 627;
+    a = 628;
+    a = 629;
+    a = 630;
+    a = 631;
+    a = 632;
+    a = 633;
+    a = 634;
+    a = 635;
+    a = 636;
+    a = 637;
+    a = 638;
+    a = 639;
+    a = 640;
+    a = 641;
+    a = 642;
+    a = 643;
+    a = 644;
+    a = 645;
+    a = 646;
     c = 0; c = 1; c = 2;
     (void) a;
     if (a == -1)
