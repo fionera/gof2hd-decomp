@@ -3869,3 +3869,8 @@ mtw anchor for any size change before MenuTouchWindow.
   stores 0. **linked_exact 4486 -> 4487.**
 - **ModStation ctor raw improvement, 1008 B** (`d74d2a06`, w2972): read through a pitch-table
   pointer so the literal pool orders `pitch` before `yawIPad`/`yaw`.
+- **PlayerStation ctor 97.7 -> 100.0%, 3440 B, linked-exact (C1+C2)** (`45024cee`, w2971):
+  function-scope `rootGeometry` reference plus inline `event0`/`event1` and per-anim locals
+  reproduce the original EH landing-pad table. **linked_exact 4487 -> 4489.**
+- **PlayerEgo::update 98.9 -> 99.8%, 8852 B** (`fb7a7cdb`, w2973): fix the turret test order and
+  dock-index `orr`, un-hoist the autopilot target.
