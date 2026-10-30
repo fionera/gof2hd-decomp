@@ -3,7 +3,10 @@
 > `.text 0x1343d0`, lint CLEAN, drift 0. Wave 87 attacked the worst-match queue: Gun::calcCharacterCollision
 > 74.9 -> 77.2%, Layout::Layout 45.4 -> 45.5% (7072 B), Radar::draw 71.40 -> 71.43%,
 > createCampaignMission 96.9 -> 97.0%, LevelScript::process 51.6 -> 51.9%, MeshReadData
-> 77.1 -> 78.1%, MenuTouchWindow::draw 95.1 -> 96.2%. The remaining work is fuzzy/register-allocation matching
+> 77.1 -> 78.1%, MenuTouchWindow::draw 95.1 -> 96.2%, drawChallengeModeScore 81.5 -> 83.8%,
+> StarMap::drawOnScreenInfo 98.2 -> 99.8%, SpaceLounge::startChat 97.4 -> 99.1%,
+> PlayerEgo::update 98.6 -> 98.9%, MGame::OnUpdate 99.7 -> 99.8%,
+> ModStation::OnKeyPress 99.7 -> 99.9%, MenuTouchWindow::OnTouchEnd 84.9%. The remaining work is fuzzy/register-allocation matching
 > for the 38 non-linked-exact functions; the detailed table below is the wave-69 snapshot and is
 > retained for address-order history.
 >
