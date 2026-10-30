@@ -593,8 +593,8 @@ void Gun::calcCharacterCollision() {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
         }
-        if (__builtin_expect(!enemy->isActive(), 0)) continue;  // lint: arm_builtin
-        if (__builtin_expect(enemy->getHitpoints() < 1, 0)) continue;  // lint: arm_builtin
+        if (!enemy->isActive()) continue;
+        if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
             enemy = enemySlot;
@@ -644,7 +644,7 @@ void Gun::calcCharacterCollision() {
                     if (!Globals::achievements->hasMedal(41, 1) &&
                         (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
                         int count = ++Globals::status->field_12c;
-                        if (count > Globals::achievements->getValue(41, 1) - 1) {
+                        if (count >= Globals::achievements->getValue(41, 1)) {
                             ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(41, 100);
                             Globals::status->field_130 = 1;
                         }
@@ -696,6 +696,10 @@ void Gun::calcCharacterCollision() {
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
+                // Codegen anchor: the original reloads this byte here, which keeps the frame
+                // layout and the block ordering in step with the shipped binary.
+                uint8_t hitFlag = *(volatile uint8_t *) &enemy->field_54;
+                (void) hitFlag;
                 ((Level *) this->level)->field_30 = 1;
             }
             enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
