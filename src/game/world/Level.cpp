@@ -4096,15 +4096,16 @@ void Level::createCampaignMission() {
             this->enemyRoute->getWaypoint(0)->reached();
             this->enemies = new Array<KIPlayer *>();
             unsigned char weakDevice = Globals::isRunningHDonWeakDevice;
-            int fighters = weakDevice ? 5 : 10;
             int docks = weakDevice ^ 1;
             ArraySetLength(((weakDevice == 0 ? 20 : 10) | docks) + 3, *this->enemies);
             Vector stationPos = {-120000.0f, 0.0f, 20000.0f};
+            int fighters = weakDevice ? 5 : 10;
             Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(101);
+            PlayerStation *stationShip = new PlayerStation(station);
             int friendEnd = fighters + docks;
             int enemyEnd = friendEnd + fighters;
             int stationIndex = enemyEnd + 2;
-            (*this->enemies)[stationIndex] = new PlayerStation(station);
+            (*this->enemies)[stationIndex] = stationShip;
             (*this->enemies)[stationIndex]->name = station->getName();
             (*this->enemies)[stationIndex]->shipGroup = 3;
             (*this->enemies)[stationIndex]->setPosition(stationPos);
