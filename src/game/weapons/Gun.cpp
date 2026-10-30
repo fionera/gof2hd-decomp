@@ -588,6 +588,7 @@ void Gun::calcCharacterCollision() {
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
+        Player *volatile enemySlot = enemy;
         if (mine) {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
@@ -596,8 +597,8 @@ void Gun::calcCharacterCollision() {
         if (__builtin_expect(enemy->getHitpoints() < 1, 0)) continue;  // lint: arm_builtin
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
+            enemy = enemySlot;
             Vector position = this->positions.data()[i];
-            enemy = this->enemies->data()[e];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition = AbyssEngine::AEMath::MatrixGetPosition(enemy->transform);
             Level *level = (Level *) this->level;
@@ -643,7 +644,7 @@ void Gun::calcCharacterCollision() {
                     if (!Globals::achievements->hasMedal(41, 1) &&
                         (isRocketLike(this->weaponType) || this->weaponType == ITEM_SORT_IONIZING_MISSILE)) {
                         int count = ++Globals::status->field_12c;
-                        if (count >= Globals::achievements->getValue(41, 1)) {
+                        if (count > Globals::achievements->getValue(41, 1) - 1) {
                             ((Hud *) ((Level *) this->level)->getPlayer()->getHUD())->hudEventMedal(41, 100);
                             Globals::status->field_130 = 1;
                         }
