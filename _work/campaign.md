@@ -3957,3 +3957,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow ctor raw 86.2845 -> 86.3145%, 9600 B** (`7fb41202`, w3037): zero the flag
   clusters with the original's wide `strd`/`str`/`strh` schedule (`0xfc, 0x16c, 0x177, 0x173,
   0x171, 0x17b`) instead of byte stores. Residual is constant-island placement (about-text pool).
+- **MeshReadData 78.1 -> 78.3%, 2632 B** (`6f43a9e4`, w3035): index the packed-normal stream
+  with one consistent `2*i` byte/halfword index (`raw + 2*i`, `+2`, `+4`) and drop the separate
+  `rawY` base, reproducing the original's `ldrsh` triple + `r6 += 6` walk. Residual is an
+  allocator permutation and the shared `delete[] raw`/`return -1` epilogue placement.

@@ -578,11 +578,10 @@ namespace AbyssEngine {
                     return -1;
                 }
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
-                short *rawY = (short *) raw + 1;
-                for (int i = 0; i + 3 <= ((*slot)->vertexCount * 3); i += 3) {
-                    float x = (float) ((double) *(short *) (raw + i) * (1.0 / 32768.0));
-                    float z = (float) ((double) *(short *) (raw + i + 2) * (1.0 / 32768.0));
-                    float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
+                for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
+                    float x = (float) ((double) *(short *) (raw + 2 * i) * (1.0 / 32768.0));
+                    float y = (float) ((double) *(short *) (raw + 2 * i + 2) * (1.0 / 32768.0));
+                    float z = (float) ((double) *(short *) (raw + 2 * i + 4) * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
                     // The original loads (*slot)->normals once per iteration and stores the
                     // clamped components through a single base pointer.
@@ -607,7 +606,7 @@ namespace AbyssEngine {
                         nrm[2] = cz;
                     }
                 }
-                delete[] (unsigned char *) raw;
+                delete[] raw;
             } else if ((flags & 0x18) != 0) {
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
