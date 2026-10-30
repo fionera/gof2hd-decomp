@@ -514,7 +514,10 @@ void HangarWindow::render() {
                 if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
                     int imgH = Globals::Canvas->GetImage2DHeight(this->hintImage);
-                    short rows = Globals::h / imgH;
+                    int rows = Globals::h / imgH;
+                    // Non-negative guard: keeps the original 376-byte frame
+                    // (this@sp+136, &Canvas@sp+140) with int rows.
+                    if (rows < 0) rows = 0;
                     for (int r = 0; r <= rows; r++) {
                         Globals::Canvas->DrawImage2D(this->hintImage,
                                                      Globals::layout->buttonInsetX - imgW + this->hintOffsetX,
