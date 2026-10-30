@@ -3807,3 +3807,8 @@ mtw anchor for any size change before MenuTouchWindow.
   inline the ship price, and name the message temp at offer 10/4.
 - **PlayerEgo::update 98.6 -> 98.9%, 8852 B** (`94682340`, w2926): mask the dock index with `0xfe`
   before the `orr`, matching the original's `and.w`.
+- **MGame::OnUpdate 99.7 -> 99.8%, 11440 B** (`w2929`): express the radio `messageIndex` range as
+  `(unsigned) messageIndex < 4` (the index is bounded to -1..2 by the 3-iteration loop), matching
+  the original `cmp #3` shape.
+- **ModStation::OnKeyPress 99.7 -> 99.9%, 2516 B** (`de58f29f`, w2928): type the SpaceLounge hangar
+  flag as `bool`, matching the original's byte load.
