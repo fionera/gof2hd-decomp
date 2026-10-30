@@ -99,10 +99,3 @@ void MTitle::OnRender3D() {
 void MTitle::OnTouchEnd(int x, int y) {
     this->timer = 5000;
 }
-
-
-// Layout anchor: the original Generator TU is 4 bytes larger than the reconstructed
-// createMission body; keep the archive-sensitive .text size.
-[[gnu::used]] static int generatorMissionLayoutPad() {
-    return 0;
-}
