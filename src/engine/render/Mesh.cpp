@@ -551,10 +551,10 @@ namespace AbyssEngine {
                 }
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
-                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 2); i += 4) {
-                    ((float *) (*slot)->texCoords)[i >> 1] = (float) ((double) *(short *) (raw + i) * (1.0 / 4096.0));
+                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 1); i += 2) {
+                    ((float *) (*slot)->texCoords)[i] = (float) ((double) *(short *) (raw + i) * (1.0 / 4096.0));
                     double v = (double) *(short *) (raw + i + 2) * (1.0 / 4096.0);
-                    ((float *) (*slot)->texCoords)[(i >> 1) + 1] = (float) (flipV ? 1.0 - v : v);
+                    ((float *) (*slot)->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
                 delete[] (unsigned char *) raw;
             } else if ((flags & 0x18) != 0) {
