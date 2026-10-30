@@ -113,14 +113,14 @@ PlayerStation::PlayerStation(Station *station)
             Globals::Canvas->TransformCreate(base0);
             Globals::Canvas->TransformAddMesh(base0, 0x4221, false);
             root->addChild(base0);
-            uint32_t event1;
             uint32_t base1 = 0xffffffff;
             Globals::Canvas->TransformCreate(base1);
             Globals::Canvas->TransformAddMesh(base1, 0x4222, false);
             root->addChild(base1);
+            uint32_t event0, event1;
             if (Globals::status->getCurrentCampaignMission() == 157 &&
                 Globals::status->getStation()->getIndex() == 112) {
-                uint32_t event0 = 0xffffffff;
+                event0 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event0);
                 Globals::Canvas->TransformAddMesh(event0, 0x4950, false);
                 this->rootGeometry->addChild(event0);
@@ -207,11 +207,11 @@ PlayerStation::PlayerStation(Station *station)
                 collision = reader->loadStationCollision(1005);
                 delete reader;
             } else {
-                uint16_t lodMesh = 0x4226;
-                int lodDist = 70000;
-                this->rootGeometry->setLodMeshes(&lodMesh, &lodDist, 1);
-                uint16_t lodChildMesh = 0x4227;
-                this->rootGeometry->setLodChildMeshes(&lodChildMesh);
+                uint16_t lodMesh[1] = {0x4226};
+                int lodDist[1] = {70000};
+                this->rootGeometry->setLodMeshes(lodMesh, lodDist, 1);
+                uint16_t lodChildMesh[1] = {0x4227};
+                this->rootGeometry->setLodChildMeshes(lodChildMesh);
             }
         } else if (race == 0 || race == 2) {
             AEGeometry *part1 = new AEGeometry((uint16_t) (this->stationIndex + 21800), Globals::Canvas, false);
