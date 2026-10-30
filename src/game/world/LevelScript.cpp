@@ -212,6 +212,7 @@ bool LevelScript::process(int delta) {
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
     PlayerEgo *player = m_pLevel->getPlayer();
     Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
+    Status *status = Globals::status;
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -221,13 +222,13 @@ bool LevelScript::process(int delta) {
             // state 0 setup, once message #2 finishes (disasm 0x137e9c). FP fills decoded from
             // the constant pool @0x1380d0..0x1380f8 (see per-line values below).
             m_nState = 1;
-            player->setPosition(-12000.0f, 18000.0f, -40000.0f);          // 0x1380d0/d4/d8
-            m_pCamera->setPosition(18000.0f, 2000.0f, -500.0f);          // 0x1380d4/e0/dc
+            player->setPosition(18000.0f, -12000.0f, -40000.0f);          // 0x1380d4/d0/d8
+            m_pCamera->setPosition(-12000.0f, 2000.0f, -500.0f);          // 0x1380d0/e0/dc
             // Set the camera's live local matrix translation to the same point (0x137ec2).
             AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
             Matrix *local = reinterpret_cast<Matrix *>(
                     canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-            AbyssEngine::AEMath::MatrixSetTranslation(*local, 18000.0f, 2000.0f, -500.0f);
+            AbyssEngine::AEMath::MatrixSetTranslation(*local, -12000.0f, 2000.0f, -500.0f);
             // Park the three intro ships (vtable+0x48 == KIPlayer::setPosition(fff), 0x137eec).
             (*enemies)[0]->setPosition(-10000.0f, 500.0f, 0.0f);          // 0x1380e8/ec
             (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
@@ -313,6 +314,8 @@ bool LevelScript::process(int delta) {
             // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
             // message #8 finishes hand control back to the player and reframe onto the player ship.
             // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            // layout anchor (see s_processPad)
+            s_processPad[3] = delta + 3;
             m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
             if (((RadioMessage *) ((*messages)[8]))->isOver()) {
                 m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
@@ -537,7 +540,7 @@ bool LevelScript::process(int delta) {
                 }
             }
         }
-    } else if (Globals::status->getCurrentCampaignMission() == 1) {
+    } else if (status->getCurrentCampaignMission() == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
         // while radio message #2 plays; on fade-out it switches to the next scene.
         m_pLevel->lodManager->forceUpdate(delta, true);
@@ -568,7 +571,7 @@ bool LevelScript::process(int delta) {
             return 0;
         }
         m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
-    } else if (Globals::status->getCurrentCampaignMission() == 0x51 && Globals::status->inAlienOrbit()) {
+    } else if (status->getCurrentCampaignMission() == 0x51 && status->inAlienOrbit()) {
         // Chain A, mission 81 alien-orbit arrival (0x1381ca).
         m_pLevel->lodManager->forceUpdate(delta, true);
         m_pCamera->translate((float) (2 * delta), 0.0f, (float) (-4 * delta));

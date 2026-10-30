@@ -4009,3 +4009,7 @@ mtw anchor for any size change before MenuTouchWindow.
   `-enemy->radius` negation plus a `__builtin_expect(..., 1)` on the first comparison so
   MachineBlockPlacement keeps the not-bomb flag block before the mine bounce. The mine block now
   matches instruction-for-instruction; residual is inner-loop register allocation.
+- **LevelScript::process 54.5 -> 54.6%, 57232 B** (`808a2e28`, w3078): correct the mission-0
+  state-0 camera/player constants (x/y were swapped) and hoist `Status *status = Globals::status`
+  for the mission dispatch so the `Status*` lands in r4 and the player stays at `sp+0x54`; a fourth
+  `s_processPad` store keeps the function size-exact.
