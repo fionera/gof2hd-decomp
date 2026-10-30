@@ -1773,7 +1773,7 @@ void MenuTouchWindow::draw() {
                 y + (this->sliderRowHeight - sliderLabelOffset), false);
             if (Globals::layout->field_0x284_sliderSlot5Enabled) {
                 layout = Globals::layout;
-                y = y + layout->field_0x2c_rowHeight + this->sliderRowHeight;
+                y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
                 layout->drawBox(5, layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight, String(""));
                 Globals::Canvas->DrawString(
                     (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
@@ -1822,7 +1822,7 @@ void MenuTouchWindow::draw() {
             Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
             layout = Globals::layout;
             Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
-                                         Globals::w - layout->buttonInsetX - this->listEntryHeight / 2,
+                                         Globals::w - layout->buttonInsetX - (this->listEntryHeight >> 1),
                                          arrowOffset + layout->field_0xc_leftMargin + layout->field_0x20_top, 17, 20);
             Globals::Canvas->SetColor(optionFlag(17) ? 0xffffffffu : 0xffffff2fu);
             Globals::Canvas->DrawString(
