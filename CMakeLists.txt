@@ -35,6 +35,16 @@ if(GOF2_MATCH_LAYOUT)
     target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 endif()
 
+# ModStation::OnInitialize's lazy CutScene check is a pointer comparison, so LLVM's
+# BranchProbabilityInfo pointer heuristic (20:12) picks the wrong successor probability and the
+# EH landing pads are laid out in the wrong order.  The original's branch metadata is 20:12, i.e.
+# the __builtin_expect hint in OnInitialize was compiled with these weights.  Scope the flag to
+# this TU: the other __builtin_expect/__predict_true users in the tree match with the 2000:1
+# default.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/ModStation.cpp"
+    PROPERTIES COMPILE_OPTIONS
+    "-mllvm;-likely-branch-weight=20;-mllvm;-unlikely-branch-weight=12")
+
 # =================================================================================================
 # Whole-.so link -- produce libgof2hdaa.so the original's shape
 # =================================================================================================
