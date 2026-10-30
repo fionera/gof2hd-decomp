@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.88,
   "byte_exact": 1412,
-  "linked_exact": 4485,
-  "fuzzy_perfect": 4485,
+  "linked_exact": 4486,
+  "fuzzy_perfect": 4486,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -270,14 +270,6 @@
    "linked": false,
    "osize": 8852,
    "usize": 8852
-  },
-  {
-   "name": "_ZN11SpaceLounge9startChatEv",
-   "pct": 99.1,
-   "byte": false,
-   "linked": false,
-   "osize": 14450,
-   "usize": 14450
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",
@@ -13142,6 +13134,14 @@
    "linked": true,
    "osize": 12,
    "usize": 12
+  },
+  {
+   "name": "_ZN11SpaceLounge9startChatEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 14450,
+   "usize": 14450
   },
   {
    "name": "_ZN11SpaceLoungeC1Ev",

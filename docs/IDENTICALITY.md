@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1412, linked_exact 4485, avg 99.87%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1412, linked_exact 4486, avg 99.88%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1412, linked_exact 4485, avg 99.87%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1412, linked_exact 4486, avg 99.88%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -44,7 +44,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 ## The four real gaps (in priority/size order)
 
-1. **38 non-linked exported functions.** 4485 of 4523 compared functions are linked-exact; the
+1. **37 non-linked exported functions.** 4486 of 4523 compared functions are linked-exact; the
    remaining 38 are the long tail (16 in 90–99%, 11 in 80–89%, 6 in 70–79%, 2 in 60–69%,
    3 below 60%). The `.text` total is +3,080 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a

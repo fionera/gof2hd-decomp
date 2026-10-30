@@ -3861,3 +3861,6 @@ mtw anchor for any size change before MenuTouchWindow.
   the crosshair floats live across `AEMath::operator-`, producing the original `vpush {d8-d13}`;
   the two redundant planet-loop stores pay for the +20 B. Fuzzy drops (tuned baseline aligned
   branch offsets better), but the prologue/inSight block now match the binary.
+- **SpaceLounge::startChat 99.1 -> 100.0%, 14450 B, linked-exact** (`71359604`, w2974): direct
+  `String` concat in the offer 10/4 paths restores the original temporary lifetime/EH landing pad;
+  `detailText` is a local value assigned back to `agent->field_0x2c`. **linked_exact 4485 -> 4486.**
