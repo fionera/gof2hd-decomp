@@ -3928,3 +3928,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Radar::draw 69.2 -> 71.5%, 9908 B** (`b3a8f4e7`, w3016): restore the tuned pre-`5765b59b`
   docking/visibility predicates and clear the gas-lock context before its timer. The faithful
   VL-first `inSight` shape (vpush d8-d13) remains 69.2%; the tuned bounds-first form scores higher.
+- **HangarWindow::render 77.1% (raw 77.1413 -> 77.0587), 9700 B** (`3112b1a0`, w3033): free-credit
+  `textY` uses the original `(float)height * 0.2f` (pool literal + `vmla.f32`) instead of the tuned
+  `/5.0f`; the extra pool word shifts literal displacements, so the raw fuzzy dips while the
+  reported percentage is unchanged. `int rows` loop and 376-byte frame preserved.
