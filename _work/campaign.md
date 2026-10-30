@@ -3733,3 +3733,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `0.5f` cost factor (faithful; compiles to 1992 B) and add a 4-byte `[[gnu::used]]` text anchor in
   `MTitle.cpp` so `.text` stays 0x1343d0. The remaining -4 B is the type-8 branch (difficulty in
   r6), still to reconstruct.
+- **Radar::draw 71.3 -> 71.4%, 9908 B** (`b9729d26`, w2302): order the distance bounds like the
+  original literal pool.
+- **HangarWindow::render 77.0 -> 77.1%, 9700 B** (`c9a7fa5b`, w2404): express the free-credit
+  `textY` as `height / 5.0f` so clang emits `vdiv` instead of a `0.2f` literal load.
+- **MeshReadData semantic fix** (`57fcce63`, w2405): read the packed UV/normal streams as signed
+  16-bit (`short*`, matching the original's 6 `ldrsh`), 77.1%, 2632 B, no metric change.

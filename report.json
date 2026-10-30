@@ -49,7 +49,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 71.3,
+   "pct": 71.4,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -72,20 +72,20 @@
    "usize": 1984
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.0,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
    "pct": 77.1,
    "byte": false,
    "linked": false,
    "osize": 2632,
    "usize": 2632
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 77.1,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
