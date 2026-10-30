@@ -2810,11 +2810,11 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->setToSleep();
                 (*this->enemies)[i]->player->setAlwaysEnemy(true);
                 (*this->enemies)[i]->setPosition(50000.0f, 50000.0f, 50000.0f);
-                Array<KIPlayer *> &enemies = *this->enemies;
-                KIPlayer *enemy = enemies[i];
+                KIPlayer **data = this->enemies->data_;
+                KIPlayer *enemy = data[i];
                 ((PlayerFighter *) enemy)->crateCaptured() = 0;
                 enemy->cargo = nullptr;
-                enemies[i]->player->setHitpoints(150);
+                data[i]->player->setHitpoints(150);
                 if (i <= 2)
                     ((PlayerFighter *) (*this->enemies)[i])->setExhaustVisible(false);
             }
