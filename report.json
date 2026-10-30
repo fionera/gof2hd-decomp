@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.88,
+  "avg_match": 99.89,
   "byte_exact": 1415,
   "linked_exact": 4491,
   "fuzzy_perfect": 4491,
@@ -49,7 +49,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 71.5,
+   "pct": 71.6,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -81,7 +81,7 @@
   },
   {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 78.1,
+   "pct": 78.3,
    "byte": false,
    "linked": false,
    "osize": 2632,
@@ -216,14 +216,6 @@
    "usize": 1896
   },
   {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 29676
-  },
-  {
    "name": "_ZN15MenuTouchWindow4drawEv",
    "pct": 97.8,
    "byte": false,
@@ -246,6 +238,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
+  },
+  {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 99.3,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 29676
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",

@@ -3961,3 +3961,7 @@ mtw anchor for any size change before MenuTouchWindow.
   with one consistent `2*i` byte/halfword index (`raw + 2*i`, `+2`, `+4`) and drop the separate
   `rawY` base, reproducing the original's `ldrsh` triple + `r6 += 6` walk. Residual is an
   allocator permutation and the shared `delete[] raw`/`return -1` epilogue placement.
+- **Level::createCampaignMission 97.4 -> 99.3%, 29676 B** (`1ab17fa4`, w3045): make the case-80
+  carrier-turret counter `unsigned char` (narrow `lsrs`, removes the 4 B cumulative shift that
+  flipped both TBH defaults) and drop `volatile` from the case-102 escort waypoint. **avg 99.88 ->
+  99.89.** Residual is 57 register/scheduling coin flips (cargo-pointer r1/r2, case-157 cmp form).

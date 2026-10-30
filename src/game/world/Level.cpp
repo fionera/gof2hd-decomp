@@ -3469,7 +3469,7 @@ void Level::createCampaignMission() {
             MatrixSetRotation(rotation, 0.0f, 3.1415927f, 0.0f);
             Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
-            for (int k = 0; k < 12; k++) {
+            for (unsigned char k = 0; k < 12; k++) {
                 ArrayAdd(this->createStaticObject(nullptr, ((2547u >> k) & 1) ? 14363 : 14365, true),
                          *this->enemies);
                 KIPlayer *turret = (*this->enemies)[k + 1];
@@ -3727,7 +3727,7 @@ void Level::createCampaignMission() {
                                    Globals::rnd->nextInt(140000) - 70000, 0, -70000};
             this->friendRoute = new Route(friendCoords, 9);
             Waypoint *dockWp = new Waypoint(-50000, 1000, 70000, nullptr);
-            Waypoint *volatile escortWp = new Waypoint(20000, 10000, 10000, nullptr);
+            Waypoint *escortWp = new Waypoint(20000, 10000, 10000, nullptr);
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(10, *this->enemies);
             (*this->enemies)[0] = this->createStaticObject(dockWp, 18804, true);
