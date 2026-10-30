@@ -1410,104 +1410,100 @@ void Radar::drawCurrentLock(Hud *) {
         if (target == nullptr) {
             target = this->lockedEnemy;
         }
-    }
-    if (target == nullptr) {
-        // The volatile read is load-bearing: it keeps the gas/enemy
-        // if-conversion intact and lets the cold station block land right
-        // after the dlc1Won block, matching the original layout.
-        volatile int zz;
-        int q = zz;
-        target = this->lockedStation;
         if (target == nullptr) {
-            Radar::drawTarget = q;
+            target = this->lockedStation;
+        }
+    }
+    if (target != nullptr) {
+        Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
+        Array<KIPlayer *> *landmarks = this->landmarks;
+        KIPlayer *asteroid = this->lockedAsteroid;
+        KIPlayer *station = this->lockedStation;
+        String *titleText;
+        if (station == (*landmarks)[0]) {
+            titleText = (*this->labelStrings)[0];
+        } else {
+            titleText = station == (*landmarks)[3] ? (*this->labelStrings)[3] : (*this->labelStrings)[1];
+        }
+        String title(*titleText, false);
+
+        if (target == this->lockedGasCloud) {
+            String text(*Globals::gameText->getText(3236), false);
+            int x = (Globals::w >> 1) -
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                        this->field_0x214 + layoutField(0xc4), false);
             return;
         }
-    }
-    Globals::Canvas->DrawImage2D(this->image_0xcc, this->lockLabelX, this->field_0x214);
-    Array<KIPlayer *> *landmarks = this->landmarks;
-    KIPlayer *asteroid = this->lockedAsteroid;
-    KIPlayer *station = this->lockedStation;
-    String *titleText;
-    if (station == (*landmarks)[0]) {
-        titleText = (*this->labelStrings)[0];
-    } else {
-        titleText = station == (*landmarks)[3] ? (*this->labelStrings)[3] : (*this->labelStrings)[1];
-    }
-    String title(*titleText, false);
-
-    if (target == this->lockedGasCloud) {
-        String text(*Globals::gameText->getText(3236), false);
-        int x = (Globals::w >> 1) -
-                (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
-                                    this->field_0x214 + layoutField(0xc4), false);
-        return;
-    }
-    if (target == asteroid) {
-        String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
-        int x = (Globals::w >> 1) -
-                (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-        this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
-        this->qualitySprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->qualitySprite->getFrameWidth(),
-                                         this->field_0x214 + layoutField(0xc0));
-        this->qualitySprite->draw(1.0f, 1.0f);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
-                                    this->field_0x214 + layoutField(0xc4), false);
-        return;
-    }
-
-    String text;
-    int x;
-    const String *label;
-    if (target->name.length != 0 &&
-        (target->name.Compare(*Globals::gameText->getText(1611)) == 0 ||
-         target->name.Compare(*Globals::gameText->getText(1663)) == 0 || target->field_0x42)) {
-        Globals::Canvas->SetColor(0xff2a00ff);
-        text = target->name;
-        if (target->field_0x42) {
-            text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
+        if (target == asteroid) {
+            String text(*Globals::gameText->getText(((PlayerAsteroid *) target)->asteroidIndex + 1274), false);
+            int x = (Globals::w >> 1) -
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+            this->qualitySprite->setFrame(((PlayerAsteroid *) target)->getQualityFrameIndex());
+            this->qualitySprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->qualitySprite->getFrameWidth(),
+                                             this->field_0x214 + layoutField(0xc0));
+            this->qualitySprite->draw(1.0f, 1.0f);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                        this->field_0x214 + layoutField(0xc4), false);
+            return;
         }
-        x = (Globals::w >> 1) -
-            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
-                                    this->field_0x214 + layoutField(0xc4), false);
-        Globals::Canvas->SetColor(0xffffffff);
-    } else {
-        if (target == station) {
-            label = &title;
-        } else if (target->name.length == 0) {
-            label = Globals::gameText->getText(target->shipGroup + 406);
-        } else {
-            label = &target->name;
-        }
-        text = *label;
-        if (target != station) {
-            text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
-            x = (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
-        } else {
-            if (Globals::status->inAlienOrbit()) {
-                if (Globals::status->dlc1Won()) {
-                    this->lockSprite->setFrame(8);
-                } else {
-                    this->lockSprite->setFrame(9);
-                }
-            } else {
-                this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
+
+        String text;
+        int x;
+        const String *label;
+        if (target->name.length != 0 &&
+            (target->name.Compare(*Globals::gameText->getText(1611)) == 0 ||
+             target->name.Compare(*Globals::gameText->getText(1663)) == 0 || target->field_0x42)) {
+            Globals::Canvas->SetColor(0xff2a00ff);
+            text = target->name;
+            if (target->field_0x42) {
+                text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
             }
             x = (Globals::w >> 1) -
                 (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                        this->field_0x214 + layoutField(0xc4), false);
+            Globals::Canvas->SetColor(0xffffffff);
+        } else {
+            if (target == station) {
+                label = &title;
+            } else if (target->name.length == 0) {
+                label = Globals::gameText->getText(target->shipGroup + 406);
+            } else {
+                label = &target->name;
+            }
+            text = *label;
+            if (target != station) {
+                text += String(String(" ", false) + String(target->player->getDamageRate()) + String("%", false), false);
+                x = (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+            } else {
+                if (Globals::status->inAlienOrbit()) {
+                    if (Globals::status->dlc1Won()) {
+                        this->lockSprite->setFrame(8);
+                    } else {
+                        this->lockSprite->setFrame(9);
+                    }
+                } else {
+                    this->lockSprite->setFrame(((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace());
+                }
+                x = (Globals::w >> 1) -
+                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1);
+                this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
+                                              this->field_0x214 + layoutField(0xc8));
+                this->lockSprite->draw(1.0f, 1.0f);
+            }
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
+                                        this->field_0x214 + layoutField(0xc4), false);
+        }
+        if (target != station && target->shipGroup != 10) {
+            this->lockSprite->setFrame(target->shipGroup);
             this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
                                           this->field_0x214 + layoutField(0xc8));
             this->lockSprite->draw(1.0f, 1.0f);
         }
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, x,
-                                    this->field_0x214 + layoutField(0xc4), false);
-    }
-    if (target != station && target->shipGroup != 10) {
-        this->lockSprite->setFrame(target->shipGroup);
-        this->lockSprite->setPosition(x - Globals::layout->field_0x2c_rowHeight - this->lockSprite->getFrameWidth(),
-                                      this->field_0x214 + layoutField(0xc8));
-        this->lockSprite->draw(1.0f, 1.0f);
+    } else {
+        Radar::drawTarget = 0;
+        return;
     }
 }
 KIPlayer *Radar::getLockedGasCloud() {
