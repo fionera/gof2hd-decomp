@@ -3812,3 +3812,7 @@ mtw anchor for any size change before MenuTouchWindow.
   the original `cmp #3` shape.
 - **ModStation::OnKeyPress 99.7 -> 99.9%, 2516 B** (`de58f29f`, w2928): type the SpaceLounge hangar
   flag as `bool`, matching the original's byte load.
+- **LevelScript::process 51.94 -> 52.02%, 57232 B** (`fcf0cb4d`, w2932): move the mission-26 special
+  before mission-5 in the pre-switch block. Residual is the original's linear state-0..5 compare
+  chain vs our merged `tbh` table; `this`/`player`/`status` spill counts (196/111/25 vs 328/163/48)
+  remain the register-allocation frontier.
