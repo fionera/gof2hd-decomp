@@ -3141,11 +3141,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     Globals::sound->enableCategory(1, options[13]);
                 }
                 if (this->optBtnD8->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(12);
-                    optionFlag(12) = on;
+                    bool on = !options[12];
+                    options[12] = on;
                     this->optBtnD8->setAlwaysPressed(on);
-                    (*this->sliders)[2]->setHalfTransparent(!optionFlag(12));
-                    Globals::sound->enableCategory(2, optionFlag(12));
+                    (*this->sliders)[2]->setHalfTransparent(!options[12]);
+                    Globals::sound->enableCategory(2, options[12]);
                     Globals::sound->play(126, 0, 0, 0.0f);
                 }
                 if (this->optBtnDC->OnTouchEnd(x, y)) {
@@ -3298,14 +3298,11 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 }
                 if (this->genericConfirmB) {
-                    int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 0) {
+                    if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
                         g_android_link_game_gp = 1;
-                    } else if (r != 1) {
-                        return 0;
+                        this->genericConfirmB = 0;
+                        this->messageShowing = 0;
                     }
-                    this->genericConfirmB = 0;
-                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->quitConfirmShowing) {
