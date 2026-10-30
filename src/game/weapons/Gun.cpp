@@ -659,12 +659,13 @@ void Gun::calcCharacterCollision() {
                 }
             } else if (mine) {
                 float r = (float) enemy->radius;
+                float nr = (float) -enemy->radius;
                 if (enemyPosition.x - position.x + velocity.x < r &&
-                    enemyPosition.x - position.x + velocity.x > (float) -enemy->radius &&
+                    enemyPosition.x - position.x + velocity.x > nr &&
                     enemyPosition.y - position.y + velocity.y < r &&
-                    enemyPosition.y - position.y + velocity.y > (float) -enemy->radius &&
+                    enemyPosition.y - position.y + velocity.y > nr &&
                     enemyPosition.z - position.z + velocity.z < r &&
-                    enemyPosition.z - position.z + velocity.z > (float) -enemy->radius) {
+                    enemyPosition.z - position.z + velocity.z > nr) {
                     this->ignite();
                     return;
                 }
