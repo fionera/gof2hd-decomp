@@ -3969,3 +3969,7 @@ mtw anchor for any size change before MenuTouchWindow.
   guard as `isDockingToDockingPoint() && !turretActive && !isLandingOrTakingOff()` so the two
   inlined helper bodies keep the original CFG instead of one flattened if-converted `itt ne` block;
   drops the artificial `__builtin_expect`. **linked_exact 4491 -> 4492.**
+- **Level::createShip 73.0 -> 73.1%, 2764 B** (`893df34d`, w3043): draw the three jitter values
+  Y,Z,X so two of the three spill slots match the original (faithful X,Y,Z is 73.0%). The original
+  EH pad is four plain `new` cleanups (no `__cxa_begin_catch`); removing the `__builtin_trap`
+  anchor reproduces it but drops the whole-function allocation to 67.7%, so the anchor stays.
