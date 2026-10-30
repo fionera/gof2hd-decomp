@@ -2822,12 +2822,12 @@ void MGame::OnUpdate() {
                            !this->jumpDriveActive && !this->usingJumpDrive) {
                     int i = 0;
                     int messageIndex = -1;
-                    for (; i < 3; i++) {
+                    for (int n = 3; i < n; i++) {
                         if (Globals::status->getCurrentCampaignMission() >= gWingmenRadioMissions[i]) {
                             messageIndex++;
                         }
                     }
-                    if ((unsigned) messageIndex < 4) {
+                    if ((unsigned) messageIndex < 3) {
                         Globals::status->field_0x17c = 0;
                         this->level->createRadioMessage(27, messageIndex);
                     }
