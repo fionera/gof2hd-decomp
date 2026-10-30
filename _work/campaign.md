@@ -3973,3 +3973,8 @@ mtw anchor for any size change before MenuTouchWindow.
   Y,Z,X so two of the three spill slots match the original (faithful X,Y,Z is 73.0%). The original
   EH pad is four plain `new` cleanups (no `__cxa_begin_catch`); removing the `__builtin_trap`
   anchor reproduces it but drops the whole-function allocation to 67.7%, so the anchor stays.
+- **Hud::drawChallengeModeScore 83.8 -> 89.1%, 944 B** (`a537451b`, w3022): restore the real
+  `String("0")` pad loop (drop the `ndkEntrance` anchor), hoist `step`/`half`/`halfStep` above it,
+  and add an off-screen `mx < 0` origin guard that keeps `half` live across the digit loop and
+  reproduces the original `sp+24` spill. Residual: clang folds `mx = half + rowGap - halfStep`
+  into `left + rowGap`, so the fused `sub.w`/`sp+0` halfStep store is still missing.

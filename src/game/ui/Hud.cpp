@@ -20,11 +20,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 
-// Platform-provided "0" pointer (NdkHooks.cpp). Referencing it keeps the zero-pad
-// reload inside the loop, matching the original's per-iteration .rodata "0" load.
-extern const char *ndkEntrance;
-
-
 // lint: void_ptr (external symbol; param types are mangling-load-bearing)
 
 
@@ -1761,15 +1756,15 @@ void Hud::drawChallengeModeScore(int unused) {
     y = Globals::layout->field_0x2c_rowHeight;
     screenW = Globals::w;
     String score(scoreValue);
-    if (score.size() < 7) {
-        int pad = 7 - score.size();
-        for (int i = 0; i != pad; i++)
-            score = String(ndkEntrance) + score;
-    }
-    Globals::Canvas->SetColor(0x77ccffff);
     step = digitW - overlap;
     half = screenW / 2;
     halfStep = step * 7 / 2;
+    if (score.size() < 7) {
+        int pad = 7 - score.size();
+        for (int i = 0; i < pad; i++)
+            score = String("0") + score;
+    }
+    Globals::Canvas->SetColor(0x77ccffff);
     left = half - halfStep;
     int x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
@@ -1804,6 +1799,9 @@ void Hud::drawChallengeModeScore(int unused) {
         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
         String multiplier(Globals::status->field_0x18c);
         int mx = half + rowGap - halfStep;
+        // Keep the multiplier digits on-screen if the computed origin is off the left edge.
+        if (mx < 0)
+            y = half;
         for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
             int frame = multiplier.SubString(i - 1, i).ValueOf();
             this->digitSprite->setFrame(frame);
