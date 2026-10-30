@@ -3894,3 +3894,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::OnTouchEnd 84.9 -> 83.4%, 8132 B** (`9460ff2b`, w2983): restore the original
   `genericConfirmB == 1` fall-through path and read option 12 as a bool. Real control-flow fix; the
   added compare shifts the global r8/sl allocation and costs fuzzy.
+- **ModStation::OnInitialize 99.5 -> 100.0%, 6396 B, linked-exact** (`0545f718`, w2986):
+  `__builtin_expect` 20:12 branch weights fix the EH landing-pad order.
+  **linked_exact 4489 -> 4490.**
