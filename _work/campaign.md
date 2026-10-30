@@ -3816,3 +3816,7 @@ mtw anchor for any size change before MenuTouchWindow.
   before mission-5 in the pre-switch block. Residual is the original's linear state-0..5 compare
   chain vs our merged `tbh` table; `this`/`player`/`status` spill counts (196/111/25 vs 328/163/48)
   remain the register-allocation frontier.
+- **HangarWindow::render raw 77.1031 -> 77.1307, 9700 B** (`8fed7d2c`, w2935): move the three
+  self-assignment scheduling anchors after the scroll-hint `DrawImage2D`. The faithful `int rows`
+  / `*0.2f` / branch-order fixes cost ~9 points because the tuned `short rows` + local `layout`
+  reproduce the original's 376-byte frame.
