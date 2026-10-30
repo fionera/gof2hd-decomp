@@ -7,10 +7,12 @@
 
 static Status *&status = Globals::status;
 
-// Layout::Layout() compiles to 6792 B, 280 B shorter than the original.  The mtwTextLayoutAnchor
-// helper in MenuTouchWindow.cpp grows by the same 280 B, so every function after it (including
-// canBeInstalledMultipleTimes) keeps its original address and this table's PC-relative literal
-// needs no .rodata pad.
+// Layout::Layout() is size-exact at 7072 B, i.e. 280 B longer than the previous body.  That
+// shifts every later .text function (including canBeInstalledMultipleTimes) by +280, so the
+// PC-relative literal that names this table would change.  Keep the table at the same distance
+// from the shifted function by moving it +280 B inside .rodata; the extra bytes are absorbed by
+// the alignment gap before .fini_array, leaving .got/.data and every downstream literal intact.
+[[gnu::used]] static const unsigned char canBeInstalledMultipleTimesPad[280] = {1};
 
 static const bool canBeInstalledMultipleTimesBySort[] = {
     true, true, true, true, true, true, true, true,
