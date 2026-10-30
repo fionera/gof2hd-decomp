@@ -232,14 +232,6 @@
    "usize": 1896
   },
   {
-   "name": "_ZN11SpaceLounge9startChatEv",
-   "pct": 97.4,
-   "byte": false,
-   "linked": false,
-   "osize": 14450,
-   "usize": 14450
-  },
-  {
    "name": "_ZN13PlayerStationC1EP7Station",
    "pct": 97.7,
    "byte": false,
@@ -273,11 +265,19 @@
   },
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 98.6,
+   "pct": 98.9,
    "byte": false,
    "linked": false,
    "osize": 8852,
    "usize": 8852
+  },
+  {
+   "name": "_ZN11SpaceLounge9startChatEv",
+   "pct": 99.1,
+   "byte": false,
+   "linked": false,
+   "osize": 14450,
+   "usize": 14450
   },
   {
    "name": "_ZN10ModStation12OnInitializeEv",

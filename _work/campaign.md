@@ -3803,3 +3803,7 @@ mtw anchor for any size change before MenuTouchWindow.
   r6 across the icon chain with a same-value ternary, matching the original's register allocation.
 - **MenuTouchWindow::OnTouchEnd 84.88 -> 84.92%, 8132 B** (`167012c0`, w2912): match the original's
   id53 flag-store order (the one real shape fix in an exhaustive swap search).
+- **SpaceLounge::startChat 97.4 -> 99.1%, 14450 B** (`c3591272`, w2923): name the case-5 mission,
+  inline the ship price, and name the message temp at offer 10/4.
+- **PlayerEgo::update 98.6 -> 98.9%, 8852 B** (`94682340`, w2926): mask the dock index with `0xfe`
+  before the `orr`, matching the original's `and.w`.
