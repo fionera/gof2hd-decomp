@@ -3940,3 +3940,9 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createMission 71.4 -> 71.5%, 17172 B** (`f0dfe3e5`, w3030): compute `stationIndex`
   before `raidRoll`/`getFreelanceMission()` in the no-mission prologue, matching the original call
   order. The `security == 3` raid clamp and the huge no-mission tail block placement remain.
+- **Layout::Layout 45.5 -> 50.7%, 6792 B (280 B short)** (`1b48aae9`, w3028): restore the
+  50.7% store schedule that reproduces the original's SLP vector-store order, drop the now-stale
+  280 B `Item.cpp` pad, and retune `mtwTextLayoutAnchor` (+49 stores) while keeping the 54.0%
+  `LevelScript::process` 57232 B form. Gate stays byte 1415 / linked 4491. Tradeoff: Layout is
+  280 B short of the original 7072 B (size-exact 7072 flat chain was 45.5%); the store-schedule
+  shape is the better base for reconstructing the missing tail.

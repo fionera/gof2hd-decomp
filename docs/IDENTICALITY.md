@@ -45,7 +45,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 ## The four real gaps (in priority/size order)
 
 1. **32 non-linked exported functions.** 4491 of 4523 compared functions are linked-exact; the
-   remaining 32 are the long tail (10 in 90–99%, 12 in 80–89%, 6 in 70–79%, 1 in 60–69%,
+   remaining 32 are the long tail (10 in 90–99%, 12 in 80–89%, 7 in 70–79%, 0 in 60–69%,
    3 below 60%). The `.text` total is +3,080 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
@@ -77,8 +77,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1415 byte_exact,
-4491 linked_exact, 4521 size_match of 4523; pct buckets {100:4491, 90-99:10, 80-89:12, 70-79:6,
-60-69:1, <60:3}. 2 functions size-MISMATCH (need restructuring); 21 size-match >=80%
+4491 linked_exact, 4519 size_match of 4523; pct buckets {100:4491, 90-99:10, 80-89:12, 70-79:7,
+<60:3}. 4 function rows size-MISMATCH (Layout C1/C2 -280 B, Generator -4 B, Hud +4 B); 21 size-match >=80%
 not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):
