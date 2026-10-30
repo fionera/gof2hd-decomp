@@ -42,12 +42,12 @@ PlayerStation::PlayerStation(Station *station)
     FileRead *reader = new FileRead();
     Array<int> *collision = reader->loadStationCollision(index);
     delete reader;
+    AEGeometry *&root = this->rootGeometry;
     bool alienOrbit = Globals::status->inAlienOrbit();
 
     // stations without their own collision data use one of the generic station models
     if ((uint32_t) (index - 109) >= 2 && collision == nullptr) {
         if (!alienOrbit) {
-            AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x4034, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry((uint16_t) 0x4037, Globals::Canvas, false);
             root->addChild(part1->transform);
@@ -59,7 +59,6 @@ PlayerStation::PlayerStation(Station *station)
             collision = r1000->loadStationCollision(1000);
             delete r1000;
         } else if (Globals::status->dlc1Won()) {
-            AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x4220, Globals::Canvas, false);
             uint32_t t1 = 0xffffffff;
             Globals::Canvas->TransformCreate(t1);
@@ -69,9 +68,9 @@ PlayerStation::PlayerStation(Station *station)
             Globals::Canvas->TransformCreate(t2);
             Globals::Canvas->TransformAddMesh(t2, 0x4222, false);
             root->addChild(t2);
-            reader = new FileRead();
-            collision = reader->loadStationCollision(1003);
-            delete reader;
+            FileRead *r1003 = new FileRead();
+            collision = r1003->loadStationCollision(1003);
+            delete r1003;
             ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(root->transform))
                     ->Update(((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(root->transform))->animationLength,
                              false);
@@ -82,7 +81,6 @@ PlayerStation::PlayerStation(Station *station)
                     ->Update(((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(root->parentTransform))->animationLength,
                              false);
         } else {
-            AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x403b, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry((uint16_t) 0x403e, Globals::Canvas, false);
             root->addChild(part1->transform);
@@ -107,7 +105,6 @@ PlayerStation::PlayerStation(Station *station)
                            : 9;
 
         if (this->stationIndex == 101) {
-            AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x4220, Globals::Canvas, false);
             uint32_t base0 = 0xffffffff;
             Globals::Canvas->TransformCreate(base0);
@@ -117,14 +114,13 @@ PlayerStation::PlayerStation(Station *station)
             Globals::Canvas->TransformCreate(base1);
             Globals::Canvas->TransformAddMesh(base1, 0x4222, false);
             root->addChild(base1);
-            uint32_t event0, event1;
             if (Globals::status->getCurrentCampaignMission() == 157 &&
                 Globals::status->getStation()->getIndex() == 112) {
-                event0 = 0xffffffff;
+                uint32_t event0 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event0);
                 Globals::Canvas->TransformAddMesh(event0, 0x4950, false);
                 this->rootGeometry->addChild(event0);
-                event1 = 0xffffffff;
+                uint32_t event1 = 0xffffffff;
                 Globals::Canvas->TransformCreate(event1);
                 Globals::Canvas->TransformAddMesh(event1, 0x4952, false);
                 this->rootGeometry->addChild(event1);
@@ -141,7 +137,6 @@ PlayerStation::PlayerStation(Station *station)
                                  false);
             }
         } else if (this->stationIndex == 111 && Globals::status->getCurrentCampaignMission() <= 93) {
-            AEGeometry *&root = this->rootGeometry;
             root = new AEGeometry((uint16_t) 0x5254, Globals::Canvas, false);
             AEGeometry *part1 = new AEGeometry((uint16_t) 0x5574, Globals::Canvas, false);
             root->addChild(part1->transform);
@@ -226,18 +221,18 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry *part2 = new AEGeometry((uint16_t) (this->stationIndex + 22000), Globals::Canvas, false);
             this->rootGeometry->addChild(part2->transform);
             if (this->stationIndex == 108) {
-                AEGeometry *anim = new AEGeometry((uint16_t) 0x5974, Globals::Canvas, false);
-                this->rootGeometry->addChild(anim->transform);
-                this->animTransform0 = anim->transform;
-                anim = new AEGeometry((uint16_t) 0x5975, Globals::Canvas, false);
-                this->rootGeometry->addChild(anim->transform);
-                this->animTransform1 = anim->transform;
-                anim = new AEGeometry((uint16_t) 0x5976, Globals::Canvas, false);
-                this->rootGeometry->addChild(anim->transform);
-                this->animTransform2 = anim->transform;
-                anim = new AEGeometry((uint16_t) 0x5977, Globals::Canvas, false);
-                this->rootGeometry->addChild(anim->transform);
-                this->animTransform3 = anim->transform;
+                AEGeometry *anim0 = new AEGeometry((uint16_t) 0x5974, Globals::Canvas, false);
+                this->rootGeometry->addChild(anim0->transform);
+                this->animTransform0 = anim0->transform;
+                AEGeometry *anim1 = new AEGeometry((uint16_t) 0x5975, Globals::Canvas, false);
+                this->rootGeometry->addChild(anim1->transform);
+                this->animTransform1 = anim1->transform;
+                AEGeometry *anim2 = new AEGeometry((uint16_t) 0x5976, Globals::Canvas, false);
+                this->rootGeometry->addChild(anim2->transform);
+                this->animTransform2 = anim2->transform;
+                AEGeometry *anim3 = new AEGeometry((uint16_t) 0x5977, Globals::Canvas, false);
+                this->rootGeometry->addChild(anim3->transform);
+                this->animTransform3 = anim3->transform;
             }
             delete part1;
             delete part2;
