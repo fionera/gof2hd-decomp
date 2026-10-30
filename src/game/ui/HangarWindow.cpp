@@ -952,13 +952,13 @@ void HangarWindow::render() {
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
-                    description = description;
-                    description = description;
-                    description = description;
                     Globals::Canvas->DrawImage2D(
                         this->scrollHintImageA,
                         (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
                         (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
+                    description = description;
+                    description = description;
+                    description = description;
                 }
             }
         } else {
