@@ -3987,3 +3987,7 @@ mtw anchor for any size change before MenuTouchWindow.
   drop the `generatorMissionLayoutPad` MTitle anchor. The real 4 B shortfall is the type-8 branch's
   early `str amount,[sp,#28]` + `difficulty -> r6`, which clang 7 sinks; the constant is a
   size-exactness device, not a semantic claim.
+- **LevelScript::process 54.0 -> 54.5%, 57232 B** (`dfd5e686`, w3051): reshape the size anchor to
+  a 3-store `s_processPad[8]` array, route the mission-1 rotate through `m_pLevel->getPlayer()`,
+  and keep `this` live across the mission-complete tail (`m_bCinematicBreak = 1`). The 4-byte
+  size knob is required: shrinking by 4 B drops 9 downstream address-sensitive byte_exact thunks.

@@ -41,7 +41,7 @@
 // reconstructed loop below compiles 0x1c bytes shorter because -Oz keeps the cached enemy
 // pointer in a register instead of reloading it.  These volatile stores restore the body's
 // original size/register pressure (the values are never read).
-static volatile int s_processPad;
+static volatile int s_processPad[8];
 
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);
@@ -239,13 +239,9 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setVisible(true);
             }
             // layout anchor (see s_processPad)
-            s_processPad = delta;
-            s_processPad = delta + 1;
-            s_processPad = delta + 2;
-            s_processPad = delta + 3;
-            s_processPad = delta + 4;
-            s_processPad = delta + 5;
-            s_processPad = delta + 6;
+            s_processPad[0] = delta;
+            s_processPad[1] = delta + 1;
+            s_processPad[2] = delta + 2;
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
@@ -548,7 +544,7 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
-        player->rotate(0.0f, angle, angle);
+        m_pLevel->getPlayer()->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
@@ -3212,6 +3208,7 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
+                        m_bCinematicBreak = 1;
                         Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
