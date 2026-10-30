@@ -1362,9 +1362,8 @@ void MenuTouchWindow::draw() {
                     (*this->scrollSlots)[i]->setAlwaysPressed(false);
                 }
                 layout = Globals::layout;
-                (*this->scrollSlots)[i]->setYPosition((layout->field_0x2c_rowHeight + this->contentHeightCache) * i +
-                                                      layout->field_0x20_top + layout->field_0xc_leftMargin +
-                                                      this->scrollOffset);
+                int y = layout->field_0x20_top + layout->field_0xc_leftMargin + this->scrollOffset;
+                (*this->scrollSlots)[i]->setYPosition(y + (layout->field_0x2c_rowHeight + this->contentHeightCache) * i);
                 (*this->scrollSlots)[i]->draw();
                 if ((optionFlag(53) && i == 0) || (optionFlag(54) && i == 1) || (optionFlag(55) && i == 2) ||
                     (optionFlag(56) && i == 3) || (i == 4 && ((optionFlag(53) && optionFlag(55)) || optionFlag(57)))) {
@@ -1814,8 +1813,8 @@ void MenuTouchWindow::draw() {
             Layout *layout = Globals::layout;
             layout->drawBox(5, layout->buttonInsetX, layout->field_0xc_leftMargin + layout->field_0x20_top,
                             this->optionsWidth, this->listEntryWidth, String(""));
-            Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             layout = Globals::layout;
+            Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x110, layout->buttonInsetX + this->listEntryHeight / 2,
                                          layout->field_0xc_leftMargin + arrowOffset * 2 + layout->field_0x20_top, 17,
                                          20);
