@@ -601,9 +601,10 @@ void SpaceLounge::startChat() {
                 this->mode = 3;
                 return;
             }
-            case 5:
+            case 5: {
                 // Freelance job.
-                agent->setMission(generator->createMission(agent, Globals::galaxy->getSystems()));
+                Mission *mission = generator->createMission(agent, Globals::galaxy->getSystems());
+                agent->setMission(mission);
                 agent->field_0x28 = 777 + Globals::rnd->nextInt(2);
                 body += *Globals::gameText->getText(agent->field_0x28);
                 body = Globals::status->replaceHash(
@@ -613,6 +614,7 @@ void SpaceLounge::startChat() {
                 body = Globals::status->replaceHash(
                     body, String(Globals::layout->formatCredits(agent->getMission()->getReward()), false), String("#C"));
                 break;
+            }
             case 1: {
                 // Ore rumours.
                 int ore;
@@ -752,8 +754,7 @@ void SpaceLounge::startChat() {
                     return;
                 }
                 agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                int shipPrice = Globals::status->getShip()->getPrice();
-                agent->setSellItemPrice(shipPrice * agent->getModPricePercentage() / 100);
+                agent->setSellItemPrice(Globals::status->getShip()->getPrice() * agent->getModPricePercentage() / 100);
                 message = *Globals::gameText->getText(agent->field_0x28);
                 message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 message += String(" ") + *Globals::gameText->getText(879);
@@ -814,7 +815,10 @@ void SpaceLounge::startChat() {
                     textId = 874 + Globals::rnd->nextInt(2);
                 agent->field_0x28 = textId;
                 message = *Globals::gameText->getText(textId);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                {
+                    String extra = String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                    message += extra;
+                }
                 if (agent->field_0x2c == -1)
                     agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
                 int detailText = agent->field_0x2c;
@@ -829,7 +833,10 @@ void SpaceLounge::startChat() {
                 // System coordinates.
                 agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
                 message = *Globals::gameText->getText(agent->field_0x28);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                {
+                    String extra = String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                    message += extra;
+                }
                 message += String(" ") + *Globals::gameText->getText(877);
                 SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
                 message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
