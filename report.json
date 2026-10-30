@@ -17,19 +17,19 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 50.7,
+   "pct": 45.5,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6792
+   "usize": 7072
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 50.7,
+   "pct": 45.5,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6792
+   "usize": 7072
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -128,22 +128,6 @@
    "usize": 8132
   },
   {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 86.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 86.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 86.7,
    "byte": false,
@@ -166,6 +150,22 @@
    "linked": false,
    "osize": 968,
    "usize": 968
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 87.6,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 87.6,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
   },
   {
    "name": "_ZN5Level11createSceneEv",

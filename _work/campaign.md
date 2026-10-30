@@ -4000,3 +4000,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `Globals::w >> 2` x argument (avoids the signed-division sequence) and store `listBottomY`
   directly / load the entry-width float from the pool instead of materializing locals. Moves the
   about-text constant island to the original 0x124d10 and realigns the landing-pad `b.n` targets.
+- **Layout::Layout 50.7 -> 45.5%, 7072 B (size-exact)** (`8c83fde8`, w3068): land the size-exact
+  7072 B store order (204 field assignments) with the `70.0f`/`23` literal forms, a 280 B
+  `Item.cpp` `.rodata` pad, and a 47-store trim of `mtwTextLayoutAnchor`. Gate stays byte 1415 /
+  linked 4492. **All 4523 compared functions are now size-exact.** The fuzzy drop is the price of
+  size-exactness: the original's more heavily vectorised store schedule is not yet recovered.
