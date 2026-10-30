@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.88,
   "byte_exact": 1412,
-  "linked_exact": 4484,
-  "fuzzy_perfect": 4484,
+  "linked_exact": 4485,
+  "fuzzy_perfect": 4485,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -40,20 +40,20 @@
    "usize": 57232
   },
   {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 69.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
+  },
+  {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
    "pct": 71.4,
    "byte": false,
    "linked": false,
    "osize": 9908,
    "usize": 9908
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 71.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2780
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
@@ -190,14 +190,6 @@
    "linked": false,
    "osize": 9332,
    "usize": 9332
-  },
-  {
-   "name": "_ZN5Level11createRouteEi",
-   "pct": 92.5,
-   "byte": false,
-   "linked": false,
-   "osize": 232,
-   "usize": 216
   },
   {
    "name": "_ZN7StarMap4drawEv",
@@ -23134,6 +23126,14 @@
    "linked": true,
    "osize": 22,
    "usize": 22
+  },
+  {
+   "name": "_ZN5Level11createRouteEi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 232,
+   "usize": 232
   },
   {
    "name": "_ZN5Level11createSpaceEv",

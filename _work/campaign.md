@@ -3794,7 +3794,8 @@ mtw anchor for any size change before MenuTouchWindow.
   original's `add`/`asr` sequence.
 - **Hud::drawChallengeModeScore 81.5 -> 83.8%, 944 B** (`0658baab`, w2910): pre-increment the
   bonus-digit offset so the loop lays out test-first like the original.
-- **Level::createShip 69.3 -> 71.5%, 2780 B** (`79ca92c3`, w2503): land the faithful no-EH body
-  (statement clamp, no phantom try/catch). The +16 B is compensated by a `createRoute`
-  placement-new (232 -> 216 B, 92.5%) and a 312 B `Item` `.rodata` pad, so `byte_exact` stays
-  1412 and `.text` 0x1343d0; `linked_exact` is 4484 (transient, `createRoute` recovery pending).
+- **Level::createShip no-EH body (71.5%, 2780 B) reverted** (`79ca92c3` -> `3df49d47`, w2503/w2922):
+  the faithful statement-clamp/no-try-catch body scores 71.5% but is 16 B larger; compensating via
+  a `createRoute` placement-new (216 B, 92.5%) costs `linked_exact` 4485 -> 4484. The size-exact
+  ternary+EH body (2764 B, 69.3%) plus `createRoute` at 232 B (100%) is the better net trade and
+  keeps the gate at linked 4485. The missing 16 B in the no-EH body is still the open target.
