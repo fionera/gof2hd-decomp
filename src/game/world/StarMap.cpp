@@ -694,12 +694,12 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         this->iconBuffer[1] = this->keyImageWanted;
     if (Globals::status->getCurrentCampaignMission() == 116 && stationMode &&
         (*this->stations)[index]->getIndex() >= 90 && (*this->stations)[index]->getIndex() <= 94 &&
-        !((Globals::status->getCampaignMission(), campaign)->getStatusValue() &
+        !(((Mission *) Globals::status->getCampaignMission())->getStatusValue() &
           (1 << ((*this->stations)[index]->getIndex() - 90)))) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 120 &&
                (stationMode ? (*this->stations)[index]->getIndex() == 93
-                            : (int) (*this->systems)[index]->getStationEnumIndex(93) >= 0)) {
+                            : (int) (*this->systems)[index]->getStationEnumIndex(93) >= 0 && campaign != 0)) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 125 && stationMode &&
                Globals::status->isFreighterMissionStation((*this->stations)[index]->getIndex()) &&
