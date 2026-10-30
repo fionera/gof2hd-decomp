@@ -2065,12 +2065,11 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     float bank = 0.0f;
     if (this->autoPilot && this->autoPilotTarget != 0) {
         if (!this->field_0x145 && !this->updateManeuver()) {
-            KIPlayer *target = (KIPlayer *) (intptr_t) this->autoPilotTarget;
-            if (this->goingToWaypointFlag && ((Waypoint *) target)->route != nullptr) {
-                target = (KIPlayer *) (intptr_t) ((Waypoint *) target)->route->getWaypoint();
-                this->autoPilotTarget = (int) (intptr_t) target;
+            if (this->goingToWaypointFlag && ((Waypoint *) (intptr_t) this->autoPilotTarget)->route != nullptr) {
+                this->autoPilotTarget = (int) (intptr_t) ((Waypoint *) (intptr_t) this->autoPilotTarget)->route->getWaypoint();
             }
-            if (target == nullptr || this->dockedToStream) {
+            KIPlayer *target = (KIPlayer *) (intptr_t) this->autoPilotTarget;
+            if (__builtin_expect(target == nullptr, 0) || this->dockedToStream) { // lint: arm_builtin
                 this->setAutoPilot(nullptr);
             } else {
                 this->moveTarget = target->getPosition();
@@ -2086,7 +2085,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             }
         }
     } else if (!this->field_0x145) {
-        if (this->turretActive || __builtin_expect(this->field_0x1a1, 0)) { // lint: arm_builtin
+        if (__builtin_expect(this->turretActive, 0) || this->field_0x1a1) { // lint: arm_builtin
             this->handleTurretView(dt);
         } else {
             this->roll(this->shakeIntensity);
@@ -2095,7 +2094,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && ((this->dockingPointIndex & 0xfe) | 1) != 3)
+    if (__builtin_expect(this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && (this->dockingPointIndex | 1) != 3, 1)) // lint: arm_builtin
         this->updateManeuver();
 
     if (this->autoTurretEquipped && this->autoTurretEnabled
