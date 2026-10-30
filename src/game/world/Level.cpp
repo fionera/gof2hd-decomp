@@ -1590,7 +1590,7 @@ static const int kBlueprintRaces[5] = {1, 3, 2, 0, 2};
 static const float kBlueprintPositions[5][3] = {
     {-20000.0f, 30000.0f, 80000.0f}, {40000.0f, -30000.0f, 100000.0f}, {-80000.0f, 80000.0f, -90000.0f},
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
-static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
+static const int kBlueprintSpacePoints[9] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
 
 static void levelTextAnchor();
 
@@ -1700,9 +1700,9 @@ void Level::createMission() {
                             // identical store sequences in all four blocks let SimplifyCFG hoist
                             // them and rewrite the switch as a lookup table, but the original
                             // keeps the branchy form.
-                            offset[1] = 6000.0f;
-                            offset[0] = 12000.0f;
                             offset[2] = -45000.0f;
+                            offset[0] = 12000.0f;
+                            offset[1] = 6000.0f;
                             break;
                     }
                     (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
@@ -1711,49 +1711,6 @@ void Level::createMission() {
                 this->stationPosition = this->player->getPosition();
                 this->timeLimit = 181000;
                 this->objectivesA = new Objective(3, 181000, this);
-                return;
-            }
-            case 184: {
-                int coords[9] = {Globals::rnd->nextInt(140000) - 70000, 0, 70000,
-                                 Globals::rnd->nextInt(140000) - 70000, 0, 100000,
-                                 Globals::rnd->nextInt(140000) - 70000, 0, 140000};
-                this->enemyRoute = new Route(coords, 3);
-                Globals::status->getMission()->getDifficulty();
-                ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(mission->getClientRace());
-                int clientRace = mission->getClientRace();
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(4, *this->enemies);
-                (*this->enemies)[0] = this->createStaticObject(new Waypoint(-30000, 0, 40000, nullptr), 19080, true);
-                ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
-                ((PlayerFixedObject *) (*this->enemies)[0])->setDockingType(2);
-                ((PlayerFixedObject *) (*this->enemies)[0])->setName(*Globals::gameText->getText(3208));
-                (*this->enemies)[1] = this->createStaticObject(new Waypoint(30000, 0, 40000, nullptr), 18830, true);
-                ((PlayerFixedObject *) (*this->enemies)[1])->setMoving(false);
-                ((PlayerFixedObject *) (*this->enemies)[1])->setDockingType(1);
-                ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(3209));
-                struct ConvoyCoords9 { int a, b, c, d, e, f, g, h, i; };
-                ConvoyCoords9 convoyCoords = {-1, -1, -1, 0, 0, 40000, -1, -1, -1};
-                int waitTimes[3] = {10000, 0, 10000};
-                Array<KIPlayer *> *stops = new Array<KIPlayer *>();
-                ArraySetLength(3, *stops);
-                (*stops)[0] = (*this->enemies)[0];
-                (*stops)[2] = (*this->enemies)[1];
-                Route *convoyRoute = new Route(&convoyCoords.a, stops, waitTimes, 9);
-                convoyRoute->setLoop(true);
-                Route *convoyRoute2 = convoyRoute->clone();
-                for (int i = 2; i < 4; i++) {
-                    int type = Globals::globals->getRandomEnemyFighter(clientRace);
-                    if (i == 2) {
-                        (*this->enemies)[i] = this->createShip(clientRace, 0, type, convoyRoute->getWaypoint(0), true, false);
-                        (*this->enemies)[i]->setRoute(convoyRoute);
-                    } else {
-                        (*this->enemies)[i] = this->createShip(clientRace, 0, type, convoyRoute2->getWaypoint(0), true, false);
-                        (*this->enemies)[i]->setRoute(convoyRoute2);
-                    }
-                    (*this->enemies)[i]->player->setAlwaysFriend(true);
-                    (*this->enemies)[i]->player->setNeverAttack(true);
-                }
-                this->objectivesA = new Objective(29, mission->getProductionGoodAmount(), mission->getProductionGoodIndex(), this);
                 return;
             }
             case 3:
@@ -2049,6 +2006,49 @@ void Level::createMission() {
                 }
                 goto case4Else;
             }
+            case 184: {
+                int coords[9] = {Globals::rnd->nextInt(140000) - 70000, 0, 70000,
+                                 Globals::rnd->nextInt(140000) - 70000, 0, 100000,
+                                 Globals::rnd->nextInt(140000) - 70000, 0, 140000};
+                this->enemyRoute = new Route(coords, 3);
+                Globals::status->getMission()->getDifficulty();
+                ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(mission->getClientRace());
+                int clientRace = mission->getClientRace();
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(4, *this->enemies);
+                (*this->enemies)[0] = this->createStaticObject(new Waypoint(-30000, 0, 40000, nullptr), 19080, true);
+                ((PlayerFixedObject *) (*this->enemies)[0])->setMoving(false);
+                ((PlayerFixedObject *) (*this->enemies)[0])->setDockingType(2);
+                ((PlayerFixedObject *) (*this->enemies)[0])->setName(*Globals::gameText->getText(3208));
+                (*this->enemies)[1] = this->createStaticObject(new Waypoint(30000, 0, 40000, nullptr), 18830, true);
+                ((PlayerFixedObject *) (*this->enemies)[1])->setMoving(false);
+                ((PlayerFixedObject *) (*this->enemies)[1])->setDockingType(1);
+                ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(3209));
+                struct ConvoyCoords9 { int a, b, c, d, e, f, g, h, i; };
+                ConvoyCoords9 convoyCoords = {-1, -1, -1, 0, 0, 40000, -1, -1, -1};
+                int waitTimes[3] = {10000, 0, 10000};
+                Array<KIPlayer *> *stops = new Array<KIPlayer *>();
+                ArraySetLength(3, *stops);
+                (*stops)[0] = (*this->enemies)[0];
+                (*stops)[2] = (*this->enemies)[1];
+                Route *convoyRoute = new Route(&convoyCoords.a, stops, waitTimes, 9);
+                convoyRoute->setLoop(true);
+                Route *convoyRoute2 = convoyRoute->clone();
+                for (int i = 2; i < 4; i++) {
+                    int type = Globals::globals->getRandomEnemyFighter(clientRace);
+                    if (i == 2) {
+                        (*this->enemies)[i] = this->createShip(clientRace, 0, type, convoyRoute->getWaypoint(0), true, false);
+                        (*this->enemies)[i]->setRoute(convoyRoute);
+                    } else {
+                        (*this->enemies)[i] = this->createShip(clientRace, 0, type, convoyRoute2->getWaypoint(0), true, false);
+                        (*this->enemies)[i]->setRoute(convoyRoute2);
+                    }
+                    (*this->enemies)[i]->player->setAlwaysFriend(true);
+                    (*this->enemies)[i]->player->setNeverAttack(true);
+                }
+                this->objectivesA = new Objective(29, mission->getProductionGoodAmount(), mission->getProductionGoodIndex(), this);
+                return;
+            }
             default:
                 return;
         }
@@ -2334,7 +2334,7 @@ void Level::createMission() {
                   ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 &&
                   Globals::status->getStation()->getIndex() ==
                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation();
-    bool bigAlienWave = false;
+    int bigAlienWave = 0;
     int alienWave = 0;
     int pirateFortress = 0;
     if (this->field_168 > 0 && localRace == 0) {

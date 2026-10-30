@@ -3991,3 +3991,8 @@ mtw anchor for any size change before MenuTouchWindow.
   a 3-store `s_processPad[8]` array, route the mission-1 rotate through `m_pLevel->getPlayer()`,
   and keep `this` live across the mission-complete tail (`m_bCinematicBreak = 1`). The 4-byte
   size knob is required: shrinking by 4 B drops 9 downstream address-sensitive byte_exact thunks.
+- **Level::createMission 71.5 -> 83.3%, 17172 B** (`1d18e017`+`5020b3bf`, w3070/w3061): make
+  `bigAlienWave` an `int` and reorder the case-183 diamond stores (`offset[2],offset[0],offset[1]`)
+  so clang emits the branchy GPR form and places the huge no-mission tail after the case bodies
+  (tbh targets now within −2…+8 B). Also move `case 184` to the end of the switch. A full case
+  reorder reaches 100% but is +168 B and costs 41 byte_exact, so it was not landed.
