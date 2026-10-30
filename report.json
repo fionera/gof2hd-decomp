@@ -192,14 +192,6 @@
    "usize": 9332
   },
   {
-   "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 94.0,
-   "byte": false,
-   "linked": false,
-   "osize": 13052,
-   "usize": 13052
-  },
-  {
    "name": "_ZN7StarMap4drawEv",
    "pct": 94.7,
    "byte": false,
@@ -216,12 +208,12 @@
    "usize": 1948
   },
   {
-   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
-   "pct": 96.0,
+   "name": "_ZN15MenuTouchWindow4drawEv",
+   "pct": 95.1,
    "byte": false,
    "linked": false,
-   "osize": 1680,
-   "usize": 1680
+   "osize": 13052,
+   "usize": 13052
   },
   {
    "name": "_ZN5Level21createCampaignMissionEv",
@@ -318,6 +310,14 @@
    "linked": false,
    "osize": 11440,
    "usize": 11440
+  },
+  {
+   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
+   "pct": 99.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1680,
+   "usize": 1680
   },
   {
    "name": "Blowfish_decipher",

@@ -3763,3 +3763,7 @@ mtw anchor for any size change before MenuTouchWindow.
   the post-clamp amount and the `orr` dock index check.
 - **PlayerStation ctor 96.3 -> 97.7%, 3440 B** (`39c6ca05`, w2703): LOD mesh arrays plus hoisted
   `event0`/`event1` declarations fix the stack slots.
+- **Radar::drawCurrentLock 96.0 -> 99.8%, 1680 B** (`8d551c0a`, w2702): volatile-driven station-block
+  placement.
+- **MenuTouchWindow::draw 93.98 -> 95.0%, 13052 B** (`36394ab0`, w2703): faithful logo canvas plus a
+  non-merging language test.
