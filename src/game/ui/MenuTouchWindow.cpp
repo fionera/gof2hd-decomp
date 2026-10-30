@@ -3489,8 +3489,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                     appData->dlcMenuAckFlag = 0;
-                    this->dlcMessageShowing = 1;
                     ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMenuRequestFlag = 1;
+                    this->dlcMessageShowing = 1;
                     this->messageShowing = 1;
                     this->choiceWindow->set(*Globals::gameText->getText(71), *Globals::gameText->getText(425));
                 }
