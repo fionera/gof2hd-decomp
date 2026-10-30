@@ -3901,3 +3901,6 @@ mtw anchor for any size change before MenuTouchWindow.
   disjoint XOR sum.
 - **MenuTouchWindow ctor raw 86.2545 -> 86.2845, 9600 B** (`b76399d6`, w3009): language loop bound
   as `!= 10` matches the original `cmp #10`.
+- **LevelScript::process 52.0 -> 52.1%, 57248 B** (`240c37ae`, w3012): reload
+  `status->getShip()` for every `hasCargo` test (5 call sites like the original; the hoist was
+  wrong). The +16 B is absorbed by retuning `mtwTextLayoutAnchor`.
