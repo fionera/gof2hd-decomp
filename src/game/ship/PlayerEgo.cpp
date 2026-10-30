@@ -1987,7 +1987,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                         }
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
-                    if (this->dockTotalAmount > delivered) {
+                    if (this->dockTransferedAmount > delivered) {
                         if (mission->getType() == 184) {
                             if (Globals::status->field_178 >= 1) {
                                 Globals::status->field_178 += delivered - this->dockTransferedAmount;
@@ -2019,8 +2019,8 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                         }
                         this->dockTransferedAmount = this->dockTotalAmount;
                     }
-                    if (this->dockTotalAmount > delivered)
-                        Globals::status->field_178 += this->dockTotalAmount - delivered;
+                    if (this->dockTransferedAmount > delivered)
+                        Globals::status->field_178 += this->dockTransferedAmount - delivered;
                 }
             } else if (campaign != nullptr && !campaign->isEmpty()
                        && (campaign->getType() == 167 || campaign->getType() == 174) && ((PlayerFixedObject *) (intptr_t) this->asteroidTarget)->getDockingType() == 1) {
@@ -2095,8 +2095,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && this->dockingPointIndex != 2
-        && this->dockingPointIndex != 3)
+    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && (this->dockingPointIndex | 1) != 3)
         this->updateManeuver();
 
     if (this->autoTurretEquipped && this->autoTurretEnabled
