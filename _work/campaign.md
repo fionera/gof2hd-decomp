@@ -3857,3 +3857,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Generator::createMission 73.6 -> 73.8%, 1992 B + 4 B MTitle anchor** (`f3bb7d98`, w2955):
   restore the original `0.5f` cost factor; the 4-byte `generatorMissionLayoutPad` keeps the
   archive-sensitive `.text` at 0x1343d0.
+- **Radar::draw structural 71.4 -> 69.2%, 9908 B** (`2a13c95f`, w2954): VL-first inSight now keeps
+  the crosshair floats live across `AEMath::operator-`, producing the original `vpush {d8-d13}`;
+  the two redundant planet-loop stores pay for the +20 B. Fuzzy drops (tuned baseline aligned
+  branch offsets better), but the prologue/inSight block now match the binary.
