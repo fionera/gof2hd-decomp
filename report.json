@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.88,
   "byte_exact": 1412,
-  "linked_exact": 4486,
-  "fuzzy_perfect": 4486,
+  "linked_exact": 4487,
+  "fuzzy_perfect": 4487,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -286,14 +286,6 @@
    "linked": false,
    "osize": 11440,
    "usize": 11440
-  },
-  {
-   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1680,
-   "usize": 1680
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
@@ -24174,6 +24166,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN5Radar15drawCurrentLockEP3Hud",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 1680,
+   "usize": 1680
   },
   {
    "name": "_ZN5Radar15isPlasmaInRangeEv",

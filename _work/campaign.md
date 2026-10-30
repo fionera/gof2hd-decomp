@@ -3864,3 +3864,8 @@ mtw anchor for any size change before MenuTouchWindow.
 - **SpaceLounge::startChat 99.1 -> 100.0%, 14450 B, linked-exact** (`71359604`, w2974): direct
   `String` concat in the offer 10/4 paths restores the original temporary lifetime/EH landing pad;
   `detailText` is a local value assigned back to `agent->field_0x2c`. **linked_exact 4485 -> 4486.**
+- **Radar::drawCurrentLock 99.8 -> 100.0%, 1680 B, linked-exact** (`89a798a0`, w2977): wrap the
+  target body in `if (target != nullptr)` so the cold no-target block lands after `dlc1Won` and
+  stores 0. **linked_exact 4486 -> 4487.**
+- **ModStation ctor raw improvement, 1008 B** (`d74d2a06`, w2972): read through a pitch-table
+  pointer so the literal pool orders `pitch` before `yawIPad`/`yaw`.
