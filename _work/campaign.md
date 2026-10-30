@@ -4013,3 +4013,7 @@ mtw anchor for any size change before MenuTouchWindow.
   state-0 camera/player constants (x/y were swapped) and hoist `Status *status = Globals::status`
   for the mission dispatch so the `Status*` lands in r4 and the player stays at `sp+0x54`; a fourth
   `s_processPad` store keeps the function size-exact.
+- **Level::createCampaignMission 99.3 -> 99.5%, 29676 B** (`26c26229`, w3084): split the case-80
+  carrier turret `? 14363 : 14365` ternary into a real if/else so clang emits the original
+  `ite eq; movweq/movwne` conditional moves instead of `bic/adds`. Residual is 40 r1/r2
+  cargo-pointer allocator diffs and the case-157 `cmp #5/bcs` canonicalization.

@@ -3470,8 +3470,10 @@ void Level::createCampaignMission() {
             Vector v = {0.0f, 0.0f, 0.0f};
             int turretHitpoints = Globals::status->getLevel() > 20 ? 520 : Globals::status->getLevel() * 15 + 220;
             for (unsigned char k = 0; k < 12; k++) {
-                ArrayAdd(this->createStaticObject(nullptr, ((2547u >> k) & 1) ? 14363 : 14365, true),
-                         *this->enemies);
+                if ((2547u >> k) & 1)
+                    ArrayAdd(this->createStaticObject(nullptr, 14363, true), *this->enemies);
+                else
+                    ArrayAdd(this->createStaticObject(nullptr, 14365, true), *this->enemies);
                 KIPlayer *turret = (*this->enemies)[k + 1];
                 turret->player->setMaxHitpoints(turretHitpoints);
                 v = MatrixRotateVector(rotation, Vector{kCarrierTurrets[k][4], kCarrierTurrets[k][5], kCarrierTurrets[k][6]});
