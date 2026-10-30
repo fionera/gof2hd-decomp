@@ -373,9 +373,8 @@ bool LevelScript::process(int delta) {
                 case 7: {
                     m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     m_nScriptTimerA += delta;
-                    AEGeometry *dockModel = m_pGeometry5;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                    m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                             Vector{0.0f, 1.0f, 0.0f});
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -451,9 +450,8 @@ bool LevelScript::process(int delta) {
                         rumble = 0.0f;
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
-                    AEGeometry *dockModel = m_pGeometry5;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                    m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                             Vector{0.0f, 1.0f, 0.0f});
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -594,9 +592,8 @@ bool LevelScript::process(int delta) {
                     rumble = 1.0f;
                 }
                 m_pCamera->setRumblePercentage(1.0f - rumble, 100);
-                AEGeometry *dockModel = m_pGeometry5;
                 AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                         Vector{0.0f, 1.0f, 0.0f});
                 ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -758,13 +755,12 @@ bool LevelScript::process(int delta) {
                     rumble = 1.0f;
                 }
                 m_pCamera->setRumblePercentage(1.0f - rumble, 100);
-                AEGeometry *dockModel = m_pGeometry5;
                 AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                 Vector camDir = AbyssEngine::AEMath::MatrixGetDir(
                         *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
-                dockModel->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f});
+                m_pGeometry5->setDirection(camDir, Vector{0.0f, 1.0f, 0.0f});
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)
-                        Globals::Canvas->TransformGetTransform(dockModel->transform);
+                        Globals::Canvas->TransformGetTransform(m_pGeometry5->transform);
                 t->Update((long long) delta, false);
                 if (m_nScriptTimerA >= 4001) {
                     m_nState = 11;
@@ -1505,48 +1501,7 @@ bool LevelScript::process(int delta) {
                     }
                     break;
                 }
-                }
-                break;
-            }
-            case 144: {
-                // Departure: follow the marker out while the cloaked escorts slip away.
-                m_bCinematicBreak = 1;
-                m_pGeometry4->moveForward((float) (delta * 5));
-                m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
-                if (m_nState == 1) {
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_pCamera->setTarget(m_pGeometry4);
-                    m_nState = 2;
-                } else if (m_nState == 2) {
-                    if (((RadioMessage *) ((*messages)[3]))->isOver()) {
-                        m_nScriptTimerA = 0;
-                        m_nState = 3;
-                    }
-                } else if (m_nState == 3) {
-                    m_nScriptTimerA += delta;
-                    for (unsigned int i = 1; i < enemies->count; i++) {
-                        if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (Globals::rnd->nextInt(100) <= 9 && !((PlayerFighter *) (*enemies)[i])->field_0x13c) {
-                                ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
-                                ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
-                            }
-                            (*enemies)[i]->geometry->moveForward((float) m_nScriptTimerA * 0.05f);
-                        }
-                    }
-                    if (m_nScriptTimerA > 4000) {
-                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
-                        if (m_nScriptTimerA >= 7001) {
-                            m_nState = 4;
-                            Globals::status->nextCampaignMission(true);
-                            Globals::status->setStation(Globals::status->getStation());
-                            Globals::status->departStation(Globals::status->getStation());
-                            if (Level::initStreamOutPositionAfterCutscene) {
-                                Level::initStreamOutPositionAfterCutscene = 0;
-                                Level::initStreamOutPosition = 1;
-                            }
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                        }
-                    }
+                case 6: m_nState = 2; break;
                 }
                 break;
             }
@@ -1641,11 +1596,52 @@ bool LevelScript::process(int delta) {
                     }
                 }
                 if (m_nState == 2) {
-                    KIPlayer *enemy0 = (*enemies)[0];
                     if (ship->hasCargo(201, 1) || ship->hasCargo(202, 1) || ship->hasCargo(203, 1)
                         || ship->hasCargo(204, 1) || Globals::status->getShip()->hasCargo(205, 1)) {
-                        enemy0->setSpeed(2.1f);
+                        (*enemies)[0]->setSpeed(2.1f);
                         m_nState = 3;
+                    }
+                }
+                break;
+            }
+            case 144: {
+                // Departure: follow the marker out while the cloaked escorts slip away.
+                m_bCinematicBreak = 1;
+                m_pGeometry4->moveForward((float) (delta * 5));
+                m_pCamera->translate(0.0f, (float) delta * 0.05f, (float) delta * 0.28f);
+                if (m_nState == 1) {
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->setTarget(m_pGeometry4);
+                    m_nState = 2;
+                } else if (m_nState == 2) {
+                    if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        m_nScriptTimerA = 0;
+                        m_nState = 3;
+                    }
+                } else if (m_nState == 3) {
+                    m_nScriptTimerA += delta;
+                    for (unsigned int i = 1; i < enemies->count; i++) {
+                        if ((*enemies)[i]->shipGroupFlag == 44) {
+                            if (Globals::rnd->nextInt(100) <= 9 && !((PlayerFighter *) (*enemies)[i])->field_0x13c) {
+                                ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
+                                ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
+                            }
+                            (*enemies)[i]->geometry->moveForward((float) m_nScriptTimerA * 0.05f);
+                        }
+                    }
+                    if (m_nScriptTimerA > 4000) {
+                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
+                        if (m_nScriptTimerA >= 7001) {
+                            m_nState = 4;
+                            Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation(Globals::status->getStation());
+                            Globals::status->departStation(Globals::status->getStation());
+                            if (Level::initStreamOutPositionAfterCutscene) {
+                                Level::initStreamOutPositionAfterCutscene = 0;
+                                Level::initStreamOutPosition = 1;
+                            }
+                            Globals::appManager->SetCurrentApplicationModule(2);
+                        }
                     }
                 }
                 break;
@@ -2331,9 +2327,8 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 13) {
                     m_pCamera->translate((float) delta * 0.5f, (float) delta * 0.2f, (float) -delta * 4.0f);
                     m_nScriptTimerA += delta;
-                    AEGeometry *dockModel = m_pGeometry5;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-                    dockModel->setDirection(AbyssEngine::AEMath::MatrixGetDir(
+                    m_pGeometry5->setDirection(AbyssEngine::AEMath::MatrixGetDir(
                                                     *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()))),
                                             Vector{0.0f, 1.0f, 0.0f});
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
