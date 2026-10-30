@@ -3946,3 +3946,7 @@ mtw anchor for any size change before MenuTouchWindow.
   `LevelScript::process` 57232 B form. Gate stays byte 1415 / linked 4491. Tradeoff: Layout is
   280 B short of the original 7072 B (size-exact 7072 flat chain was 45.5%); the store-schedule
   shape is the better base for reconstructing the missing tail.
+- **Hud::draw 87.8 -> 88.3%, 9332 B (size-exact)** (`b51b3d70`, w3040): the 4-byte tail anchor was
+  compensating a real alignment mismatch — `DialogueWindow(Mission*,Level*,int)` starts 4-byte
+  aligned in the original but our section was `.p2align 1`. Mark the ctor `[[gnu::aligned(4)]]`
+  and drop the anchor; the TouchButton/SpriteGun thunks stay byte-exact.

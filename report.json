@@ -176,20 +176,20 @@
    "usize": 968
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 87.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9336
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 88.2,
    "byte": false,
    "linked": false,
    "osize": 2252,
    "usize": 2252
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 88.3,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
   },
   {
    "name": "_ZN7StarMap4drawEv",

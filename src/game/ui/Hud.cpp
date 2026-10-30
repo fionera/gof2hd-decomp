@@ -816,7 +816,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             alpha = 255 - alpha;
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
         String hint(*Globals::gameText->getText(618), false);
-        this->field_0x4d0 = *(volatile int *) &this->field_0x4d0;
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, hint,
                                     Globals::w / 2 -
                                         Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, hint) / 2,

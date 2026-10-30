@@ -77,8 +77,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 1415 byte_exact,
-4491 linked_exact, 4519 size_match of 4523; pct buckets {100:4491, 90-99:10, 80-89:12, 70-79:7,
-<60:3}. 4 function rows size-MISMATCH (Layout C1/C2 -280 B, Generator -4 B, Hud +4 B); 21 size-match >=80%
+4491 linked_exact, 4520 size_match of 4523; pct buckets {100:4491, 90-99:10, 80-89:12, 70-79:7,
+<60:3}. 3 function rows size-MISMATCH (Layout C1/C2 -280 B, Generator -4 B); 21 size-match >=80%
 not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):

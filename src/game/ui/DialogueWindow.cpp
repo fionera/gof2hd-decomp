@@ -790,7 +790,7 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->pauseLength = 0;
 }
 
-DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
+[[gnu::aligned(4)]] DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->init();
     this->level = level;
     this->set(mission, kind, -1);
