@@ -3925,3 +3925,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **RocketGun::update 85.8 -> 86.7%, 1908 B** (`516e9f6c`, w3003): call `this->level->getPlayer()`
   directly, drop the pad anchor, and mark the muzzle branch `__builtin_expect(..., 1)`. Residual:
   `elapsed` stays in r5 vs the original's r4 (`trailMatrices` occupies the adjacent spill slot).
+- **Radar::draw 69.2 -> 71.5%, 9908 B** (`b3a8f4e7`, w3016): restore the tuned pre-`5765b59b`
+  docking/visibility predicates and clear the gas-lock context before its timer. The faithful
+  VL-first `inSight` shape (vpush d8-d13) remains 69.2%; the tuned bounds-first form scores higher.
