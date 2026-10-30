@@ -48,20 +48,20 @@
    "usize": 9908
   },
   {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 69.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
-  },
-  {
    "name": "_ZN5Level13createMissionEv",
    "pct": 71.4,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 73.0,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",

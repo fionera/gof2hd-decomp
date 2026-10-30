@@ -3916,3 +3916,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Layout::Layout 6792 B experiment reverted** (`3a4b1d12` -> `0e611ee6`, w2998): the 50.7% store
   schedule is 280 B short of the original; restoring the size-exact 7072 B schedule + Item pad is
   the better long-term state.
+- **Level::createShip 69.3 -> 73.0%, 2764 B** (`455eaa61`, w3011): compute `x` after the `Player`
+  ctor and make the phantom catch body a `__builtin_trap()` (the original has no `__cxa` catch
+  calls; `udf` in the landing pad). Size stays 2764 B, so `createRoute` stays 232 B/linked-exact.
