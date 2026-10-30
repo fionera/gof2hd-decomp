@@ -3744,3 +3744,5 @@ mtw anchor for any size change before MenuTouchWindow.
   keeps its original address and stays byte-exact. Fuzzy drops 50.7 -> 43.1 (the metric prefers the
   shorter 6792 B body), but every exported function except `Generator::createMission` is now
   size-exact.
+- **Radar::draw 71.3693 -> 71.3979%, 9908 B** (`223a310d`, w2603): hoist the landmark lock flags
+  into the landmark block.
