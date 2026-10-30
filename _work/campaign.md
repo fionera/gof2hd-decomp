@@ -4017,3 +4017,7 @@ mtw anchor for any size change before MenuTouchWindow.
   carrier turret `? 14363 : 14365` ternary into a real if/else so clang emits the original
   `ite eq; movweq/movwne` conditional moves instead of `bic/adds`. Residual is 40 r1/r2
   cargo-pointer allocator diffs and the case-157 `cmp #5/bcs` canonicalization.
+- **MenuTouchWindow::draw 97.8 -> 98.9%, 13052 B** (`fd9d61de`, w3083): move the case-8
+  `Globals::layout` reload after `SetColor`, use signed `listEntryHeight / 2` (rounding add),
+  order the label-500/499 add trees as the original, and swap the case-14 equivalent conditions so
+  the OR flag is computed once. Structural diff ops 86 -> 45.
