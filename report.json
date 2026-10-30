@@ -17,19 +17,19 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 45.5,
+   "pct": 46.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 7072
+   "usize": 6968
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 45.5,
+   "pct": 46.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 7072
+   "usize": 6968
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -209,7 +209,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 96.2,
+   "pct": 96.5,
    "byte": false,
    "linked": false,
    "osize": 13052,

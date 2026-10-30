@@ -3874,3 +3874,9 @@ mtw anchor for any size change before MenuTouchWindow.
   reproduce the original EH landing-pad table. **linked_exact 4487 -> 4489.**
 - **PlayerEgo::update 98.9 -> 99.8%, 8852 B** (`fb7a7cdb`, w2973): fix the turret test order and
   dock-index `orr`, un-hoist the autopilot target.
+- **Layout::Layout 45.5 -> 46.3%, 6968 B** (`1158d24a`, w2951): reorder the field-init statements
+  to the original CSE shape (the Item pad was retuned to keep `canBeInstalledMultipleTimes`).
+- **MGame::OnTouchEnd raw 78.2624 -> 78.2985, 8080 B** (`ccf99177`, w2959): resume sounds before
+  closing the secondary-weapon menu.
+- **MenuTouchWindow::draw 96.2 -> 96.5%, 13052 B** (`b7135b16`, w2968): hoist the case-15 Y sum and
+  reorder the case-8 layout load.
