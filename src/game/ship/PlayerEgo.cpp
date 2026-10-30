@@ -2095,7 +2095,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && (this->dockingPointIndex | 1) != 3)
+    if (this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && ((this->dockingPointIndex & 0xfe) | 1) != 3)
         this->updateManeuver();
 
     if (this->autoTurretEquipped && this->autoTurretEnabled
