@@ -3950,3 +3950,7 @@ mtw anchor for any size change before MenuTouchWindow.
   compensating a real alignment mismatch — `DialogueWindow(Mission*,Level*,int)` starts 4-byte
   aligned in the original but our section was `.p2align 1`. Mark the ctor `[[gnu::aligned(4)]]`
   and drop the anchor; the TouchButton/SpriteGun thunks stay byte-exact.
+- **Radar::draw 71.5 -> 71.6%, 9908 B** (`7955884e`, w3031): revert the VL-first `inSight`
+  ordering to the original distance-first shape and hoist `dockNavPtr` before the asteroid-slot
+  clear loop. The planet-lock else block was already present (the 108 B missing-code premise was
+  stale); `drawCurrentLock` stays 100%.

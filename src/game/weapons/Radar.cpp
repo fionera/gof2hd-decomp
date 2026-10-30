@@ -1080,11 +1080,12 @@ enemies:
     }
 
 asteroids:
+    bool hasDockNav = this->dockNavPtr != nullptr;
     for (int i = 0; i != 5; ++i) {
         this->asteroidSlots[i] = -1;
     }
     {
-        otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) ||
+        otherLock = (hasDockNav && this->lockedEnemy == nullptr) ||
                     this->field_0x1c != nullptr || this->lockedStation != nullptr || this->field_0x14 != 0;
         if (!this->level->getPlayer()->isInDockingProcedure() && this->asteroids != nullptr) {
             int inCenter = 0;
