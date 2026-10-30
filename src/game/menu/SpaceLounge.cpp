@@ -815,13 +815,11 @@ void SpaceLounge::startChat() {
                     textId = 874 + Globals::rnd->nextInt(2);
                 agent->field_0x28 = textId;
                 message = *Globals::gameText->getText(textId);
-                {
-                    String extra = String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                    message += extra;
-                }
-                if (agent->field_0x2c == -1)
-                    agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 int detailText = agent->field_0x2c;
+                if (detailText == -1)
+                    detailText = 773 + Globals::rnd->nextInt(2);
+                agent->field_0x2c = detailText;
                 message += String("\n") + *Globals::gameText->getText(detailText);
                 message = Globals::status->replaceHash(message, String(String(1), false), String("#Q"));
                 message = Globals::status->replaceHash(
@@ -833,10 +831,7 @@ void SpaceLounge::startChat() {
                 // System coordinates.
                 agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
                 message = *Globals::gameText->getText(agent->field_0x28);
-                {
-                    String extra = String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                    message += extra;
-                }
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
                 message += String(" ") + *Globals::gameText->getText(877);
                 SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
                 message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
