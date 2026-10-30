@@ -3954,3 +3954,6 @@ mtw anchor for any size change before MenuTouchWindow.
   ordering to the original distance-first shape and hoist `dockNavPtr` before the asteroid-slot
   clear loop. The planet-lock else block was already present (the 108 B missing-code premise was
   stale); `drawCurrentLock` stays 100%.
+- **MenuTouchWindow ctor raw 86.2845 -> 86.3145%, 9600 B** (`7fb41202`, w3037): zero the flag
+  clusters with the original's wide `strd`/`str`/`strh` schedule (`0xfc, 0x16c, 0x177, 0x173,
+  0x171, 0x17b`) instead of byte stores. Residual is constant-island placement (about-text pool).

@@ -852,20 +852,11 @@ initState:
     this->missionsWindow = 0;
     this->recordRows = 0;
     this->menuState = 0;
-    this->returnToMenuShowing = 0;
-    this->leaderboardDialogShowing = 0;
-    this->dlcMessageShowing = 0;
-    this->returnToMenuSubFlag = 0;
-    this->field_0x175 = 0;
-    this->field_0x176 = 0;
-    // Two adjacent flag bytes written as one 16-bit store (matches the original's strh).
+    // The original zeroes these flag clusters with one wide store each.
+    *(uint32_t *) &this->quitConfirmShowing = 0;
+    *(uint32_t *) &this->saveDialogShowing = 0;
     *(volatile uint16_t *) &this->field_0x171 = 0;
-    this->field_0x17b = 0;
-    this->quitConfirmShowing = 0;
-    this->saveDialogShowing = 0;
-    this->dlcResultDialogShowing = 0;
-    this->dlcErrorDialogShowing = 0;
-    this->loadFailedDialogShowing = 0;
+    *(uint32_t *) &this->field_0x17b = 0;
     this->selectedRow = -1;
     this->okButton = 0;
     this->backButton = 0;
