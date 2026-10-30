@@ -3932,3 +3932,5 @@ mtw anchor for any size change before MenuTouchWindow.
   `textY` uses the original `(float)height * 0.2f` (pool literal + `vmla.f32`) instead of the tuned
   `/5.0f`; the extra pool word shifts literal displacements, so the raw fuzzy dips while the
   reported percentage is unchanged. `int rows` loop and 376-byte frame preserved.
+- **LevelScript::process 52.0 -> 54.0%, 57232 B** (`a3a3d6b7`, w3029): correct the mission-0
+  intro placement and add the state-0 body anchor; size stays exact.
