@@ -2063,9 +2063,9 @@ void Level::createMission() {
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15 &&
         Globals::status->getCurrentCampaignMission() < 16)
         introSystem = true;
+    int stationIndex = Globals::status->getStation()->getIndex();
     int raidRoll = Globals::rnd->nextInt(100);
     Mission *freelance = Globals::status->getFreelanceMission();
-    int stationIndex = Globals::status->getStation()->getIndex();
     int pirates = 0;
     if (freelance != nullptr && (freelance->getType() == 0 || freelance->getType() == 11 || freelance->getType() == 15))
         pirates = (int) ((float) freelance->getDifficulty() / 10.0f * 5.0f);

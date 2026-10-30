@@ -3937,3 +3937,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::draw 96.6 -> 97.8%, 13052 B** (`29bcb0d8`, w3027): reload `Globals::layout`
   after `getText(500)` in case 8 and use the global pointer for the `DrawImage2D` y terms, matching
   the original's post-call load placement. Case-14 OR-shape and all-cached variants score lower.
+- **Level::createMission 71.4 -> 71.5%, 17172 B** (`f0dfe3e5`, w3030): compute `stationIndex`
+  before `raidRoll`/`getFreelanceMission()` in the no-mission prologue, matching the original call
+  order. The `security == 3` raid clamp and the huge no-mission tail block placement remain.
