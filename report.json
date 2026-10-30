@@ -17,19 +17,19 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 46.3,
+   "pct": 45.5,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6968
+   "usize": 7072
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 46.3,
+   "pct": 45.5,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6968
+   "usize": 7072
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -73,7 +73,7 @@
   },
   {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 78.1,
+   "pct": 77.9,
    "byte": false,
    "linked": false,
    "osize": 2632,
@@ -120,20 +120,20 @@
    "usize": 17172
   },
   {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 83.4,
+   "byte": false,
+   "linked": false,
+   "osize": 8132,
+   "usize": 8132
+  },
+  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 83.8,
    "byte": false,
    "linked": false,
    "osize": 944,
    "usize": 944
-  },
-  {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 84.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8132
   },
   {
    "name": "_ZN9RocketGun6updateEi",

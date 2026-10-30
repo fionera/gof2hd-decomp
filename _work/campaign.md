@@ -3887,3 +3887,10 @@ mtw anchor for any size change before MenuTouchWindow.
   (`n = 3`) and tighten the guard to `< 3`.
 - **MenuTouchWindow ctor raw 86.2245 -> 86.2545, 9600 B** (`299b4c10`, w2979): move the quit/save
   flag stores after the `strh` tail.
+- **Layout::Layout restored to size-exact 7072 B, 45.5%** (`fb658e05`, w2987): revert the 6968 B
+  order and drop the 104-byte `cheatFunction` pad; size-exactness is a prerequisite for byte identity.
+- **MeshReadData 78.1 -> 77.9%, 2632 B** (`fd088297`, w2989): index the packed UV stream by bytes
+  (semantically correct; the 78.1 shape read unscaled overlapping shorts).
+- **MenuTouchWindow::OnTouchEnd 84.9 -> 83.4%, 8132 B** (`9460ff2b`, w2983): restore the original
+  `genericConfirmB == 1` fall-through path and read option 12 as a bool. Real control-flow fix; the
+  added compare shifts the global r8/sl allocation and costs fuzzy.
