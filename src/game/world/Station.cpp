@@ -218,7 +218,7 @@ void Station::addShip(Ship *ship) {
         ArrayAdd(ship, *ships);
 }
 
-uint32_t Station::stationHasPirateBase() {
+bool Station::stationHasPirateBase() {
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
             unsigned char *flags =

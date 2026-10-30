@@ -85,6 +85,6 @@ public:
 
     uint32_t stationHasHiddenBlueprint(bool ignoreFound);
 
-    uint32_t stationHasPirateBase();
+    bool stationHasPirateBase();
 };
 #endif
