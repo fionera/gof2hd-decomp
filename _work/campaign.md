@@ -3899,3 +3899,5 @@ mtw anchor for any size change before MenuTouchWindow.
   **linked_exact 4489 -> 4490.**
 - **MenuTouchWindow::draw 96.5 -> 96.6%, 13052 B** (`12ff1718`, w3006): case-14 language test as a
   disjoint XOR sum.
+- **MenuTouchWindow ctor raw 86.2545 -> 86.2845, 9600 B** (`b76399d6`, w3009): language loop bound
+  as `!= 10` matches the original `cmp #10`.
