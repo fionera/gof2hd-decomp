@@ -3978,3 +3978,7 @@ mtw anchor for any size change before MenuTouchWindow.
   and add an off-screen `mx < 0` origin guard that keeps `half` live across the digit loop and
   reproduces the original `sp+24` spill. Residual: clang folds `mx = half + rowGap - halfStep`
   into `left + rowGap`, so the fused `sub.w`/`sp+0` halfStep store is still missing.
+- **MenuTouchWindow::OnTouchEnd 84.9 -> 85.0%, 8132 B** (`463792db`, w3057): option-16 raw
+  `ldrb` toggle and option-14 bool toggle (avoids the 6-byte bool normalization). Faithful
+  genericConfirmB/enableCategory shapes change the 8132 B total and lose ~5 points; the residual is
+  layout-dominated.

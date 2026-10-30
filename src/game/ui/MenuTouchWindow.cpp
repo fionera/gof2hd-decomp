@@ -3110,8 +3110,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
                 if (this->optBtnCC->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(16);
-                    optionFlag(16) = on;
+                    bool on = !options[16];
+                    options[16] = on;
                     this->optBtnCC->setAlwaysPressed(on);
                 }
                 if (this->optBtnD0->OnTouchEnd(x, y)) {
@@ -3141,8 +3141,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     Globals::sound->play(126, 0, 0, 0.0f);
                 }
                 if (this->optBtnDC->OnTouchEnd(x, y)) {
-                    bool on = !options[14];
-                    options[14] = on;
+                    bool on = !optionFlag(14);
+                    optionFlag(14) = on;
                     this->optBtnDC->setAlwaysPressed(on);
                     (*this->sliders)[3]->setHalfTransparent(!options[14]);
                     Globals::sound->enableCategory(3, options[14]);
