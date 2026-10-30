@@ -613,7 +613,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
             this->field_0x1a8 = this->level->getPlayer()->goingToPlanet() &&
-                                !this->level->getPlayer()->isDockingToPlanet() &&
                                 autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
         }
 
@@ -790,16 +789,13 @@ enemies:
                         image = this->image_0x78;
                     }
                     Globals::Canvas->DrawImage2D(image, this->screenX, this->screenY, 17, 68);
-                    enemy->field_0x73 = 0;
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
-                    bool inSight = false;
-                    if (this->screenX > cx - this->field_0x124 && this->screenY > cy - this->field_0x124 &&
-                        this->screenX < cx + this->field_0x124 && this->screenY < cy + this->field_0x124 &&
-                        AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f) {
-                        inSight = true;
+                    if (AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f &&
+                        this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
+                        this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124) {
+                        enemy->field_0x73 = 1;
                     }
-                    enemy->field_0x73 = inSight;
                     if (enemy == locked) {
                         this->lockLabel = this->calcDistance(this->targetPos.x, this->targetPos.y, this->targetPos.z,
                                                              this->cameraX, this->cameraY, this->cameraZ);
