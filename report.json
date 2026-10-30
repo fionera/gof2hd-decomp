@@ -256,14 +256,6 @@
    "usize": 3440
   },
   {
-   "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 98.2,
-   "byte": false,
-   "linked": false,
-   "osize": 3488,
-   "usize": 3488
-  },
-  {
    "name": "_ZN10ModStationC1Ev",
    "pct": 98.6,
    "byte": false,
@@ -318,6 +310,14 @@
    "linked": false,
    "osize": 1680,
    "usize": 1680
+  },
+  {
+   "name": "_ZN7StarMap16drawOnScreenInfoEib",
+   "pct": 99.8,
+   "byte": false,
+   "linked": false,
+   "osize": 3488,
+   "usize": 3488
   },
   {
    "name": "Blowfish_decipher",

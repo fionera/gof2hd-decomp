@@ -3799,3 +3799,5 @@ mtw anchor for any size change before MenuTouchWindow.
   a `createRoute` placement-new (216 B, 92.5%) costs `linked_exact` 4485 -> 4484. The size-exact
   ternary+EH body (2764 B, 69.3%) plus `createRoute` at 232 B (100%) is the better net trade and
   keeps the gate at linked 4485. The missing 16 B in the no-EH body is still the open target.
+- **StarMap::drawOnScreenInfo 98.2 -> 99.8%, 3488 B** (`ed3c4020`, w2925): keep `campaign` live in
+  r6 across the icon chain with a same-value ternary, matching the original's register allocation.
