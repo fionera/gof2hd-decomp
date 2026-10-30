@@ -1863,8 +1863,8 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500), layout->buttonInsetX + 10,
-                layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth +
-                    layout->field_0x2c_rowHeight + this->field_0x15c / 2 -
+                layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x2c_rowHeight +
+                    this->listEntryWidth + this->field_0x15c / 2 -
                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
                 false);
             Globals::Canvas->DrawString(
@@ -1894,7 +1894,7 @@ void MenuTouchWindow::draw() {
                 if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
                     int logoTop = Globals::layout->field_0xc_leftMargin;
                     int logoWidth = canvas->GetImage2DWidth(logoImage);
-                    int logoHeight = canvas->GetImage2DHeight(this->field_0x120);
+                    int logoHeight = Globals::Canvas->GetImage2DHeight(this->field_0x120);
                     canvas->DrawImage2D(logoImage, logoCenterX, logoTop / 4, logoWidth / 2,
                                         logoHeight / 2, 17, 20, 0);
                 } else {
@@ -2058,15 +2058,16 @@ void MenuTouchWindow::draw() {
             Globals::layout->drawHeader(String(*Globals::gameText->getText(0)), false);
             for (unsigned int i = 0; i < this->buttonsB0->size(); i++) {
                 // Language names are drawn in their own script: Arabic left-to-right switch.
+                // The two button sets are disjoint, so the second test is equivalent to the
+                // first OR but keeps the single draw between the two colour stores.
                 bool arabicButton = (*this->buttonsB0)[i]->id == 34 && GameText::getLanguage() != 9;
                 bool latinButton = ((*this->buttonsB0)[i]->id == 33 || (*this->buttonsB0)[i]->id == 36 ||
                                     (*this->buttonsB0)[i]->id == 37) &&
                                    GameText::getLanguage() == 9;
-                bool switchScript = arabicButton | latinButton;
-                if (switchScript)
+                if (arabicButton | latinButton)
                     Globals::Canvas->field_0x1c = !arabicButton;
                 (*this->buttonsB0)[i]->draw();
-                if (*(volatile bool *) &switchScript)
+                if (arabicButton != latinButton)
                     Globals::Canvas->field_0x1c = arabicButton;
             }
             break;
