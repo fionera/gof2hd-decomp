@@ -575,11 +575,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->cinematicTextWindow->setText(String(""), *Globals::gameText->getText(495));
         this->cinematicTouchIdA = 0;
         this->cinematicTouchIdB = 0;
-        int bottomY = Globals::iPadHD ? 703 : (Globals::iPadLarge ? 1000 : 500);
-        float entryWidth = Globals::iPadHD ? 175.78125f : (Globals::iPadLarge ? 250.0f : 125.0f);
-        this->listBottomY = bottomY;
-        this->listTopY = (Globals::w - bottomY) / 2;
-        this->listEntryWidth = (int) entryWidth;
+        this->listBottomY = Globals::iPadHD ? 703 : (Globals::iPadLarge ? 1000 : 500);
+        this->listTopY = (Globals::w - this->listBottomY) / 2;
+        this->listEntryWidth = (int) (Globals::iPadHD ? 175.78125f : (Globals::iPadLarge ? 250.0f : 125.0f));
     } else {
         this->listTopY = 0;
         this->listBottomY = Globals::w;
@@ -784,7 +782,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             listX = 50;
         this->listX = listX;
         this->scrollWindowA = new ScrollTouchWindow(
-            Globals::layout->buttonInsetX + Globals::w / 4,
+            Globals::layout->buttonInsetX + (Globals::w >> 2),
             Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top,
             (Globals::w >> 1) - Globals::layout->buttonInsetX * 2,
             Globals::h - (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) -

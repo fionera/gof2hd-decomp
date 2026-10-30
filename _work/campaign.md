@@ -3996,3 +3996,7 @@ mtw anchor for any size change before MenuTouchWindow.
   so clang emits the branchy GPR form and places the huge no-mission tail after the case bodies
   (tbh targets now within −2…+8 B). Also move `case 184` to the end of the switch. A full case
   reorder reaches 100% but is +168 B and costs 41 byte_exact, so it was not landed.
+- **MenuTouchWindow ctor 86.3 -> 87.6%, 9600 B** (`72f1cfed`, w3063): use the shift-form iPad
+  `Globals::w >> 2` x argument (avoids the signed-division sequence) and store `listBottomY`
+  directly / load the entry-width float from the pool instead of materializing locals. Moves the
+  about-text constant island to the original 0x124d10 and realigns the landing-pad `b.n` targets.
