@@ -3922,3 +3922,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Hud::draw 88.3 -> 87.8%, 9336 B** (`59665088`, w2965): 4-byte tail anchor realigns the
   TouchButton/SpriteGun thunks byte-exact. **byte_exact 1412 -> 1415**; Hud::draw itself is now
   4 B over (9336 vs 9332) — the anchor is the size knob for those three thunks.
+- **RocketGun::update 85.8 -> 86.7%, 1908 B** (`516e9f6c`, w3003): call `this->level->getPlayer()`
+  directly, drop the pad anchor, and mark the muzzle branch `__builtin_expect(..., 1)`. Residual:
+  `elapsed` stays in r5 vs the original's r4 (`trailMatrices` occupies the adjacent spill slot).

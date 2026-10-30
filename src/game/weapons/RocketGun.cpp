@@ -163,17 +163,12 @@ void RocketGun::render() {
 void RocketGun::update(int elapsed) {
     using namespace AbyssEngine::AEMath;
     Vector ahead = {0.0f, 0.0f, 0.0f};
-    Level *levelLocal = this->level;
     Gun &g = *this->gun;
     g.update(elapsed);
-    // A zeroed volatile frame slot reproduces the original's early register pressure: the
-    // constant parks in the scratch register the muzzle block would otherwise take, which
-    // lets the elapsed argument keep the callee-saved register the original uses for it.
-    volatile int pad = 0;
 
-    if (this->hasGeometry != 0 && this->gun->delayActive != 0) {
+    if (__builtin_expect(this->hasGeometry != 0 && this->gun->delayActive != 0, 1)) { // lint: arm_builtin
         // Muzzle flash grows on the launcher while the launch delay runs down.
-        PlayerEgo *player = levelLocal->getPlayer();
+        PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
         Vector barrel = this->gun->offset;
         barrel.z -= 100.0f;
