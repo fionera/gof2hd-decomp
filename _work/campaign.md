@@ -3897,3 +3897,5 @@ mtw anchor for any size change before MenuTouchWindow.
 - **ModStation::OnInitialize 99.5 -> 100.0%, 6396 B, linked-exact** (`0545f718`, w2986):
   `__builtin_expect` 20:12 branch weights fix the EH landing-pad order.
   **linked_exact 4489 -> 4490.**
+- **MenuTouchWindow::draw 96.5 -> 96.6%, 13052 B** (`12ff1718`, w3006): case-14 language test as a
+  disjoint XOR sum.
