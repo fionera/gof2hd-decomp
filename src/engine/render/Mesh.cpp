@@ -628,15 +628,19 @@ namespace AbyssEngine {
                     unsigned int i0 = index[0];
                     unsigned int i1 = index[1];
                     unsigned int i2 = index[2];
+                    float px1 = pos[i1].x - pos[i0].x;
+                    float py1 = pos[i1].y - pos[i0].y;
+                    float pz1 = pos[i1].z - pos[i0].z;
+                    float px2 = pos[i2].x - pos[i0].x;
+                    float py2 = pos[i2].y - pos[i0].y;
+                    float pz2 = pos[i2].z - pos[i0].z;
                     float du1 = uv[i1 * 2] - uv[i0 * 2];
                     float du2 = uv[i2 * 2] - uv[i0 * 2];
                     float dv1 = uv[i1 * 2 + 1] - uv[i0 * 2 + 1];
                     float dv2 = uv[i2 * 2 + 1] - uv[i0 * 2 + 1];
                     float r = 1.0f / (du1 * dv2 - du2 * dv1);
-                    Vector tangent(
-                            ((pos[i1].x - pos[i0].x) * dv2 - (pos[i2].x - pos[i0].x) * dv1) * r,
-                            ((pos[i1].y - pos[i0].y) * dv2 - (pos[i2].y - pos[i0].y) * dv1) * r,
-                            ((pos[i1].z - pos[i0].z) * dv2 - (pos[i2].z - pos[i0].z) * dv1) * r);
+                    Vector tangent((px1 * dv2 - px2 * dv1) * r, (py1 * dv2 - py2 * dv1) * r,
+                                   (pz1 * dv2 - pz2 * dv1) * r);
                     accum[i0] += tangent;
                     accum[i1] += tangent;
                     accum[i2] += tangent;
