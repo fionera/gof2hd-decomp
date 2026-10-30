@@ -552,8 +552,8 @@ namespace AbyssEngine {
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 1); i += 2) {
-                    ((float *) (*slot)->texCoords)[i] = (float) ((double) raw[i] * (1.0 / 4096.0));
-                    double v = (double) raw[i + 1] * (1.0 / 4096.0);
+                    ((float *) (*slot)->texCoords)[i] = (float) ((double) *(short *) (raw + i) * (1.0 / 4096.0));
+                    double v = (double) *(short *) (raw + i + 2) * (1.0 / 4096.0);
                     ((float *) (*slot)->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
                 delete[] (unsigned char *) raw;
@@ -580,8 +580,8 @@ namespace AbyssEngine {
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 short *rawY = (short *) raw + 1;
                 for (int i = 0; i + 3 <= ((*slot)->vertexCount * 3); i += 3) {
-                    float x = (float) ((double) raw[i] * (1.0 / 32768.0));
-                    float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
+                    float x = (float) ((double) *(short *) (raw + i) * (1.0 / 32768.0));
+                    float z = (float) ((double) *(short *) (raw + i + 2) * (1.0 / 32768.0));
                     float y = (float) ((double) rawY[i] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
                     // The original loads (*slot)->normals once per iteration and stores the
