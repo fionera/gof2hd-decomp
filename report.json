@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.87,
+  "avg_match": 99.88,
   "byte_exact": 1412,
   "linked_exact": 4485,
   "fuzzy_perfect": 4485,
@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 43.1,
+   "pct": 45.4,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 43.1,
+   "pct": 45.4,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 51.2,
+   "pct": 51.6,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 74.0,
+   "pct": 74.9,
    "byte": false,
    "linked": false,
    "osize": 1984,
@@ -241,7 +241,7 @@
   },
   {
    "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 96.7,
+   "pct": 96.9,
    "byte": false,
    "linked": false,
    "osize": 29676,
@@ -265,7 +265,7 @@
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 98.1,
+   "pct": 98.2,
    "byte": false,
    "linked": false,
    "osize": 3488,

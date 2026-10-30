@@ -3749,3 +3749,13 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Generator::createMission size-exact 1996 B, 73.6%** (`f91d4caf`, w2502): load the `0.5f` cost
   factor from the pool and drop the `MTitle` anchor. Together with the size-exact `Layout::Layout`,
   **every exported function is now size-exact (4523/4523)**.
+- **Layout::Layout 43.1 -> 45.4%, 7072 B** (`f7aa8a43`, w2601): hill-climb the size-exact 7072 B
+  store permutation (36 store moves) while keeping the Item pad and size.
+- **LevelScript::process 51.2 -> 51.6%, 57232 B** (`26d5c7b9`, w2602): inline the dockModel temps,
+  move case 144 after case 142, add case-145 state 6, and index enemies[0] directly.
+- **Gun::calcCharacterCollision 74.0 -> 74.9%, 1984 B** (`d9e2dbaf`, w2604): cache the enemy pointer
+  per outer iteration and make the medal-41 threshold size-exact.
+- **Level::createCampaignMission 96.7 -> 96.9%, 29676 B** (`f4eb9792`, w2704): build the case-157
+  station before the index math.
+- **StarMap::drawOnScreenInfo 98.1 -> 98.2%, 3488 B** (`7cdd2c02`, w2707): use a fresh campaign
+  mission and keep campaign live across the 120 arm.
