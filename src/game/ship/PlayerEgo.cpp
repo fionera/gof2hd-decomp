@@ -2094,7 +2094,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    if (__builtin_expect(this->dockedFlag && this->dockingPointIndex != 1 && !this->turretActive && (this->dockingPointIndex | 1) != 3, 1)) // lint: arm_builtin
+    if (this->isDockingToDockingPoint() && !this->turretActive && !this->isLandingOrTakingOff())
         this->updateManeuver();
 
     if (this->autoTurretEquipped && this->autoTurretEnabled

@@ -3965,3 +3965,7 @@ mtw anchor for any size change before MenuTouchWindow.
   carrier-turret counter `unsigned char` (narrow `lsrs`, removes the 4 B cumulative shift that
   flipped both TBH defaults) and drop `volatile` from the case-102 escort waypoint. **avg 99.88 ->
   99.89.** Residual is 57 register/scheduling coin flips (cargo-pointer r1/r2, case-157 cmp form).
+- **PlayerEgo::update 99.8 -> 100.0%, 8852 B, linked-exact** (`25411f2c`, w3053): express the dock
+  guard as `isDockingToDockingPoint() && !turretActive && !isLandingOrTakingOff()` so the two
+  inlined helper bodies keep the original CFG instead of one flattened if-converted `itt ne` block;
+  drops the artificial `__builtin_expect`. **linked_exact 4491 -> 4492.**

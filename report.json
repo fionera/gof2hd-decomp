@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.89,
   "byte_exact": 1415,
-  "linked_exact": 4491,
-  "fuzzy_perfect": 4491,
+  "linked_exact": 4492,
+  "fuzzy_perfect": 4492,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -262,14 +262,6 @@
    "linked": false,
    "osize": 3488,
    "usize": 3488
-  },
-  {
-   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 8852,
-   "usize": 8852
   },
   {
    "name": "Blowfish_decipher",
@@ -33390,6 +33382,14 @@
    "linked": true,
    "osize": 216,
    "usize": 216
+  },
+  {
+   "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 8852,
+   "usize": 8852
   },
   {
    "name": "_ZN9PlayerEgo7explodeEv",
