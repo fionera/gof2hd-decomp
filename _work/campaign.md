@@ -3846,3 +3846,11 @@ mtw anchor for any size change before MenuTouchWindow.
   The size-exact 2764 B body stays at 69.3%.
 - **Generator::createMission** (w2934): `0.5f` gives 73.8% at 1992 B but the 4-byte size change
   cascades byte_exact below the gate; no 1996 B variant beats 73.6%.
+
+## Wave 89 (2026-10-30) — targeted root-cause round
+
+- **Gun::calcCharacterCollision 77.2 -> 81.0%, 1984 B** (`f91dcc51`, w2957): hoist the negated mine
+  radius into a local so MBP keeps the not-bomb flag block before the mine bounce (the original
+  block order).
+- **HangarWindow::render raw 77.1307 -> 77.1413, 9700 B** (`efe3e5e5`, w2956): `int rows` plus a
+  non-negative guard pins the original 376-byte frame.

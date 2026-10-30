@@ -72,14 +72,6 @@
    "usize": 9700
   },
   {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 77.2,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1984
-  },
-  {
    "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
    "pct": 78.1,
    "byte": false,
@@ -110,6 +102,14 @@
    "linked": false,
    "osize": 612,
    "usize": 612
+  },
+  {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 81.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1984
   },
   {
    "name": "_ZN5Level13createMissionEv",
