@@ -1,15 +1,12 @@
 # .text frontier map — exported functions in original address order
 
-> **Current frontier (2026-10-29, wave 82):** `MeshReadData`, `Level::createShip`,
-> `Level::createMission`, `Radar::draw`, `Gun::calcCharacterCollision`, `PlayerStation` C1/C2,
-> `Level::createScene`, `Globals` ctor, `MenuTouchWindow` ctor/`draw`, `Status::missionCompleted`,
-> `Hud::draw`, `HangarWindow::render`, `MGame::OnTouchEnd`, `StarMap::draw`,
-> `Level::createCampaignMission` and `LevelScript::process` are all size-exact. Remaining exported
-> size difference: `Layout::Layout` -280 B (50.7% store-order body; the size-exact 7072 B form is
-> 36.7% and is kept in commit `daffb1e7`). Gate: `byte_exact 1412`, `linked_exact 4485`,
-> avg 99.88%, `.text 0x1343d0`, lint CLEAN, drift 0. The detailed table below is the wave-69
-> snapshot and is retained for address-order history; use the size-diff list above for the current
-> queue.
+> **Current frontier (2026-10-30, wave 83):** `Layout::Layout` is now size-exact at 7072 B
+> (43.1%; the 280 B Item `.rodata` pad keeps `Item::canBeInstalledMultipleTimes` byte-exact). The
+> only remaining exported size difference is `Generator::createMission` -4 B (1992 vs 1996 B; the
+> faithful `0.5f` cost factor plus a 4-byte `MTitle` anchor). Every other exported function is
+> size-exact. Gate: `byte_exact 1412`, `linked_exact 4485`, avg 99.87%, `.text 0x1343d0`,
+> lint CLEAN, drift 0. The detailed table below is the wave-69 snapshot and is retained for
+> address-order history; use the size-diff list above for the current queue.
 >
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by
 walking the common `.dynsym` function symbols of both binaries in original-address order.

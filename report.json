@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.88,
+  "avg_match": 99.87,
   "byte_exact": 1412,
   "linked_exact": 4485,
   "fuzzy_perfect": 4485,
@@ -17,19 +17,19 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 50.7,
+   "pct": 43.1,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6792
+   "usize": 7072
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 50.7,
+   "pct": 43.1,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6792
+   "usize": 7072
   },
   {
    "name": "_ZN11LevelScript7processEi",

@@ -3739,3 +3739,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `textY` as `height / 5.0f` so clang emits `vdiv` instead of a `0.2f` literal load.
 - **MeshReadData semantic fix** (`57fcce63`, w2405): read the packed UV/normal streams as signed
   16-bit (`short*`, matching the original's 6 `ldrsh`), 77.1%, 2632 B, no metric change.
+- **Layout::Layout size-exact 7072 B, 43.1%** (`32b24da2`, w2501): land the size-exact 7072 B store
+  schedule and add a 280 B `.rodata` pad in `Item.cpp` so `Item::canBeInstalledMultipleTimes`
+  keeps its original address and stays byte-exact. Fuzzy drops 50.7 -> 43.1 (the metric prefers the
+  shorter 6792 B body), but every exported function except `Generator::createMission` is now
+  size-exact.
