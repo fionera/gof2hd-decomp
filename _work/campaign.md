@@ -3854,3 +3854,6 @@ mtw anchor for any size change before MenuTouchWindow.
   block order).
 - **HangarWindow::render raw 77.1307 -> 77.1413, 9700 B** (`efe3e5e5`, w2956): `int rows` plus a
   non-negative guard pins the original 376-byte frame.
+- **Generator::createMission 73.6 -> 73.8%, 1992 B + 4 B MTitle anchor** (`f3bb7d98`, w2955):
+  restore the original `0.5f` cost factor; the 4-byte `generatorMissionLayoutPad` keeps the
+  archive-sensitive `.text` at 0x1343d0.

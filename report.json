@@ -57,11 +57,11 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 73.6,
+   "pct": 73.8,
    "byte": false,
    "linked": false,
    "osize": 1996,
-   "usize": 1996
+   "usize": 1992
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
