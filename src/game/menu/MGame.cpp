@@ -2827,7 +2827,7 @@ void MGame::OnUpdate() {
                             messageIndex++;
                         }
                     }
-                    if (messageIndex >= 0 && messageIndex < 3) {
+                    if ((unsigned) messageIndex < 4) {
                         Globals::status->field_0x17c = 0;
                         this->level->createRadioMessage(27, messageIndex);
                     }
