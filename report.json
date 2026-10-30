@@ -224,22 +224,6 @@
    "usize": 1680
   },
   {
-   "name": "_ZN13PlayerStationC1EP7Station",
-   "pct": 96.3,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3440
-  },
-  {
-   "name": "_ZN13PlayerStationC2EP7Station",
-   "pct": 96.3,
-   "byte": false,
-   "linked": false,
-   "osize": 3440,
-   "usize": 3440
-  },
-  {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 96.9,
    "byte": false,
@@ -262,6 +246,22 @@
    "linked": false,
    "osize": 14450,
    "usize": 14450
+  },
+  {
+   "name": "_ZN13PlayerStationC1EP7Station",
+   "pct": 97.7,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3440
+  },
+  {
+   "name": "_ZN13PlayerStationC2EP7Station",
+   "pct": 97.7,
+   "byte": false,
+   "linked": false,
+   "osize": 3440,
+   "usize": 3440
   },
   {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",

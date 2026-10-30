@@ -3761,3 +3761,5 @@ mtw anchor for any size change before MenuTouchWindow.
   mission and keep campaign live across the 120 arm.
 - **PlayerEgo::update 98.3 -> 98.6%, 8852 B** (`57177dbe`, w2708): the dock-transfer guard uses
   the post-clamp amount and the `orr` dock index check.
+- **PlayerStation ctor 96.3 -> 97.7%, 3440 B** (`39c6ca05`, w2703): LOD mesh arrays plus hoisted
+  `event0`/`event1` declarations fix the stack slots.
