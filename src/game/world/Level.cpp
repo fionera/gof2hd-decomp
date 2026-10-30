@@ -673,9 +673,7 @@ Route *Level::createRoute(int count) {
             p[1] = Globals::rnd->nextInt(30000) + prev + 50000;
         }
     }
-    Route *route = (Route *) ::operator new(sizeof(Route));
-    new (route) Route(pts, n);
-    return route;
+    return new Route(pts, n);
 }
 
 void Level::alarmAllFriends(int race, bool message) {
@@ -6185,11 +6183,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = Globals::status->getLevel();
-    if (empPoints > 20) {
-        empPoints = 20;
-    }
-    empPoints = empPoints * 5 + 40;
+    int empPoints = (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 5 + 40;
     int empTime;
     if (shipClass == 1) {
         hitpoints *= type == 14 ? 25 : 5;
@@ -6206,7 +6200,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
     float z = (float) (wz + jitterZ - 20000);
     float y = (float) (wy + jitterY - 20000);
-    player->setEmpData(empPoints, empTime);
+    try {
+        player->setEmpData(empPoints, empTime);
+    } catch (...) {
+    }
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
