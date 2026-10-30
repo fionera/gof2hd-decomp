@@ -1629,8 +1629,9 @@ void Level::createMission() {
                                 : ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(localRace);
         switch (mission->getType()) {
             case 183: {
-                int coords[6] = {-55000, 0, -35000, -30000, 0, -50000};
-                this->enemyRoute = new Route(coords, 6);
+                struct Coords6 { int a, b, c, d, e, f; };
+                Coords6 coords = {-55000, 0, -35000, -30000, 0, -50000};
+                this->enemyRoute = new Route(&coords.a, 6);
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength(14, *this->enemies);
                 for (int i = 0; i < 8; i++) {
@@ -1730,13 +1731,14 @@ void Level::createMission() {
                 ((PlayerFixedObject *) (*this->enemies)[1])->setMoving(false);
                 ((PlayerFixedObject *) (*this->enemies)[1])->setDockingType(1);
                 ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(3209));
-                int convoyCoords[9] = {-1, -1, -1, 0, 0, 40000, -1, -1, -1};
+                struct ConvoyCoords9 { int a, b, c, d, e, f, g, h, i; };
+                ConvoyCoords9 convoyCoords = {-1, -1, -1, 0, 0, 40000, -1, -1, -1};
                 int waitTimes[3] = {10000, 0, 10000};
                 Array<KIPlayer *> *stops = new Array<KIPlayer *>();
                 ArraySetLength(3, *stops);
                 (*stops)[0] = (*this->enemies)[0];
                 (*stops)[2] = (*this->enemies)[1];
-                Route *convoyRoute = new Route(convoyCoords, stops, waitTimes, 9);
+                Route *convoyRoute = new Route(&convoyCoords.a, stops, waitTimes, 9);
                 convoyRoute->setLoop(true);
                 Route *convoyRoute2 = convoyRoute->clone();
                 for (int i = 2; i < 4; i++) {
@@ -2012,15 +2014,16 @@ void Level::createMission() {
                 ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setDockingType(1);
                 ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setMoving(false);
                 (*this->enemies)[this->miningPlantIndex]->setPosition(this->stationPosition);
-                int shuttleCoords[6] = {0, 0, -30000, -1, -1, -1};
-                shuttleCoords[0] = (int) (this->stationPosition.x + (float) shuttleCoords[0]);
-                shuttleCoords[1] = (int) (this->stationPosition.y + (float) shuttleCoords[1]);
-                shuttleCoords[2] = (int) (this->stationPosition.z + (float) shuttleCoords[2]);
+                struct ShuttleCoords6 { int a, b, c, d, e, f; };
+                ShuttleCoords6 shuttleCoords = {0, 0, -30000, -1, -1, -1};
+                shuttleCoords.a = (int) (this->stationPosition.x + (float) shuttleCoords.a);
+                shuttleCoords.b = (int) (this->stationPosition.y + (float) shuttleCoords.b);
+                shuttleCoords.c = (int) (this->stationPosition.z + (float) shuttleCoords.c);
                 int waitTimes[2] = {0, 6000};
                 Array<KIPlayer *> *stops = new Array<KIPlayer *>();
                 ArraySetLength(2, *stops);
                 (*stops)[1] = (*this->enemies)[this->miningPlantIndex];
-                Route *shuttleRoute = new Route(shuttleCoords, stops, waitTimes, 6);
+                Route *shuttleRoute = new Route(&shuttleCoords.a, stops, waitTimes, 6);
                 shuttleRoute->setLoop(true);
                 Route *shuttleRoute2 = shuttleRoute->clone();
                 for (int i = this->miningPlant + raiderCount; i < this->miningPlant + raiderCount + 2; i++) {
@@ -2076,8 +2079,9 @@ void Level::createMission() {
         raid = false;
     else
         raid = raidRoll < (security == 0 ? 90 : security == 1 ? 65 : security == 2 ? 35 : 10);
-    int raidCoords[3] = {Globals::rnd->nextInt(100000) - 50000, 0, Globals::rnd->nextInt(50000) + 50000};
-    this->field_180 = new Route(raidCoords, 3);
+    struct RaidCoords3 { int a, b, c; };
+    RaidCoords3 raidCoords = {Globals::rnd->nextInt(100000) - 50000, 0, Globals::rnd->nextInt(50000) + 50000};
+    this->field_180 = new Route(&raidCoords.a, 3);
     int localRace = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
     int raidRace = Globals::rnd->nextInt(100) < 75
                            ? 8
