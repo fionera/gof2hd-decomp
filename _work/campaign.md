@@ -3801,3 +3801,5 @@ mtw anchor for any size change before MenuTouchWindow.
   keeps the gate at linked 4485. The missing 16 B in the no-EH body is still the open target.
 - **StarMap::drawOnScreenInfo 98.2 -> 99.8%, 3488 B** (`ed3c4020`, w2925): keep `campaign` live in
   r6 across the icon chain with a same-value ternary, matching the original's register allocation.
+- **MenuTouchWindow::OnTouchEnd 84.88 -> 84.92%, 8132 B** (`167012c0`, w2912): match the original's
+  id53 flag-store order (the one real shape fix in an exhaustive swap search).
