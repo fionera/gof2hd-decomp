@@ -1789,13 +1789,13 @@ void Hud::drawChallengeModeScore(int unused) {
             int multiplier = Globals::status->field_0x18c;
             String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
             int bonusY = digitH + y;
-            int offset = 0;
+            int offset = -step;
             for (unsigned int i = 0; i < bonus.size(); i++) {
                 int frame = bonus.SubString(i, i + 1).ValueOf();
                 this->digitSprite->setFrame(frame);
+                offset += step;
                 this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
                                                bonusY + Globals::layout->field_0x2c_rowHeight);
-                offset += step;
                 this->digitSprite->draw(1.0f, 1.0f);
             }
         }
