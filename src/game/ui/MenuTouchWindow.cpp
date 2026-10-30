@@ -1816,8 +1816,9 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
             Globals::Canvas->DrawImage2D(this->optionsImage_0x110, layout->buttonInsetX + this->listEntryHeight / 2,
-                                         layout->field_0xc_leftMargin + arrowOffset * 2 + layout->field_0x20_top, 17,
-                                         20);
+                                         Globals::layout->field_0xc_leftMargin + arrowOffset * 2 +
+                                             Globals::layout->field_0x20_top,
+                                         17, 20);
             Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
             layout = Globals::layout;
             Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
@@ -1862,7 +1863,7 @@ void MenuTouchWindow::draw() {
             layout = Globals::layout;
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500), layout->buttonInsetX + 10,
-                layout->field_0xc_leftMargin + layout->field_0x20_top + layout->field_0x2c_rowHeight +
+                layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + layout->field_0x2c_rowHeight +
                     this->listEntryWidth + this->field_0x15c / 2 -
                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 + 1,
                 false);

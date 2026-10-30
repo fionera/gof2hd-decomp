@@ -3934,3 +3934,6 @@ mtw anchor for any size change before MenuTouchWindow.
   reported percentage is unchanged. `int rows` loop and 376-byte frame preserved.
 - **LevelScript::process 52.0 -> 54.0%, 57232 B** (`a3a3d6b7`, w3029): correct the mission-0
   intro placement and add the state-0 body anchor; size stays exact.
+- **MenuTouchWindow::draw 96.6 -> 97.8%, 13052 B** (`29bcb0d8`, w3027): reload `Globals::layout`
+  after `getText(500)` in case 8 and use the global pointer for the `DrawImage2D` y terms, matching
+  the original's post-call load placement. Case-14 OR-shape and all-cached variants score lower.
