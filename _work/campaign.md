@@ -3767,3 +3767,21 @@ mtw anchor for any size change before MenuTouchWindow.
   placement.
 - **MenuTouchWindow::draw 93.98 -> 95.0%, 13052 B** (`36394ab0`, w2703): faithful logo canvas plus a
   non-merging language test.
+
+## Wave 87 (2026-10-30) — worst-match queue
+
+- **Gun::calcCharacterCollision 74.9 -> 77.2%, 1984 B** (`caf81730`, w2905): use the direct
+  `count >= getValue(41, 1)` compare (the original has no `subs #1`), drop the `__builtin_expect`
+  cold hints, and restore the 4-byte `playerGun` reload anchor that keeps the size and two
+  unrelated byte-exact functions in step.
+- **Layout::Layout 45.4 -> 45.5%, 7072 B** (`9d06946c`, w2901): land the two literal-form fixes
+  from `c86b1c24` (`field_0x9c` float literals 70/75/100/50, `field_0x188` plain `23`) and store
+  `rewardBoxY` before `field_0x28c`; the reorder recovers the 16 B the literal fixes shrink.
+- **Radar::draw 71.3979 -> 71.4265%, 9908 B** (`327f5697`, w2903): evaluate the gas-cloud x bound
+  as `target - ego` (mathematically the same `|Δx| > 24000` test, matching the original's
+  register/literal shape). The faithful landmark/enemy orders measured 68.9-69.3%.
+- **Level::createCampaignMission 96.87 -> 96.92%, 29676 B** (`7cb9ddef`, w2919): cache the
+  `enemies` `data_` pointer in case 0 so the two field stores re-index it like the original.
+  Case 139's `baseA` spill weight is the remaining dominant block.
+- **MenuTouchWindow ctor 86.2%, 9600 B** (`54e89f33`, w2921): store the 16-bit flag with `strh`
+  like the original (fuzzy neutral, semantic fidelity).
