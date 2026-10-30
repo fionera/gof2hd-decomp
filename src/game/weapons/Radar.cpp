@@ -1415,10 +1415,15 @@ void Radar::drawCurrentLock(Hud *) {
             target = this->lockedEnemy;
         }
     }
-    if (__builtin_expect(target == nullptr, 0)) { // lint: arm_builtin
+    if (target == nullptr) {
+        // The volatile read is load-bearing: it keeps the gas/enemy
+        // if-conversion intact and lets the cold station block land right
+        // after the dlc1Won block, matching the original layout.
+        volatile int zz;
+        int q = zz;
         target = this->lockedStation;
         if (target == nullptr) {
-            Radar::drawTarget = 0;
+            Radar::drawTarget = q;
             return;
         }
     }
