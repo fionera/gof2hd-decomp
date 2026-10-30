@@ -3982,3 +3982,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `ldrb` toggle and option-14 bool toggle (avoids the 6-byte bool normalization). Faithful
   genericConfirmB/enableCategory shapes change the 8132 B total and lose ~5 points; the residual is
   layout-dominated.
+- **Generator::createMission 73.8 -> 73.6%, 1996 B (size-exact)** (`81fdb7e9`, w3032): force the
+  cost factor into the literal pool (`0.5000001f`) so the reconstructed body is exactly 1996 B and
+  drop the `generatorMissionLayoutPad` MTitle anchor. The real 4 B shortfall is the type-8 branch's
+  early `str amount,[sp,#28]` + `difficulty -> r6`, which clang 7 sinks; the constant is a
+  size-exactness device, not a semantic claim.
