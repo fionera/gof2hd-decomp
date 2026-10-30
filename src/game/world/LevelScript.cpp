@@ -1807,6 +1807,8 @@ bool LevelScript::process(int delta) {
             }
             case 67: {
                 // The smuggler freighter: stop it, scan it, then follow it through the pirates.
+                // The else-if order controls where each body and its literal pool land; this ordering
+                // reproduces the original block placement most closely.
                 if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
                     m_nState = 1;
                     (*enemies)[10]->setSpeed(0.0f);
@@ -1850,18 +1852,19 @@ bool LevelScript::process(int delta) {
                         m_nState = 3;
                         m_bCinematicBreak = 0;
                     }
-                } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 3) {
-                    Vector origin = (*enemies)[0]->getPosition();
-                    for (int i = 5; i != 9; i++) {
-                        KIPlayer *pirate = (*enemies)[i];
-                        int dx = Globals::rnd->nextInt(10000) + 15000;
-                        int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
-                        int dy = Globals::rnd->nextInt(10000);
-                        int dz = Globals::rnd->nextInt(10000) + 15000;
-                        int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
-                        pirate->setPosition(origin + Vector{(float) x, (float) (dy - 5000), (float) z});
-                    }
-                    m_nState = 4;
+                } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
+                    player->player->setVulnerable(true);
+                    player->freeze = 0;
+                    (*enemies)[10]->setSpeed(8.0f);
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->enabled = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 6;
+                    m_bCinematicBreak = 0;
                 } else if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
                     Vector origin = (*enemies)[0]->getPosition();
                     (*enemies)[10]->setPosition(origin.x, origin.y, origin.z + 12000.0f);
@@ -1892,19 +1895,18 @@ bool LevelScript::process(int delta) {
                     player->freeze = 1;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 5;
-                } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
-                    player->player->setVulnerable(true);
-                    player->freeze = 0;
-                    (*enemies)[10]->setSpeed(8.0f);
-                    m_pCamera->setLookAtCam(false);
-                    m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
-                    m_pHud->visible = 1;
-                    m_pRadar->enabled = 1;
-                    resetCamera(m_pLevel);
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_nState = 6;
-                    m_bCinematicBreak = 0;
+                } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 3) {
+                    Vector origin = (*enemies)[0]->getPosition();
+                    for (int i = 5; i != 9; i++) {
+                        KIPlayer *pirate = (*enemies)[i];
+                        int dx = Globals::rnd->nextInt(10000) + 15000;
+                        int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
+                        int dy = Globals::rnd->nextInt(10000);
+                        int dz = Globals::rnd->nextInt(10000) + 15000;
+                        int z = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dz;
+                        pirate->setPosition(origin + Vector{(float) x, (float) (dy - 5000), (float) z});
+                    }
+                    m_nState = 4;
                 } else if (((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6) {
                     (*enemies)[10]->setActive(false);
                     (*enemies)[10]->setVisible(false);
@@ -1914,8 +1916,9 @@ bool LevelScript::process(int delta) {
             }
             case 70: { // 0x1399a2
                 // Cutscene-exit teardown variant (state 0): like case 69 but reframes closer, points
-                // the camera to the opposite side and freezes the player ship. FP immediates from
-                // the .rodata pool: @0x139b60 = 3000.0f (dir scale), @0x139b64/68/6c = {-600, -300, -1000}.
+                // the camera to the opposite side and freezes the player ship. The radar is re-enabled
+                // before resetCamera, as in the original (0x13ec80/0x13ec84 vs 0x13ec8c). FP immediates
+                // from the .rodata pool: @0x139b60 = 3000.0f (dir scale), @0x139b64/68/6c = {-600, -300, -1000}.
                 if (((RadioMessage *) ((*messages)[0]))->isTriggered() && m_nState == 0) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -1940,29 +1943,6 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     player->freeze = 1; // PlayerEgo+0x24
                     m_nState = 1; // shared tail 0x139aba (m_nState = 1) -> post-switch tail
-                } else if (m_nState == 2) {
-                    // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
-                    // hand control back to the player, restore the HUD/radar, reframe the camera on the
-                    // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
-                    // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
-                    // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        break; // -> post-switch tail (0x144e36)
-                    }
-                    m_pCamera->setLookAtCam(false);
-                    m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
-                    m_pHud->visible = 1;
-                    resetCamera(m_pLevel);
-                    m_pRadar->enabled = 1;
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                    Player *lead = (*m_pLevel->getEnemies())[0]->player;
-                    m_nState = 3;
-                    lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
-                    (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
-                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 } else if (m_nState == 1) {
                     // State-1 conclude (0x13c04e): keep the LODs warm; once radio #1 is over commit
                     // enemies[0] (a PlayerFighter) as a permanent enemy -- seed its state fields, drop
@@ -1989,6 +1969,29 @@ bool LevelScript::process(int delta) {
                         m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
+                } else if (m_nState == 2) {
+                    // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
+                    // hand control back to the player, restore the HUD/radar, reframe the camera on the
+                    // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
+                    // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
+                    // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        break; // -> post-switch tail (0x144e36)
+                    }
+                    m_pCamera->setLookAtCam(false);
+                    m_pCamera->setTarget(player->geometry);
+                    player->setComputerControlled(false);
+                    m_pHud->visible = 1;
+                    m_pRadar->enabled = 1;
+                    resetCamera(m_pLevel);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                    Player *lead = (*m_pLevel->getEnemies())[0]->player;
+                    m_nState = 3;
+                    lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
+                    (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
+                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 }
                 break;
             }
@@ -3946,10 +3949,6 @@ bool LevelScript::process(int delta) {
                         m_nState = 3;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                     }
-                } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3) {
-                    m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_nState = 4;
-                    m_nScriptTimerA = m_nScriptTime;
                 } else if (m_nState == 4 && m_nScriptTime >= m_nScriptTimerA + 4000) {
                     Globals::status->nextCampaignMission(true);
                     Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
@@ -3957,6 +3956,10 @@ bool LevelScript::process(int delta) {
                     Globals::appManager->SetCurrentApplicationModule(5);
                     Level::initStreamOutPosition = 0;
                     m_nState = 5;
+                } else if (((RadioMessage *) ((*messages)[4]))->isOver() && m_nState == 3) {
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_nState = 4;
+                    m_nScriptTimerA = m_nScriptTime;
                 }
                 break;
             }
