@@ -3820,3 +3820,29 @@ mtw anchor for any size change before MenuTouchWindow.
   self-assignment scheduling anchors after the scroll-hint `DrawImage2D`. The faithful `int rows`
   / `*0.2f` / branch-order fixes cost ~9 points because the tuned `short rows` + local `layout`
   reproduce the original's 376-byte frame.
+
+## Wave 88 (2026-10-30) — second worst-match round
+
+- **LevelScript::process 51.94 -> 52.02%, 57232 B** (`fcf0cb4d`, w2932): mission-26 special before
+  mission-5. Residual: original lowers state 0-5 as a linear compare chain, ours merges into `tbh`.
+- **HangarWindow::render raw 77.1031 -> 77.1307, 9700 B** (`8fed7d2c`, w2935): move the three
+  self-assignment anchors after the scroll-hint draw.
+- **Layout::Layout literal-pool finding** (w2931, no commit): the original pool has 373 referenced
+  words vs our 308; it carries 14 extra copies each of the n9 constants `51/108/545/170` (the n9
+  values of `0x5c/0x64/0x68/0x6c`) = 224 B, exactly the iOS-order (6848 B) to original (7072 B) gap.
+  The current hill-climb reaches 7072 B by a different composition (more code, fewer literals).
+- **Radar::draw** (w2933): every faithful shape (VectorLength-first crosshair, 109/110/111 guard
+  order, exact asteroid/enemy skip) loses 2-17 points because branch offsets shift; 71.4% stays.
+- **MGame::OnTouchEnd** (w2936): `amount != 0` and guard removal each cost 1.8-7.0 points; the
+  remaining ~600 mismatches are an MBP tie-break. 78.3% stays.
+- **Globals ctor** (w2937): moving `status` out of the pointer group reproduces the original's
+  literal-pool order exactly but scores 78.3%; the 583 hoist is a pre-RA scheduler decision.
+- **Level::createMission** (w2938): global stack layout differs (big shared slot sp+312 vs sp+272);
+  faithful-order variants drop byte_exact to 1374.
+- **drawChallengeModeScore** (w2939): the literal-remat-vs-spill coin flip is not reachable from
+  source; 83.8% stays.
+- **Level::createShip** (w2940): best faithful body is 71.5% at 2780 B (or 71.8% at 2788 B); both
+  shift mid-file addresses, and only a `createRoute` shrink can compensate (costing linked_exact).
+  The size-exact 2764 B body stays at 69.3%.
+- **Generator::createMission** (w2934): `0.5f` gives 73.8% at 1992 B but the 4-byte size change
+  cascades byte_exact below the gate; no 1996 B variant beats 73.6%.

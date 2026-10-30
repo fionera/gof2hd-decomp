@@ -6,7 +6,9 @@
 > 77.1 -> 78.1%, MenuTouchWindow::draw 95.1 -> 96.2%, drawChallengeModeScore 81.5 -> 83.8%,
 > StarMap::drawOnScreenInfo 98.2 -> 99.8%, SpaceLounge::startChat 97.4 -> 99.1%,
 > PlayerEgo::update 98.6 -> 98.9%, MGame::OnUpdate 99.7 -> 99.8%,
-> ModStation::OnKeyPress 99.7 -> 99.9%, MenuTouchWindow::OnTouchEnd 84.9%. The remaining work is fuzzy/register-allocation matching
+> ModStation::OnKeyPress 99.7 -> 99.9%, MenuTouchWindow::OnTouchEnd 84.9%. Wave 88 added
+> LevelScript::process 52.0% and a Layout literal-pool finding (14 duplicated n9 constant islands,
+> 224 B = the iOS-order gap); the remaining top-20 functions are all at measured local optima. The remaining work is fuzzy/register-allocation matching
 > for the 38 non-linked-exact functions; the detailed table below is the wave-69 snapshot and is
 > retained for address-order history.
 >
