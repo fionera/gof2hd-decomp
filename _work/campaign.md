@@ -3746,3 +3746,6 @@ mtw anchor for any size change before MenuTouchWindow.
   size-exact.
 - **Radar::draw 71.3693 -> 71.3979%, 9908 B** (`223a310d`, w2603): hoist the landmark lock flags
   into the landmark block.
+- **Generator::createMission size-exact 1996 B, 73.6%** (`f91d4caf`, w2502): load the `0.5f` cost
+  factor from the pool and drop the `MTitle` anchor. Together with the size-exact `Layout::Layout`,
+  **every exported function is now size-exact (4523/4523)**.

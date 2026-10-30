@@ -1,12 +1,12 @@
 # .text frontier map — exported functions in original address order
 
-> **Current frontier (2026-10-30, wave 83):** `Layout::Layout` is now size-exact at 7072 B
-> (43.1%; the 280 B Item `.rodata` pad keeps `Item::canBeInstalledMultipleTimes` byte-exact). The
-> only remaining exported size difference is `Generator::createMission` -4 B (1992 vs 1996 B; the
-> faithful `0.5f` cost factor plus a 4-byte `MTitle` anchor). Every other exported function is
-> size-exact. Gate: `byte_exact 1412`, `linked_exact 4485`, avg 99.87%, `.text 0x1343d0`,
-> lint CLEAN, drift 0. The detailed table below is the wave-69 snapshot and is retained for
-> address-order history; use the size-diff list above for the current queue.
+> **Current frontier (2026-10-30, wave 84):** **every exported function is now size-exact**
+> (4523/4523). `Layout::Layout` landed its 7072 B schedule with a 280 B `Item.cpp` `.rodata` pad
+> (43.1%), and `Generator::createMission` landed a pool-loaded `0.5f` cost factor at 1996 B (73.6%)
+> with the `MTitle` anchor removed. Gate: `byte_exact 1412`, `linked_exact 4485`, avg 99.87%,
+> `.text 0x1343d0`, lint CLEAN, drift 0. The remaining work is fuzzy/register-allocation matching
+> for the non-byte-exact functions; the detailed table below is the wave-69 snapshot and is
+> retained for address-order history.
 >
 Generated from the current `wave69-w1744` build (commit `4bd072cb` + this pass) by
 walking the common `.dynsym` function symbols of both binaries in original-address order.
