@@ -2066,7 +2066,7 @@ void MenuTouchWindow::draw() {
                 if (arabicButton | latinButton)
                     Globals::Canvas->field_0x1c = !arabicButton;
                 (*this->buttonsB0)[i]->draw();
-                if (arabicButton != latinButton)
+                if (arabicButton + latinButton == 1)
                     Globals::Canvas->field_0x1c = arabicButton;
             }
             break;
