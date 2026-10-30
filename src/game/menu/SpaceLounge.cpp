@@ -1879,7 +1879,7 @@ done:
     return __builtin_annotation(result, "sound"); // lint: arm_builtin
 }
 
-unsigned char SpaceLounge::hangarNeedsUpdate() {
+bool SpaceLounge::hangarNeedsUpdate() {
     return this->hangarUpdate;
 }
 

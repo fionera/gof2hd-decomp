@@ -53,7 +53,7 @@ public:
     int chatScroll;
     int chatAnswer;
     uint8_t mapVisible;
-    uint8_t hangarUpdate;
+    bool hangarUpdate;
     uint8_t singleOffer;
     Array<Array<ImagePart *> *> *silhouetteGrid;
     Array<ImagePart *> *agentImageParts;
@@ -116,7 +116,7 @@ public:
 
     int getSpecificSoundForRace(int soundId, int race, bool alternate);
 
-    unsigned char hangarNeedsUpdate();
+    bool hangarNeedsUpdate();
 
     void init();
 
