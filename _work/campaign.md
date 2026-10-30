@@ -4005,3 +4005,7 @@ mtw anchor for any size change before MenuTouchWindow.
   `Item.cpp` `.rodata` pad, and a 47-store trim of `mtwTextLayoutAnchor`. Gate stays byte 1415 /
   linked 4492. **All 4523 compared functions are now size-exact.** The fuzzy drop is the price of
   size-exactness: the original's more heavily vectorised store schedule is not yet recovered.
+- **Gun::calcCharacterCollision 81.0 -> 82.7%, 1984 B** (`470d4279`, w3064): lazy inline
+  `-enemy->radius` negation plus a `__builtin_expect(..., 1)` on the first comparison so
+  MachineBlockPlacement keeps the not-bomb flag block before the mine bounce. The mine block now
+  matches instruction-for-instruction; residual is inner-loop register allocation.
