@@ -3880,3 +3880,6 @@ mtw anchor for any size change before MenuTouchWindow.
   closing the secondary-weapon menu.
 - **MenuTouchWindow::draw 96.2 -> 96.5%, 13052 B** (`b7135b16`, w2968): hoist the case-15 Y sum and
   reorder the case-8 layout load.
+- **Level::createCampaignMission 97.0 -> 97.4%, 29676 B** (`54f1a3b2`, w2969): if/else base
+  selection keeps `baseA` in r9 across `setName` and spills to `[sp,#40]` like the original.
+  Residual: the shared switch exit shifts +4, flipping the jump-table default entries.

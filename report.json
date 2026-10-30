@@ -216,20 +216,20 @@
    "usize": 13052
   },
   {
-   "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 97.0,
-   "byte": false,
-   "linked": false,
-   "osize": 29676,
-   "usize": 29676
-  },
-  {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
    "pct": 97.2,
    "byte": false,
    "linked": false,
    "osize": 1896,
    "usize": 1896
+  },
+  {
+   "name": "_ZN5Level21createCampaignMissionEv",
+   "pct": 97.4,
+   "byte": false,
+   "linked": false,
+   "osize": 29676,
+   "usize": 29676
   },
   {
    "name": "_ZN10ModStationC1Ev",
