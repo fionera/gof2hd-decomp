@@ -495,42 +495,41 @@ namespace AbyssEngine {
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
+        unsigned char *raw = 0;
         if ((flags & 4) != 0) {
-            short *raw = (short *) new unsigned char[(*slot)->vertexCount * 6];
-            if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0) {
-                delete[] (unsigned char *) raw;
-                return -1;
-            }
+            raw = new unsigned char[(*slot)->vertexCount * 6];
+            if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0)
+                goto fail;
+            short *sraw = (short *) raw;
             (*slot)->positions = new float[(*slot)->vertexCount * 3];
             unsigned int count = (*slot)->vertexCount * 3;
             for (int i = 0; i != count; i++) {
                 unsigned int axis = i % 3;
-                float value = raw[i];
+                float value = sraw[i];
                 ((float *) (*slot)->positions)[i] = value;
                 if (minimum[axis] > value)
                     minimum[axis] = value;
                 if (maximum[axis] < value)
                     maximum[axis] = value;
             }
-            delete[] (unsigned char *) raw;
+            delete[] raw;
         } else if ((flags & 3) != 0) {
-            int *raw = (int *) new unsigned char[(*slot)->vertexCount * 12];
-            if (AEFile::Read((*slot)->vertexCount * 12, raw, handle) == 0) {
-                delete[] (unsigned char *) raw;
-                return -1;
-            }
+            raw = new unsigned char[(*slot)->vertexCount * 12];
+            if (AEFile::Read((*slot)->vertexCount * 12, raw, handle) == 0)
+                goto fail;
+            int *iraw = (int *) raw;
             (*slot)->positions = new float[(*slot)->vertexCount * 3];
             unsigned int count = (*slot)->vertexCount * 3;
             for (int i = 0; i != count; i++) {
                 unsigned int axis = i % 3;
-                float value = raw[i];
+                float value = iraw[i];
                 ((float *) (*slot)->positions)[i] = value;
                 if (minimum[axis] > value)
                     minimum[axis] = value;
                 if (maximum[axis] < value)
                     maximum[axis] = value;
             }
-            delete[] (unsigned char *) raw;
+            delete[] raw;
         } else if ((flags & 0x18) != 0) {
             (*slot)->positions = new float[(*slot)->vertexCount * 3];
             if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
@@ -544,19 +543,18 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 2) {
             if ((flags << 29) != 0) {
-                int *raw = new int[(*slot)->vertexCount];
-                if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
-                    delete[] raw;
-                    return -1;
-                }
+                raw = new unsigned char[(*slot)->vertexCount * 4];
+                if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0)
+                    goto fail;
+                short *sraw = (short *) raw;
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 1); i += 2) {
-                    ((float *) (*slot)->texCoords)[i] = (float) ((double) (short) raw[i / 2] * (1.0 / 4096.0));
-                    double v = (double) (short) (raw[i / 2] >> 16) * (1.0 / 4096.0);
+                    ((float *) (*slot)->texCoords)[i] = (float) ((double) sraw[i] * (1.0 / 4096.0));
+                    double v = (double) sraw[i + 1] * (1.0 / 4096.0);
                     ((float *) (*slot)->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
-                delete[] (unsigned char *) raw;
+                delete[] raw;
             } else if ((flags & 0x18) != 0) {
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 if (AEFile::Read((*slot)->vertexCount * 8, (*slot)->texCoords, handle) == 0)
@@ -572,16 +570,16 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 4) {
             if ((flags << 29) != 0) {
-                short *raw = (short *) new unsigned char[(*slot)->vertexCount * 6];
-                if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0) {
-                    delete[] raw;
-                    return -1;
-                }
+                raw = new unsigned char[(*slot)->vertexCount * 6];
+                if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0)
+                    goto fail;
+                short *sraw = (short *) raw;
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
-                for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
-                    float x = (float) ((double) raw[i] * (1.0 / 32768.0));
-                    float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
-                    float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
+                int count = (*slot)->vertexCount * 3;
+                for (int i = 0; i < count; i += 3) {
+                    float x = (float) ((double) sraw[i] * (1.0 / 32768.0));
+                    float y = (float) ((double) sraw[i + 1] * (1.0 / 32768.0));
+                    float z = (float) ((double) sraw[i + 2] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
                     // The original loads (*slot)->normals once per iteration and stores the
                     // clamped components through a single base pointer.
@@ -662,22 +660,25 @@ namespace AbyssEngine {
             }
         }
 
+        goto afterFail;
+    fail:
+        delete[] raw;
+        return -1;
+    afterFail:
+
         if ((*slot)->vertexFormat & 8) {
             if ((flags << 29) != 0) {
-                Mesh *mesh = *slot;
-                unsigned char *raw = new unsigned char[mesh->vertexCount * 4];
-                if (AEFile::Read(mesh->vertexCount * 4, raw, handle) == 0) {
+                unsigned char *raw = new unsigned char[(*slot)->vertexCount * 4];
+                if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
                     delete[] raw;
                     return -1;
                 }
-                mesh->colors = new unsigned char[mesh->vertexCount * 16];
-                mesh = *slot;
-                for (unsigned int i = 0; i < (unsigned int) (mesh->vertexCount << 2); i++)
-                    ((float *) mesh->colors)[i] = (float) raw[i] / 255.0f;
+                (*slot)->colors = new unsigned char[(*slot)->vertexCount * 16];
+                for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 2); i++)
+                    ((float *) (*slot)->colors)[i] = (float) raw[i] / 255.0f;
                 delete[] raw;
             } else if ((flags & 0x18) != 0) {
-                Mesh *mesh = *slot;
-                mesh->colors = new unsigned char[mesh->vertexCount * 16];
+                (*slot)->colors = new unsigned char[(*slot)->vertexCount * 16];
                 unsigned int ok = AEFile::Read((*slot)->vertexCount * 16, (*slot)->colors, handle);
                 int result = ok != 0 ? 1 : -1;
                 if (enhanced == 0 || ok == 0)
@@ -696,13 +697,8 @@ namespace AbyssEngine {
         if ((*slot)->animation != 0) {
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
         }
-        if (children == 0) {
-            // Cold-path layout anchor: one volatile store keeps this early-out at the
-            // original size so the following .text offsets do not move.
-            volatile short layoutAnchor;
-            layoutAnchor = 1;
+        if (children == 0)
             return 1;
-        }
         for (unsigned int c = 0; c < (unsigned short) children; c++) {
             Mesh *child = new Mesh();
             child->vboEligible = 1;
