@@ -544,7 +544,7 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 2) {
             if ((flags << 29) != 0) {
-                signed char *raw = (signed char *) new unsigned char[(*slot)->vertexCount * 4];
+                int *raw = new int[(*slot)->vertexCount];
                 if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
                     delete[] raw;
                     return -1;
@@ -552,8 +552,8 @@ namespace AbyssEngine {
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 bool flipV = Engine::enableShader != 0;
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 1); i += 2) {
-                    ((float *) (*slot)->texCoords)[i] = (float) ((double) *(short *) (raw + i) * (1.0 / 4096.0));
-                    double v = (double) *(short *) (raw + i + 2) * (1.0 / 4096.0);
+                    ((float *) (*slot)->texCoords)[i] = (float) ((double) (short) raw[i / 2] * (1.0 / 4096.0));
+                    double v = (double) (short) (raw[i / 2] >> 16) * (1.0 / 4096.0);
                     ((float *) (*slot)->texCoords)[i + 1] = (float) (flipV ? 1.0 - v : v);
                 }
                 delete[] (unsigned char *) raw;
@@ -572,16 +572,16 @@ namespace AbyssEngine {
 
         if ((*slot)->vertexFormat & 4) {
             if ((flags << 29) != 0) {
-                signed char *raw = (signed char *) new unsigned char[(*slot)->vertexCount * 6];
+                short *raw = (short *) new unsigned char[(*slot)->vertexCount * 6];
                 if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0) {
                     delete[] raw;
                     return -1;
                 }
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 for (int i = 0; i < ((*slot)->vertexCount * 3); i += 3) {
-                    float x = (float) ((double) *(short *) (raw + 2 * i) * (1.0 / 32768.0));
-                    float y = (float) ((double) *(short *) (raw + 2 * i + 2) * (1.0 / 32768.0));
-                    float z = (float) ((double) *(short *) (raw + 2 * i + 4) * (1.0 / 32768.0));
+                    float x = (float) ((double) raw[i] * (1.0 / 32768.0));
+                    float y = (float) ((double) raw[i + 1] * (1.0 / 32768.0));
+                    float z = (float) ((double) raw[i + 2] * (1.0 / 32768.0));
                     float length = sqrtf(x * x + y * y + z * z);
                     // The original loads (*slot)->normals once per iteration and stores the
                     // clamped components through a single base pointer.

@@ -65,19 +65,11 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.1,
+   "pct": 77.4,
    "byte": false,
    "linked": false,
    "osize": 9700,
    "usize": 9700
-  },
-  {
-   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 78.3,
-   "byte": false,
-   "linked": false,
-   "osize": 2632,
-   "usize": 2632
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -118,6 +110,14 @@
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
+   "pct": 83.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2632,
+   "usize": 2632
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
@@ -248,20 +248,20 @@
    "usize": 29676
   },
   {
-   "name": "_ZN5MGame8OnUpdateEv",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 11440,
-   "usize": 11440
-  },
-  {
    "name": "_ZN7StarMap16drawOnScreenInfoEib",
    "pct": 99.8,
    "byte": false,
    "linked": false,
    "osize": 3488,
    "usize": 3488
+  },
+  {
+   "name": "_ZN5MGame8OnUpdateEv",
+   "pct": 99.9,
+   "byte": false,
+   "linked": false,
+   "osize": 11440,
+   "usize": 11440
   },
   {
    "name": "Blowfish_decipher",

@@ -4034,3 +4034,10 @@ mtw anchor for any size change before MenuTouchWindow.
   really returns `bool` (bare `ldrb; bx lr`), so the call site lowers to `cmp #0` instead of
   `cmp #1`; the hint guard becomes the witnessed `hints[35] && (hints[36] | field_0xe0) == 0`
   shape. Residual: mission-122..124 radio block loads `level` after the mission call.
+- **MeshReadData 78.3 -> 83.7%, 2632 B** (`1b1f9c58`, w3091): read the packed UV stream as
+  `int *` (one `ldr` + `sxth`/`asr` per vertex pair instead of two byte-offset `ldrsh`) and the
+  packed-normal stream as `short *` (`raw[i]`/`raw[i+1]`/`raw[i+2]`). Both are semantically
+  correct and size-exact; the epilogue moves from after the colours block to right after the UV
+  region, and the normals loop matches the original's halfword walk. Residual is the shared
+  `delete[] raw`/`return -1` epilogue still placed after the UV block instead of after the
+  normals loop, plus the r10/fp allocator permutation.
