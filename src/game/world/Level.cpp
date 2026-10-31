@@ -2903,7 +2903,12 @@ void Level::createCampaignMission() {
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 Player *p = (*this->enemies)[i]->player;
                 p->setMaxHitpoints(p->getMaxHitpoints() / 3);
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             (*this->enemies)[0]->setPosition((float) wp->x, (float) wp->y, (float) wp->z);
@@ -2980,7 +2985,12 @@ void Level::createCampaignMission() {
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 Player *p = (*this->enemies)[i]->player;
                 p->setMaxHitpoints(p->getMaxHitpoints() / 3);
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             (*this->landmarks)[3]->setVisible(false);
@@ -3028,7 +3038,12 @@ void Level::createCampaignMission() {
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 Player *p = (*this->enemies)[i]->player;
                 p->setMaxHitpoints(p->getMaxHitpoints() / 4);
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             break;
@@ -3593,7 +3608,12 @@ void Level::createCampaignMission() {
             p->setHitpoints(p->getHitpoints() / 20);
             (*this->enemies)[0]->geometry->setRotation(Vector{0.0f, 5.4977875f, 0.0f});
             (*this->enemies)[0]->setActive(false);
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             this->objectivesB = new Objective(1, 0, this);
             break;
@@ -3620,7 +3640,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[3]->player->setAlwaysFriend(true);
             ((PlayerFixedObject *) (*this->enemies)[3])->setDockingType(1);
             ((PlayerFixedObject *) (*this->enemies)[3])->setName(*Globals::gameText->getText(3209));
-            delete (*this->enemies)[3]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[3]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[3]->cargo = nullptr;
             this->objectivesA = new Objective(22, 0, this);
             this->objectivesB = new Objective(1, 3, this);
@@ -3644,7 +3669,12 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[6])->setName(*Globals::gameText->getText(3208));
             (*this->enemies)[6]->player->setAlwaysFriend(true);
             (*this->enemies)[6]->geometry->rotate(Vector{0.0f, -2.3561945f, 0.0f});
-            delete (*this->enemies)[6]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[6]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[6]->cargo = nullptr;
             Waypoint *wp = new Waypoint(30000, -5000, 40000, nullptr);
             (*this->enemies)[7] = this->createStaticObject(wp, 17049, false);
@@ -3652,7 +3682,12 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[7])->setDockingType(1);
             ((PlayerFixedObject *) (*this->enemies)[7])->setName(*Globals::gameText->getText(3209));
             (*this->enemies)[7]->player->setAlwaysFriend(true);
-            delete (*this->enemies)[7]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[7]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[7]->cargo = nullptr;
             int convoyCoords[9] = {-1, -1, -1, 20000, -3000, 30000, -1, -1, -1};
             int waitTimes[3] = {12000, 0, 12000};
@@ -3742,7 +3777,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->player->setAlwaysFriend(true);
             (*this->enemies)[0]->player->setHitpoints(9999999);
             (*this->enemies)[0]->field_0x74 = 1;
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             (*this->enemies)[1] = this->createStaticObject(dockWp, 21113, true);
             (*this->enemies)[1]->setPosition(0.0f, 0.0f, 0.0f);
@@ -3752,7 +3792,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[1]->player->setHitpoints(9999999);
             (*this->enemies)[1]->geometry->rotate(Vector{0.0f, 3.1415927f, 0.0f});
             (*this->enemies)[1]->setActive(false);
-            delete (*this->enemies)[1]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[1]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[1]->cargo = nullptr;
             for (int i = 2; i < 6; i++) {
                 (*this->enemies)[i] = this->createShip(0, 0, 51, escortWp, true, false);
@@ -3852,7 +3897,12 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[0])->setName(*Globals::gameText->getText(3210));
             ((PlayerFixedObject *) (*this->enemies)[0])->setDockingType(1);
             (*this->enemies)[0]->player->setAlwaysFriend(true);
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             for (int i = 1; i < 3; i++) {
                 (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
@@ -3885,7 +3935,12 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[0])->setDockingType(3);
             (*this->enemies)[0]->player->setHitpoints(9999999);
             ((PlayerFixedObject *) (*this->enemies)[0])->setName(*Globals::gameText->getText(1667) + String(" 1"));
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             (*this->enemies)[1] = this->createStaticObject(baseB, 19051, true);
             (*this->enemies)[1]->setPosition(baseB->getPosition());
@@ -3893,7 +3948,12 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[1])->setDockingType(3);
             (*this->enemies)[1]->player->setHitpoints(9999999);
             ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(1667) + String(" 2"));
-            delete (*this->enemies)[1]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[1]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[1]->cargo = nullptr;
             Matrix rotation;
             Vector v = {0.0f, 0.0f, 0.0f};
@@ -4051,7 +4111,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[0]->geometry->setDirection(this->player->GetDirVector(), Vector{0.0f, 1.0f, 0.0f});
             (*this->enemies)[0]->setEnemies(nullptr);
             ((PlayerFighter *) (*this->enemies)[0])->field_0x13d = 0;
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             (*this->enemies)[1] = this->createStaticObject(nullptr, 16928, false);
             ((PlayerFixedObject *) (*this->enemies)[1])->setMoving(false);
@@ -4061,7 +4126,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[1]->geometry->setRotation(0.0f, 3.1415927f, 0.0f);
             (*this->enemies)[1]->field_0x74 = 1;
             (*this->enemies)[1]->field_0x70 = 0;
-            delete (*this->enemies)[1]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[1]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[1]->cargo = nullptr;
             int dockCoords[9] = {-10000, 1000, 15000, -1, -1, -1, -10000, 1000, 15000};
             int waitTimes[3] = {0, 10000, 0};
@@ -4120,7 +4190,12 @@ void Level::createCampaignMission() {
             (*this->enemies)[stationIndex]->name = station->getName();
             (*this->enemies)[stationIndex]->shipGroup = 3;
             (*this->enemies)[stationIndex]->setPosition(stationPos);
-            delete (*this->enemies)[stationIndex]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[stationIndex]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[stationIndex]->cargo = nullptr;
             delete station;
             for (int i = 0; i < fighters; i++) {
@@ -4134,7 +4209,12 @@ void Level::createCampaignMission() {
                 ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
                 (*this->enemies)[i]->player->setAlwaysFriend(true);
                 (*this->enemies)[i]->setPosition(30000.0f, -15000.0f, -50000.0f);
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             Vector dir = this->enemyRoute->getWaypoint(1)->getPosition() - this->enemyRoute->getWaypoint(0)->getPosition();
@@ -4182,7 +4262,12 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->setVisible(false);
                 (*this->enemies)[i]->setSpeed(5.0f);
                 (*this->enemies)[i]->name = *Globals::gameText->getText(1636);
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             for (int i = enemyEnd + 1; i < stationIndex; i++) {
@@ -4212,7 +4297,12 @@ void Level::createCampaignMission() {
             ((PlayerFighter *) (*this->enemies)[0])->setCloakingPossible(false);
             (*this->enemies)[0]->name = *Globals::gameText->getText(1636);
             ((PlayerFighter *) (*this->enemies)[0])->setAIDisabled(true);
-            delete (*this->enemies)[0]->cargo;
+            {
+                Array<int> *cargo = (*this->enemies)[0]->cargo;
+                if (cargo != nullptr) {
+                    delete cargo;
+                }
+            }
             (*this->enemies)[0]->cargo = nullptr;
             for (int i = 0; i < 3; i++) {
                 KIPlayer *mine = this->createStaticObject(nullptr, 18882, true);
@@ -4292,7 +4382,12 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->player->setAlwaysEnemy(false);
                 (*this->enemies)[i]->player->setAlwaysFriend(true);
                 (*this->enemies)[i]->field_0x74 = 1;
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             for (int i = 11; i < 15; i++) {
@@ -4304,7 +4399,12 @@ void Level::createCampaignMission() {
                                     (float) (-145000 - (i - 11) * 4000));
                 (*this->enemies)[i]->geometry->rotate((float) i + -4.31969f, (float) i + -11.519174f, (float) i + -5.759587f);
                 (*this->enemies)[i]->field_0x74 = 1;
-                delete (*this->enemies)[i]->cargo;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
                 (*this->enemies)[i]->cargo = nullptr;
             }
             this->objectivesA = new Objective(4, 7, this);
