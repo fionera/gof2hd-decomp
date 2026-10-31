@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 45.5,
+   "pct": 45.8,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 45.5,
+   "pct": 45.8,
    "byte": false,
    "linked": false,
    "osize": 7072,

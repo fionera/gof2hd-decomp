@@ -4106,3 +4106,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `r==1` and returns early otherwise), use `int old` toggles in cases 8/3 so clang emits separate
   `eor`+`clz`, and pass `optionFlag(13)` to `enableCategory(1, ...)`. Residual is MBP ordering of
   the DLC switch bodies (`0,2,4,1,3` vs `0,1,2,3,4`) and the options spill.
+- **Layout::Layout 45.5 -> 45.8%, 7072 B** (`9c68cfc6`, w3150): reorder five constructor
+  statements (`field_0x1c`/`footerTextInset`/`headerTitleY` after `field_0x20_top`,
+  `field_0x2c_rowHeight` after `field_0x30_rowHeight`, `field_0x204` before `field_0x160`) to
+  steer the SLP store schedule while staying size-exact. Residual is that the original outlines
+  ~6 innermost `Globals::iPad ? A : B` ternaries into cold blocks (86 vld1/81 vst1 vs our 77/72);
+  the 50.7% schedule is 6792 B and not size-exact.
