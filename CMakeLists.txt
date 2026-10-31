@@ -53,6 +53,13 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-condsider-local-interval-cost")
 
+# Radar::draw's autopilot / otherLock / off-screen-blip __builtin_expect hints pick the wrong
+# block layout at LLVM's default 2000:1 weights; the original's cold autopilot block lands after
+# the planet loop at a much flatter likely:unlikely ratio.  Scope the weights to this TU so the
+# sibling Radar.cpp helpers keep the default.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
+
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/ModStation.cpp"
     PROPERTIES COMPILE_OPTIONS
     "-mllvm;-likely-branch-weight=20;-mllvm;-unlikely-branch-weight=12")

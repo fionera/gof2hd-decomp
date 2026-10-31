@@ -4133,3 +4133,8 @@ mtw anchor for any size change before MenuTouchWindow.
   so clang keeps the merged return value in r0 instead of r5 and drops the extra `moveq r0,r5`;
   inline the normals-loop bound (`i < (*slot)->vertexCount * 3`) so the loop reloads it like the
   original. linked_exact 4492 -> 4493; baseline and docs locked in the same commit.
+- **Radar::draw 71.7413 -> 71.7985 raw (71.8%), 9908 B** (`b7dacd1b`, w3186): scope flatter
+  likely:unlikely branch weights (`-mllvm -likely-branch-weight=80 -mllvm
+  -unlikely-branch-weight=1`) to Radar.cpp. The three `__builtin_expect` hints were lowered with
+  LLVM's default 2000:1 weights; at 80:1 the enemy/combat-music tail block layout realigns. The
+  flag sweep found 80..1000:1 is a plateau; all other block-placement flags were neutral or worse.
