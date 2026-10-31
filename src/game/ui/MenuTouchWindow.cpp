@@ -1365,7 +1365,7 @@ void MenuTouchWindow::draw() {
             }
             layout = Globals::layout;
             layout->drawBox(0, layout->buttonInsetX + this->slotListWidth + this->slotBorderWidth,
-                            layout->field_0x20_top + layout->field_0xc_leftMargin,
+                            layout->field_0xc_leftMargin + layout->field_0x20_top,
                             this->slotTextWidth - layout->field_0x2c_rowHeight - this->slotMarkerWidth,
                             layout->field_0x1c, String(*Globals::gameText->getText(this->field_0x1e0 + 77)));
             layout = Globals::layout;
@@ -2053,11 +2053,15 @@ void MenuTouchWindow::draw() {
                 bool latinButton = ((*this->buttonsB0)[i]->id == 33 || (*this->buttonsB0)[i]->id == 36 ||
                                     (*this->buttonsB0)[i]->id == 37) &&
                                    GameText::getLanguage() == 9;
-                if (arabicButton + latinButton == 1)
-                    Globals::Canvas->field_0x1c = !arabicButton;
+                if (arabicButton)
+                    Globals::Canvas->field_0x1c = false;
+                else if (latinButton)
+                    Globals::Canvas->field_0x1c = true;
                 (*this->buttonsB0)[i]->draw();
-                if (arabicButton | latinButton)
-                    Globals::Canvas->field_0x1c = arabicButton;
+                if (arabicButton)
+                    Globals::Canvas->field_0x1c = true;
+                else if (latinButton)
+                    Globals::Canvas->field_0x1c = false;
             }
             break;
         case 16:
