@@ -4088,3 +4088,7 @@ mtw anchor for any size change before MenuTouchWindow.
   at the top of the `count == 4 && showBestDeal` body) to steer the loop's register allocation.
   The extra `.ARM.extab` entry pushes `.rodata` +0x10, so `canBeInstalledMultipleTimesPad` in
   Item.cpp is retuned 280 -> 264 to hold the PC-relative literal distance exact.
+- **Hud::draw 88.2717 -> 88.2577 raw (88.3%), 9332 B** (`4ad435e0`, w3158): make `armorY`
+  `unsigned short` so clang emits the original zero-extending `ldrh` instead of `ldrsh.w`. The
+  2-byte shrink inserts an alignment `nop` later, so the raw ratio dips 0.014 while the reported
+  percentage and all gate counts are unchanged.
