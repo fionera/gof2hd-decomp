@@ -4049,3 +4049,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **StarMap::drawOnScreenInfo 99.8 -> 99.9%, 3488 B** (`166133f7`, w3015): keep `campaign` live
   in r6 through the 116/120/125 chain by comparing the 120-arm campaign value `>= 0` (matches the
   original `bge`). Residual is the single `cmp r0` vs `cmp r6` register choice.
+- **Level::createScene 88.18 -> 92.12%, 2252 B** (`c43d02f1`, w3072): move `createScene` into its
+  own `LevelCreateScene.cpp` TU with a scoped `-mllvm -sink-insts-to-avoid-spills`, which sinks the
+  `&Globals::rnd` GOT load into the loop preheader and pins it in r8; site 3 uses the local `rnd`
+  so the body returns to exactly 2252 B. The section-ordering file keeps the original address.
