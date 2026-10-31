@@ -593,8 +593,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                         if (this->field_0x18 != this->planetTargets->data()[i]) {
                             this->planetLockTimer = 0;
                         }
-                        this->field_0x18 = this->planetTargets->data()[i];
                         this->planetDockIndex = i;
+                        this->field_0x18 = this->planetTargets->data()[i];
                         planetHit = true;
                     }
                     if (stationId != currentStation) {
@@ -808,8 +808,8 @@ enemies:
                     }
                 }
             } else {
-                enemy->field_0x73 = 0;
                 enemy->field_0x76 = 0;
+                enemy->field_0x73 = 0;
                 if (wreck) {
                     KIPlayer *e = this->enemies->data()[i];
                     unsigned int image;
@@ -1123,8 +1123,8 @@ asteroids:
                                 int left = (int) (PlayerEgo::crosshairPos.x - (float) size);
                                 int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                                 if (this->screenX > left && this->screenX < left + size * 2 && this->screenY > top &&
-                                    this->screenY < top + size * 2 && !asteroid->asteroidFlag && slotCount <= 3 &&
-                                    this->field_0x1b0) {
+                                    this->screenY < top + size * 2 && !asteroid->asteroidFlag && this->field_0x1b0 &&
+                                    slotCount <= 3) {
                                     this->asteroidSlots[slotCount++] = i;
                                 }
                             }
