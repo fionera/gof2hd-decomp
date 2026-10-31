@@ -250,7 +250,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     // Shield / armour / gamma bars.
     int dividerOffset = Globals::layout->field_0x1e8;
     Globals::Canvas->SetColor(0xffffffff);
-    short armorY;
+    unsigned short armorY;
     int armorBarY;
     if (this->hasShieldBar) {
         PaintCanvas *canvas = Globals::Canvas;
