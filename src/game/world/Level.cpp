@@ -2095,11 +2095,9 @@ void Level::createMission() {
                                     (*(float *) &Globals::options[44] - 0.5f) * (float) this->hostileCount);
         this->hostileCount += Globals::status->getLevel() / 4;
     }
-    if (security == 3) {
-        if (*(float *) &Globals::options[44] < 1.0f) {
-            if (raid)
-                this->hostileCount = Globals::rnd->nextInt(2) + 1;
-        }
+    if ((security == 3) & raid) {
+        if (*(float *) &Globals::options[44] < 1.0f)
+            this->hostileCount = Globals::rnd->nextInt(2) + 1;
     }
     int extraFriend;
     if (stationIndex == 78) {
