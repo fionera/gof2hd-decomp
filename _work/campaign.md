@@ -4059,3 +4059,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **LevelScript::process 54.566 -> 54.570%, 57232 B** (`8709f5c0`, w3125): move the state-3
   `s_processPad[3]` size anchor past the message-8 handoff; the store stays 8 B and the scheduler
   reproduces one more original instruction.
+- **MGame::OnTouchEnd 78.3 -> 78.4%, 8080 B** (`599a16e0`, w3105): hoist
+  `Status::getCampaignMission()` into a local `Mission *campaign` reused by the `keepObjectives`
+  test and mission selection (the original loads it once). Residual is MachineBlockPlacement: the
+  original keeps the hot chain contiguous and ends the shared epilogue at 0xEC0.
