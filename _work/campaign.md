@@ -4142,3 +4142,7 @@ mtw anchor for any size change before MenuTouchWindow.
   `isMoveToCargoButton()`-before-`isSellButton()` block order (the branches are mutually
   exclusive). A scoped-flag sweep found nothing better; the 9700-byte body and its anchors
   (`description = description` x3, two volatile stores, `textYbarrier`) are load-bearing.
+- **Level::createScene 92.1 -> 93.1%, 2252 B** (`9b9978fc`, w3182): scope the local `rnd`
+  pointer to the ship loop so `this` spills to sp#48 and `sl` is free for `ship`, reproducing the
+  original callee-saved pressure in the hangar branch. The `-sink-insts-to-avoid-spills` flag and
+  the dedicated LevelCreateScene.cpp TU remain part of the winning shape.
