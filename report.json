@@ -232,20 +232,20 @@
    "usize": 1008
   },
   {
-   "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 98.9,
-   "byte": false,
-   "linked": false,
-   "osize": 13052,
-   "usize": 13052
-  },
-  {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 99.5,
    "byte": false,
    "linked": false,
    "osize": 29676,
    "usize": 29676
+  },
+  {
+   "name": "_ZN15MenuTouchWindow4drawEv",
+   "pct": 99.8,
+   "byte": false,
+   "linked": false,
+   "osize": 13052,
+   "usize": 13052
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",

@@ -4095,3 +4095,9 @@ mtw anchor for any size change before MenuTouchWindow.
 - **StarMap::draw 94.7 -> 94.8%, 2644 B** (`a0bf6fd4`, w3143): assert the transition flags are
   exclusive (`__builtin_assume(!(transitionIn && transitionOut))`, lint waiver) so the second
   guard tests `mode` first, matching the original `cmp r0,#3; it eq; cmpeq r5,#0` shape.
+- **MenuTouchWindow::draw 98.9 -> 99.8%, 13052 B** (`04a8695d`, w3166): reconstruct case 14 as
+  the original pair of `if/else-if` language-button chains (draw unconditionally, reuse the OR),
+  and swap case 15's third `drawBox` add order to `field_0xc_leftMargin + field_0x20_top`. The
+  4 B shorter case-14 shape exposed a pre-existing 4 B deficit; the case-15 add order restored
+  2 B and the resulting literal-pool alignment `nop` restored the other 2 B. Residual is 2
+  commutative `adds` tie-breaks and 9 stack-colored `String` temporaries.
