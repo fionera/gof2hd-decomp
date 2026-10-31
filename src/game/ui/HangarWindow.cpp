@@ -794,15 +794,15 @@ void HangarWindow::render() {
                             (*Globals::items)[item->pendingProduct->blueprintIndex]->getType(),
                             Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
                         buttonOffset = 0;
-                    } else if (item->isSellButton()) {
-                        (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
-                        (*this->buttons)[5]->setVisible(true);
-                        (*this->buttons)[5]->draw();
-                        continue;
                     } else if (item->isMoveToCargoButton()) {
                         (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
                         (*this->buttons)[6]->setVisible(true);
                         (*this->buttons)[6]->draw();
+                        continue;
+                    } else if (item->isSellButton()) {
+                        (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[5]->setVisible(true);
+                        (*this->buttons)[5]->draw();
                         continue;
                     } else {
                         Globals::layout->drawBox(0, Globals::layout->buttonInsetX + this->hintOffsetX,
