@@ -4138,3 +4138,7 @@ mtw anchor for any size change before MenuTouchWindow.
   -unlikely-branch-weight=1`) to Radar.cpp. The three `__builtin_expect` hints were lowered with
   LLVM's default 2000:1 weights; at 80:1 the enemy/combat-music tail block layout realigns. The
   flag sweep found 80..1000:1 is a plateau; all other block-placement flags were neutral or worse.
+- **HangarWindow::render 78.4 -> 78.5%, 9700 B** (`03cc071c`, w3187): restore the original
+  `isMoveToCargoButton()`-before-`isSellButton()` block order (the branches are mutually
+  exclusive). A scoped-flag sweep found nothing better; the 9700-byte body and its anchors
+  (`description = description` x3, two volatile stores, `textYbarrier`) are load-bearing.
