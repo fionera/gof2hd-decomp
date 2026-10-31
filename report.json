@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.4,
+   "pct": 77.5,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -73,7 +73,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.3,
+   "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -105,7 +105,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 83.3,
+   "pct": 83.5,
    "byte": false,
    "linked": false,
    "osize": 17172,
@@ -168,14 +168,6 @@
    "usize": 9600
   },
   {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 88.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2252
-  },
-  {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
    "pct": 88.3,
    "byte": false,
@@ -190,6 +182,14 @@
    "linked": false,
    "osize": 944,
    "usize": 944
+  },
+  {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 92.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2252
   },
   {
    "name": "_ZN7StarMap4drawEv",
@@ -248,20 +248,20 @@
    "usize": 29676
   },
   {
-   "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 3488,
-   "usize": 3488
-  },
-  {
    "name": "_ZN5MGame8OnUpdateEv",
    "pct": 99.9,
    "byte": false,
    "linked": false,
    "osize": 11440,
    "usize": 11440
+  },
+  {
+   "name": "_ZN7StarMap16drawOnScreenInfoEib",
+   "pct": 99.9,
+   "byte": false,
+   "linked": false,
+   "osize": 3488,
+   "usize": 3488
   },
   {
    "name": "Blowfish_decipher",
