@@ -4123,3 +4123,8 @@ mtw anchor for any size change before MenuTouchWindow.
   original pointer reuse and r1/r2 register assignment. The only residual is case-157's
   `cmp #5; bcs` vs our canonicalized `cmp #4; bhi`, so the function is 100.0% fuzzy but not
   linked-exact. fuzzy_perfect 4492 -> 4493.
+- **LevelScript::process 54.585 -> 54.596%, 57232 B** (`de14d640`, w3184): scope
+  `-mllvm -condsider-local-interval-cost` to LevelScript.cpp and extend the state-3
+  `s_processPad` anchor by one 8-byte store to offset the flag's 8-byte code reduction. The other
+  suggested flags were much worse (-disable-block-placement 8.8%, -misched-postra 54.32%,
+  -sink-insts-to-avoid-spills 47.1%, -enable-deferred-spilling 53.44%, -pre-RA-sched=source 35.9%).
