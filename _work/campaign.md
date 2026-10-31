@@ -4068,3 +4068,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `this`@88), and hoist `enemyPos.z` into a local before `setToSleep()` so the `vldr s16` is
   scheduled before the call. Residual is global register allocation: the original keeps
   `&Globals::status` in r4 and reuses r9 for `enemies`; ours keeps status in r9.
+- **Radar::draw 71.6 -> 71.7%, 9908 B** (`88e5f10d`, w3146): reorder the planet-lock stores
+  (`planetDockIndex` before `field_0x18`), the enemy off-screen tail (`field_0x76` before
+  `field_0x73`) and the asteroid slot guard (`!asteroidFlag && field_0x1b0 && slotCount <= 3`).
+  The faithful crosshair shape (VL-first, `vpush {d8-d13}`) reproduces the original block but
+  global register allocation regresses later blocks to 69.2%.
