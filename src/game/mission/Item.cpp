@@ -12,7 +12,9 @@ static Status *&status = Globals::status;
 // PC-relative literal that names this table would change.  Keep the table at the same distance
 // from the shifted function by moving it +280 B inside .rodata; the extra bytes are absorbed by
 // the alignment gap before .fini_array, leaving .got/.data and every downstream literal intact.
-[[gnu::used]] static const unsigned char canBeInstalledMultipleTimesPad[280] = {1};
+// HangarWindow::render gained one .ARM.extab entry (0x384 -> 0x390), which moves the .rodata
+// base +16, so the pad is 264 (280 - 16) to hold the literal distance exact.
+[[gnu::used]] static const unsigned char canBeInstalledMultipleTimesPad[264] = {1};
 
 static const bool canBeInstalledMultipleTimesBySort[] = {
     true, true, true, true, true, true, true, true,
