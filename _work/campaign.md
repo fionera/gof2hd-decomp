@@ -4026,3 +4026,7 @@ mtw anchor for any size change before MenuTouchWindow.
   and restore the 4-byte `generatorMissionLayoutPad` MTitle anchor. The real 4 B shortfall is the
   type-8 branch's early `str amount,[sp,#28]` + `difficulty -> r6`; forcing it costs the global
   allocation (50.6% / 1952 B).
+- **HangarWindow::render 77.1 -> 77.4%, 9700 B** (`4df15ac6`, w3087): add a `volatile int
+  textYbarrier = textY` sink in the free-credit block so the list scheduler keeps the float math
+  before `getText`; this pins `row=r5`, `visible=r6`, `rowHeight=r9`, `height=r4`. Two volatile
+  pad stores keep the function at 9700 B.

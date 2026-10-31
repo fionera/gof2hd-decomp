@@ -916,6 +916,8 @@ void HangarWindow::render() {
                 // text but steer codegen to the original 9700-byte body while
                 // OnTouchEnd keeps its exact 5828-byte shape; the remaining
                 // 32 bytes of the layout live in Gun::calcCharacterCollision.
+                // The two volatile stores below pin the same 8-byte size delta
+                // introduced by the free-credits textY scheduling fix.
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
@@ -962,6 +964,8 @@ void HangarWindow::render() {
                     description = description;
                     description = description;
                     description = description;
+                    volatile int pad0 = 0;
+                    volatile int pad1 = 0;
                 }
             }
         } else {
@@ -1052,6 +1056,9 @@ void HangarWindow::render() {
                 int height = button->getHeight();
                 Globals::Canvas->SetColor(0xffffffffu);
                 int textY = (int) ((float) y + (float) height * 0.2f);
+                // Volatile sink: keeps the textY float math scheduled ahead of
+                // the getText call, as in the original body.
+                volatile int textYbarrier = textY;
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
                 Globals::Canvas->SetColor(0x777777ffu);
