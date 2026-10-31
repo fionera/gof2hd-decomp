@@ -4112,3 +4112,8 @@ mtw anchor for any size change before MenuTouchWindow.
   steer the SLP store schedule while staying size-exact. Residual is that the original outlines
   ~6 innermost `Globals::iPad ? A : B` ternaries into cold blocks (86 vld1/81 vst1 vs our 77/72);
   the 50.7% schedule is 6792 B and not size-exact.
+- **Radar::draw 71.7127 -> 71.7413 raw (71.7%), 9908 B** (`eeab8ffc`, w3160): rewrite the
+  landmark crosshair bounds test in the original operand order (`left < screenX && screenY <
+  top+size+size && top < screenY && left+size+size > screenX`). The worker also established that
+  our source duplicates the AutoPilot block (original has one, reached only from the early
+  `!alienOrbit` branch) and that the faithful single-copy shape scores 66.6%; the tuned shape wins.
