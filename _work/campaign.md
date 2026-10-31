@@ -4146,3 +4146,7 @@ mtw anchor for any size change before MenuTouchWindow.
   pointer to the ship loop so `this` spills to sp#48 and `sl` is free for `ship`, reproducing the
   original callee-saved pressure in the hangar branch. The `-sink-insts-to-avoid-spills` flag and
   the dedicated LevelCreateScene.cpp TU remain part of the winning shape.
+- **PlayerEgo::calcCollision 87.0 -> 87.3%, 968 B** (`36816354`, w3200): make the anti-rotation
+  bounds check live (`objects->size() <= i` instead of the always-true `>= i`) and swap the
+  collision-zero compare to `Vector{0,0,0} != collision` so the `AEMath::ne` argument order
+  matches the original. Size and `.text` unchanged; the faithful `i == 0` guard still scores 83.2%.

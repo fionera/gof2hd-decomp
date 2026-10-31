@@ -137,7 +137,7 @@
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
-   "pct": 87.0,
+   "pct": 87.3,
    "byte": false,
    "linked": false,
    "osize": 968,
