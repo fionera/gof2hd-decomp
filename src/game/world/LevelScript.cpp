@@ -331,6 +331,7 @@ bool LevelScript::process(int delta) {
             }
             // layout anchor (see s_processPad)
             s_processPad[3] = delta + 3;
+            s_processPad[4] = delta + 4;
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
