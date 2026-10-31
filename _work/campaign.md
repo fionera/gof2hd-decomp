@@ -4041,3 +4041,6 @@ mtw anchor for any size change before MenuTouchWindow.
   region, and the normals loop matches the original's halfword walk. Residual is the shared
   `delete[] raw`/`return -1` epilogue still placed after the UV block instead of after the
   normals loop, plus the r10/fp allocator permutation.
+- **HangarWindow::render 77.4 -> 77.5%, 9700 B** (`7c1c36c1`, w3106): call `getHeight()` before
+  `getWidth()` in the free-credit row so the `textY` float math is scheduled before the string
+  work; the volatile `textY` sink is retained. Residual is register/literal-pool allocation.
