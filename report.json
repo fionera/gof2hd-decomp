@@ -5,8 +5,8 @@
   "compared": 4523,
   "avg_match": 99.89,
   "byte_exact": 1415,
-  "linked_exact": 4492,
-  "fuzzy_perfect": 4493,
+  "linked_exact": 4493,
+  "fuzzy_perfect": 4494,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -174,14 +174,6 @@
    "linked": false,
    "osize": 944,
    "usize": 944
-  },
-  {
-   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 90.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2632,
-   "usize": 2632
   },
   {
    "name": "_ZN5Level11createSceneEv",
@@ -6878,6 +6870,14 @@
    "linked": true,
    "osize": 416,
    "usize": 416
+  },
+  {
+   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 2632,
+   "usize": 2632
   },
   {
    "name": "_ZN11AbyssEngine12PostBWShader11SetInActiveEv",

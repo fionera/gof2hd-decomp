@@ -476,26 +476,26 @@ namespace AbyssEngine {
         bool enhanced = (flags & 0x1a) != 0;
         float minimum[3];
         float maximum[3];
+        unsigned char *raw = 0;
         if (enhanced != 0 && AEFile::Read(12, &(*slot)->pivot, handle) == 0)
-            return -1;
+            goto failReturn;
 
         if ((*slot)->vertexFormat & 0x10) {
             if (AEFile::Read(2, &(*slot)->indexCount, handle) == 0)
-                return -1;
+                goto failReturn;
             (*slot)->indices = new unsigned char[(*slot)->indexCount << 1];
             if (AEFile::Read((*slot)->indexCount << 1, (*slot)->indices, handle) == 0)
-                return -1;
+                goto failReturn;
         }
 
         if (AEFile::Read(2, &(*slot)->vertexCount, handle) == 0)
-            return -1;
+            goto failReturn;
 
         minimum[0] = minimum[1] = minimum[2] = 10000000.0f;
         maximum[0] = maximum[1] = maximum[2] = -10000000.0f;
 
         // Positions: 16-bit (packed) or 32-bit integer streams are converted to floats while the
         // axis-aligned bounds are collected; float streams are read verbatim.
-        unsigned char *raw = 0;
         if ((flags & 4) != 0) {
             raw = new unsigned char[(*slot)->vertexCount * 6];
             if (AEFile::Read((*slot)->vertexCount * 6, raw, handle) == 0)
@@ -533,7 +533,7 @@ namespace AbyssEngine {
         } else if ((flags & 0x18) != 0) {
             (*slot)->positions = new float[(*slot)->vertexCount * 3];
             if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->positions, handle) == 0)
-                return -1;
+                goto failReturn;
         }
 
         (*slot)->bounds.center = Vector((maximum[0] + minimum[0]) * 0.5f, (maximum[1] + minimum[1]) * 0.5f,
@@ -558,7 +558,7 @@ namespace AbyssEngine {
             } else if ((flags & 0x18) != 0) {
                 (*slot)->texCoords = new unsigned char[(*slot)->vertexCount * 8];
                 if (AEFile::Read((*slot)->vertexCount * 8, (*slot)->texCoords, handle) == 0)
-                    return -1;
+                    goto failReturn;
                 if (Engine::enableShader != 0) {
                     for (int i = 0; i < ((*slot)->vertexCount << 1); i += 2) {
                         float *v = (float *) (*slot)->texCoords + i + 1;
@@ -575,8 +575,7 @@ namespace AbyssEngine {
                     goto fail;
                 short *sraw = (short *) raw;
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
-                int count = (*slot)->vertexCount * 3;
-                for (int i = 0; i < count; i += 3) {
+                for (int i = 0; i < (*slot)->vertexCount * 3; i += 3) {
                     float x = (float) ((double) sraw[i] * (1.0 / 32768.0));
                     float y = (float) ((double) sraw[i + 1] * (1.0 / 32768.0));
                     float z = (float) ((double) sraw[i + 2] * (1.0 / 32768.0));
@@ -608,7 +607,7 @@ namespace AbyssEngine {
             } else if ((flags & 0x18) != 0) {
                 (*slot)->normals = new float[(*slot)->vertexCount * 3];
                 if (AEFile::Read((*slot)->vertexCount * 12, (*slot)->normals, handle) == 0)
-                    return -1;
+                    goto failReturn;
             }
 
             if (Engine::enableShader != 0) {
@@ -663,6 +662,7 @@ namespace AbyssEngine {
         goto afterFail;
     fail:
         delete[] raw;
+    failReturn:
         return -1;
     afterFail:
 
@@ -671,7 +671,7 @@ namespace AbyssEngine {
                 unsigned char *raw = new unsigned char[(*slot)->vertexCount * 4];
                 if (AEFile::Read((*slot)->vertexCount * 4, raw, handle) == 0) {
                     delete[] raw;
-                    return -1;
+                    goto failReturn;
                 }
                 (*slot)->colors = new unsigned char[(*slot)->vertexCount * 16];
                 for (unsigned int i = 0; i < (unsigned int) ((*slot)->vertexCount << 2); i++)
@@ -690,10 +690,10 @@ namespace AbyssEngine {
             return 1;
 
         if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
-            return -1;
+            goto failReturn;
         short children;
         if (AEFile::Read(2, &children, handle) == 0)
-            return -1;
+            goto failReturn;
         if ((*slot)->animation != 0) {
             (*slot)->bounds.Merge((*slot)->animation->boundingSphere);
         }
@@ -705,7 +705,7 @@ namespace AbyssEngine {
             child->vertexFormat = (*slot)->vertexFormat;
             child->material = (*slot)->material;
             if (MeshReadData(engine, handle, flags, &child, mat) == -1)
-                return -1;
+                goto failReturn;
             (*slot)->bounds.Merge(child->bounds);
             ArrayAdd(child, (*slot)->animation->meshes);
         }
