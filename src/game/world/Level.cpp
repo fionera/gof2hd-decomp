@@ -4061,8 +4061,8 @@ void Level::createCampaignMission() {
             ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(77));
             (*this->enemies)[1]->player->setAlwaysFriend(true);
             (*this->enemies)[1]->geometry->setRotation(0.0f, 3.1415927f, 0.0f);
-            (*this->enemies)[1]->field_0x70 = 0;
             (*this->enemies)[1]->field_0x74 = 1;
+            (*this->enemies)[1]->field_0x70 = 0;
             delete (*this->enemies)[1]->cargo;
             (*this->enemies)[1]->cargo = nullptr;
             int dockCoords[9] = {-10000, 1000, 15000, -1, -1, -1, -10000, 1000, 15000};

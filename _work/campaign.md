@@ -4053,3 +4053,6 @@ mtw anchor for any size change before MenuTouchWindow.
   own `LevelCreateScene.cpp` TU with a scoped `-mllvm -sink-insts-to-avoid-spills`, which sinks the
   `&Globals::rnd` GOT load into the loop preheader and pins it in r8; site 3 uses the local `rnd`
   so the body returns to exactly 2252 B. The section-ordering file keeps the original address.
+- **Level::createCampaignMission 99.5% (raw 99.4505 -> 99.4600), 29676 B** (`cb4bb843`, w3123):
+  swap the case-154 `field_0x74`/`field_0x70` stores to match the original order; structural diff
+  lines 69 -> 67. The 40 r1/r2 cargo-pointer diffs and case-157 `cmp #5/bcs` remain.
