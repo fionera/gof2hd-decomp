@@ -4063,3 +4063,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `Status::getCampaignMission()` into a local `Mission *campaign` reused by the `keepObjectives`
   test and mission selection (the original loads it once). Residual is MachineBlockPlacement: the
   original keeps the hot chain contiguous and ends the shared epilogue at 0xEC0.
+- **LevelScript::process 54.570 -> 54.585%, 57232 B** (`03ad5bdc`, w3139): split the `enemies`
+  declaration from its initializer so clang emits the original prologue spill order (`player`@84,
+  `this`@88), and hoist `enemyPos.z` into a local before `setToSleep()` so the `vldr s16` is
+  scheduled before the call. Residual is global register allocation: the original keeps
+  `&Globals::status` in r4 and reuses r9 for `enemies`; ours keeps status in r9.
