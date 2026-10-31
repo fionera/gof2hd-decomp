@@ -210,8 +210,9 @@ bool LevelScript::process(int delta) {
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
+    Array<KIPlayer *> *enemies;
     PlayerEgo *player = m_pLevel->getPlayer();
-    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
+    enemies = m_pLevel->getEnemies();
     Status *status = Globals::status;
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
@@ -551,8 +552,9 @@ bool LevelScript::process(int delta) {
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
+        float enemyZ = enemyPos.z;
         (*enemies)[0]->setToSleep();
-        float depth = enemyPos.z / -5000.0f;
+        float depth = enemyZ / -5000.0f;
         if (!(depth < 1.0f)) {
             depth = 1.0f;
         }
