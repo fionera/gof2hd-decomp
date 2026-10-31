@@ -2979,9 +2979,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             this->upButtonPressed = 0;
             this->downButtonPressed = 0;
             if (this->optBtnCC->OnTouchEnd(x, y)) {
-                bool on = !optionFlag(16);
-                optionFlag(16) = on;
-                this->optBtnCC->setAlwaysPressed(on);
+                int old = optionFlag(16);
+                optionFlag(16) = old ^ 1;
+                this->optBtnCC->setAlwaysPressed(!old);
             }
             if (this->optBtnD0->OnTouchEnd(x, y)) {
                 this->choiceWindow->set(*Globals::gameText->getText(493));
@@ -2997,24 +2997,24 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 break;
             }
             if (this->optBtnD4->OnTouchEnd(x, y)) {
-                bool on = !optionFlag(13);
-                optionFlag(13) = on;
-                this->optBtnD4->setAlwaysPressed(on);
+                int old = optionFlag(13);
+                optionFlag(13) = old ^ 1;
+                this->optBtnD4->setAlwaysPressed(!old);
                 (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
                 Globals::sound->enableCategory(1, optionFlag(13));
             }
             if (this->optBtnD8->OnTouchEnd(x, y)) {
-                bool on = !optionFlag(12);
-                optionFlag(12) = on;
-                this->optBtnD8->setAlwaysPressed(on);
+                int old = optionFlag(12);
+                optionFlag(12) = old ^ 1;
+                this->optBtnD8->setAlwaysPressed(!old);
                 (*this->sliders)[2]->setHalfTransparent(!optionFlag(12));
                 Globals::sound->enableCategory(2, optionFlag(12));
                 Globals::sound->play(126, 0, 0, 0.0f);
             }
             if (this->optBtnDC->OnTouchEnd(x, y)) {
-                bool on = !optionFlag(14);
-                optionFlag(14) = on;
-                this->optBtnDC->setAlwaysPressed(on);
+                int old = optionFlag(14);
+                optionFlag(14) = old ^ 1;
+                this->optBtnDC->setAlwaysPressed(!old);
                 (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
                 Globals::sound->enableCategory(3, optionFlag(14));
             }
@@ -3112,9 +3112,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 this->upButtonPressed = 0;
                 this->downButtonPressed = 0;
                 if (this->optBtnCC->OnTouchEnd(x, y)) {
-                    bool on = !options[16];
-                    options[16] = on;
-                    this->optBtnCC->setAlwaysPressed(on);
+                    int old = options[16];
+                    options[16] = old ^ 1;
+                    this->optBtnCC->setAlwaysPressed(!old);
                 }
                 if (this->optBtnD0->OnTouchEnd(x, y)) {
                     this->choiceWindow->set(*Globals::gameText->getText(493));
@@ -3128,24 +3128,24 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     break;
                 }
                 if (this->optBtnD4->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(13);
-                    optionFlag(13) = on;
-                    this->optBtnD4->setAlwaysPressed(on);
+                    int old = optionFlag(13);
+                    optionFlag(13) = old ^ 1;
+                    this->optBtnD4->setAlwaysPressed(!old);
                     (*this->sliders)[1]->setHalfTransparent(!options[13]);
-                    Globals::sound->enableCategory(1, options[13]);
+                    Globals::sound->enableCategory(1, optionFlag(13));
                 }
                 if (this->optBtnD8->OnTouchEnd(x, y)) {
-                    bool on = !options[12];
-                    options[12] = on;
-                    this->optBtnD8->setAlwaysPressed(on);
+                    int old = options[12];
+                    options[12] = old ^ 1;
+                    this->optBtnD8->setAlwaysPressed(!old);
                     (*this->sliders)[2]->setHalfTransparent(!options[12]);
                     Globals::sound->enableCategory(2, options[12]);
                     Globals::sound->play(126, 0, 0, 0.0f);
                 }
                 if (this->optBtnDC->OnTouchEnd(x, y)) {
-                    bool on = !optionFlag(14);
-                    optionFlag(14) = on;
-                    this->optBtnDC->setAlwaysPressed(on);
+                    int old = optionFlag(14);
+                    optionFlag(14) = old ^ 1;
+                    this->optBtnDC->setAlwaysPressed(!old);
                     (*this->sliders)[3]->setHalfTransparent(!options[14]);
                     Globals::sound->enableCategory(3, options[14]);
                 }
@@ -3292,11 +3292,14 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 }
                 if (this->genericConfirmB) {
-                    if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
+                    int r = this->choiceWindow->OnTouchEnd(x, y);
+                    if (r != 1) {
+                        if (r != 0)
+                            return 0;
                         g_android_link_game_gp = 1;
-                        this->genericConfirmB = 0;
-                        this->messageShowing = 0;
                     }
+                    this->messageShowing = 0;
+                    this->genericConfirmB = 0;
                     return 0;
                 }
                 if (this->quitConfirmShowing) {
