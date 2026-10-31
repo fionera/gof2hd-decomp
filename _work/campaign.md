@@ -4021,3 +4021,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `Globals::layout` reload after `SetColor`, use signed `listEntryHeight / 2` (rounding add),
   order the label-500/499 add trees as the original, and swap the case-14 equivalent conditions so
   the OR flag is computed once. Structural diff ops 86 -> 45.
+- **Generator::createMission 73.6 -> 73.8%, 1992 B (4 B short)** (`0cdc0662`, w3076): restore the
+  original `0.5f` immediate (`vmov.f32 s2,#96`) instead of the `0.5000001f` pool-load size device,
+  and restore the 4-byte `generatorMissionLayoutPad` MTitle anchor. The real 4 B shortfall is the
+  type-8 branch's early `str amount,[sp,#28]` + `difficulty -> r6`; forcing it costs the global
+  allocation (50.6% / 1952 B).

@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 54.5,
+   "pct": 54.6,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -57,11 +57,11 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 73.6,
+   "pct": 73.8,
    "byte": false,
    "linked": false,
    "osize": 1996,
-   "usize": 1996
+   "usize": 1992
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
@@ -105,7 +105,7 @@
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 81.0,
+   "pct": 82.7,
    "byte": false,
    "linked": false,
    "osize": 1984,
@@ -216,14 +216,6 @@
    "usize": 1896
   },
   {
-   "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 97.8,
-   "byte": false,
-   "linked": false,
-   "osize": 13052,
-   "usize": 13052
-  },
-  {
    "name": "_ZN10ModStationC1Ev",
    "pct": 98.6,
    "byte": false,
@@ -240,8 +232,16 @@
    "usize": 1008
   },
   {
+   "name": "_ZN15MenuTouchWindow4drawEv",
+   "pct": 98.9,
+   "byte": false,
+   "linked": false,
+   "osize": 13052,
+   "usize": 13052
+  },
+  {
    "name": "_ZN5Level21createCampaignMissionEv",
-   "pct": 99.3,
+   "pct": 99.5,
    "byte": false,
    "linked": false,
    "osize": 29676,

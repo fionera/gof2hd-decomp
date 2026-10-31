@@ -100,3 +100,9 @@ void MTitle::OnTouchEnd(int x, int y) {
     this->timer = 5000;
 }
 
+
+// Layout anchor: the reconstructed createMission body is 4 bytes smaller than the
+// original's; keep the archive-sensitive .text size (and the MTitle layout) intact.
+[[gnu::used]] static int generatorMissionLayoutPad() {
+    return 0;
+}
