@@ -4046,3 +4046,6 @@ mtw anchor for any size change before MenuTouchWindow.
   work; the volatile `textY` sink is retained. Residual is register/literal-pool allocation.
 - **Level::createMission 83.3 -> 83.5%, 17172 B** (`24bb04ab`, w3096): name the turret `Vector`
   locals and test `hasWanted` first in the mission-184 path; size and gate unchanged.
+- **StarMap::drawOnScreenInfo 99.8 -> 99.9%, 3488 B** (`166133f7`, w3015): keep `campaign` live
+  in r6 through the 116/120/125 chain by comparing the 120-arm campaign value `>= 0` (matches the
+  original `bge`). Residual is the single `cmp r0` vs `cmp r6` register choice.
