@@ -4101,3 +4101,8 @@ mtw anchor for any size change before MenuTouchWindow.
   4 B shorter case-14 shape exposed a pre-existing 4 B deficit; the case-15 add order restored
   2 B and the resulting literal-pool alignment `nop` restored the other 2 B. Residual is 2
   commutative `adds` tie-breaks and 9 stack-colored `String` temporaries.
+- **MenuTouchWindow::OnTouchEnd 85.0 -> 85.1%, 8132 B** (`1ea77182`, w3148): restore the faithful
+  `genericConfirmB` shape (the original clears `messageShowing`/`genericConfirmB` for `r==0` and
+  `r==1` and returns early otherwise), use `int old` toggles in cases 8/3 so clang emits separate
+  `eor`+`clz`, and pass `optionFlag(13)` to `enableCategory(1, ...)`. Residual is MBP ordering of
+  the DLC switch bodies (`0,2,4,1,3` vs `0,1,2,3,4`) and the options spill.
