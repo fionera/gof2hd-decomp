@@ -4128,3 +4128,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `s_processPad` anchor by one 8-byte store to offset the flag's 8-byte code reduction. The other
   suggested flags were much worse (-disable-block-placement 8.8%, -misched-postra 54.32%,
   -sink-insts-to-avoid-spills 47.1%, -enable-deferred-spilling 53.44%, -pre-RA-sched=source 35.9%).
+- **MeshReadData 90.7 -> 100.0%, 2632 B, linked-exact** (`3a578df3`, w3189): route all raw-free
+  failures through one shared `failReturn:` label (with `raw` hoisted so the label is in scope)
+  so clang keeps the merged return value in r0 instead of r5 and drops the extra `moveq r0,r5`;
+  inline the normals-loop bound (`i < (*slot)->vertexCount * 3`) so the loop reloads it like the
+  original. linked_exact 4492 -> 4493; baseline and docs locked in the same commit.
