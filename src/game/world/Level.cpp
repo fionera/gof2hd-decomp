@@ -2363,7 +2363,7 @@ void Level::createMission() {
                            this->friendCount + this->field_164 + this->field_168 + this->hostileCount,
                    *this->enemies);
     for (int i = 0; i < this->friendCount; i++) {
-        if (i == 0 && hasWanted) {
+        if (hasWanted && i == 0) {
             int race = wanted->getRace() <= 3u ? wanted->getRace() : 8;
             (*this->enemies)[0] = this->createShip(race, 0, wanted->getShip(), wingRoute->getWaypoint(), true, false);
             int hp = wanted->getHitpoints() + (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 15 +
@@ -2460,9 +2460,13 @@ void Level::createMission() {
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
             const float *t = (bigAlienWave ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
-            v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
+            // Named locals, not braced temporaries: the original materialises each Vector with
+            // three scalar loads/stores; a temporary lets -Oz fold the pair into ldrd/stmia.
+            Vector turretDir = {t[3], t[4], t[5]};
+            v = MatrixRotateVector(rotation, turretDir);
             gun->geometry->setRotation(v);
-            v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
+            Vector turretPos = {t[0], t[1], t[2]};
+            v = MatrixRotateVector(rotation, turretPos);
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = localRace;
