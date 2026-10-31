@@ -4092,3 +4092,6 @@ mtw anchor for any size change before MenuTouchWindow.
   `unsigned short` so clang emits the original zero-extending `ldrh` instead of `ldrsh.w`. The
   2-byte shrink inserts an alignment `nop` later, so the raw ratio dips 0.014 while the reported
   percentage and all gate counts are unchanged.
+- **StarMap::draw 94.7 -> 94.8%, 2644 B** (`a0bf6fd4`, w3143): assert the transition flags are
+  exclusive (`__builtin_assume(!(transitionIn && transitionOut))`, lint waiver) so the second
+  guard tests `mode` first, matching the original `cmp r0,#3; it eq; cmpeq r5,#0` shape.
