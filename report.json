@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.5,
+   "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -105,19 +105,11 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 83.5,
+   "pct": 83.9,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
-  },
-  {
-   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
-   "pct": 83.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2632,
-   "usize": 2632
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
@@ -182,6 +174,14 @@
    "linked": false,
    "osize": 944,
    "usize": 944
+  },
+  {
+   "name": "_ZN11AbyssEngine12MeshReadDataEPNS_6EngineERKjjPPNS_4MeshEPNS_8MaterialE",
+   "pct": 90.7,
+   "byte": false,
+   "linked": false,
+   "osize": 2632,
+   "usize": 2632
   },
   {
    "name": "_ZN5Level11createSceneEv",

@@ -4073,3 +4073,18 @@ mtw anchor for any size change before MenuTouchWindow.
   `field_0x73`) and the asteroid slot guard (`!asteroidFlag && field_0x1b0 && slotCount <= 3`).
   The faithful crosshair shape (VL-first, `vpush {d8-d13}`) reproduces the original block but
   global register allocation regresses later blocks to 69.2%.
+- **MeshReadData 83.7 -> 90.7%, 2632 B** (`a9a35088`, w3154): hoist `raw` to function scope and
+  reconstruct the original shared `delete[] raw` / `return -1` fail epilogue reached by all four
+  decode paths (`goto fail`), decode packed UVs through `short *sraw` and short-packed normals
+  with a hoisted `count = vertexCount * 3`, remove the `layoutAnchor` from the `children == 0`
+  path, and read `(*slot)` directly in the colors section. A 99.5% variant is 2640 B and shifts
+  later functions (byte_exact 1365), so the size-exact 90.7% shape wins the gate.
+- **Level::createMission 83.5 -> 83.9%, 17172 B** (`6dfc63cf`, w3153): fold the
+  `security == 3 && raid` guard into one mask test (`(security == 3) & raid`) so clang emits the
+  original `ands` sequence. Full case reorder is 68.0%/17348 B on current master, not the old
+  100%; residual is stack-slot assignment for `playerPos`/`coords`/turret temporaries.
+- **HangarWindow::render 77.5 -> 78.4%, 9700 B** (`0007670e`, w3151): move the two volatile
+  layout-anchor stores into the credit-list row loop (one after `buttons[12+count]->draw()`, one
+  at the top of the `count == 4 && showBestDeal` body) to steer the loop's register allocation.
+  The extra `.ARM.extab` entry pushes `.rodata` +0x10, so `canBeInstalledMultipleTimesPad` in
+  Item.cpp is retuned 280 -> 264 to hold the PC-relative literal distance exact.
