@@ -2427,7 +2427,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         }
         // Redundant bounds check: keeps the loop from being rotated so the
         // register allocation matches the original.
-        if (objects->size() >= i)
+        if (objects->size() <= i)
             continue;
         if (object->getType() == 16994 && object->isVisible()) {
             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
@@ -2484,7 +2484,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         if (!object->isVisible())
             continue;
         Vector collision = object->projectCollisionOnSurface(this->geometry->getPosition());
-        if (collision != Vector{0.0f, 0.0f, 0.0f}) {
+        if (Vector{0.0f, 0.0f, 0.0f} != collision) {
             this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
