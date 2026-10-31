@@ -4117,3 +4117,9 @@ mtw anchor for any size change before MenuTouchWindow.
   top+size+size && top < screenY && left+size+size > screenX`). The worker also established that
   our source duplicates the AutoPilot block (original has one, reached only from the early
   `!alienOrbit` branch) and that the faithful single-copy shape scores 66.6%; the tuned shape wins.
+- **Level::createCampaignMission 99.5 -> 100.0%, 29676 B** (`dccad448`, w3170): replace each of
+  the 10 `delete (*this->enemies)[i]->cargo;` statements with an explicit
+  `{ Array<int> *cargo = ...; if (cargo != nullptr) delete cargo; }` block, reproducing the
+  original pointer reuse and r1/r2 register assignment. The only residual is case-157's
+  `cmp #5; bcs` vs our canonicalized `cmp #4; bhi`, so the function is 100.0% fuzzy but not
+  linked-exact. fuzzy_perfect 4492 -> 4493.
