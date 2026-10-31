@@ -879,6 +879,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
 // Security level colours (RGB) for the system info line.
 
 void StarMap::draw() {
+    __builtin_assume(!(this->transitionIn && this->transitionOut)); // lint: arm_builtin
     bool in = this->transitionIn;
     this->alpha = this->mode == 0 ? 255 : 0;
     if (in != this->transitionOut) {
