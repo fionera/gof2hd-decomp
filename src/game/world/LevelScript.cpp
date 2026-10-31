@@ -314,8 +314,6 @@ bool LevelScript::process(int delta) {
             // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
             // message #8 finishes hand control back to the player and reframe onto the player ship.
             // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
-            // layout anchor (see s_processPad)
-            s_processPad[3] = delta + 3;
             m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
             if (((RadioMessage *) ((*messages)[8]))->isOver()) {
                 m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
@@ -330,6 +328,8 @@ bool LevelScript::process(int delta) {
                 m_bStartSequence = 0;               // strb 0 -> this+0x20
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
             }
+            // layout anchor (see s_processPad)
+            s_processPad[3] = delta + 3;
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the

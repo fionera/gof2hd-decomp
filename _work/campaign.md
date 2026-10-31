@@ -4056,3 +4056,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createCampaignMission 99.5% (raw 99.4505 -> 99.4600), 29676 B** (`cb4bb843`, w3123):
   swap the case-154 `field_0x74`/`field_0x70` stores to match the original order; structural diff
   lines 69 -> 67. The 40 r1/r2 cargo-pointer diffs and case-157 `cmp #5/bcs` remain.
+- **LevelScript::process 54.566 -> 54.570%, 57232 B** (`8709f5c0`, w3125): move the state-3
+  `s_processPad[3]` size anchor past the message-8 handoff; the store stays 8 B and the scheduler
+  reproduces one more original instruction.
