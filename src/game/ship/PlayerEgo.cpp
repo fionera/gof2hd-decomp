@@ -3478,9 +3478,8 @@ cargoDone:
     Globals::sound->resume(this->field_0x1c);
 }
 
-unsigned char PlayerEgo::lostMiningGame() {
-    PlayerEgo *self = this;
-    return ((uint8_t &) this->lostMiningGameFlag);
+bool PlayerEgo::lostMiningGame() {
+    return this->lostMiningGameFlag;
 }
 
 void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {

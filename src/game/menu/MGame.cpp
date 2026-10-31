@@ -2999,7 +2999,8 @@ void MGame::OnUpdate() {
                     this->field_0xe0 = 1;
                     return;
                 }
-                if (hints[35] && !hints[36] && (this->field_0xe0 & 1) == 0 && !Globals::status->inAlienOrbit() &&
+                int hintDone = hints[36] | this->field_0xe0;
+                if (hints[35] && hintDone == 0 && !Globals::status->inAlienOrbit() &&
                     ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 2) {
                     this->level->createRadioMessage(6, 0);
                     hints[36] = 1;

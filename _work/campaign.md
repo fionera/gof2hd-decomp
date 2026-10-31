@@ -4030,3 +4030,7 @@ mtw anchor for any size change before MenuTouchWindow.
   textYbarrier = textY` sink in the free-credit block so the list scheduler keeps the float math
   before `getText`; this pins `row=r5`, `visible=r6`, `rowHeight=r9`, `height=r4`. Two volatile
   pad stores keep the function at 9700 B.
+- **MGame::OnUpdate 99.79 -> 99.87%, 11440 B** (`50d7e055`, w3073): `PlayerEgo::lostMiningGame()`
+  really returns `bool` (bare `ldrb; bx lr`), so the call site lowers to `cmp #0` instead of
+  `cmp #1`; the hint guard becomes the witnessed `hints[35] && (hints[36] | field_0xe0) == 0`
+  shape. Residual: mission-122..124 radio block loads `level` after the mission call.

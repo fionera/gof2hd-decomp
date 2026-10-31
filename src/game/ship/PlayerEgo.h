@@ -256,7 +256,7 @@ public:
     bool volatileGoods;
     uint8_t field_0x399;
     uint8_t field_0x39a;
-    uint8_t lostMiningGameFlag;
+    bool lostMiningGameFlag;
 
     PlayerEgo(Player *player);
 
@@ -472,7 +472,7 @@ public:
 
     void left(int frameTime, float delta);
 
-    unsigned char lostMiningGame();
+    bool lostMiningGame();
 
     float moveToPosition(AbyssEngine::AEMath::Vector target, bool steer, float speed);
 
