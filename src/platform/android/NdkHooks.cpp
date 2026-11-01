@@ -82,6 +82,26 @@ extern "C" int ndk23_getExitFlag() { // lint: extern_c (native ABI boundary; ori
     return forceExit;
 }
 
+extern "C" int loadAPK(const char *path) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    struct zip *za = zip_open(path, 0, 0);
+    APKArchive = za;
+    if (za == 0)
+        return 0;
+
+    int count = zip_get_num_files(za);
+    for (int i = 0; i < count; ++i) {
+        if (zip_get_name(APKArchive, i, 0) == 0)
+            break;
+    }
+    return 1;
+}
+
+extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    APKArchive = zip_open(apkPath, 0, 0);
+    ZIPArchive = zip_open(patchPath, 0, 0);
+    return APKArchive != 0 && ZIPArchive != 0;
+}
+
 extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     (void) height;
     (void) width;
@@ -237,17 +257,6 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     }
 
     ndk_checkPlaytimeAndSpendOfferwallCredits();
-}
-
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    if (Globals::status->getPlayingTime() >= 1) {
-        int amount = gb_android_offerwallCreditAmount;
-        if (amount > 0) {
-            Globals::status->changeCredits(amount);
-            ndk_autosave();
-            gb_android_offerwallCreditAmount = 0;
-        }
-    }
 }
 
 extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
@@ -424,6 +433,18 @@ void ndk_autosave() {
     handler->recordStoreWrite(0);
     handler->recordStoreWritePreview(0);
     delete handler;
+}
+
+
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    if (Globals::status->getPlayingTime() >= 1) {
+        int amount = gb_android_offerwallCreditAmount;
+        if (amount > 0) {
+            Globals::status->changeCredits(amount);
+            ndk_autosave();
+            gb_android_offerwallCreditAmount = 0;
+        }
+    }
 }
 
 int ndk_getCurrentApplicationModule() {

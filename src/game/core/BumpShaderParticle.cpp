@@ -106,6 +106,20 @@ namespace AbyssEngine {
         }
     }
 
+    void BumpShaderParticle::SetInActive() {
+        if (aPositionLoc >= 0)
+            glDisableVertexAttribArray(aPositionLoc);
+        if (aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(aTexCoordLoc);
+        if (aNormalLoc >= 0)
+            glDisableVertexAttribArray(aNormalLoc);
+        if (aTangentLoc >= 0)
+            glDisableVertexAttribArray(aTangentLoc);
+        if (aBitangentLoc >= 0)
+            glDisableVertexAttribArray(aBitangentLoc);
+        if (aVertexColorLoc >= 0)
+            glDisableVertexAttribArray(aVertexColorLoc);
+    }
     void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (uModelViewProjectionMatrixLoc >= 0)
             glUniformMatrix4fv(uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
@@ -177,18 +191,4 @@ namespace AbyssEngine {
         }
     }
 
-    void BumpShaderParticle::SetInActive() {
-        if (aPositionLoc >= 0)
-            glDisableVertexAttribArray(aPositionLoc);
-        if (aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(aTexCoordLoc);
-        if (aNormalLoc >= 0)
-            glDisableVertexAttribArray(aNormalLoc);
-        if (aTangentLoc >= 0)
-            glDisableVertexAttribArray(aTangentLoc);
-        if (aBitangentLoc >= 0)
-            glDisableVertexAttribArray(aBitangentLoc);
-        if (aVertexColorLoc >= 0)
-            glDisableVertexAttribArray(aVertexColorLoc);
-    }
 }

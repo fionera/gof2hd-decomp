@@ -1,4 +1,5 @@
 #include "game/ship/KIPlayer.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/core/AERandom.h"
 #include "game/mission/Item.h"
@@ -138,61 +139,8 @@ KIPlayer::~KIPlayer() {
     }
 }
 
-int KIPlayer::getType() {
-    return this->type;
-}
-
-bool KIPlayer::isDead() {
-    return this->state == 4;
-}
-
-void KIPlayer::setJumpSphere(uint32_t sphere) {
-    this->jumpSphere = sphere;
-}
-
-bool KIPlayer::isWingMan() {
-    return this->wingmanFlag;
-}
-
-void KIPlayer::ResumeEngineSound() {
-    if (this->player != 0 && this->engineSoundEvent != -1)
-        this->player->ResumeEngineSound(false);
-}
-
-void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
-    this->field_0xe4 = cmd;
-    this->wingmanTarget = target;
-}
-
-void KIPlayer::PauseEngineSound() {
-    if (this->player != 0 && this->engineSoundEvent != -1)
-        this->player->PauseEngineSound();
-}
-
-void KIPlayer::setRotationSpeed(float speed) {
-    this->rotationSpeed = speed;
-}
-
-uint8_t KIPlayer::isEnemy() {
-    return (uint8_t) reinterpret_cast<uint16_t &>(this->player->enemyFlagsLo);
-}
-
-bool KIPlayer::isDocked() {
-    return this->state == 9;
-}
-
-bool KIPlayer::isDying() {
-    return this->state == 3;
-}
-
-void KIPlayer::translate(const Vector &v) {
-    this->geometry->translate(v);
-    if (this->route != 0)
-        this->route->translate(v);
-}
-
-Vector KIPlayer::getPosition() {
-    return AbyssEngine::AEMath::MatrixGetPosition(this->player->transform);
+uint8_t KIPlayer::isVisible() {
+    return this->visibleFlag;
 }
 
 void KIPlayer::setVisible(bool visible) {
@@ -201,97 +149,36 @@ void KIPlayer::setVisible(bool visible) {
         this->geometry->setVisible(this->visibleFlag != 0);
 }
 
-void KIPlayer::StopEngineSound() {
-    if (this->player != 0 && this->engineSoundEvent != -1)
-        this->player->StopEngineSound();
-}
-
-void KIPlayer::render() {
-    this->geometry->render();
-}
-
-void KIPlayer::setToSleep() {
-    this->state = 5;
-    this->player->setActive(0);
-    this->sleepFlag = 1;
-}
-
-void KIPlayer::jump() {
-    this->jumpDone = 0;
-    this->jumperFlag = 1;
-}
-
-void KIPlayer::setActive(bool active) {
-    this->player->setActive(active);
-}
-
-void KIPlayer::PlayEngineSound() {
-    if (this->player != 0 && this->engineSoundEvent != -1)
-        this->player->PlayEngineSound(this->engineSoundEvent, nullptr);
-}
-
-void KIPlayer::setRoute(Route *route) {
-    delete this->route;
-    this->route = 0;
-    if (route != 0)
-        this->initialRoute = route;
-    this->route = route;
-}
-
-uint8_t KIPlayer::isVisible() {
-    return this->visibleFlag;
-}
-
-void KIPlayer::awake() {
-    this->state = 1;
-    this->player->setActive(true);
-}
-
-void KIPlayer::setInitActive(bool active) {
-    this->setActive(active);
-    this->initActiveFlag = 0;
-}
-
-void KIPlayer::setWingman(bool b, int cmd) {
-    this->wingmanFlag = b;
-    this->wingmanCommand = cmd;
-    this->field_0xe4 = 1;
-}
-
 void KIPlayer::setSpacePoints(Array<SpacePoint *> *pts) {
     this->spacePoints = pts;
 }
 
-uint8_t KIPlayer::isJumper() {
-    return this->jumperFlag;
+Array<SpacePoint *> *KIPlayer::getSpacePoints() {
+    return this->spacePoints;
 }
 
-void KIPlayer::setSpeed(float v) {
-    this->speed = v;
-}
+SpacePoint *KIPlayer::getNearestNavigationPoint(const Vector &position, SpacePoint *current) {
+    if (this->spacePoints == 0)
+        return 0;
 
-void KIPlayer::revive() {
-}
-
-void KIPlayer::setJumper(bool b) {
-    this->jumperFlag = b;
-}
-
-bool KIPlayer::cargoAvailable() {
-    Array<int> *arr = this->cargo;
-    if (arr != 0) {
-        unsigned int len = arr->size();
-        for (unsigned int i = 0; i < len; i += 2) {
-            if ((*arr)[i + 1] > 0)
-                return true;
+    Vector shipPosition = this->getPosition();
+    SpacePoint *nearest = 0;
+    float nearestDistance = 100000000.0f;
+    for (unsigned int i = 0; i < this->spacePoints->size(); ++i) {
+        if ((*this->spacePoints)[i]->type != 1)
+            continue;
+        float distance = AbyssEngine::AEMath::VectorLength(
+                shipPosition + AbyssEngine::AEMath::MatrixRotateVector(this->geometry->getMatrix(),
+                                                                       *(const Vector *) (*this->spacePoints)[i]) -
+                position);
+        distance = distance > 0.0f ? distance : -distance;
+        if (distance < nearestDistance &&
+            ((*this->spacePoints)[i]->isFree() || (*this->spacePoints)[i] == current)) {
+            nearestDistance = distance;
+            nearest = (*this->spacePoints)[i];
         }
     }
-    return false;
-}
-
-void KIPlayer::setDead() {
-    this->state = 4;
-    this->setActive(false);
+    return nearest;
 }
 
 SpacePoint *KIPlayer::getNearestDockingPoint(const Vector &position) {
@@ -317,14 +204,40 @@ SpacePoint *KIPlayer::getNearestDockingPoint(const Vector &position) {
     return nearest;
 }
 
-void KIPlayer::setPosition(float x, float y, float z) {
-    Vector v;
-    v.x = x;
-    v.y = y;
-    v.z = z;
-    this->setPosition(v);
+void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
+    this->shipGroupFlag = group;
+    if (geom == 0 || !flag) {
+        this->geometry = geom;
+        delete this->parentGeometry;
+        this->parentGeometry = 0;
+    } else {
+        AEGeometry *grp = this->geometry;
+        this->parentGeometry = geom;
+        if (grp == 0) {
+            grp = new AEGeometry((PaintCanvas *) Globals::Canvas);
+            this->geometry = grp;
+        }
+        grp->addChild(this->parentGeometry->transform);
+        this->parentGeometry->altTransform = this->geometry->transform;
+    }
+    this->geometry->setPosition(this->posX, this->posY, this->posZ);
+    this->player->transform = this->geometry->getMatrix();
+    if (this->parentGeometry != 0) {
+        this->player->transform *= this->parentGeometry->getMatrix();
+    }
 }
 
+void KIPlayer::setJumper(bool b) {
+    this->jumperFlag = b;
+}
+
+uint8_t KIPlayer::isJumper() {
+    return this->jumperFlag;
+}
+
+void KIPlayer::setInitialRotation(Vector rotation) {
+    (void) rotation;
+}
 void KIPlayer::reset() {
     if (this->player != 0)
         this->player->reset();
@@ -336,6 +249,21 @@ void KIPlayer::reset() {
         this->route->reset();
     this->field_0xfc = 0;
     this->field_0x100 = 0;
+}
+
+void KIPlayer::setToSleep() {
+    this->state = 5;
+    this->player->setActive(0);
+    this->sleepFlag = 1;
+}
+
+void KIPlayer::setActive(bool active) {
+    this->player->setActive(active);
+}
+
+void KIPlayer::setInitActive(bool active) {
+    this->setActive(active);
+    this->initActiveFlag = 0;
 }
 
 void KIPlayer::captureCrate(Hud *hud) {
@@ -414,64 +342,116 @@ void KIPlayer::captureCrate(Hud *hud) {
     }
 }
 
-SpacePoint *KIPlayer::getNearestNavigationPoint(const Vector &position, SpacePoint *current) {
-    if (this->spacePoints == 0)
-        return 0;
+bool KIPlayer::isDead() {
+    return this->state == 4;
+}
 
-    Vector shipPosition = this->getPosition();
-    SpacePoint *nearest = 0;
-    float nearestDistance = 100000000.0f;
-    for (unsigned int i = 0; i < this->spacePoints->size(); ++i) {
-        if ((*this->spacePoints)[i]->type != 1)
-            continue;
-        float distance = AbyssEngine::AEMath::VectorLength(
-                shipPosition + AbyssEngine::AEMath::MatrixRotateVector(this->geometry->getMatrix(),
-                                                                       *(const Vector *) (*this->spacePoints)[i]) -
-                position);
-        distance = distance > 0.0f ? distance : -distance;
-        if (distance < nearestDistance &&
-            ((*this->spacePoints)[i]->isFree() || (*this->spacePoints)[i] == current)) {
-            nearestDistance = distance;
-            nearest = (*this->spacePoints)[i];
-        }
-    }
-    return nearest;
+bool KIPlayer::isDying() {
+    return this->state == 3;
+}
+
+bool KIPlayer::isWingMan() {
+    return this->wingmanFlag;
+}
+
+void KIPlayer::setWingman(bool b, int cmd) {
+    this->wingmanFlag = b;
+    this->wingmanCommand = cmd;
+    this->field_0xe4 = 1;
+}
+
+void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
+    this->field_0xe4 = cmd;
+    this->wingmanTarget = target;
+}
+
+void KIPlayer::setSpeed(float v) {
+    this->speed = v;
+}
+
+void KIPlayer::setRotationSpeed(float speed) {
+    this->rotationSpeed = speed;
+}
+
+void KIPlayer::setLevel(Level *lvl) {
+    this->level = lvl;
+}
+
+void KIPlayer::enableExplosion() {
+}
+
+void KIPlayer::setRoute(Route *route) {
+    delete this->route;
+    this->route = 0;
+    if (route != 0)
+        this->initialRoute = route;
+    this->route = route;
+}
+
+Route *KIPlayer::getRoute() {
+    return this->route;
 }
 
 void KIPlayer::setEnemies(Array<Player *> *enemies) {
     this->player->setEnemies(enemies);
 }
 
-void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
-    this->shipGroupFlag = group;
-    if (geom == 0 || !flag) {
-        this->geometry = geom;
-        delete this->parentGeometry;
-        this->parentGeometry = 0;
-    } else {
-        AEGeometry *grp = this->geometry;
-        this->parentGeometry = geom;
-        if (grp == 0) {
-            grp = new AEGeometry((PaintCanvas *) Globals::Canvas);
-            this->geometry = grp;
-        }
-        grp->addChild(this->parentGeometry->transform);
-        this->parentGeometry->altTransform = this->geometry->transform;
-    }
-    this->geometry->setPosition(this->posX, this->posY, this->posZ);
-    this->player->transform = this->geometry->getMatrix();
-    if (this->parentGeometry != 0) {
-        this->player->transform *= this->parentGeometry->getMatrix();
-    }
+void KIPlayer::PauseEngineSound() {
+    if (this->player != 0 && this->engineSoundEvent != -1)
+        this->player->PauseEngineSound();
 }
 
-void KIPlayer::setPosition(const Vector &v) {
-    if (this->geometry != 0) {
-        this->geometry->setPosition(v);
-        this->player->transform = this->geometry->getMatrix();
-        if (this->parentGeometry != 0)
-            this->player->transform *= this->parentGeometry->getMatrix();
-    }
+void KIPlayer::PlayEngineSound() {
+    if (this->player != 0 && this->engineSoundEvent != -1)
+        this->player->PlayEngineSound(this->engineSoundEvent, nullptr);
+}
+
+void KIPlayer::ResumeEngineSound() {
+    if (this->player != 0 && this->engineSoundEvent != -1)
+        this->player->ResumeEngineSound(false);
+}
+
+void KIPlayer::StopEngineSound() {
+    if (this->player != 0 && this->engineSoundEvent != -1)
+        this->player->StopEngineSound();
+}
+
+void KIPlayer::addGun(Gun *gun, int slot) {
+    this->player->addGun(gun, slot);
+}
+
+void KIPlayer::addGun(Array<Gun *> *guns, int slot) {
+    this->player->addGun(guns, slot);
+}
+
+int KIPlayer::getType() {
+    return this->type;
+}
+
+uint8_t KIPlayer::isEnemy() {
+    return (uint8_t) reinterpret_cast<uint16_t &>(this->player->enemyFlagsLo);
+}
+
+Vector KIPlayer::getPosition() {
+    return AbyssEngine::AEMath::MatrixGetPosition(this->player->transform);
+}
+
+bool KIPlayer::isDocked() {
+    return this->state == 9;
+}
+
+void KIPlayer::setDead() {
+    this->state = 4;
+    this->setActive(false);
+}
+
+void KIPlayer::awake() {
+    this->state = 1;
+    this->player->setActive(true);
+}
+
+void KIPlayer::setJumpSphere(uint32_t sphere) {
+    this->jumpSphere = sphere;
 }
 
 // Mesh of the cargo crate a destroyed ship drops: special crate types first, otherwise
@@ -499,24 +479,16 @@ void KIPlayer::createCrate(int type) {
     this->player->setKIPlayer(this);
 }
 
-Route *KIPlayer::getRoute() {
-    return this->route;
-}
-
-Array<SpacePoint *> *KIPlayer::getSpacePoints() {
-    return this->spacePoints;
-}
-
-void KIPlayer::setLevel(Level *lvl) {
-    this->level = lvl;
-}
-
-void KIPlayer::addGun(Gun *gun, int slot) {
-    this->player->addGun(gun, slot);
-}
-
-void KIPlayer::addGun(Array<Gun *> *guns, int slot) {
-    this->player->addGun(guns, slot);
+bool KIPlayer::cargoAvailable() {
+    Array<int> *arr = this->cargo;
+    if (arr != 0) {
+        unsigned int len = arr->size();
+        for (unsigned int i = 0; i < len; i += 2) {
+            if ((*arr)[i + 1] > 0)
+                return true;
+        }
+    }
+    return false;
 }
 
 int KIPlayer::levelCollision(Vector *out, long long flags) {
@@ -525,9 +497,38 @@ int KIPlayer::levelCollision(Vector *out, long long flags) {
     return 0;
 }
 
-void KIPlayer::enableExplosion() {
+void KIPlayer::render() {
+    this->geometry->render();
 }
 
-void KIPlayer::setInitialRotation(Vector rotation) {
-    (void) rotation;
+void KIPlayer::translate(const Vector &v) {
+    this->geometry->translate(v);
+    if (this->route != 0)
+        this->route->translate(v);
 }
+
+void KIPlayer::jump() {
+    this->jumpDone = 0;
+    this->jumperFlag = 1;
+}
+
+void KIPlayer::revive() {
+}
+
+void KIPlayer::setPosition(const Vector &v) {
+    if (this->geometry != 0) {
+        this->geometry->setPosition(v);
+        this->player->transform = this->geometry->getMatrix();
+        if (this->parentGeometry != 0)
+            this->player->transform *= this->parentGeometry->getMatrix();
+    }
+}
+
+void KIPlayer::setPosition(float x, float y, float z) {
+    Vector v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    this->setPosition(v);
+}
+

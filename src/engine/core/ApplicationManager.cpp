@@ -234,11 +234,6 @@ void ApplicationManager::SoundPause(int soundId) {
         this->soundResource->pause(soundId);
     }
 }
-void ApplicationManager::SoundResume() {
-    if (this->soundResource != 0) {
-        this->soundResource->resume();
-    }
-}
 void ApplicationManager::SoundResume(int soundId) {
     if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
         this->soundResource->resume(soundId);
@@ -279,6 +274,11 @@ bool ApplicationManager::SoundIsPlaying(int soundId) {
         return false;
     }
     return this->soundResource->isPlaying(soundId);
+}
+void ApplicationManager::SoundResume() {
+    if (this->soundResource != 0) {
+        this->soundResource->resume();
+    }
 }
 void ApplicationManager::VibrateEnable(bool enable) {
     this->vibrateEnabled = enable;
@@ -959,7 +959,7 @@ uint64_t ApplicationManager::GetActionState() {
 void ApplicationManager::ResetKeyState() {
     this->keyState = 0;
 }
-uint64_t ApplicationManager::GetCurrentTimeMillis() {
+int64_t ApplicationManager::GetCurrentTimeMillis() {
     return this->currentTimeMs;
 }
 uint64_t ApplicationManager::GetSystemTimeMillis() {
