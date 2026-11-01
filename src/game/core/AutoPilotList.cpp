@@ -13,8 +13,6 @@
 
 
 
-static const char kApLit1[] = ": ";
-static const char kApLit2[] = " ";
 
 AutoPilotList::AutoPilotList(Level *level) {
     this->entries = new Array<String *>();
@@ -23,7 +21,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     if (Level::programmedStation != 0) {
         (*this->entries)[0] = new String(
-            *Globals::gameText->getText(0x222) + String(kApLit1, false) +
+            *Globals::gameText->getText(0x222) + String(": ", false) +
             Level::programmedStation->getName());
         this->count++;
     }
@@ -36,7 +34,7 @@ AutoPilotList::AutoPilotList(Level *level) {
     if (Globals::status->inEmptyOrbit() == 0) {
         (*this->entries)[2] = new String(
             ((Station *) Globals::status->getStation())->getName() +
-            String(kApLit2, false) + *Globals::gameText->getText(0x88));
+            String(" ", false) + *Globals::gameText->getText(0x88));
         this->count++;
     }
 
