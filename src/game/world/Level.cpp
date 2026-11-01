@@ -2081,13 +2081,14 @@ void Level::createMission() {
                 this->playerRoute = new Route(coords, 6);
                 int extra = Globals::rnd->nextInt(2);
                 float difficulty = (float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f;
+                float opt44 = *(float *) &Globals::options[44];
                 int race = ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(mission->getClientRace());
                 if (race == 8)
                     race = 0;
                 float defenders = (float) ((int) difficulty + 3);
                 int stations = extra + 2;
                 this->enemies = new Array<KIPlayer *>();
-                ArraySetLength((int) (defenders + (*(float *) &Globals::options[44] - 0.5f) * defenders) + stations, *this->enemies);
+                ArraySetLength((int) (defenders + (opt44 - 0.5f) * defenders) + stations, *this->enemies);
                 int stationType = race == 1 ? 13 : 15;
                 for (int i = 0; i < stations; i++) {
                     (*this->enemies)[i] = this->createShip(race, 1, stationType, this->playerRoute->getWaypoint(1), true, false);
