@@ -4,12 +4,56 @@
 #include "engine/core/AERandom.h"
 #include "engine/render/ParticleSettingsRef.h"
 
-void IParticleSystem::enableUpdate(bool enabled) {
-    this->updateEnabled = enabled;
+IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
+                                 Array<ParticleSettings::ParticleSet> const &sets,
+                                 bool mirror, bool alphaFade)
+    : canvas(canvas), random(), matrix(matrix), emitterVelocity(),
+      lastEmitterPosition(), particleSets() {
+    this->alphaFade = alphaFade;
+    this->mirror = mirror;
+    ArraySet(sets, this->particleSets);
+
+    this->currentParticle = 0;
+    this->resource = -1;
+    this->idOffset = -1;
+    this->emitEnabled = 1;
+    this->renderEnabled = 1;
+    this->updateEnabled = 1;
+    this->maxParticles = 0;
+    this->flags = 0;
+
+    for (uint32_t i = 0; i < sets.size(); i++) {
+        int set = sets[i];
+        if (set != -1) {
+            const ParticleSettings::SetDefinition &def =
+                    ParticleSettingsRef::cur.sets[set];
+            this->maxParticles = this->maxParticles > def.count ? this->maxParticles : def.count;
+            if (this->flags == 0) {
+                this->flags = def.flags;
+            }
+        }
+    }
+
+    this->particleSetIndex = 0;
+    this->emitTimer = 0;
+    this->particleAges = new int[(uint32_t) this->maxParticles];
+    this->particleSetIds = new int8_t[this->maxParticles];
+
+    for (int i = 0; i < this->maxParticles; ++i) {
+        this->particleSetIds[i] = (int8_t) 200;
+    }
+
+    this->initialized = 0;
+    this->field_0x4 = 1;
+    this->emitterVelocityDirty = 1;
 }
 
 int IParticleSystem::getParticleCount() {
     return this->maxParticles;
+}
+
+void IParticleSystem::setParticleSetIndex(uint8_t index) {
+    this->particleSetIndex = index;
 }
 
 void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set) {
@@ -18,11 +62,53 @@ void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set) {
     }
 }
 
-void IParticleSystem::enableEmit(bool enabled) {
-    if (enabled && this->emitEnabled == 0) {
-        this->emitTimer = 0;
+void IParticleSystem::resetEmitterVelocity() {
+    {
+        Vector value = {};
+        this->emitterVelocity = value;
     }
-    this->emitEnabled = enabled;
+    this->emitterVelocityDirty = 1;
+    {
+        Vector value = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
+        this->lastEmitterPosition = value;
+    }
+    this->field_0x4 = 0;
+}
+
+void IParticleSystem::calcEmitterVelocity(int delta) {
+    Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
+    Vector scaled = (position - this->lastEmitterPosition) * (1000.0f / (float) delta);
+    this->emitterVelocity = scaled;
+    this->emitterVelocityDirty = 0;
+    this->lastEmitterPosition = position;
+}
+
+void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
+    int age = this->particleAges[index];
+    const ParticleSettings::SetDefinition &def =
+            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
+
+    float t = (float) age / (float) def.lifetime;
+    t = t > 1.0f ? 1.0f : t;
+    float inv = 1.0f - t;
+    uint32_t c0 = def.color0;
+    uint32_t c1 = def.color1;
+    alpha = (t * (float) (c1 >> 24) + inv * (float) (c0 >> 24)) * 0.003921569f;
+    red = (t * (float) ((c1 >> 16) & 0xff) + inv * (float) ((c0 >> 16) & 0xff)) * 0.003921569f;
+    green = (t * (float) ((c1 >> 8) & 0xff) + inv * (float) ((c0 >> 8) & 0xff)) * 0.003921569f;
+    blue = (t * (float) (c1 & 0xff) + inv * (float) (c0 & 0xff)) * 0.003921569f;
+
+    if (age < def.fadeFrames) {
+        float fade = (float) age / (float) def.fadeFrames;
+        // alphaFade fades alpha/red/green, otherwise only blue is faded.
+        float *last = &blue;
+        if (this->alphaFade != 0) {
+            alpha *= fade;
+            red *= fade;
+            last = &green;
+        }
+        *last *= fade;
+    }
 }
 
 void IParticleSystem::update(int delta) {
@@ -36,14 +122,11 @@ void IParticleSystem::update(int delta) {
     }
 }
 
-void IParticleSystem::setParticleSetIndex(uint8_t index) {
-    this->particleSetIndex = index;
-}
-
-void IParticleSystem::setMatrix(Matrix const *matrix) {
-    this->matrix = matrix;
-    this->field_0x4 = 0;
-    this->emitterVelocityDirty = 1;
+void IParticleSystem::enableEmit(bool enabled) {
+    if (enabled && this->emitEnabled == 0) {
+        this->emitTimer = 0;
+    }
+    this->emitEnabled = enabled;
 }
 
 void IParticleSystem::enableRender(bool enabled) {
@@ -51,6 +134,10 @@ void IParticleSystem::enableRender(bool enabled) {
         this->reset();
     }
     this->renderEnabled = enabled;
+}
+
+void IParticleSystem::enableUpdate(bool enabled) {
+    this->updateEnabled = enabled;
 }
 
 namespace {
@@ -247,86 +334,6 @@ void IParticleSystem::emit(int delta) {
     }
 }
 
-void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue) {
-    int age = this->particleAges[index];
-    const ParticleSettings::SetDefinition &def =
-            ParticleSettingsRef::cur.sets[this->particleSetIds[index]];
-
-    float t = (float) age / (float) def.lifetime;
-    t = t > 1.0f ? 1.0f : t;
-    float inv = 1.0f - t;
-    uint32_t c0 = def.color0;
-    uint32_t c1 = def.color1;
-    alpha = (t * (float) (c1 >> 24) + inv * (float) (c0 >> 24)) * 0.003921569f;
-    red = (t * (float) ((c1 >> 16) & 0xff) + inv * (float) ((c0 >> 16) & 0xff)) * 0.003921569f;
-    green = (t * (float) ((c1 >> 8) & 0xff) + inv * (float) ((c0 >> 8) & 0xff)) * 0.003921569f;
-    blue = (t * (float) (c1 & 0xff) + inv * (float) (c0 & 0xff)) * 0.003921569f;
-
-    if (age < def.fadeFrames) {
-        float fade = (float) age / (float) def.fadeFrames;
-        // alphaFade fades alpha/red/green, otherwise only blue is faded.
-        float *last = &blue;
-        if (this->alphaFade != 0) {
-            alpha *= fade;
-            red *= fade;
-            last = &green;
-        }
-        *last *= fade;
-    }
-}
-
-IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
-                                 Array<ParticleSettings::ParticleSet> const &sets,
-                                 bool mirror, bool alphaFade)
-    : canvas(canvas), random(), matrix(matrix), emitterVelocity(),
-      lastEmitterPosition(), particleSets() {
-    this->alphaFade = alphaFade;
-    this->mirror = mirror;
-    ArraySet(sets, this->particleSets);
-
-    this->currentParticle = 0;
-    this->resource = -1;
-    this->idOffset = -1;
-    this->emitEnabled = 1;
-    this->renderEnabled = 1;
-    this->updateEnabled = 1;
-    this->maxParticles = 0;
-    this->flags = 0;
-
-    for (uint32_t i = 0; i < sets.size(); i++) {
-        int set = sets[i];
-        if (set != -1) {
-            const ParticleSettings::SetDefinition &def =
-                    ParticleSettingsRef::cur.sets[set];
-            this->maxParticles = this->maxParticles > def.count ? this->maxParticles : def.count;
-            if (this->flags == 0) {
-                this->flags = def.flags;
-            }
-        }
-    }
-
-    this->particleSetIndex = 0;
-    this->emitTimer = 0;
-    this->particleAges = new int[(uint32_t) this->maxParticles];
-    this->particleSetIds = new int8_t[this->maxParticles];
-
-    for (int i = 0; i < this->maxParticles; ++i) {
-        this->particleSetIds[i] = (int8_t) 200;
-    }
-
-    this->initialized = 0;
-    this->field_0x4 = 1;
-    this->emitterVelocityDirty = 1;
-}
-
-void IParticleSystem::calcEmitterVelocity(int delta) {
-    Vector position = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
-    Vector scaled = (position - this->lastEmitterPosition) * (1000.0f / (float) delta);
-    this->emitterVelocity = scaled;
-    this->emitterVelocityDirty = 0;
-    this->lastEmitterPosition = position;
-}
-
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime) {
     if (particleSet == -1)
         return;
@@ -404,15 +411,8 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
     this->currentParticle = next;
 }
 
-void IParticleSystem::resetEmitterVelocity() {
-    {
-        Vector value = {};
-        this->emitterVelocity = value;
-    }
-    this->emitterVelocityDirty = 1;
-    {
-        Vector value = AbyssEngine::AEMath::MatrixGetPosition(*this->matrix);
-        this->lastEmitterPosition = value;
-    }
+void IParticleSystem::setMatrix(Matrix const *matrix) {
+    this->matrix = matrix;
     this->field_0x4 = 0;
+    this->emitterVelocityDirty = 1;
 }
