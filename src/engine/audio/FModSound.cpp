@@ -14,6 +14,9 @@ char *property_name_pause = (char *) "pause";
 
 static const float kFade = 0.1f;
 
+static const char *CategoryNames[4] = {"master", "music", "sfx", "voice"};
+static const char *const LanguageAudio[2] = {"english", "deutsch"};
+
 
 
 
@@ -90,7 +93,6 @@ void FModSound::release() {
 void FModSound::init() {
     static const char kSuffixB[] = "data/audio/FMOD_GOF2.fev";
     static const char kSuffixA[] = "FMOD_GOF2.fev";
-    static const char *kCats[4] = {"master", "music", "sfx", "voice"};
 
     for (int i = 0; i != 5; i++)
         this->fxSlots[i] = -1;
@@ -110,7 +112,7 @@ void FModSound::init() {
     this->system->load(path, nullptr, nullptr);
     for (int i = 0; i != 4; i++) {
         this->category[i] = 0;
-        this->system->getCategory(kCats[i], &this->category[i]);
+        this->system->getCategory(CategoryNames[i], &this->category[i]);
     }
     this->system->getProjectByIndex(0, &this->project);
     this->propSlot = 0;
@@ -124,10 +126,9 @@ void FModSound::ERRCHECK(FMOD_RESULT /*result*/) {
 }
 
 void FModSound::setAudioLanguage(int p1) {
-    static const char *const kLangs[2] = {"english", "deutsch"};
     if (!this->system)
         return;
-    this->system->setLanguage(kLangs[p1 == 1]);
+    this->system->setLanguage(LanguageAudio[p1 == 1]);
 }
 
 bool FModSound::isHeadsetPluggedIn() {
