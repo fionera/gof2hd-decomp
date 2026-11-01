@@ -4471,3 +4471,9 @@ original build flags.
   0x216970 to 0x216980. Removing it makes the RW LOAD (`0x9dcc` file / `0x1077c` mem) and
   `.bss` (0x216970/0x69ac) byte-for-byte layout-exact. Every ELF section and program header now
   matches the original; the only whole-file delta is `.rodata` content order (0x1e7570).
+- **`.rodata` grouping root cause found** (research note only, byte-neutral): the trailing `*`
+  in `section_order.txt` makes gold sort every unlisted `.rodata*` input together after the
+  listed `.text.*` sections, so merge groups (`.cst*`/`.str1.*`) precede plain `.rodata`.
+  Deleting `*` and listing the 134 unlisted `.text*` sections explicitly moves the first
+  `.rodata` divergence from 0x1d760 to 0x301eb (VMA 0x1e7570 -> 0x1f2ffb) and leaves a 16-byte
+  size delta to chase. See `_work/reconstructions/rodata_group_order.md`.
