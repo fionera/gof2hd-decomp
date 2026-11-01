@@ -36,6 +36,33 @@ WantedWindow::WantedWindow() {
 }
 
 
+WantedWindow::~WantedWindow() {
+    if (this->imageParts != nullptr) {
+        ArrayReleaseClasses(*this->imageParts);
+        delete this->imageParts;
+    }
+    this->imageParts = nullptr;
+
+    if (this->buttons != nullptr) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
+    }
+    this->buttons = nullptr;
+
+    delete this->detailButton;
+    this->detailButton = nullptr;
+
+    delete this->wantedList;
+    this->wantedList = nullptr;
+
+    delete this->mission;
+    this->mission = nullptr;
+
+    delete this->scrollWindow;
+    this->scrollWindow = nullptr;
+}
+
+
 void WantedWindow::init() {
     this->scrollOffset = 0;
     this->lastDragY = 0;
@@ -141,32 +168,6 @@ void WantedWindow::init() {
     this->lastButtonHit = 1;
 }
 
-
-WantedWindow::~WantedWindow() {
-    if (this->imageParts != nullptr) {
-        ArrayReleaseClasses(*this->imageParts);
-        delete this->imageParts;
-    }
-    this->imageParts = nullptr;
-
-    if (this->buttons != nullptr) {
-        ArrayReleaseClasses(*this->buttons);
-        delete this->buttons;
-    }
-    this->buttons = nullptr;
-
-    delete this->detailButton;
-    this->detailButton = nullptr;
-
-    delete this->wantedList;
-    this->wantedList = nullptr;
-
-    delete this->mission;
-    this->mission = nullptr;
-
-    delete this->scrollWindow;
-    this->scrollWindow = nullptr;
-}
 
 
 void WantedWindow::selectWanted(int idx) {

@@ -123,6 +123,11 @@ RecordHandler::RecordHandler() {
 RecordHandler::~RecordHandler() {
 }
 
+bool RecordHandler::notEnoughMemory() {
+    return (int)AEFile::GetDeviceFreeSpace() < 900;
+}
+
+
 Array<GameRecord *> *RecordHandler::readAllPreviewRecords() {
     Array<GameRecord *> *records = new Array<GameRecord *>();
     ArraySetLength(Globals::recordSlots, *records);
@@ -1055,9 +1060,6 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-bool RecordHandler::notEnoughMemory() {
-    return (int)AEFile::GetDeviceFreeSpace() < 900;
-}
 
 GameRecord *RecordHandler::readRecord(int slot) {
     return this->recordStoreRead(slot);

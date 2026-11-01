@@ -242,6 +242,70 @@ SpaceLounge::SpaceLounge()
     this->initialized = 1;
 }
 
+
+bool SpaceLounge::introFinished() {
+    return this->introDone;
+}
+
+SpaceLounge::~SpaceLounge() {
+    delete this->choiceWindow;
+    this->choiceWindow = 0;
+
+    delete this->cutScene;
+    this->cutScene = 0;
+
+    delete[] this->agentVisited;
+    this->agentVisited = 0;
+
+    if (this->agentTexts != 0) {
+        ArrayReleaseClasses(*this->agentTexts);
+        delete this->agentTexts;
+    }
+    this->agentTexts = 0;
+
+    if (this->buttons != 0) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
+    }
+    this->buttons = 0;
+
+    if (this->agentImageParts != 0) {
+        ArrayReleaseClasses(*this->agentImageParts);
+        delete this->agentImageParts;
+    }
+    this->agentImageParts = 0;
+
+    if (this->silhouetteGrid != 0) {
+        for (unsigned i = 0; i < this->silhouetteGrid->size(); ++i) {
+            ArrayReleaseClasses(*(*this->silhouetteGrid)[i]);
+            delete (*this->silhouetteGrid)[i];
+            (*this->silhouetteGrid)[i] = 0;
+        }
+        ArrayReleaseClasses(*this->silhouetteGrid);
+        delete this->silhouetteGrid;
+    }
+    this->silhouetteGrid = 0;
+
+    if (this->agentRects != 0) {
+        ArrayReleaseClasses(*this->agentRects);
+        delete this->agentRects;
+    }
+    this->agentRects = 0;
+
+    delete this->cameraEase;
+    this->cameraEase = 0;
+
+    delete this->headEase;
+    this->headEase = 0;
+}
+
+void SpaceLounge::setHangarUpdate(bool value) {
+    this->hangarUpdate = value;
+}
+
+// Mod sale offers: {mod, bonus percentage shown in the pitch}.
+static const int SpaceLounge_modBonuses[4][2] = {{0, 40}, {1, 30}, {2, 1}, {3, 20}};
+
 void SpaceLounge::init() {
     this->initialized = 0;
     this->touchDown = 0;
@@ -398,68 +462,6 @@ void SpaceLounge::init() {
     this->initialized = 1;
 }
 
-bool SpaceLounge::introFinished() {
-    return this->introDone;
-}
-
-SpaceLounge::~SpaceLounge() {
-    delete this->choiceWindow;
-    this->choiceWindow = 0;
-
-    delete this->cutScene;
-    this->cutScene = 0;
-
-    delete[] this->agentVisited;
-    this->agentVisited = 0;
-
-    if (this->agentTexts != 0) {
-        ArrayReleaseClasses(*this->agentTexts);
-        delete this->agentTexts;
-    }
-    this->agentTexts = 0;
-
-    if (this->buttons != 0) {
-        ArrayReleaseClasses(*this->buttons);
-        delete this->buttons;
-    }
-    this->buttons = 0;
-
-    if (this->agentImageParts != 0) {
-        ArrayReleaseClasses(*this->agentImageParts);
-        delete this->agentImageParts;
-    }
-    this->agentImageParts = 0;
-
-    if (this->silhouetteGrid != 0) {
-        for (unsigned i = 0; i < this->silhouetteGrid->size(); ++i) {
-            ArrayReleaseClasses(*(*this->silhouetteGrid)[i]);
-            delete (*this->silhouetteGrid)[i];
-            (*this->silhouetteGrid)[i] = 0;
-        }
-        ArrayReleaseClasses(*this->silhouetteGrid);
-        delete this->silhouetteGrid;
-    }
-    this->silhouetteGrid = 0;
-
-    if (this->agentRects != 0) {
-        ArrayReleaseClasses(*this->agentRects);
-        delete this->agentRects;
-    }
-    this->agentRects = 0;
-
-    delete this->cameraEase;
-    this->cameraEase = 0;
-
-    delete this->headEase;
-    this->headEase = 0;
-}
-
-void SpaceLounge::setHangarUpdate(bool value) {
-    this->hangarUpdate = value;
-}
-
-// Mod sale offers: {mod, bonus percentage shown in the pitch}.
-static const int SpaceLounge_modBonuses[4][2] = {{0, 40}, {1, 30}, {2, 1}, {3, 20}};
 
 void SpaceLounge::startChat() {
     Agent *agent = (*this->agents)[this->selectedAgent];
