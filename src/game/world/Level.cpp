@@ -2078,10 +2078,11 @@ void Level::createMission() {
                 int extra = Globals::rnd->nextInt(2);
                 float difficulty = (float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f;
                 float opt44 = *(float *) &Globals::options[44];
+                int difficultyInt = (int) difficulty;
                 int race = ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(mission->getClientRace());
                 if (race == 8)
                     race = 0;
-                float defenders = (float) ((int) difficulty + 3);
+                float defenders = (float) (difficultyInt + 3);
                 int stations = extra + 2;
                 this->enemies = new Array<KIPlayer *>();
                 ArraySetLength((int) (defenders + (opt44 - 0.5f) * defenders) + stations, *this->enemies);
