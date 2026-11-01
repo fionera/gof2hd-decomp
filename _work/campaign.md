@@ -4307,3 +4307,8 @@ mtw anchor for any size change before MenuTouchWindow.
   `levelTextAnchor` call is deleted from Level.cpp and the TU end-marker alignment covers
   PlayerStation/ResourceMaterial/Wanted. `.text` 0x1337b0, `.ARM.exidx` 0x6f88, `.rodata`
   0x1c9e10 exact.
+- **PLT order pass: byte_exact 1592 -> 1694 (+102)** (`w3305`): the PLT entry order follows the
+  `.dynsym` order (first definition/reference), so moving `Mesh`'s source order and restoring the
+  original TU splits (`Curve.cpp`, `GLES1Compat.cpp`, ...) pulled a large block of dynsym/PLT slots
+  back into place. `.text` 0x1337b0, `.rodata` 0x1c9e10 exact. This is the single biggest gain of
+  the session and confirms the PLT/dynsym theory.
