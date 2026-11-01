@@ -128,13 +128,14 @@ elseif(GOF2_LIB STREQUAL "libzip")
     # Member order = the original libzip.a's link order, recovered from the original's .text
     # function layout (and cross-checked against its PLT first-reference order).  Gold scans
     # relocations (and thus creates PLT entries) in input-member order, so this order is what
-    # makes the libzip PLT block match.  zip_err_str.c has no .text; it is kept next to the
-    # other error-table members.
+    # makes the libzip PLT block match.  zip_err_str.c has no .text, so its archive position is
+    # free; it goes right after zip_close to reproduce the original's .rodata.str1.1 order
+    # (the _zip_err_str[] table is emitted before zip_open/zip_dirent's TORRENTZIPPED strings).
     set(units
         zip_memdup zip_add zip_filerange_crc zip_get_name zip_file_strerror
         zip_fopen_index zip_source_buffer zip_error_clear zip_get_archive_comment
         zip_source_file zip_set_name zip_file_error_get zip_file_get_offset
-        zip_unchange zip_new zip_close zip_add_dir zip_error_get_sys_type
+        zip_unchange zip_new zip_close zip_err_str zip_add_dir zip_error_get_sys_type
         zip_set_archive_comment zip_name_locate zip_unchange_archive zip_source_free
         zip_get_num_files zip_source_filep zip_error zip_strerror zip_entry_new
         zip_get_archive_flag zip_set_archive_flag zip_unchange_data zip_fread
@@ -142,7 +143,7 @@ elseif(GOF2_LIB STREQUAL "libzip")
         zip_delete zip_set_file_comment zip_stat zip_get_file_comment mkstemp
         zip_entry_free zip_open zip_error_get zip_fclose zip_dirent zip_free
         zip_file_error_clear zip_error_to_str zip_stat_init zip_fopen
-        zip_unchange_all zip_error_strerror zip_err_str)
+        zip_unchange_all zip_error_strerror)
     set(objs "")
     # -mthumb: the original .so has all libzip functions in Thumb mode (clang defaults to ARM).
     foreach(_n ${units})

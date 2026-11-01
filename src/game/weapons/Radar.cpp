@@ -1357,42 +1357,6 @@ asteroids_done:
     this->field_0x1bc = 0;
 
 }
-String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
-    // positions are halved first so the squared 64-bit sum stays in range
-    x1 *= 0.5f;
-    y1 *= 0.5f;
-    z1 *= 0.5f;
-    x2 *= 0.5f;
-    y2 *= 0.5f;
-    z2 *= 0.5f;
-    long long dx = static_cast<long long>(x1 - x2);
-    long long dx2 = dx * dx;
-    long long dz = static_cast<long long>(z1 - z2);
-    long long dz2 = dz * dz;
-    long long dy = static_cast<long long>(y1 - y2);
-    long long squared = dy * dy + dx2 + dz2;
-    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
-    int meters = distance << 3;
-
-    String text = String(meters) + String("m", false);
-    if (distance >= 125) {
-        int remainder = meters % 1000;
-        if (remainder >= 100) {
-            text = String(remainder);
-        } else {
-            text = String("0", false);
-        }
-        text = text.SubString(0, 1);
-        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
-    }
-    return text;
-}
-int Radar::getPlanetDockIndex() {
-    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
-        static_cast<intptr_t>(Globals::status->getSystem()));
-    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
-    return (*stations)[this->planetDockIndex];
-}
 void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
@@ -1510,6 +1474,42 @@ void Radar::drawCurrentLock(Hud *) {
         Radar::drawTarget = 0;
         return;
     }
+}
+String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    // positions are halved first so the squared 64-bit sum stays in range
+    x1 *= 0.5f;
+    y1 *= 0.5f;
+    z1 *= 0.5f;
+    x2 *= 0.5f;
+    y2 *= 0.5f;
+    z2 *= 0.5f;
+    long long dx = static_cast<long long>(x1 - x2);
+    long long dx2 = dx * dx;
+    long long dz = static_cast<long long>(z1 - z2);
+    long long dz2 = dz * dz;
+    long long dy = static_cast<long long>(y1 - y2);
+    long long squared = dy * dy + dx2 + dz2;
+    int distance = static_cast<int>(Globals::globals->sqrt(static_cast<float>(squared) * 0.000244140625f));
+    int meters = distance << 3;
+
+    String text = String(meters) + String("m", false);
+    if (distance >= 125) {
+        int remainder = meters % 1000;
+        if (remainder >= 100) {
+            text = String(remainder);
+        } else {
+            text = String("0", false);
+        }
+        text = text.SubString(0, 1);
+        text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
+    }
+    return text;
+}
+int Radar::getPlanetDockIndex() {
+    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
+        static_cast<intptr_t>(Globals::status->getSystem()));
+    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
+    return (*stations)[this->planetDockIndex];
 }
 KIPlayer *Radar::getLockedGasCloud() {
     return this->lockedGasCloud;
