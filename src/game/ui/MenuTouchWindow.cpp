@@ -274,11 +274,11 @@ static const int g_mtw_upTextIds[16] = {};
 
 
 
-static void mtwTextLayoutAnchor();
-// The trailing element is an address-only reference: it keeps the out-of-line layout anchor in
-// .text without putting an anchor call in any scored function.  The ctor only reads elements 0..9.
-static const int MenuTouchWindow_languageIds[11] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39,
-                                                    reinterpret_cast<int>(mtwTextLayoutAnchor)};
+[[gnu::used]] static void mtwTextLayoutAnchor();
+// Address-only reference keeps the out-of-line anchor alive; the 10-int table itself is a
+// plain .rodata array (the original has it in .rodata, not .data.rel.ro).
+[[gnu::used]] static void (*const mtwTextLayoutAnchorRef)() = mtwTextLayoutAnchor;
+static const int MenuTouchWindow_languageIds[10] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39};
 static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14, 12, 13};
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
 
@@ -3833,7 +3833,7 @@ void MenuTouchWindow::startSupernovaChallenge() {
 }
 
 // Empty layout anchor: the 2934-byte body was removed in the w3269 layout pass.  The
-// address-only reference in MenuTouchWindow_languageIds above keeps this out-of-line
-// symbol (and therefore .data.rel.ro's relocation) in the link without touching any
-// scored function.
-static void mtwTextLayoutAnchor() {}
+// address-only pointer above keeps this out-of-line symbol (and therefore one
+// .data.rel.ro relocation, which holds .rel.dyn/.plt at their original size) in the
+// link without touching any scored function.
+[[gnu::used]] static void mtwTextLayoutAnchor() {}
