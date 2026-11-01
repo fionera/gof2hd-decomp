@@ -4408,3 +4408,5 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   shader literal order fixed. `.ARM.exidx` 0x6fb8 -> 0x6f50 (orig 0x6f70), `.ARM.extab`
   0x2627c (orig 0x26298). This is the first time `.rodata` has landed on its original address;
   1739 functions are still "linked but not byte" because of literal-pool words.
+- **Level.cpp PLT order pass 2: byte_exact 2923 -> 2928 (+5), PLT diff 42 -> 30** (`w3365`):
+  `initParticleSystems` before `createPlayer`, `createStaticObject` before `createMission`.

@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 2923,
+  "byte_exact": 2928,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -15618,7 +15618,7 @@
   {
    "name": "_ZN13PlayerFighter8setLevelEP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 232,
    "usize": 232
@@ -15746,7 +15746,7 @@
   {
    "name": "_ZN13PlayerStation6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -23482,7 +23482,7 @@
   {
    "name": "_ZN5Level18createStaticObjectEP8Waypointib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6960,
    "usize": 6960
@@ -28026,7 +28026,7 @@
   {
    "name": "_ZN7BombGun6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1152,
    "usize": 1152
@@ -28194,7 +28194,7 @@
   {
    "name": "_ZN7Globals17getWreckCollisionEiP10AEGeometry",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 604,
    "usize": 604
