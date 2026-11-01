@@ -70,3 +70,39 @@ cp cmake-build-match/section_order.txt /tmp/section_order.bak
 cmake --build cmake-build-match --target link_so -j24
 # compare .rodata with a small ELF section reader (objcopy is unusable on /tmp here)
 ```
+
+## Update: the no-`*` variant scores +58 byte_exact
+
+Measured with `link_so` + `verify` (not `check`; `ratchet.py` does not treat a hand-edited
+`section_order.txt` as stale, so `check` can report the previous `.so`):
+
+| variant | byte_exact | linked_exact | .text | .rodata | .bss |
+|---|---:|---:|---|---|---|
+| baseline (`*`) | 4115 | 4495 | 0x1337c8 | 0x41b67 | 0x69ac |
+| no `*`, explicit 134 `.text*` leftovers | **4173** | 4495 | 0x1337c8 | 0x41b57 (-16) | 0x69b8 (+12) |
+
+So the grouping fix is worth **+58 functions** even before the size delta is fixed. The remaining
+work is exactly: recover the 16 missing `.rodata` bytes and the 12 extra `.bss` bytes without
+losing the 4173.
+
+### `.rodata` -16 clue
+
+After the mojibake fix the first diff is at 0x31780 (VMA 0x1e9f90), not 0x301eb. It is the
+`Generator.cpp` static-table emission order: the original has `kAgentOfferItems`
+(200,220,208,213,216,228,229,230,231) at 0x31780, then `kKaamoStationItems` (101,102,103,107,
+108,109,114,124,0,0); ours emits `kKaamoStationItems` first and `kAgentOfferItems` at 0x3198c.
+This is a TU function/use-order issue, not a linker-group issue.
+
+The 16-byte size delta is around 0x39a9c (DialogueWindow's `.rodata`): `g_dw_briefingCounts`
+starts at orig 0x399a0 vs ours 0x39998 (-8), and the original has 16 extra bytes of `0xffffffff`
+table data before it. The table immediately before `g_dw_briefingCounts` is
+`g_dw_speakerFaceParts`/`g_dw_speakerFaces`-shaped data (`0xffffffff` sentinels, small face-part
+indices); ours has a `0x7447756e` ("nGuT") word where the original has `0xffffffff`. Check the
+DialogueWindow face-part table sizes and the TU's emission order.
+
+### `.bss` +12 clue
+
+The no-`*` variant makes `.bss` unlisted (index 0) and `.bss.anchor` listed last, which changes
+the `.bss` input order and adds 12 bytes of alignment padding. Adding an explicit `.bss` line
+before `.bss.anchor` made it worse (+20) and lost 8 byte_exact. The `.bss` order must reproduce
+the `*` group's order (the original's), not simply put `.bss` first.
