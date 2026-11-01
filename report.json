@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4492,
+  "byte_exact": 4494,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -15,6 +15,14 @@
   "extra": 0
  },
  "rows": [
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 45.2,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 57232
+  },
   {
    "name": "_ZN6LayoutC1Ev",
    "pct": 46.6,
@@ -30,14 +38,6 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
-  },
-  {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 54.1,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -112,14 +112,6 @@
    "usize": 17172
   },
   {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 85.3,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8132
-  },
-  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 86.7,
    "byte": false,
@@ -142,6 +134,14 @@
    "linked": false,
    "osize": 968,
    "usize": 968
+  },
+  {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 87.5,
+   "byte": false,
+   "linked": false,
+   "osize": 8132,
+   "usize": 8132
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
@@ -23882,7 +23882,7 @@
   {
    "name": "_ZN5MGame12successCheckEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1468,
    "usize": 1468
@@ -23890,7 +23890,7 @@
   {
    "name": "_ZN5MGame12switchCameraEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 316,
    "usize": 316
@@ -23906,7 +23906,7 @@
   {
    "name": "_ZN5MGame13gameOverCheckEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 696,
    "usize": 696
@@ -28026,7 +28026,7 @@
   {
    "name": "_ZN7BombGun6updateEi",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 1152,
    "usize": 1152
