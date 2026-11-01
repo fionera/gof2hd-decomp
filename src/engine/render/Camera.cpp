@@ -21,33 +21,27 @@
 // Camera::Camera is inline in Camera.h (the original emits it weak in PaintCanvas.cpp).
 
 namespace AbyssEngine {
-    int CameraIsPointinViewFrustum(const Vector &point, Matrix *extra, Camera *cam) {
-        if (Engine::vfc == 0)
-            return 1;
+    namespace AEMath {
+    }
 
-        const Matrix &view = cam->projection;
-        // Point in camera space (computed but unused).
-        Vector camPoint = {0.0f, 0.0f, 0.0f};
-        if (extra != 0) {
-            Matrix combined = view;
-            combined *= *extra;
-            camPoint = AEMath::MatrixInverseTransformVector(combined, point);
-        } else {
-            camPoint = AEMath::MatrixInverseTransformVector(view, point);
+    void CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
+                              Camera *cam) {
+        if (cam != 0) {
+            float *f = (float *) cam;
+            f[0] = p1;
+            f[1] = aspectNum;
+            f[2] = fov;
+
+            float half = p1 * 0.5f;
+            float s = AbyssEngine::AEMath::Sinf(half);
+            float c = AbyssEngine::AEMath::Cosf(half);
+            f[0x12] = s / c;
+            f[0x13] = (aspectDen / near) * (s / c);
+            f[0x14] = aspectDen / near;
+
+            f[0x16] = 1.0f / AbyssEngine::AEMath::Cosf(half);
+            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]));
         }
-
-        Vector toPoint = point - AEMath::MatrixGetPosition(view);
-        float depth = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
-        if (depth > cam->position[2] || depth < cam->position[1])
-            return 0;
-
-        float vertical = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
-        float vLimit = depth * cam->frustumTanHalfFov;
-        if (vertical > vLimit || vertical < -(depth * cam->frustumTanHalfFov))
-            return 0;
-
-        float horizontal = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
-        return !(horizontal > vLimit * cam->frustumAspect) && !(horizontal < -(vLimit * cam->frustumAspect));
     }
 }
 
@@ -75,27 +69,33 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    namespace AEMath {
-    }
+    int CameraIsPointinViewFrustum(const Vector &point, Matrix *extra, Camera *cam) {
+        if (Engine::vfc == 0)
+            return 1;
 
-    void CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
-                              Camera *cam) {
-        if (cam != 0) {
-            float *f = (float *) cam;
-            f[0] = p1;
-            f[1] = aspectNum;
-            f[2] = fov;
-
-            float half = p1 * 0.5f;
-            float s = AbyssEngine::AEMath::Sinf(half);
-            float c = AbyssEngine::AEMath::Cosf(half);
-            f[0x12] = s / c;
-            f[0x13] = (aspectDen / near) * (s / c);
-            f[0x14] = aspectDen / near;
-
-            f[0x16] = 1.0f / AbyssEngine::AEMath::Cosf(half);
-            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]));
+        const Matrix &view = cam->projection;
+        // Point in camera space (computed but unused).
+        Vector camPoint = {0.0f, 0.0f, 0.0f};
+        if (extra != 0) {
+            Matrix combined = view;
+            combined *= *extra;
+            camPoint = AEMath::MatrixInverseTransformVector(combined, point);
+        } else {
+            camPoint = AEMath::MatrixInverseTransformVector(view, point);
         }
+
+        Vector toPoint = point - AEMath::MatrixGetPosition(view);
+        float depth = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(-AEMath::MatrixGetDir(view)));
+        if (depth > cam->position[2] || depth < cam->position[1])
+            return 0;
+
+        float vertical = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetUp(view)));
+        float vLimit = depth * cam->frustumTanHalfFov;
+        if (vertical > vLimit || vertical < -(depth * cam->frustumTanHalfFov))
+            return 0;
+
+        float horizontal = AEMath::VectorDot(toPoint, AEMath::VectorNormalize(AEMath::MatrixGetRight(view)));
+        return !(horizontal > vLimit * cam->frustumAspect) && !(horizontal < -(vLimit * cam->frustumAspect));
     }
 }
 
