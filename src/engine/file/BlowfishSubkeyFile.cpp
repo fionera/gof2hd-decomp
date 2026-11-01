@@ -3,10 +3,16 @@
 #include <cstdio>
 
 extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-unsigned int S[4][256];
-
 extern "C" unsigned int P[18]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+
+// The key-schedule arrays live at the original .bss tail, after every code TU's
+// uninitialised data.  A private input section lets the section-ordering pass place
+// them there without moving the whole Blowfish TU (which owns early .text) to the end
+// of the link.
+#pragma clang section bss=".bss.blowfish"
+unsigned int S[4][256];
 unsigned int P[18];
+#pragma clang section bss=""
 
 extern "C" std::FILE *SubkeyFile; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 

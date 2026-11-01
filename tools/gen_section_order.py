@@ -236,15 +236,25 @@ def main() -> int:
     #
     # The other unlisted sections still need the trailing index: plain `.text`
     # (libcrypto/libgcc) and libc++abi/libandroid_support `.text.*` must stay
-    # after the listed functions, and `.data*`/`.bss*` must stay after the
-    # explicitly listed `.data` entries.  Gold's `.bss` common block is an
-    # Output_section_data with index 0, so it stays first (as in the original)
-    # only while the `.bss.*` inputs have the trailing index.
+    # after the listed functions, and `.data*` must stay after the explicitly
+    # listed `.data` entries.
+    #
+    # `.bss` is deliberately NOT listed.  Gold emits the COMMON block (an
+    # Output_section_data with index 0) after every regular `.bss` input at the
+    # same index, so leaving `.bss` unlisted reproduces the original's layout:
+    # the C runtime's COMMON globals (`g_android_*`, `SubkeyFile`, `g_pVM`, ...)
+    # land at the .bss tail, not the front.  Listing `.bss*` put the COMMON block
+    # first and shifted every code TU's uninitialised data by its size.
     order.append(".text*")
     order.append(".data*")
-    order.append(".bss*")
-    # The levelTextAnchor .bss pad lives in its own input section so it can be ordered after
-    # the archive .bss (libzip/libcrypto/libc++abi), matching the original .bss tail size.
+    # Blowfish's S/P arrays are the original .bss tail.  They get a private input section
+    # (a `#pragma clang section` in BlowfishSubkeyFile.cpp) so they can be ordered after all
+    # other regular `.bss` without moving the whole TU (which owns early .text) to the end of
+    # the link.
+    order.append(".bss.blowfish")
+    # Sentinel only: the empty-TU markers below are inserted before the last entry, and this
+    # keeps them in the trailing group (the original's late-pulled archive members have no
+    # ordered witness).  No object emits `.bss.anchor` any more.
     order.append(".bss.anchor")
 
     # Place each empty-TU marker after the LAST of its owner's sections in the finished order.
