@@ -22,8 +22,11 @@ using AbyssEngine::AERandom;
 using AbyssEngine::AnimationMode;
 
 // Per-ship vertical offset of the hangar cutscene ship (original .rodata @ 0x1fb934).
-static const int CUTSCENE_SHIP_HEIGHT[16] = {
+static const int CUTSCENE_SHIP_HEIGHT[64] = {
     160, 150, 220, 310, 160, 180, 140, 170, 170, 110, 250, 205, 240, 250, 250, 250,
+    170, 170, 190, 460, 170, 210, 140, 170, 160, 190, 170, 240, 220, 280, 200, 200,
+    140, 160, 180, 150, 310, 390, 480, 200, 300, 300, 170, 200, 170, 370, 370, 300,
+    440, 340, 170, 470, 170, 170, 170, 170, 200, 170, 250, 150, 170, 250, 270, 170,
 };
 
 CutScene::CutScene(int mode) {
@@ -526,24 +529,4 @@ void CutScene::render3D() {
     }
 }
 
-// Mission type -> dispatch rank.  The original switch lays its case bodies out in
-// source order; clang's jump-table lowering sorts them by case value, so the types
-// are ranked into the original body order.  (The 190-byte table reuses the tail of
-// the cutscene height table above to keep .rodata size/layout exact.)
-#pragma GCC visibility push(hidden)
-extern const unsigned char kMissionCase[192] = {
-    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 152, 155, 154, 156, 157, 159, 167, 168, 160, 190,
-    169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166, 190, 190,
-};
-#pragma GCC visibility pop
 

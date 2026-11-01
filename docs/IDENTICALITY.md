@@ -86,6 +86,14 @@ MenuTouchWindow tables were landing in the wrong order. Three `Level` function m
 **byte_exact 4441 -> 4463 (+22), linked 4496 unchanged**. See
 `_work/reconstructions/rodata_content_round5_w3477.md`.
 
+The w3490 `kMissionCase` pass then removed the rank-table workaround that a later pass had
+reintroduced. The real `.rodata` at `0x1fb974` is `_SHIP_HANGAR_OFFSETS[16..63]` (the tail of the
+64-int CutScene copy at `0x1fb934`); the invented 192-byte `kMissionCase` table had overwritten
+it, leaving 191 differing `.rodata` bytes. Restoring `CUTSCENE_SHIP_HEIGHT[64]` and switching
+directly on `(short) m->getType()` removes the table and returns `.rodata` to **0 differing
+bytes** with byte_exact 4494 / linked_exact 4496 unchanged (`.text` `0x1337c8`, lint clean,
+drift 0). See `_work/reconstructions/kMissionCase_real_table_w3490.md`.
+
 ## Update 2026-07-26 — historical (superseded by the update above)
 
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
