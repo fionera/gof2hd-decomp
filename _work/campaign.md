@@ -4230,3 +4230,5 @@ mtw anchor for any size change before MenuTouchWindow.
   0x6fa8 (orig 0x6f70; 3568 vs 3566 entries), `.text` unchanged 0x1343d0, `.got`/`.data`/
   `.dynamic` still at the original addresses. The `.rodata` shift (+0xc50) makes 37 more
   literal-pool words match.
+- **Level::createShip 73.1 -> 73.2%, 2764 B** (`w3239`): make the loop index `unsigned x`, which
+  matches the original's zero-extension in the hull-box loop. Gate unchanged (byte 1495).
