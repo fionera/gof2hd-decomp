@@ -1,0 +1,49 @@
+diff --git a/report.json b/report.json
+index 2a6b70aa..fc7ef9f2 100644
+--- a/report.json
++++ b/report.json
+@@ -4,7 +4,7 @@
+   "ours_functions": 4524,
+   "compared": 4523,
+   "avg_match": 99.89,
+-  "byte_exact": 1415,
++  "byte_exact": 1414,
+   "linked_exact": 4493,
+   "fuzzy_perfect": 4494,
+   "stub_zero_size": 0,
+@@ -41,11 +41,11 @@
+   },
+   {
+    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
+-   "pct": 71.8,
++   "pct": 68.2,
+    "byte": false,
+    "linked": false,
+    "osize": 9908,
+-   "usize": 9908
++   "usize": 9940
+   },
+   {
+    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+@@ -20674,7 +20674,7 @@
+   {
+    "name": "_ZN4Item27canBeInstalledMultipleTimesEv",
+    "pct": 100.0,
+-   "byte": true,
++   "byte": false,
+    "linked": true,
+    "osize": 16,
+    "usize": 16
+diff --git a/src/game/weapons/Radar.cpp b/src/game/weapons/Radar.cpp
+index 7e26887d..bd63cd6d 100644
+--- a/src/game/weapons/Radar.cpp
++++ b/src/game/weapons/Radar.cpp
+@@ -370,7 +370,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
+         this->field_0x1a8 =
+                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
+     } else {
+-        if (__builtin_expect(this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin
++        if (__builtin_expect(this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet(), 0)) { // lint: arm_builtin
+             int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
+             Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
+             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();

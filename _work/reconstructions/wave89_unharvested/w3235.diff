@@ -1,0 +1,19 @@
+diff --git a/src/game/menu/SpaceLounge.cpp b/src/game/menu/SpaceLounge.cpp
+index 4abe891b..2fc416e6 100644
+--- a/src/game/menu/SpaceLounge.cpp
++++ b/src/game/menu/SpaceLounge.cpp
+@@ -1624,9 +1624,12 @@ void SpaceLounge::drawLounge() {
+             x = Globals::w - layout->buttonInsetX - (width + Globals::layout->field_0x94 * 2);
+         }
+         int lineHeight = layout->field_0x30_rowHeight;
+-        layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
++        int boxX = x - pad;
++        int boxY = top - pad;
++        int boxWidth = pad * 2 + width;
++        layout->drawBox(2, boxX, boxY, boxWidth, lineHeight, String(""));
+         Globals::Canvas->SetColor(0x193043ffu);
+-        Globals::Canvas->DrawRectangle(x - pad, top - pad, pad * 2 + width, Globals::layout->field_0x30_rowHeight);
++        Globals::Canvas->DrawRectangle(boxX, boxY, boxWidth, Globals::layout->field_0x30_rowHeight);
+         Globals::Canvas->SetColor(0xffffffffu);
+         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font,
+                                     name + (agent->isKnown() ? String("  ") : String("")), x,

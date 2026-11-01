@@ -1,0 +1,16 @@
+diff --git a/src/game/world/StarMap.cpp b/src/game/world/StarMap.cpp
+index b2e64ee4..e22c306a 100644
+--- a/src/game/world/StarMap.cpp
++++ b/src/game/world/StarMap.cpp
+@@ -951,8 +951,9 @@ void StarMap::draw() {
+             if (pulse > *(float *) &this->field_0xec) {
+                 step++;
+                 this->field_0xe8 = step;
+-                step = (uint32_t) step < this->systemPath->size() ? step : 0;
+-                this->field_0xe8 = step;
++                if ((uint32_t) step >= this->systemPath->size())
++                    this->field_0xe8 = 0;
++                step = this->field_0xe8;
+             }
+             *(float *) &this->field_0xec = pulse;
+             // Block-placement barrier: the original keeps the route colour

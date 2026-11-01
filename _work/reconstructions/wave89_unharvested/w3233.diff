@@ -1,0 +1,47 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f1a8268c..b09d501a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -45,7 +45,7 @@ endif()
+ # pre-RA MachineLICM sink (sink-insts-to-avoid-spills) reproduces that shape; scoped to this TU
+ # so the sibling Level.cpp functions keep their baseline allocation.
+ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene.cpp"
+-    PROPERTIES COMPILE_OPTIONS "-mllvm;-sink-insts-to-avoid-spills")
++    PROPERTIES COMPILE_OPTIONS "-mllvm;-sink-insts-to-avoid-spills;-mllvm;-regalloc-csr-first-time-cost=2")
+ 
+ # LevelScript::process is dominated by greedy-allocator split-candidate choices.  The original's
+ # local-interval cost accounting is reproduced by this scoped flag (LLVM's spelling); the sibling
+diff --git a/src/game/world/LevelCreateScene.cpp b/src/game/world/LevelCreateScene.cpp
+index 655480f4..7dc6391e 100644
+--- a/src/game/world/LevelCreateScene.cpp
++++ b/src/game/world/LevelCreateScene.cpp
+@@ -162,9 +162,8 @@ void Level::createScene() {
+             const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
+             for (int i = 0; i < shipCount; i++) {
+                 int race = sceneRace;
+-                AbyssEngine::AERandom *rnd = Globals::rnd;
+-                if (rnd->nextInt(100) <= 29) {
+-                    race = rnd->nextInt(4);
++                if (Globals::rnd->nextInt(100) <= 29) {
++                    race = Globals::rnd->nextInt(4);
+                     if (Globals::rnd->nextInt(100) < 30)
+                         race = 8;
+                 }
+@@ -178,7 +177,7 @@ void Level::createScene() {
+                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
+                 int spot = Globals::rnd->nextInt(capacity);
+                 for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
+-                    spot = rnd->nextInt(capacity);
++                    spot = Globals::rnd->nextInt(capacity);
+                 spotUsed[spot] = 1;
+                 const int *table;
+                 switch (sceneRace) {
+@@ -202,7 +201,7 @@ void Level::createScene() {
+                                   (float) table[spot * 3 + 2]);
+                 ship->player->setAlwaysFriend(true);
+                 ship->setToSleep();
+-                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
++                ship->geometry->setRotation(0.0f, (float) Globals::rnd->nextInt(300) / 100.0f, 0.0f);
+                 ((PlayerFighter *) ship)->setExhaustVisible(false);
+                 ArrayAdd(ship, *this->enemies);
+             }

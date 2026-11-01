@@ -1,0 +1,20 @@
+diff --git a/src/game/mission/Generator.cpp b/src/game/mission/Generator.cpp
+index 8ede8902..2daa29c0 100644
+--- a/src/game/mission/Generator.cpp
++++ b/src/game/mission/Generator.cpp
+@@ -873,6 +873,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
+         amount = Globals::rnd->nextInt(15) + 5;
+         difficulty = (*items)[itemId]->getTecLevel();
++        goto amountDone;
+     } else {
+         ++difficulty;
+         switch (type) {
+@@ -904,6 +905,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+         }
+     }
+ 
++amountDone:
+     if (difficulty >= 10) {
+         difficulty = 10;
+     }

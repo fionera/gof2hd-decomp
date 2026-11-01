@@ -1,0 +1,239 @@
+diff --git a/src/game/ui/Hud.cpp b/src/game/ui/Hud.cpp
+index b3ec7f66..a11a55bf 100644
+--- a/src/game/ui/Hud.cpp
++++ b/src/game/ui/Hud.cpp
+@@ -20,6 +20,7 @@
+ #include "engine/render/PaintCanvas.h"
+ #include "game/ui/Layout.h"
+ 
++
+ // lint: void_ptr (external symbol; param types are mangling-load-bearing)
+ 
+ 
+@@ -29,6 +30,9 @@
+ 
+ static unsigned int g_Hud_heImportantMask = 0;
+ 
++// Reused as the zero-pad string; the original reloads the pointer inside the pad loop.
++extern const char *ndkEntrance;
++
+ void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
+                            unsigned int x, unsigned int y) {
+     (void) t0;
+@@ -250,17 +254,12 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+     // Shield / armour / gamma bars.
+     int dividerOffset = Globals::layout->field_0x1e8;
+     Globals::Canvas->SetColor(0xffffffff);
+-    unsigned short armorY;
++    int armorY;
+     int armorBarY;
+     if (this->hasShieldBar) {
+-        PaintCanvas *canvas = Globals::Canvas;
+-        canvas->SetColor(savedColor);
+-        unsigned int shieldImage;
+-        if (ego->player->getShieldHP() >= 2 && this->shieldHitFlash)
+-            shieldImage = this->shieldFrameHitImage;
+-        else
+-            shieldImage = this->shieldFrameImage;
+-        canvas->DrawImage2D(shieldImage, this->field_0x43c, this->field_0x442);
++        Globals::Canvas->DrawImage2D(ego->player->getShieldHP() >= 2 && this->shieldHitFlash ? this->shieldFrameHitImage
++                                                                                               : this->shieldFrameImage,
++                                     this->field_0x43c, this->field_0x442);
+         Globals::Canvas->DrawImage2D(this->lockBracketImage, this->field_0x43e, this->field_0x442 + dividerOffset);
+         Globals::Canvas->DrawImage2D(this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
+         int shieldW = (int) ((float) ego->player->getShieldDamageRate() * 0.01f * (float) this->field_0x446);
+@@ -284,7 +283,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+         Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
+                                       this->field_0x440, armorBarY);
+     }
+-    int pad_ = this->field_0x470;
+     if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                     Globals::status->getCurrentCampaignMission()) > 0.0f) {
+         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
+@@ -430,7 +428,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+         } else {
+             String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
+                           String(Globals::status->getShip()->getMaxLoad()) + String("t");
+-            short shift = 0;
++            int shift = 0;
+             if (Globals::status->getShip()->getCurrentLoad() >= 101)
+                 shift = -2 * Globals::layout->field_0x2c_rowHeight;
+             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
+@@ -452,7 +450,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+                                ->getCargo(Globals::status->getMission()->getProductionGoodIndex())
+                                ->getAmount()
+                          : 0;
+-        String cargo = amount + String(" / ") + String(Globals::status->getShip()->getFreeSpace() + amount);
++        String cargo = amount + String(" / ") + String(amount + Globals::status->getShip()->getFreeSpace());
+         Globals::Canvas->DrawImage2D(this->image_0x338, this->field_0x438 - Globals::layout->field_0x1f0, this->field_0x43a);
+         if (ego->hasVolatileGoods()) {
+             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x340);
+@@ -526,8 +524,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+         }
+     }
+ 
+-    if (pad_ != 0)
+-        Globals::Canvas->SetColor(savedColor);
+     // Autopilot button.
+     if (!ego->radioRef->isShowingMessage()) {
+         if ((!ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
+@@ -604,7 +600,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+         else
+             Globals::Canvas->DrawImage2D(this->image_0x318, this->field_0x3fe, this->field_0x400);
+     } else if (this->secondaryLabelTimer >= 1) {
+-        int labelY = this->field_0x418;
+         int labelH = Globals::Canvas->GetImage2DHeight(this->image_0x354);
+         int labelGap = Globals::layout->field_0x20c;
+         int textGap = Globals::layout->field_0x210;
+@@ -612,15 +607,16 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+         int alpha = (int) ((float) this->secondaryLabelTimer / 2000.0f * 255.0f);
+         if (alpha > 255)
+             alpha = 254 - alpha;
+-        int labelX = this->field_0x3ec;
+         unsigned int color = Globals::Canvas->GetColor();
+         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) alpha);
+-        labelY = labelY - labelH - labelGap;
++        int labelY = this->field_0x418 - labelH - labelGap;
+         Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3ec, labelY);
+         Globals::Canvas->DrawString(
+             (unsigned int) (uintptr_t) Globals::font, this->field_0x51c,
+-            this->field_0x3ec + (canvasW - labelX -
+-                Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x51c)) / 2,
++            this->field_0x3ec +
++                (canvasW - this->field_0x3ec -
++                 Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x51c)) /
++                    2,
+             labelY + textGap, false);
+         Globals::Canvas->SetColor(color);
+         this->secondaryLabelTimer += dt;
+@@ -740,30 +736,29 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+             float fade = 1.0f;
+             if (fadeIn < 1.0f)
+                 fade = fadeIn;
+-            unsigned short top = this->field_0x3e2;
++            int top = this->field_0x3e2 * 2;
+             int barYOffset = Globals::layout->field_0x218;
+             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
+-            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
++            Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top, 0x11, 0x14);
+             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
+                                           (Globals::w >> 1) - barW / 2, barYOffset + top);
+-            unsigned int fontId = (unsigned int) (uintptr_t) Globals::font;
+-            int halfW = Globals::w >> 1;
+-            int textW = Globals::Canvas->GetTextWidth(fontId, text);
++            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
+             float textY = (float) top + (float) barH * 2.5f;
+-            Globals::Canvas->DrawString(fontId, text, halfW - (textW >> 1), (int) textY, false);
++            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
++                                        (int) textY, false);
+             if (this->field_0x27a && Globals::status->getMission() != 0 &&
+                 Globals::status->getMission()->getType() != 168)
+                 Globals::Canvas->DrawImage2D(
+                     this->image_0x380,
+-                    (Globals::w >> 1) +
+-                        (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
++                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
++                        (Globals::w >> 1),
+                     (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                     0x11, 0x41);
+             if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174)
+                 Globals::Canvas->DrawImage2D(
+                     this->image_0x384,
+-                    (Globals::w >> 1) +
+-                        (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
++                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1) +
++                        (Globals::w >> 1),
+                     (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                     0x11, 0x41);
+         }
+@@ -781,27 +776,25 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
+                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
+             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
+             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
+-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
++            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+             this->field_0x464 += dt;
+             float fade = (float) this->field_0x464 / 1000.0f;
+             int top = this->field_0x3e2;
+-            int y = barOffset + top * 2;
+             int barYOffset = Globals::layout->field_0x218;
+             Globals::Canvas->SetColor(fade < 1.0f ? (int) (fade * 255.0f) - 256 : 0xffffffff);
++            int y = barOffset + top * 2;
+             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
+             float filled = progress * (float) halfW;
+             Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
+                                           barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
+-            Globals::Canvas->DrawString(
+-                (unsigned int) (uintptr_t) Globals::font, text,
+-                (Globals::w >> 1) -
+-                    (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
+-                (int) ((float) y + (float) barH * 2.5f), false);
++            int textW = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text);
++            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (textW >> 1),
++                                        (int) ((float) y + (float) barH * 2.5f), false);
+         }
+     }
+ 
+     // First-flight steering hint.
+-    if (!ego->isMining() && Globals::hints[17] == 0 && Globals::status->getCurrentCampaignMission() == 2 &&
++    if (!ego->isMining() && !Globals::hints[17] && Globals::status->getCurrentCampaignMission() == 2 &&
+         ego->levelScript->m_nScriptTime > 12000 && !ego->isDockingToAsteroid() && !ego->isDockedToAsteroid()) {
+         this->field_0x4c4 += dt;
+         if (this->field_0x4c4 > 2000)
+@@ -1528,8 +1521,8 @@ void Hud::drawMenu(int unused) {
+     if (this->menuType != 0)
+         return;
+     if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
++        unsigned int rowH = Globals::layout->field_0x30_rowHeight;
+         String label = String("X ") + String(this->fuelGaugeValue);
+-        int rowH = Globals::layout->field_0x30_rowHeight;
+         int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+         int gy = Globals::layout->field_0x288 + (y + rowH / 2);
+         Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
+@@ -1756,15 +1749,15 @@ void Hud::drawChallengeModeScore(int unused) {
+     y = Globals::layout->field_0x2c_rowHeight;
+     screenW = Globals::w;
+     String score(scoreValue);
+-    step = digitW - overlap;
+-    half = screenW / 2;
+-    halfStep = step * 7 / 2;
+     if (score.size() < 7) {
+         int pad = 7 - score.size();
+-        for (int i = 0; i < pad; i++)
+-            score = String("0") + score;
++        for (int i = 0; i != pad; i++)
++            score = String(ndkEntrance) + score;
+     }
+     Globals::Canvas->SetColor(0x77ccffff);
++    step = digitW - overlap;
++    half = screenW / 2;
++    halfStep = step * 7 / 2;
+     left = half - halfStep;
+     int x = left;
+     for (unsigned int i = 0; i < score.size(); i++) {
+@@ -1784,13 +1777,13 @@ void Hud::drawChallengeModeScore(int unused) {
+             int multiplier = Globals::status->field_0x18c;
+             String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
+             int bonusY = digitH + y;
+-            int offset = -step;
++            int offset = 0;
+             for (unsigned int i = 0; i < bonus.size(); i++) {
+                 int frame = bonus.SubString(i, i + 1).ValueOf();
+                 this->digitSprite->setFrame(frame);
+-                offset += step;
+                 this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
+                                                bonusY + Globals::layout->field_0x2c_rowHeight);
++                offset += step;
+                 this->digitSprite->draw(1.0f, 1.0f);
+             }
+         }
+@@ -1799,9 +1792,6 @@ void Hud::drawChallengeModeScore(int unused) {
+         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
+         String multiplier(Globals::status->field_0x18c);
+         int mx = half + rowGap - halfStep;
+-        // Keep the multiplier digits on-screen if the computed origin is off the left edge.
+-        if (mx < 0)
+-            y = half;
+         for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
+             int frame = multiplier.SubString(i - 1, i).ValueOf();
+             this->digitSprite->setFrame(frame);

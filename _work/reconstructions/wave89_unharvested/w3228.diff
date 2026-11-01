@@ -1,0 +1,47 @@
+diff --git a/report.json b/report.json
+index 2a6b70aa..af6e8c49 100644
+--- a/report.json
++++ b/report.json
+@@ -120,20 +120,20 @@
+    "usize": 8132
+   },
+   {
+-   "name": "_ZN6Status16missionCompletedEbbx",
+-   "pct": 86.7,
++   "name": "_ZN9RocketGun6updateEi",
++   "pct": 85.8,
+    "byte": false,
+    "linked": false,
+-   "osize": 1432,
+-   "usize": 1432
++   "osize": 1908,
++   "usize": 1908
+   },
+   {
+-   "name": "_ZN9RocketGun6updateEi",
+-   "pct": 86.9,
++   "name": "_ZN6Status16missionCompletedEbbx",
++   "pct": 86.7,
+    "byte": false,
+    "linked": false,
+-   "osize": 1908,
+-   "usize": 1908
++   "osize": 1432,
++   "usize": 1432
+   },
+   {
+    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
+diff --git a/src/game/weapons/RocketGun.cpp b/src/game/weapons/RocketGun.cpp
+index 70bdf1c9..faf0159a 100644
+--- a/src/game/weapons/RocketGun.cpp
++++ b/src/game/weapons/RocketGun.cpp
+@@ -284,9 +284,6 @@ void RocketGun::update(int elapsed) {
+     }
+ 
+     const float dt = (float) elapsed;
+-    // Keep the frame time in a stack slot for the loop; the original reloads it from the
+-    // frame in the launch block rather than holding it in a callee-saved register.
+-    volatile int unused = elapsed;
+     Array<Matrix> *trailMatrices = this->trailMatrices;
+     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
+         gun = this->gun;

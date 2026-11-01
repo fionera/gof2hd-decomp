@@ -1,0 +1,24 @@
+diff --git a/src/game/ship/PlayerEgo.cpp b/src/game/ship/PlayerEgo.cpp
+index eae06c1b..7a4c748f 100644
+--- a/src/game/ship/PlayerEgo.cpp
++++ b/src/game/ship/PlayerEgo.cpp
+@@ -2425,10 +2425,6 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
+             if (!object->outerCollide(surface))
+                 continue;
+         }
+-        // Redundant bounds check: keeps the loop from being rotated so the
+-        // register allocation matches the original.
+-        if (objects->size() <= i)
+-            continue;
+         if (object->getType() == 16994 && object->isVisible()) {
+             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
+                 continue;
+@@ -2489,7 +2485,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
+             reinterpret_cast<Matrix &>(this->player->transform[0]) =
+                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
+                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
+-            if (object->field_0x71)
++            if (i == 0 && object->field_0x71)
+                 this->collidesWithStationFlag = 1;
+         }
+         this->hitCamera();

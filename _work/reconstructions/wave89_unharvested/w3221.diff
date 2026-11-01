@@ -1,0 +1,346 @@
+diff --git a/src/game/menu/MGame.cpp b/src/game/menu/MGame.cpp
+index ac48a767..536f0160 100644
+--- a/src/game/menu/MGame.cpp
++++ b/src/game/menu/MGame.cpp
+@@ -1292,7 +1292,7 @@ void MGame::startChargingJumpDrive() {
+     Globals::status->getShip()->removeCargo(122, cells);
+ }
+ 
+-void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
++int MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- exported override signature (Pv)
+     if (this->activeTouchId == touchId) {
+         this->activeTouchId = nullptr;
+     }
+@@ -1327,7 +1327,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                             }
+                         }
+                         Globals::status->field_0x111 = 1;
+-                        return;
++                        return 0;
+                     }
+                     Array<KIPlayer *> *enemies = this->level->getEnemies();
+                     if (enemies != nullptr) {
+@@ -1429,15 +1429,15 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                                 this->menuWindow = new MenuTouchWindow(1);
+                             }
+                             this->menuWindow->startSupernovaChallenge();
+-                            return;
++                            return 0;
+                         case 1:
+                             Globals::globals->playMusicAndFadeOutCurrent(2);
+                             this->active = 0;
+                             this->applicationManager->SetCurrentApplicationModule(1);
+                             Globals::status->resetGame();
+-                            return;
++                            return 0;
+                         case 2:
+-                            return;
++                            return 0;
+                         default:
+                             break;
+                     }
+@@ -1453,7 +1453,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                     this->usingJumpDrive = 0;
+                     startJumpScene();
+                     this->player->resetGunDelay();
+-                    return;
++                    return 0;
+                 case 1:
+                     // Pick another destination on the jump map.
+                     this->autopilotMenuOpen = 0;
+@@ -1466,9 +1466,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                     this->starMapOpen = 1;
+                     this->pauseOpen = 1;
+                     pauseSounds();
+-                    return;
++                    return 0;
+                 default:
+-                    return;
++                    return 0;
+             }
+         } else if (!this->field_0xc4) {
+             if (this->starMapOpen) {
+@@ -1476,10 +1476,10 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                     if (Globals::layout->OnTouchEnd(x, y)) {
+                         Globals::layout->choiceWindowOpen = 0;
+                     }
+-                    return;
++                    return 0;
+                 }
+                 if (!this->starMap->OnTouchEnd(x, y)) {
+-                    return;
++                    return 0;
+                 }
+                 this->level->getStarSystem()->initLight();
+                 this->starMapOpen = 0;
+@@ -1503,11 +1503,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                 }
+                 delete this->starMap;
+                 this->starMap = nullptr;
+-                return;
++                return 0;
+             }
+             if (this->cutsceneActive) {
+                 if (!this->dialogueWindow->OnTouchEnd(x, y)) {
+-                    return;
++                    return 0;
+                 }
+                 this->pauseOpen = 0;
+                 resumeSounds();
+@@ -1519,7 +1519,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(1);
+                         Globals::status->resetGame();
+-                        return;
++                        return 0;
+                     }
+                     // Freelance mission failed: take back what was handed out.
+                     if (Globals::status->getMission()->getType() == 12) {
+@@ -1563,7 +1563,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::switch_to_target_setting = 2;
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(1);
+-                        return;
++                        return 0;
+                     }
+                     Globals::status->changeCredits(mission->getReward() + mission->getBonus());
+                     this->levelScript->m_nTimeLimit = 0;
+@@ -1595,7 +1595,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         delete reader;
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
+                         Globals::switch_to_target_setting = 1;
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+@@ -1607,7 +1607,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation(Globals::status->playerStation);
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 74) {
+                         FileRead *reader = new FileRead();
+                         Globals::status->setStation(reader->loadStation(100));
+@@ -1623,7 +1623,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() &&
+                                (Globals::status->getCurrentCampaignMission() == 96 ||
+                                 (mission->isCampaignMission() &&
+@@ -1637,7 +1637,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+                         Globals::status->field_5c = this->player->player->getShieldHP();
+@@ -1648,7 +1648,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                         Globals::appManager->SetCurrentApplicationModule(5);
+                         this->active = 0;
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 110) {
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+                         Globals::status->field_5c = this->player->player->getShieldHP();
+@@ -1660,7 +1660,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::appManager->SetCurrentApplicationModule(5);
+                         Globals::enterSpaceLounge = 1;
+                         this->active = 0;
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 120) {
+                         Globals::switch_to_target_setting = 1;
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+@@ -1671,7 +1671,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(126));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(5);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
+                         Globals::switch_to_target_setting = 1;
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+@@ -1682,7 +1682,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 134) {
+                         Globals::switch_to_target_setting = 0;
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+@@ -1693,7 +1693,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(5);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 144) {
+                         Globals::switch_to_target_setting = 1;
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+@@ -1704,7 +1704,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 155) {
+                         Globals::switch_to_target_setting = 1;
+                         Level::initStreamOutPosition = 1;
+@@ -1712,7 +1712,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                             (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 161) {
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+                         Globals::status->field_5c = this->player->player->getShieldHP();
+@@ -1723,7 +1723,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 162) {
+                         Globals::status->field_64 = this->player->player->getHitpoints();
+                         Globals::status->field_5c = this->player->player->getShieldHP();
+@@ -1734,7 +1734,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                         this->active = 0;
+                         this->applicationManager->SetCurrentApplicationModule(5);
+-                        return;
++                        return 0;
+                     } else {
+                         goto finishMission;
+                     }
+@@ -1746,7 +1746,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                     Globals::status->field_68 = this->player->player->getGammaHP();
+                     this->active = 0;
+                     this->applicationManager->SetCurrentApplicationModule(5);
+-                    return;
++                    return 0;
+ 
+                 finishMission:
+                     if (!keepObjectives) {
+@@ -1770,7 +1770,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                         Globals::status->setFreelanceMission(escort);
+                         this->active = 0;
+                         Globals::appManager->SetCurrentApplicationModule(2);
+-                        return;
++                        return 0;
+                     }
+                 } else {
+                     this->levelScript->resetStartSequenceOver();
+@@ -1778,13 +1778,13 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                 this->frameTime = 0;
+                 this->hud->resetAnalogStick();
+                 this->hud->releaseAllKeys();
+-                return;
++                return 0;
+             }
+             if (this->menuTouchOpen) {
+                 if (this->freeCamMode) {
+                     MGameAppData *appData = (MGameAppData *) Globals::appManager->GetApplicationData();
+                     if (appData->modalActive || appData->transitionActive) {
+-                        return;
++                        return 0;
+                     }
+                     if (!this->menuWindow->isShowingMessage() && !this->menuWindow->isMakingScreenshot()) {
+                         freeCamTouchEnd(x, y, touchId);
+@@ -1862,13 +1862,13 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                     setCinematicMode(true);
+                     this->hudTouchFlags = 0;
+                     this->level->getStarSystem()->initLight();
+-                    return;
++                    return 0;
+                 }
+                 if (this->freeCamMode && !this->menuWindow->inCinematicMode()) {
+                     setCinematicMode(false);
+                     this->hudTouchFlags = 0;
+                 }
+-                return;
++                return 0;
+             }
+         }
+     }
+@@ -1902,15 +1902,15 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                 Globals::sound->play(123, nullptr, nullptr, 0.0f);
+             }
+             this->hud->releaseAllKeys();
+-            return;
++            return 0;
+         }
+     }
+     if (this->levelScript->startSequence() || this->player->isDead()) {
+         this->levelScript->skipSequence();
+-        return;
++        return 0;
+     }
+     if (this->jumpActive || this->jumpDriveActive) {
+-        return;
++        return 0;
+     }
+ 
+     if ((this->hudTouchFlags & 2) && this->player->isBoostRefreshed() && !this->player->boosting() &&
+@@ -1936,7 +1936,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+         }
+     }
+     if (this->player->isInRocketControl()) {
+-        return;
++        return 0;
+     }
+     if (this->player->hasAutoTurret() && (this->hudTouchFlags & 0x20000000)) {
+         this->player->setAutoTurret(!this->player->autoTurretIsEnabled());
+@@ -2088,9 +2088,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
+                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
+             }
+-            resumeSounds();
+             this->pauseOpen = 0;
+             this->hudMenuOpen = 0;
++            resumeSounds();
+             this->hud->closeHudMenu();
+         } else if (wingmanCommand >= 0) {
+             // Order the wingmen.
+@@ -2110,10 +2110,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+             resumeSounds();
+         }
+         if (this->hudTouchFlags == 0) {
++            this->hud->closeHudMenu();
+             this->hudMenuOpen = 0;
+-            if (this->hud != nullptr) {
+-                this->hud->closeHudMenu();
+-            }
+             this->touch0Id = nullptr;
+             this->touch1Id = nullptr;
+             this->pauseOpen = 0;
+@@ -2141,6 +2139,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
+         reinterpret_cast<float &>(this->field_0x1b0) = 1.0f;
+         this->field_0x1b4 = 100.0f;
+     }
++    return 0;
+ }
+ 
+ void MGame::startJumpScene() {
+diff --git a/src/game/menu/MGame.h b/src/game/menu/MGame.h
+index 22822fc4..50211568 100644
+--- a/src/game/menu/MGame.h
++++ b/src/game/menu/MGame.h
+@@ -209,7 +209,7 @@ public:
+ 
+     void OnTouchMove(int p1, int y, void *touch) override; // lint: void_ptr -- exported override signature (Pv)
+ 
+-    void OnTouchEnd(int p1, int p2, void *touchId) override; // lint: void_ptr -- exported override signature (Pv)
++    int OnTouchEnd(int p1, int p2, void *touchId);
+ 
+     void OnUpdate() override;
+ 

@@ -1,0 +1,20 @@
+diff --git a/src/game/ui/MenuTouchWindow.cpp b/src/game/ui/MenuTouchWindow.cpp
+index 42c8221b..239a04e4 100644
+--- a/src/game/ui/MenuTouchWindow.cpp
++++ b/src/game/ui/MenuTouchWindow.cpp
+@@ -449,11 +449,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
+                     (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
+             }
+             bool special = (i | 1) == 9;
+-            int spacing = Globals::Canvas->FontGetSpacing(
+-                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
++            unsigned int fontId = special ? (unsigned int) *specialFontPtr
++                                          : (unsigned int) (uintptr_t) Globals::font;
++            int spacing = Globals::Canvas->FontGetSpacing(fontId);
+             TouchButton *language = new TouchButton(
+                 *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
+-                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font, spacing);
++                fontId, spacing);
+             language->id = MenuTouchWindow_languageIds[i];
+             if (special)
+                 language->fontId = *specialFontPtr;

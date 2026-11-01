@@ -1,0 +1,39 @@
+diff --git a/src/game/world/Level.cpp b/src/game/world/Level.cpp
+index 50bd0a47..6af63a7c 100644
+--- a/src/game/world/Level.cpp
++++ b/src/game/world/Level.cpp
+@@ -6308,7 +6308,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
+     }
+     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
+     Player *player = new Player(armor, hitpoints, 1, 1, 0);
+-    int x = wx + jitterX - 20000;
++    unsigned int x = wx + jitterX - 20000;
+     float z = (float) (wz + jitterZ - 20000);
+     float y = (float) (wy + jitterY - 20000);
+     try {
+@@ -6318,11 +6318,12 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
+     }
+ 
+     KIPlayer *ship = nullptr;
++    int mp = missionPtr;
+     if (shipClass == 0) {
+         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter));
+         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+-        if (missionPtr != 1 && missionPtr != 23) {
++        if (mp != 1 && missionPtr != 23) {
+             KIPlayer *kiFighter = fighter;
+             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
+         }
+@@ -6335,8 +6336,10 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
+         ship = fighter;
+     } else if (shipClass == 1) {
+         // capital ships: hull collision boxes per race
++        AEGeometry *geom = nullptr;
+         PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject));
+-        new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
++        new (fixed) PlayerFixedObject(type, race, player, geom, x, y, z);
++        (void) geom;
+         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+         switch (race) {
+             case 0:

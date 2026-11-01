@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f1a8268c..21db7b04 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -51,7 +51,7 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene
+ # local-interval cost accounting is reproduced by this scoped flag (LLVM's spelling); the sibling
+ # LevelScript functions keep their baseline allocation.
+ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
+-    PROPERTIES COMPILE_OPTIONS "-mllvm;-condsider-local-interval-cost")
++    PROPERTIES COMPILE_OPTIONS "-mllvm;-condsider-local-interval-cost;-mllvm;-join-liveintervals=false")
+ 
+ # Radar::draw's autopilot / otherLock / off-screen-blip __builtin_expect hints pick the wrong
+ # block layout at LLVM's default 2000:1 weights; the original's cold autopilot block lands after

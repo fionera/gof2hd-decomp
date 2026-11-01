@@ -1,0 +1,16 @@
+diff --git a/src/game/world/Level.cpp b/src/game/world/Level.cpp
+index 50bd0a47..78d6a13e 100644
+--- a/src/game/world/Level.cpp
++++ b/src/game/world/Level.cpp
+@@ -1629,9 +1629,8 @@ void Level::createMission() {
+                                 : ((Standing *) (intptr_t) Globals::status->getStanding())->getEnemyRace(localRace);
+         switch (mission->getType()) {
+             case 183: {
+-                struct Coords6 { int a, b, c, d, e, f; };
+-                Coords6 coords = {-55000, 0, -35000, -30000, 0, -50000};
+-                this->enemyRoute = new Route(&coords.a, 6);
++                int coords[9] = {-55000, 0, -35000, -30000, 0, -50000};
++                this->enemyRoute = new Route(coords, 6);
+                 this->enemies = new Array<KIPlayer *>();
+                 ArraySetLength(14, *this->enemies);
+                 for (int i = 0; i < 8; i++) {
