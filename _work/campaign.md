@@ -4333,3 +4333,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Layout 46.2 -> 50.8%** (`w3308`): the 50.8% field-store schedule is adopted (6800 B ctor, 272 B
   short of the original 7072 B - it is a tuned body, not yet the real one). Gate unchanged at
   1882 because the `.ARM.exidx`/`.text` shift absorbs the size change.
+- **Camera/WantedWindow/String source order: byte_exact 1882 -> 1909 (+27)** (`w3319`): the three
+  TUs are reordered to the original definition order (the WantedWindow and String files are pure
+  moves), and the back-button JNI wrapper gets its own TU.
