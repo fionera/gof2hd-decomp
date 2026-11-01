@@ -1370,6 +1370,18 @@ int Status::missionFailed(bool docked, int64_t time) {
     return 0;
 }
 
+static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
+
+void Status::checkForLevelUp() {
+    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
+              currentCampaignMission + stationsVisited;
+    for (int i = 0; i != 0x15; i = i + 1) {
+        if (sum >= g_levelXPTable[i]) {
+            level = i;
+        }
+    }
+}
+
 // Layout anchor: the original 190-byte mission-order table lives in .bss so
 // the .rodata/.data page boundary stays fixed.
 static volatile unsigned char kMissionOrder[190];
@@ -1702,18 +1714,6 @@ int Status::getGoodsProduced() { return goodsProduced; }
 void Status::incGoodsProduced(int delta) { goodsProduced = delta + goodsProduced; }
 
 void Status::setCredits(int v) { credits = v; }
-
-static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
-
-void Status::checkForLevelUp() {
-    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
-              currentCampaignMission + stationsVisited;
-    for (int i = 0; i != 0x15; i = i + 1) {
-        if (sum >= g_levelXPTable[i]) {
-            level = i;
-        }
-    }
-}
 
 int Status::getRating() { return rating; }
 

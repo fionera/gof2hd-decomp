@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4249, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4250, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -28,9 +28,12 @@ text default, DialogueWindow success script/alignment), making **every ELF secti
 base-exact**, `.rodata` included (0x41b67 @ 0x1c9e10), and byte_exact 4171 -> 4182. The 2026-11-01 worst-match wave then added the Generator table dedup
 (byte 4182 -> 4188) and the TU-start 4-byte alignment discovery in the exidx-marker generator
 (byte 4188 -> 4233, section sizes unchanged) plus Layout::Layout 45.3 -> 46.6%, HangarWindow::render 78.2 -> 78.7% and
-the Status rank-table fix (fuzzy-only, byte-neutral). The first `.rodata` *content* divergence is
-now at 0x1fb8c8 (VMA); 14,515 bytes still differ. See
-`_work/reconstructions/rodata_group_order.md`. See `_work/reconstructions/literal_pool_audit.md`
+the Status rank-table fix (fuzzy-only, byte-neutral). The w3438 `.rodata` content-map pass then
+moved `g_levelXPTable`/`Status::checkForLevelUp` ahead of `kMissionCase`, making
+`0x1fc330..0x1fc390` byte-identical and `Status::checkForLevelUp` byte-exact (byte 4249 -> 4250;
+linked 4496 unchanged). The first `.rodata` *content* divergence is now at 0x1fc390 (VMA);
+13,308 bytes still differ. See `_work/reconstructions/rodata_content_map_round2.md`,
+`_work/reconstructions/rodata_group_order.md`, `_work/reconstructions/literal_pool_audit.md`
 and `_work/reconstructions/data_layout_audit_2.md`.
 
 ## Update 2026-07-26 — historical (superseded by the update above)
