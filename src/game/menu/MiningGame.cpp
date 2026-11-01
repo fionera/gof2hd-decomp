@@ -54,57 +54,80 @@ static inline int MiningGame_Ship_getFreeSpace(Ship *ship) { return ship->getFre
 
 static inline float &F(Layout *p, unsigned off) { return *(float *) ((char *) p + off); }
 
-int MiningGame::getOreAmount() {
-    return (int) this->oreAmount;
-}
+MiningGame::MiningGame(int layer, int station, Hud *hud) {
+    this->station = station;
+    this->layer = layer;
+    this->hud = hud;
+    this->centerX = Globals::w >> 1;
+    this->centerY = Globals::layout->centerYBase + (Globals::h >> 1);
+    this->marqueeWidth = Globals::layout->marqueeWidth;
+    this->driftTimer = 0;
+    this->gameLostFlag = 0;
+    this->isCoreLayer = layer == 7;
+    this->lossTimer = 0;
+    this->oreAmount = 0.0f;
+    this->oreRate = 0.0f;
+    this->failThreshold = 2500;
+    *(long long *) &this->layerTimer = 0;
+    this->targetLayer = layer;
+    this->gameWonFlag = 0;
+    this->gotCoreFlag = 0;
+    this->inputY = 0.0f;
+    this->posX = (float) this->centerX;
+    this->inputX = 0.0f;
+    this->driftX = 0.0f;
+    this->driftY = 0.0f;
+    this->posY = (float) this->centerY;
 
-int MiningGame::getAsteroidType() {
-    return this->station;
-}
+    Item *drill = Globals::status->getShip()->getFirstEquipmentOfSort(19);
+    if (drill != 0) {
+        this->controlDivisor = 0.3f + ((float) drill->getAttribute(32) / 100.0f) * 1.5f;
+        this->oreRate = (float) drill->getAttribute(33) / 100.0f;
+    }
 
+    unsigned int drillImage = (unsigned int) -1;
+    Globals::Canvas->Image2DCreate(0x4e6, drillImage);
+    int drillHeight = Globals::Canvas->GetImage2DHeight(drillImage);
+    this->drillSprite = new Sprite(drillImage, drillHeight, drillHeight);
+    this->drillSprite->defineReferencePixel(drillHeight >> 1, drillHeight >> 1);
 
+    this->animAccumulator = 0.0f;
+    Globals::Canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
+    Globals::Canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
+    Globals::Canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
+    Globals::Canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
+    Globals::Canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
+    Globals::Canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
+    Globals::Canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
+    Globals::Canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
+    Globals::Canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
+    Globals::Canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
+    Globals::Canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
+    Globals::Canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
+    if (this->isCoreLayer)
+        Globals::Canvas->Image2DCreate(station == 164 ? 0x522 : 0x523, (unsigned int &) this->coreImageId);
 
-bool MiningGame::isInCurrentLayer() {
-    float dx = this->posX - (float) this->centerX;
-    float dy = this->posY - (float) this->centerY;
-    Globals **sqrtHolder = &Globals::globals;
-    int current = this->currentLayer;
-    int layer = this->targetLayer;
-    int *row = LAYER_DIAMETERS + (7 - layer) * 7;
-    Layout *layout = Globals::layout;
-    Globals *globals = *sqrtHolder;
-    int size = row[current];
-    float scale = layout->ringRadiusScale;
-    float distance = globals->sqrt(dx * dx + dy * dy);
-    return distance < scale * (float) (size / 2);
-}
+    this->progressBarWidth = Globals::Canvas->GetImage2DWidth(this->progressBarImageId);
+    this->progressBarHeight = Globals::Canvas->GetImage2DHeight(this->progressBarImageId);
+    this->progressBarX = Globals::w / 2 - this->progressBarWidth / 2;
+    this->progressBarY = Globals::layout->progressBarYBase;
+    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, this->progressBarX,
+                                         this->progressBarHeight + this->progressBarY + 5, 20.0f);
+    this->rightMarquee = new MarqueeImage(0x4ec, this->marqueeWidth,
+                                          (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
+                                          this->progressBarHeight + this->progressBarY + 5, 32.0f);
 
-void MiningGame::up(float amount) {
-    this->inputY = amount * 3.0f;
-}
+    this->oreIconOffsetX = Globals::Canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
+    this->oreIconOffsetY = Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) >> 1;
+    this->oreImageHeight = Globals::Canvas->GetImage2DHeight(this->oreTextImageId);
+    float oreMarqueeSpeed = Globals::layout->field_0xdc;
+    this->oreMarquee = new MarqueeImage(0x4e4, Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0,
+                                        oreMarqueeSpeed);
+    this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
 
-uint8_t MiningGame::gameWon() {
-    return this->gameWonFlag;
-}
-
-void MiningGame::down(float amount) {
-    this->inputY = amount * 3.0f;
-}
-
-uint8_t MiningGame::gotCore() {
-    return this->gotCoreFlag;
-}
-
-void MiningGame::left(float amount) {
-    this->inputX = amount * 3.0f;
-}
-
-uint8_t MiningGame::gameLost() {
-    return this->gameLostFlag;
-}
-
-void MiningGame::right(float amount) {
-    this->inputX = amount * 3.0f;
+    this->textAlpha = 1.0f;
+    this->promptPulseTimer = 0;
+    this->campaignFlag = Globals::status->getCurrentCampaignMission() > 4;
 }
 
 MiningGame::~MiningGame() {
@@ -112,13 +135,43 @@ MiningGame::~MiningGame() {
     this->drillSprite = nullptr;
 }
 
+uint8_t MiningGame::gameWon() {
+    return this->gameWonFlag;
+}
+
+uint8_t MiningGame::gameLost() {
+    return this->gameLostFlag;
+}
+
+int MiningGame::getOreAmount() {
+    return (int) this->oreAmount;
+}
+
+uint8_t MiningGame::gotCore() {
+    return this->gotCoreFlag;
+}
+
+int MiningGame::getAsteroidType() {
+    return this->station;
+}
+
+void MiningGame::up(float amount) {
+    this->inputY = amount * 3.0f;
+}
+
+void MiningGame::down(float amount) {
+    this->inputY = amount * 3.0f;
+}
+
+void MiningGame::left(float amount) {
+    this->inputX = amount * 3.0f;
+}
+
+void MiningGame::right(float amount) {
+    this->inputX = amount * 3.0f;
+}
 
 static inline int MG_nextInt(AbyssEngine::AERandom *random, int limit) { return random->nextInt(limit); }
-
-
-
-
-
 
 int MiningGame::update(int delta) {
     int pulse = this->promptPulseTimer + delta;
@@ -229,87 +282,20 @@ int MiningGame::update(int delta) {
     return 1;
 }
 
-
-
-
-
-
-MiningGame::MiningGame(int layer, int station, Hud *hud) {
-    this->station = station;
-    this->layer = layer;
-    this->hud = hud;
-    this->centerX = Globals::w >> 1;
-    this->centerY = Globals::layout->centerYBase + (Globals::h >> 1);
-    this->marqueeWidth = Globals::layout->marqueeWidth;
-    this->driftTimer = 0;
-    this->gameLostFlag = 0;
-    this->isCoreLayer = layer == 7;
-    this->lossTimer = 0;
-    this->oreAmount = 0.0f;
-    this->oreRate = 0.0f;
-    this->failThreshold = 2500;
-    *(long long *) &this->layerTimer = 0;
-    this->targetLayer = layer;
-    this->gameWonFlag = 0;
-    this->gotCoreFlag = 0;
-    this->inputY = 0.0f;
-    this->posX = (float) this->centerX;
-    this->inputX = 0.0f;
-    this->driftX = 0.0f;
-    this->driftY = 0.0f;
-    this->posY = (float) this->centerY;
-
-    Item *drill = Globals::status->getShip()->getFirstEquipmentOfSort(19);
-    if (drill != 0) {
-        this->controlDivisor = 0.3f + ((float) drill->getAttribute(32) / 100.0f) * 1.5f;
-        this->oreRate = (float) drill->getAttribute(33) / 100.0f;
-    }
-
-    unsigned int drillImage = (unsigned int) -1;
-    Globals::Canvas->Image2DCreate(0x4e6, drillImage);
-    int drillHeight = Globals::Canvas->GetImage2DHeight(drillImage);
-    this->drillSprite = new Sprite(drillImage, drillHeight, drillHeight);
-    this->drillSprite->defineReferencePixel(drillHeight >> 1, drillHeight >> 1);
-
-    this->animAccumulator = 0.0f;
-    Globals::Canvas->Image2DCreate(0x4e2, (unsigned int &) this->ringEvenNear);
-    Globals::Canvas->Image2DCreate(0x4dd, (unsigned int &) this->ringEvenFar);
-    Globals::Canvas->Image2DCreate(0x4de, (unsigned int &) this->ringEvenMid);
-    Globals::Canvas->Image2DCreate(0x4e1, (unsigned int &) this->ringOddNear);
-    Globals::Canvas->Image2DCreate(0x4df, (unsigned int &) this->ringOddMid);
-    Globals::Canvas->Image2DCreate(0x4e0, (unsigned int &) this->ringOddFar);
-    Globals::Canvas->Image2DCreate(0x4e5, (unsigned int &) this->oreLabelImageId);
-    Globals::Canvas->Image2DCreate(0x4e4, (unsigned int &) this->oreTextImageId);
-    Globals::Canvas->Image2DCreate(0x4e7, (unsigned int &) this->oreIconImageId);
-    Globals::Canvas->Image2DCreate(0x4e3, (unsigned int &) this->cornerImageId);
-    Globals::Canvas->Image2DCreate(0x4e8, (unsigned int &) this->progressBarImageId);
-    Globals::Canvas->Image2DCreate(0x4ed, (unsigned int &) this->progressLabelImageId);
-    if (this->isCoreLayer)
-        Globals::Canvas->Image2DCreate(station == 164 ? 0x522 : 0x523, (unsigned int &) this->coreImageId);
-
-    this->progressBarWidth = Globals::Canvas->GetImage2DWidth(this->progressBarImageId);
-    this->progressBarHeight = Globals::Canvas->GetImage2DHeight(this->progressBarImageId);
-    this->progressBarX = Globals::w / 2 - this->progressBarWidth / 2;
-    this->progressBarY = Globals::layout->progressBarYBase;
-    this->leftMarquee = new MarqueeImage(0x4eb, this->marqueeWidth, this->progressBarX,
-                                         this->progressBarHeight + this->progressBarY + 5, 20.0f);
-    this->rightMarquee = new MarqueeImage(0x4ec, this->marqueeWidth,
-                                          (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
-                                          this->progressBarHeight + this->progressBarY + 5, 32.0f);
-
-    this->oreIconOffsetX = Globals::Canvas->GetImage2DWidth(this->oreIconImageId) / 2 + 5;
-    this->oreIconOffsetY = Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) >> 1;
-    this->oreImageHeight = Globals::Canvas->GetImage2DHeight(this->oreTextImageId);
-    float oreMarqueeSpeed = Globals::layout->field_0xdc;
-    this->oreMarquee = new MarqueeImage(0x4e4, Globals::Canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0,
-                                        oreMarqueeSpeed);
-    this->oreMarquee->setSpeed(Globals::layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer]);
-
-    this->textAlpha = 1.0f;
-    this->promptPulseTimer = 0;
-    this->campaignFlag = Globals::status->getCurrentCampaignMission() > 4;
+bool MiningGame::isInCurrentLayer() {
+    float dx = this->posX - (float) this->centerX;
+    float dy = this->posY - (float) this->centerY;
+    Globals **sqrtHolder = &Globals::globals;
+    int current = this->currentLayer;
+    int layer = this->targetLayer;
+    int *row = LAYER_DIAMETERS + (7 - layer) * 7;
+    Layout *layout = Globals::layout;
+    Globals *globals = *sqrtHolder;
+    int size = row[current];
+    float scale = layout->ringRadiusScale;
+    float distance = globals->sqrt(dx * dx + dy * dy);
+    return distance < scale * (float) (size / 2);
 }
-
 
 void MiningGame::render2D() {
     Globals::Canvas->SetColor(0xffffffffu);
