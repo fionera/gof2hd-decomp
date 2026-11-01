@@ -121,6 +121,29 @@ namespace AbyssEngine {
     int BloomShader::ShaderIndex = -1;
     unsigned char firstRender = 1;
 
+    BloomShader::BloomShader() {
+        BloomShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("BloomShader");
+    }
+
+    BloomShader::~BloomShader() {
+        ; // non-empty body in the original (compiled-out statement): clang keeps the vptr store
+    }
+
+    void BloomShader::InternalInit(Engine *engine) {
+        this->fboLuma = new FBOContainer(engine, String("BloomShader fboLuma"));
+        this->fboLuma->Create(0x100, 0x100, true, false);
+
+        this->fboBlurH = new FBOContainer(engine, String("BloomShader fboBlurH"));
+        this->fboBlurH->Create(0x100, 0x100, true, false);
+
+        this->fboBlurV = new FBOContainer(engine, String("BloomShader fboBlurV"));
+        this->fboBlurV->Create(0x100, 0x100, true, false);
+
+        this->fboBlack = new FBOContainer(engine, String("BloomShader fboBlack"));
+        this->fboBlack->Create(0x100, 0x100, true, false);
+    }
+
     void BloomShader::Init(Engine *) {
         const char *vertex = kBloomVertexSource;
         const char *positionName = "a_position";
@@ -173,29 +196,6 @@ namespace AbyssEngine {
         glUseProgram(this->finalProgram);
         glUniform1i(this->finalUniformTexture, 0);
         glUniform1i(this->finalUniformTextureBloom, 1);
-    }
-
-    BloomShader::BloomShader() {
-        BloomShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("BloomShader");
-    }
-
-    BloomShader::~BloomShader() {
-        ; // non-empty body in the original (compiled-out statement): clang keeps the vptr store
-    }
-
-    void BloomShader::InternalInit(Engine *engine) {
-        this->fboLuma = new FBOContainer(engine, String("BloomShader fboLuma"));
-        this->fboLuma->Create(0x100, 0x100, true, false);
-
-        this->fboBlurH = new FBOContainer(engine, String("BloomShader fboBlurH"));
-        this->fboBlurH->Create(0x100, 0x100, true, false);
-
-        this->fboBlurV = new FBOContainer(engine, String("BloomShader fboBlurV"));
-        this->fboBlurV->Create(0x100, 0x100, true, false);
-
-        this->fboBlack = new FBOContainer(engine, String("BloomShader fboBlack"));
-        this->fboBlack->Create(0x100, 0x100, true, false);
     }
 
     void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine) {

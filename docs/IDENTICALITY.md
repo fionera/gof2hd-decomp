@@ -6,18 +6,30 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
+<<<<<<< HEAD
 Current: **byte_exact 2806, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+=======
+Current: **byte_exact 2734, linked_exact 4494, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
+>>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
-placement of local functions in the section-ordering file. See docs/VALIDATION.md.
+placement of local functions in the section-ordering file. The 2026-11-01 data-layout pass
+dropped ten empty-`.text` CANTUNWIND sentinels that had inflated `.ARM.exidx` by 0x60 and
+pushed `.rodata` to 0x1c9e50 (byte 2646 -> 2732), and restored the original string-literal
+order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). See
+`_work/reconstructions/data_layout_audit_2.md` and docs/VALIDATION.md.
 
 ## Update 2026-07-26 — historical (superseded by the update above)
 
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
+<<<<<<< HEAD
 mode). Current: **compared 4524, byte_exact 2806, linked_exact 4494, avg 99.89%, stub_zero_size
+=======
+mode). Current: **compared 4524, byte_exact 2734, linked_exact 4494, avg 99.9%, stub_zero_size
+>>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -32,10 +44,10 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,440 | **−24** | the MenuTouchWindow anchor is now empty; the residual is the Rank-3 pads plus the `HangarWindow::initialize` shrink (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
+| **.text** | 1,259,464 | 1,259,500 | **+36** | the MenuTouchWindow anchor is now empty; the residual is the Rank-3 pads plus the `HangarWindow::initialize` shrink (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
 | **.rodata** | 269,159 | 269,207 | **+48** | address still exact (0x1c9e10); the MenuTouchWindow language table now lives here as in the original, which costs +48 B of size. |
-| .ARM.exidx | 28,528 | 28,552 | **+24** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels; 3569 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md`). |
-| .ARM.extab | 156,312 | 156,304 | **−8** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
+| .ARM.exidx | 28,528 | 28,504 | **−24** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels, and ten empty-`.text` objects with no original sentinel are now dropped; 3563 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md` and `data_layout_audit_2.md`). |
+| .ARM.extab | 156,312 | 156,300 | **−12** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8); the language-table anchor object is gone. |
@@ -54,7 +66,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` is 28 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is only 32 B smaller now (was 4,572 B): the app and vendored C
+3. **EH tables.** `.ARM.extab` is only 12 B smaller now (was 4,572 B): the app and vendored C
    objects were missing `-funwind-tables`. The residual is the net unwind-length difference of nine
    non-exact functions (`HangarWindow::render` −48, `Level::createShip` −20,
    `RecordHandler::recordStoreWrite` −16, ...).

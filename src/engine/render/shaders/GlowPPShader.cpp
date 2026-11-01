@@ -254,6 +254,11 @@ namespace AbyssEngine {
         this->RenderEffect(source, target, engine);
     }
 
+    GlowPPShader::GlowPPShader() {
+        GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("GlowPPShader");
+    }
+
     void GlowPPShader::InternalInit(Engine *engine) {
         this->copyTarget = new FBOContainer(engine, String("GlowPPShader fboMasked"));
         this->copyTarget->Create(0x200, 0x200, true, false);
@@ -315,10 +320,6 @@ namespace AbyssEngine {
         glUniform1i(this->combineUniformTexture2, 1);
     }
 
-    GlowPPShader::GlowPPShader() {
-        GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("GlowPPShader");
-    }
 
     GlowPPShader::~GlowPPShader() {
     }

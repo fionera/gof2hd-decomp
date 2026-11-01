@@ -32,6 +32,24 @@ import subprocess
 import sys
 
 
+# Ten app objects whose empty plain `.text` sentinel is dropped entirely.  The original
+# link's CANTUNWIND set is not fully recoverable from the stripped binary; these ten
+# zero-size sections only affect `.ARM.exidx` size.  Dropping them moves `.rodata` back
+# to the original 0x1c9e10 base (the 0x60-byte read-only layout delta) without moving
+# any function.  See _work/reconstructions/data_layout_audit_2.md.
+DROP_EMPTY_TEXT = {
+    "BackButton.c.obj",
+    "NFC.cpp.obj",
+    "VirtualInput.cpp.obj",
+    "BlowfishSubkeyFile.cpp.obj",
+    "main.c.obj",
+    "GOF2HD2012.c.obj",
+    "Mesh.cpp.obj",
+    "GLES1Compat.cpp.obj",
+    "FileInterfaceAndroid.cpp.obj",
+    "EaseInOutMatrix.cpp.obj",
+}
+
 # libcrypto's three plain-.text objects are each one section.  Give them unique names so
 # the ordering file can place them individually: the original interleaves them with the
 # zip TUs and orders armv4cpuid.o before sha256-armv4.o, which gold's same-name `.text`
@@ -75,12 +93,16 @@ def patch_align(path, name, align):
     raise SystemExit(f"{path}: section {name} not found")
 
 
-def rename_empty_text(objcopy, src, dst, marker, align=1):
+def rename_empty_text(objcopy, src, dst, marker, align=1, drop=False):
     shutil.copyfile(src, dst)
     if has_empty_plain_text(dst):
-        subprocess.run([objcopy, "--rename-section", f".text={marker}", dst],
-                       check=True, capture_output=True)
-        patch_align(dst, marker, align)
+        if drop:
+            subprocess.run([objcopy, "--remove-section", ".text", dst],
+                           check=True, capture_output=True)
+        else:
+            subprocess.run([objcopy, "--rename-section", f".text={marker}", dst],
+                           check=True, capture_output=True)
+            patch_align(dst, marker, align)
         return True
     return False
 
@@ -129,7 +151,8 @@ def main() -> int:
             "KIPlayer.cpp.obj", "Explosion.cpp.obj", "ApplicationManager.cpp.obj",
             "PlayerStation.cpp.obj", "ResourceMaterial.cpp.obj", "Wanted.cpp.obj",
             "Matrix.cpp.obj") else 1
-        if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align):
+        if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align,
+                             drop=os.path.basename(obj) in DROP_EMPTY_TEXT):
             markers += 1
         copies.append(dst)
     with open(os.path.join(outdir, "link_order.rsp"), "w") as f:

@@ -3,8 +3,13 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
+<<<<<<< HEAD
   "avg_match": 99.89,
   "byte_exact": 2806,
+=======
+  "avg_match": 99.9,
+  "byte_exact": 2734,
+>>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -290,7 +295,7 @@
   {
    "name": "JNI_OnLoad",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -418,7 +423,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 320,
    "usize": 320
@@ -642,7 +647,7 @@
   {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -650,7 +655,7 @@
   {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -658,7 +663,7 @@
   {
    "name": "Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -3778,7 +3783,7 @@
   {
    "name": "_ZN10NewsTickerC1Eiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 972,
    "usize": 972
@@ -3786,7 +3791,7 @@
   {
    "name": "_ZN10NewsTickerC2Eiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 972,
    "usize": 972
@@ -4634,7 +4639,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShader12InternalInitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -5162,7 +5167,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas12GetLineArrayEjRKNS_6StringEiP5ArrayIPS1_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -5490,7 +5495,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15DrawStringColorEjRKNS_6StringEiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -5626,7 +5631,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -6130,7 +6135,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas33TransformGet2DPickedTextureRegionEjiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -6194,7 +6199,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas7GetLineEjNS_6StringEiPS1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 308,
    "usize": 308
@@ -6770,7 +6775,7 @@
   {
    "name": "_ZN11AbyssEngine12GlowPPShader12InternalInitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 356,
    "usize": 356
@@ -7722,7 +7727,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource18initWithoutLoadingEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -7730,7 +7735,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource4initEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8770,7 +8775,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager27GetApplicationVersionStringEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -9010,7 +9015,7 @@
   {
    "name": "_ZN11AbyssEngine18MeshCreateFromFileEPNS_6EngineEPKcPPNS_4MeshEPNS_8MaterialE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 824,
    "usize": 824
@@ -9082,7 +9087,7 @@
   {
    "name": "_ZN11AbyssEngine19ImageCreateFromFileEPNS_6EngineEPKcPPNS_5ImageE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 760,
    "usize": 760
@@ -9538,7 +9543,7 @@
   {
    "name": "_ZN11AbyssEngine23ImageCreateFontFromFileEPNS_6EngineEPKctPPNS_9ImageFontE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 920,
    "usize": 920
@@ -9554,7 +9559,7 @@
   {
    "name": "_ZN11AbyssEngine25ImageCreateRegionFromFileEPNS_6EngineEPKctPNS_7Image2DE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 644,
    "usize": 644
@@ -10858,7 +10863,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine6InitGLEbii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 408,
    "usize": 408
@@ -11034,7 +11039,7 @@
   {
    "name": "_ZN11AbyssEngine6String3SetEPKc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -11050,7 +11055,7 @@
   {
    "name": "_ZN11AbyssEngine6String3SetEf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 460,
    "usize": 460
@@ -11154,7 +11159,7 @@
   {
    "name": "_ZN11AbyssEngine6String9SplitTagsES0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 456,
    "usize": 456
@@ -15218,7 +15223,7 @@
   {
    "name": "_ZN13AutoPilotList15getTargetStringEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -15858,7 +15863,7 @@
   {
    "name": "_ZN13RecordHandler11saveOptionsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 564,
    "usize": 564
@@ -16042,7 +16047,7 @@
   {
    "name": "_ZN13RecordHandlerC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -16050,7 +16055,7 @@
   {
    "name": "_ZN13RecordHandlerC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -17458,7 +17463,7 @@
   {
    "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 268,
    "usize": 268
@@ -19042,7 +19047,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid12GetDirPreFixEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -19106,7 +19111,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid4ReadEjPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 360,
    "usize": 360
@@ -19146,7 +19151,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid8OpenReadEN11AbyssEngine6StringEibiij",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 552,
    "usize": 552
@@ -19154,7 +19159,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid9FileExistEN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 308,
    "usize": 308
@@ -19162,7 +19167,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid9OpenWriteEN11AbyssEngine6StringEibj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -19178,7 +19183,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC1EP8_jobjectb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -19210,7 +19215,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC2EP8_jobjectb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -20362,7 +20367,7 @@
   {
    "name": "_ZN3NFC5isPadEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -20370,7 +20375,7 @@
   {
    "name": "_ZN3NFC8getWidthEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -20386,7 +20391,7 @@
   {
    "name": "_ZN3NFC9getHeightEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -24242,7 +24247,7 @@
   {
    "name": "_ZN5RadarC1EP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2488,
    "usize": 2488
@@ -24250,7 +24255,7 @@
   {
    "name": "_ZN5RadarC2EP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2488,
    "usize": 2488
@@ -24778,7 +24783,7 @@
   {
    "name": "_ZN6AEFile15collectPakFilesERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 244,
    "usize": 244
@@ -24826,7 +24831,7 @@
   {
    "name": "_ZN6AEFile4OpenERN11AbyssEngine6StringENS_12FileOpenTypeEPj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -25066,7 +25071,7 @@
   {
    "name": "_ZN6AEFile9FileExistERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 272,
    "usize": 272
@@ -25258,7 +25263,7 @@
   {
    "name": "_ZN6Layout10drawHeaderEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -25338,7 +25343,7 @@
   {
    "name": "_ZN6Layout12formatNumberEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 548,
    "usize": 548
@@ -25578,7 +25583,7 @@
   {
    "name": "_ZN6Layout9tagStringEN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 260,
    "usize": 260
@@ -26874,7 +26879,7 @@
   {
    "name": "_ZN6Status11replaceHashEN11AbyssEngine6StringES1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -28106,7 +28111,7 @@
   {
    "name": "_ZN7Globals12getLineArrayEjRKN11AbyssEngine6StringEiP5ArrayIPS1_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 520,
    "usize": 520
@@ -28122,7 +28127,7 @@
   {
    "name": "_ZN7Globals13getRandomNameEib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 380,
    "usize": 380
@@ -28154,7 +28159,7 @@
   {
    "name": "_ZN7Globals16getBoundedStringERKN11AbyssEngine6StringEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 256,
    "usize": 256
@@ -28290,7 +28295,7 @@
   {
    "name": "_ZN7Globals26getInAppPurchaseArrayIndexEiP5ArrayIPN11AbyssEngine6StringEE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 716,
    "usize": 716
@@ -28338,7 +28343,7 @@
   {
    "name": "_ZN7Globals7getLineEjN11AbyssEngine6StringEiPS1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -28546,7 +28551,7 @@
   {
    "name": "_ZN7Mission14getDescriptionEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -28698,7 +28703,7 @@
   {
    "name": "_ZN7Mission7getNameEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -28818,7 +28823,7 @@
   {
    "name": "_ZN7MissionC1Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -28826,7 +28831,7 @@
   {
    "name": "_ZN7MissionC1EiN11AbyssEngine6StringEPiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -28834,7 +28839,7 @@
   {
    "name": "_ZN7MissionC1Eiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 300,
    "usize": 300
@@ -28842,7 +28847,7 @@
   {
    "name": "_ZN7MissionC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -28850,7 +28855,7 @@
   {
    "name": "_ZN7MissionC2Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -28858,7 +28863,7 @@
   {
    "name": "_ZN7MissionC2EiN11AbyssEngine6StringEPiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -28866,7 +28871,7 @@
   {
    "name": "_ZN7MissionC2Eiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 300,
    "usize": 300
@@ -28874,7 +28879,7 @@
   {
    "name": "_ZN7MissionC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -29306,7 +29311,7 @@
   {
    "name": "_ZN7StationC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -29322,7 +29327,7 @@
   {
    "name": "_ZN7StationC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -29506,7 +29511,7 @@
   {
    "name": "_ZN8FileRead10loadAgentsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 472,
    "usize": 472
@@ -29514,7 +29519,7 @@
   {
    "name": "_ZN8FileRead10loadTickerEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 336,
    "usize": 336
@@ -29522,7 +29527,7 @@
   {
    "name": "_ZN8FileRead10loadWantedEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 544,
    "usize": 544
@@ -29538,7 +29543,7 @@
   {
    "name": "_ZN8FileRead13loadShipPartsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 396,
    "usize": 396
@@ -29546,7 +29551,7 @@
   {
    "name": "_ZN8FileRead15loadItemsBinaryEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 428,
    "usize": 428
@@ -29554,7 +29559,7 @@
   {
    "name": "_ZN8FileRead15loadNamesBinaryEibb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 884,
    "usize": 884
@@ -29562,7 +29567,7 @@
   {
    "name": "_ZN8FileRead15loadShipsBinaryEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 296,
    "usize": 296
@@ -29570,7 +29575,7 @@
   {
    "name": "_ZN8FileRead15loadSpacePointsEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 648,
    "usize": 648
@@ -29578,7 +29583,7 @@
   {
    "name": "_ZN8FileRead16loadStationPartsEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 412,
    "usize": 412
@@ -29586,7 +29591,7 @@
   {
    "name": "_ZN8FileRead17loadSystemsBinaryEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 716,
    "usize": 716
@@ -29594,7 +29599,7 @@
   {
    "name": "_ZN8FileRead18loadStationsBinaryEP11SolarSystem",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 364,
    "usize": 364
@@ -29602,7 +29607,7 @@
   {
    "name": "_ZN8FileRead18loadStationsBinaryEPsi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -29610,7 +29615,7 @@
   {
    "name": "_ZN8FileRead18loadStationsBinaryEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 256,
    "usize": 256
@@ -29618,7 +29623,7 @@
   {
    "name": "_ZN8FileRead18loadWreckCollisionEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 284,
    "usize": 284
@@ -29626,7 +29631,7 @@
   {
    "name": "_ZN8FileRead19loadStaticCollisionEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 284,
    "usize": 284
@@ -29642,7 +29647,7 @@
   {
    "name": "_ZN8FileRead20loadStationCollisionEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 284,
    "usize": 284
@@ -29714,7 +29719,7 @@
   {
    "name": "_ZN8GameText11setLanguageEsi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 908,
    "usize": 908
@@ -29730,7 +29735,7 @@
   {
    "name": "_ZN8GameText13getRegionCodeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -29778,7 +29783,7 @@
   {
    "name": "_ZN8GameTextC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -29786,7 +29791,7 @@
   {
    "name": "_ZN8GameTextC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -30290,7 +30295,7 @@
   {
    "name": "_ZN8KIPlayerC1EiiP6PlayerP10AEGeometryfffb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 556,
    "usize": 556
@@ -30298,7 +30303,7 @@
   {
    "name": "_ZN8KIPlayerC2EiiP6PlayerP10AEGeometryfffb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 556,
    "usize": 556

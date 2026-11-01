@@ -99,6 +99,12 @@ namespace AbyssEngine {
         glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
     }
 
+    SandboxShader::SandboxShader() {
+        SandboxShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        *SandboxShader_registerDst = SandboxShader_registerSrc;
+        this->name = String("SandboxShader", false);
+    }
+
     void SandboxShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kSandboxShaderVertexSource, kSandboxShaderFragmentSource);
 
@@ -129,9 +135,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->aBitangentLoc);
     }
 
-    SandboxShader::SandboxShader() {
-        SandboxShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        *SandboxShader_registerDst = SandboxShader_registerSrc;
-        this->name = String("SandboxShader", false);
-    }
 }
