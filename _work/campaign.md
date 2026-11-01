@@ -4214,3 +4214,10 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Level::createMission 83.9 -> 84.3%, 17172 B** (`w3245`): put `convoyCoords[9]` in the same
   small-array stack slot class as the original, which fixes the sp+260/sp+272 colouring.
   Gate unchanged.
+- **Flag matrix 2** (w3302, `flag_matrix_2.md`): 37 more flags A/B'd on top of master. None
+  improves the gate; the neutral ones (`-faligned-allocation`, `-fmerge-all-constants`,
+  `-fno-use-init-array`, `-mno-movt`, `-fno-inline-functions-called-once`,
+  `-fno-delete-null-pointer-checks`, `-mllvm -unroll-threshold=0`, `-fno-finite-math-only`,
+  `-fno-short-wchar`, `-fno-sized-deallocation`, `-fno-omit-frame-pointer`,
+  `-fno-asynchronous-unwind-tables`) cannot be distinguished from the current set. The current
+  global flag set is confirmed correct as far as the metric can tell.
