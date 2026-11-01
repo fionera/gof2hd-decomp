@@ -4442,3 +4442,10 @@ original build flags.
 - **exidx/extab pass 2: `.ARM.exidx` now EXACT, byte_exact 3914 -> 3921** (`w3376`):
   `.ARM.extab` -0x1c -> -0xc, `.rodata` base still 0x1c9e10. Remaining section deltas: `.ARM.extab`
   -0xc and `.rodata` size +0x40.
+- **Literal-pool audit pass 1: byte_exact 3921 -> 4105 (+184)** (`w3390`): GOT ordering fixed in
+  LODManager/shader/NDK TUs. First systematic classification of the 582 "100% fuzzy but not byte"
+  functions by what their differing literal word points at.
+- **Level::createScene flag-free: 80.2 -> 88.2%** (`w3378`): the `&Globals::rnd` local shape is
+  reproduced in plain C++, the empty `LevelCreateScene.cpp` TU is deleted and its scoped
+  `-mllvm -sink-insts-to-avoid-spills` removed. **The build now uses only original flags — no
+  per-TU `-mllvm` overrides remain.**
