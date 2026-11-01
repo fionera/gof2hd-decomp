@@ -128,1012 +128,6 @@ void glError() {
     glGetError();
 }
 
-double *Engine::GetAccelValue() {
-    double x = this->accelRaw[0];
-    double y;
-    if (this->appManager->paintCanvas->gameOrientation == 1) {
-        x = -x;
-        y = -this->accelRaw[1];
-    } else {
-        y = this->accelRaw[1];
-    }
-    this->accelValue[1] = y;
-    this->accelValue[0] = x;
-    this->accelValue[2] = this->accelRaw[2];
-    return this->accelValue;
-}
-
-uint32_t Engine::Resume() {
-    this->appManager->paintCanvas->Resume();
-    for (int index = 0; index != 0x14; index += 1) {
-        this->boundTextures[index] = -1;
-    }
-    return 1;
-}
-
-uint32_t Engine::Suspend() {
-    this->appManager->paintCanvas->Suspend();
-    return 1;
-}
-
-uint32_t Engine::GetDisplayWidth() {
-    return this->displayWidth;
-}
-
-double *Engine::GetGravValue() {
-    double x = this->gravRaw[0];
-    double y;
-    if (this->appManager->paintCanvas->gameOrientation == 1) {
-        x = -x;
-        y = -this->gravRaw[1];
-    } else {
-        y = this->gravRaw[1];
-    }
-    this->gravValue[1] = y;
-    this->gravValue[0] = x;
-    this->gravValue[2] = this->gravRaw[2];
-    return this->gravValue;
-}
-
-uint32_t Engine::GetDisplayHeight() {
-    return this->displayHeight;
-}
-
-void Engine::LightSetRimColor(float red, float green, float blue) {
-    if (Engine::enableShader == 0) {
-        return;
-    }
-    this->rimColor[0] = red;
-    this->rimColor[1] = green;
-    this->rimColor[2] = blue;
-    return this->ShaderUpdate();
-}
-
-bool Engine::IsPostEffectActivated() {
-    return this->postEffectFlags != 0;
-}
-
-void Engine::SetUVMatrix(const Matrix &matrix) {
-    if (Engine::enableShader == 0) {
-        glMatrixMode(0x1702);
-        MatrixGetGL(matrix, this->uvMatrixGL);
-        glLoadMatrixf(this->uvMatrixGL);
-        return glMatrixMode(0x1700);
-    }
-
-    const float *m = matrix.m;
-    float m0 = m[0];
-    float m1 = m[1];
-    float m2 = m[2];
-    float m3 = m[3];
-    float m4 = m[4];
-    float m5 = m[5];
-    float m6 = m[6];
-    float m7 = m[7];
-    float m8 = m[8];
-    float m9 = m[9];
-    float m10 = m[10];
-    float m11 = m[11];
-
-    float *uv = this->uvMatrix;
-    uv[0] = m0;
-    uv[1] = m4;
-    uv[2] = m8;
-    uv[3] = 0.0f;
-    uv[4] = m1;
-    uv[5] = m5;
-    uv[6] = m9;
-    uv[7] = 0.0f;
-    uv[8] = m2;
-    uv[9] = m6;
-    uv[10] = m10;
-    uv[11] = 0.0f;
-    uv[12] = m3;
-    uv[13] = m7;
-    uv[14] = m11;
-    uv[15] = 1.0f;
-}
-
-void Engine::LightSetMaterialColorAlpha(float alpha) {
-    if (this->lightingEnabled == 0) {
-        return;
-    }
-
-    this->materialAmbient[3] = alpha;
-    this->materialAlpha = alpha;
-    glMaterialfv(0x408, 0x1200, this->materialAmbient);
-    this->materialSpecular[3] = this->materialAlpha;
-    glMaterialfv(0x408, 0x1202, this->materialSpecular);
-    this->materialDiffuse[3] = this->materialAlpha;
-    return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
-}
-
-void Engine::SetAccelValue(double x, double y, double z) {
-    this->accelRaw[0] = x;
-    this->accelRaw[1] = y;
-    this->accelRaw[2] = z;
-}
-
-void Engine::ResetUVMatrix() {
-    if (Engine::enableShader != 0) {
-        float *uv = this->uvMatrix;
-        uv[0] = 1.0f;
-        uv[1] = 0.0f;
-        uv[2] = 0.0f;
-        uv[3] = 0.0f;
-        uv[4] = 0.0f;
-        uv[5] = 1.0f;
-        uv[6] = 0.0f;
-        uv[7] = 0.0f;
-        uv[8] = 0.0f;
-        uv[9] = 0.0f;
-        uv[10] = 1.0f;
-        uv[11] = 0.0f;
-        uv[12] = 0.0f;
-        uv[13] = 0.0f;
-        uv[14] = 0.0f;
-        uv[15] = 1.0f;
-        return;
-    }
-
-    glMatrixMode(0x1702);
-    glLoadIdentity();
-    glScalef(1.0f, -1.0f, 1.0f);
-    return glMatrixMode(0x1700);
-}
-
-void Engine::GlowEndGlow() {
-    if (Engine::EnableGlow == 0) {
-        return;
-    }
-    this->glowActive = 0;
-    glColorMask(1, 1, 1, 1);
-    return glDepthFunc(0x201);
-}
-
-void Engine::GlowEnableGlow() {
-    if (this->glowActive != 0) {
-        return;
-    }
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(0x4000);
-    this->glowActive = 1;
-}
-
-void Engine::SetOnDestroyApp(DestroyCallback *callback) {
-    this->onDestroyCallback = callback;
-}
-
-void Engine::SetGravValue(double x, double y, double z) {
-    this->gravRaw[0] = x;
-    this->gravRaw[1] = y;
-    this->gravRaw[2] = z;
-}
-
-void Engine::ReloadShaders() {
-    uint32_t index = 0;
-    while (index < this->shaders.size()) {
-        ShaderBaseStruct *shader = this->shaders[index];
-        shader->DeleteShader();
-
-        shader = this->shaders[index];
-        shader->Init(this);
-        index += 1;
-    }
-}
-
-bool Engine::HasVibration() {
-    if (this->hasVibration) {
-        return this->vibrationSupported != 0;
-    }
-    return false;
-}
-
-void Engine::LightSetLightCount(int count) {
-    if (count >= 8) {
-        count = 8;
-    }
-    if (count < 0) {
-        count = 0;
-    }
-    this->lightCount = count;
-}
-
-void Engine::SetAddData(void *data, int size) { // lint: void_ptr exported method signature
-    this->addData = static_cast<unsigned char *>(data);
-    this->addDataSize = size;
-}
-
-void Engine::ShaderUpdate() {
-    uint32_t index = 0;
-    while (index < this->shaders.size()) {
-        this->shaders[index]->Update();
-        index += 1;
-    }
-}
-
-bool Engine::IsExtensionSupported(const char *extension) {
-    const char *extensions = reinterpret_cast<const char *>(glGetString(0x1f03));
-
-    uint32_t allLength = 0;
-    while (extensions[allLength] != 0) {
-        allLength += 1;
-    }
-
-    uint32_t extLength = 0;
-    while (extension[extLength] != 0) {
-        extLength += 1;
-    }
-
-    uint32_t index = 0;
-    while (index < allLength) {
-        if (extensions[index] == extension[0]) {
-            const char *cur = extensions + index;
-            uint32_t offset = 0;
-            while (offset < extLength && index + offset < allLength &&
-                   extension[offset] == cur[offset]) {
-                offset += 1;
-                if (offset == extLength) {
-                    return true;
-                }
-            }
-        }
-        index += 1;
-    }
-    return false;
-}
-
-void Engine::LightSetMaterialColorShininess(float shininess) {
-    this->materialShininess = shininess;
-    if (Engine::enableShader == 0) {
-        return glMaterialf(0x408, 0x1601, shininess);
-    }
-}
-
-namespace AbyssEngine {
-    void SetFXMaterial(BlendMode /*mode*/) {
-    }
-}
-
-void Engine::Initialize(InitializeCallback *callback) {
-    if (callback != 0) {
-        callback(this);
-    }
-}
-
-void Engine::LightSetParticleAmbient(float red, float green, float blue) {
-    this->particleAmbientColor[0] = red;  // particle ambient @0x314
-    this->particleAmbientColor[1] = green;
-    this->particleAmbientColor[2] = blue;
-}
-
-void Engine::SetPerspMatrix(float *matrix) {
-    if (Engine::enableShader != 0) {
-        float *proj = this->projMatrix;
-        proj[0] = matrix[0];
-        proj[1] = matrix[1];
-        proj[2] = matrix[2];
-        proj[3] = matrix[3];
-        proj[4] = matrix[4];
-        proj[5] = matrix[5];
-        proj[6] = matrix[6];
-        proj[7] = matrix[7];
-        proj[8] = matrix[8];
-        proj[9] = matrix[9];
-        proj[10] = matrix[10];
-        proj[11] = matrix[11];
-        proj[12] = matrix[12];
-        proj[13] = matrix[13];
-        proj[14] = matrix[14];
-        proj[15] = matrix[15];
-    }
-}
-
-void Engine::SetFrameBufferTexture(int slot0, int slot1) {
-    if (this->frameBufferTextures[slot0] != -1) {
-        glActiveTexture(0x84c0);
-        glBindTexture(0xde1, this->frameBufferTextures[slot0]);
-    }
-    if (slot1 != -1 && this->frameBufferTextures[slot1] != -1) {
-        glActiveTexture(0x84c1);
-        glBindTexture(0xde1, this->frameBufferTextures[slot1]);
-    }
-}
-
-void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
-    unsigned int index = light - 0x4000;
-    if (index < 8) {
-        int count = light - 0x3fff;
-        int current = this->lightCount;
-        if (current > count) {
-            count = current;
-        }
-        this->lightCount = count;
-
-        Vector normalized =
-                AbyssEngine::AEMath::VectorNormalize(Vector{x, y, z});
-        this->lightPositions[index] = normalized;
-        this->lightDirty[index] = 0.0f;
-    }
-    return;
-}
-
-void Engine::RenderMesh(Mesh *mesh) {
-    // Triangle statistics: [0]/[1] = indexed 2D/3D (field_0x58 holds two counters),
-    // triangleCountA/B = VBO-indexed 2D/3D; drawCallCountA/B = 2D/3D draw calls.
-    int *indexedTriangles = reinterpret_cast<int *>(&this->field_0x58);
-    if (mesh == 0 || mesh->indexCount == 0) {
-        return;
-    }
-
-    if (Engine::enableShader != 0) {
-        ShaderSet = 0;
-        uint32_t flags = this->glEnableFlags;
-        if ((flags & 0x1000) != 0) {
-            this->ShaderSetActive(GenericShader::ShaderIndex, mesh);
-        } else if ((flags & 0x2000) != 0) {
-            this->ShaderSetActive(GenericShader1::ShaderIndex, mesh);
-        } else if ((flags & 0x4000) != 0) {
-            this->ShaderSetActive(GenericShader2::ShaderIndex, mesh);
-        } else if ((flags & 0x400) != 0) {
-            this->ShaderSetActive(SandboxShader::ShaderIndex, mesh);
-        } else if ((flags & 0x4) != 0) {
-            this->ShaderSetActive(BumpMapping::ShaderIndex, mesh);
-        } else if ((flags & 0x10000) != 0) {
-            this->ShaderSetActive(BumpShaderV3::ShaderIndex, mesh);
-        } else if ((flags & 0x1000000) != 0) {
-            this->ShaderSetActive(BumpShaderParticle::ShaderIndex, mesh);
-        } else if ((flags & 0x40000) != 0) {
-            this->ShaderSetActive(BumpShaderCloak::ShaderIndex, mesh);
-        } else if ((flags & 0x8000000) != 0) {
-            this->ShaderSetActive(BumpShaderRefract::ShaderIndex, mesh);
-        } else if ((flags & 0x200000) != 0) {
-            this->ShaderSetActive(EnergyShield::ShaderIndex, mesh);
-        } else if ((flags & 0x400000) != 0) {
-            this->ShaderSetActive(SimpleRefractionShader::ShaderIndex, mesh);
-        } else if ((flags & 0x100000) != 0) {
-            this->ShaderSetActive(GlowShader::ShaderIndex, mesh);
-        } else if ((flags & 0x4000000) != 0) {
-            this->ShaderSetActive(DNSShader::ShaderIndex, mesh);
-        } else if ((flags & 0x20000) != 0) {
-            if (Engine::UseAdvancedShader != 0) {
-                this->ShaderSetActive(BumpRimCubeShader::ShaderIndex, mesh);
-            } else {
-                this->ShaderSetActive(BumpRimCubeShader_new::ShaderIndex, mesh);
-            }
-        } else if ((flags & 0x2000000) != 0) {
-            // shader already bound by the caller
-        } else if ((flags & 0x8) != 0) {
-            this->ShaderSetActive(SpecCubeMapping::ShaderIndex, mesh);
-        } else if ((flags & 0x80000) != 0) {
-            this->ShaderSetActive(SpecCubeAlphaMapping::ShaderIndex, mesh);
-        } else if ((flags & 0x8000) != 0) {
-            this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
-        } else if ((flags & 0x2) != 0) {
-            this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
-        } else if ((flags & 0x1) != 0) {
-            if ((mesh->vertexFormat & 0xa) == 8) {
-                this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
-            } else if (this->lightingEnabled) {
-                this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
-            } else if ((mesh->vertexFormat & 8) != 0) {
-                this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
-            } else if ((flags & 0x800000) != 0) {
-                this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
-            } else {
-                this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
-            }
-        } else {
-            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
-        }
-
-        if (ShaderSet != 0) {
-            int oldBuffer;
-            glGetIntegerv(0x8ca6, &oldBuffer);
-            if ((mesh->vertexFormat & 0x10) == 0) {
-                glDrawArrays(4, 0, mesh->vertexCount);
-            } else {
-                unsigned int count = mesh->indexCount;
-                unsigned int triangles = count / 3;
-                if (mesh->uploaded != 0) {
-                    if (this->statsEnabled != 0) {
-                        this->triangleCountB += triangles;
-                        this->drawCallCountB += 1;
-                    } else {
-                        this->triangleCountA += triangles;
-                        this->drawCallCountA += 1;
-                    }
-                    glBindBuffer(0x8893, mesh->indexVBO);
-                    glDrawElements(4, mesh->indexCount, 0x1403, 0);
-                    glBindBuffer(0x8892, 0);
-                    glBindBuffer(0x8893, 0);
-                } else {
-                    if (this->statsEnabled != 0) {
-                        indexedTriangles[1] += triangles;
-                        this->drawCallCountB += 1;
-                    } else {
-                        indexedTriangles[0] += triangles;
-                        this->drawCallCountA += 1;
-                    }
-                    glDrawElements(4, count, 0x1403, mesh->indices);
-                }
-            }
-            this->shaders[currentUsedShaderIndex]->SetInActive();
-        }
-        return;
-    }
-
-    glVertexPointer(3, 0x1406, 0, mesh->positions);
-    this->AEClientState(0x8074, true);
-    if ((mesh->vertexFormat & 2) == 0) {
-        this->AEClientState(0x8078, false);
-    } else if (mesh->material == 0 || mesh->material->textures[1] == -1) {
-        glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
-        this->AEClientState(0x8078, true);
-    }
-    if ((mesh->vertexFormat & 4) == 0) {
-        this->AEClientState(0x8075, false);
-    } else {
-        glNormalPointer(0x1406, 0, mesh->normals);
-        this->AEClientState(0x8075, true);
-    }
-    if ((mesh->vertexFormat & 8) == 0) {
-        this->AEClientState(0x8076, false);
-    } else {
-        glColorPointer(4, 0x1406, 0, mesh->colors);
-        this->AEClientState(0x8076, true);
-    }
-    if ((mesh->vertexFormat & 0x10) == 0) {
-        glDrawArrays(4, 0, mesh->vertexCount);
-    } else {
-        if (this->field_0xfe != 0) {
-            if (this->statsEnabled != 0) {
-                indexedTriangles[1] += mesh->indexCount / 3;
-                this->drawCallCountB += 1;
-            } else {
-                indexedTriangles[0] += mesh->indexCount / 3;
-                this->drawCallCountA += 1;
-            }
-        }
-        glDrawElements(4, mesh->indexCount, 0x1403, mesh->indices);
-    }
-    if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
-        mesh->material->textures[1] != -1) {
-        this->AEClientState(0x8078, false);
-        return glClientActiveTexture(0x84c0);
-    }
-}
-
-void Engine::DrawQuad(int x, int y, int width, int height) {
-    float fx = static_cast<float>(x);
-    float fy = static_cast<float>(y);
-    float right = static_cast<float>(x + width);
-    float bottom = static_cast<float>(height + y);
-
-    Mesh *mesh = this->quadMesh;
-    float *positions = mesh->positions;
-    positions[0] = fx;
-    positions[1] = fy;
-    positions[3] = right;
-    positions[4] = fy;
-    positions[6] = right;
-    positions[7] = bottom;
-    positions[9] = fx;
-    positions[10] = bottom;
-
-    float *uv = reinterpret_cast<float *>(mesh->texCoords);
-    uv[0] = 0.0f;
-    uv[1] = 1.0f;
-    uv[2] = 1.0f;
-    uv[3] = 1.0f;
-    uv[4] = 1.0f;
-    uv[5] = 0.0f;
-    uv[6] = 0.0f;
-    uv[7] = 0.0f;
-
-    return glDrawElements(4, mesh->indexCount, 0x1403,
-                          mesh->indices);
-}
-
-void Engine::SetColor(float red, float green, float blue, float alpha) {
-    if (this->glColor[0] != red || this->glColor[1] != green || this->glColor[2] != blue ||
-        this->glColor[3] != alpha) {
-        this->glColor[0] = red;
-        this->glColor[1] = green;
-        this->glColor[2] = blue;
-        this->glColor[3] = alpha;
-        this->packedColor =
-                static_cast<int>(green * 255.0f) * 0x10000 +
-                static_cast<int>(red * 255.0f) * 0x1000000 +
-                static_cast<int>(blue * 255.0f) * 0x100 +
-                static_cast<int>(alpha * 255.0f);
-        if (Engine::enableShader != 0) {
-            return this->ShaderUpdate();
-        }
-        this->LightSetMaterialColorAlpha(alpha);
-        return glColor4f(red, green, blue, alpha);
-}
-}
-
-Engine::~Engine() {
-    DestroyCallback *destroy = this->onDestroyCallback;
-    if (destroy != 0) {
-        destroy(this);
-    }
-
-    delete this->appManager;
-    this->appManager = nullptr;
-
-    delete this->fileInterface;
-    this->fileInterface = 0;
-
-    AEFile::Release();
-    ArrayReleaseClasses(this->shaders);
-
-    delete this->postEffectFBO;
-    this->postEffectFBO = 0;
-
-    delete this->refractFBO;
-    this->refractFBO = 0;
-
-    AbyssEngine::MeshRelease(this, &this->quadMesh);
-    this->ReleaseGL();
-}
-
-void Engine::AfterGLInit() {
-    this->ResetLightParam();
-    AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
-
-    unsigned short *indices = reinterpret_cast<unsigned short *>(this->quadMesh->indices);
-    indices[0] = 0;
-    indices[1] = 2;
-    indices[2] = 1;
-    indices[3] = 0;
-    indices[4] = 3;
-    indices[5] = 2;
-
-    Engine::vendor = String(reinterpret_cast<const char *>(glGetString(0x1f00)));
-    Engine::renderer = String(reinterpret_cast<const char *>(glGetString(0x1f01)));
-}
-
-void Engine::DrawCloakFBO(FBOContainer *fbo) {
-    if (Engine::enableShader != 0) {
-        ShaderBaseStruct *shader = this->shaders[DrawFBOShader::ShaderIndex];
-        shader->RenderEffect(fbo, this);
-    }
-}
-
-void Engine::ShaderRegister(ShaderBaseStruct *shader) {
-    if (shader != 0) {
-        char *name = shader->GetShaderName().GetAEChar();
-        shader->Init(this);
-        ArrayAdd(shader, this->shaders);
-        ArrayAdd(0, this->triangleCounts);
-        delete[] name;
-    }
-}
-
-void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
-    if (count == 0) {
-        return;
-    }
-    if (slot >= 8 || textureIndex > count - 1) {
-        return;
-    }
-    int &bound = this->boundTextures[slot];
-    uint32_t texture = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
-    if (bound == static_cast<int>(texture)) {
-        return;
-    }
-    glActiveTexture(slot + 0x84c0);
-    float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
-    if (currentLODBias != env) {
-        currentLODBias = env;
-        if (Engine::enableShader != 0) {
-            if (BiasErrorOutputFlag) {
-                BiasErrorOutputFlag = false;
-            }
-        } else {
-            glTexEnvf(0x8500, 0x8501, env);
-        }
-    }
-    if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
-        glBindTexture(0x8513, texture);
-    } else {
-        glBindTexture(0xde1, texture);
-    }
-    bound = static_cast<int>(texture);
-}
-
-void Engine::AEClientState(unsigned int state, bool enable) {
-    if (enable) {
-        switch (state) {
-            case 0x8074:
-                if ((this->clientStateFlagsAE & 2) == 0) {
-                    glEnableClientState(0x8074);
-                    this->clientStateFlagsAE |= 2;
-                }
-                break;
-            case 0x8075:
-                if ((this->clientStateFlagsAE & 1) == 0) {
-                    glEnableClientState(0x8075);
-                    this->clientStateFlagsAE |= 1;
-                }
-                break;
-            case 0x8076:
-                if ((this->clientStateFlagsAE & 8) == 0) {
-                    glEnableClientState(0x8076);
-                    this->clientStateFlagsAE |= 8;
-                }
-                break;
-            case 0x8078:
-                if ((this->clientStateFlagsAE & 4) == 0) {
-                    glEnableClientState(0x8078);
-                    this->clientStateFlagsAE |= 4;
-                }
-                break;
-        }
-    } else {
-        switch (state) {
-            case 0x8074:
-                if ((this->clientStateFlagsAE & 2) != 0) {
-                    glDisableClientState(0x8074);
-                    this->clientStateFlagsAE &= ~2u;
-                }
-                break;
-            case 0x8075:
-                if ((this->clientStateFlagsAE & 1) != 0) {
-                    glDisableClientState(0x8075);
-                    this->clientStateFlagsAE &= ~1u;
-                }
-                break;
-            case 0x8078:
-                if ((this->clientStateFlagsAE & 4) != 0) {
-                    glDisableClientState(0x8078);
-                    this->clientStateFlagsAE &= ~4u;
-                }
-                break;
-            case 0x8076:
-                if ((this->clientStateFlagsAE & 8) != 0) {
-                    glDisableClientState(0x8076);
-                    this->clientStateFlagsAE &= ~8u;
-                }
-                break;
-        }
-    }
-}
-
-void Engine::GlowBeginGlow(int depthFunc) {
-    if (this->glowActive != 0) {
-        return;
-    }
-    if (Engine::EnableGlow == 0) {
-        return;
-    }
-    glColorMask(0, 0, 0, 1);
-    this->GlowEnableGlow();
-    if (this->glowActive != 0) {
-        return glDepthFunc(depthFunc);
-    }
-}
-
-void Engine::DrawLine2D(float *verts, int count, bool strip) {
-    this->lineVertexBase = static_cast<int>(reinterpret_cast<uintptr_t>(verts));
-    this->ShaderSetActive(NoTexShader::ShaderIndex, 0);
-    if (strip) {
-        return glDrawArrays(GL_LINE_LOOP, 0, count);
-    }
-    return glDrawArrays(GL_LINES, 0, count);
-}
-
-void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
-    // The original uses a loop-shaped branch here; an `if` changes register
-    // allocation and grows the function from 196 to 220 bytes.
-    while (shaderIndex == -1) {
-        shaderIndex = TextureShader::ShaderIndex;
-        if ((mesh->vertexFormat & 2) == 0) {
-            shaderIndex = SimpleShader::ShaderIndex;
-        }
-    }
-
-    bool hasExtra = mesh != 0 && mesh->hasAnimation != 0;
-    ShaderBaseStruct *shader = this->shaders[shaderIndex];
-    if (shader == 0) {
-        return;
-    }
-    ShaderSet = 1;
-
-    if (shader->program != this->currentProgram) {
-        shader->UseShader(hasExtra);
-        shader = this->shaders[shaderIndex];
-        this->currentProgram = shader->program;
-        currentUsedShaderIndex = shaderIndex;
-    }
-    shader->UseShader(hasExtra);
-    shader = this->shaders[shaderIndex];
-    shader->UpdateMeshData(mesh, this);
-    if (mesh != 0) {
-        uint32_t triangles = mesh->indexCount / 3u;
-        this->triangleCounts[shaderIndex] += triangles;
-    }
-}
-
-void Engine::DoPostEffect() {
-    uint32_t flags = this->postEffectFlags;
-    FBOContainer *source = this->postEffectFBO;
-    FBOContainer *target = this->refractFBO;
-    if (Engine::enableShader != 0) {
-        // Each active pass renders source -> target; when another pass follows, the two FBOs swap.
-        if ((flags & 2) != 0) {
-            ShaderBaseStruct *shader = this->shaders[GlowPPShader::ShaderIndex];
-            flags &= ~2u;
-            if (flags != 0) {
-                shader->RenderEffect(source, target, this);
-                FBOContainer *swap = source;
-                source = target;
-                target = swap;
-            } else {
-                shader->RenderEffect(source, this);
-                flags = 0;
-            }
-        }
-        if ((this->postEffectFlags & 1) != 0) {
-            ShaderBaseStruct *shader = this->shaders[BloomShader::ShaderIndex];
-            flags &= ~1u;
-            if (flags != 0) {
-                shader->RenderEffect(source, target, this);
-                FBOContainer *swap = source;
-                source = target;
-                target = swap;
-            } else {
-                shader->RenderEffect(source, this);
-                flags = 0;
-            }
-        }
-        if ((this->postEffectFlags & 4) != 0) {
-            ShaderBaseStruct *shader = this->shaders[BlurShader::ShaderIndex];
-            if ((flags & ~4u) != 0) {
-                shader->RenderEffect(source, target, this, this->blurStrength, this->field_0x3cc);
-                FBOContainer *swap = source;
-                source = target;
-                target = swap;
-            } else {
-                shader->RenderEffect(source, this, this->blurStrength, this->field_0x3cc);
-            }
-        }
-        if (g_Engine_postEffectFlag == 1) {
-            this->SetPostEffect(kPostEffectBW, false);
-        }
-    }
-}
-
-void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
-    this->materialSpecular[0] = red;
-    this->materialSpecular[1] = green;
-    this->materialSpecular[2] = blue;
-    this->materialSpecular[3] = this->materialAlpha;
-
-    if (Engine::enableShader == 0) {
-        return glMaterialfv(0x408, 0x1202, this->materialSpecular);
-    }
-
-    int count = this->lightCount;
-    for (int index = 0; index < count; index += 1) {
-        const LightColor &src = (&this->lightSpecular)[index];
-        this->specularShaded[index][0] = src.r * red;
-        this->specularShaded[index][1] = src.g * green;
-        this->specularShaded[index][2] = src.b * blue;
-    }
-    return this->ShaderUpdate();
-}
-
-void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue) {
-    this->sceneAmbient[0] = red;
-    this->sceneAmbient[1] = green;
-    this->sceneAmbient[2] = blue;
-    this->sceneAmbient[3] = 1.0f;
-
-    if (Engine::enableShader == 0) {
-        return glLightModelfv(0xb53, this->sceneAmbient);
-    }
-
-    int count = this->lightCount;
-    for (int index = 0; index < count; index += 1) {
-        const LightColor &src = (&this->lightAmbient)[index];
-        this->ambientShaded[index][0] = (src.r + red) * this->materialAmbient[0];
-        this->ambientShaded[index][1] = (src.g + green) * this->materialAmbient[1];
-        this->ambientShaded[index][2] = (src.b + blue) * this->materialAmbient[2];
-    }
-    return this->ShaderUpdate();
-}
-
-void Engine::SetPostEffect(uint32_t effect, bool enable) {
-    if (this->postEffectFBO == 0 && enable) {
-        this->postEffectFBO = new FBOContainer(this, String("render2TextureFBO"));
-        if (this->appManager->paintCanvas->gameOrientation == 2) {
-            this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
-        } else {
-            this->postEffectFBO->Create(this->displayHeight, this->displayWidth, true, false);
-        }
-    }
-
-    if (effect == kPostEffectBase) {
-        if (enable) {
-            this->postEffectFlags |= 1;
-        } else {
-            this->postEffectFlags &= ~1u;
-        }
-    } else if (effect == kPostEffectBlur) {
-        Engine::EnableGlow = enable;
-        if (enable) {
-            this->postEffectFlags |= 2;
-        } else {
-            this->postEffectFlags &= ~2u;
-        }
-    } else if (effect == kPostEffectBW) {
-        if (enable) {
-            if (g_Engine_postEffectCounter <= 0) {
-                this->postEffectFlags |= 4;
-            } else {
-                g_Engine_postEffectCounter -= 1;
-            }
-        } else if (g_Engine_postEffectFlag == 1) {
-            this->postEffectFlags &= ~4u;
-            g_Engine_postEffectCounter = 1;
-            g_Engine_postEffectFlag = 0;
-        } else if (g_Engine_postEffectCounter <= 0) {
-            g_Engine_postEffectFlag = 1;
-        } else {
-            g_Engine_postEffectFlag = 0;
-        }
-    }
-}
-
-void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
-    this->materialDiffuse[0] = red;
-    this->materialDiffuse[1] = green;
-    this->materialDiffuse[2] = blue;
-    this->materialDiffuse[3] = this->materialAlpha;
-
-    if (Engine::enableShader == 0) {
-        return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
-    }
-
-    int lightCount = this->lightCount;
-    for (int i = 0; i < lightCount; i += 1) {
-        const LightColor &src = (&this->lightDiffuse)[i];
-        this->diffuseShaded[i][0] = src.r * red;
-        this->diffuseShaded[i][1] = src.g * green;
-        this->diffuseShaded[i][2] = src.b * blue;
-    }
-    return this->ShaderUpdate();
-}
-
-void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
-    if (Engine::enableShader != 0) {
-        float *proj = this->projMatrix;
-        proj[0] = projection[0];
-        proj[1] = projection[1];
-        proj[2] = projection[2];
-        proj[3] = projection[3];
-        proj[4] = projection[4];
-        proj[5] = projection[5];
-        proj[6] = projection[6];
-        proj[7] = projection[7];
-        proj[8] = projection[8];
-        proj[9] = projection[9];
-        proj[10] = projection[10];
-        proj[11] = projection[11];
-        proj[12] = projection[12];
-        proj[13] = projection[13];
-        proj[14] = projection[14];
-        proj[15] = projection[15];
-        if (multiply) {
-            float local[16];
-            // The original copies the 64-byte view matrix with four 128-bit NEON moves.
-            vst1q_f32(&local[0], vld1q_f32(&view[0]));
-            vst1q_f32(&local[4], vld1q_f32(&view[4]));
-            vst1q_f32(&local[8], vld1q_f32(&view[8]));
-            vst1q_f32(&local[12], vld1q_f32(&view[12]));
-            AbyssEngine::esMatrixMultiply(
-                    reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix),
-                    reinterpret_cast<AbyssEngine::ESMatrix *>(local),
-                    reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix));
-        }
-    }
-}
-
-void Engine::ClearBuffer(uint32_t color) {
-    const double scale = 255.0;
-    double red = static_cast<double>(color >> 24) / scale;
-    double green = static_cast<double>((color >> 16) & 0xff) / scale;
-    double blue = static_cast<double>((color >> 8) & 0xff) / scale;
-    double alpha = static_cast<double>(color & 0xff) / scale;
-    glClearColor(static_cast<float>(red), static_cast<float>(green),
-                 static_cast<float>(blue), static_cast<float>(alpha));
-    return glClear(0x4100);
-}
-
-void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light) {
-    unsigned int index = light - 0x4000;
-    if (index < 8) {
-        int count = light - 0x3fff;
-        int current = this->lightCount;
-        if (current > count) {
-            count = current;
-        }
-        this->lightCount = count;
-
-        Vector value;
-        value.x = x;
-        value.y = y;
-        value.z = z;
-        this->lightPositions[index] = value;
-        this->lightDirty[index] = 1.0f;
-    }
-    return;
-}
-
-void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsigned int light) {
-    unsigned int index = light - 0x4000;
-    if (index > 7) {
-        return;
-    }
-    int count = light - 0x3fff;
-    int current = this->lightCount;
-    if (current > count) {
-        count = current;
-    }
-    this->lightCount = count;
-
-    LightColor &src = (&this->lightAmbient)[index];
-    src.r = red;
-    src.g = green;
-    src.b = blue;
-    src.a = 1.0f;
-    if (Engine::enableShader == 0) {
-        return glLightfv(light, 0x1200, &src.r);
-    }
-    float *dst = this->ambientShaded[index];
-    dst[0] = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
-    dst[1] = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
-    dst[2] = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
-    return this->ShaderUpdate();
-}
-
-void Engine::ShaderSetInActive() {
-    ShaderBaseStruct *shader = this->shaders[currentUsedShaderIndex];
-    shader->SetInActive();
-}
-
-void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsigned int light) {
-    unsigned int index = light - 0x4000;
-    if (index > 7) {
-        return;
-    }
-    int count = light - 0x3fff;
-    int current = this->lightCount;
-    if (current > count) {
-        count = current;
-    }
-    this->lightCount = count;
-
-    LightColor &src = (&this->lightDiffuse)[index];
-    src.r = red;
-    src.g = green;
-    src.b = blue;
-    src.a = 1.0f;
-    if (Engine::enableShader == 0) {
-        return glLightfv(light, 0x1201, &src.r);
-    }
-    float *dst = this->diffuseShaded[index]; /* diffuse-shaded[2] @0x2fc */
-    dst[0] = this->materialDiffuse[0] * red;
-    dst[1] = src.g * this->materialDiffuse[1];
-    dst[2] = src.b * this->materialDiffuse[2];
-    return this->ShaderUpdate();
-}
-
 Engine::Engine()
         : lightColor(), field_0x3cc() {
     this->quadMesh = nullptr;
@@ -1195,268 +189,45 @@ Engine::Engine()
     this->initFileInterface();
 }
 
-void Engine::SetTextures(uint32_t first, uint32_t second) {
-    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
-    if (count == 0 || first > count - 1) {
-        return;
-    }
-    uint32_t texture =
-            this->appManager->paintCanvas->cubeTextures.data_[first]->glId;
-    if (static_cast<uint32_t>(this->boundTextures[0]) != texture) {
-        glActiveTexture(0x84c0);
-        float env = this->appManager->paintCanvas->cubeTextures.data_[first]->scale;
-        if (currentLODBias != env) {
-            currentLODBias = env;
-            if (Engine::enableShader != 0) {
-                if (BiasErrorOutputFlag) {
-                    BiasErrorOutputFlag = false;
-                }
-            } else {
-                glTexEnvf(0x8500, 0x8501, env);
-            }
-        }
-        glBindTexture(0xde1, texture);
-        this->boundTextures[0] = texture;
+Engine::~Engine() {
+    DestroyCallback *destroy = this->onDestroyCallback;
+    if (destroy != 0) {
+        destroy(this);
     }
 
-    if (second > this->appManager->paintCanvas->cubeTextures.count - 1) {
-        if (this->boundTextures[1] != -1) {
-            if (Engine::enableShader == 0) {
-                glActiveTexture(0x84c1);
-                glDisable(0xde1);
-                glActiveTexture(0x84c0);
-            }
-            this->boundTextures[1] = -1;
-        }
-        return;
-    }
+    delete this->appManager;
+    this->appManager = nullptr;
 
-    uint32_t texture2 =
-            this->appManager->paintCanvas->cubeTextures.data_[second]->glId;
-    if (static_cast<uint32_t>(this->boundTextures[1]) != texture2) {
-        glActiveTexture(0x84c1);
-        this->GlEnable(0xde1, true);
-        unsigned int target;
-        if (Engine::enableShader != 0 && (this->glEnableFlags & 0x80008) != 0) {
-            target = 0x8513;
-        } else {
-            target = 0xde1;
-        }
-        glBindTexture(target, texture2);
-        this->boundTextures[1] = texture2;
-    }
+    delete this->fileInterface;
+    this->fileInterface = 0;
+
+    AEFile::Release();
+    ArrayReleaseClasses(this->shaders);
+
+    delete this->postEffectFBO;
+    this->postEffectFBO = 0;
+
+    delete this->refractFBO;
+    this->refractFBO = 0;
+
+    AbyssEngine::MeshRelease(this, &this->quadMesh);
+    this->ReleaseGL();
 }
 
-namespace AbyssEngine {
-    void esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB) {
-        ESMatrix tmp;
-        for (int i = 0; i < 4; i++) {
-            tmp.m[i][0] = (srcA->m[i][0] * srcB->m[0][0]) + (srcA->m[i][1] * srcB->m[1][0]) +
-                          (srcA->m[i][2] * srcB->m[2][0]) + (srcA->m[i][3] * srcB->m[3][0]);
-            tmp.m[i][1] = (srcA->m[i][0] * srcB->m[0][1]) + (srcA->m[i][1] * srcB->m[1][1]) +
-                          (srcA->m[i][2] * srcB->m[2][1]) + (srcA->m[i][3] * srcB->m[3][1]);
-            tmp.m[i][2] = (srcA->m[i][0] * srcB->m[0][2]) + (srcA->m[i][1] * srcB->m[1][2]) +
-                          (srcA->m[i][2] * srcB->m[2][2]) + (srcA->m[i][3] * srcB->m[3][2]);
-            tmp.m[i][3] = (srcA->m[i][0] * srcB->m[0][3]) + (srcA->m[i][1] * srcB->m[1][3]) +
-                          (srcA->m[i][2] * srcB->m[2][3]) + (srcA->m[i][3] * srcB->m[3][3]);
-        }
-        memcpy(result, &tmp, sizeof(ESMatrix));
-    }
-}
+void Engine::AfterGLInit() {
+    this->ResetLightParam();
+    AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
 
-uint32_t Engine::ShaderInit() {
-    this->ShaderRegister(new TextureShader());
-    this->ShaderRegister(new SimpleShader());
-    this->ShaderRegister(new TextureVtxColorShader());
-    this->ShaderRegister(new NoTexShader());
-    this->ShaderRegister(new NoTexVtxColorShader());
-    this->ShaderRegister(new TextureAlphaTestShader());
-    this->ShaderRegister(new CubeMapping());
-    this->ShaderRegister(new CubeNormalMapping());
-    this->ShaderRegister(new BumpMapping());
-    this->ShaderRegister(new SandboxShader());
-    this->ShaderRegister(new GenericShader());
-    this->ShaderRegister(new GenericShader1());
-    this->ShaderRegister(new GenericShader2());
-    this->ShaderRegister(new TexOnlyShader());
-    this->ShaderRegister(new BumpShaderV2());
-    this->ShaderRegister(new BumpShaderV3());
-    this->ShaderRegister(new VertexColorShader());
-    this->ShaderRegister(new VertexColorAlphaTextureShader());
-    this->ShaderRegister(new PulseShader());
-    this->ShaderRegister(new BumpShader());
-    this->ShaderRegister(new BumpShaderV4());
-    this->ShaderRegister(new BloomShader());
-    this->ShaderRegister(new BlurShader());
-    this->ShaderRegister(new PostBWShader());
-    this->ShaderRegister(new TextureLightShader());
-    this->ShaderRegister(new BumpRimCubeShader());
-    this->ShaderRegister(new BumpShaderCloak());
-    this->ShaderRegister(new SpecCubeMapping());
-    this->ShaderRegister(new SpecCubeAlphaMapping());
-    this->ShaderRegister(new EnergyShield());
-    this->ShaderRegister(new SimpleRefractionShader());
-    this->ShaderRegister(new GlowShader());
-    this->ShaderRegister(new GlowPPShader());
-    this->ShaderRegister(new DrawFBOShader());
-    this->ShaderRegister(new ColorMixAdd());
-    this->ShaderRegister(new BumpShaderParticle());
-    this->ShaderRegister(new DNSShader());
-    this->ShaderRegister(new BumpShaderRefract());
-    this->ShaderRegister(new BumpRimCubeShader_new());
-    glGetError();
-    return 1;
-}
+    unsigned short *indices = reinterpret_cast<unsigned short *>(this->quadMesh->indices);
+    indices[0] = 0;
+    indices[1] = 2;
+    indices[2] = 1;
+    indices[3] = 0;
+    indices[4] = 3;
+    indices[5] = 2;
 
-void Engine::SetEyePosition(float x, float y, float z) {
-    this->eyePosition = Vector{x, y, z};
-}
-
-void Engine::SetModelMatrix(const Matrix &matrix) {
-    if (Engine::enableShader != 0) {
-        const float *m = matrix.m;
-        this->normalMatrix[0] = m[0];
-        this->normalMatrix[1] = m[4];
-        this->normalMatrix[2] = m[8];
-        this->normalMatrix[3] = m[1];
-        this->normalMatrix[4] = m[5];
-        this->normalMatrix[5] = m[9];
-        this->normalMatrix[6] = m[2];
-        this->normalMatrix[7] = m[6];
-        this->normalMatrix[8] = m[10];
-        float *gl = this->modelMatrixGL;
-        gl[0] = m[0];
-        gl[1] = m[4];
-        gl[2] = m[8];
-        gl[3] = 0.0f;
-        gl[4] = m[1];
-        gl[5] = m[5];
-        gl[6] = m[9];
-        gl[7] = 0.0f;
-        gl[8] = m[2];
-        gl[9] = m[6];
-        gl[10] = m[10];
-        gl[11] = 0.0f;
-        gl[12] = m[3];
-        gl[13] = m[7];
-        gl[14] = m[11];
-        gl[15] = 1.0f;
-        if (this->lightDirty[0] == 0.0f) {
-            this->lightDir[0] = AbyssEngine::AEMath::VectorNormalize(
-                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[0]));
-        } else {
-            this->lightDir[0] = this->lightPositions[0];
-        }
-        if (this->lightCount > 1) {
-            if (this->lightDirty[1] == 0.0f) {
-                this->lightDir[1] = AbyssEngine::AEMath::VectorNormalize(
-                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[1]));
-            } else {
-                this->lightDir[1] = this->lightPositions[1];
-            }
-        }
-        this->ShaderUpdate();
-        this->lightColor = AbyssEngine::AEMath::MatrixInverseTransformVector(matrix, this->eyePosition);
-        this->lightColor.x /= m[12];
-        this->lightColor.y /= m[13];
-        this->lightColor.z /= m[14];
-    }
-}
-
-void Engine::LightSetLight(unsigned int light) {
-    float position[4] = {0.0f, 1.0f, 0.0f, 0.0f};
-    unsigned int index = light - 0x4000;
-    if (index < 8) {
-        int count = light - 0x3fff;
-        int current = this->lightCount;
-        if (current > count) {
-            count = current;
-        }
-        this->lightCount = count;
-
-        const Vector &dir = this->lightPositions[index];
-        position[0] = dir.x;
-        position[1] = dir.y;
-        position[2] = dir.z;
-        position[3] = this->lightDirty[index];
-        if (Engine::enableShader == 0) {
-            glLightfv(light, 0x1203, position);
-        }
-    }
-    return;
-}
-
-void Engine::SetTexturesExt(uint32_t first, ...) {
-    if (this->appManager->paintCanvas->cubeTextures.count != 0) {
-        va_list args;
-        va_start(args, first);
-        uint32_t slot = 0;
-        for (uint32_t textureIndex = first; textureIndex != 0xffffffff;
-             textureIndex = va_arg(args, uint32_t), slot += 1) {
-            if (textureIndex >= this->appManager->paintCanvas->cubeTextures.count) {
-                continue;
-            }
-            uint32_t texture =
-                    this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
-            if (static_cast<uint32_t>(this->boundTextures[slot]) == texture) {
-                continue;
-            }
-            glActiveTexture(slot + 0x84c0);
-            float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
-            if (currentLODBias != env) {
-                currentLODBias = env;
-                if (Engine::enableShader != 0) {
-                    if (BiasErrorOutputFlag) {
-                        BiasErrorOutputFlag = false;
-                    }
-                } else {
-                    glTexEnvf(0x8500, 0x8501, env);
-                }
-            }
-            if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
-                glBindTexture(0x8513, texture);
-            } else {
-                glBindTexture(0xde1, texture);
-            }
-            this->boundTextures[slot] = texture;
-        }
-        va_end(args);
-        for (uint32_t i = slot; i < 0x14; i += 1) {
-            this->boundTextures[i] = -1;
-        }
-        glActiveTexture(0x84c0);
-    }
-}
-
-void Engine::Release() {
-}
-
-bool Engine::IsRefractActivated() {
-    return true;
-}
-
-void Engine::Vibrate(unsigned short duration) {
-}
-
-void Engine::SetWorldViewMatrix(const Matrix &matrix) {
-    const float *m = matrix.m;
-    if (Engine::enableShader != 0) {
-        float gl[16] = {
-            m[0], m[4], m[8], 0.0f,
-            m[1], m[5], m[9], 0.0f,
-            m[2], m[6], m[10], 0.0f,
-            m[3], m[7], m[11], 1.0f,
-        };
-        memcpy(this->worldViewMatrixGL, gl, sizeof(gl));
-        AbyssEngine::esMatrixMultiply(
-                reinterpret_cast<AbyssEngine::ESMatrix *>(this->worldViewProjMatrix),
-                reinterpret_cast<AbyssEngine::ESMatrix *>(gl),
-                reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix));
-    } else {
-        MatrixGetGL(matrix, this->uvMatrixGL);
-        return glLoadMatrixf(this->uvMatrixGL);
-    }
-    return;
+    Engine::vendor = String(reinterpret_cast<const char *>(glGetString(0x1f00)));
+    Engine::renderer = String(reinterpret_cast<const char *>(glGetString(0x1f01)));
 }
 
 void Engine::ResetLightParam() {
@@ -1554,31 +325,240 @@ void Engine::ResetLightParam() {
     this->lightDirty[1] = 0.0f;
 }
 
-void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsigned int light) {
-    unsigned int index = light - 0x4000;
-    if (index > 7) {
+void Engine::Initialize(InitializeCallback *callback) {
+    if (callback != 0) {
+        callback(this);
+    }
+}
+
+void Engine::Release() {
+}
+
+uint32_t Engine::GetDisplayWidth() {
+    return this->displayWidth;
+}
+
+uint32_t Engine::GetDisplayHeight() {
+    return this->displayHeight;
+}
+
+bool Engine::HasVibration() {
+    if (this->hasVibration) {
+        return this->vibrationSupported != 0;
+    }
+    return false;
+}
+
+void Engine::Vibrate(unsigned short duration) {
+}
+
+void Engine::ClearBuffer(uint32_t color) {
+    const double scale = 255.0;
+    double red = static_cast<double>(color >> 24) / scale;
+    double green = static_cast<double>((color >> 16) & 0xff) / scale;
+    double blue = static_cast<double>((color >> 8) & 0xff) / scale;
+    double alpha = static_cast<double>(color & 0xff) / scale;
+    glClearColor(static_cast<float>(red), static_cast<float>(green),
+                 static_cast<float>(blue), static_cast<float>(alpha));
+    return glClear(0x4100);
+}
+
+void Engine::SetOnDestroyApp(DestroyCallback *callback) {
+    this->onDestroyCallback = callback;
+}
+
+uint32_t Engine::Suspend() {
+    this->appManager->paintCanvas->Suspend();
+    return 1;
+}
+
+uint32_t Engine::Resume() {
+    this->appManager->paintCanvas->Resume();
+    for (int index = 0; index != 0x14; index += 1) {
+        this->boundTextures[index] = -1;
+    }
+    return 1;
+}
+
+namespace AbyssEngine {
+    void esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB) {
+        ESMatrix tmp;
+        for (int i = 0; i < 4; i++) {
+            tmp.m[i][0] = (srcA->m[i][0] * srcB->m[0][0]) + (srcA->m[i][1] * srcB->m[1][0]) +
+                          (srcA->m[i][2] * srcB->m[2][0]) + (srcA->m[i][3] * srcB->m[3][0]);
+            tmp.m[i][1] = (srcA->m[i][0] * srcB->m[0][1]) + (srcA->m[i][1] * srcB->m[1][1]) +
+                          (srcA->m[i][2] * srcB->m[2][1]) + (srcA->m[i][3] * srcB->m[3][1]);
+            tmp.m[i][2] = (srcA->m[i][0] * srcB->m[0][2]) + (srcA->m[i][1] * srcB->m[1][2]) +
+                          (srcA->m[i][2] * srcB->m[2][2]) + (srcA->m[i][3] * srcB->m[3][2]);
+            tmp.m[i][3] = (srcA->m[i][0] * srcB->m[0][3]) + (srcA->m[i][1] * srcB->m[1][3]) +
+                          (srcA->m[i][2] * srcB->m[2][3]) + (srcA->m[i][3] * srcB->m[3][3]);
+        }
+        memcpy(result, &tmp, sizeof(ESMatrix));
+    }
+}
+
+uint32_t Engine::ShaderInit() {
+    this->ShaderRegister(new TextureShader());
+    this->ShaderRegister(new SimpleShader());
+    this->ShaderRegister(new TextureVtxColorShader());
+    this->ShaderRegister(new NoTexShader());
+    this->ShaderRegister(new NoTexVtxColorShader());
+    this->ShaderRegister(new TextureAlphaTestShader());
+    this->ShaderRegister(new CubeMapping());
+    this->ShaderRegister(new CubeNormalMapping());
+    this->ShaderRegister(new BumpMapping());
+    this->ShaderRegister(new SandboxShader());
+    this->ShaderRegister(new GenericShader());
+    this->ShaderRegister(new GenericShader1());
+    this->ShaderRegister(new GenericShader2());
+    this->ShaderRegister(new TexOnlyShader());
+    this->ShaderRegister(new BumpShaderV2());
+    this->ShaderRegister(new BumpShaderV3());
+    this->ShaderRegister(new VertexColorShader());
+    this->ShaderRegister(new VertexColorAlphaTextureShader());
+    this->ShaderRegister(new PulseShader());
+    this->ShaderRegister(new BumpShader());
+    this->ShaderRegister(new BumpShaderV4());
+    this->ShaderRegister(new BloomShader());
+    this->ShaderRegister(new BlurShader());
+    this->ShaderRegister(new PostBWShader());
+    this->ShaderRegister(new TextureLightShader());
+    this->ShaderRegister(new BumpRimCubeShader());
+    this->ShaderRegister(new BumpShaderCloak());
+    this->ShaderRegister(new SpecCubeMapping());
+    this->ShaderRegister(new SpecCubeAlphaMapping());
+    this->ShaderRegister(new EnergyShield());
+    this->ShaderRegister(new SimpleRefractionShader());
+    this->ShaderRegister(new GlowShader());
+    this->ShaderRegister(new GlowPPShader());
+    this->ShaderRegister(new DrawFBOShader());
+    this->ShaderRegister(new ColorMixAdd());
+    this->ShaderRegister(new BumpShaderParticle());
+    this->ShaderRegister(new DNSShader());
+    this->ShaderRegister(new BumpShaderRefract());
+    this->ShaderRegister(new BumpRimCubeShader_new());
+    glGetError();
+    return 1;
+}
+
+void Engine::ShaderRegister(ShaderBaseStruct *shader) {
+    if (shader != 0) {
+        char *name = shader->GetShaderName().GetAEChar();
+        shader->Init(this);
+        ArrayAdd(shader, this->shaders);
+        ArrayAdd(0, this->triangleCounts);
+        delete[] name;
+    }
+}
+
+void Engine::SetFrameBufferTexture(int slot0, int slot1) {
+    if (this->frameBufferTextures[slot0] != -1) {
+        glActiveTexture(0x84c0);
+        glBindTexture(0xde1, this->frameBufferTextures[slot0]);
+    }
+    if (slot1 != -1 && this->frameBufferTextures[slot1] != -1) {
+        glActiveTexture(0x84c1);
+        glBindTexture(0xde1, this->frameBufferTextures[slot1]);
+    }
+}
+
+void Engine::SetAddData(void *data, int size) { // lint: void_ptr exported method signature
+    this->addData = static_cast<unsigned char *>(data);
+    this->addDataSize = size;
+}
+
+void Engine::SetTexturesExt(uint32_t first, ...) {
+    if (this->appManager->paintCanvas->cubeTextures.count != 0) {
+        va_list args;
+        va_start(args, first);
+        uint32_t slot = 0;
+        for (uint32_t textureIndex = first; textureIndex != 0xffffffff;
+             textureIndex = va_arg(args, uint32_t), slot += 1) {
+            if (textureIndex >= this->appManager->paintCanvas->cubeTextures.count) {
+                continue;
+            }
+            uint32_t texture =
+                    this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
+            if (static_cast<uint32_t>(this->boundTextures[slot]) == texture) {
+                continue;
+            }
+            glActiveTexture(slot + 0x84c0);
+            float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
+            if (currentLODBias != env) {
+                currentLODBias = env;
+                if (Engine::enableShader != 0) {
+                    if (BiasErrorOutputFlag) {
+                        BiasErrorOutputFlag = false;
+                    }
+                } else {
+                    glTexEnvf(0x8500, 0x8501, env);
+                }
+            }
+            if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
+                glBindTexture(0x8513, texture);
+            } else {
+                glBindTexture(0xde1, texture);
+            }
+            this->boundTextures[slot] = texture;
+        }
+        va_end(args);
+        for (uint32_t i = slot; i < 0x14; i += 1) {
+            this->boundTextures[i] = -1;
+        }
+        glActiveTexture(0x84c0);
+    }
+}
+
+void Engine::SetTextures(uint32_t first, uint32_t second) {
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
+    if (count == 0 || first > count - 1) {
         return;
     }
-    int count = light - 0x3fff;
-    int current = this->lightCount;
-    if (current > count) {
-        count = current;
+    uint32_t texture =
+            this->appManager->paintCanvas->cubeTextures.data_[first]->glId;
+    if (static_cast<uint32_t>(this->boundTextures[0]) != texture) {
+        glActiveTexture(0x84c0);
+        float env = this->appManager->paintCanvas->cubeTextures.data_[first]->scale;
+        if (currentLODBias != env) {
+            currentLODBias = env;
+            if (Engine::enableShader != 0) {
+                if (BiasErrorOutputFlag) {
+                    BiasErrorOutputFlag = false;
+                }
+            } else {
+                glTexEnvf(0x8500, 0x8501, env);
+            }
+        }
+        glBindTexture(0xde1, texture);
+        this->boundTextures[0] = texture;
     }
-    this->lightCount = count;
 
-    LightColor &src = (&this->lightSpecular)[index];
-    src.r = red;
-    src.g = green;
-    src.b = blue;
-    src.a = 1.0f;
-    if (Engine::enableShader == 0) {
-        return glLightfv(light, 0x1202, &src.r);
+    if (second > this->appManager->paintCanvas->cubeTextures.count - 1) {
+        if (this->boundTextures[1] != -1) {
+            if (Engine::enableShader == 0) {
+                glActiveTexture(0x84c1);
+                glDisable(0xde1);
+                glActiveTexture(0x84c0);
+            }
+            this->boundTextures[1] = -1;
+        }
+        return;
     }
-    float *dst = this->specularShaded[index]; /* specular-shaded[2] @0x2e4 */
-    dst[0] = this->materialSpecular[0] * red;
-    dst[1] = src.g * this->materialSpecular[1];
-    dst[2] = src.b * this->materialSpecular[2];
-    return this->ShaderUpdate();
+
+    uint32_t texture2 =
+            this->appManager->paintCanvas->cubeTextures.data_[second]->glId;
+    if (static_cast<uint32_t>(this->boundTextures[1]) != texture2) {
+        glActiveTexture(0x84c1);
+        this->GlEnable(0xde1, true);
+        unsigned int target;
+        if (Engine::enableShader != 0 && (this->glEnableFlags & 0x80008) != 0) {
+            target = 0x8513;
+        } else {
+            target = 0xde1;
+        }
+        glBindTexture(target, texture2);
+        this->boundTextures[1] = texture2;
+    }
 }
 
 void Engine::GlEnable(unsigned int cap, bool enable) {
@@ -1790,6 +770,292 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     return glDisable(cap);
 }
 
+void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
+    uint32_t count = this->appManager->paintCanvas->cubeTextures.count;
+    if (count == 0) {
+        return;
+    }
+    if (slot >= 8 || textureIndex > count - 1) {
+        return;
+    }
+    int &bound = this->boundTextures[slot];
+    uint32_t texture = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->glId;
+    if (bound == static_cast<int>(texture)) {
+        return;
+    }
+    glActiveTexture(slot + 0x84c0);
+    float env = this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->scale;
+    if (currentLODBias != env) {
+        currentLODBias = env;
+        if (Engine::enableShader != 0) {
+            if (BiasErrorOutputFlag) {
+                BiasErrorOutputFlag = false;
+            }
+        } else {
+            glTexEnvf(0x8500, 0x8501, env);
+        }
+    }
+    if (this->appManager->paintCanvas->cubeTextures.data_[textureIndex]->isCube != 0) {
+        glBindTexture(0x8513, texture);
+    } else {
+        glBindTexture(0xde1, texture);
+    }
+    bound = static_cast<int>(texture);
+}
+
+void Engine::SetEyePosition(float x, float y, float z) {
+    this->eyePosition = Vector{x, y, z};
+}
+
+void Engine::SetUVMatrix(const Matrix &matrix) {
+    if (Engine::enableShader == 0) {
+        glMatrixMode(0x1702);
+        MatrixGetGL(matrix, this->uvMatrixGL);
+        glLoadMatrixf(this->uvMatrixGL);
+        return glMatrixMode(0x1700);
+    }
+
+    const float *m = matrix.m;
+    float m0 = m[0];
+    float m1 = m[1];
+    float m2 = m[2];
+    float m3 = m[3];
+    float m4 = m[4];
+    float m5 = m[5];
+    float m6 = m[6];
+    float m7 = m[7];
+    float m8 = m[8];
+    float m9 = m[9];
+    float m10 = m[10];
+    float m11 = m[11];
+
+    float *uv = this->uvMatrix;
+    uv[0] = m0;
+    uv[1] = m4;
+    uv[2] = m8;
+    uv[3] = 0.0f;
+    uv[4] = m1;
+    uv[5] = m5;
+    uv[6] = m9;
+    uv[7] = 0.0f;
+    uv[8] = m2;
+    uv[9] = m6;
+    uv[10] = m10;
+    uv[11] = 0.0f;
+    uv[12] = m3;
+    uv[13] = m7;
+    uv[14] = m11;
+    uv[15] = 1.0f;
+}
+
+void Engine::ResetUVMatrix() {
+    if (Engine::enableShader != 0) {
+        float *uv = this->uvMatrix;
+        uv[0] = 1.0f;
+        uv[1] = 0.0f;
+        uv[2] = 0.0f;
+        uv[3] = 0.0f;
+        uv[4] = 0.0f;
+        uv[5] = 1.0f;
+        uv[6] = 0.0f;
+        uv[7] = 0.0f;
+        uv[8] = 0.0f;
+        uv[9] = 0.0f;
+        uv[10] = 1.0f;
+        uv[11] = 0.0f;
+        uv[12] = 0.0f;
+        uv[13] = 0.0f;
+        uv[14] = 0.0f;
+        uv[15] = 1.0f;
+        return;
+    }
+
+    glMatrixMode(0x1702);
+    glLoadIdentity();
+    glScalef(1.0f, -1.0f, 1.0f);
+    return glMatrixMode(0x1700);
+}
+
+void Engine::SetModelMatrix(const Matrix &matrix) {
+    if (Engine::enableShader != 0) {
+        const float *m = matrix.m;
+        this->normalMatrix[0] = m[0];
+        this->normalMatrix[1] = m[4];
+        this->normalMatrix[2] = m[8];
+        this->normalMatrix[3] = m[1];
+        this->normalMatrix[4] = m[5];
+        this->normalMatrix[5] = m[9];
+        this->normalMatrix[6] = m[2];
+        this->normalMatrix[7] = m[6];
+        this->normalMatrix[8] = m[10];
+        float *gl = this->modelMatrixGL;
+        gl[0] = m[0];
+        gl[1] = m[4];
+        gl[2] = m[8];
+        gl[3] = 0.0f;
+        gl[4] = m[1];
+        gl[5] = m[5];
+        gl[6] = m[9];
+        gl[7] = 0.0f;
+        gl[8] = m[2];
+        gl[9] = m[6];
+        gl[10] = m[10];
+        gl[11] = 0.0f;
+        gl[12] = m[3];
+        gl[13] = m[7];
+        gl[14] = m[11];
+        gl[15] = 1.0f;
+        if (this->lightDirty[0] == 0.0f) {
+            this->lightDir[0] = AbyssEngine::AEMath::VectorNormalize(
+                    AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[0]));
+        } else {
+            this->lightDir[0] = this->lightPositions[0];
+        }
+        if (this->lightCount > 1) {
+            if (this->lightDirty[1] == 0.0f) {
+                this->lightDir[1] = AbyssEngine::AEMath::VectorNormalize(
+                        AbyssEngine::AEMath::MatrixInverseRotateVector(matrix, this->lightPositions[1]));
+            } else {
+                this->lightDir[1] = this->lightPositions[1];
+            }
+        }
+        this->ShaderUpdate();
+        this->lightColor = AbyssEngine::AEMath::MatrixInverseTransformVector(matrix, this->eyePosition);
+        this->lightColor.x /= m[12];
+        this->lightColor.y /= m[13];
+        this->lightColor.z /= m[14];
+    }
+}
+
+void Engine::ShaderUpdate() {
+    uint32_t index = 0;
+    while (index < this->shaders.size()) {
+        this->shaders[index]->Update();
+        index += 1;
+    }
+}
+
+void Engine::SetWorldViewMatrix(const Matrix &matrix) {
+    const float *m = matrix.m;
+    if (Engine::enableShader != 0) {
+        float gl[16] = {
+            m[0], m[4], m[8], 0.0f,
+            m[1], m[5], m[9], 0.0f,
+            m[2], m[6], m[10], 0.0f,
+            m[3], m[7], m[11], 1.0f,
+        };
+        memcpy(this->worldViewMatrixGL, gl, sizeof(gl));
+        AbyssEngine::esMatrixMultiply(
+                reinterpret_cast<AbyssEngine::ESMatrix *>(this->worldViewProjMatrix),
+                reinterpret_cast<AbyssEngine::ESMatrix *>(gl),
+                reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix));
+    } else {
+        MatrixGetGL(matrix, this->uvMatrixGL);
+        return glLoadMatrixf(this->uvMatrixGL);
+    }
+    return;
+}
+
+void Engine::SetPerspMatrix(float *matrix) {
+    if (Engine::enableShader != 0) {
+        float *proj = this->projMatrix;
+        proj[0] = matrix[0];
+        proj[1] = matrix[1];
+        proj[2] = matrix[2];
+        proj[3] = matrix[3];
+        proj[4] = matrix[4];
+        proj[5] = matrix[5];
+        proj[6] = matrix[6];
+        proj[7] = matrix[7];
+        proj[8] = matrix[8];
+        proj[9] = matrix[9];
+        proj[10] = matrix[10];
+        proj[11] = matrix[11];
+        proj[12] = matrix[12];
+        proj[13] = matrix[13];
+        proj[14] = matrix[14];
+        proj[15] = matrix[15];
+    }
+}
+
+void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
+    if (Engine::enableShader != 0) {
+        float *proj = this->projMatrix;
+        proj[0] = projection[0];
+        proj[1] = projection[1];
+        proj[2] = projection[2];
+        proj[3] = projection[3];
+        proj[4] = projection[4];
+        proj[5] = projection[5];
+        proj[6] = projection[6];
+        proj[7] = projection[7];
+        proj[8] = projection[8];
+        proj[9] = projection[9];
+        proj[10] = projection[10];
+        proj[11] = projection[11];
+        proj[12] = projection[12];
+        proj[13] = projection[13];
+        proj[14] = projection[14];
+        proj[15] = projection[15];
+        if (multiply) {
+            float local[16];
+            // The original copies the 64-byte view matrix with four 128-bit NEON moves.
+            vst1q_f32(&local[0], vld1q_f32(&view[0]));
+            vst1q_f32(&local[4], vld1q_f32(&view[4]));
+            vst1q_f32(&local[8], vld1q_f32(&view[8]));
+            vst1q_f32(&local[12], vld1q_f32(&view[12]));
+            AbyssEngine::esMatrixMultiply(
+                    reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix),
+                    reinterpret_cast<AbyssEngine::ESMatrix *>(local),
+                    reinterpret_cast<AbyssEngine::ESMatrix *>(this->projMatrix));
+        }
+    }
+}
+
+void Engine::SetColor(float red, float green, float blue, float alpha) {
+    if (this->glColor[0] != red || this->glColor[1] != green || this->glColor[2] != blue ||
+        this->glColor[3] != alpha) {
+        this->glColor[0] = red;
+        this->glColor[1] = green;
+        this->glColor[2] = blue;
+        this->glColor[3] = alpha;
+        this->packedColor =
+                static_cast<int>(green * 255.0f) * 0x10000 +
+                static_cast<int>(red * 255.0f) * 0x1000000 +
+                static_cast<int>(blue * 255.0f) * 0x100 +
+                static_cast<int>(alpha * 255.0f);
+        if (Engine::enableShader != 0) {
+            return this->ShaderUpdate();
+        }
+        this->LightSetMaterialColorAlpha(alpha);
+        return glColor4f(red, green, blue, alpha);
+}
+}
+
+void Engine::LightSetMaterialColorAlpha(float alpha) {
+    if (this->lightingEnabled == 0) {
+        return;
+    }
+
+    this->materialAmbient[3] = alpha;
+    this->materialAlpha = alpha;
+    glMaterialfv(0x408, 0x1200, this->materialAmbient);
+    this->materialSpecular[3] = this->materialAlpha;
+    glMaterialfv(0x408, 0x1202, this->materialSpecular);
+    this->materialDiffuse[3] = this->materialAlpha;
+    return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
+}
+
+void Engine::LightSetLightCount(int count) {
+    if (count >= 8) {
+        count = 8;
+    }
+    if (count < 0) {
+        count = 0;
+    }
+    this->lightCount = count;
+}
+
 void Engine::LightEnable(bool enabled) {
     if (this->lightingEnabled == enabled) return;
     this->lightingEnabled = enabled;
@@ -1804,6 +1070,194 @@ void Engine::LightEnable(bool enabled) {
         glDisable(0x4000); // GL_LIGHT0
         glDisable(0xb50);  // GL_LIGHTING
     }
+}
+
+void Engine::LightSetLight(unsigned int light) {
+    float position[4] = {0.0f, 1.0f, 0.0f, 0.0f};
+    unsigned int index = light - 0x4000;
+    if (index < 8) {
+        int count = light - 0x3fff;
+        int current = this->lightCount;
+        if (current > count) {
+            count = current;
+        }
+        this->lightCount = count;
+
+        const Vector &dir = this->lightPositions[index];
+        position[0] = dir.x;
+        position[1] = dir.y;
+        position[2] = dir.z;
+        position[3] = this->lightDirty[index];
+        if (Engine::enableShader == 0) {
+            glLightfv(light, 0x1203, position);
+        }
+    }
+    return;
+}
+
+void Engine::LightSetParticleAmbient(float red, float green, float blue) {
+    this->particleAmbientColor[0] = red;  // particle ambient @0x314
+    this->particleAmbientColor[1] = green;
+    this->particleAmbientColor[2] = blue;
+}
+
+void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue) {
+    this->sceneAmbient[0] = red;
+    this->sceneAmbient[1] = green;
+    this->sceneAmbient[2] = blue;
+    this->sceneAmbient[3] = 1.0f;
+
+    if (Engine::enableShader == 0) {
+        return glLightModelfv(0xb53, this->sceneAmbient);
+    }
+
+    int count = this->lightCount;
+    for (int index = 0; index < count; index += 1) {
+        const LightColor &src = (&this->lightAmbient)[index];
+        this->ambientShaded[index][0] = (src.r + red) * this->materialAmbient[0];
+        this->ambientShaded[index][1] = (src.g + green) * this->materialAmbient[1];
+        this->ambientShaded[index][2] = (src.b + blue) * this->materialAmbient[2];
+    }
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
+    unsigned int index = light - 0x4000;
+    if (index < 8) {
+        int count = light - 0x3fff;
+        int current = this->lightCount;
+        if (current > count) {
+            count = current;
+        }
+        this->lightCount = count;
+
+        Vector normalized =
+                AbyssEngine::AEMath::VectorNormalize(Vector{x, y, z});
+        this->lightPositions[index] = normalized;
+        this->lightDirty[index] = 0.0f;
+    }
+    return;
+}
+
+void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light) {
+    unsigned int index = light - 0x4000;
+    if (index < 8) {
+        int count = light - 0x3fff;
+        int current = this->lightCount;
+        if (current > count) {
+            count = current;
+        }
+        this->lightCount = count;
+
+        Vector value;
+        value.x = x;
+        value.y = y;
+        value.z = z;
+        this->lightPositions[index] = value;
+        this->lightDirty[index] = 1.0f;
+    }
+    return;
+}
+
+void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsigned int light) {
+    unsigned int index = light - 0x4000;
+    if (index > 7) {
+        return;
+    }
+    int count = light - 0x3fff;
+    int current = this->lightCount;
+    if (current > count) {
+        count = current;
+    }
+    this->lightCount = count;
+
+    LightColor &src = (&this->lightDiffuse)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
+    if (Engine::enableShader == 0) {
+        return glLightfv(light, 0x1201, &src.r);
+    }
+    float *dst = this->diffuseShaded[index]; /* diffuse-shaded[2] @0x2fc */
+    dst[0] = this->materialDiffuse[0] * red;
+    dst[1] = src.g * this->materialDiffuse[1];
+    dst[2] = src.b * this->materialDiffuse[2];
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsigned int light) {
+    unsigned int index = light - 0x4000;
+    if (index > 7) {
+        return;
+    }
+    int count = light - 0x3fff;
+    int current = this->lightCount;
+    if (current > count) {
+        count = current;
+    }
+    this->lightCount = count;
+
+    LightColor &src = (&this->lightAmbient)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
+    if (Engine::enableShader == 0) {
+        return glLightfv(light, 0x1200, &src.r);
+    }
+    float *dst = this->ambientShaded[index];
+    dst[0] = (this->sceneAmbient[0] + red) * this->materialAmbient[0];
+    dst[1] = (this->sceneAmbient[1] + src.g) * this->materialAmbient[1];
+    dst[2] = (this->sceneAmbient[2] + src.b) * this->materialAmbient[2];
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsigned int light) {
+    unsigned int index = light - 0x4000;
+    if (index > 7) {
+        return;
+    }
+    int count = light - 0x3fff;
+    int current = this->lightCount;
+    if (current > count) {
+        count = current;
+    }
+    this->lightCount = count;
+
+    LightColor &src = (&this->lightSpecular)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
+    if (Engine::enableShader == 0) {
+        return glLightfv(light, 0x1202, &src.r);
+    }
+    float *dst = this->specularShaded[index]; /* specular-shaded[2] @0x2e4 */
+    dst[0] = this->materialSpecular[0] * red;
+    dst[1] = src.g * this->materialSpecular[1];
+    dst[2] = src.b * this->materialSpecular[2];
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
+    this->materialDiffuse[0] = red;
+    this->materialDiffuse[1] = green;
+    this->materialDiffuse[2] = blue;
+    this->materialDiffuse[3] = this->materialAlpha;
+
+    if (Engine::enableShader == 0) {
+        return glMaterialfv(0x408, 0x1201, this->materialDiffuse);
+    }
+
+    int lightCount = this->lightCount;
+    for (int i = 0; i < lightCount; i += 1) {
+        const LightColor &src = (&this->lightDiffuse)[i];
+        this->diffuseShaded[i][0] = src.r * red;
+        this->diffuseShaded[i][1] = src.g * green;
+        this->diffuseShaded[i][2] = src.b * blue;
+    }
+    return this->ShaderUpdate();
 }
 
 void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
@@ -1826,3 +1280,554 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     return this->ShaderUpdate();
 }
 
+void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
+    this->materialSpecular[0] = red;
+    this->materialSpecular[1] = green;
+    this->materialSpecular[2] = blue;
+    this->materialSpecular[3] = this->materialAlpha;
+
+    if (Engine::enableShader == 0) {
+        return glMaterialfv(0x408, 0x1202, this->materialSpecular);
+    }
+
+    int count = this->lightCount;
+    for (int index = 0; index < count; index += 1) {
+        const LightColor &src = (&this->lightSpecular)[index];
+        this->specularShaded[index][0] = src.r * red;
+        this->specularShaded[index][1] = src.g * green;
+        this->specularShaded[index][2] = src.b * blue;
+    }
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetRimColor(float red, float green, float blue) {
+    if (Engine::enableShader == 0) {
+        return;
+    }
+    this->rimColor[0] = red;
+    this->rimColor[1] = green;
+    this->rimColor[2] = blue;
+    return this->ShaderUpdate();
+}
+
+void Engine::LightSetMaterialColorShininess(float shininess) {
+    this->materialShininess = shininess;
+    if (Engine::enableShader == 0) {
+        return glMaterialf(0x408, 0x1601, shininess);
+    }
+}
+
+namespace AbyssEngine {
+    void SetFXMaterial(BlendMode /*mode*/) {
+    }
+}
+
+void Engine::DrawLine2D(float *verts, int count, bool strip) {
+    this->lineVertexBase = static_cast<int>(reinterpret_cast<uintptr_t>(verts));
+    this->ShaderSetActive(NoTexShader::ShaderIndex, 0);
+    if (strip) {
+        return glDrawArrays(GL_LINE_LOOP, 0, count);
+    }
+    return glDrawArrays(GL_LINES, 0, count);
+}
+
+void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
+    // The original uses a loop-shaped branch here; an `if` changes register
+    // allocation and grows the function from 196 to 220 bytes.
+    while (shaderIndex == -1) {
+        shaderIndex = TextureShader::ShaderIndex;
+        if ((mesh->vertexFormat & 2) == 0) {
+            shaderIndex = SimpleShader::ShaderIndex;
+        }
+    }
+
+    bool hasExtra = mesh != 0 && mesh->hasAnimation != 0;
+    ShaderBaseStruct *shader = this->shaders[shaderIndex];
+    if (shader == 0) {
+        return;
+    }
+    ShaderSet = 1;
+
+    if (shader->program != this->currentProgram) {
+        shader->UseShader(hasExtra);
+        shader = this->shaders[shaderIndex];
+        this->currentProgram = shader->program;
+        currentUsedShaderIndex = shaderIndex;
+    }
+    shader->UseShader(hasExtra);
+    shader = this->shaders[shaderIndex];
+    shader->UpdateMeshData(mesh, this);
+    if (mesh != 0) {
+        uint32_t triangles = mesh->indexCount / 3u;
+        this->triangleCounts[shaderIndex] += triangles;
+    }
+}
+
+void Engine::RenderMesh(Mesh *mesh) {
+    // Triangle statistics: [0]/[1] = indexed 2D/3D (field_0x58 holds two counters),
+    // triangleCountA/B = VBO-indexed 2D/3D; drawCallCountA/B = 2D/3D draw calls.
+    int *indexedTriangles = reinterpret_cast<int *>(&this->field_0x58);
+    if (mesh == 0 || mesh->indexCount == 0) {
+        return;
+    }
+
+    if (Engine::enableShader != 0) {
+        ShaderSet = 0;
+        uint32_t flags = this->glEnableFlags;
+        if ((flags & 0x1000) != 0) {
+            this->ShaderSetActive(GenericShader::ShaderIndex, mesh);
+        } else if ((flags & 0x2000) != 0) {
+            this->ShaderSetActive(GenericShader1::ShaderIndex, mesh);
+        } else if ((flags & 0x4000) != 0) {
+            this->ShaderSetActive(GenericShader2::ShaderIndex, mesh);
+        } else if ((flags & 0x400) != 0) {
+            this->ShaderSetActive(SandboxShader::ShaderIndex, mesh);
+        } else if ((flags & 0x4) != 0) {
+            this->ShaderSetActive(BumpMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x10000) != 0) {
+            this->ShaderSetActive(BumpShaderV3::ShaderIndex, mesh);
+        } else if ((flags & 0x1000000) != 0) {
+            this->ShaderSetActive(BumpShaderParticle::ShaderIndex, mesh);
+        } else if ((flags & 0x40000) != 0) {
+            this->ShaderSetActive(BumpShaderCloak::ShaderIndex, mesh);
+        } else if ((flags & 0x8000000) != 0) {
+            this->ShaderSetActive(BumpShaderRefract::ShaderIndex, mesh);
+        } else if ((flags & 0x200000) != 0) {
+            this->ShaderSetActive(EnergyShield::ShaderIndex, mesh);
+        } else if ((flags & 0x400000) != 0) {
+            this->ShaderSetActive(SimpleRefractionShader::ShaderIndex, mesh);
+        } else if ((flags & 0x100000) != 0) {
+            this->ShaderSetActive(GlowShader::ShaderIndex, mesh);
+        } else if ((flags & 0x4000000) != 0) {
+            this->ShaderSetActive(DNSShader::ShaderIndex, mesh);
+        } else if ((flags & 0x20000) != 0) {
+            if (Engine::UseAdvancedShader != 0) {
+                this->ShaderSetActive(BumpRimCubeShader::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(BumpRimCubeShader_new::ShaderIndex, mesh);
+            }
+        } else if ((flags & 0x2000000) != 0) {
+            // shader already bound by the caller
+        } else if ((flags & 0x8) != 0) {
+            this->ShaderSetActive(SpecCubeMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x80000) != 0) {
+            this->ShaderSetActive(SpecCubeAlphaMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x8000) != 0) {
+            this->ShaderSetActive(CubeNormalMapping::ShaderIndex, mesh);
+        } else if ((flags & 0x2) != 0) {
+            this->ShaderSetActive(TextureAlphaTestShader::ShaderIndex, mesh);
+        } else if ((flags & 0x1) != 0) {
+            if ((mesh->vertexFormat & 0xa) == 8) {
+                this->ShaderSetActive(NoTexVtxColorShader::ShaderIndex, mesh);
+            } else if (this->lightingEnabled) {
+                this->ShaderSetActive(TextureLightShader::ShaderIndex, mesh);
+            } else if ((mesh->vertexFormat & 8) != 0) {
+                this->ShaderSetActive(TextureVtxColorShader::ShaderIndex, mesh);
+            } else if ((flags & 0x800000) != 0) {
+                this->ShaderSetActive(ColorMixAdd::ShaderIndex, mesh);
+            } else {
+                this->ShaderSetActive(TextureShader::ShaderIndex, mesh);
+            }
+        } else {
+            this->ShaderSetActive(NoTexShader::ShaderIndex, mesh);
+        }
+
+        if (ShaderSet != 0) {
+            int oldBuffer;
+            glGetIntegerv(0x8ca6, &oldBuffer);
+            if ((mesh->vertexFormat & 0x10) == 0) {
+                glDrawArrays(4, 0, mesh->vertexCount);
+            } else {
+                unsigned int count = mesh->indexCount;
+                unsigned int triangles = count / 3;
+                if (mesh->uploaded != 0) {
+                    if (this->statsEnabled != 0) {
+                        this->triangleCountB += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        this->triangleCountA += triangles;
+                        this->drawCallCountA += 1;
+                    }
+                    glBindBuffer(0x8893, mesh->indexVBO);
+                    glDrawElements(4, mesh->indexCount, 0x1403, 0);
+                    glBindBuffer(0x8892, 0);
+                    glBindBuffer(0x8893, 0);
+                } else {
+                    if (this->statsEnabled != 0) {
+                        indexedTriangles[1] += triangles;
+                        this->drawCallCountB += 1;
+                    } else {
+                        indexedTriangles[0] += triangles;
+                        this->drawCallCountA += 1;
+                    }
+                    glDrawElements(4, count, 0x1403, mesh->indices);
+                }
+            }
+            this->shaders[currentUsedShaderIndex]->SetInActive();
+        }
+        return;
+    }
+
+    glVertexPointer(3, 0x1406, 0, mesh->positions);
+    this->AEClientState(0x8074, true);
+    if ((mesh->vertexFormat & 2) == 0) {
+        this->AEClientState(0x8078, false);
+    } else if (mesh->material == 0 || mesh->material->textures[1] == -1) {
+        glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
+        this->AEClientState(0x8078, true);
+    }
+    if ((mesh->vertexFormat & 4) == 0) {
+        this->AEClientState(0x8075, false);
+    } else {
+        glNormalPointer(0x1406, 0, mesh->normals);
+        this->AEClientState(0x8075, true);
+    }
+    if ((mesh->vertexFormat & 8) == 0) {
+        this->AEClientState(0x8076, false);
+    } else {
+        glColorPointer(4, 0x1406, 0, mesh->colors);
+        this->AEClientState(0x8076, true);
+    }
+    if ((mesh->vertexFormat & 0x10) == 0) {
+        glDrawArrays(4, 0, mesh->vertexCount);
+    } else {
+        if (this->field_0xfe != 0) {
+            if (this->statsEnabled != 0) {
+                indexedTriangles[1] += mesh->indexCount / 3;
+                this->drawCallCountB += 1;
+            } else {
+                indexedTriangles[0] += mesh->indexCount / 3;
+                this->drawCallCountA += 1;
+            }
+        }
+        glDrawElements(4, mesh->indexCount, 0x1403, mesh->indices);
+    }
+    if ((mesh->vertexFormat & 2) != 0 && mesh->material != 0 &&
+        mesh->material->textures[1] != -1) {
+        this->AEClientState(0x8078, false);
+        return glClientActiveTexture(0x84c0);
+    }
+}
+
+void Engine::ShaderSetInActive() {
+    ShaderBaseStruct *shader = this->shaders[currentUsedShaderIndex];
+    shader->SetInActive();
+}
+
+void Engine::AEClientState(unsigned int state, bool enable) {
+    if (enable) {
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) == 0) {
+                    glEnableClientState(0x8074);
+                    this->clientStateFlagsAE |= 2;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) == 0) {
+                    glEnableClientState(0x8075);
+                    this->clientStateFlagsAE |= 1;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) == 0) {
+                    glEnableClientState(0x8076);
+                    this->clientStateFlagsAE |= 8;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) == 0) {
+                    glEnableClientState(0x8078);
+                    this->clientStateFlagsAE |= 4;
+                }
+                break;
+        }
+    } else {
+        switch (state) {
+            case 0x8074:
+                if ((this->clientStateFlagsAE & 2) != 0) {
+                    glDisableClientState(0x8074);
+                    this->clientStateFlagsAE &= ~2u;
+                }
+                break;
+            case 0x8075:
+                if ((this->clientStateFlagsAE & 1) != 0) {
+                    glDisableClientState(0x8075);
+                    this->clientStateFlagsAE &= ~1u;
+                }
+                break;
+            case 0x8078:
+                if ((this->clientStateFlagsAE & 4) != 0) {
+                    glDisableClientState(0x8078);
+                    this->clientStateFlagsAE &= ~4u;
+                }
+                break;
+            case 0x8076:
+                if ((this->clientStateFlagsAE & 8) != 0) {
+                    glDisableClientState(0x8076);
+                    this->clientStateFlagsAE &= ~8u;
+                }
+                break;
+        }
+    }
+}
+
+bool Engine::IsExtensionSupported(const char *extension) {
+    const char *extensions = reinterpret_cast<const char *>(glGetString(0x1f03));
+
+    uint32_t allLength = 0;
+    while (extensions[allLength] != 0) {
+        allLength += 1;
+    }
+
+    uint32_t extLength = 0;
+    while (extension[extLength] != 0) {
+        extLength += 1;
+    }
+
+    uint32_t index = 0;
+    while (index < allLength) {
+        if (extensions[index] == extension[0]) {
+            const char *cur = extensions + index;
+            uint32_t offset = 0;
+            while (offset < extLength && index + offset < allLength &&
+                   extension[offset] == cur[offset]) {
+                offset += 1;
+                if (offset == extLength) {
+                    return true;
+                }
+            }
+        }
+        index += 1;
+    }
+    return false;
+}
+
+double *Engine::GetGravValue() {
+    double x = this->gravRaw[0];
+    double y;
+    if (this->appManager->paintCanvas->gameOrientation == 1) {
+        x = -x;
+        y = -this->gravRaw[1];
+    } else {
+        y = this->gravRaw[1];
+    }
+    this->gravValue[1] = y;
+    this->gravValue[0] = x;
+    this->gravValue[2] = this->gravRaw[2];
+    return this->gravValue;
+}
+
+double *Engine::GetAccelValue() {
+    double x = this->accelRaw[0];
+    double y;
+    if (this->appManager->paintCanvas->gameOrientation == 1) {
+        x = -x;
+        y = -this->accelRaw[1];
+    } else {
+        y = this->accelRaw[1];
+    }
+    this->accelValue[1] = y;
+    this->accelValue[0] = x;
+    this->accelValue[2] = this->accelRaw[2];
+    return this->accelValue;
+}
+
+void Engine::SetGravValue(double x, double y, double z) {
+    this->gravRaw[0] = x;
+    this->gravRaw[1] = y;
+    this->gravRaw[2] = z;
+}
+
+void Engine::SetAccelValue(double x, double y, double z) {
+    this->accelRaw[0] = x;
+    this->accelRaw[1] = y;
+    this->accelRaw[2] = z;
+}
+
+void Engine::ReloadShaders() {
+    uint32_t index = 0;
+    while (index < this->shaders.size()) {
+        ShaderBaseStruct *shader = this->shaders[index];
+        shader->DeleteShader();
+
+        shader = this->shaders[index];
+        shader->Init(this);
+        index += 1;
+    }
+}
+
+void Engine::SetPostEffect(uint32_t effect, bool enable) {
+    if (this->postEffectFBO == 0 && enable) {
+        this->postEffectFBO = new FBOContainer(this, String("render2TextureFBO"));
+        if (this->appManager->paintCanvas->gameOrientation == 2) {
+            this->postEffectFBO->Create(this->displayWidth, this->displayHeight, true, false);
+        } else {
+            this->postEffectFBO->Create(this->displayHeight, this->displayWidth, true, false);
+        }
+    }
+
+    if (effect == kPostEffectBase) {
+        if (enable) {
+            this->postEffectFlags |= 1;
+        } else {
+            this->postEffectFlags &= ~1u;
+        }
+    } else if (effect == kPostEffectBlur) {
+        Engine::EnableGlow = enable;
+        if (enable) {
+            this->postEffectFlags |= 2;
+        } else {
+            this->postEffectFlags &= ~2u;
+        }
+    } else if (effect == kPostEffectBW) {
+        if (enable) {
+            if (g_Engine_postEffectCounter <= 0) {
+                this->postEffectFlags |= 4;
+            } else {
+                g_Engine_postEffectCounter -= 1;
+            }
+        } else if (g_Engine_postEffectFlag == 1) {
+            this->postEffectFlags &= ~4u;
+            g_Engine_postEffectCounter = 1;
+            g_Engine_postEffectFlag = 0;
+        } else if (g_Engine_postEffectCounter <= 0) {
+            g_Engine_postEffectFlag = 1;
+        } else {
+            g_Engine_postEffectFlag = 0;
+        }
+    }
+}
+
+void Engine::DoPostEffect() {
+    uint32_t flags = this->postEffectFlags;
+    FBOContainer *source = this->postEffectFBO;
+    FBOContainer *target = this->refractFBO;
+    if (Engine::enableShader != 0) {
+        // Each active pass renders source -> target; when another pass follows, the two FBOs swap.
+        if ((flags & 2) != 0) {
+            ShaderBaseStruct *shader = this->shaders[GlowPPShader::ShaderIndex];
+            flags &= ~2u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
+            } else {
+                shader->RenderEffect(source, this);
+                flags = 0;
+            }
+        }
+        if ((this->postEffectFlags & 1) != 0) {
+            ShaderBaseStruct *shader = this->shaders[BloomShader::ShaderIndex];
+            flags &= ~1u;
+            if (flags != 0) {
+                shader->RenderEffect(source, target, this);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
+            } else {
+                shader->RenderEffect(source, this);
+                flags = 0;
+            }
+        }
+        if ((this->postEffectFlags & 4) != 0) {
+            ShaderBaseStruct *shader = this->shaders[BlurShader::ShaderIndex];
+            if ((flags & ~4u) != 0) {
+                shader->RenderEffect(source, target, this, this->blurStrength, this->field_0x3cc);
+                FBOContainer *swap = source;
+                source = target;
+                target = swap;
+            } else {
+                shader->RenderEffect(source, this, this->blurStrength, this->field_0x3cc);
+            }
+        }
+        if (g_Engine_postEffectFlag == 1) {
+            this->SetPostEffect(kPostEffectBW, false);
+        }
+    }
+}
+
+void Engine::DrawCloakFBO(FBOContainer *fbo) {
+    if (Engine::enableShader != 0) {
+        ShaderBaseStruct *shader = this->shaders[DrawFBOShader::ShaderIndex];
+        shader->RenderEffect(fbo, this);
+    }
+}
+
+bool Engine::IsPostEffectActivated() {
+    return this->postEffectFlags != 0;
+}
+
+bool Engine::IsRefractActivated() {
+    return true;
+}
+
+void Engine::DrawQuad(int x, int y, int width, int height) {
+    float fx = static_cast<float>(x);
+    float fy = static_cast<float>(y);
+    float right = static_cast<float>(x + width);
+    float bottom = static_cast<float>(height + y);
+
+    Mesh *mesh = this->quadMesh;
+    float *positions = mesh->positions;
+    positions[0] = fx;
+    positions[1] = fy;
+    positions[3] = right;
+    positions[4] = fy;
+    positions[6] = right;
+    positions[7] = bottom;
+    positions[9] = fx;
+    positions[10] = bottom;
+
+    float *uv = reinterpret_cast<float *>(mesh->texCoords);
+    uv[0] = 0.0f;
+    uv[1] = 1.0f;
+    uv[2] = 1.0f;
+    uv[3] = 1.0f;
+    uv[4] = 1.0f;
+    uv[5] = 0.0f;
+    uv[6] = 0.0f;
+    uv[7] = 0.0f;
+
+    return glDrawElements(4, mesh->indexCount, 0x1403,
+                          mesh->indices);
+}
+
+void Engine::GlowBeginGlow(int depthFunc) {
+    if (this->glowActive != 0) {
+        return;
+    }
+    if (Engine::EnableGlow == 0) {
+        return;
+    }
+    glColorMask(0, 0, 0, 1);
+    this->GlowEnableGlow();
+    if (this->glowActive != 0) {
+        return glDepthFunc(depthFunc);
+    }
+}
+
+void Engine::GlowEnableGlow() {
+    if (this->glowActive != 0) {
+        return;
+    }
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(0x4000);
+    this->glowActive = 1;
+}
+
+void Engine::GlowEndGlow() {
+    if (Engine::EnableGlow == 0) {
+        return;
+    }
+    this->glowActive = 0;
+    glColorMask(1, 1, 1, 1);
+    return glDepthFunc(0x201);
+}
+
+// .text layout anchor: a 16-byte hidden body placed after the Engine block so the
+// GameText/Engine region keeps the original addresses without shifting later code.
+[[gnu::visibility("hidden")]] unsigned int engineTextAnchor(unsigned int code) {
+    return (code - 0x621) * 20;
+}
