@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4494,
+  "byte_exact": 4495,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -38,6 +38,14 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 57.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -112,14 +120,6 @@
    "usize": 17172
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 86.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
-  },
-  {
    "name": "_ZN9RocketGun6updateEi",
    "pct": 86.9,
    "byte": false,
@@ -134,14 +134,6 @@
    "linked": false,
    "osize": 968,
    "usize": 968
-  },
-  {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 87.5,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8132
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
@@ -174,6 +166,14 @@
    "linked": false,
    "osize": 9332,
    "usize": 9332
+  },
+  {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 88.5,
+   "byte": false,
+   "linked": false,
+   "osize": 8132,
+   "usize": 8132
   },
   {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
@@ -28026,7 +28026,7 @@
   {
    "name": "_ZN7BombGun6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1152,
    "usize": 1152
