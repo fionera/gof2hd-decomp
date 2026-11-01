@@ -5,12 +5,41 @@
 #include "game/weapons/AbstractGun.h"
 #include "engine/core/Array.h"
 
-bool Route::waypointDefined() {
-    return this->waypoints != nullptr;
+Route::Route(int *coords, int count) {
+    this->currentIndex = 0;
+    this->loop = false;
+    this->waypoints = new Array<Waypoint *>();
+    this->dockingTargets = new Array<KIPlayer *>();
+    this->dockingTimes = new Array<int>();
+    uint32_t n = count / 3;
+    ArraySetLength(n, *(this->dockingTargets));
+    ArraySetLength(n, *(this->dockingTimes));
+    for (int i = 0; i < count; i += 3)
+        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
 }
 
-int Route::length() {
-    return (int) this->waypoints->size();
+Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
+    this->currentIndex = 0;
+    this->loop = false;
+    this->waypoints = new Array<Waypoint *>();
+    this->dockingTimes = new Array<int>();
+    this->dockingTargets = targets;
+    for (int i = 0; i < count; i += 3)
+        ArrayAdd(times[i / 3], *(this->dockingTimes));
+    for (int i = 0; i < count; i += 3)
+        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
+}
+
+Route::~Route() {
+    if (this->waypoints != nullptr) {
+        ArrayReleaseClasses(*this->waypoints);
+        delete this->waypoints;
+    }
+    this->waypoints = nullptr;
+    delete this->dockingTargets;
+    this->dockingTargets = nullptr;
+    delete this->dockingTimes;
+    this->dockingTimes = nullptr;
 }
 
 void Route::reset() {
@@ -19,18 +48,15 @@ void Route::reset() {
     this->currentIndex = 0;
 }
 
-Waypoint *Route::getWaypoint() {
-    return getWaypoint(this->currentIndex);
+void Route::setNewCoords(Vector v) {
+    Waypoint *wp = (*this->waypoints)[0];
+    wp->x = (int) v.x;
+    wp->y = (int) v.y;
+    wp->z = (int) v.z;
 }
 
-Route *Route::getExactClone() {
-    Route *result = clone();
-    for (uint32_t i = 0; i < result->waypoints->size(); i++) {
-        if ((uint8_t) (*this->waypoints)[i]->state != 0)
-            (*result->waypoints)[i]->reached();
-    }
-    result->currentIndex = this->currentIndex;
-    return result;
+void Route::setLoop(bool loop) {
+    this->loop = loop;
 }
 
 KIPlayer *Route::getDockingTarget() {
@@ -46,6 +72,10 @@ KIPlayer *Route::getDockingTarget(int index) {
     if (targets != nullptr && index < (int) targets->size())
         return (*targets)[index];
     return nullptr;
+}
+
+int Route::getDockingTime() {
+    return getDockingTime(this->currentIndex);
 }
 
 int Route::getDockingTime(int index) {
@@ -71,30 +101,20 @@ Waypoint *Route::getWaypoint(int index) {
     return wp;
 }
 
-void Route::setNewCoords(Vector v) {
-    Waypoint *wp = (*this->waypoints)[0];
-    wp->x = (int) v.x;
-    wp->y = (int) v.y;
-    wp->z = (int) v.z;
-}
-
-void Route::update(const Vector &v) {
-    update(v.x, v.y, v.z);
+Waypoint *Route::getWaypoint() {
+    return getWaypoint(this->currentIndex);
 }
 
 Waypoint *Route::getLastWaypoint() {
     return getWaypoint((int) this->waypoints->size() - 1);
 }
 
-void Route::translate(const Vector &v) {
-    Array<Waypoint *> *wps = this->waypoints;
-    float vx = v.x, vy = v.y, vz = v.z;
-    for (uint32_t i = 0; i != wps->size(); i++) {
-        Waypoint *wp = (*wps)[i];
-        wp->x = (int) ((float) wp->x + vx);
-        wp->y = (int) ((float) wp->y + vy);
-        wp->z = (int) ((float) wp->z + vz);
-    }
+bool Route::waypointDefined() {
+    return this->waypoints != nullptr;
+}
+
+int Route::getCurrent() {
+    return this->currentIndex;
 }
 
 void Route::reachWaypoint(int index) {
@@ -114,40 +134,12 @@ void Route::reachWaypoint(int index) {
     (*this->waypoints)[index]->reached();
 }
 
-Route *Route::clone() {
-    Array<Waypoint *> *wps = this->waypoints;
-    int n = (int) wps->size();
-    int *coords = new int[n * 3];
-    int j = 0;
-    for (int i = 0; i != n; i++) {
-        coords[j++] = (*wps)[i]->x;
-        coords[j++] = (*wps)[i]->y;
-        coords[j++] = (*wps)[i]->z;
-    }
-    bool any = false;
-    Array<KIPlayer *> *tgt = this->dockingTargets;
-    if (tgt != nullptr) {
-        for (uint32_t k = 0; k < tgt->size(); k++)
-            if ((*tgt)[k] != nullptr)
-                any = true;
-    }
-    if (!any) {
-        Route *r = new Route(coords, (int) wps->size() * 3);
-        r->loop = this->loop;
-        return r;
-    }
-    Array<int> *times = this->dockingTimes;
-    int *timesCopy = new int[times->size()];
-    for (uint32_t k = 0; k < times->size(); k++)
-        timesCopy[k] = (*times)[k];
-    Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
-    ArraySetLength(this->dockingTargets->size(), *targetsArr);
-    for (uint32_t k = 0; k < this->dockingTargets->size(); k++)
-        (*targetsArr)[k] = (*this->dockingTargets)[k];
-    Route *r = new Route(coords, targetsArr, timesCopy, (int) this->waypoints->size() * 3);
-    r->loop = this->loop;
-    delete[] timesCopy;
-    return r;
+int Route::length() {
+    return (int) this->waypoints->size();
+}
+
+void Route::update(const Vector &v) {
+    update(v.x, v.y, v.z);
 }
 
 void Route::update(float x, float y, float z) {
@@ -189,51 +181,59 @@ void Route::update(float x, float y, float z) {
     }
 }
 
-int Route::getDockingTime() {
-    return getDockingTime(this->currentIndex);
-}
-
-Route::Route(int *coords, int count) {
-    this->currentIndex = 0;
-    this->loop = false;
-    this->waypoints = new Array<Waypoint *>();
-    this->dockingTargets = new Array<KIPlayer *>();
-    this->dockingTimes = new Array<int>();
-    uint32_t n = count / 3;
-    ArraySetLength(n, *(this->dockingTargets));
-    ArraySetLength(n, *(this->dockingTimes));
-    for (int i = 0; i < count; i += 3)
-        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
-}
-
-Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
-    this->currentIndex = 0;
-    this->loop = false;
-    this->waypoints = new Array<Waypoint *>();
-    this->dockingTimes = new Array<int>();
-    this->dockingTargets = targets;
-    for (int i = 0; i < count; i += 3)
-        ArrayAdd(times[i / 3], *(this->dockingTimes));
-    for (int i = 0; i < count; i += 3)
-        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
-}
-
-Route::~Route() {
-    if (this->waypoints != nullptr) {
-        ArrayReleaseClasses(*this->waypoints);
-        delete this->waypoints;
+Route *Route::getExactClone() {
+    Route *result = clone();
+    for (uint32_t i = 0; i < result->waypoints->size(); i++) {
+        if ((uint8_t) (*this->waypoints)[i]->state != 0)
+            (*result->waypoints)[i]->reached();
     }
-    this->waypoints = nullptr;
-    delete this->dockingTargets;
-    this->dockingTargets = nullptr;
-    delete this->dockingTimes;
-    this->dockingTimes = nullptr;
+    result->currentIndex = this->currentIndex;
+    return result;
 }
 
-int Route::getCurrent() {
-    return this->currentIndex;
+Route *Route::clone() {
+    Array<Waypoint *> *wps = this->waypoints;
+    int n = (int) wps->size();
+    int *coords = new int[n * 3];
+    int j = 0;
+    for (int i = 0; i != n; i++) {
+        coords[j++] = (*wps)[i]->x;
+        coords[j++] = (*wps)[i]->y;
+        coords[j++] = (*wps)[i]->z;
+    }
+    bool any = false;
+    Array<KIPlayer *> *tgt = this->dockingTargets;
+    if (tgt != nullptr) {
+        for (uint32_t k = 0; k < tgt->size(); k++)
+            if ((*tgt)[k] != nullptr)
+                any = true;
+    }
+    if (!any) {
+        Route *r = new Route(coords, (int) wps->size() * 3);
+        r->loop = this->loop;
+        return r;
+    }
+    Array<int> *times = this->dockingTimes;
+    int *timesCopy = new int[times->size()];
+    for (uint32_t k = 0; k < times->size(); k++)
+        timesCopy[k] = (*times)[k];
+    Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
+    ArraySetLength(this->dockingTargets->size(), *targetsArr);
+    for (uint32_t k = 0; k < this->dockingTargets->size(); k++)
+        (*targetsArr)[k] = (*this->dockingTargets)[k];
+    Route *r = new Route(coords, targetsArr, timesCopy, (int) this->waypoints->size() * 3);
+    r->loop = this->loop;
+    delete[] timesCopy;
+    return r;
 }
 
-void Route::setLoop(bool loop) {
-    this->loop = loop;
+void Route::translate(const Vector &v) {
+    Array<Waypoint *> *wps = this->waypoints;
+    float vx = v.x, vy = v.y, vz = v.z;
+    for (uint32_t i = 0; i != wps->size(); i++) {
+        Waypoint *wp = (*wps)[i];
+        wp->x = (int) ((float) wp->x + vx);
+        wp->y = (int) ((float) wp->y + vy);
+        wp->z = (int) ((float) wp->z + vz);
+    }
 }
