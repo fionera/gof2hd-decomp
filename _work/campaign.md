@@ -4424,3 +4424,18 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   which puts `.rodata` at 0x1c9df0 and costs 160 byte-exact; it lands when the extab is fixed.
 - **Layout::Layout size-exact: byte_exact 3912 -> 3914 (+2)** (`w3375`): the ctor is now the
   original 7072 B (was 6800 + a 274 B pad) with .text still exact.
+
+### Wave 93 — build-flag forensics (`w3344`)
+
+The original's toolchain is now hard evidence, not a guess: `.comment` = clang 7.0.2
+(NDK r18b, r328903), `.note.android.ident` = r18b, `.note.gnu.gold-version` = gold 1.12,
+ELF flags = soft-float ABI, `.ARM.attributes` = ARMv7 / Thumb-2 / VFPv3 / NEONv1.
+Every global flag was A/B-tested against the original; the current set is the unique combination
+that reproduces its codegen (`-Oz -g -std=c++11 -fPIC -frtti -fstack-protector-strong
+-march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp`, strict aliasing, frame pointers,
+vectorization, threadsafe statics). `-Os/-O1/-O2/-O3`, `-fomit-frame-pointer`,
+`-fno-strict-aliasing`, `-fwrapv`, `-fno-rtti`, `-fvisibility=hidden`, `-marm`,
+`-mcpu=cortex-a8`, `-mfpu=vfpv3-d16`, `-fno-threadsafe-statics` are all measurably wrong.
+See `_work/reconstructions/build_flags_research.md` and `link_flags_research.md`.
+The remaining per-TU `-mllvm` flags are local compensations for source/TU mismatches, not
+original build flags.
