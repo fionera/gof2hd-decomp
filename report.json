@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4414,
+  "byte_exact": 4441,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -38,6 +38,14 @@
    "linked": false,
    "osize": 57232,
    "usize": 57232
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 57.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -118,14 +126,6 @@
    "linked": false,
    "osize": 8132,
    "usize": 8132
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 86.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN9RocketGun6updateEi",
@@ -3554,7 +3554,7 @@
   {
    "name": "_ZN10ModStation12OnInitializeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6396,
    "usize": 6396
@@ -3650,7 +3650,7 @@
   {
    "name": "_ZN10ModStation21resetIdleCamForHangarEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 360,
    "usize": 360
@@ -4066,7 +4066,7 @@
   {
    "name": "_ZN10StarSystem26switchSunForSupernovaIntroEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -4122,7 +4122,7 @@
   {
    "name": "_ZN10StarSystem9initLightEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1476,
    "usize": 1476
@@ -4130,7 +4130,7 @@
   {
    "name": "_ZN10StarSystemC1Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2900,
    "usize": 2900
@@ -4138,7 +4138,7 @@
   {
    "name": "_ZN10StarSystemC2Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2900,
    "usize": 2900
@@ -12794,7 +12794,7 @@
   {
    "name": "_ZN11SolarSystem18hasHiddenBlueprintEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -13098,7 +13098,7 @@
   {
    "name": "_ZN11SpaceLounge9startChatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 14450,
    "usize": 14450
@@ -13826,7 +13826,7 @@
   {
    "name": "_ZN12Achievements16checkForNewMedalEP9PlayerEgo",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1168,
    "usize": 1168
@@ -13882,7 +13882,7 @@
   {
    "name": "_ZN12Achievements8getValueEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -14082,7 +14082,7 @@
   {
    "name": "_ZN12ChoiceWindow8setMedalEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 476,
    "usize": 476
@@ -14146,7 +14146,7 @@
   {
    "name": "_ZN12HangarWindow10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 5828,
    "usize": 5828
@@ -16482,7 +16482,7 @@
   {
    "name": "_ZN14ListItemWindow3setEP8ListItemjjjjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6820,
    "usize": 6820
@@ -16506,7 +16506,7 @@
   {
    "name": "_ZN14ListItemWindow6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -16594,7 +16594,7 @@
   {
    "name": "_ZN14MissionsWindow4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2468,
    "usize": 2468
@@ -16602,7 +16602,7 @@
   {
    "name": "_ZN14MissionsWindow6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 556,
    "usize": 556
@@ -18306,7 +18306,7 @@
   {
    "name": "_ZN17PlayerFixedObjectC1EiiP6PlayerP10AEGeometryfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 756,
    "usize": 756
@@ -18314,7 +18314,7 @@
   {
    "name": "_ZN17PlayerFixedObjectC2EiiP6PlayerP10AEGeometryfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 756,
    "usize": 756
@@ -19762,7 +19762,7 @@
   {
    "name": "_ZN3Gun8setIndexEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 272,
    "usize": 272
@@ -19794,7 +19794,7 @@
   {
    "name": "_ZN3Gun9setOffsetEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -20114,7 +20114,7 @@
   {
    "name": "_ZN3Hud4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3464,
    "usize": 3464
@@ -23538,7 +23538,7 @@
   {
    "name": "_ZN5Level19initParticleSystemsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1872,
    "usize": 1872
@@ -28906,7 +28906,7 @@
   {
    "name": "_ZN7StarMap10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2972,
    "usize": 2972
@@ -32010,7 +32010,7 @@
   {
    "name": "_ZN9LensFlare8render2DEfffi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1568,
    "usize": 1568
@@ -32082,7 +32082,7 @@
   {
    "name": "_ZN9ObjectGun6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1092,
    "usize": 1092
@@ -32106,7 +32106,7 @@
   {
    "name": "_ZN9ObjectGunC1EiP3GunijP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -32114,7 +32114,7 @@
   {
    "name": "_ZN9ObjectGunC2EiP3GunijP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516

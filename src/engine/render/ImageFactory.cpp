@@ -123,6 +123,8 @@ static const int gCreateChar2Table[] = {
      1,  1,  1,  1,
      1,  1,  1,  1,
      4,  4,  5,  7,
+     0,  0,  0,  2,
+     1,  1,  1,  1,
 };
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;

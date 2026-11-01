@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4414, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4441, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -43,7 +43,7 @@ empty-`.text` sentinel a 4-byte alignment (the original's TU starts), removed th
 their owners: **`.data` is now byte-identical (3 -> 0 differing bytes)** and `.data.rel.ro` drops
 667 -> 21 bytes (18 B `Level::createScene` `.rodata` table + 3 B `.bss` pointer order), byte
 4265 -> 4408. The first
-`.rodata` *content* divergence is now at 0x1fb7f8 (VMA); 13,121 bytes still differ. See
+`.rodata` *content* divergence is now at 0x1fb7f8 (VMA); 8,826 bytes still differ. See
 `_work/reconstructions/data_content_round2_w3451.md`,
 `_work/reconstructions/rodata_content_map_round2.md`,
 `_work/reconstructions/rodata_group_order.md`, `_work/reconstructions/literal_pool_audit.md`
@@ -59,6 +59,21 @@ ELF sections are size- and base-exact; byte 4408 -> 4409. The remaining EH conte
 one `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
 record-length deltas that net to zero. See
 `_work/reconstructions/exidx_extab_exact_w3462.md`.
+
+The w3472 `Status::missionCompleted` pass then recovered the 4-byte `.text` shortfall that
+had blocked the Level `.rodata` block. The original switches directly on `m->getType()` and is
+1432 B; our direct `int` switch emitted 1428 B because clang 7 places the case bodies in
+ascending-value order instead of the original's source order. Switching on
+`(short) m->getType()` restores the 1432 B size without a padding anchor (the signed-narrow
+switch lowering places the 184/189 bodies after the default block). With the size fixed, the
+Level `.rodata` corrections from w3469 could land: `g_ips_shipTypeMap[64]`,
+`jumpgateMeshes[16]`, removal of the invented `kMissionCase[190]`, the 13-row
+`gCreateChar2Table`, the `alignas(16)` LensFlare tables and the 10-int Hud `_RACE_IMAGES_BIG`.
+Every ELF section stays size- and base-exact; **byte_exact 4414 -> 4441 (+27), linked 4496
+unchanged**, `.rodata` differing bytes 13,121 -> 8,826 (first still `0x1fb7f8`). The
+`missionCompleted` body itself remains a 57.7% near-miss (the direct `int` form was 60.2%);
+the gate gain is from the corrected `.rodata` data, not from that function. See
+`_work/reconstructions/Status-missionCompleted-4bytes-w3472.md`.
 
 ## Update 2026-07-26 — historical (superseded by the update above)
 
@@ -82,7 +97,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 13,121 content bytes still differ (first: 0x1fb7f8), all per-object table/string emission order. |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 8,826 content bytes still differ (first: 0x1fb7f8), all per-object table/string emission order. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
@@ -95,14 +110,15 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 ## The remaining gaps (in priority order)
 
-1. **29 non-linked functions.** 4495 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (45.3%), `LevelScript::process` (54.6%), `Radar::draw` (71.4%),
-   `Level::createShip` (73.2%), `Generator::createMission` (73.6%), `HangarWindow::render`
-   (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%). The `.text` total is
-   exact (0x1337c8); these are per-function body/register-allocation deltas, not missing code.
+1. **28 non-linked functions.** 4496 of 4524 compared functions are linked-exact. The worst are
+   `Layout::Layout` (45.3%), `LevelScript::process` (54.6%), `Status::missionCompleted` (57.7%),
+   `Radar::draw` (71.4%), `Level::createShip` (73.2%), `Generator::createMission` (73.6%),
+   `HangarWindow::render` (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%).
+   The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
+   deltas, not missing code.
 2. **`.rodata` content.** Size and base are exact; output-group order is fixed (plain `.rodata`
    now interleaves with the merge groups in input order). The first differing byte is 0x1fb7f8
-   (VMA); 13,121 bytes still differ, all per-object content/table ordering. 314 functions are
+   (VMA); 8,826 bytes still differ, all per-object content/table ordering. 314 functions are
    instruction-identical and differ only by a literal-pool word.
 3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are now size- and base-exact (3566 entries,
    CANTUNWIND 272, inline 856, extab 2438). The remaining content delta is one

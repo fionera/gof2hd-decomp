@@ -3,9 +3,9 @@
 #include <cmath>
 
 
-static const int kFlareRed[5] = {200, 200, 255, 255, 255};
-static const int kFlareGreen[5] = {200, 255, 200, 255, 255};
-static const int kFlareBlue[5] = {255, 200, 200, 255, 200};
+alignas(16) static const int kFlareRed[5] = {200, 200, 255, 255, 255};
+alignas(16) static const int kFlareGreen[5] = {200, 255, 200, 255, 255};
+alignas(16) static const int kFlareBlue[5] = {255, 200, 200, 255, 200};
 
 LensFlare::LensFlare(PaintCanvas *canvas) {
     this->images = new uint32_t[3];
