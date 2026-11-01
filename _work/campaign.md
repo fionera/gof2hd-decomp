@@ -4302,3 +4302,8 @@ mtw anchor for any size change before MenuTouchWindow.
   every differing byte is a `blx <plt>` offset. Both files have 3674 PLT entries but the order
   differs (`MTitle::OnTouchMove` @0x61df4 orig vs @0x61e00 ours), so every later slot shifts.
   `diff` of the two PLT symbol sequences shows 1354 differing lines.
+- **Mid-game drift closed: byte_exact 1544 -> 1592 (+48)** (`w3294`): the five gaps after
+  loadLowTextures/SystemPathFinder/PlayerCreature/PlayerStation/Wanted are gone, the
+  `levelTextAnchor` call is deleted from Level.cpp and the TU end-marker alignment covers
+  PlayerStation/ResourceMaterial/Wanted. `.text` 0x1337b0, `.ARM.exidx` 0x6f88, `.rodata`
+  0x1c9e10 exact.
