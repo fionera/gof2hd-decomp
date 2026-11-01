@@ -59,58 +59,6 @@ static const int CAMPAIGN_GOAL_TEXT[164] = {
 
 
 
-bool MissionsWindow::OnTouchMove(int p1, int p2) {
-    if (this->m_mode == 1)
-        return this->m_pWantedWindow->OnTouchMove(p1, p2);
-    if (this->m_choiceActive) {
-        this->m_pChoiceWindow->OnTouchMove(p1, p2);
-    } else if (this->m_starMapActive) {
-        this->m_pStarMap->OnTouchMove(p1, p2);
-    } else {
-        if (Globals::status->wantedBoardAccessible()) {
-            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
-                (*this->m_pTabButtons)[i]->OnTouchMove(p1, p2);
-        }
-        (Globals::layout)->OnTouchMove(p1, p2);
-        this->m_pCampaignWindow->OnTouchMove(p1, p2);
-        this->m_pFreelanceWindow->OnTouchMove(p1, p2);
-        if (this->m_pAcceptButton) this->m_pAcceptButton->OnTouchMove(p1, p2);
-        if (this->m_pMapButton) this->m_pMapButton->OnTouchMove(p1, p2);
-        if (this->m_pRejectButton) this->m_pRejectButton->OnTouchMove(p1, p2);
-    }
-    return false;
-}
-
-bool MissionsWindow::OnTouchBegin(int p1, int p2) {
-    if (this->m_mode == 1)
-        return this->m_pWantedWindow->OnTouchBegin(p1, p2);
-    if (this->m_choiceActive) {
-        this->m_pChoiceWindow->OnTouchBegin(p1, p2);
-    } else if (this->m_starMapActive) {
-        this->m_pStarMap->OnTouchBegin(p1, p2);
-    } else {
-        if (Globals::status->wantedBoardAccessible()) {
-            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
-                (*this->m_pTabButtons)[i]->OnTouchBegin(p1, p2);
-        }
-        (Globals::layout)->OnTouchBegin(p1, p2);
-        this->m_pCampaignWindow->OnTouchBegin(p1, p2);
-        this->m_pFreelanceWindow->OnTouchBegin(p1, p2);
-        if (this->m_pAcceptButton) this->m_pAcceptButton->OnTouchBegin(p1, p2);
-        if (this->m_pMapButton) this->m_pMapButton->OnTouchBegin(p1, p2);
-        if (this->m_pRejectButton) this->m_pRejectButton->OnTouchBegin(p1, p2);
-    }
-    return false;
-}
-
-void MissionsWindow::setHangarUpdate(bool v) {
-    this->m_hangarNeedsUpdate = v;
-}
-
-uint8_t MissionsWindow::hangarNeedsUpdate() {
-    return this->m_hangarNeedsUpdate;
-}
-
 MissionsWindow::MissionsWindow() {
     this->m_pAcceptButton = nullptr;
     this->m_pRejectButton = nullptr;
@@ -124,33 +72,6 @@ MissionsWindow::MissionsWindow() {
     this->m_pAgentImageParts = nullptr;
     this->m_textHalfHeight = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 - 1;
     this->init();
-}
-
-MissionsWindow::~MissionsWindow() {
-    if (this->m_pAgentImageParts) {
-        ArrayReleaseClasses(*this->m_pAgentImageParts);
-        delete this->m_pAgentImageParts;
-    }
-    this->m_pAgentImageParts = nullptr;
-    if (this->m_pTabButtons) {
-        ArrayReleaseClasses(*this->m_pTabButtons);
-        delete this->m_pTabButtons;
-    }
-    this->m_pTabButtons = nullptr;
-    delete this->m_pCampaignWindow;
-    this->m_pCampaignWindow = nullptr;
-    delete this->m_pFreelanceWindow;
-    this->m_pFreelanceWindow = nullptr;
-    delete this->m_pChoiceWindow;
-    this->m_pChoiceWindow = nullptr;
-    delete this->m_pAcceptButton;
-    this->m_pAcceptButton = nullptr;
-    delete this->m_pRejectButton;
-    this->m_pRejectButton = nullptr;
-    delete this->m_pMapButton;
-    this->m_pMapButton = nullptr;
-    delete this->m_pWantedWindow;
-    this->m_pWantedWindow = nullptr;
 }
 
 void MissionsWindow::init() {
@@ -313,6 +234,44 @@ void MissionsWindow::init() {
     }
 }
 
+MissionsWindow::~MissionsWindow() {
+    if (this->m_pAgentImageParts) {
+        ArrayReleaseClasses(*this->m_pAgentImageParts);
+        delete this->m_pAgentImageParts;
+    }
+    this->m_pAgentImageParts = nullptr;
+    if (this->m_pTabButtons) {
+        ArrayReleaseClasses(*this->m_pTabButtons);
+        delete this->m_pTabButtons;
+    }
+    this->m_pTabButtons = nullptr;
+    delete this->m_pCampaignWindow;
+    this->m_pCampaignWindow = nullptr;
+    delete this->m_pFreelanceWindow;
+    this->m_pFreelanceWindow = nullptr;
+    delete this->m_pChoiceWindow;
+    this->m_pChoiceWindow = nullptr;
+    delete this->m_pAcceptButton;
+    this->m_pAcceptButton = nullptr;
+    delete this->m_pRejectButton;
+    this->m_pRejectButton = nullptr;
+    delete this->m_pMapButton;
+    this->m_pMapButton = nullptr;
+    delete this->m_pWantedWindow;
+    this->m_pWantedWindow = nullptr;
+}
+
+void MissionsWindow::setHangarUpdate(bool v) {
+    this->m_hangarNeedsUpdate = v;
+}
+
+void MissionsWindow::render3D() {
+    if (this->m_mode == 1)
+        this->m_pWantedWindow->render3D();
+    if (this->m_starMapActive)
+        this->m_pStarMap->render();
+}
+
 void MissionsWindow::draw() {
     if (this->m_mode == 1) {
         this->m_pWantedWindow->draw();
@@ -405,11 +364,85 @@ void MissionsWindow::draw() {
         this->m_pChoiceWindow->draw();
 }
 
-void MissionsWindow::render3D() {
+uint8_t MissionsWindow::hangarNeedsUpdate() {
+    return this->m_hangarNeedsUpdate;
+}
+
+void MissionsWindow::update(int dt) {
+    if (this->m_mode == 1) {
+        this->m_pWantedWindow->update(dt);
+        return;
+    }
+    if (this->m_starMapActive) {
+        this->m_pStarMap->update(dt);
+        return;
+    }
+
+    this->m_pCampaignWindow->update(dt);
+    this->m_pFreelanceWindow->update(dt);
+
+    // Production missions show the remaining amount of goods in the campaign text.
+    CampaignMissionFlags *flags = (CampaignMissionFlags *) Globals::options;
+    if ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
+         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) &&
+        (!Globals::status->gameWon() || flags->campaignVisibleFlagA || flags->campaignVisibleFlagB)) {
+        String text("");
+        if (Globals::status->getCurrentCampaignMission() < 164) {
+            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
+            text = Globals::status->replaceHash(
+                    text,
+                    String(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getProductionGoodAmount() -
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()),
+                    String("#Q"));
+            this->m_pCampaignWindow->setText(String(""), text);
+        }
+    }
+
+    for (unsigned int i = 0; i < this->m_pTabButtons->size(); i++)
+        (*this->m_pTabButtons)[i]->setAlwaysPressed((int) i == this->m_mode);
+}
+bool MissionsWindow::OnTouchBegin(int p1, int p2) {
     if (this->m_mode == 1)
-        this->m_pWantedWindow->render3D();
-    if (this->m_starMapActive)
-        this->m_pStarMap->render();
+        return this->m_pWantedWindow->OnTouchBegin(p1, p2);
+    if (this->m_choiceActive) {
+        this->m_pChoiceWindow->OnTouchBegin(p1, p2);
+    } else if (this->m_starMapActive) {
+        this->m_pStarMap->OnTouchBegin(p1, p2);
+    } else {
+        if (Globals::status->wantedBoardAccessible()) {
+            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
+                (*this->m_pTabButtons)[i]->OnTouchBegin(p1, p2);
+        }
+        (Globals::layout)->OnTouchBegin(p1, p2);
+        this->m_pCampaignWindow->OnTouchBegin(p1, p2);
+        this->m_pFreelanceWindow->OnTouchBegin(p1, p2);
+        if (this->m_pAcceptButton) this->m_pAcceptButton->OnTouchBegin(p1, p2);
+        if (this->m_pMapButton) this->m_pMapButton->OnTouchBegin(p1, p2);
+        if (this->m_pRejectButton) this->m_pRejectButton->OnTouchBegin(p1, p2);
+    }
+    return false;
+}
+
+bool MissionsWindow::OnTouchMove(int p1, int p2) {
+    if (this->m_mode == 1)
+        return this->m_pWantedWindow->OnTouchMove(p1, p2);
+    if (this->m_choiceActive) {
+        this->m_pChoiceWindow->OnTouchMove(p1, p2);
+    } else if (this->m_starMapActive) {
+        this->m_pStarMap->OnTouchMove(p1, p2);
+    } else {
+        if (Globals::status->wantedBoardAccessible()) {
+            for (unsigned i = 0; i < this->m_pTabButtons->size(); i++)
+                (*this->m_pTabButtons)[i]->OnTouchMove(p1, p2);
+        }
+        (Globals::layout)->OnTouchMove(p1, p2);
+        this->m_pCampaignWindow->OnTouchMove(p1, p2);
+        this->m_pFreelanceWindow->OnTouchMove(p1, p2);
+        if (this->m_pAcceptButton) this->m_pAcceptButton->OnTouchMove(p1, p2);
+        if (this->m_pMapButton) this->m_pMapButton->OnTouchMove(p1, p2);
+        if (this->m_pRejectButton) this->m_pRejectButton->OnTouchMove(p1, p2);
+    }
+    return false;
 }
 
 bool MissionsWindow::OnTouchEnd(int x, int y) {
@@ -545,36 +578,3 @@ bool MissionsWindow::OnTouchEnd(int x, int y) {
     return false;
 }
 
-void MissionsWindow::update(int dt) {
-    if (this->m_mode == 1) {
-        this->m_pWantedWindow->update(dt);
-        return;
-    }
-    if (this->m_starMapActive) {
-        this->m_pStarMap->update(dt);
-        return;
-    }
-
-    this->m_pCampaignWindow->update(dt);
-    this->m_pFreelanceWindow->update(dt);
-
-    // Production missions show the remaining amount of goods in the campaign text.
-    CampaignMissionFlags *flags = (CampaignMissionFlags *) Globals::options;
-    if ((((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 ||
-         ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 174) &&
-        (!Globals::status->gameWon() || flags->campaignVisibleFlagA || flags->campaignVisibleFlagB)) {
-        String text("");
-        if (Globals::status->getCurrentCampaignMission() < 164) {
-            text = *Globals::gameText->getText(CAMPAIGN_GOAL_TEXT[Globals::status->getCurrentCampaignMission()]);
-            text = Globals::status->replaceHash(
-                    text,
-                    String(((Mission *) (intptr_t) Globals::status->getCampaignMission())->getProductionGoodAmount() -
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getStatusValue()),
-                    String("#Q"));
-            this->m_pCampaignWindow->setText(String(""), text);
-        }
-    }
-
-    for (unsigned int i = 0; i < this->m_pTabButtons->size(); i++)
-        (*this->m_pTabButtons)[i]->setAlwaysPressed((int) i == this->m_mode);
-}
