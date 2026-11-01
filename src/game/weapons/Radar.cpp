@@ -297,10 +297,6 @@ Radar::~Radar() {
     }
     this->players = nullptr;
 }
-void Radar::update(KIPlayer *player) {
-    Vector position = player->getPosition();
-    update(position);
-}
 void Radar::update(Vector value) {
     Vector *current = &this->radarPos;
     *current = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
@@ -318,6 +314,10 @@ void Radar::update(Vector value) {
         this->screenX = static_cast<int>(current->x);
         this->screenY = static_cast<int>(current->y);
     }
+}
+void Radar::update(KIPlayer *player) {
+    Vector position = player->getPosition();
+    update(position);
 }
 Vector Radar::elipsoidIntersect(int x, int y, Vector value) {
     float dx = static_cast<float>(this->centerX - x);
