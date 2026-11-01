@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4255,
+  "byte_exact": 4263,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -826,7 +826,7 @@
   {
    "name": "_Z10MouseInputii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -954,7 +954,7 @@
   {
    "name": "_Z11UseJoysticki",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -962,7 +962,7 @@
   {
    "name": "_Z11keyReleasedPN11AbyssEngine6EngineEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 396,
    "usize": 396
@@ -1034,7 +1034,7 @@
   {
    "name": "_Z12CaptureMousei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -1042,7 +1042,7 @@
   {
    "name": "_Z12keyIsPressedv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -1090,7 +1090,7 @@
   {
    "name": "_Z13simulateTouchPN11AbyssEngine6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1928,
    "usize": 1928
@@ -1570,7 +1570,7 @@
   {
    "name": "_Z14GetUseJoystickv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -2594,7 +2594,7 @@
   {
    "name": "_Z9HideMousev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
