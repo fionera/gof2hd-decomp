@@ -4671,3 +4671,8 @@ Landed so far: `#pragma clang section` removed (Blowfish TU became a C TU with C
 `extern`s removed, `LevelScript::process` 45.2 -> 53.0% with the process pads gone.
 `__builtin_assume`: all 3 sites are load-bearing (removing them regresses the gate).
 `s_processPad` must stay: it is a 0x10-byte `.bss` chunk that 10 functions depend on.
+- `MGame::startJumpScene` byte-exact (PLT-order anchor) -> byte 4496.
+- Fuzzy: `MenuTouchWindow` ctor 87.6 -> 91.2%, `MenuTouchWindow::OnTouchEnd` 88.5 -> 89.5%,
+  `Hud::draw` 88.3 -> 88.7%, `Level::createMission` 83.7 -> 83.8%,
+  `LevelScript::process` 53.0 -> 52.8% (structural reorder), `Status::missionCompleted`
+  rank table corrected (file-static).
