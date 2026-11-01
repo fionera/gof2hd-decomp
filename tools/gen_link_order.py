@@ -47,7 +47,16 @@ def main() -> int:
     # GameResource.cpp TU also held BuildResourceList) and reordered .text independently.
     # Keep `.text` exact via the section-ordering file; swap the link positions so the
     # .rodata chunks land at the original offsets.
-    for first, second in (("LowResourceTable.cpp.obj", "ResourceMaterial.cpp.obj"),):
+    # GameText.cpp is data-only (its sole symbol is GameText::currentLang).  The original
+    # Android link order put it between PaintCanvas.cpp and Engine.cpp: currentLang sits at
+    # .data+0x10c4, between PaintCanvas's i_fov (+0x10c0) and Engine's lodBiasDiffuse
+    # (+0x10c8).  The .text-address key cannot place a TU with no strong function, so move
+    # it next to Engine.cpp.  No TU between PaintCanvas and Engine owns a .data section, so
+    # "immediately before Engine" is exactly "immediately after PaintCanvas" for .data.
+    for first, second in (
+        ("LowResourceTable.cpp.obj", "ResourceMaterial.cpp.obj"),
+        ("GameText.cpp.obj", "Engine.cpp.obj"),
+    ):
         names = [k[3] for k in keyed]
         fi = next((i for i, o in enumerate(names) if o.endswith(first)), None)
         si = next((i for i, o in enumerate(names) if o.endswith(second)), None)
