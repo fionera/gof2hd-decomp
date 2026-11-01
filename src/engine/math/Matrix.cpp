@@ -30,6 +30,49 @@ namespace AbyssEngine {
             return *this;
         }
 
+        Matrix &Matrix::operator*=(const Matrix &other) {
+            const MatrixElements &o = other.m;
+            float r0 = m.e0, r1 = m.e1, r2 = m.e2;
+            m.e0 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e1 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e2 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e3 = m.e3 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
+            r0 = m.e4;
+            r1 = m.e5;
+            r2 = m.e6;
+            m.e4 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e5 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e6 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e7 = m.e7 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
+            r0 = m.e8;
+            r1 = m.e9;
+            r2 = m.e10;
+            m.e8 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
+            m.e9 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
+            m.e10 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
+            m.e11 = m.e11 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
+            scaleVector() *= other.scaleVector();
+            return *this;
+        }
+
+        Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
+            const float m0 = lhs.m[0] * rhs.m[0] + lhs.m[1] * rhs.m[4] + lhs.m[2] * rhs.m[8];
+            const float m1 = lhs.m[0] * rhs.m[1] + lhs.m[1] * rhs.m[5] + lhs.m[2] * rhs.m[9];
+            const float m2 = lhs.m[0] * rhs.m[2] + lhs.m[1] * rhs.m[6] + lhs.m[2] * rhs.m[10];
+            const float m3 = lhs.m[3] + (lhs.m[0] * rhs.m[3] + lhs.m[1] * rhs.m[7] + lhs.m[2] * rhs.m[11]);
+            const float m4 = lhs.m[4] * rhs.m[0] + lhs.m[5] * rhs.m[4] + lhs.m[6] * rhs.m[8];
+            const float m5 = lhs.m[4] * rhs.m[1] + lhs.m[5] * rhs.m[5] + lhs.m[6] * rhs.m[9];
+            const float m6 = lhs.m[4] * rhs.m[2] + lhs.m[5] * rhs.m[6] + lhs.m[6] * rhs.m[10];
+            const float m7 = lhs.m[7] + (lhs.m[4] * rhs.m[3] + lhs.m[5] * rhs.m[7] + lhs.m[6] * rhs.m[11]);
+            const float m8 = lhs.m[8] * rhs.m[0] + lhs.m[9] * rhs.m[4] + lhs.m[10] * rhs.m[8];
+            const float m9 = lhs.m[8] * rhs.m[1] + lhs.m[9] * rhs.m[5] + lhs.m[10] * rhs.m[9];
+            const float m10 = lhs.m[8] * rhs.m[2] + lhs.m[9] * rhs.m[6] + lhs.m[10] * rhs.m[10];
+            const float m11 = lhs.m[11] + (lhs.m[8] * rhs.m[3] + lhs.m[9] * rhs.m[7] + lhs.m[10] * rhs.m[11]);
+            Matrix result(m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11);
+            result.scaleVector() = lhs.scaleVector() * rhs.scaleVector();
+            return result;
+        }
+
         bool operator==(const Matrix &lhs, const Matrix &rhs) {
             return !(lhs.m[0] != rhs.m[0] ||
                      lhs.m[1] != rhs.m[1] ||
@@ -60,24 +103,6 @@ namespace AbyssEngine {
                    lhs.m[11] != rhs.m[11];
         }
 
-        Matrix operator*(const Matrix &lhs, const Matrix &rhs) {
-            const float m0 = lhs.m[0] * rhs.m[0] + lhs.m[1] * rhs.m[4] + lhs.m[2] * rhs.m[8];
-            const float m1 = lhs.m[0] * rhs.m[1] + lhs.m[1] * rhs.m[5] + lhs.m[2] * rhs.m[9];
-            const float m2 = lhs.m[0] * rhs.m[2] + lhs.m[1] * rhs.m[6] + lhs.m[2] * rhs.m[10];
-            const float m3 = lhs.m[3] + (lhs.m[0] * rhs.m[3] + lhs.m[1] * rhs.m[7] + lhs.m[2] * rhs.m[11]);
-            const float m4 = lhs.m[4] * rhs.m[0] + lhs.m[5] * rhs.m[4] + lhs.m[6] * rhs.m[8];
-            const float m5 = lhs.m[4] * rhs.m[1] + lhs.m[5] * rhs.m[5] + lhs.m[6] * rhs.m[9];
-            const float m6 = lhs.m[4] * rhs.m[2] + lhs.m[5] * rhs.m[6] + lhs.m[6] * rhs.m[10];
-            const float m7 = lhs.m[7] + (lhs.m[4] * rhs.m[3] + lhs.m[5] * rhs.m[7] + lhs.m[6] * rhs.m[11]);
-            const float m8 = lhs.m[8] * rhs.m[0] + lhs.m[9] * rhs.m[4] + lhs.m[10] * rhs.m[8];
-            const float m9 = lhs.m[8] * rhs.m[1] + lhs.m[9] * rhs.m[5] + lhs.m[10] * rhs.m[9];
-            const float m10 = lhs.m[8] * rhs.m[2] + lhs.m[9] * rhs.m[6] + lhs.m[10] * rhs.m[10];
-            const float m11 = lhs.m[11] + (lhs.m[8] * rhs.m[3] + lhs.m[9] * rhs.m[7] + lhs.m[10] * rhs.m[11]);
-            Matrix result(m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11);
-            result.scaleVector() = lhs.scaleVector() * rhs.scaleVector();
-            return result;
-        }
-
         Vector operator*(const Matrix &matrix, const Vector &vector) {
             const float x = vector.x * matrix.m[0] + vector.y * matrix.m[1] + vector.z * matrix.m[2] + matrix.m[3];
             const float y = vector.x * matrix.m[4] + vector.y * matrix.m[5] + vector.z * matrix.m[6] + matrix.m[7];
@@ -87,31 +112,6 @@ namespace AbyssEngine {
             result.y = y;
             result.z = z;
             return result;
-        }
-
-        Matrix &Matrix::operator*=(const Matrix &other) {
-            const MatrixElements &o = other.m;
-            float r0 = m.e0, r1 = m.e1, r2 = m.e2;
-            m.e0 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
-            m.e1 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
-            m.e2 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
-            m.e3 = m.e3 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
-            r0 = m.e4;
-            r1 = m.e5;
-            r2 = m.e6;
-            m.e4 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
-            m.e5 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
-            m.e6 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
-            m.e7 = m.e7 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
-            r0 = m.e8;
-            r1 = m.e9;
-            r2 = m.e10;
-            m.e8 = r0 * o.e0 + r1 * o.e4 + r2 * o.e8;
-            m.e9 = r0 * o.e1 + r1 * o.e5 + r2 * o.e9;
-            m.e10 = r0 * o.e2 + r1 * o.e6 + r2 * o.e10;
-            m.e11 = m.e11 + (r0 * o.e3 + r1 * o.e7 + r2 * o.e11);
-            scaleVector() *= other.scaleVector();
-            return *this;
         }
 
         Matrix MatrixMultiply(const Matrix &lhs, const Matrix &rhs) {
