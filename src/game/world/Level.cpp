@@ -1269,407 +1269,66 @@ static const float kBlueprintPositions[5][3] = {
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
 static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
 
-KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) {
-    int x = waypoint != nullptr ? waypoint->x : 0;
-    int y = waypoint != nullptr ? waypoint->y : 0;
-    int z = waypoint != nullptr ? waypoint->z : 0;
-    if (scatter) {
-        x = x + Globals::rnd->nextInt(20000) - 10000;
-        y = y + Globals::rnd->nextInt(20000) - 10000;
-        z = z + Globals::rnd->nextInt(20000) - 10000;
-    }
-
-    KIPlayer *object;
-    if (type == 0x4215) {
-        // space junk: one of three random meshes
-        int variant = Globals::rnd->nextInt(3);
-        int mesh = variant == 0 ? 0x4215 : (variant == 1 ? 0x4216 : 0x4217);
-        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
-        Player *player = new Player(1000, 1, 0, 0, 0);
-        object = new PlayerJunk(0x4215, player, geometry, x, y, z);
-        object->geometry->rotate(x, y, z);
-    } else {
-        AEGeometry *geometry;
-        if (type == 0x1a74 || type == 0x381b || type == 0x1a76) {
-            geometry = new AEGeometry(Globals::Canvas);
+// Keep createStaticObjects ahead of createMission and createStaticObject behind
+// createRadioMessages: clang emits a function's section at its first *use*, so this
+// ordering reproduces the original object's section order (and thus gold's PLT order)
+// for createStaticObject/getBoundingVolume/createShip/createRadioMessages.
+void Level::createStaticObjects() {
+    // the station-under-construction at station 0x70 grows with the campaign
+    if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x70
+        && Globals::status->getCurrentCampaignMission() >= 0x80) {
+        int type;
+        if (Globals::status->getCurrentCampaignMission() < 0x83) {
+            type = 0x493e;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x87) {
+            type = 0x4941;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x8a) {
+            type = 0x4944;
+        } else if (Globals::status->getCurrentCampaignMission() < 0x8e) {
+            type = 0x4947;
+        } else if (Globals::status->getCurrentCampaignMission() <= 0x91) {
+            type = 0x494a;
         } else {
-            geometry = new AEGeometry(type, Globals::Canvas, false);
+            type = -1;
         }
-
-        if (type == 0x4a6a) {
-            new Player(1000, 9999999, 0, 0, 0);
-            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
-        } else if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
-            Player *player = new Player(1000, 100, 0, 0, 0);
-            object = new PlayerTurret(type, player, geometry, x, y, z);
-            object->setLevel(this);
-            object->name = *Globals::gameText->getText(0x682);
-            object->cargo = nullptr;
-        } else if (type == 0x37a3) {
-            int hitpoints = Globals::status->getLevel() > 20 ? 320 : Globals::status->getLevel() * 15 + 20;
-            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
-            float scaled = (float) hitpoints;
-            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
-            Player *player = new Player(7500, (int) scaled, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x37a3, 8, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x37a3, Globals::Canvas, false);
-            fixed->setShipGroup(geometry, -1, false);
-            AEGeometry *part1 = new AEGeometry(0x37a4, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x37a5, Globals::Canvas, false);
-            fixed->geometry->addChild(part1->transform);
-            fixed->geometry->addChild(part2->transform);
-            delete part2;
-            delete part1;
-            fixed->setWreckedMeshId(0x37a6);
-            fixed->setBV(getBoundingVolume(1002, geometry));
-            fixed->setPosition(x, y, z);
-            object = fixed;
-        } else if (type == 0x381d) {
-            Player *player = new Player(1000, 100, 0, 0, 0);
-            object = new PlayerTurret(0x381d, player, geometry, x, y, z);
-            object->setLevel(this);
-            object->name = *Globals::gameText->getText(0x681);
-            object->field_0x25 = 0;
-            object->cargo = nullptr;
-        } else if (type == 0x4220) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4220, 0, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x4220, Globals::Canvas, false);
-            fixed->setShipGroup(geometry, -1, false);
-            AEGeometry *part1 = new AEGeometry(0x4221, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x4222, Globals::Canvas, false);
-            fixed->geometry->addChild(part1->transform);
-            fixed->geometry->addChild(part2->transform);
-            delete part2;
-            delete part1;
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->transform))->Update(
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->transform))->animationLength,
-                    false);
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->childTransform))->Update(
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->childTransform))->animationLength,
-                    false);
-            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->parentTransform))->Update(
-                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->parentTransform))->animationLength,
-                    false);
-            fixed->field_0x70 = 1;
-            fixed->setWreckedMeshId(0x37a6);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(7, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(1003, geometry));
-            fixed->setPosition(x, y, z);
-            object = fixed;
-        } else if (type == 0x4a88) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            player->setVulnerable(false);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4a88, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x4a88, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(0x4a8d, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x4a8c, Globals::Canvas, false);
-            AEGeometry *part3 = new AEGeometry(0x4a89, Globals::Canvas, false);
-            AEGeometry *part4 = new AEGeometry(0x4a8a, Globals::Canvas, false);
-            AEGeometry *part5 = new AEGeometry(0x4a8b, Globals::Canvas, false);
-            root->addChild(part1->transform);
-            root->addChild(part2->transform);
-            root->addChild(part3->transform);
-            AEGeometry *part6 = new AEGeometry(0x4a8e, Globals::Canvas, false);
-            AEGeometry *part7 = new AEGeometry(0x4a90, Globals::Canvas, false);
-            AEGeometry *part8 = new AEGeometry(0x4a8f, Globals::Canvas, false);
-            root->addChild(part6->transform);
-            root->addChild(part7->transform);
-            root->addChild(part8->transform);
-            delete part6;
-            delete part7;
-            delete part8;
-            root->addChild(part4->transform);
-            root->addChild(part5->transform);
-            delete part1;
-            delete part2;
-            delete part3;
-            delete part4;
-            delete part5;
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x4a88);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(1, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(2000, geometry));
-            fixed->player->radius = 0;
-            object = fixed;
-        } else if (type == 0x493e || type == 0x4941 || type == 0x4944 || type == 0x4947 || type == 0x494a) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            player->setVulnerable(false);
-            PlayerFixedObject *fixed = new PlayerFixedObject(type, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(type, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(type + 2, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(type + 1, Globals::Canvas, false);
-            root->addChild(part1->transform);
-            root->addChild(part2->transform);
-            if (type == 0x494a && Globals::status->getCurrentCampaignMission() == 0x91) {
-                AEGeometry *part3 = new AEGeometry(type + 3, Globals::Canvas, false);
-                root->addChild(part3->transform);
-                delete part3;
+        if (type != -1) {
+            KIPlayer *object = createStaticObject(nullptr, type, false);
+            object->setPosition(-50000.0f, 0.0f, 50000.0f);
+            ((PlayerFixedObject *) object)->setMoving(false);
+            AEGeometry *geometry = object->geometry;
+            object->field_0x70 = 0;
+            geometry->setDirection(starSystem->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
+            object->name = *Globals::gameText->getText(0xc87);
+            object->player->setAlwaysFriend(true);
+            if (enemies != nullptr) {
+                ArrayAdd(object, *enemies);
+            } else {
+                enemies = new Array<KIPlayer *>();
+                ArrayAdd(object, *enemies);
             }
-            delete part1;
-            delete part2;
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setBV(getBoundingVolume(2001, geometry));
-            object = fixed;
-        } else if (type == 0x4299) {
-            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
-            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
-            float scaled = (float) hitpoints;
-            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
-            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4299, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x4299, Globals::Canvas, false);
-            unsigned int core = -1;
-            Globals::Canvas->TransformCreate(core);
-            Globals::Canvas->TransformAddMesh(core, 0x429f, false);
-            root->addChild(core);
-            unsigned int firstLights = -1;
-            unsigned int firstRing = -1;
-            for (int i = 0; i < 3; i++) {
-                unsigned int ring = -1;
-                unsigned int lights = -1;
-                Globals::Canvas->TransformCreate(ring);
-                Globals::Canvas->TransformCreate(lights);
-                Globals::Canvas->TransformAddMesh(ring, 0x429c, false);
-                Globals::Canvas->TransformAddMesh(lights, 0x429d, false);
-                float offset = i == 0 ? -2150.0f : (i == 1 ? 2150.0f : 4300.0f);
-                AbyssEngine::AEMath::MatrixSetTranslation(
-                        *(Matrix *) Globals::Canvas->TransformGetLocal(ring), 0.0f, 0.0f, offset);
-                AbyssEngine::AEMath::MatrixSetTranslation(
-                        *(Matrix *) Globals::Canvas->TransformGetLocal(lights), 0.0f, 0.0f, offset);
-                if (firstRing == (unsigned int) -1) {
-                    firstLights = lights;
-                    firstRing = ring;
-                } else {
-                    Globals::Canvas->TransformAddChild(firstRing, ring);
-                    Globals::Canvas->TransformAddChild(firstLights, lights);
-                }
-            }
-            root->addChild(firstRing);
-            unsigned int dock = -1;
-            Globals::Canvas->TransformCreate(dock);
-            Globals::Canvas->TransformAddMesh(dock, 0x429e, false);
-            root->addChild(dock);
-            unsigned short lodMeshes[1] = {0x429a};
-            int lodDistances[1] = {35000};
-            root->setLodMeshes(lodMeshes, lodDistances, 1);
-            root->setLodChildTransform(firstLights);
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->field_0x40 = 1;
-            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
-            ArraySetLength(2, *volumes);
-            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
-            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
-            fixed->setBV(volumes);
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            fixed->shipGroup = 3;
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(4, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            object = fixed;
-        } else if (type == 0x494e) {
-            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
-            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
-            float scaled = (float) hitpoints;
-            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
-            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x494e, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x4a80, Globals::Canvas, false);
-            AEGeometry *hull = new AEGeometry(0x494e, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(0x4a81, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x4a82, Globals::Canvas, false);
-            AEGeometry *part3 = new AEGeometry(0x4a83, Globals::Canvas, false);
-            AEGeometry *part4 = new AEGeometry(0x4a84, Globals::Canvas, false);
-            root->addChild(hull->transform);
-            hull->addChild(part1->transform);
-            hull->addChild(part2->transform);
-            hull->addChild(part3->transform);
-            hull->addChild(part4->transform);
-            delete hull;
-            delete part1;
-            delete part2;
-            delete part3;
-            delete part4;
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->field_0x40 = 1;
-            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
-            ArraySetLength(2, *volumes);
-            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
-            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
-            fixed->setBV(volumes);
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(3, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            object = fixed;
-        } else if (type == 0x495d) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x495d, 3, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x5254, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(0x5574, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x563c, Globals::Canvas, false);
-            AEGeometry *part3 = new AEGeometry(0x495d, Globals::Canvas, false);
-            AEGeometry *part4 = new AEGeometry(0x495d, Globals::Canvas, false);
-            AEGeometry *part5 = new AEGeometry(0x495e, Globals::Canvas, false);
-            AEGeometry *part6 = new AEGeometry(0x495f, Globals::Canvas, false);
-            AEGeometry *part7 = new AEGeometry(0x4960, Globals::Canvas, false);
-            root->addChild(part7->transform);
-            root->addChild(part1->transform);
-            root->addChild(part2->transform);
-            root->addChild(part3->transform);
-            root->addChild(part4->transform);
-            root->addChild(part5->transform);
-            root->addChild(part6->transform);
-            delete part1;
-            delete part2;
-            delete part3;
-            delete part4;
-            delete part5;
-            delete part6;
-            delete part7;
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(6, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(111, geometry));
-            object = fixed;
-        } else if (type == 0x4260) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4260, 0, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x4260, Globals::Canvas, false);
-            fixed->setShipGroup(geometry, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(2, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            object = fixed;
-        } else if (type == 0x4961) {
-            Player *player = new Player(1000, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4961, 2, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x4961, Globals::Canvas, false);
-            AEGeometry *part = new AEGeometry(0x498f, Globals::Canvas, false);
-            geometry->addChild(part->transform);
-            delete part;
-            fixed->setShipGroup(geometry, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            fixed->shipGroup = 2;
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(2, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(2003, geometry));
-            object = fixed;
-        } else if (type == 0x4962) {
-            Player *player = new Player(0, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4962, 2, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x4962, Globals::Canvas, false);
-            fixed->setShipGroup(geometry, -1, false);
-            fixed->field_0x70 = 0;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            object = fixed;
-        } else if (type == 0x4974) {
-            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
-            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
-            float scaled = (float) hitpoints;
-            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
-            Player *player = new Player(0, (int) scaled, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4974, 0, player, nullptr, x, y, z);
-            AEGeometry *root = new AEGeometry(0x4974, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(0x4975, Globals::Canvas, false);
-            AEGeometry *part2 = new AEGeometry(0x4977, Globals::Canvas, false);
-            AEGeometry *part3 = new AEGeometry(0x4978, Globals::Canvas, false);
-            AEGeometry *part4 = new AEGeometry(0x4979, Globals::Canvas, false);
-            AEGeometry *part5 = new AEGeometry(0x497a, Globals::Canvas, false);
-            AEGeometry *part6 = new AEGeometry(0x4976, Globals::Canvas, false);
-            root->addChild(part1->transform);
-            root->addChild(part2->transform);
-            root->addChild(part3->transform);
-            root->addChild(part4->transform);
-            root->addChild(part5->transform);
-            root->addChild(part6->transform);
-            delete part1;
-            delete part2;
-            delete part3;
-            delete part4;
-            delete part5;
-            delete part6;
-            fixed->setShipGroup(root, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setWreckedMeshId(0x494e);
-            fixed->setPosition(x, y, z);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(5, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(2005, geometry));
-            object = fixed;
-        } else if (type == 0x4a6b) {
-            Player *player = new Player(0, 9999999, 0, 0, 0);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x4a6b, 1, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x4a6b, Globals::Canvas, false);
-            AEGeometry *part1 = new AEGeometry(0x4a6c, Globals::Canvas, false);
-            geometry->addChild(part1->transform);
-            delete part1;
-            AEGeometry *part2 = new AEGeometry(0x4a6d, Globals::Canvas, false);
-            geometry->addChild(part2->transform);
-            delete part2;
-            fixed->setShipGroup(geometry, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x477c);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(8, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(2006, geometry));
-            object = fixed;
-        } else if (type == 0x5279) {
-            Player *player = new Player(0, 9999999, 0, 0, 0);
-            player->setVulnerable(false);
-            PlayerFixedObject *fixed = new PlayerFixedObject(0x41a0, 1, player, nullptr, x, y, z);
-            geometry = new AEGeometry(0x41a0, Globals::Canvas, false);
-            fixed->setShipGroup(geometry, -1, false);
-            fixed->field_0x70 = 1;
-            fixed->setPosition(x, y, z);
-            fixed->setWreckedMeshId(0x5279);
-            FileRead *fileRead = new FileRead();
-            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(10, -1);
-            delete fileRead;
-            fixed->setSpacePoints(spacePoints);
-            fixed->setBV(getBoundingVolume(2002, geometry));
-            object = fixed;
-        } else {
-            object = nullptr;
+            delete object->cargo;
+            object->cargo = nullptr;
         }
     }
-    object->setLevel(this);
-    return object;
+
+    if (Globals::status->getCurrentCampaignMission() >= 0x55 && Globals::status->getCurrentCampaignMission() != 0x87
+        && !Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x67) {
+        KIPlayer *object = createStaticObject(nullptr, 0x4a88, false);
+        object->setPosition(0.0f, 0.0f, 0.0f);
+        ((PlayerFixedObject *) object)->setMoving(false);
+        object->field_0x70 = 1;
+        ((PlayerFixedObject *) object)->setName(*Globals::gameText->getText(0xc8a));
+        ((PlayerFixedObject *) object)->setDockingType(1);
+        delete object->cargo;
+        object->cargo = nullptr;
+        object->player->setAlwaysFriend(true);
+        if (enemies != nullptr) {
+            ArrayAdd(object, *enemies);
+        } else {
+            enemies = new Array<KIPlayer *>();
+            ArrayAdd(object, *enemies);
+        }
+    }
 }
 
 void Level::assignGuns() {
@@ -4816,63 +4475,6 @@ void Level::createCampaignMission() {
 }
 
 
-void Level::createStaticObjects() {
-    // the station-under-construction at station 0x70 grows with the campaign
-    if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x70
-        && Globals::status->getCurrentCampaignMission() >= 0x80) {
-        int type;
-        if (Globals::status->getCurrentCampaignMission() < 0x83) {
-            type = 0x493e;
-        } else if (Globals::status->getCurrentCampaignMission() < 0x87) {
-            type = 0x4941;
-        } else if (Globals::status->getCurrentCampaignMission() < 0x8a) {
-            type = 0x4944;
-        } else if (Globals::status->getCurrentCampaignMission() < 0x8e) {
-            type = 0x4947;
-        } else if (Globals::status->getCurrentCampaignMission() <= 0x91) {
-            type = 0x494a;
-        } else {
-            type = -1;
-        }
-        if (type != -1) {
-            KIPlayer *object = createStaticObject(nullptr, type, false);
-            object->setPosition(-50000.0f, 0.0f, 50000.0f);
-            ((PlayerFixedObject *) object)->setMoving(false);
-            AEGeometry *geometry = object->geometry;
-            object->field_0x70 = 0;
-            geometry->setDirection(starSystem->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
-            object->name = *Globals::gameText->getText(0xc87);
-            object->player->setAlwaysFriend(true);
-            if (enemies != nullptr) {
-                ArrayAdd(object, *enemies);
-            } else {
-                enemies = new Array<KIPlayer *>();
-                ArrayAdd(object, *enemies);
-            }
-            delete object->cargo;
-            object->cargo = nullptr;
-        }
-    }
-
-    if (Globals::status->getCurrentCampaignMission() >= 0x55 && Globals::status->getCurrentCampaignMission() != 0x87
-        && !Globals::status->inAlienOrbit() && Globals::status->getStation()->getIndex() == 0x67) {
-        KIPlayer *object = createStaticObject(nullptr, 0x4a88, false);
-        object->setPosition(0.0f, 0.0f, 0.0f);
-        ((PlayerFixedObject *) object)->setMoving(false);
-        object->field_0x70 = 1;
-        ((PlayerFixedObject *) object)->setName(*Globals::gameText->getText(0xc8a));
-        ((PlayerFixedObject *) object)->setDockingType(1);
-        delete object->cargo;
-        object->cargo = nullptr;
-        object->player->setAlwaysFriend(true);
-        if (enemies != nullptr) {
-            ArrayAdd(object, *enemies);
-        } else {
-            enemies = new Array<KIPlayer *>();
-            ArrayAdd(object, *enemies);
-        }
-    }
-}
 
 void Level::createSentryGuns() {
     int ship = (int) (intptr_t) Globals::status->getShip();
@@ -5136,6 +4738,411 @@ void Level::connectPlayers() {
             ship->player->setEnemy(player->player);
         }
     }
+}
+
+// See the note above createStaticObjects: this definition must stay after
+// createCampaignMission so getBoundingVolume's section lands after createRadioMessages'.
+KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) {
+    int x = waypoint != nullptr ? waypoint->x : 0;
+    int y = waypoint != nullptr ? waypoint->y : 0;
+    int z = waypoint != nullptr ? waypoint->z : 0;
+    if (scatter) {
+        x = x + Globals::rnd->nextInt(20000) - 10000;
+        y = y + Globals::rnd->nextInt(20000) - 10000;
+        z = z + Globals::rnd->nextInt(20000) - 10000;
+    }
+
+    KIPlayer *object;
+    if (type == 0x4215) {
+        // space junk: one of three random meshes
+        int variant = Globals::rnd->nextInt(3);
+        int mesh = variant == 0 ? 0x4215 : (variant == 1 ? 0x4216 : 0x4217);
+        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
+        Player *player = new Player(1000, 1, 0, 0, 0);
+        object = new PlayerJunk(0x4215, player, geometry, x, y, z);
+        object->geometry->rotate(x, y, z);
+    } else {
+        AEGeometry *geometry;
+        if (type == 0x1a74 || type == 0x381b || type == 0x1a76) {
+            geometry = new AEGeometry(Globals::Canvas);
+        } else {
+            geometry = new AEGeometry(type, Globals::Canvas, false);
+        }
+
+        if (type == 0x4a6a) {
+            new Player(1000, 9999999, 0, 0, 0);
+            object = new PlayerStatic(0x4a6a, geometry, x, y, z);
+        } else if ((unsigned int) (type - 0x49c0) < 3 || type == 0x1a74 || type == 0x1a76 || type == 0x381b) {
+            Player *player = new Player(1000, 100, 0, 0, 0);
+            object = new PlayerTurret(type, player, geometry, x, y, z);
+            object->setLevel(this);
+            object->name = *Globals::gameText->getText(0x682);
+            object->cargo = nullptr;
+        } else if (type == 0x37a3) {
+            int hitpoints = Globals::status->getLevel() > 20 ? 320 : Globals::status->getLevel() * 15 + 20;
+            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
+            float scaled = (float) hitpoints;
+            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
+            Player *player = new Player(7500, (int) scaled, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x37a3, 8, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x37a3, Globals::Canvas, false);
+            fixed->setShipGroup(geometry, -1, false);
+            AEGeometry *part1 = new AEGeometry(0x37a4, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x37a5, Globals::Canvas, false);
+            fixed->geometry->addChild(part1->transform);
+            fixed->geometry->addChild(part2->transform);
+            delete part2;
+            delete part1;
+            fixed->setWreckedMeshId(0x37a6);
+            fixed->setBV(getBoundingVolume(1002, geometry));
+            fixed->setPosition(x, y, z);
+            object = fixed;
+        } else if (type == 0x381d) {
+            Player *player = new Player(1000, 100, 0, 0, 0);
+            object = new PlayerTurret(0x381d, player, geometry, x, y, z);
+            object->setLevel(this);
+            object->name = *Globals::gameText->getText(0x681);
+            object->field_0x25 = 0;
+            object->cargo = nullptr;
+        } else if (type == 0x4220) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4220, 0, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x4220, Globals::Canvas, false);
+            fixed->setShipGroup(geometry, -1, false);
+            AEGeometry *part1 = new AEGeometry(0x4221, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x4222, Globals::Canvas, false);
+            fixed->geometry->addChild(part1->transform);
+            fixed->geometry->addChild(part2->transform);
+            delete part2;
+            delete part1;
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->transform))->Update(
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->transform))->animationLength,
+                    false);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->childTransform))->Update(
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->childTransform))->animationLength,
+                    false);
+            ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->parentTransform))->Update(
+                    ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(fixed->geometry->parentTransform))->animationLength,
+                    false);
+            fixed->field_0x70 = 1;
+            fixed->setWreckedMeshId(0x37a6);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(7, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(1003, geometry));
+            fixed->setPosition(x, y, z);
+            object = fixed;
+        } else if (type == 0x4a88) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            player->setVulnerable(false);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4a88, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x4a88, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(0x4a8d, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x4a8c, Globals::Canvas, false);
+            AEGeometry *part3 = new AEGeometry(0x4a89, Globals::Canvas, false);
+            AEGeometry *part4 = new AEGeometry(0x4a8a, Globals::Canvas, false);
+            AEGeometry *part5 = new AEGeometry(0x4a8b, Globals::Canvas, false);
+            root->addChild(part1->transform);
+            root->addChild(part2->transform);
+            root->addChild(part3->transform);
+            AEGeometry *part6 = new AEGeometry(0x4a8e, Globals::Canvas, false);
+            AEGeometry *part7 = new AEGeometry(0x4a90, Globals::Canvas, false);
+            AEGeometry *part8 = new AEGeometry(0x4a8f, Globals::Canvas, false);
+            root->addChild(part6->transform);
+            root->addChild(part7->transform);
+            root->addChild(part8->transform);
+            delete part6;
+            delete part7;
+            delete part8;
+            root->addChild(part4->transform);
+            root->addChild(part5->transform);
+            delete part1;
+            delete part2;
+            delete part3;
+            delete part4;
+            delete part5;
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x4a88);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(1, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(2000, geometry));
+            fixed->player->radius = 0;
+            object = fixed;
+        } else if (type == 0x493e || type == 0x4941 || type == 0x4944 || type == 0x4947 || type == 0x494a) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            player->setVulnerable(false);
+            PlayerFixedObject *fixed = new PlayerFixedObject(type, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(type, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(type + 2, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(type + 1, Globals::Canvas, false);
+            root->addChild(part1->transform);
+            root->addChild(part2->transform);
+            if (type == 0x494a && Globals::status->getCurrentCampaignMission() == 0x91) {
+                AEGeometry *part3 = new AEGeometry(type + 3, Globals::Canvas, false);
+                root->addChild(part3->transform);
+                delete part3;
+            }
+            delete part1;
+            delete part2;
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setBV(getBoundingVolume(2001, geometry));
+            object = fixed;
+        } else if (type == 0x4299) {
+            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
+            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
+            float scaled = (float) hitpoints;
+            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
+            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4299, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x4299, Globals::Canvas, false);
+            unsigned int core = -1;
+            Globals::Canvas->TransformCreate(core);
+            Globals::Canvas->TransformAddMesh(core, 0x429f, false);
+            root->addChild(core);
+            unsigned int firstLights = -1;
+            unsigned int firstRing = -1;
+            for (int i = 0; i < 3; i++) {
+                unsigned int ring = -1;
+                unsigned int lights = -1;
+                Globals::Canvas->TransformCreate(ring);
+                Globals::Canvas->TransformCreate(lights);
+                Globals::Canvas->TransformAddMesh(ring, 0x429c, false);
+                Globals::Canvas->TransformAddMesh(lights, 0x429d, false);
+                float offset = i == 0 ? -2150.0f : (i == 1 ? 2150.0f : 4300.0f);
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                        *(Matrix *) Globals::Canvas->TransformGetLocal(ring), 0.0f, 0.0f, offset);
+                AbyssEngine::AEMath::MatrixSetTranslation(
+                        *(Matrix *) Globals::Canvas->TransformGetLocal(lights), 0.0f, 0.0f, offset);
+                if (firstRing == (unsigned int) -1) {
+                    firstLights = lights;
+                    firstRing = ring;
+                } else {
+                    Globals::Canvas->TransformAddChild(firstRing, ring);
+                    Globals::Canvas->TransformAddChild(firstLights, lights);
+                }
+            }
+            root->addChild(firstRing);
+            unsigned int dock = -1;
+            Globals::Canvas->TransformCreate(dock);
+            Globals::Canvas->TransformAddMesh(dock, 0x429e, false);
+            root->addChild(dock);
+            unsigned short lodMeshes[1] = {0x429a};
+            int lodDistances[1] = {35000};
+            root->setLodMeshes(lodMeshes, lodDistances, 1);
+            root->setLodChildTransform(firstLights);
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
+            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+            ArraySetLength(2, *volumes);
+            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+            fixed->setBV(volumes);
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            fixed->shipGroup = 3;
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(4, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            object = fixed;
+        } else if (type == 0x494e) {
+            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
+            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
+            float scaled = (float) hitpoints;
+            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
+            Player *player = new Player(1000, (int) scaled, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x494e, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x4a80, Globals::Canvas, false);
+            AEGeometry *hull = new AEGeometry(0x494e, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(0x4a81, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x4a82, Globals::Canvas, false);
+            AEGeometry *part3 = new AEGeometry(0x4a83, Globals::Canvas, false);
+            AEGeometry *part4 = new AEGeometry(0x4a84, Globals::Canvas, false);
+            root->addChild(hull->transform);
+            hull->addChild(part1->transform);
+            hull->addChild(part2->transform);
+            hull->addChild(part3->transform);
+            hull->addChild(part4->transform);
+            delete hull;
+            delete part1;
+            delete part2;
+            delete part3;
+            delete part4;
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->field_0x40 = 1;
+            Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
+            ArraySetLength(2, *volumes);
+            (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+            (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+            fixed->setBV(volumes);
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(3, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            object = fixed;
+        } else if (type == 0x495d) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x495d, 3, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x5254, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(0x5574, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x563c, Globals::Canvas, false);
+            AEGeometry *part3 = new AEGeometry(0x495d, Globals::Canvas, false);
+            AEGeometry *part4 = new AEGeometry(0x495d, Globals::Canvas, false);
+            AEGeometry *part5 = new AEGeometry(0x495e, Globals::Canvas, false);
+            AEGeometry *part6 = new AEGeometry(0x495f, Globals::Canvas, false);
+            AEGeometry *part7 = new AEGeometry(0x4960, Globals::Canvas, false);
+            root->addChild(part7->transform);
+            root->addChild(part1->transform);
+            root->addChild(part2->transform);
+            root->addChild(part3->transform);
+            root->addChild(part4->transform);
+            root->addChild(part5->transform);
+            root->addChild(part6->transform);
+            delete part1;
+            delete part2;
+            delete part3;
+            delete part4;
+            delete part5;
+            delete part6;
+            delete part7;
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(6, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(111, geometry));
+            object = fixed;
+        } else if (type == 0x4260) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4260, 0, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x4260, Globals::Canvas, false);
+            fixed->setShipGroup(geometry, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(2, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            object = fixed;
+        } else if (type == 0x4961) {
+            Player *player = new Player(1000, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4961, 2, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x4961, Globals::Canvas, false);
+            AEGeometry *part = new AEGeometry(0x498f, Globals::Canvas, false);
+            geometry->addChild(part->transform);
+            delete part;
+            fixed->setShipGroup(geometry, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            fixed->shipGroup = 2;
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(2, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(2003, geometry));
+            object = fixed;
+        } else if (type == 0x4962) {
+            Player *player = new Player(0, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4962, 2, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x4962, Globals::Canvas, false);
+            fixed->setShipGroup(geometry, -1, false);
+            fixed->field_0x70 = 0;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            object = fixed;
+        } else if (type == 0x4974) {
+            int hitpoints = Globals::status->getLevel() > 20 ? 400 : Globals::status->getLevel() * 15 + 100;
+            hitpoints = (hitpoints + (Globals::status->gameWon() ? 180 : Globals::status->getCurrentCampaignMission() * 4)) * 5;
+            float scaled = (float) hitpoints;
+            scaled = scaled + (*reinterpret_cast<float *>(&Globals::options[0x2c]) - 0.5f) * scaled;
+            Player *player = new Player(0, (int) scaled, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4974, 0, player, nullptr, x, y, z);
+            AEGeometry *root = new AEGeometry(0x4974, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(0x4975, Globals::Canvas, false);
+            AEGeometry *part2 = new AEGeometry(0x4977, Globals::Canvas, false);
+            AEGeometry *part3 = new AEGeometry(0x4978, Globals::Canvas, false);
+            AEGeometry *part4 = new AEGeometry(0x4979, Globals::Canvas, false);
+            AEGeometry *part5 = new AEGeometry(0x497a, Globals::Canvas, false);
+            AEGeometry *part6 = new AEGeometry(0x4976, Globals::Canvas, false);
+            root->addChild(part1->transform);
+            root->addChild(part2->transform);
+            root->addChild(part3->transform);
+            root->addChild(part4->transform);
+            root->addChild(part5->transform);
+            root->addChild(part6->transform);
+            delete part1;
+            delete part2;
+            delete part3;
+            delete part4;
+            delete part5;
+            delete part6;
+            fixed->setShipGroup(root, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setWreckedMeshId(0x494e);
+            fixed->setPosition(x, y, z);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(5, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(2005, geometry));
+            object = fixed;
+        } else if (type == 0x4a6b) {
+            Player *player = new Player(0, 9999999, 0, 0, 0);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x4a6b, 1, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x4a6b, Globals::Canvas, false);
+            AEGeometry *part1 = new AEGeometry(0x4a6c, Globals::Canvas, false);
+            geometry->addChild(part1->transform);
+            delete part1;
+            AEGeometry *part2 = new AEGeometry(0x4a6d, Globals::Canvas, false);
+            geometry->addChild(part2->transform);
+            delete part2;
+            fixed->setShipGroup(geometry, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x477c);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(8, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(2006, geometry));
+            object = fixed;
+        } else if (type == 0x5279) {
+            Player *player = new Player(0, 9999999, 0, 0, 0);
+            player->setVulnerable(false);
+            PlayerFixedObject *fixed = new PlayerFixedObject(0x41a0, 1, player, nullptr, x, y, z);
+            geometry = new AEGeometry(0x41a0, Globals::Canvas, false);
+            fixed->setShipGroup(geometry, -1, false);
+            fixed->field_0x70 = 1;
+            fixed->setPosition(x, y, z);
+            fixed->setWreckedMeshId(0x5279);
+            FileRead *fileRead = new FileRead();
+            Array<SpacePoint *> *spacePoints = fileRead->loadSpacePoints(10, -1);
+            delete fileRead;
+            fixed->setSpacePoints(spacePoints);
+            fixed->setBV(getBoundingVolume(2002, geometry));
+            object = fixed;
+        } else {
+            object = nullptr;
+        }
+    }
+    object->setLevel(this);
+    return object;
 }
 
 void Level::enableParticleEffects(bool emit, bool render) {
