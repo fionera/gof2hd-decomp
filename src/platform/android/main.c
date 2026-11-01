@@ -64,9 +64,6 @@ char *flstat_rootPath;
 
 int AccIndex;
 
-/* Raised by the NFC back key, consumed by ndk23_newrender. */
-int g_android_back_button_pressed;
-
 jint JNI_OnLoad(JavaVM *vm, void *reserved) { // lint: void_ptr (JNI_OnLoad reserved param, baked JNI ABI)
     JNIEnv *env = NULL;
     g_pVM = vm;
@@ -213,13 +210,6 @@ void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC1(JNIEnv *env,
     ndk_iapBoughtPremium(0, 1);
 }
 
-int g_android_current_achievements[3];
-int g_android_leaderboard_scores[8];
-int g_android_link_game_gp;
-int g_android_gp_is_linked;
-int g_android_show_achievements;
-int g_android_show_leaderboards;
-
 void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC2(JNIEnv *env, jclass clazz) {
     ndk_iapBoughtPremium(1, 1);
 }
@@ -316,52 +306,4 @@ jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown(JNIEnv *env, jcla
 
 jint Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu(JNIEnv *env, jclass clazz) {
     return ndk_isInMainMenu();
-}
-
-jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore(JNIEnv *env, jclass clazz,
-                                                                           jint index) {
-    return g_android_leaderboard_scores[index];
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLeaderboardScore(JNIEnv *env, jclass clazz,
-                                                                             jint index) {
-    g_android_leaderboard_scores[index] = 0;
-}
-
-jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId(JNIEnv *env, jclass clazz, jint index) {
-    return g_android_current_achievements[index];
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetAchievements(JNIEnv *env, jclass clazz) {
-    g_android_current_achievements[0] = 0;
-    g_android_current_achievements[1] = 0;
-    g_android_current_achievements[2] = 0;
-}
-
-jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowAchievements(JNIEnv *env, jclass clazz) {
-    return g_android_show_achievements;
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowAchievements(JNIEnv *env, jclass clazz) {
-    g_android_show_achievements = 0;
-}
-
-jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLinkGameGP(JNIEnv *env, jclass clazz) {
-    return g_android_link_game_gp;
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLinkGameGP(JNIEnv *env, jclass clazz) {
-    g_android_link_game_gp = 0;
-}
-
-jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowLeaderboards(JNIEnv *env, jclass clazz) {
-    return g_android_show_leaderboards;
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowLeaderboards(JNIEnv *env, jclass clazz) {
-    g_android_show_leaderboards = 0;
-}
-
-void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(JNIEnv *env, jclass clazz, jint linked) {
-    g_android_gp_is_linked = linked;
 }
