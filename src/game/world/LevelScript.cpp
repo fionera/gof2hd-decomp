@@ -647,11 +647,9 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setVisible(true);
             }
             // layout anchor (see s_processPad)
-            s_processPad[0] = delta + 0;
+            s_processPad[0] = delta;
             s_processPad[1] = delta + 1;
             s_processPad[2] = delta + 2;
-            s_processPad[3] = delta + 3;
-            s_processPad[0] = delta + 8;
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
@@ -738,6 +736,7 @@ bool LevelScript::process(int delta) {
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
             }
             // layout anchor (see s_processPad)
+            s_processPad[0] = delta + 3;
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
@@ -3233,6 +3232,7 @@ bool LevelScript::process(int delta) {
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                             ->Update((long long) delta, true);
                 }
+                player->setAutoTurret(player->autoTurretIsEnabled());
                 if (m_nState == 0) {
                     m_pGeometry4 = new AEGeometry(Globals::Canvas);
                     m_pGeometry4->setPosition(Vector{-120000.0f, 0.0f, 5000.0f});
@@ -3983,8 +3983,7 @@ bool LevelScript::process(int delta) {
             }
             case 154: {
                 // The pirate ambush at the asteroid station: a long camera ride along the player ship.
-                if (m_nState == 0) {
-                  if (((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     if (player->isInRocketControl()) {
                         resetCamera(m_pLevel);
                         player->setRocketControl(nullptr, nullptr);
@@ -4026,7 +4025,6 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nState++;
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                  }
                 } else if (m_nState == 1) {
                     player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -4100,10 +4098,6 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setFixed(false);
                         m_nState++;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-            // layout anchor (see s_processPad): the nested case-154 state-0 guard below is the
-            // faithful shape (orig 0x13a76e cmp/beq peel) but costs 0x1c bytes vs the merged
-            // switch clang emits for the `&&` form; this single store restores the 0xdf90 size.
-            s_processPad[0] = delta;
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 4) {
