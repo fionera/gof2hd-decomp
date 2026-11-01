@@ -930,15 +930,20 @@ bool LevelScript::process(int delta) {
                         Globals::layout->startFade(true, 255, 5000);
                         m_nState = 16;
                     }
-                    if (!Globals::layout->isFading() && m_nState == 16) {
-                        Globals::layout->enableFillScreen(true);
-                        Globals::status->nextCampaignMission(true);
-                        Globals::switch_to_target_setting = 1;
-                        Globals::appManager->SetCurrentApplicationModule(2);
-                        Level::initStreamOutPosition = 0;
-                        return 0;
-                    }
                     break;
+                }
+            }
+            // The tbh covers states 6..15 only; state 16 is the switch's default handler
+            // (0x13f902: `cmp r1,#16; bne` to the shared active tail), so it must be tested
+            // after the switch -- otherwise the mission-0 intro never ends.
+            if (m_nState == 16) {
+                if (!Globals::layout->isFading()) {
+                    Globals::layout->enableFillScreen(true);
+                    Globals::status->nextCampaignMission(true);
+                    Globals::switch_to_target_setting = 1;
+                    Globals::appManager->SetCurrentApplicationModule(2);
+                    Level::initStreamOutPosition = 0;
+                    return 0;
                 }
             }
         }
