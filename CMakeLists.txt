@@ -129,10 +129,6 @@ if(GOF2_MATCH_LAYOUT)
         COMMENT "Generating section-ordering file from the original .so + object source order"
         COMMAND_EXPAND_LISTS VERBATIM)
     set(_order_flag "--section-ordering-file=${_order}")
-    # The extra exidx bytes push the read-only segment past the RW segment's file-offset window;
-    # without this anchor gold moves the whole RW segment by +0x1000.  The original's RW segment
-    # starts here, so pin it (neutral on the pre-marker baseline).
-    set(_tdata_flag -Tdata 0x20cb80)
     set(_link_objs "@${_marker_objs}")
     set(_link_zlib "${_marker_zlib}")
     set(_link_libzip "${_marker_libzip}")
@@ -153,20 +149,18 @@ else()
 endif()
 
 add_custom_command(OUTPUT "${_so}"
-    # --unresolved-symbols=ignore-all: undecompiled engine internals import as shims, as in the
-    # original's app-provided imports. The import set is gated by tools/ratchet.py (a typo'd callee
-    # would otherwise become a silent new import). NO --allow-multiple-definition: a duplicate
-    # strong definition must be a link error, not a silent first-wins pick.
+    # A shared-library link allows undefined imports by default, as the original's app-provided
+    # imports require; the import set is gated by tools/ratchet.py (a typo'd callee would otherwise
+    # become a silent new import). NO --allow-multiple-definition: a duplicate strong definition
+    # must be a link error, not a silent first-wins pick.
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
             # The original is fully RELRO-bound: DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, and its .got
             # sits before .data inside PT_GNU_RELRO (gold only emits that order with -z now).
             # Evidence: readelf -d/-lW on the original; without -z now gold puts .got after .data.
             -z now
-            --unresolved-symbols=ignore-all
             --exclude-libs=libgcc.a
             ${_order_flag}
-            ${_tdata_flag}
             -o "${_so}"
             ${_crtbegin} -L ${_libdir}
             ${_link_objs}

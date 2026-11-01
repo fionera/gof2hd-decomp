@@ -118,7 +118,7 @@ folder taxonomy is fine — **folder paths are free, TU membership is not**:
 
 - `-ffunction-sections` + the section-ordering file reproduce the original `.text` order regardless
   of file layout, but **`.rodata`/`.data` layout, string-literal pools, `__GLOBAL__sub_I_*`
-  initializers (original has 3 `.init_array` entries; we have 1), per-TU statics, and -Oz
+  initializers (original has 3 `.init_array` entries; we have the same 3), per-TU statics, and -Oz
   same-TU inlining all follow TU membership**. Byte-identicality of data requires the original's
   TU ownership and link order.
 - Before adding or moving a function/class, check `_work/original_layout/tu_mapping.md` for its

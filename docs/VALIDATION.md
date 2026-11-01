@@ -45,9 +45,10 @@ come first, and the plain `.text` group (libcrypto's sha256/armv4cpuid objects, 
 placed at the original's block start (one ZIP TU earlier, so the following 32-byte-aligned
 libc++abi section needs no padding). A trailing `*` keeps archive-local sections that the
 original's `.dynsym` cannot name after the listed ones; without it gold gives them ordering
-index 0 and they sort to the front of `.text`),
-and `--unresolved-symbols=ignore-all` (undecompiled engine internals import as shims; the import
-set is pinned by the ratchet, so a typo'd callee cannot slip in as a silent new import).
+index 0 and they sort to the front of `.text`), and gold's default shared-library handling of
+undefined imports (no `--unresolved-symbols` switch; undecompiled engine internals import as
+shims, and the import set is pinned by the ratchet, so a typo'd callee cannot slip in as a
+silent new import).
 `--allow-multiple-definition` was removed after it was found masking a real triplicate definition
 of the Vector/Matrix operators — duplicate strong definitions are hard link errors now. Any symbol
 the original does not export but we do is removed by reshaping the C++, or recorded below as an
