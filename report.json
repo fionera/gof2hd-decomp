@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4252,
+  "byte_exact": 4253,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -16746,7 +16746,7 @@
   {
    "name": "_ZN14PlayerAsteroid16getQualityStringEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60

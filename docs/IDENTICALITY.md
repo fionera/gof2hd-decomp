@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4252, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4253, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -61,7 +61,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 14,515 content bytes still differ (first: 0x1fb8c8), all per-object table/string emission order. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact: 3566 entries; CANTUNWIND 272, inline 856, extab 2438 all match. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact since the EH landing-pad split in `Level::createShip` (see `_work/reconstructions/exidx_extab_audit.md`). |
-| .dynsym | 89,248 | 89,248 | 0 | same symbol count; only a handful of local symbol-order permutations remain. |
+| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 1410/5578 entries at the same index. Gold emits dynsym in its `std::unordered_map` iteration order (keyed by namepool offsets), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
@@ -84,8 +84,10 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    landing-pad split in `Level::createShip`.
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
-   `PT_GNU_RELRO`, `.got` at 0x20fcf4). Only a handful of local symbol-order permutations remain
-   in the PLT/dynsym sequence; the GNU build-id is a content hash that converges last.
+   `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now
+   exact; the remaining `.dynsym` order delta (1410/5578 same index) is gold's hash-table
+   iteration order over the symbol-insertion sequence, not a tunable link knob. The GNU
+   build-id is a content hash that converges last.
 
 ## Done
 - **Pass 1: strip** the link output (`strip --strip-all`) -> section set matches the original

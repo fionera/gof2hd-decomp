@@ -166,8 +166,11 @@ static int gStoryFaces[60][5] = {
 // The original's gStoryFaces has 60 rows; the out-of-range row gStoryFaces[60] aliases gPirateFace.
 static int gPirateFace[10] = {2, 0, 0, 0, 0, 4, 2, 0, 2, 2};
 static int gPirateGreetingFaceB[5];
-// Face of the story character speaking a given story dialogue.
-static int *const gStoryFaceTable[62] = {
+// Face of the story character speaking a given story dialogue.  The original table has 63
+// entries: index 0 is the pirate greeting face B (a .bss array), then the 60 story rows and the
+// two pirate rows.  (The decompiled call sites index it with face 0/57/58, so index 0 is live.)
+static int *const gStoryFaceTable[63] = {
+    gPirateGreetingFaceB,
     gStoryFaces[0], gStoryFaces[1], gStoryFaces[2], gPirateFace + 5, gStoryFaces[3],
     gStoryFaces[4], gStoryFaces[5], gStoryFaces[6], gStoryFaces[7], gStoryFaces[8], gStoryFaces[9],
     gStoryFaces[10], gStoryFaces[11], gStoryFaces[12], gStoryFaces[13], gStoryFaces[14], gStoryFaces[15],

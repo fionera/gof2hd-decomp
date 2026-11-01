@@ -273,12 +273,6 @@ static const int g_mtw_upTextIds[16] = {};
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
 
-
-// .data.rel.ro slot at 0x20de20: the original holds an R_ARM_ABS32 to the
-// PlayerStaticFar typeinfo here.  Keeping the reference (rather than a zero-size
-// out-of-line anchor) preserves the .rel.dyn entry without adding an .ARM.exidx row.
-extern const char _ZTI15PlayerStaticFar[];
-[[gnu::used]] static const void *const mtwPlayerStaticFarTypeInfoRef = _ZTI15PlayerStaticFar; // lint: void_ptr (typeinfo pointer slot)
 static const int MenuTouchWindow_languageIds[10] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39};
 static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14, 12, 13};
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
