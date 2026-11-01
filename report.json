@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4182,
+  "byte_exact": 4188,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 45.3,
+   "pct": 46.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 45.3,
+   "pct": 46.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -64,20 +64,20 @@
    "usize": 1992
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.2,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 78.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -31874,7 +31874,7 @@
   {
    "name": "_ZN9Generator11getLootListEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 500,
    "usize": 500
@@ -31882,7 +31882,7 @@
   {
    "name": "_ZN9Generator12createAgentsEP7Station",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1464,
    "usize": 1464
@@ -31890,7 +31890,7 @@
   {
    "name": "_ZN9Generator14getItemBuyListEP7Station",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1840,
    "usize": 1840
@@ -31898,7 +31898,7 @@
   {
    "name": "_ZN9Generator14getShipBuyListEP7Station",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2244,
    "usize": 2244
@@ -31914,7 +31914,7 @@
   {
    "name": "_ZN9Generator18isKaamoSpecialItemEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -31922,7 +31922,7 @@
   {
    "name": "_ZN9Generator20generateStationIndexEP5ArrayIP11SolarSystemEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 344,
    "usize": 344

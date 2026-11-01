@@ -4536,3 +4536,22 @@ original build flags.
   The old `0x1e9f90` first-diff VMA in the bullet above is a typo; it was `0x1fb590` (offset
   `0x31780`). The next first diff is `0x1fb8c8`, `Hud.cpp`'s `g_Hud_raceBadge` merge constant.
   See `_work/reconstructions/generator_rodata_order.md`.
+
+## 2026-11-01 worst-match wave (harvested)
+
+- **Generator table dedup** (`w3386`, byte 4182 -> 4188): identical `Generator` tables were
+  emitted twice; deduplicating them moved the first `.rodata` content diff and made 6 more
+  functions byte-exact. Note: `_work/reconstructions/generator_rodata_order.md`.
+- **DialogueWindow .rodata** (`w3416`): the DialogueWindow plain-`.rodata` block is now
+  byte-identical (0x290c bytes); the empty-string statics were already replaced by
+  `String("", false)` in the data-layout pass, and `g_dw_successScript[2060]` is confirmed by
+  the original's 16 trailing zero bytes. Byte-neutral after the data-layout pass but the block
+  is now verified byte-identical.
+- **Layout::Layout** (`w3388`): `if/else` for 10 flag chains + store-order sweep, 45.3 -> 46.6%.
+- **HangarWindow::render** (`w3395`): `switch(tab)` selected-item dispatch + second volatile
+  sink, 78.2 -> 78.7%.
+- **Status::missionCompleted** (`w3412`): rank table for types 0xb6/0xb8 corrected (fuzzy
+  unchanged, content fix).
+- **No improvement found**: `Globals::Globals` (`w3393`, 80.5%), `MenuTouchWindow::OnTouchBegin`
+  (`w3418`, 97.2% — `&Globals::layout` rematerialisation, no source shape reproduces it),
+  `StarMap::draw` (`w3392`, -1 byte when simplified).
