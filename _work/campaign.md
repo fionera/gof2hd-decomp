@@ -4561,3 +4561,9 @@ original build flags.
   function start addresses. Note: `_work/reconstructions/section_order_derivation.md`.
   Caveat recorded there: with the archive markers also aligned, `.text` grows 36 bytes because
   our archive/local code is 36 bytes smaller than the original's.
+- **MenuTouchWindow::draw** (`w3433`, byte 4233 -> 4234, linked 4495 -> 4496): the D8 slider-row
+  y expression shape was wrong; restoring it made the function byte-exact. First function in the
+  "pct==100 but not byte" bucket to be closed.
+- **Radar::draw** (`w3430`, no change): 71.4% is a wide plateau — declaration order, `SetColor`
+  placement, guard inversion and negated distance comparisons all compile to byte-identical
+  code; 336 of 997 mismatched instructions are 1:1 register substitutions.
