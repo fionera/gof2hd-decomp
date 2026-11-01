@@ -4372,3 +4372,9 @@ definition order and the redundant `engineTextAnchor` dropped; `FogSetParameter`
 before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dropped from
 ~766 to ~430 lines. This is the single largest PLT-order win so far and confirms the
 `.dynsym`-order thesis: no function body changed, only TU definition order.
+- **Merge `wave87-w3305` (RepairBeam PLT passes 1-5): byte_exact 2345 -> 2487 (+142)** (`w3305`):
+  w3305's independent TU-order work (AEFile/Camera/String/Transform/PaintCanvas/Status/Level/
+  Station/ListItem/KIPlayer/PlayerEgo/TouchSlider/BumpShaderParticle/CutScene/ApplicationManager/
+  ConfigReader/Engine/ShaderBaseStruct/EnergyShield/AbyssEngine) stacked on `da761aa9` and merged
+  onto master's later PLT passes. Its duplicate `GameText_Android.cpp` and `NdkHooks`
+  `ndk_autosave` copy were dropped (master already split both). PLT symbol diff 552 -> ~410.
