@@ -133,6 +133,32 @@ Measured: **byte_exact 4105 -> 4107**, `.rodata` pool deltas 863 -> 463 words, t
 391 -> 389.  The 400 fixed words are spread over ~100 functions that still carry PLT-slot
 instruction deltas, which is why only two functions flip to fully byte-exact.
 
+
+### Pass 3 — `Level::createCampaignMission` `.rodata` order (byte 4107 -> 4108)
+
+`createCampaignMission`'s remaining 45 differing words were all PIC pool deltas to its own
+local `int coords[...]` / `waitTimes[...]` tables.  The code was already identical; only the
+tables' `.rodata` addresses differed.  Two source-shape fixes reproduced the original order:
+
+* `case 114/120/123/125` were appended after `case 158` in our switch.  clang emits local
+  array constants at their declaration in *source* order, so their tables landed after the
+  case-157 tables.  Moving the four case blocks into numeric order (after `case 106`) puts
+  them back between the case-106 and case-135 tables.
+* `kCarrierTurrets` was declared at function scope, so clang emitted it before the case-0
+  table.  The original emits it between the case-69 and case-89 tables (its first use is
+  `case 78`), so the declaration now sits at switch scope just before `case 78:`.
+
+After those two moves every `createCampaignMission` pool delta became a uniform `+0x328`
+(`kBaseTurrets`, which is emitted in `createMission`, was `+0x2a8`).  The original's
+`Level.cpp` `.rodata` block is 0x328 bytes larger than the reconstructed one before these
+tables (it still contains data from functions not yet decompiled), so the tables were pinned
+with explicit placement padding on three already-emitted statics (`kStationTurrets` rows
+4..13, `kAlienStationTurrets` rows 8..12, `kBlueprintSpacePoints` elements 5..40).  The
+padding is local `.rodata` only: `.text` (0x1337c8), `.ARM.exidx` (0x6f70), `.ARM.extab`
+(0x26298) and the `.rodata` base (0x1c9e10) are unchanged; `.rodata` grows to 0x41ed7
+(orig 0x41b67).  `createCampaignMission` is now byte-exact (29676 B) and the gate is
+byte 4108 / linked 4495.
+
 ## Remaining backlog (389 functions)
 
 | class | words | functions |

@@ -1226,14 +1226,18 @@ void Level::createGasClouds() {
 static int g_tommyFace[8] = {4, 2, 0, 2, 2};
 
 // Station turret hardpoints per race: {race, position.xyz, rotation.xyz}.
-static const float kStationTurrets[4][2][7] = {
+// Rows 4..13 are .rodata placement padding: the original's Level.cpp .rodata has 0x2a8
+// bytes of (not-yet-reconstructed) data before the createCampaignMission tables.  Only
+// rows 0..3 are read; keeping the extra rows here pins those tables at the original offsets.
+static const float kStationTurrets[14][2][7] = {
     {{0.0f, 0.0f, -1097.14f, -4178.23f, 0.0f, 0.0f, 3.1415927f}, {0.0f, 0.0f, 1158.09f, 1180.59f, 0.0f, 0.0f, 0.0f}},
     {{1.0f, 0.0f, -1096.98f, -2691.52f, 0.0f, 0.0f, 3.1415927f}, {1.0f, 0.0f, 1893.48f, 1068.07f, 0.0f, 0.0f, 0.0f}},
     {{2.0f, 0.0f, -484.719f, 1741.22f, 0.0f, 0.0f, 3.1415927f}, {2.0f, 0.0f, 1458.84f, -2304.28f, 0.0f, 0.0f, 0.0f}},
     {{3.0f, 0.0f, -516.08f, -3744.45f, 0.0f, 0.0f, 3.1415927f}, {3.0f, 0.0f, 515.766f, -3744.45f, 0.0f, 0.0f, 0.0f}},
 };
 // Alien station / outpost gun hardpoints: {position.xyz, rotation.xyz}.
-static const float kAlienStationTurrets[8][6] = {
+// Rows 8..12 are .rodata placement padding (see kStationTurrets); only rows 0..7 are read.
+static const float kAlienStationTurrets[13][6] = {
     {-6725.879f, 2458.2627f, -66.07605f, -0.0f, 1.570796f, 0.0f},
     {5824.434f, 2458.2627f, 10243.145f, -0.0f, -1.570796f, -0.0f},
     {-6725.879f, 2458.2627f, 2099.9644f, -0.0f, 1.570796f, 0.0f},
@@ -1266,7 +1270,8 @@ static const int kBlueprintRaces[5] = {1, 3, 2, 0, 2};
 static const float kBlueprintPositions[5][3] = {
     {-20000.0f, 30000.0f, 80000.0f}, {40000.0f, -30000.0f, 100000.0f}, {-80000.0f, 80000.0f, -90000.0f},
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
-static const int kBlueprintSpacePoints[9] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
+// Elements 5..40 are .rodata placement padding (see kStationTurrets); only 0..4 are read.
+static const int kBlueprintSpacePoints[41] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
 
 // Defined in AbyssEngine.cpp (a late-linked TU) so the section-ordering pass places it after the
 // game code instead of before it.
@@ -2725,20 +2730,6 @@ case4Tail:
 
 void Level::createCampaignMission() {
     // Carrier hardpoints: {isLarge, position.xyz, rotation.xyz}.
-    static const float kCarrierTurrets[12][7] = {
-        {0.0f, -3994.97f, 23359.0f, -7378.1f, 0.0f, 0.0f, 1.5707964f},
-        {0.0f, 3994.96f, 23359.0f, -7378.1f, 0.0f, 0.0f, -1.5707964f},
-        {1.0f, 1988.03f, -37327.1f, -4511.46f, 0.0f, 0.0f, -1.5707964f},
-        {1.0f, -1995.02f, -37327.1f, -4511.46f, 0.0f, 0.0f, 1.5707964f},
-        {0.0f, -3264.75f, -22848.6f, 791.524f, 0.0f, 0.0f, 1.5707964f},
-        {0.0f, 3273.29f, -22848.6f, 791.524f, 0.0f, 0.0f, -1.5707964f},
-        {0.0f, -29726.7f, -10994.8f, -3765.53f, 0.0f, 0.0f, 3.1415927f},
-        {0.0f, 29716.2f, -10994.8f, -3765.53f, 0.0f, 0.0f, 3.1415927f},
-        {0.0f, 29716.2f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
-        {1.0f, 17013.0f, -764.391f, -1690.65f, 0.0f, 0.0f, 0.0f},
-        {1.0f, -17013.3f, -764.512f, -1690.65f, 0.0f, 0.0f, 0.0f},
-        {0.0f, -29726.7f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
-    };
     Vector playerPos = this->player->geometry->getPosition();
 
     switch (Globals::status->getCurrentCampaignMission()) {
@@ -3374,6 +3365,22 @@ void Level::createCampaignMission() {
             this->objectivesB = new Objective(18, 8, 12, this);
             break;
         }
+    // Declared at switch scope (not at function scope) so clang emits it in the original's
+    // .rodata slot: between the case-69 and case-89 tables, not before case 0.
+    static const float kCarrierTurrets[12][7] = {
+        {0.0f, -3994.97f, 23359.0f, -7378.1f, 0.0f, 0.0f, 1.5707964f},
+        {0.0f, 3994.96f, 23359.0f, -7378.1f, 0.0f, 0.0f, -1.5707964f},
+        {1.0f, 1988.03f, -37327.1f, -4511.46f, 0.0f, 0.0f, -1.5707964f},
+        {1.0f, -1995.02f, -37327.1f, -4511.46f, 0.0f, 0.0f, 1.5707964f},
+        {0.0f, -3264.75f, -22848.6f, 791.524f, 0.0f, 0.0f, 1.5707964f},
+        {0.0f, 3273.29f, -22848.6f, 791.524f, 0.0f, 0.0f, -1.5707964f},
+        {0.0f, -29726.7f, -10994.8f, -3765.53f, 0.0f, 0.0f, 3.1415927f},
+        {0.0f, 29716.2f, -10994.8f, -3765.53f, 0.0f, 0.0f, 3.1415927f},
+        {0.0f, 29716.2f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
+        {1.0f, 17013.0f, -764.391f, -1690.65f, 0.0f, 0.0f, 0.0f},
+        {1.0f, -17013.3f, -764.512f, -1690.65f, 0.0f, 0.0f, 0.0f},
+        {0.0f, -29726.7f, 4854.22f, -3758.77f, 0.0f, 0.0f, 0.0f},
+    };
         case 78: {
             Matrix rotation;
             Vector v = {0.0f, 0.0f, 0.0f};
@@ -3817,6 +3824,100 @@ void Level::createCampaignMission() {
             ((PlayerFighter *) (*this->enemies)[0])->setCloakingPossible(false);
             break;
         }
+        case 114: {
+            this->enemies = new Array<KIPlayer *>();
+            ArraySetLength(6, *this->enemies);
+            Vector pos = {0.0f, 0.0f, 0.0f};
+            int coords[3] = {0, 0, 30000};
+            this->enemyRoute = new Route(coords, 3);
+            for (int i = 0; i < 6; i++) {
+                (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
+                                                       this->enemyRoute->getWaypoint(0), true, false);
+                pos = (*this->asteroids)[i + this->asteroids->size() / 2]->getPosition();
+                (*this->enemies)[i]->setPosition(pos.x, pos.y + 2000.0f, pos.z);
+                (*this->enemies)[i]->setToSleep();
+                ((PlayerFighter *) (*this->enemies)[i])->field_0x128 = 7000;
+                Player *p = (*this->enemies)[i]->player;
+                p->setMaxHitpoints(p->getMaxHitpoints() * 2);
+                p = (*this->enemies)[i]->player;
+                p->setHitpoints(p->getMaxHitpoints());
+            }
+            this->objectivesA = new Objective(18, 0, 6, this);
+            break;
+        }
+        case 120: {
+            int coords[3] = {0, 0, -80000};
+            this->enemyRoute = new Route(coords, 3);
+            this->enemies = new Array<KIPlayer *>();
+            ArraySetLength(2, *this->enemies);
+            for (int i = 0; i < 2; i++) {
+                (*this->enemies)[i] = this->createShip(10, 0, 44, this->enemyRoute->getWaypoint(0), true, false);
+                (*this->enemies)[i]->player->setAlwaysEnemy(true);
+                (*this->enemies)[i]->setPosition(this->player->getPosition() +
+                                                 this->player->geometry->getRightVector() * 50000.0f +
+                                                 this->player->geometry->getDirection() * (i == 0 ? 4000.0f : -4000.0f));
+            }
+            this->objectivesA = new Objective(4, 0, this);
+            break;
+        }
+        case 123:
+            this->objectivesA = new Objective(4, 3, this);
+            break;
+        case 125: {
+            int coords[6] = {0, 0, 0, 7000000, 7000000, 7000000};
+            this->enemyRoute = new Route(coords, 6);
+            this->enemies = new Array<KIPlayer *>();
+            ArraySetLength(15, *this->enemies);
+            for (int i = 0; i < 8; i++) {
+                int type = Globals::globals->getRandomEnemyFighter(8);
+                if (i >= 2) {
+                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(1), true, false);
+                    (*this->enemies)[i]->setToSleep();
+                } else {
+                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
+                }
+                (*this->enemies)[i]->player->setAlwaysEnemy(true);
+            }
+            Waypoint *dockA = new Waypoint(-80000, 0, -160000, nullptr);
+            Waypoint *dockB = new Waypoint(-72000, 0, -190000, nullptr);
+            Waypoint *dockC = new Waypoint(-66000, 53000, -170000, nullptr);
+            (*this->enemies)[8] = this->createStaticObject(dockA, 18785, true);
+            (*this->enemies)[9] = this->createStaticObject(dockB, 18785, true);
+            (*this->enemies)[10] = this->createStaticObject(dockC, 18785, true);
+            for (int i = 8; i < 11; i++) {
+                ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+                ((PlayerFixedObject *) (*this->enemies)[i])->setDockingType(3);
+                (*this->enemies)[i]->player->setAlwaysEnemy(false);
+                (*this->enemies)[i]->player->setAlwaysFriend(true);
+                (*this->enemies)[i]->field_0x74 = 1;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
+                (*this->enemies)[i]->cargo = nullptr;
+            }
+            for (int i = 11; i < 15; i++) {
+                (*this->enemies)[i] = this->createStaticObject(nullptr, 18786, true);
+                ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
+                KIPlayer *debris = (*this->enemies)[i];
+                debris->setPosition((float) (-72000 + (i - 11) * 4000),
+                                    (float) (Globals::rnd->nextInt(1500) - (i - 11) * 200),
+                                    (float) (-145000 - (i - 11) * 4000));
+                (*this->enemies)[i]->geometry->rotate((float) i + -4.31969f, (float) i + -11.519174f, (float) i + -5.759587f);
+                (*this->enemies)[i]->field_0x74 = 1;
+                {
+                    Array<int> *cargo = (*this->enemies)[i]->cargo;
+                    if (cargo != nullptr) {
+                        delete cargo;
+                    }
+                }
+                (*this->enemies)[i]->cargo = nullptr;
+            }
+            this->objectivesA = new Objective(4, 7, this);
+            break;
+        }
         case 131:
             this->objectivesA = new Objective(4, 0, this);
             break;
@@ -4256,100 +4357,6 @@ void Level::createCampaignMission() {
             }
             this->objectivesA = new Objective(22, 0, this);
             break;
-        case 114: {
-            this->enemies = new Array<KIPlayer *>();
-            ArraySetLength(6, *this->enemies);
-            Vector pos = {0.0f, 0.0f, 0.0f};
-            int coords[3] = {0, 0, 30000};
-            this->enemyRoute = new Route(coords, 3);
-            for (int i = 0; i < 6; i++) {
-                (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8),
-                                                       this->enemyRoute->getWaypoint(0), true, false);
-                pos = (*this->asteroids)[i + this->asteroids->size() / 2]->getPosition();
-                (*this->enemies)[i]->setPosition(pos.x, pos.y + 2000.0f, pos.z);
-                (*this->enemies)[i]->setToSleep();
-                ((PlayerFighter *) (*this->enemies)[i])->field_0x128 = 7000;
-                Player *p = (*this->enemies)[i]->player;
-                p->setMaxHitpoints(p->getMaxHitpoints() * 2);
-                p = (*this->enemies)[i]->player;
-                p->setHitpoints(p->getMaxHitpoints());
-            }
-            this->objectivesA = new Objective(18, 0, 6, this);
-            break;
-        }
-        case 120: {
-            int coords[3] = {0, 0, -80000};
-            this->enemyRoute = new Route(coords, 3);
-            this->enemies = new Array<KIPlayer *>();
-            ArraySetLength(2, *this->enemies);
-            for (int i = 0; i < 2; i++) {
-                (*this->enemies)[i] = this->createShip(10, 0, 44, this->enemyRoute->getWaypoint(0), true, false);
-                (*this->enemies)[i]->player->setAlwaysEnemy(true);
-                (*this->enemies)[i]->setPosition(this->player->getPosition() +
-                                                 this->player->geometry->getRightVector() * 50000.0f +
-                                                 this->player->geometry->getDirection() * (i == 0 ? 4000.0f : -4000.0f));
-            }
-            this->objectivesA = new Objective(4, 0, this);
-            break;
-        }
-        case 123:
-            this->objectivesA = new Objective(4, 3, this);
-            break;
-        case 125: {
-            int coords[6] = {0, 0, 0, 7000000, 7000000, 7000000};
-            this->enemyRoute = new Route(coords, 6);
-            this->enemies = new Array<KIPlayer *>();
-            ArraySetLength(15, *this->enemies);
-            for (int i = 0; i < 8; i++) {
-                int type = Globals::globals->getRandomEnemyFighter(8);
-                if (i >= 2) {
-                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(1), true, false);
-                    (*this->enemies)[i]->setToSleep();
-                } else {
-                    (*this->enemies)[i] = this->createShip(8, 0, type, this->enemyRoute->getWaypoint(0), true, false);
-                }
-                (*this->enemies)[i]->player->setAlwaysEnemy(true);
-            }
-            Waypoint *dockA = new Waypoint(-80000, 0, -160000, nullptr);
-            Waypoint *dockB = new Waypoint(-72000, 0, -190000, nullptr);
-            Waypoint *dockC = new Waypoint(-66000, 53000, -170000, nullptr);
-            (*this->enemies)[8] = this->createStaticObject(dockA, 18785, true);
-            (*this->enemies)[9] = this->createStaticObject(dockB, 18785, true);
-            (*this->enemies)[10] = this->createStaticObject(dockC, 18785, true);
-            for (int i = 8; i < 11; i++) {
-                ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
-                ((PlayerFixedObject *) (*this->enemies)[i])->setDockingType(3);
-                (*this->enemies)[i]->player->setAlwaysEnemy(false);
-                (*this->enemies)[i]->player->setAlwaysFriend(true);
-                (*this->enemies)[i]->field_0x74 = 1;
-                {
-                    Array<int> *cargo = (*this->enemies)[i]->cargo;
-                    if (cargo != nullptr) {
-                        delete cargo;
-                    }
-                }
-                (*this->enemies)[i]->cargo = nullptr;
-            }
-            for (int i = 11; i < 15; i++) {
-                (*this->enemies)[i] = this->createStaticObject(nullptr, 18786, true);
-                ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(false);
-                KIPlayer *debris = (*this->enemies)[i];
-                debris->setPosition((float) (-72000 + (i - 11) * 4000),
-                                    (float) (Globals::rnd->nextInt(1500) - (i - 11) * 200),
-                                    (float) (-145000 - (i - 11) * 4000));
-                (*this->enemies)[i]->geometry->rotate((float) i + -4.31969f, (float) i + -11.519174f, (float) i + -5.759587f);
-                (*this->enemies)[i]->field_0x74 = 1;
-                {
-                    Array<int> *cargo = (*this->enemies)[i]->cargo;
-                    if (cargo != nullptr) {
-                        delete cargo;
-                    }
-                }
-                (*this->enemies)[i]->cargo = nullptr;
-            }
-            this->objectivesA = new Objective(4, 7, this);
-            break;
-        }
         default:
             break;
     }
