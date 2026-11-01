@@ -4208,3 +4208,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **HangarWindow::render 78.52 -> 78.55%, 9700 B** (`w3242`): move the `showBestDeal` pad store
   after the scroll-hint `DrawImage2D` so the credit-list loop's register allocation matches the
   original (positional matches 824 -> 853). Gate unchanged.
+- **MenuTouchWindow::draw 99.8 -> 100.0%, 13052 B** (`w3261`): restore the original switch-case
+  order and the case-3 branch shape (302/297-line reorder). fuzzy_perfect 4494 -> 4495; still not
+  linked-exact. Gate unchanged.

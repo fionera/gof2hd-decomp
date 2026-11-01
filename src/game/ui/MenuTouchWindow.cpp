@@ -1316,6 +1316,11 @@ void MenuTouchWindow::draw() {
     if (this->backgroundEnabled != 0 && this->menuState != 9 && this->menuState != 13)
         Globals::layout->drawBG();
 
+    // NOTE: the case order below is load-bearing, not cosmetic.  Each `String(...)` temporary
+    // gets its stack slot from its position in the source (clang allocates them in reverse
+    // emission order), and the original's slot assignment is only reproduced by this order:
+    // 15, 1/2, 11, 3, 7, 8, 0, 4/9, 17, 12, 13, 14, 16 -- with case 3's non-iPad header last
+    // inside case 3.  Reordering the cases renumbers 9 stack slots in draw().
     switch (this->menuState) {
         case 15: {
             // DLC store.
@@ -1351,7 +1356,7 @@ void MenuTouchWindow::draw() {
                     (*this->scrollSlots)[i]->setAlwaysPressed(false);
                 }
                 layout = Globals::layout;
-                int y = layout->field_0x20_top + layout->field_0xc_leftMargin + this->scrollOffset;
+                int y = layout->field_0xc_leftMargin + layout->field_0x20_top + this->scrollOffset;
                 (*this->scrollSlots)[i]->setYPosition(y + (layout->field_0x2c_rowHeight + this->contentHeightCache) * i);
                 (*this->scrollSlots)[i]->draw();
                 if ((optionFlag(53) && i == 0) || (optionFlag(54) && i == 1) || (optionFlag(55) && i == 2) ||
@@ -1434,266 +1439,312 @@ void MenuTouchWindow::draw() {
             this->drawLoadSaveMenu(false);
             break;
         }
+        case 11: {
+            // Touch-control preview (iPad).
+            if (!Globals::iPad || Globals::iPadAssetsWithLowerRes)
+                break;
+            int barWidth = Globals::Canvas->GetImage2DWidth(this->fireImage_0x54);
+            int segmentHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x50);
+            int arrowHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x5c);
+            int steerCoordX = this->steerCoord_0x40;
+            int steerX = Globals::Canvas->GetImage2DWidth(this->steerImageA) / 2 +
+                         (steerCoordX - barWidth / 2);
+            int fireCoordX = this->fireCoord_0x60;
+            int fireX = Globals::Canvas->GetImage2DWidth(this->fireSize_0x74) / 2 +
+                        (fireCoordX - barWidth / 2);
+            int steerY = this->steerCoord_0x42 + Globals::Canvas->GetImage2DHeight(this->steerImageA) / 2;
+            int fireY = this->fireCoord_0x62 + Globals::Canvas->GetImage2DHeight(this->fireSize_0x74) / 2;
+            int segmentY = (int) ((float) (Globals::Canvas->GetImage2DHeight(this->fireImage_0x54) + 100) -
+                                  (Globals::iPadHD ? 91.40625f : (Globals::iPadLarge ? 130.0f : 65.0f)));
+            for (int bar = 0; bar != 2; bar++) {
+                int x = bar == 0 ? steerX : fireX;
+                Globals::Canvas->DrawImage2D(
+                    this->fireImage_0x54, x,
+                    (int) (100.0f - (Globals::iPadHD ? 91.40625f : (Globals::iPadLarge ? 130.0f : 65.0f))));
+                int segY = segmentY;
+                for (int n = 0; n < 5; n++) {
+                    Globals::Canvas->DrawImage2D(this->fireImage_0x50, x, segY);
+                    segY += segmentHeight;
+                }
+            }
+            Globals::Canvas->DrawImage2D(
+                this->cinematicTouchIdA != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, steerX + 3,
+                (int) ((float) steerY - (Globals::iPadHD ? 239.0625f : (Globals::iPadLarge ? 340.0f : 170.0f))));
+            Globals::Canvas->DrawImage2D(
+                this->cinematicTouchIdB != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, fireX + 3,
+                (int) ((float) fireY - (Globals::iPadHD ? 225.0f : (Globals::iPadLarge ? 320.0f : 160.0f))));
+            Globals::Canvas->DrawImage2D(
+                this->cinematicTouchIdA != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, steerX + 3,
+                (int) ((Globals::iPadHD ? 239.0625f : (Globals::iPadLarge ? 340.0f : 170.0f)) + (float) steerY -
+                       (float) arrowHeight),
+                2);
+            Globals::Canvas->DrawImage2D(
+                this->cinematicTouchIdB != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, fireX + 3,
+                (int) ((Globals::iPadHD ? 225.0f : (Globals::iPadLarge ? 320.0f : 160.0f)) + (float) fireY -
+                       (float) arrowHeight),
+                2);
+            Globals::Canvas->DrawImage2D(this->steerImageA, this->steerCoord_0x40, this->steerCoord_0x42);
+            Globals::Canvas->DrawImage2D(this->steerImageD, this->steerCoord_0x3c, this->steerCoord_0x3e, 17, 68);
+            Globals::Canvas->DrawImage2D(this->steerImageC, this->steerCoord_0x2e, this->steerCoord_0x30);
+            Globals::Canvas->DrawImage2D(this->steerImageB, this->steerCoord_0x34, this->steerCoord_0x32);
+            Globals::Canvas->DrawImage2D(this->fireSize_0x74, this->fireCoord_0x60, this->fireCoord_0x62);
+            Globals::Canvas->DrawImage2D(this->fireImage_0x80, this->fireCoord_0x64, this->fireCoord_0x66, 17, 68);
+            Globals::Canvas->DrawImage2D(this->fireImage_0x84, this->fireCoord_0x68, this->fireCoord_0x6a);
+            Globals::Canvas->DrawImage2D(this->fireImage_0x88, this->fireCoord_0x6c, this->fireCoord_0x6e);
+            Globals::Canvas->DrawImage2D(this->fireImage_0x8c, this->fireCoord_0x70, this->fireCoord_0x72);
+            Layout *layout = Globals::layout;
+            layout->drawBox(7, (Globals::w >> 1) - layout->field_0x304 / 2, layout->field_0x300, layout->field_0x304,
+                            layout->choiceWindowTitleHeight, String(*Globals::gameText->getText(494)));
+            this->cinematicTextWindow->draw();
+            this->cinematicBtnA->draw();
+            this->cinematicBtnB->draw();
+            break;
+        }
         case 3: {
             // Options.
             Layout *layout = Globals::layout;
-            if (!Globals::iPad) {
-                layout->drawHeader(String(*Globals::gameText->getText(31)), false);
-                for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
-                    (*this->optionsButtons)[i]->draw();
+            if (Globals::iPad) {
+                // The iPad shows the control and sound options on one page.
+                layout->drawBG();
+                Globals::layout->drawHeader(String(*Globals::gameText->getText(498)), false);
+                int edgeWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
+                int edgeHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
+                int edgeCount = Globals::h / edgeHeight;
+                for (int i = 0, edgeY = 0; i <= edgeCount; i++) {
+                    Globals::Canvas->DrawImage2D(this->scrollbarImageId,
+                                                 this->listTopY + Globals::layout->buttonInsetX - edgeWidth, edgeY, 1);
+                    Globals::Canvas->DrawImage2D(this->scrollbarImageId,
+                                                 this->listTopY + Globals::layout->buttonInsetX + this->listBottomY, edgeY,
+                                                 0);
+                    edgeY += edgeHeight;
+                }
+
+                // Controls.
+                layout = Globals::layout;
+                int y = layout->field_0xc_leftMargin + layout->field_0x20_top;
+                layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
+                                String(*Globals::gameText->getText(498)));
+                layout = Globals::layout;
+                y = layout->field_0x1c + y + layout->field_0x2c_rowHeight;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->listEntryWidth,
+                                String(""));
+                Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
+                Globals::Canvas->DrawImage2D(this->optionsImage_0x110,
+                                             this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2,
+                                             y + arrowOffset * 2, 17, 20);
+                Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
+                Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
+                                             this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
+                                                 this->listEntryHeight / 2,
+                                             y + arrowOffset, 17, 20);
+                Globals::Canvas->SetColor(optionFlag(17) ? 0xffffffffu : 0xffffff2fu);
+                Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(490),
+                    this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2 -
+                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                      *Globals::gameText->getText(490)) / 2,
+                    y + (this->listEntryWidth - labelOffset), false);
+                Globals::Canvas->SetColor(optionFlag(17) ? 0xffffff2fu : 0xffffffffu);
+                Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(491),
+                    this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2 -
+                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                      *Globals::gameText->getText(491)) / 2,
+                    y + (this->listEntryWidth - labelOffset), false);
+                Globals::Canvas->SetColor(0xffffffffu);
+
+                layout = Globals::layout;
+                y = y + this->listEntryWidth + layout->field_0x2c_rowHeight;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->listEntryHeight, this->field_0x15c,
+                                String(""));
+                layout = Globals::layout;
+                layout->drawBox(5,
+                                this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
+                                    1,
+                                y, this->listEntryHeight, this->field_0x15c, String(""));
+                layout = Globals::layout;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y + this->field_0x15c + layout->field_0x2c_rowHeight,
+                                this->listEntryHeight, this->field_0x15c, String(""));
+                layout = Globals::layout;
+                layout->drawBox(5,
+                                this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
+                                    1,
+                                y + layout->field_0x2c_rowHeight + this->field_0x15c, this->listEntryHeight,
+                                this->field_0x15c, String(""));
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500),
+                                            this->listTopY + Globals::layout->buttonInsetX + 10,
+                                            y + (this->field_0x15c / 2 -
+                                                 Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
+                                                1,
+                                            false);
+                Globals::Canvas->DrawString(
+                    (unsigned int) (uintptr_t) Globals::font,
+                    *Globals::gameText->getText(499) + String(" [") +
+                        String(String((int) ((*this->sliders)[0]->getValue() * 100.0f)), false) + String("]"),
+                    this->listTopY + Globals::layout->buttonInsetX + 10,
+                    Globals::layout->field_0x2c_rowHeight + y + this->field_0x15c + 10, false);
+                (*this->sliders)[0]->draw();
+                this->optBtnCC->setPosition(this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
+                                            y + this->field_0x15c / 2);
+                this->optBtnCC->draw();
+                this->optBtnD0->setPosition(this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
+                                                this->listEntryHeight / 2,
+                                            y + this->field_0x15c / 2);
+                this->optBtnD0->draw();
+                layout = Globals::layout;
+                this->scrollUpButton->setPosition(this->listTopY + this->listBottomY - layout->buttonInsetX -
+                                                      this->listEntryHeight / 2,
+                                                  y + this->field_0x15c + layout->field_0x2c_rowHeight +
+                                                      this->field_0x15c / 2);
+                this->scrollUpButton->draw();
+
+                // Sound.
+                layout = Globals::layout;
+                y = y + this->field_0x15c * 2 + layout->field_0x2c_rowHeight + layout->field_0x2fc;
+                int toggleY = y + 7;
+                this->optBtnD4->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
+                                            toggleY + layout->field_0x2c_rowHeight + layout->field_0x1c);
+                layout = Globals::layout;
+                this->optBtnD8->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
+                                            toggleY + this->sliderRowHeight + layout->field_0x1c +
+                                                layout->field_0x2c_rowHeight * 2);
+                layout = Globals::layout;
+                this->optBtnDC->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
+                                            toggleY + this->sliderRowHeight * 2 + layout->field_0x1c +
+                                                layout->field_0x2c_rowHeight * 3);
+                layout = Globals::layout;
+                layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
+                                String(*Globals::gameText->getText(501)));
+                layout = Globals::layout;
+                y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
+                                String(""));
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(34),
+                                            this->listTopY + Globals::layout->buttonInsetX + 10,
+                                            y + this->sliderRowHeight / 2 -
+                                                Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                                1,
+                                            false);
+                layout = Globals::layout;
+                y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
+                                String(""));
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(35),
+                                            this->listTopY + Globals::layout->buttonInsetX + 10,
+                                            y + this->sliderRowHeight / 2 -
+                                                Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                                1,
+                                            false);
+                layout = Globals::layout;
+                y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
+                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
+                                String(""));
+                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(36),
+                                            this->listTopY + Globals::layout->buttonInsetX + 10,
+                                            y + this->sliderRowHeight / 2 -
+                                                Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                                1,
+                                            false);
+
+                // Graphics.
+                y = y + this->sliderRowHeight + Globals::layout->field_0x2fc;
+                if (!Globals::iPadLargePossible) {
+                    layout = Globals::layout;
+                    layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
+                                    String(*Globals::gameText->getText(502)));
+                    layout = Globals::layout;
+                    y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
+                    layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
+                                    String(""));
+                }
+                if (Globals::iPadLargePossible) {
+                    layout = Globals::layout;
+                    layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
+                                    String(*Globals::gameText->getText(502)));
+                    layout = Globals::layout;
+                    y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
+                    layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
+                                    String(""));
+                    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
+                                                this->listTopY + Globals::layout->buttonInsetX + 10,
+                                                y + (this->sliderSpacing / 2 -
+                                                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
+                                                    1,
+                                                false);
+                    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String("1024x768"),
+                                                this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+                                                y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, String("1440x1080"),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[5]->getWidth() / 2 -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String("1440x1080")) / 2,
+                        y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, String("2048x1536"),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[5]->getWidth() -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String("2048x1536")),
+                        y + (this->sliderRowHeight - sliderLabelOffset), false);
+                } else {
+                    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(503),
+                                                this->listTopY + Globals::layout->buttonInsetX + 10,
+                                                y + (this->sliderSpacing / 2 -
+                                                     Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
+                                                    1,
+                                                false);
+                    Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(513),
+                                                this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+                                                y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(514),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[4]->getWidth() / 2 -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                          *Globals::gameText->getText(514)) / 2,
+                        y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(515),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[4]->getWidth() -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                          *Globals::gameText->getText(515)),
+                        y + (this->sliderRowHeight - sliderLabelOffset), false);
+
+                    int slot5Y = y + this->sliderRowHeight + Globals::layout->field_0x2c_rowHeight;
+                    Globals::layout->drawBox(5, this->listTopY + Globals::layout->buttonInsetX, slot5Y,
+                                             this->optionsWidth, this->sliderRowHeight, String(""));
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
+                        this->listTopY + Globals::layout->buttonInsetX + 10,
+                        slot5Y + (this->sliderSpacing / 2 -
+                                  Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) + 1,
+                        false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(507),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC,
+                        slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(508),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC +
+                            (*this->sliders)[5]->getWidth() / 2 -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                          *Globals::gameText->getText(508)) / 2,
+                        slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
+                    Globals::Canvas->DrawString(
+                        (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(509),
+                        this->listTopY + Globals::layout->buttonInsetX + this->metricC +
+                            (*this->sliders)[5]->getWidth() -
+                            Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
+                                                          *Globals::gameText->getText(509)),
+                        slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
+                }
+                for (unsigned int i = 1; i < this->sliders->size() - 1; i++)
+                    (*this->sliders)[i]->draw();
+                this->optBtnD4->draw();
+                this->optBtnD8->draw();
+                this->optBtnDC->draw();
                 break;
             }
-            // The iPad shows the control and sound options on one page.
-            layout->drawBG();
-            Globals::layout->drawHeader(String(*Globals::gameText->getText(498)), false);
-            int edgeWidth = Globals::Canvas->GetImage2DWidth(this->scrollbarImageId);
-            int edgeHeight = Globals::Canvas->GetImage2DHeight(this->scrollbarImageId);
-            int edgeCount = Globals::h / edgeHeight;
-            for (int i = 0, edgeY = 0; i <= edgeCount; i++) {
-                Globals::Canvas->DrawImage2D(this->scrollbarImageId,
-                                             this->listTopY + Globals::layout->buttonInsetX - edgeWidth, edgeY, 1);
-                Globals::Canvas->DrawImage2D(this->scrollbarImageId,
-                                             this->listTopY + Globals::layout->buttonInsetX + this->listBottomY, edgeY,
-                                             0);
-                edgeY += edgeHeight;
-            }
-
-            // Controls.
-            layout = Globals::layout;
-            int y = layout->field_0xc_leftMargin + layout->field_0x20_top;
-            layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
-                            String(*Globals::gameText->getText(498)));
-            layout = Globals::layout;
-            y = layout->field_0x1c + y + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->listEntryWidth,
-                            String(""));
-            Globals::Canvas->SetColor(optionFlag(17) || this->upButtonPressed ? 0xe6ad4affu : 0x2f4455ffu);
-            Globals::Canvas->DrawImage2D(this->optionsImage_0x110,
-                                         this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2,
-                                         y + arrowOffset * 2, 17, 20);
-            Globals::Canvas->SetColor(optionFlag(17) && !this->downButtonPressed ? 0x2f4455ffu : 0xe6ad4affu);
-            Globals::Canvas->DrawImage2D(this->optionsImage_0x10c,
-                                         this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
-                                             this->listEntryHeight / 2,
-                                         y + arrowOffset, 17, 20);
-            Globals::Canvas->SetColor(optionFlag(17) ? 0xffffffffu : 0xffffff2fu);
-            Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(490),
-                this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight / 2 -
-                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                  *Globals::gameText->getText(490)) / 2,
-                y + (this->listEntryWidth - labelOffset), false);
-            Globals::Canvas->SetColor(optionFlag(17) ? 0xffffff2fu : 0xffffffffu);
-            Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(491),
-                this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2 -
-                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                  *Globals::gameText->getText(491)) / 2,
-                y + (this->listEntryWidth - labelOffset), false);
-            Globals::Canvas->SetColor(0xffffffffu);
-
-            layout = Globals::layout;
-            y = y + this->listEntryWidth + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->listEntryHeight, this->field_0x15c,
-                            String(""));
-            layout = Globals::layout;
-            layout->drawBox(5,
-                            this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
-                                1,
-                            y, this->listEntryHeight, this->field_0x15c, String(""));
-            layout = Globals::layout;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y + this->field_0x15c + layout->field_0x2c_rowHeight,
-                            this->listEntryHeight, this->field_0x15c, String(""));
-            layout = Globals::layout;
-            layout->drawBox(5,
-                            this->listTopY + layout->buttonInsetX + this->listEntryHeight + layout->field_0x2c_rowHeight +
-                                1,
-                            y + layout->field_0x2c_rowHeight + this->field_0x15c, this->listEntryHeight,
-                            this->field_0x15c, String(""));
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(500),
-                                        this->listTopY + Globals::layout->buttonInsetX + 10,
-                                        y + (this->field_0x15c / 2 -
-                                             Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
-                                            1,
-                                        false);
-            Globals::Canvas->DrawString(
-                (unsigned int) (uintptr_t) Globals::font,
-                *Globals::gameText->getText(499) + String(" [") +
-                    String(String((int) ((*this->sliders)[0]->getValue() * 100.0f)), false) + String("]"),
-                this->listTopY + Globals::layout->buttonInsetX + 10,
-                Globals::layout->field_0x2c_rowHeight + y + this->field_0x15c + 10, false);
-            (*this->sliders)[0]->draw();
-            this->optBtnCC->setPosition(this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight - 10,
-                                        y + this->field_0x15c / 2);
-            this->optBtnCC->draw();
-            this->optBtnD0->setPosition(this->listTopY + this->listBottomY - Globals::layout->buttonInsetX -
-                                            this->listEntryHeight / 2,
-                                        y + this->field_0x15c / 2);
-            this->optBtnD0->draw();
-            layout = Globals::layout;
-            this->scrollUpButton->setPosition(this->listTopY + this->listBottomY - layout->buttonInsetX -
-                                                  this->listEntryHeight / 2,
-                                              y + this->field_0x15c + layout->field_0x2c_rowHeight +
-                                                  this->field_0x15c / 2);
-            this->scrollUpButton->draw();
-
-            // Sound.
-            layout = Globals::layout;
-            y = y + this->field_0x15c * 2 + layout->field_0x2c_rowHeight + layout->field_0x2fc;
-            int toggleY = y + 7;
-            this->optBtnD4->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
-                                        toggleY + layout->field_0x2c_rowHeight + layout->field_0x1c);
-            layout = Globals::layout;
-            this->optBtnD8->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
-                                        toggleY + this->sliderRowHeight + layout->field_0x1c +
-                                            layout->field_0x2c_rowHeight * 2);
-            layout = Globals::layout;
-            this->optBtnDC->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
-                                        toggleY + this->sliderRowHeight * 2 + layout->field_0x1c +
-                                            layout->field_0x2c_rowHeight * 3);
-            layout = Globals::layout;
-            layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
-                            String(*Globals::gameText->getText(501)));
-            layout = Globals::layout;
-            y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
-                            String(""));
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(34),
-                                        this->listTopY + Globals::layout->buttonInsetX + 10,
-                                        y + this->sliderRowHeight / 2 -
-                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
-                                            1,
-                                        false);
-            layout = Globals::layout;
-            y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
-                            String(""));
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(35),
-                                        this->listTopY + Globals::layout->buttonInsetX + 10,
-                                        y + this->sliderRowHeight / 2 -
-                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
-                                            1,
-                                        false);
-            layout = Globals::layout;
-            y = this->sliderRowHeight + y + layout->field_0x2c_rowHeight;
-            layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
-                            String(""));
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(36),
-                                        this->listTopY + Globals::layout->buttonInsetX + 10,
-                                        y + this->sliderRowHeight / 2 -
-                                            Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
-                                            1,
-                                        false);
-
-            // Graphics.
-            y = y + this->sliderRowHeight + Globals::layout->field_0x2fc;
-            if (!Globals::iPadLargePossible) {
-                layout = Globals::layout;
-                layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
-                                String(*Globals::gameText->getText(502)));
-                layout = Globals::layout;
-                y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
-                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
-                                String(""));
-            }
-            if (Globals::iPadLargePossible) {
-                layout = Globals::layout;
-                layout->drawBox(0, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, layout->field_0x1c,
-                                String(*Globals::gameText->getText(502)));
-                layout = Globals::layout;
-                y = y + layout->field_0x1c + layout->field_0x2c_rowHeight;
-                layout->drawBox(5, this->listTopY + layout->buttonInsetX, y, this->optionsWidth, this->sliderRowHeight,
-                                String(""));
-                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
-                                            this->listTopY + Globals::layout->buttonInsetX + 10,
-                                            y + (this->sliderSpacing / 2 -
-                                                 Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
-                                                1,
-                                            false);
-                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, String("1024x768"),
-                                            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-                                            y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, String("1440x1080"),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[5]->getWidth() / 2 -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String("1440x1080")) / 2,
-                    y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, String("2048x1536"),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[5]->getWidth() -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, String("2048x1536")),
-                    y + (this->sliderRowHeight - sliderLabelOffset), false);
-            } else {
-                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(503),
-                                            this->listTopY + Globals::layout->buttonInsetX + 10,
-                                            y + (this->sliderSpacing / 2 -
-                                                 Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) +
-                                                1,
-                                            false);
-                Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(513),
-                                            this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-                                            y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(514),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[4]->getWidth() / 2 -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                      *Globals::gameText->getText(514)) / 2,
-                    y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(515),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC + (*this->sliders)[4]->getWidth() -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                      *Globals::gameText->getText(515)),
-                    y + (this->sliderRowHeight - sliderLabelOffset), false);
-
-                int slot5Y = y + this->sliderRowHeight + Globals::layout->field_0x2c_rowHeight;
-                Globals::layout->drawBox(5, this->listTopY + Globals::layout->buttonInsetX, slot5Y,
-                                         this->optionsWidth, this->sliderRowHeight, String(""));
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(504),
-                    this->listTopY + Globals::layout->buttonInsetX + 10,
-                    slot5Y + (this->sliderSpacing / 2 -
-                              Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2) + 1,
-                    false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(507),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-                    slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(508),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC +
-                        (*this->sliders)[5]->getWidth() / 2 -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                      *Globals::gameText->getText(508)) / 2,
-                    slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
-                Globals::Canvas->DrawString(
-                    (unsigned int) (uintptr_t) Globals::font, *Globals::gameText->getText(509),
-                    this->listTopY + Globals::layout->buttonInsetX + this->metricC +
-                        (*this->sliders)[5]->getWidth() -
-                        Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,
-                                                      *Globals::gameText->getText(509)),
-                    slot5Y + (this->sliderRowHeight - sliderLabelOffset), false);
-            }
-            for (unsigned int i = 1; i < this->sliders->size() - 1; i++)
-                (*this->sliders)[i]->draw();
-            this->optBtnD4->draw();
-            this->optBtnD8->draw();
-            this->optBtnDC->draw();
-            break;
-        }
-        case 17: {
-            // Campaign selection.
-            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
-                Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
-            Globals::layout->drawHeader(String(*Globals::gameText->getText(103)), false);
-            for (unsigned int i = 0; i < this->buttonsB8->size(); i++)
-                (*this->buttonsB8)[i]->draw();
-            Vector pos = (*this->buttonsB8)[0]->getPosition();
-            Globals::Canvas->DrawImage2D(
-                this->image_0x128,
-                (int) (pos.x + (float) (*this->buttonsB8)[0]->getWidth() -
-                       (float) (Globals::layout->field_0x2c_rowHeight * 20)),
-                (int) (pos.y + (float) (Globals::layout->field_0x2c_rowHeight * 5)), 68);
+            layout->drawHeader(String(*Globals::gameText->getText(31)), false);
+            for (unsigned int i = 0; i < this->optionsButtons->size(); i++)
+                (*this->optionsButtons)[i]->draw();
             break;
         }
         case 7: {
@@ -1931,65 +1982,19 @@ void MenuTouchWindow::draw() {
         case 9:
             this->missionsWindow->draw();
             break;
-        case 11: {
-            // Touch-control preview (iPad).
-            if (!Globals::iPad || Globals::iPadAssetsWithLowerRes)
-                break;
-            int barWidth = Globals::Canvas->GetImage2DWidth(this->fireImage_0x54);
-            int segmentHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x50);
-            int arrowHeight = Globals::Canvas->GetImage2DHeight(this->fireImage_0x5c);
-            int steerCoordX = this->steerCoord_0x40;
-            int steerX = Globals::Canvas->GetImage2DWidth(this->steerImageA) / 2 +
-                         (steerCoordX - barWidth / 2);
-            int fireCoordX = this->fireCoord_0x60;
-            int fireX = Globals::Canvas->GetImage2DWidth(this->fireSize_0x74) / 2 +
-                        (fireCoordX - barWidth / 2);
-            int steerY = this->steerCoord_0x42 + Globals::Canvas->GetImage2DHeight(this->steerImageA) / 2;
-            int fireY = this->fireCoord_0x62 + Globals::Canvas->GetImage2DHeight(this->fireSize_0x74) / 2;
-            int segmentY = (int) ((float) (Globals::Canvas->GetImage2DHeight(this->fireImage_0x54) + 100) -
-                                  (Globals::iPadHD ? 91.40625f : (Globals::iPadLarge ? 130.0f : 65.0f)));
-            for (int bar = 0; bar != 2; bar++) {
-                int x = bar == 0 ? steerX : fireX;
-                Globals::Canvas->DrawImage2D(
-                    this->fireImage_0x54, x,
-                    (int) (100.0f - (Globals::iPadHD ? 91.40625f : (Globals::iPadLarge ? 130.0f : 65.0f))));
-                int segY = segmentY;
-                for (int n = 0; n < 5; n++) {
-                    Globals::Canvas->DrawImage2D(this->fireImage_0x50, x, segY);
-                    segY += segmentHeight;
-                }
-            }
+        case 17: {
+            // Campaign selection.
+            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
+                Globals::Canvas->DrawImage2D(this->field_0x120, Globals::w >> 1, 80, 17, 20);
+            Globals::layout->drawHeader(String(*Globals::gameText->getText(103)), false);
+            for (unsigned int i = 0; i < this->buttonsB8->size(); i++)
+                (*this->buttonsB8)[i]->draw();
+            Vector pos = (*this->buttonsB8)[0]->getPosition();
             Globals::Canvas->DrawImage2D(
-                this->cinematicTouchIdA != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, steerX + 3,
-                (int) ((float) steerY - (Globals::iPadHD ? 239.0625f : (Globals::iPadLarge ? 340.0f : 170.0f))));
-            Globals::Canvas->DrawImage2D(
-                this->cinematicTouchIdB != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, fireX + 3,
-                (int) ((float) fireY - (Globals::iPadHD ? 225.0f : (Globals::iPadLarge ? 320.0f : 160.0f))));
-            Globals::Canvas->DrawImage2D(
-                this->cinematicTouchIdA != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, steerX + 3,
-                (int) ((Globals::iPadHD ? 239.0625f : (Globals::iPadLarge ? 340.0f : 170.0f)) + (float) steerY -
-                       (float) arrowHeight),
-                2);
-            Globals::Canvas->DrawImage2D(
-                this->cinematicTouchIdB != 0 ? this->fireImage_0x58 : this->fireImage_0x5c, fireX + 3,
-                (int) ((Globals::iPadHD ? 225.0f : (Globals::iPadLarge ? 320.0f : 160.0f)) + (float) fireY -
-                       (float) arrowHeight),
-                2);
-            Globals::Canvas->DrawImage2D(this->steerImageA, this->steerCoord_0x40, this->steerCoord_0x42);
-            Globals::Canvas->DrawImage2D(this->steerImageD, this->steerCoord_0x3c, this->steerCoord_0x3e, 17, 68);
-            Globals::Canvas->DrawImage2D(this->steerImageC, this->steerCoord_0x2e, this->steerCoord_0x30);
-            Globals::Canvas->DrawImage2D(this->steerImageB, this->steerCoord_0x34, this->steerCoord_0x32);
-            Globals::Canvas->DrawImage2D(this->fireSize_0x74, this->fireCoord_0x60, this->fireCoord_0x62);
-            Globals::Canvas->DrawImage2D(this->fireImage_0x80, this->fireCoord_0x64, this->fireCoord_0x66, 17, 68);
-            Globals::Canvas->DrawImage2D(this->fireImage_0x84, this->fireCoord_0x68, this->fireCoord_0x6a);
-            Globals::Canvas->DrawImage2D(this->fireImage_0x88, this->fireCoord_0x6c, this->fireCoord_0x6e);
-            Globals::Canvas->DrawImage2D(this->fireImage_0x8c, this->fireCoord_0x70, this->fireCoord_0x72);
-            Layout *layout = Globals::layout;
-            layout->drawBox(7, (Globals::w >> 1) - layout->field_0x304 / 2, layout->field_0x300, layout->field_0x304,
-                            layout->choiceWindowTitleHeight, String(*Globals::gameText->getText(494)));
-            this->cinematicTextWindow->draw();
-            this->cinematicBtnA->draw();
-            this->cinematicBtnB->draw();
+                this->image_0x128,
+                (int) (pos.x + (float) (*this->buttonsB8)[0]->getWidth() -
+                       (float) (Globals::layout->field_0x2c_rowHeight * 20)),
+                (int) (pos.y + (float) (Globals::layout->field_0x2c_rowHeight * 5)), 68);
             break;
         }
         case 12:

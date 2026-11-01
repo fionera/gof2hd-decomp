@@ -6,7 +6,7 @@
   "avg_match": 99.9,
   "byte_exact": 1458,
   "linked_exact": 4493,
-  "fuzzy_perfect": 4494,
+  "fuzzy_perfect": 4495,
   "stub_zero_size": 0,
   "orig_zero_size": 1,
   "missing": 0,
@@ -222,14 +222,6 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
-  },
-  {
-   "name": "_ZN15MenuTouchWindow4drawEv",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 13052,
-   "usize": 13052
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
@@ -17766,6 +17758,14 @@
    "linked": true,
    "osize": 48,
    "usize": 48
+  },
+  {
+   "name": "_ZN15MenuTouchWindow4drawEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": false,
+   "osize": 13052,
+   "usize": 13052
   },
   {
    "name": "_ZN15MenuTouchWindow6updateEi",
