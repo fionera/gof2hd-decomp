@@ -38,13 +38,18 @@ import sys
 
 
 # App objects whose empty plain `.text` sentinel is dropped entirely.  The original link's
-# CANTUNWIND set is not fully recoverable from the stripped binary; these zero-size sections
-# only affect `.ARM.exidx` size (they never move a function).  The set is tuned so the
-# `.text`+`.ARM.exidx`+`.ARM.extab` total still rounds to the original 0x1c9e10 `.rodata`
-# base (the window is only 16 bytes wide).  See _work/reconstructions/exidx_extab_audit.md.
+# CANTUNWIND set is read from the binary's `.ARM.exidx` (see exidx_table.py): these objects'
+# sentinels are absent there (their functions run into the next TU without a CANTUNWIND).
+# Dropping the marker removes the spurious CANT; the functions themselves are unaffected.
+# With the markers restored/moved (gen_section_order.py), `.ARM.exidx` is 0x6f70 and
+# `.ARM.extab` 0x26298, so the `.text`+`.ARM.exidx`+`.ARM.extab` total lands exactly on the
+# original `.rodata` base 0x1c9e10.  See _work/reconstructions/exidx_extab_exact_w3462.md.
 DROP_EMPTY_TEXT = {
-    "BackButton.c.obj",
-    "main.c.obj",
+    "Vector.cpp.obj",
+    "BuildResourceList.cpp.obj",
+    "LowResourceTable.cpp.obj",
+    "Array.cpp.obj",
+    "ArrayInstantiations.cpp.obj",
 }
 
 # libcrypto's three plain-.text objects are each one section.  Give them unique names so

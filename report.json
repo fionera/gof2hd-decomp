@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4408,
+  "byte_exact": 4409,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -64,20 +64,20 @@
    "usize": 1992
   },
   {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 77.1,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
-  },
-  {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.7,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -7610,7 +7610,7 @@
   {
    "name": "_ZN11AbyssEngine15ResourceTextureC2ERKNS_6StringEf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60

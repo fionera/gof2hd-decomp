@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4408, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4409, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -49,6 +49,17 @@ their owners: **`.data` is now byte-identical (3 -> 0 differing bytes)** and `.d
 `_work/reconstructions/rodata_group_order.md`, `_work/reconstructions/literal_pool_audit.md`
 and `_work/reconstructions/data_layout_audit_2.md`.
 
+The w3462 `.ARM.exidx`/`.ARM.extab` pass then fixed the empty-`.text` CANTUNWIND sentinel
+set (drop `Vector`/`BuildResourceList`/`LowResourceTable`/`Array`/`ArrayInstantiations`,
+keep `BackButton`/`main`), moved the NdkHooks/NdkAutosave sentinels to the original's
+witnessed boundaries, and added a 12-byte dead-local pad in `HangarWindow::render` to
+restore its LSDA record. **`.ARM.exidx` is now `0x6f70` (3566 entries, CANT 272, inline
+856, extab 2438) and `.ARM.extab` is `0x26298`**, both size- and base-exact, so all 27
+ELF sections are size- and base-exact; byte 4408 -> 4409. The remaining EH content is
+one `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
+record-length deltas that net to zero. See
+`_work/reconstructions/exidx_extab_exact_w3462.md`.
+
 ## Update 2026-07-26 — historical (superseded by the update above)
 
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
@@ -72,8 +83,8 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 13,121 content bytes still differ (first: 0x1fb7f8), all per-object table/string emission order. |
-| .ARM.exidx | 28,528 | 28,536 | **+8** | 3567 entries vs 3566 (CANTUNWIND 275 vs 272, inline 854 vs 856, extab 2438). The +1 entry is the open exidx/extab campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`). |
-| .ARM.extab | 156,312 | 156,300 | **-12** | 0xc under; the net -4 B is absorbed by `.rodata`'s 16-byte alignment, so `.rodata` base stays exact. Open campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`). |
+| .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
+| .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8). |
@@ -93,11 +104,11 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    now interleaves with the merge groups in input order). The first differing byte is 0x1fb7f8
    (VMA); 13,121 bytes still differ, all per-object content/table ordering. 314 functions are
    instruction-identical and differ only by a literal-pool word.
-3. **EH tables.** `.ARM.exidx` is +8 B (3567 vs 3566 entries; CANTUNWIND 275 vs 272, inline
-   854 vs 856, extab 2438) and `.ARM.extab` is -0xc; the net -4 B is absorbed by `.rodata`'s
-   16-byte alignment. The w3460 archive-marker pass restored the original CANTUNWIND entries at
-   `fallback_malloc.o`/`abort_message.o`, but the exidx/extab content is not yet one-for-one;
-   matching it is the next campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`).
+3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are now size- and base-exact (3566 entries,
+   CANTUNWIND 272, inline 856, extab 2438). The remaining content delta is one
+   `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
+   record-length deltas that net to zero; raw prel31 operands still differ with local
+   `.text` layout. See `_work/reconstructions/exidx_extab_exact_w3462.md`.
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now

@@ -57,6 +57,17 @@ LOCAL_ONLY_AFTER = {
     ".text.abort_message": ".text._ZNKSt10bad_typeid4whatEv",
 }
 
+# Empty-.text sentinels whose owner object is not the TU that owns the boundary in
+# the original link.  The original's CANTUNWIND set (read from the binary) has
+# boundaries after ndk_resetNativeItemInformationList and GetTouch, not after
+# NdkHooks.cpp's ndk_setNativeItemInformationList or NdkAutosave.cpp's ndk_autosave.
+# Move those two markers to the witnessed boundaries instead of adding sections.
+# Keyed by a witness section in the owner object (stable across link-order renumbering).
+MARKER_AFTER = {
+    ".text.ndk23_Init": ".text.ndk_resetNativeItemInformationList",   # NdkHooks.cpp
+    ".text.ndk_autosave": ".text._Z8GetTouchi",                       # NdkAutosave.cpp
+}
+
 
 # libcrypto's plain-.text objects are renamed by gen_exidx_markers.py so they can be
 # placed individually.  Anchor each at the first exported symbol of its object.
@@ -270,6 +281,14 @@ def main() -> int:
         # LOCAL_ONLY_AFTER members (fallback_malloc.o / abort_message.o).  The original's
         # CANTUNWIND entries sit at those members' first-function addresses; keeping them in
         # the trailing group merged two of them away and left .ARM.exidx 0x10 short.
+        override_anchor = next((a for w, a in MARKER_AFTER.items() if w in seq), None)
+        if override_anchor is not None:
+            for m in markers:
+                if override_anchor in pos:
+                    inserts.setdefault(pos[override_anchor][-1], []).append(m)
+                else:
+                    tail.append(m)
+            continue
         idxs = [i for t in seq for i in pos.get(t, [])]
         if idxs:
             # ApplicationManager.cpp has two function blocks in the original order; its
