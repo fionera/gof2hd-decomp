@@ -4173,3 +4173,5 @@ mtw anchor for any size change before MenuTouchWindow.
   pointer check in the ctor reproduces the original `OnInitialize` EH landing-pad order without
   `-mllvm -likely-branch-weight=20 -mllvm -unlikely-branch-weight=12`. 1008 B, 98.6% unchanged;
   gate byte 1458 / linked 4493 / .text 0x1343d0.
+- **SpaceLounge::drawLounge 95.1 -> 95.3%, 1948 B** (`e5b0b0a5`, w3255): hint the `isKnown`
+  width block and use the local pad in the right-edge clamp. avg_match 99.89 -> 99.9.

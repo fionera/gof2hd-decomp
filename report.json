@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4523,
-  "avg_match": 99.89,
+  "avg_match": 99.9,
   "byte_exact": 1458,
   "linked_exact": 4493,
   "fuzzy_perfect": 4494,
@@ -193,7 +193,7 @@
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
-   "pct": 95.1,
+   "pct": 95.3,
    "byte": false,
    "linked": false,
    "osize": 1948,

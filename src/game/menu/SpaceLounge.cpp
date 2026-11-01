@@ -1613,7 +1613,7 @@ void SpaceLounge::drawLounge() {
                                                                : String("");
 
         int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
-        if (agent->isKnown()) {
+        if (__builtin_expect(agent->isKnown(), 1)) { // lint: arm_builtin
             width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
         }
         Layout *layout = Globals::layout;
@@ -1621,7 +1621,7 @@ void SpaceLounge::drawLounge() {
         if (x - pad < layout->buttonInsetX) {
             x = layout->buttonInsetX + pad;
         } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
-            x = Globals::w - layout->buttonInsetX - (width + Globals::layout->field_0x94 * 2);
+            x = Globals::w - layout->buttonInsetX - (width + pad + pad);
         }
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
