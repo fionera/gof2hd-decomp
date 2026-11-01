@@ -4237,3 +4237,10 @@ mtw anchor for any size change before MenuTouchWindow.
   `.rodata 0x1c9ed0` (+0xC0), `.got/.data/.dynamic` exact, but `byte_exact 1473` (-22). The
   remaining `.text` excess is the ~136 B of Rank-3 prologue anchors. w3269 is tasked with the
   gate-green combination.
+- **`mtwTextLayoutAnchor` removed; `.rodata` lands exactly on 0x1c9e10** (`w3269`): empty the
+  2934-byte anchor body (keep the `.data.rel.ro` reference), delete the StarMap/StarSystem/
+  ModStation/`is_equal` pads, and shrink the `HangarWindow::initialize` iPad block. byte_exact
+  1495 -> 1513, linked 4493 -> 4492 (ratchet's allowed 1-link transient), `.text` 0x1343d0 ->
+  0x1337b0 (original 0x1337c8, -24 B), `.ARM.exidx` 0x6f88 (+24), `.rodata` 0x1caa60 -> 0x1c9e10
+  (exact), `.got`/`.data`/`.dynamic` exact. `HangarWindow::initialize` is now 2984/3052 B
+  (85.3%) — restoring its real 68 B is the next layout task.

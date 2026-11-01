@@ -1414,17 +1414,6 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 
 
 
-// libc++abi's type_info equality helper (private_typeinfo.cpp), linked out of line
-// in the original. The NDK archive emits its copy after the game TUs; keeping this
-// one here holds the original .text page alignment.
-#pragma GCC visibility push(hidden)
-bool is_equal(const std::type_info *lhs, const std::type_info *rhs, bool compareNames) {
-    if (!compareNames) {
-        return lhs == rhs;
-    }
-    return strcmp(lhs->name(), rhs->name()) == 0;
-}
-#pragma GCC visibility pop
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;

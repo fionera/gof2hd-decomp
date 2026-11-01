@@ -35,14 +35,6 @@
 #include "game/mission/PendingProduct.h"
 
 
-// Layout anchor: the original StarMap TU has no such helper.  Keep this body
-// at 8 bytes so the reconstructed draw() body and the TU's .text size both
-// match the original.
-[[gnu::used]] static bool StarMap_GetScreenPosition(PaintCanvas *canvas, const Vector &position, Vector *screenPosition) {
-    (void) position;
-    (void) screenPosition;
-    return canvas != 0;
-}
 
 
 

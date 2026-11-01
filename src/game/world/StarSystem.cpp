@@ -123,12 +123,6 @@ static const float kRimLightColors[57] = {
 #define STAR_MIN(a, b) ((a) > (b) ? (b) : (a))
 #define STAR_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// .text layout anchor: the ctor below is now 2900 bytes (the original size), so this
-// 14-byte stub absorbs the section-alignment slack and keeps the linked .text section
-// at its original 0x1343c0 size (later TUs embed pc-relative offsets that depend on it).
-[[gnu::used]] static int starSystemLayoutAnchor(int value) {
-    return value * 3 + 1 + (value & 1);
-}
 
 StarSystem::StarSystem(int mode) {
     this->stationIdxArray = nullptr;

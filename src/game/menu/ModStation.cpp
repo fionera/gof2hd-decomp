@@ -1102,17 +1102,6 @@ void ModStation::OnTouchMove(int x, int y, void *touch) { // lint: void_ptr
     this->camScrollPos = x;
 }
 
-// Layout anchor: a static helper that nothing calls is dropped at -Oz, so this keeps external
-// linkage with hidden visibility to stay emitted. Its size preserves the ModStation.o archive
-// layout that the ten libstdc++ exception constructors are byte-exact at.
-#pragma GCC visibility push(hidden)
-int modStationTouchEndPad(int value) {
-    if (value <= 1) return value;
-    int a = modStationTouchEndPad(value - 1);
-    int b = modStationTouchEndPad(value - 2);
-    return value + a + b + (a & 1);
-}
-#pragma GCC visibility pop
 
 void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     if (this->activeTouch != touch) {
