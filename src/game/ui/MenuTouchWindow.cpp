@@ -2722,37 +2722,38 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 return 0;
             }
             this->scrollWindowB->OnTouchEnd(x, y);
+            unsigned char *volatile options = Globals::options;
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
                 if (__builtin_expect(button->id == 60, 0)) { // lint: arm_builtin
                     if (__builtin_expect(button->OnTouchEnd(x, y), 0)) { // lint: arm_builtin
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
                         this->messageShowing = 0;
                         this->purchaseRestorePending = 1;
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
                     }
                 }
                 if (button->id == 52) {
                     if (button->OnTouchEnd(x, y)) {
                         switch (this->field_0x1e0) {
                             case 0:
-                                if (!Globals::options[53])
+                                if (!options[53])
                                     NFC::iap_buy_dlc_valkyrie();
                                 break;
                             case 1:
-                                if (!Globals::options[54])
+                                if (!options[54])
                                     NFC::iap_buy_dlc_kaamo_club();
                                 break;
                             case 2:
-                                if (!Globals::options[55])
+                                if (!options[55])
                                     NFC::iap_buy_dlc_supernova();
                                 break;
                             case 3:
-                                if (!Globals::options[56])
+                                if (!options[56])
                                     NFC::iap_buy_dlc_vip();
                                 break;
                             case 4:
-                                if (!Globals::options[57])
+                                if (!options[57])
                                     NFC::iap_buy_dlc_full_package();
                                 break;
                         }

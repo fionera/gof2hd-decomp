@@ -4181,3 +4181,6 @@ mtw anchor for any size change before MenuTouchWindow.
   into `BlowfishSubkeyFile.cpp` raises the dynsym sequence match 5212 -> 5228 (ratio
   0.970577 -> 0.973557, blocks 78 -> 75) with the gate unchanged (byte 1458, linked 4493,
   .text 0x1343d0).
+- **MenuTouchWindow::OnTouchEnd 85.10 -> 85.18%, 8132 B** (`w3246`): keep the `options` pointer
+  volatile and restore the DLC store order (0,2,4,1,3 -> 0,1,2,3,4) so the switch bodies land in
+  the original's order. Gate unchanged.
