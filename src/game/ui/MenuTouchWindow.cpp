@@ -442,7 +442,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                      Globals::layout->field_0x30_rowHeight) +
                     (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
             }
-            bool special = (i | 1) != 9;
+            bool special = (i | 1) == 9 && i != 1;
             int spacing = Globals::Canvas->FontGetSpacing(
                 special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
             TouchButton *language = new TouchButton(
@@ -634,9 +634,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         int imageHeight = Globals::Canvas->GetImage2DHeight(image);
         int x;
         if (controlIndex == 0)
-            x = 0 - imageWidth / 2 - imageWidth + Globals::w / 2;
+            x = Globals::w / 2 - (imageWidth / 2 + imageWidth);
         else
-            x = (controlIndex == 1 ? 0 - imageWidth / 2 : imageWidth / 2) + Globals::w / 2;
+            x = Globals::w / 2 + (controlIndex == 1 ? 0 - imageWidth / 2 : imageWidth / 2);
         ArrayAdd(new TouchButton(image, pressedImage, 19, x, Globals::h / 2 - imageHeight / 2, 1), *this->buttonsB8);
     }
 
