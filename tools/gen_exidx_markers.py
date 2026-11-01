@@ -122,11 +122,12 @@ def main() -> int:
     copies, markers = [], 0
     for i, obj in enumerate(objs):
         dst = os.path.join(objdir, f"o{i:03d}_{os.path.basename(obj)}")
-        # KIPlayer/Explosion/ApplicationManager are followed by a TU whose first
-        # function is 4-aligned in the original (ListItem/Status/Engine); align the
-        # boundary marker to 4 to match.
-        align = 4 if os.path.basename(obj) in ("KIPlayer.cpp.obj", "Explosion.cpp.obj",
-                                                "ApplicationManager.cpp.obj") else 1
+        # TUs followed by a TU whose first function is 4-aligned in the original
+        # (KIPlayer/Explosion/ApplicationManager/PlayerStation/ResourceMaterial/Wanted):
+        # align the boundary marker to 4 to match.
+        align = 4 if os.path.basename(obj) in (
+            "KIPlayer.cpp.obj", "Explosion.cpp.obj", "ApplicationManager.cpp.obj",
+            "PlayerStation.cpp.obj", "ResourceMaterial.cpp.obj", "Wanted.cpp.obj") else 1
         if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align):
             markers += 1
         copies.append(dst)

@@ -709,17 +709,6 @@ void Level::setPlayerEngineColor(short color) {
     }
 }
 
-// .text layout anchor: createMission now ends 4 B short of the original TU size after its
-// direct anchor call removed the literal-pool word.  This 8-byte out-of-line function sits
-// immediately after setPlayerEngineColor in the section order (the last non-byte-exact
-// function before the Array<T> block), so it restores the original .text size without
-// moving any byte-exact function.  Hidden visibility keeps it out of .dynsym.
-#pragma GCC visibility push(hidden)
-int levelMissionPad(int a) {
-    return (a + 1) * 2;
-}
-#pragma GCC visibility pop
-
 Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
     Gun *gun = nullptr;
     AbstractGun *weapon = nullptr;

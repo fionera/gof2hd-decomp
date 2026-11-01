@@ -3835,5 +3835,7 @@ void MenuTouchWindow::startSupernovaChallenge() {
 // Empty layout anchor: the 2934-byte body was removed in the w3269 layout pass.  The
 // address-only pointer above keeps this out-of-line symbol (and therefore one
 // .data.rel.ro relocation, which holds .rel.dyn/.plt at their original size) in the
-// link without touching any scored function.
-[[gnu::used]] static void mtwTextLayoutAnchor() {}
+// link without touching any scored function.  The original has no function here, so
+// the body is zero-size (the unreachable builtin emits no instruction, unlike an empty
+// body's `bx lr`); its exidx sentinel still holds .rel.dyn at the original size.
+[[gnu::used]] static void mtwTextLayoutAnchor() { __builtin_unreachable(); } // lint: arm_builtin
