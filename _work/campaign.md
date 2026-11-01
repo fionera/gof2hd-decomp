@@ -4475,7 +4475,7 @@ original build flags.
   in `section_order.txt` makes gold sort every unlisted `.rodata*` input together after the
   listed `.text.*` sections, so merge groups (`.cst*`/`.str1.*`) precede plain `.rodata`.
   Deleting `*` and listing the 134 unlisted `.text*` sections explicitly moves the first
-  `.rodata` divergence from 0x1d760 to 0x301eb (VMA 0x1e7570 -> 0x1f2ffb) and leaves a 16-byte
+  `.rodata` divergence from 0x1d760 to 0x301eb (VMA 0x1e7570 -> 0x1f9ffb) and leaves a 16-byte
   size delta to chase. See `_work/reconstructions/rodata_group_order.md`.
 - **Shader string mojibake fixed** (byte-neutral, 4115): `VertexColorAlphaTextureShader.cpp`
   had `benÃ¶tigt` (UTF-8 C3 83 C2 B6) where the original has `benötigt` (C3 B6). The extra 0x83
@@ -4491,3 +4491,13 @@ original build flags.
   differences (`cmp #4; bhi` vs original `cmp #5; bcs`) are clang-7 DAGCombine's
   `SETUGE 5 -> SETUGT 4` canonicalization, not a source-shape difference; ~20 source variants
   produce identical IR. The 45 literal words are `.rodata` PIC deltas.
+
+- **`.rodata` output-group ordering finished: byte_exact 4115 -> 4171** (`w3412`). Replaced the
+  trailing `*` in `gen_section_order.py` with `.text*`/`.data*`/`.bss*`, leaving `.rodata*`
+  unlisted so plain `.rodata` inputs keep gold's index 0 and interleave with the merge groups in
+  input order. The first `.rodata` divergence moves from 0x1e7570 to 0x1f9ffb (a double-encoded
+  `ö` in `VertexColorAlphaTextureShader.cpp`, i.e. content, not ordering). All sections remain
+  size/base exact except `.rodata` (0x41b57 vs 0x41b67, -16 B, net per-object content diffs).
+  `linked_exact` 4495 unchanged; lint CLEAN; drift 0. A `.text*`-only variant reaches 4179 but
+  moves gold's `** common` block to the end of `.bss` and grows `.bss` by 12 B; `.bss*` keeps
+  the exact 0x69ac. See `_work/reconstructions/rodata_group_order.md`.

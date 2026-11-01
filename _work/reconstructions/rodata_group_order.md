@@ -71,38 +71,149 @@ cmake --build cmake-build-match --target link_so -j24
 # compare .rodata with a small ELF section reader (objcopy is unusable on /tmp here)
 ```
 
-## Update: the no-`*` variant scores +58 byte_exact
+---
 
-Measured with `link_so` + `verify` (not `check`; `ratchet.py` does not treat a hand-edited
-`section_order.txt` as stale, so `check` can report the previous `.so`):
+# Finish (w3412, 2026-11-01): replace the bare `*` with `.text*`/`.data*`/`.bss*`
 
-| variant | byte_exact | linked_exact | .text | .rodata | .bss |
-|---|---:|---:|---|---|---|
-| baseline (`*`) | 4115 | 4495 | 0x1337c8 | 0x41b67 | 0x69ac |
-| no `*`, explicit 134 `.text*` leftovers | **4173** | 4495 | 0x1337c8 | 0x41b57 (-16) | 0x69b8 (+12) |
+Status: landed. Branch `wave87-w3412`, based on master `3f58cfa2`. Baseline before the change:
+**byte_exact 4115, linked_exact 4495, compared 4524, lint CLEAN, drift 0**, every ELF section
+size/base exact (`.rodata` 0x41b67 @ 0x1c9e10).
 
-So the grouping fix is worth **+58 functions** even before the size delta is fixed. The remaining
-work is exactly: recover the 16 missing `.rodata` bytes and the 12 extra `.bss` bytes without
-losing the 4173.
+## What was wrong, precisely
 
-### `.rodata` -16 clue
+Gold's `--section-ordering-file` parser (`layout.cc:find_section_order_index`) returns a nonzero
+index only for section names matched by the file; unmatched names keep index 0. Mergeable input
+sections (`.rodata.str1.1`, `.rodata.str1.8`, `.rodata.cst*`, ...) are not `Input_section`
+entries at all: `Output_section::add_merge_input_section` wraps them in an
+`Output_merge_string`/`Output_merge_data` `Output_section_data`, whose `section_order_index` is
+always 0. When the ordering file ends with a bare `*`, every plain `.rodata` input matches the
+glob and gets the `*` line's nonzero index, so
+`Input_section_sort_section_order_index_compare` sorts all plain `.rodata` inputs **after** the
+merge groups. That is the 0x1e7570 grouping. Without an ordering file (the original link) every
+input has index 0 and gold keeps input order, interleaving merge groups and plain `.rodata`.
 
-After the mojibake fix the first diff is at 0x31780 (VMA 0x1e9f90), not 0x301eb. It is the
-`Generator.cpp` static-table emission order: the original has `kAgentOfferItems`
-(200,220,208,213,216,228,229,230,231) at 0x31780, then `kKaamoStationItems` (101,102,103,107,
-108,109,114,124,0,0); ours emits `kKaamoStationItems` first and `kAgentOfferItems` at 0x3198c.
-This is a TU function/use-order issue, not a linker-group issue.
+## The fix
 
-The 16-byte size delta is around 0x39a9c (DialogueWindow's `.rodata`): `g_dw_briefingCounts`
-starts at orig 0x399a0 vs ours 0x39998 (-8), and the original has 16 extra bytes of `0xffffffff`
-table data before it. The table immediately before `g_dw_briefingCounts` is
-`g_dw_speakerFaceParts`/`g_dw_speakerFaces`-shaped data (`0xffffffff` sentinels, small face-part
-indices); ours has a `0x7447756e` ("nGuT") word where the original has `0xffffffff`. Check the
-DialogueWindow face-part table sizes and the TU's emission order.
+`tools/gen_section_order.py` now ends with three scoped globs instead of `*`:
 
-### `.bss` +12 clue
+```
+.text*
+.data*
+.bss*
+.bss.anchor
+```
 
-The no-`*` variant makes `.bss` unlisted (index 0) and `.bss.anchor` listed last, which changes
-the `.bss` input order and adds 12 bytes of alignment padding. Adding an explicit `.bss` line
-before `.bss.anchor` made it worse (+20) and lost 8 byte_exact. The `.bss` order must reproduce
-the `*` group's order (the original's), not simply put `.bss` first.
+`.rodata*` is deliberately **not** listed, so plain `.rodata` inputs keep index 0 and interleave
+with the merge groups in input order. The three globs preserve the previous placement of the
+other unlisted inputs:
+
+* `.text*` keeps plain `.text` (libcrypto/libgcc) and the libc++abi/libandroid_support `.text.*`
+  leftovers after the listed `.text.*` functions.
+* `.data*` keeps the unlisted `.data`/`.data.rel.ro` inputs after the explicitly listed `.data`
+  entries.
+* `.bss*` keeps the `.bss.*` inputs after gold's `** common` block. The common block is an
+  `Output_section_data` with index 0; if `.bss.*` were also index 0 the common block would sort
+  last (it is appended after the inputs), changing `.bss` size by +12. With `.bss*` the common
+  block stays first and `.bss` stays exactly 0x69ac.
+
+## Measured A/B
+
+All variants are relinks of the same objects with the same gold command line
+(`/tmp/relink2.sh OUT -Map=...`, gold 1.12 from NDK r18b), only the ordering file differs.
+`byte` / `linked` are the verify counts; `first diff` is the byte offset inside `.rodata`
+(VMA = 0x1c9e10 + offset).
+
+| variant | ordering tail | byte | linked | `.rodata` size | `.bss` size | first `.rodata` diff |
+|---|---|---:|---:|---:|---:|---|
+| baseline | `*` | 4115 | 4495 | 0x41b67 | 0x69ac | 0x1d760 (VMA 0x1e7570) |
+| A | `.text*` | **4179** | 4495 | 0x41b57 | 0x69b8 (+12) | 0x301eb (VMA 0x1f9ffb) |
+| B (landed) | `.text* .data* .bss*` | **4171** | 4495 | 0x41b57 | **0x69ac** | 0x301eb (VMA 0x1f9ffb) |
+
+Variant A has the higher function count but regresses `.bss` by 12 bytes (common block moves to
+the end). Variant B is the strict structural improvement: byte 4115 -> 4171, linked unchanged,
+and every section except `.rodata` size is still exact. The landed `check` line:
+
+```
+verify: byte 4171  linked 4495  stubs 0  missing 0  extra 0  avg 99.89
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+  GAIN  byte_exact 4115 -> 4171 (lock with --update-baseline)
+RATCHET PASS
+```
+
+`lint` is `CLEAN ✓` and `drift` is `0 field(s) across 0 class(es)`.
+
+## What the new `.rodata` order matches
+
+A map-file walk (`gold -Map`) over the 290 plain `.rodata` input sections shows **279 are
+byte-identical at their new addresses**; the other 11 differ in content, not placement. The
+first divergence is now inside `o075_VertexColorAlphaTextureShader.cpp.obj` at 0x301eb:
+
+```
+orig: ... ben\xc3\xb6tigt zu werden)\n}\x00\x00\x00 N11AbyssEngine29...
+ours: ... ben\xc3\x83\xc2\xb6tigt zu werden)\n}\x00 N11AbyssEngine29...
+```
+
+i.e. the source has a double-encoded UTF-8 `Ã¶` (`c3 83 c2 b6`) where the original has `ö`
+(`c3 b6`). This is a source-content bug, not an ordering bug. The other 10 sections are
+per-object content/table differences: `Generator.cpp`, `Status.cpp`, `Level.cpp`,
+`StarMap.cpp`, `ModStation.cpp`, `ImageFactory.cpp`, `LensFlare.cpp`, `MenuTouchWindow.cpp`,
+`AutoPilotList.cpp`, `DialogueWindow.cpp` (e.g. `Generator.cpp` has a 0x24-byte table at
+`.rodata+0x20c` that the original places before the rest of that object's `.rodata`).
+The remaining `.rodata` size delta (-0x10) is the net of those content differences.
+
+## Proven vs hypothesis
+
+Proven:
+* The bare `*` is the cause of the 0x1e7570 grouping; removing it from the `.rodata` inputs moves
+  the first divergence to 0x1f9ffb.
+* The landed variant is a strict gate improvement (byte 4115 -> 4171, linked unchanged, lint
+  clean, drift 0) and keeps every section size/base exact except the `.rodata` content size.
+* `.text*`/`.data*`/`.bss*` are each necessary to preserve the previous non-`.rodata` placement;
+  in particular `.bss*` is what keeps `.bss` at 0x69ac.
+
+Hypothesis (strongly supported, not fully closed):
+* The remaining `.rodata` -0x10 size delta is entirely per-object content, not global ordering.
+  279/290 sections matching at their new addresses and the first diff being a string-content bug
+  support this, but the 11 sections have not all been fixed yet.
+* The original's `.bss` common block is at the end (original `g_android_leaderboard_scores` is at
+  0x21d2c0, `g_pVM` at 0x21d318). Variant A reproduces that placement and gains +8 byte_exact
+  but costs +12 `.bss` bytes because our app `.bss` is 8 bytes larger before the common block and
+  the `.bss.anchor` pad adds 4 more. That is a separate `.bss`-layout pass, not part of this one.
+
+## Reproduction
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8          # baseline 4115 / 4495
+
+# A/B without touching the tree: copy the generated ordering file, replace the '*' line
+python3 - <<'PY'
+lines = open('cmake-build-match/section_order.txt').read().splitlines()
+out = []
+for l in lines:
+    if l == '*':
+        out += ['.text*', '.data*', '.bss*']   # A: only '.text*'
+    else:
+        out.append(l)
+open('/tmp/order_globs.txt', 'w').write('\n'.join(out) + '\n')
+PY
+# relink with the same gold command line, only --section-ordering-file changed
+# (the exact command is the libgof2hdaa.so rule in cmake-build-match/build.ninja)
+# then verify:
+python3 tools/verify/verify.py --build-dir /tmp/verify_globs \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so --ours /tmp/globs_strip.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+
+# landed change:
+cmake --build cmake-build-match --target link_so -j8
+cmake --build cmake-build-match --target check -j8
+python3 tools/ratchet.py --build-dir cmake-build-match --update-baseline
+```
+
+## Note after harvest
+
+Master already contains the `benötigt` mojibake fix (`50c89e36`), so on current master the
+first `.rodata` content diff is the next item after 0x1f9ffb, not the double-encoded `ö`.
+The `-16 B` `.rodata` size delta is still open (DialogueWindow table region around 0x39a9c).

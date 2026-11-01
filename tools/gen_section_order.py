@@ -225,7 +225,24 @@ def main() -> int:
     order.append(".data.__cxa_terminate_handler")
     order.append(".data.__cxa_unexpected_handler")
     order.append(".data._ZL5cause")
-    order.append("*")          # keep unlisted sections after the listed ones, not before
+    # Do NOT use a bare `*` here.  Gold gives every section matching a glob the
+    # same ordering index, and mergeable input sections (`.rodata.str1.1`,
+    # `.rodata.cst*`, ...) are not real Input_section entries, so they always keep
+    # index 0.  A `*` would therefore give every plain `.rodata` input a nonzero
+    # index and sort all of them AFTER the merge groups -- which is exactly the
+    # 0x1e7570 grouping bug.  Leaving `.rodata*` unlisted keeps plain `.rodata`
+    # at index 0 too, so gold interleaves it with the merge groups in input
+    # order, as in the original (linked without an ordering file).
+    #
+    # The other unlisted sections still need the trailing index: plain `.text`
+    # (libcrypto/libgcc) and libc++abi/libandroid_support `.text.*` must stay
+    # after the listed functions, and `.data*`/`.bss*` must stay after the
+    # explicitly listed `.data` entries.  Gold's `.bss` common block is an
+    # Output_section_data with index 0, so it stays first (as in the original)
+    # only while the `.bss.*` inputs have the trailing index.
+    order.append(".text*")
+    order.append(".data*")
+    order.append(".bss*")
     # The levelTextAnchor .bss pad lives in its own input section so it can be ordered after
     # the archive .bss (libzip/libcrypto/libc++abi), matching the original .bss tail size.
     order.append(".bss.anchor")

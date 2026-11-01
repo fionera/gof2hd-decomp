@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4115,
+  "byte_exact": 4171,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -3538,7 +3538,7 @@
   {
    "name": "_ZN10ModStation11checkMedalsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 468,
    "usize": 468
@@ -4250,7 +4250,7 @@
   {
    "name": "_ZN11AbyssEngine10BlurShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -4314,7 +4314,7 @@
   {
    "name": "_ZN11AbyssEngine10BumpShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 476,
    "usize": 476
@@ -4362,7 +4362,7 @@
   {
    "name": "_ZN11AbyssEngine10GlowShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4410,7 +4410,7 @@
   {
    "name": "_ZN11AbyssEngine10MaskShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -4666,7 +4666,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 520,
    "usize": 520
@@ -4730,7 +4730,7 @@
   {
    "name": "_ZN11AbyssEngine11BumpMapping4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -4778,7 +4778,7 @@
   {
    "name": "_ZN11AbyssEngine11ColorMixAdd4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -4826,7 +4826,7 @@
   {
    "name": "_ZN11AbyssEngine11CubeMapping4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 312,
    "usize": 312
@@ -4882,7 +4882,7 @@
   {
    "name": "_ZN11AbyssEngine11GreenShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 288,
    "usize": 288
@@ -4938,7 +4938,7 @@
   {
    "name": "_ZN11AbyssEngine11NoTexShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -6346,7 +6346,7 @@
   {
    "name": "_ZN11AbyssEngine11PulseShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 304,
    "usize": 304
@@ -6394,7 +6394,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV24InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 324,
    "usize": 324
@@ -6442,7 +6442,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV34InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 484,
    "usize": 484
@@ -6490,7 +6490,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV44InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 324,
    "usize": 324
@@ -6658,7 +6658,7 @@
   {
    "name": "_ZN11AbyssEngine12EnergyShield4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -6802,7 +6802,7 @@
   {
    "name": "_ZN11AbyssEngine12GlowPPShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 432,
    "usize": 432
@@ -6898,7 +6898,7 @@
   {
    "name": "_ZN11AbyssEngine12PostBWShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -6978,7 +6978,7 @@
   {
    "name": "_ZN11AbyssEngine12SimpleShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -7042,7 +7042,7 @@
   {
    "name": "_ZN11AbyssEngine13DrawFBOShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -7106,7 +7106,7 @@
   {
    "name": "_ZN11AbyssEngine13GenericShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 356,
    "usize": 356
@@ -7162,7 +7162,7 @@
   {
    "name": "_ZN11AbyssEngine13SandboxShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 264,
    "usize": 264
@@ -7218,7 +7218,7 @@
   {
    "name": "_ZN11AbyssEngine13TexOnlyShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -7274,7 +7274,7 @@
   {
    "name": "_ZN11AbyssEngine13TextureShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -7338,7 +7338,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader14InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 288,
    "usize": 288
@@ -7386,7 +7386,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader24InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 288,
    "usize": 288
@@ -7442,7 +7442,7 @@
   {
    "name": "_ZN11AbyssEngine15BumpShaderCloak4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 540,
    "usize": 540
@@ -7642,7 +7642,7 @@
   {
    "name": "_ZN11AbyssEngine15SpecCubeMapping4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -8090,7 +8090,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 620,
    "usize": 620
@@ -8138,7 +8138,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpShaderRefract4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -8186,7 +8186,7 @@
   {
    "name": "_ZN11AbyssEngine17CubeNormalMapping4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 376,
    "usize": 376
@@ -8274,7 +8274,7 @@
   {
    "name": "_ZN11AbyssEngine17TextureConference4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -8322,7 +8322,7 @@
   {
    "name": "_ZN11AbyssEngine17VertexColorShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 304,
    "usize": 304
@@ -8922,7 +8922,7 @@
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticle4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 388,
    "usize": 388
@@ -9042,7 +9042,7 @@
   {
    "name": "_ZN11AbyssEngine18TextureLightShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 392,
    "usize": 392
@@ -9154,7 +9154,7 @@
   {
    "name": "_ZN11AbyssEngine19NoTexVtxColorShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -9242,7 +9242,7 @@
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMapping4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -9298,7 +9298,7 @@
   {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_new4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 620,
    "usize": 620
@@ -9362,7 +9362,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -9434,7 +9434,7 @@
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -9498,7 +9498,7 @@
   {
    "name": "_ZN11AbyssEngine22TextureAlphaTestShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -9602,7 +9602,7 @@
   {
    "name": "_ZN11AbyssEngine29VertexColorAlphaTextureShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 304,
    "usize": 304
@@ -10442,7 +10442,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine13LightSetLightEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -11666,7 +11666,7 @@
   {
    "name": "_ZN11AbyssEngine9DNSShader4InitEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 356,
    "usize": 356
@@ -12722,7 +12722,7 @@
   {
    "name": "_ZN11SolarSystem13getAttackRaceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -12730,7 +12730,7 @@
   {
    "name": "_ZN11SolarSystem13hasPirateBaseEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -14042,7 +14042,7 @@
   {
    "name": "_ZN12ChoiceWindow4drawEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 784,
    "usize": 784
@@ -15906,7 +15906,7 @@
   {
    "name": "_ZN13RecordHandler16addHashToOptionsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 256,
    "usize": 256
@@ -16018,7 +16018,7 @@
   {
    "name": "_ZN13RecordHandler7addHashEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 276,
    "usize": 276
@@ -16026,7 +16026,7 @@
   {
    "name": "_ZN13RecordHandler9checkHashEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 280,
    "usize": 280
@@ -16330,7 +16330,7 @@
   {
    "name": "_ZN14DialogueWindow51pickGermanGenericTextBecauseWeSaved100EurosWithThatEiP5Agent",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 184,
    "usize": 184
@@ -20938,7 +20938,7 @@
   {
    "name": "_ZN4Ship11adjustPriceEv",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -24690,7 +24690,7 @@
   {
    "name": "_ZN6AEFile11crc32_ccittERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -27978,7 +27978,7 @@
   {
    "name": "_ZN7BeamGunC1EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -27986,7 +27986,7 @@
   {
    "name": "_ZN7BeamGunC2EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -28306,7 +28306,7 @@
   {
    "name": "_ZN7Globals26playMusicAndFadeOutCurrentEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 588,
    "usize": 588
@@ -29130,7 +29130,7 @@
   {
    "name": "_ZN7Station20stationHasPirateBaseEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -29138,7 +29138,7 @@
   {
    "name": "_ZN7Station21getPirateStationIndexEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -29738,7 +29738,7 @@
   {
    "name": "_ZN8GameText17isNonArabicStringEPKtj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -29754,7 +29754,7 @@
   {
    "name": "_ZN8GameText23convertStringFromArabicEN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 728,
    "usize": 728
@@ -30850,7 +30850,7 @@
   {
    "name": "_ZN8Standing12getEnemyRaceEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -30946,7 +30946,7 @@
   {
    "name": "_ZN8Standing9applyKillEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -31522,7 +31522,7 @@
   {
    "name": "_ZN9FModSound13disableReverbEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -31698,7 +31698,7 @@
   {
    "name": "_ZN9FModSound4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 332,
    "usize": 332
