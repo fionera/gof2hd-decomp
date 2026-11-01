@@ -4363,3 +4363,12 @@ highest-value work left.
 - **Camera ATanf/Cosf order: byte_exact 1928 -> 1938 (+10)** (`w3331`): the 5-float
   `CameraSetPerspective` is defined first so `ATanf` precedes `Cosf` in the PLT, exactly as in
   the original.
+
+### Wave 92b — CutScene/FogSetParameter TU order (`w3333`)
+
+byte_exact **1938 -> 2345 (+407)**, linked 4494, `.text` 0x1337a4, `.ARM.exidx` 0x6fb0,
+`.rodata` 0x1c9e20/0x41b97. `CutScene.cpp` reordered to the original `.text`/`.dynsym`
+definition order and the redundant `engineTextAnchor` dropped; `FogSetParameter` is defined
+before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dropped from
+~766 to ~430 lines. This is the single largest PLT-order win so far and confirms the
+`.dynsym`-order thesis: no function body changed, only TU definition order.
