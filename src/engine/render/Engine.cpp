@@ -1826,8 +1826,3 @@ void Engine::GlowEndGlow() {
     return glDepthFunc(0x201);
 }
 
-// .text layout anchor: a 16-byte hidden body placed after the Engine block so the
-// GameText/Engine region keeps the original addresses without shifting later code.
-[[gnu::visibility("hidden")]] unsigned int engineTextAnchor(unsigned int code) {
-    return (code - 0x621) * 20;
-}
