@@ -5,10 +5,12 @@
 #include "engine/math/AEMath.h"
 #include "engine/core/AERandom.h"
 
-// Layout anchor shared with LevelScript::process.  The original 0x2183a0..0x2183b0
-// .bss chunk sits between StatusWindow's g_sw_charDef and Mission's 16-byte-aligned
-// .bss; this TU is linked exactly there (o159).  Hidden so it adds no dynsym export.
-[[gnu::visibility("hidden")]] volatile int s_processPad[4];
+// The original TargetFollowCamera TU carries a 16-byte, unreferenced .bss object
+// between StatusWindow's g_sw_charDef and Mission::empty (0x2183a0..0x2183b0).
+// No code, pointer or relocation in the original refers to it; a file-static
+// [[gnu::used]] object is the smallest source shape that reproduces it without
+// exporting a symbol.
+[[gnu::used]] static int s_cameraPad[4];
 
 static inline float bitsToFloat(uint32_t u) {
     float f;

@@ -41,8 +41,6 @@
 // reconstructed loop below compiles 0x1c bytes shorter because -Oz keeps the cached enemy
 // pointer in a register instead of reloading it.  These volatile stores restore the body's
 // original size/register pressure (the values are never read).
-// s_processPad is declared in TargetFollowCamera.h; the 0x10-byte .bss chunk must
-// stay in TargetFollowCamera's TU (before Mission's 16-byte-aligned .bss).
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);
 }
