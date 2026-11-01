@@ -10,10 +10,6 @@ namespace {
 extern const char *deviceInfoPath;
 }
 
-extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    g_android_back_button_pressed = 1;
-}
-
 NFC::NFC() {
 }
 
