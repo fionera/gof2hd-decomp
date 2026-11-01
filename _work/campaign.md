@@ -4394,3 +4394,7 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - `w3341`'s Level.cpp move of `createScene` (structurally correct per the layout dumps) is a
   measured -40 because it grows `.text` by 32 B and shifts `.rodata` +16; not landed. Redo it
   together with a size-neutral fix.
+- **zlib/libzip archive member order: byte_exact 2646 -> 2714 (+68), PLT diff 198 -> 86** (`w3346`):
+  the vendored libz/libzip member order is restored to the original's (third_party/build_match_lib.cmake)
+  and `__cxa_end_catch` now lands after the zlib block. The whole zlib/zip PLT region is exact.
+- **HackingGame/MissionsWindow TU order: byte_exact +2** (`w3356`), PLT diff 344 -> 323.
