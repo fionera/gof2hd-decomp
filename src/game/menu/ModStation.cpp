@@ -270,6 +270,7 @@ static const unsigned gStationImageByRace[10] = {1190, 1187, 1189, 1188, 0xfffff
 static inline int Status_getCredits_frag() { return (int)(Globals::status->getCredits()); }
 
 ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
+    (void) gStoryFaces; // keep the story-face array before gPirateFace in .data
     this->dt = 0;
     this->flag_0xb3 = 0;
     this->flag_0xb0 = 0;
