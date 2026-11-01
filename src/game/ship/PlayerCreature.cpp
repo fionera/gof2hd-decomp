@@ -15,10 +15,9 @@
 
 // Per creature type: weight, rage modifier and endurance modifier share one table.
 // The original TU keeps this 16-byte table in plain .rodata (not the mergeable
-// .rodata.str4.4 group); the pragma reproduces that input-section choice.
-#pragma clang section rodata=".rodata"
-static const int kCreatureTypeFactor[4] = {1, 1, 1, 0};
-#pragma clang section rodata=""
+// .rodata.str4.4 group); [[gnu::used]] makes its address significant so clang
+// emits a plain .rodata object instead of a mergeable constant.
+[[gnu::used]] static const int kCreatureTypeFactor[4] = {1, 1, 1, 0};
 
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)

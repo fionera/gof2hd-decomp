@@ -255,14 +255,10 @@ def main() -> int:
     # same index, so leaving `.bss` unlisted reproduces the original's layout:
     # the C runtime's COMMON globals (`g_android_*`, `SubkeyFile`, `g_pVM`, ...)
     # land at the .bss tail, not the front.  Listing `.bss*` put the COMMON block
-    # first and shifted every code TU's uninitialised data by its size.
+    # first and shifted every code TU's uninitialised data by its size.  Blowfish's
+    # S/P arrays are C tentative definitions (COMMON), so they land in that block too.
     order.append(".text*")
     order.append(".data*")
-    # Blowfish's S/P arrays are the original .bss tail.  They get a private input section
-    # (a `#pragma clang section` in BlowfishSubkeyFile.cpp) so they can be ordered after all
-    # other regular `.bss` without moving the whole TU (which owns early .text) to the end of
-    # the link.
-    order.append(".bss.blowfish")
     # Sentinel only: the empty-TU markers below are inserted before the last entry, and this
     # keeps them in the trailing group (the original's late-pulled archive members have no
     # ordered witness).  No object emits `.bss.anchor` any more.

@@ -1,30 +1,26 @@
+// Blowfish reference implementation.  The original Android build compiled this as C:
+// the S/P arrays are tentative definitions, so they are COMMON and gold places them in
+// the .bss COMMON block at the tail (before the other COMMON globals), matching the
+// original.  Compiling as C++ would make S/P ordinary .bss objects and put them at the
+// Blowfish TU's early link position instead.
 
+#include <stdio.h>
 
-#include <cstdio>
-
-extern "C" unsigned int S[4][256]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-extern "C" unsigned int P[18]; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-
-// The key-schedule arrays live at the original .bss tail, after every code TU's
-// uninitialised data.  A private input section lets the section-ordering pass place
-// them there without moving the whole Blowfish TU (which owns early .text) to the end
-// of the link.
-#pragma clang section bss=".bss.blowfish"
 unsigned int S[4][256];
 unsigned int P[18];
-#pragma clang section bss=""
 
-extern "C" std::FILE *SubkeyFile; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+extern FILE *SubkeyFile;
 
-extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+unsigned int F(unsigned int value);
 
-extern "C" int opensubkeyfile() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    SubkeyFile = std::fopen("Blowfish.dat", "rb");
-    return SubkeyFile != nullptr ? 0 : -1;
+// Opens the Blowfish subkey file.
+int opensubkeyfile(void) {
+    SubkeyFile = fopen("Blowfish.dat", "rb");
+    return SubkeyFile != NULL ? 0 : -1;
 }
 
 // Blowfish round function over the S-boxes loaded by InitializeBlowfish.
-extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+unsigned int F(unsigned int value) {
     const unsigned int a = value >> 24;
     const unsigned int b = (value >> 16) & 0xff;
     const unsigned int c = (value >> 8) & 0xff;
@@ -33,7 +29,8 @@ extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI bo
     return ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
 }
 
-extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+// Enciphers one 64-bit block.
+void Blowfish_encipher(unsigned int *xl, unsigned int *xr) {
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     unsigned int temp;
@@ -53,7 +50,8 @@ extern "C" void Blowfish_encipher(unsigned int *xl, unsigned int *xr) { // lint:
     *xr = Xr;
 }
 
-extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+// Deciphers one 64-bit block.
+void Blowfish_decipher(unsigned int *xl, unsigned int *xr) {
     unsigned int Xl = *xl;
     unsigned int Xr = *xr;
     unsigned int temp;
@@ -75,32 +73,32 @@ extern "C" void Blowfish_decipher(unsigned int *xl, unsigned int *xr) { // lint:
 }
 
 // Reference Blowfish key schedule (P-array and S-boxes read from Blowfish.dat, then mixed with the key).
-extern "C" short InitializeBlowfish(unsigned char key[], short keybytes) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+short InitializeBlowfish(unsigned char key[], short keybytes) {
     unsigned int data;
     unsigned int datal;
     unsigned int datar;
 
     int error = opensubkeyfile();
     if (error != 0) {
-        std::printf("Unable to open subkey initialization file : %d\n", error);
+        printf("Unable to open subkey initialization file : %d\n", error);
         return (short) error;
     }
 
     for (unsigned short i = 0; i < 18; ++i) {
-        unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+        unsigned short numread = (unsigned short) fread(&data, 4, 1, SubkeyFile);
         if (numread != 1)
             return -1;
         P[i] = data;
     }
     for (unsigned short i = 0; i < 4; ++i) {
         for (unsigned short j = 0; j < 256; ++j) {
-            unsigned short numread = (unsigned short) std::fread(&data, 4, 1, SubkeyFile);
+            unsigned short numread = (unsigned short) fread(&data, 4, 1, SubkeyFile);
             if (numread != 1)
                 return -1;
             S[i][j] = data;
         }
     }
-    std::fclose(SubkeyFile);
+    fclose(SubkeyFile);
 
     short k;
     short j = 0;
