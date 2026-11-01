@@ -88,8 +88,8 @@ void FModSound::release() {
 }
 
 void FModSound::init() {
-    static const char kSuffixA[16] = "FMOD_GOF2.fev";
-    static const char kSuffixB[32] = "data/audio/FMOD_GOF2.fev";
+    static const char kSuffixB[] = "data/audio/FMOD_GOF2.fev";
+    static const char kSuffixA[] = "FMOD_GOF2.fev";
     static const char *kCats[4] = {"master", "music", "sfx", "voice"};
 
     for (int i = 0; i != 5; i++)
