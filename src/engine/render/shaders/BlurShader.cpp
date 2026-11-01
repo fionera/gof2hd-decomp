@@ -7,6 +7,46 @@
 #include <GLES2/gl2.h>
 #include <cstring>
 
+static const char kBlurShaderVertexSource[] =
+    "attribute highp vec4 a_position;\n"
+    "uniform highp mat4 u_WorldMatrix;\n"
+    "varying mediump vec2 uv;\n"
+    "void main(void)\n"
+    "{\n"
+    "\tgl_Position = vec4((u_WorldMatrix * a_position).xy, 0.0, 1.0 );\n"
+    "\tgl_Position = sign( gl_Position );\n"
+    "\t// Texture coordinate for screen aligned (in correct range):\n"
+    "\tuv = (gl_Position.xy + 1.0) * 0.5;\n"
+    "}\n";
+
+static const char kBlurShaderFragmentSource[] =
+    "precision lowp float;\n"
+    "uniform sampler2D s_texture_base;\n"
+    "uniform lowp vec2 u_radial_origin;   // blur origin\n"
+    "uniform lowp float u_blur_strength;  // blur strength\n"
+    "varying mediump vec2 uv;\n"
+    "const lowp float sampleDist = 1.0;\n"
+    "void main(void)\n"
+    "{\n"
+    "    mediump vec2 dir = u_radial_origin - uv;\n"
+    "    float dist = length(dir);\n"
+    "    dir = dir/dist;\n"
+    "    mediump vec4 color = texture2D(s_texture_base, uv);\n"
+    "    mediump vec4 sum = color;\n"
+    "    float samples[6];\n"
+    "    samples[0] = -0.03;\n"
+    "    samples[1] = -0.02;\n"
+    "    samples[2] = -0.01;\n"
+    "    samples[3] =  0.01;\n"
+    "    samples[4] =  0.02;\n"
+    "    samples[5] =  0.03;\n"
+    "    for (int i = 0; i < 5; i++)\n"
+    "\t\tsum += texture2D( s_texture_base, uv + dir * samples[i]);\n"
+    "\tsum *= 0.1429;\n"
+    "\tgl_FragColor = mix( color, sum, clamp( dist * u_blur_strength ,0.0,1.0) );\n"
+    "}\n";
+
+
 
 namespace AbyssEngine {
     int BlurShader::ShaderIndex = -1;
@@ -22,42 +62,7 @@ namespace AbyssEngine {
     }
 
     void BlurShader::Init(Engine *) {
-        this->blurProgram = this->ES2LoadProgram(
-            "attribute highp vec4 a_position;\n"
-            "uniform highp mat4 u_WorldMatrix;\n"
-            "varying mediump vec2 uv;\n"
-            "void main(void)\n"
-            "{\n"
-            "\tgl_Position = vec4((u_WorldMatrix * a_position).xy, 0.0, 1.0 );\n"
-            "\tgl_Position = sign( gl_Position );\n"
-            "\t// Texture coordinate for screen aligned (in correct range):\n"
-            "\tuv = (gl_Position.xy + 1.0) * 0.5;\n"
-            "}\n",
-            "precision lowp float;\n"
-            "uniform sampler2D s_texture_base;\n"
-            "uniform lowp vec2 u_radial_origin;   // blur origin\n"
-            "uniform lowp float u_blur_strength;  // blur strength\n"
-            "varying mediump vec2 uv;\n"
-            "const lowp float sampleDist = 1.0;\n"
-            "void main(void)\n"
-            "{\n"
-            "    mediump vec2 dir = u_radial_origin - uv;\n"
-            "    float dist = length(dir);\n"
-            "    dir = dir/dist;\n"
-            "    mediump vec4 color = texture2D(s_texture_base, uv);\n"
-            "    mediump vec4 sum = color;\n"
-            "    float samples[6];\n"
-            "    samples[0] = -0.03;\n"
-            "    samples[1] = -0.02;\n"
-            "    samples[2] = -0.01;\n"
-            "    samples[3] =  0.01;\n"
-            "    samples[4] =  0.02;\n"
-            "    samples[5] =  0.03;\n"
-            "    for (int i = 0; i < 5; i++)\n"
-            "\t\tsum += texture2D( s_texture_base, uv + dir * samples[i]);\n"
-            "\tsum *= 0.1429;\n"
-            "\tgl_FragColor = mix( color, sum, clamp( dist * u_blur_strength ,0.0,1.0) );\n"
-            "}\n");
+        this->blurProgram = this->ES2LoadProgram(kBlurShaderVertexSource, kBlurShaderFragmentSource);
         this->aPosition = glGetAttribLocation(this->blurProgram, "a_position");
         this->aTexCoord = glGetAttribLocation(this->blurProgram, "a_texCoord");
         this->uMvpMatrix = glGetUniformLocation(this->blurProgram, "u_WorldMatrix");

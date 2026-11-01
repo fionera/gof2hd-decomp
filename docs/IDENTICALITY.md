@@ -33,7 +33,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,440 | **−24** | the MenuTouchWindow anchor is now empty; the residual is the Rank-3 pads plus the `HangarWindow::initialize` shrink (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
-| **.rodata** | 269,159 | 268,103 | **−1,056** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and address (0x1c9e10); the shader GLSL cluster now lives in per-TU arrays and the duplicate 45x3 table is gone. |
 | .ARM.exidx | 28,528 | 28,552 | **+24** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels; 3569 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md`). |
 | .ARM.extab | 156,312 | 156,304 | **−8** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
@@ -41,7 +41,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | .data.rel.ro | 12,264 | 12,296 | **+32** | anonymous read-only-relocated data layout still differs. |
 | .data | 10,604 | 10,604 | **0** | exact (original TU order/sizes; gEngine moved out of Engine .bss). |
 | .bss | 27,052 | 27,096 | **+44** | anonymous zero-initialised-data layout still differs. |
-| .got | 17,164 | 17,164 | 0 | same slot count and now the same address (0x20fcf4); slot order still follows our link order. |
+| .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
 | .dynamic | 328 | 328 | 0 | exact since the link passes `-z now` (DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, .dynamic at 0x20fba4). |
 
 ## The four real gaps (in priority/size order)

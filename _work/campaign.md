@@ -4244,3 +4244,9 @@ mtw anchor for any size change before MenuTouchWindow.
   0x1337b0 (original 0x1337c8, -24 B), `.ARM.exidx` 0x6f88 (+24), `.rodata` 0x1caa60 -> 0x1c9e10
   (exact), `.got`/`.data`/`.dynamic` exact. `HangarWindow::initialize` is now 2984/3052 B
   (85.3%) — restoring its real 68 B is the next layout task.
+- **`.rodata` size exact: 0x41b67 (269,159 B), address 0x1c9e10** (`w3259` re-landed on top of the
+  new layout): convert the shader-source literals to per-TU `static const char[]` arrays (restores
+  the original's duplicate GLSL copy and the per-TU `.rodata` order) and delete the duplicate
+  `Achievements` 45x3 table. Combined with the anchor/exidx work the whole data layout now lands:
+  `.text 0x1337b0` (-24), `.ARM.exidx 0x6f88` (+24), `.rodata` exact address and size,
+  `.got 0x20fcf4`, `.data 0x214000`, `.dynamic 0x20fba4` all exact. byte 1513, linked 4492.

@@ -4,7 +4,7 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-static const char *const kTextureConferenceVertexSource =
+static const char kTextureConferenceVertexSource[] =
     "attribute highp vec4 a_position;   \n"
     "attribute mediump vec2 a_texCoord;   \n"
     "varying mediump vec2 v_texCoord;     \n"
@@ -21,7 +21,7 @@ static const char *const kTextureConferenceVertexSource =
     "   v_texCoord = a_texCoord;  \n"
     "}                            \n";
 
-static const char *const kTextureConferenceFragmentSource =
+static const char kTextureConferenceFragmentSource[] =
     "precision lowp float;                            \n"
     "varying mediump vec2 v_texCoord;                            \n"
     "varying highp float v_dummy;     \n"

@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char *const kBumpShaderV4VertexSource =
+static const char kBumpShaderV4VertexSource[] =
     "attribute highp vec4 \ta_position;\t\t\n"
     "attribute mediump vec2  a_texCoord;   \t\n"
     "attribute highp vec3  \ta_normal; \t\t\n"
@@ -39,7 +39,7 @@ static const char *const kBumpShaderV4VertexSource =
     "\t//v_DiffuseLight.a = 1.0; \n"
     "} \n";
 
-static const char *const kBumpShaderV4FragmentSource =
+static const char kBumpShaderV4FragmentSource[] =
     "precision lowp float;\t\n"
     "varying mediump vec2 v_texCoord;\t\n"
     "varying mediump vec3 v_light_dir;\t\n"

@@ -7,6 +7,29 @@
 #include <GLES2/gl2.h>
 #include <cmath>
 
+static const char kPulseShaderVertexSource[] =
+    "attribute highp vec4 a_position;   \n"
+    "attribute mediump vec2 a_texCoord;   \n"
+    "varying mediump vec2 v_texCoord;     \n"
+    "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
+    "void main()                  \n"
+    "{                            \n"
+    "   gl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
+    "   v_texCoord = a_texCoord;  \n"
+    "}                            \n";
+
+static const char kPulseShaderFragmentSource[] =
+    "precision lowp float;\n"
+    "varying mediump vec2 v_texCoord;\n"
+    "uniform sampler2D  s_texture;\n"
+    "uniform highp float u_timevalue;\n"
+    "void main()\n"
+    "{\n"
+    "\tvec4 textureColor = texture2D(  s_texture, v_texCoord );\n"
+    "\tgl_FragColor = textureColor * vec4(vec3( u_timevalue ), 1.0); // * vec4(4.0,4.0,4.0,1.0);\n"
+    "}\n";
+
+
 namespace AbyssEngine {
     int PulseShader::ShaderIndex = -1;
 
@@ -24,25 +47,7 @@ namespace AbyssEngine {
     }
 
     void PulseShader::Init(Engine *) {
-        int program = this->ES2LoadProgram(
-            "attribute highp vec4 a_position;   \n"
-            "attribute mediump vec2 a_texCoord;   \n"
-            "varying mediump vec2 v_texCoord;     \n"
-            "uniform highp mat4 u_ModelViewProjectionMatrix;  \n"
-            "void main()                  \n"
-            "{                            \n"
-            "   gl_Position = u_ModelViewProjectionMatrix * a_position;\t\t\n"
-            "   v_texCoord = a_texCoord;  \n"
-            "}                            \n",
-            "precision lowp float;\n"
-            "varying mediump vec2 v_texCoord;\n"
-            "uniform sampler2D  s_texture;\n"
-            "uniform highp float u_timevalue;\n"
-            "void main()\n"
-            "{\n"
-            "\tvec4 textureColor = texture2D(  s_texture, v_texCoord );\n"
-            "\tgl_FragColor = textureColor * vec4(vec3( u_timevalue ), 1.0); // * vec4(4.0,4.0,4.0,1.0);\n"
-            "}\n");
+        int program = this->ES2LoadProgram(kPulseShaderVertexSource, kPulseShaderFragmentSource);
         this->program = program;
 
         this->aPositionLoc = glGetAttribLocation(program, "a_position");

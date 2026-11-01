@@ -4,7 +4,7 @@
 #include "engine/render/Mesh.h"
 
 
-static const char *const kBumpRimCubeShader_newVertexSource =
+static const char kBumpRimCubeShader_newVertexSource[] =
     "attribute highp vec3 \ta_position;  \n"
     "attribute highp vec2  a_texCoord;    \n"
     "attribute highp vec3  \ta_normal; \t  \n"
@@ -56,7 +56,7 @@ static const char *const kBumpRimCubeShader_newVertexSource =
     "   v_FogFactor = computeLinearFogFactor(eyeDist); \n"
     "}  \n";
 
-static const char *const kBumpRimCubeShader_newFragmentSource =
+static const char kBumpRimCubeShader_newFragmentSource[] =
     "precision lowp float;  \n"
     "varying highp vec2 v_texCoord;  \n"
     "varying lowp vec3 v_eye_dir;  \n"

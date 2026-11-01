@@ -3,7 +3,7 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-static const char *const kBumpShaderV2VertexSource =
+static const char kBumpShaderV2VertexSource[] =
     "attribute highp vec4 \ta_position;   \t  \n"
     "attribute mediump vec2  a_texCoord;  \n"
     "attribute highp vec3  \ta_normal; \t  \n"
@@ -32,7 +32,7 @@ static const char *const kBumpShaderV2VertexSource =
     "\tv_lightvec = tangentSpaceXform * u_lightdirmodel;  \n"
     "}  \n";
 
-static const char *const kBumpShaderV2FragmentSource =
+static const char kBumpShaderV2FragmentSource[] =
     "precision lowp float;  \n"
     "varying mediump vec2 v_texCoord;  \n"
     "varying mediump vec3 v_light_dir;  \n"

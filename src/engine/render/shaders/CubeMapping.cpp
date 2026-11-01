@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static const char (&kCubeMappingVertexSource)[1778] =
+static const char kCubeMappingVertexSource[] =
     "attribute highp\tvec3 a_position;   \n"
     "attribute mediump\tvec3 a_normal;\t\t\n"
     "attribute mediump\tvec2 a_texCoord;   \n"
