@@ -4336,3 +4336,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Camera/WantedWindow/String source order: byte_exact 1882 -> 1909 (+27)** (`w3319`): the three
   TUs are reordered to the original definition order (the WantedWindow and String files are pure
   moves), and the back-button JNI wrapper gets its own TU.
+- **Shader TU source order: byte_exact 1909 -> 1919 (+10)** (`w3324`): the shader TUs are reordered
+  so the glCreateShader/glShaderSource/glCompileShader/glGetShaderiv/glGetShaderInfoLog/
+  glDeleteShader block lands in the original PLT order.

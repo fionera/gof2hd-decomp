@@ -1,6 +1,6 @@
 {
  "verify": {
-  "byte_exact": 1909,
+  "byte_exact": 1919,
   "linked_exact": 4494,
   "stub_zero_size": 0,
   "missing": 0,

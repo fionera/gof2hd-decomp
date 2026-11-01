@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1909,
+  "byte_exact": 1919,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -3274,7 +3274,7 @@
   {
    "name": "_ZN10MeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -14514,7 +14514,7 @@
   {
    "name": "_ZN12MarqueeImage4drawEii",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -15338,7 +15338,7 @@
   {
    "name": "_ZN13LodMeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -20922,7 +20922,7 @@
   {
    "name": "_ZN4Ship10getSlotPosEP4Item",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -20986,7 +20986,7 @@
   {
    "name": "_ZN4Ship12addEquipmentEP4Item",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 86,
    "usize": 86
@@ -21018,7 +21018,7 @@
   {
    "name": "_ZN4Ship12getEquipmentEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 142,
    "usize": 142
@@ -21074,7 +21074,7 @@
   {
    "name": "_ZN4Ship12getUsedSlotsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 54,
    "usize": 54
@@ -21082,7 +21082,7 @@
   {
    "name": "_ZN4Ship12hasCargoTypeEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 58,
    "usize": 58
@@ -21090,7 +21090,7 @@
   {
    "name": "_ZN4Ship12hasEquipmentEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -21210,7 +21210,7 @@
   {
    "name": "_ZN4Ship13slotAvailableEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 62,
    "usize": 62
@@ -21370,7 +21370,7 @@
   {
    "name": "_ZN4Ship19hasSecondaryWeaponsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 58,
    "usize": 58
@@ -21410,7 +21410,7 @@
   {
    "name": "_ZN4Ship23getFirstEquipmentOfSortEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -21506,7 +21506,7 @@
   {
    "name": "_ZN4Ship8getCargoEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 62,
    "usize": 62
@@ -21562,7 +21562,7 @@
   {
    "name": "_ZN4Ship8hasCargoEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -28002,7 +28002,7 @@
   {
    "name": "_ZN7BeamGunD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -28010,7 +28010,7 @@
   {
    "name": "_ZN7BeamGunD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
