@@ -4439,3 +4439,6 @@ vectorization, threadsafe statics). `-Os/-O1/-O2/-O3`, `-fomit-frame-pointer`,
 See `_work/reconstructions/build_flags_research.md` and `link_flags_research.md`.
 The remaining per-TU `-mllvm` flags are local compensations for source/TU mismatches, not
 original build flags.
+- **exidx/extab pass 2: `.ARM.exidx` now EXACT, byte_exact 3914 -> 3921** (`w3376`):
+  `.ARM.extab` -0x1c -> -0xc, `.rodata` base still 0x1c9e10. Remaining section deltas: `.ARM.extab`
+  -0xc and `.rodata` size +0x40.
