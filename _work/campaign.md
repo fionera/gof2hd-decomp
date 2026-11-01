@@ -4316,3 +4316,8 @@ mtw anchor for any size change before MenuTouchWindow.
   + Camera source order (1692 -> 1700), String/Transform source order + KeyFrame `memclr4`
   (1700 -> 1748), PaintCanvas source order (1748 -> 1831). All `.text` 0x1337b0, `.rodata`
   0x1c9e10. Total PLT-order gain this session: 1544 -> 1824 (+280).
+- **JNI TU split** (`w3314`): the `GOF2HD2012` and back-button JNI functions are split out of
+  `main.c` into their own TUs, matching the original object layout. Gate unchanged at 1824 but
+  the PLT diff drops further (the JNI block was 78 dynsym slots early).
+- **PaintCanvas +16 gap** (`w3316`): closed by relocating the GameText Arabic anchor (the gap
+  moves to `GameText::getRegionCode`, so this is neutral until the anchor is deleted).
