@@ -952,12 +952,12 @@ void HangarWindow::render() {
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
+                volatile int pad0 = count;
                 (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
                 // Layout anchor: two volatile stores keep this TU's .text at
                 // 0x1343d0 (see the credit-dialog comment above) and steer the
                 // register allocation of the surrounding credit-list loop.
-                volatile int pad0 = count;
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
@@ -965,7 +965,7 @@ void HangarWindow::render() {
                         this->scrollHintImageA,
                         (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
                         (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
-                    volatile int pad1 = 1;
+                    volatile int pad1 = x;
                     description = description;
                     description = description;
                     description = description;
