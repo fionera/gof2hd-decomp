@@ -24,7 +24,7 @@ namespace AbyssEngine {
         // original exports (see docs/VALIDATION.md).
         KeyFrame() {
             timestamp = 0;
-            __builtin_memset(this, 0, 0x48);
+            __builtin_memset((unsigned *) this, 0, 0x48);
             scale = AEMath::Vector{1.0f, 1.0f, 1.0f};
             localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
             channels = 0;
