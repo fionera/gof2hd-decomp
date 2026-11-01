@@ -639,8 +639,8 @@ void AEFile::ResetSaveDirectory() {
         AEFile::fileInterface->ResetSaveDirectory();
     }
 }
+Array<AELowLevelFile *> *AEFile::file;
 FileInterface *AEFile::fileInterface;
 Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
-Array<AELowLevelFile *> *AEFile::file;
 char *AEFile::appRoot;
 

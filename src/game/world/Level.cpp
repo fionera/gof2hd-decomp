@@ -1,10 +1,6 @@
 #include "game/world/Level.h"
 #include "engine/core/ArrayReleaseClasses.h"
 
-float Level::r;
-float Level::g;
-float Level::b;
-
 #include "game/mission/Mission.h"
 #include "game/ship/Ship.h"
 #include "engine/render/AEGeometry.h"
@@ -7402,17 +7398,20 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
 
 
 
-unsigned char Level::doInstantJump;
-Station *Level::programmedStation;
-bool Level::comingFromAlienWorld;
 unsigned char Level::initStreamOutPosition;
-int Level::energyCellsForNextJump;
-int Level::lastMissionFreighterHitpoints;
-unsigned char Level::initStreamOutPositionAfterCutscene;
-float Level::i_a;
-float Level::i_b;
-float Level::i_g;
-float Level::i_r;
-int Level::b_min;
-int Level::g_min;
+bool Level::comingFromAlienWorld;
+float Level::r;
+float Level::g;
+float Level::b;
 int Level::r_min;
+int Level::g_min;
+int Level::b_min;
+float Level::i_r;
+float Level::i_g;
+float Level::i_b;
+int Level::lastMissionFreighterHitpoints;
+float Level::i_a;
+unsigned char Level::initStreamOutPositionAfterCutscene;
+Station *Level::programmedStation;
+unsigned char Level::doInstantJump;
+int Level::energyCellsForNextJump;

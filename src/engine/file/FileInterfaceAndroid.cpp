@@ -339,12 +339,12 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 void FileInterfaceAndroid::ResetSaveDirectory() {
 }
 
-jmethodID FileInterfaceAndroid::methodRead;
-int FileInterfaceAndroid::fileCounter;
-jmethodID FileInterfaceAndroid::methodWrite;
-jmethodID FileInterfaceAndroid::methodCloseRead;
-jmethodID FileInterfaceAndroid::methodFileExist;
-jmethodID FileInterfaceAndroid::methodCloseWrite;
 JNIEnv *FileInterfaceAndroid::env;
 jclass FileInterfaceAndroid::clazz;
 jobject FileInterfaceAndroid::context;
+int FileInterfaceAndroid::fileCounter;
+jmethodID FileInterfaceAndroid::methodFileExist;
+jmethodID FileInterfaceAndroid::methodRead;
+jmethodID FileInterfaceAndroid::methodWrite;
+jmethodID FileInterfaceAndroid::methodCloseRead;
+jmethodID FileInterfaceAndroid::methodCloseWrite;

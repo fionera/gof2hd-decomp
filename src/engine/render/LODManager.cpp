@@ -5,11 +5,11 @@
 
 #include <cstdlib>
 
-int curTouchSize = 0;
-int maxTouchSize = 0;
 // The original allocates a one-entry buffer at static-init time (its second .init_array entry:
 // touches = realloc(touches, 16)).
 Touch *touches = static_cast<Touch *>(realloc(touches, sizeof(Touch)));
+int maxTouchSize = 0;
+int curTouchSize = 0;
 
 extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&
