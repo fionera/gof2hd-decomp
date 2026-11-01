@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 3907,
+  "byte_exact": 3912,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 71.7,
+   "pct": 71.4,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -1754,7 +1754,7 @@
   {
    "name": "_Z19ArrayReleaseClassesIP18ParticleSystemMeshEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -1762,7 +1762,7 @@
   {
    "name": "_Z19ArrayReleaseClassesIP20ParticleSystemSpriteEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -12410,7 +12410,7 @@
   {
    "name": "_ZN11LevelScript31setAutoPilotToProgrammedStationEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 212,
    "usize": 212
@@ -19554,7 +19554,7 @@
   {
    "name": "_ZN21ParticleSystemManager8render3dEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -24074,7 +24074,7 @@
   {
    "name": "_ZN5MGame9dockEventEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1300,
    "usize": 1300
