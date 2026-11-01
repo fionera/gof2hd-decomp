@@ -67,6 +67,11 @@ struct zip *ZIPArchive = nullptr;
 static double gGravity[3];
 static double gNegGravity[3];
 
+// Free accessor for the global engine instance (original TU starts here at .text 0x93c88).
+Engine *GetEngine() {
+    return gEngine;
+}
+
 extern "C" void ExitFunction() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     forceExit = -1;
 }

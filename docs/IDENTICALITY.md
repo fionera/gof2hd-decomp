@@ -6,15 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Current: **byte_exact 3921, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
-=======
-Current: **byte_exact 2734, linked_exact 4494, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
->>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
-=======
-Current: **byte_exact 3885, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
->>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
+Current: **byte_exact 4105, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -29,15 +21,7 @@ order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). See
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-<<<<<<< HEAD
-<<<<<<< HEAD
-mode). Current: **compared 4524, byte_exact 3921, linked_exact 4494, avg 99.89%, stub_zero_size
-=======
-mode). Current: **compared 4524, byte_exact 2734, linked_exact 4494, avg 99.9%, stub_zero_size
->>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
-=======
-mode). Current: **compared 4524, byte_exact 3885, linked_exact 4494, avg 99.89%, stub_zero_size
->>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
+mode). Current: **compared 4524, byte_exact 4105, linked_exact 4494, avg 99.89%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -71,16 +55,6 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now exact
    (0x1337c8); the remaining differences are per-function body deltas. This is a finishing
    campaign, not a missing-code campaign.
-<<<<<<< HEAD
-2. **Anonymous data layout.** `.rodata` is 48 B larger; `.data`, `.data.rel.ro` and `.bss` are now
-   exact. Exported data objects already match 843/843. The residual is local const/string data and
-   literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is 28 B smaller now (was 4,572 B): the app and vendored C
-   objects were missing `-funwind-tables`. The residual is the net unwind-length difference of nine
-   non-exact functions (`HangarWindow::render` −36, `Hud::draw` +16, `RecordHandler::recordStoreWrite`
-   −16, `ConfigReader::RegisterTokenReadFunction` −16, `__cxa_demangle` +12, `StarMap::draw` +12,
-   `Level::createShip` −8, `Generator::createMission` +4, `LevelScript::process` +4).
-=======
 2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` is 28 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
@@ -90,7 +64,6 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    `Hud::drawChallengeModeScore` +16, `RecordHandler::readWanted` −16, `__cxa_demangle` +12,
    `StarMap::drawOnScreenInfo` +12, `Level::createShip` −8, `Generator::createAgent` +4,
    `LevelScript::~LevelScript` +4).
->>>>>>> 44c486bf (exidx/extab pass 2: .ARM.exidx exact, extab -0x1c -> -0xc (byte 3907 -> 3914))
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is now reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). Dynamic-symbol order and the GNU build-id are content

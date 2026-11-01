@@ -51,10 +51,6 @@ static bool update_orientation_timer(ApplicationManager *self) {
 }
 
 
-Engine *GetEngine() {
-    return gEngine;
-}
-
 ApplicationManager::ApplicationManager(Engine *engine) {
     AbyssEngine::debugTouch[0] = 0.0f;
     AbyssEngine::debugTouch[1] = 0.0f;

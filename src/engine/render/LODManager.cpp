@@ -11,40 +11,6 @@ int maxTouchSize = 0;
 // touches = realloc(touches, 16)).
 Touch *touches = static_cast<Touch *>(realloc(touches, sizeof(Touch)));
 
-void AddTouch(int x, int y, int id, int action) {
-    int index = curTouchSize;
-    curTouchSize = index + 1;
-
-    Touch *buf;
-    if (index < maxTouchSize) {
-        buf = touches;
-    } else {
-        maxTouchSize = index + 1;
-        buf = static_cast<Touch *>(realloc(touches, (index + 1) * sizeof(Touch)));
-        touches = buf;
-    }
-
-    // The original computes the x slot before reloading curTouchSize after realloc; keeping the
-    // two expressions separate reproduces that instruction schedule.
-    buf[curTouchSize - 1].x = x;
-    Touch *slot = &buf[curTouchSize - 1];
-    slot->y = y;
-    slot->id = id;
-    slot->action = action;
-}
-
-int GetTouchCount() {
-    return curTouchSize;
-}
-
-void RemoveTouches() {
-    curTouchSize = 0;
-}
-
-Touch GetTouch(int index) {
-    return touches[index];
-}
-
 extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&
         Globals::cItemListID_02 != nullptr && Globals::cItemListID_03 != nullptr &&
@@ -116,6 +82,40 @@ extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native
         Globals::cItemListPrice_03 = nullptr;
         Globals::cItemListPrice_04 = nullptr;
     }
+}
+
+void AddTouch(int x, int y, int id, int action) {
+    int index = curTouchSize;
+    curTouchSize = index + 1;
+
+    Touch *buf;
+    if (index < maxTouchSize) {
+        buf = touches;
+    } else {
+        maxTouchSize = index + 1;
+        buf = static_cast<Touch *>(realloc(touches, (index + 1) * sizeof(Touch)));
+        touches = buf;
+    }
+
+    // The original computes the x slot before reloading curTouchSize after realloc; keeping the
+    // two expressions separate reproduces that instruction schedule.
+    buf[curTouchSize - 1].x = x;
+    Touch *slot = &buf[curTouchSize - 1];
+    slot->y = y;
+    slot->id = id;
+    slot->action = action;
+}
+
+int GetTouchCount() {
+    return curTouchSize;
+}
+
+void RemoveTouches() {
+    curTouchSize = 0;
+}
+
+Touch GetTouch(int index) {
+    return touches[index];
 }
 
 LODManager::LODManager() {

@@ -3,6 +3,32 @@
 #include "engine/math/AEMath.h"
 #include <cmath>
 
+BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
+                         float width, float height, float depth)
+    : BoundingVolume(x, y, z, ex, ey, ez) {
+    float halfWidth = width * 0.5f;
+    float extentX = width * -0.5f;
+    if (0.0f < halfWidth) {
+        extentX = halfWidth;
+    }
+
+    float halfHeight = height * 0.5f;
+    float extentY = height * -0.5f;
+    if (0.0f < halfHeight) {
+        extentY = halfHeight;
+    }
+
+    float halfDepth = depth * 0.5f;
+    float extentZ = depth * -0.5f;
+    if (0.0f < halfDepth) {
+        extentZ = halfDepth;
+    }
+
+    this->halfExtents.x = extentX;
+    this->halfExtents.y = extentY;
+    this->halfExtents.z = extentZ;
+}
+
 int BoundingAAB::outerCollide(float x, float y, float z) {
     float centerX = this->position.x + this->offset.x;
     float extentX = this->halfExtents.x;
@@ -60,32 +86,6 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
         }
     }
     return point - faceOffsets[closestIndex];
-}
-
-BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
-                         float width, float height, float depth)
-    : BoundingVolume(x, y, z, ex, ey, ez) {
-    float halfWidth = width * 0.5f;
-    float extentX = width * -0.5f;
-    if (0.0f < halfWidth) {
-        extentX = halfWidth;
-    }
-
-    float halfHeight = height * 0.5f;
-    float extentY = height * -0.5f;
-    if (0.0f < halfHeight) {
-        extentY = halfHeight;
-    }
-
-    float halfDepth = depth * 0.5f;
-    float extentZ = depth * -0.5f;
-    if (0.0f < halfDepth) {
-        extentZ = halfDepth;
-    }
-
-    this->halfExtents.x = extentX;
-    this->halfExtents.y = extentY;
-    this->halfExtents.z = extentZ;
 }
 
 BoundingAAB::~BoundingAAB() {

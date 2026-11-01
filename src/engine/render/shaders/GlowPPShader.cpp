@@ -94,6 +94,11 @@ namespace AbyssEngine {
     int GlowPPShader::ShaderIndex = -1;
     unsigned char firstRenderGlow = 1;
 
+    GlowPPShader::GlowPPShader() {
+        GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("GlowPPShader");
+    }
+
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);
         glDisableVertexAttribArray(this->meshAttribTexCoord);
@@ -252,11 +257,6 @@ namespace AbyssEngine {
     void GlowPPShader::RenderEffect(FBOContainer *source, Engine *engine) {
         FBOContainer *target = 0;
         this->RenderEffect(source, target, engine);
-    }
-
-    GlowPPShader::GlowPPShader() {
-        GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("GlowPPShader");
     }
 
     void GlowPPShader::InternalInit(Engine *engine) {

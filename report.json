@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 3921,
+  "byte_exact": 4105,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -274,7 +274,7 @@
   {
    "name": "F",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -282,7 +282,7 @@
   {
    "name": "InitializeBlowfish",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 416,
    "usize": 416
@@ -1058,7 +1058,7 @@
   {
    "name": "_Z13GetTouchCountv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -1066,7 +1066,7 @@
   {
    "name": "_Z13RemoveTouchesv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -1978,7 +1978,7 @@
   {
    "name": "_Z19OnCreateApplicationPN11AbyssEngine6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1332,
    "usize": 1332
@@ -2114,7 +2114,7 @@
   {
    "name": "_Z8AddTouchiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -2578,7 +2578,7 @@
   {
    "name": "_Z8GetTouchi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -2586,7 +2586,7 @@
   {
    "name": "_Z9GetEnginev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -3322,7 +3322,7 @@
   {
    "name": "_ZN10MeshMergerD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -3330,7 +3330,7 @@
   {
    "name": "_ZN10MeshMergerD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -4258,7 +4258,7 @@
   {
    "name": "_ZN11AbyssEngine10BlurShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -4266,7 +4266,7 @@
   {
    "name": "_ZN11AbyssEngine10BlurShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -4306,7 +4306,7 @@
   {
    "name": "_ZN11AbyssEngine10BumpShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 644,
    "usize": 644
@@ -4322,7 +4322,7 @@
   {
    "name": "_ZN11AbyssEngine10BumpShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4330,7 +4330,7 @@
   {
    "name": "_ZN11AbyssEngine10BumpShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4370,7 +4370,7 @@
   {
    "name": "_ZN11AbyssEngine10GlowShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4378,7 +4378,7 @@
   {
    "name": "_ZN11AbyssEngine10GlowShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4418,7 +4418,7 @@
   {
    "name": "_ZN11AbyssEngine10MaskShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4426,7 +4426,7 @@
   {
    "name": "_ZN11AbyssEngine10MaskShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4626,7 +4626,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShader11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -4642,7 +4642,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1208,
    "usize": 1208
@@ -4650,7 +4650,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1152,
    "usize": 1152
@@ -4674,7 +4674,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4682,7 +4682,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4698,7 +4698,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShaderD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -4706,7 +4706,7 @@
   {
    "name": "_ZN11AbyssEngine11BloomShaderD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -4714,7 +4714,7 @@
   {
    "name": "_ZN11AbyssEngine11BumpMapping11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -4722,7 +4722,7 @@
   {
    "name": "_ZN11AbyssEngine11BumpMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -4738,7 +4738,7 @@
   {
    "name": "_ZN11AbyssEngine11BumpMappingC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4746,7 +4746,7 @@
   {
    "name": "_ZN11AbyssEngine11BumpMappingC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4786,7 +4786,7 @@
   {
    "name": "_ZN11AbyssEngine11ColorMixAddC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4794,7 +4794,7 @@
   {
    "name": "_ZN11AbyssEngine11ColorMixAddC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4810,7 +4810,7 @@
   {
    "name": "_ZN11AbyssEngine11CubeMapping11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -4818,7 +4818,7 @@
   {
    "name": "_ZN11AbyssEngine11CubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 380,
    "usize": 380
@@ -4834,7 +4834,7 @@
   {
    "name": "_ZN11AbyssEngine11CubeMappingC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4842,7 +4842,7 @@
   {
    "name": "_ZN11AbyssEngine11CubeMappingC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4890,7 +4890,7 @@
   {
    "name": "_ZN11AbyssEngine11GreenShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4898,7 +4898,7 @@
   {
    "name": "_ZN11AbyssEngine11GreenShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4946,7 +4946,7 @@
   {
    "name": "_ZN11AbyssEngine11NoTexShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -4954,7 +4954,7 @@
   {
    "name": "_ZN11AbyssEngine11NoTexShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6338,7 +6338,7 @@
   {
    "name": "_ZN11AbyssEngine11PulseShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 572,
    "usize": 572
@@ -6354,7 +6354,7 @@
   {
    "name": "_ZN11AbyssEngine11PulseShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6362,7 +6362,7 @@
   {
    "name": "_ZN11AbyssEngine11PulseShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6386,7 +6386,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV214UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -6402,7 +6402,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV2C1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6410,7 +6410,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV2C2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6434,7 +6434,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV314UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 740,
    "usize": 740
@@ -6450,7 +6450,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV3C1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6458,7 +6458,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV3C2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6482,7 +6482,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV414UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -6498,7 +6498,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV4C1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6506,7 +6506,7 @@
   {
    "name": "_ZN11AbyssEngine12BumpShaderV4C2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6650,7 +6650,7 @@
   {
    "name": "_ZN11AbyssEngine12EnergyShield14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 452,
    "usize": 452
@@ -6666,7 +6666,7 @@
   {
    "name": "_ZN11AbyssEngine12EnergyShieldC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6674,7 +6674,7 @@
   {
    "name": "_ZN11AbyssEngine12EnergyShieldC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6786,7 +6786,7 @@
   {
    "name": "_ZN11AbyssEngine12GlowPPShader12RenderEffectEPNS_12FBOContainerERS2_PNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1264,
    "usize": 1264
@@ -6810,7 +6810,7 @@
   {
    "name": "_ZN11AbyssEngine12GlowPPShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6818,7 +6818,7 @@
   {
    "name": "_ZN11AbyssEngine12GlowPPShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6906,7 +6906,7 @@
   {
    "name": "_ZN11AbyssEngine12PostBWShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6914,7 +6914,7 @@
   {
    "name": "_ZN11AbyssEngine12PostBWShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6930,7 +6930,7 @@
   {
    "name": "_ZN11AbyssEngine12PostBWShaderD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -6938,7 +6938,7 @@
   {
    "name": "_ZN11AbyssEngine12PostBWShaderD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -6986,7 +6986,7 @@
   {
    "name": "_ZN11AbyssEngine12SimpleShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -6994,7 +6994,7 @@
   {
    "name": "_ZN11AbyssEngine12SimpleShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7026,7 +7026,7 @@
   {
    "name": "_ZN11AbyssEngine13DrawFBOShader12RenderEffectEPNS_12FBOContainerEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 552,
    "usize": 552
@@ -7050,7 +7050,7 @@
   {
    "name": "_ZN11AbyssEngine13DrawFBOShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -7058,7 +7058,7 @@
   {
    "name": "_ZN11AbyssEngine13DrawFBOShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -7098,7 +7098,7 @@
   {
    "name": "_ZN11AbyssEngine13GenericShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 528,
    "usize": 528
@@ -7114,7 +7114,7 @@
   {
    "name": "_ZN11AbyssEngine13GenericShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7122,7 +7122,7 @@
   {
    "name": "_ZN11AbyssEngine13GenericShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7146,7 +7146,7 @@
   {
    "name": "_ZN11AbyssEngine13SandboxShader11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -7154,7 +7154,7 @@
   {
    "name": "_ZN11AbyssEngine13SandboxShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 388,
    "usize": 388
@@ -7170,7 +7170,7 @@
   {
    "name": "_ZN11AbyssEngine13SandboxShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7178,7 +7178,7 @@
   {
    "name": "_ZN11AbyssEngine13SandboxShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7226,7 +7226,7 @@
   {
    "name": "_ZN11AbyssEngine13TexOnlyShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7234,7 +7234,7 @@
   {
    "name": "_ZN11AbyssEngine13TexOnlyShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7266,7 +7266,7 @@
   {
    "name": "_ZN11AbyssEngine13TextureShader23ConnectShaderComponentsEji",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 240,
    "usize": 240
@@ -7290,7 +7290,7 @@
   {
    "name": "_ZN11AbyssEngine13TextureShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7298,7 +7298,7 @@
   {
    "name": "_ZN11AbyssEngine13TextureShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7346,7 +7346,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader1C1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7354,7 +7354,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader1C2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7394,7 +7394,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader2C1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7402,7 +7402,7 @@
   {
    "name": "_ZN11AbyssEngine14GenericShader2C2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7434,7 +7434,7 @@
   {
    "name": "_ZN11AbyssEngine15BumpShaderCloak14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 808,
    "usize": 808
@@ -7450,7 +7450,7 @@
   {
    "name": "_ZN11AbyssEngine15BumpShaderCloakC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7458,7 +7458,7 @@
   {
    "name": "_ZN11AbyssEngine15BumpShaderCloakC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7626,7 +7626,7 @@
   {
    "name": "_ZN11AbyssEngine15SpecCubeMapping11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -7634,7 +7634,7 @@
   {
    "name": "_ZN11AbyssEngine15SpecCubeMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 380,
    "usize": 380
@@ -7650,7 +7650,7 @@
   {
    "name": "_ZN11AbyssEngine15SpecCubeMappingC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -7658,7 +7658,7 @@
   {
    "name": "_ZN11AbyssEngine15SpecCubeMappingC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8018,7 +8018,7 @@
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStructC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -8034,7 +8034,7 @@
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStructD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -8042,7 +8042,7 @@
   {
    "name": "_ZN11AbyssEngine16ShaderBaseStructD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -8082,7 +8082,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpRimCubeShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 852,
    "usize": 852
@@ -8098,7 +8098,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpRimCubeShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8106,7 +8106,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpRimCubeShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8146,7 +8146,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpShaderRefractC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8154,7 +8154,7 @@
   {
    "name": "_ZN11AbyssEngine17BumpShaderRefractC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8170,7 +8170,7 @@
   {
    "name": "_ZN11AbyssEngine17CubeNormalMapping11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -8178,7 +8178,7 @@
   {
    "name": "_ZN11AbyssEngine17CubeNormalMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 488,
    "usize": 488
@@ -8194,7 +8194,7 @@
   {
    "name": "_ZN11AbyssEngine17CubeNormalMappingC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8202,7 +8202,7 @@
   {
    "name": "_ZN11AbyssEngine17CubeNormalMappingC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8282,7 +8282,7 @@
   {
    "name": "_ZN11AbyssEngine17TextureConferenceC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -8290,7 +8290,7 @@
   {
    "name": "_ZN11AbyssEngine17TextureConferenceC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -8314,7 +8314,7 @@
   {
    "name": "_ZN11AbyssEngine17VertexColorShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 580,
    "usize": 580
@@ -8330,7 +8330,7 @@
   {
    "name": "_ZN11AbyssEngine17VertexColorShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8338,7 +8338,7 @@
   {
    "name": "_ZN11AbyssEngine17VertexColorShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8370,7 +8370,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager10OnTouchEndEiiPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -8466,7 +8466,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager12OnTouchBeginEiiPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 376,
    "usize": 376
@@ -8738,7 +8738,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager21EnablePerformanceTestEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -8754,7 +8754,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager25CheckForOrientationChangeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 244,
    "usize": 244
@@ -8778,7 +8778,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager27SetCurrentApplicationModuleEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -8826,7 +8826,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager8OnUpdateEx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4576,
    "usize": 4576
@@ -8874,7 +8874,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManagerC1EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1668,
    "usize": 1668
@@ -8882,7 +8882,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManagerC2EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1668,
    "usize": 1668
@@ -8914,7 +8914,7 @@
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticle14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 632,
    "usize": 632
@@ -8930,7 +8930,7 @@
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticleC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -8938,7 +8938,7 @@
   {
    "name": "_ZN11AbyssEngine18BumpShaderParticleC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9026,7 +9026,7 @@
   {
    "name": "_ZN11AbyssEngine18TextureLightShader11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -9034,7 +9034,7 @@
   {
    "name": "_ZN11AbyssEngine18TextureLightShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 520,
    "usize": 520
@@ -9050,7 +9050,7 @@
   {
    "name": "_ZN11AbyssEngine18TextureLightShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9058,7 +9058,7 @@
   {
    "name": "_ZN11AbyssEngine18TextureLightShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9162,7 +9162,7 @@
   {
    "name": "_ZN11AbyssEngine19NoTexVtxColorShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9170,7 +9170,7 @@
   {
    "name": "_ZN11AbyssEngine19NoTexVtxColorShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9226,7 +9226,7 @@
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMapping11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -9234,7 +9234,7 @@
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMapping14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 404,
    "usize": 404
@@ -9250,7 +9250,7 @@
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMappingC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9258,7 +9258,7 @@
   {
    "name": "_ZN11AbyssEngine20SpecCubeAlphaMappingC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9290,7 +9290,7 @@
   {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_new14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1000,
    "usize": 1000
@@ -9306,7 +9306,7 @@
   {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_newC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9314,7 +9314,7 @@
   {
    "name": "_ZN11AbyssEngine21BumpRimCubeShader_newC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9338,7 +9338,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader11SetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -9346,7 +9346,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 448,
    "usize": 448
@@ -9354,7 +9354,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShader23ConnectShaderComponentsEji",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 264,
    "usize": 264
@@ -9378,7 +9378,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9386,7 +9386,7 @@
   {
    "name": "_ZN11AbyssEngine21TextureVtxColorShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9426,7 +9426,7 @@
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 536,
    "usize": 536
@@ -9442,7 +9442,7 @@
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9450,7 +9450,7 @@
   {
    "name": "_ZN11AbyssEngine22SimpleRefractionShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9490,7 +9490,7 @@
   {
    "name": "_ZN11AbyssEngine22TextureAlphaTestShader23ConnectShaderComponentsEji",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -9514,7 +9514,7 @@
   {
    "name": "_ZN11AbyssEngine22TextureAlphaTestShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9522,7 +9522,7 @@
   {
    "name": "_ZN11AbyssEngine22TextureAlphaTestShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9594,7 +9594,7 @@
   {
    "name": "_ZN11AbyssEngine29VertexColorAlphaTextureShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 580,
    "usize": 580
@@ -9610,7 +9610,7 @@
   {
    "name": "_ZN11AbyssEngine29VertexColorAlphaTextureShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9618,7 +9618,7 @@
   {
    "name": "_ZN11AbyssEngine29VertexColorAlphaTextureShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -10266,7 +10266,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine10DrawLine2DEPfib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -10282,7 +10282,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine10RenderMeshEPNS_4MeshE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1040,
    "usize": 1040
@@ -10314,7 +10314,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine11AfterGLInitEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -10346,7 +10346,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine11SetTexturesEjj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 312,
    "usize": 312
@@ -10370,7 +10370,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine12DrawCloakFBOEPNS_12FBOContainerE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -10522,7 +10522,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetTextureSlotEjj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -10530,7 +10530,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetTexturesExtEjz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 312,
    "usize": 312
@@ -10562,7 +10562,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine15ResetLightParamEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 480,
    "usize": 480
@@ -10578,7 +10578,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine15ShaderSetActiveEiPNS_4MeshE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -10610,7 +10610,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine17ShaderSetInActiveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -10802,7 +10802,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine26LightSetMaterialColorAlphaEf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -11658,7 +11658,7 @@
   {
    "name": "_ZN11AbyssEngine9DNSShader14UpdateMeshDataEPNS_4MeshEPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 588,
    "usize": 588
@@ -11674,7 +11674,7 @@
   {
    "name": "_ZN11AbyssEngine9DNSShaderC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -11682,7 +11682,7 @@
   {
    "name": "_ZN11AbyssEngine9DNSShaderC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -12146,7 +12146,7 @@
   {
    "name": "_ZN11BoundingAAB25projectCollisionOnSurfaceERKN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 356,
    "usize": 356
@@ -12170,7 +12170,7 @@
   {
    "name": "_ZN11BoundingAABC1Efffffffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -12178,7 +12178,7 @@
   {
    "name": "_ZN11BoundingAABC2Efffffffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -15370,7 +15370,7 @@
   {
    "name": "_ZN13LodMeshMergerD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -15378,7 +15378,7 @@
   {
    "name": "_ZN13LodMeshMergerD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -23970,7 +23970,7 @@
   {
    "name": "_ZN5MGame16setCinematicModeEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -24034,7 +24034,7 @@
   {
    "name": "_ZN5MGame5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 676,
    "usize": 676
@@ -31642,7 +31642,7 @@
   {
    "name": "_ZN9FModSound19getEventPauseLengthEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -31706,7 +31706,7 @@
   {
    "name": "_ZN9FModSound4playEiPN11AbyssEngine6AEMath6VectorES3_f",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 560,
    "usize": 560
@@ -35586,7 +35586,7 @@
   {
    "name": "ndk23_handleTouchPadEvent",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -35602,7 +35602,7 @@
   {
    "name": "ndk23_ndkDone",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -35610,7 +35610,7 @@
   {
    "name": "ndk23_newrender",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -35626,7 +35626,7 @@
   {
    "name": "ndk23_resize",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -35634,7 +35634,7 @@
   {
    "name": "ndk23_sendingPauseSignal",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -35642,7 +35642,7 @@
   {
    "name": "ndk23_sendingResumeSignal",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -35698,7 +35698,7 @@
   {
    "name": "ndk_getCurrentApplicationModule",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35706,7 +35706,7 @@
   {
    "name": "ndk_getDLC_1_BOUGHT",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35714,7 +35714,7 @@
   {
    "name": "ndk_getDLC_2_BOUGHT",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35722,7 +35722,7 @@
   {
    "name": "ndk_getDLC_3_BOUGHT",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35730,7 +35730,7 @@
   {
    "name": "ndk_getDLC_4_BOUGHT",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35738,7 +35738,7 @@
   {
    "name": "ndk_getDLC_5_BOUGHT",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35754,7 +35754,7 @@
   {
    "name": "ndk_iapBoughtConsumable",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -35762,7 +35762,7 @@
   {
    "name": "ndk_iapBoughtPremium",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 276,
    "usize": 276
@@ -35778,7 +35778,7 @@
   {
    "name": "ndk_resetNativeItemInformationList",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 676,
    "usize": 676
@@ -35794,7 +35794,7 @@
   {
    "name": "opensubkeyfile",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
