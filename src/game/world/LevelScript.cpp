@@ -2107,7 +2107,7 @@ bool LevelScript::process(int delta) {
                         player->getHackingGameDockIndex() >= 0) {
                         PlayerFixedObject *target =
                             (PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex());
-                        if (dockingCount == 1 && target->getDockingType() == 3) {
+                        if (target->getDockingType() == 3 && dockingCount == 1) {
                             ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setDockingType(2);
                             player->setDockingState(2);
