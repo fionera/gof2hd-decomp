@@ -1387,20 +1387,9 @@ void Status::checkForLevelUp() {
 static volatile unsigned char kMissionOrder[190];
 // Mission type -> case label. The original jump table lays the case bodies out
 // in source order; ranking the types keeps clang's ascending table order aligned.
-static const unsigned char kMissionCase[190] = {
-    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 152, 155, 154, 156, 157, 159, 167, 168, 160, 190,
-    169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
-};
+#pragma GCC visibility push(hidden)
+extern const unsigned char kMissionCase[190];
+#pragma GCC visibility pop
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;

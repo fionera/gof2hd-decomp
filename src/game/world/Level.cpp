@@ -526,6 +526,350 @@ int Level::init() {
     return 1;
 }
 
+void Level::initParticleSystems() {
+    static const uint32_t g_ips_shipTypeMap[32] = {
+        3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
+        2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
+    };
+    static const uint32_t g_ips_skyColors[19] = {
+        0x00a020ff, 0x8c1402ff, 0x006d7bff, 0x2c9bd8ff,
+        0x7a7a7aff, 0xce5a46ff, 0x69a07dff, 0xa7a07eff,
+        0x7eb59fff, 0xcedee1ff, 0x9274d4ff, 0xdb6923ff,
+        0xffffffff, 0x9ae4ffff, 0xaeb77dff, 0xdb6923ff,
+        0x47665eff, 0x738d95ff, 0xaba075ff,
+    };
+
+    if (this->player != nullptr) {
+        if (this->field_a4 != nullptr) {
+            this->field_a8 = new Array<int>();
+            ArraySetLength(this->field_a4->size(), *(this->field_a8));
+
+            for (unsigned int i = 0; i < this->field_a4->size(); i++) {
+                (*this->field_a8)[i] = this->field_80->addSystem(&this->player->player->transform,
+                                                                 (ParticleSettings::ParticleSet) (i + 29), false);
+                // engine flare particle set for this anchor
+                ParticleSettings::SetDefinition &set = ParticleSettingsRef::cur.sets[i + 29];
+                set.posRight = (*this->field_a4)[i]->getPosition().x;
+                set.posUp = (*this->field_a4)[i]->getPosition().y;
+                set.lifetime = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                       ? (int) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * 80.0)
+                                       : 80;
+                set.lifeBase = (*this->field_a4)[i]->getScaling().x * 250.0f;
+                set.flLifetime = 8.0f;
+                set.count = 20;
+                set.posBase = -1000;
+                set.posDir = (*this->field_a4)[i]->getPosition().z;
+                set.velDir = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
+                                     ? (float) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * -4000.0)
+                                     : -4000.0f;
+                set.color0 = 0xddddddff;
+                set.color1 = 0;
+                set.drag = 0.8f;
+                switch (g_ips_shipTypeMap[Globals::status->getShip()->getIndex()]) {
+                    case 1:
+                        set.uvU0 = 0.376953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.498046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 2:
+                        set.uvU0 = 0.12890625f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.24609375f;
+                        set.uvV1 = 0.12109375f;
+                        break;
+                    case 3:
+                        set.uvU0 = 0.005859375f;
+                        set.uvV0 = 0.005859375f;
+                        set.uvU1 = 0.119140625f;
+                        set.uvV1 = 0.119140625f;
+                        break;
+                    case 8:
+                        set.uvU0 = 0.501953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.623046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    case 9:
+                        set.uvU0 = 0.626953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.748046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                    default:
+                        set.uvU0 = 0.251953125f;
+                        set.uvV0 = 0.001953125f;
+                        set.uvU1 = 0.373046875f;
+                        set.uvV1 = 0.123046875f;
+                        break;
+                }
+            }
+        }
+
+        this->movingStarsIndex = this->skybox2Mesh->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_4, false);
+
+        if (Globals::status->getSystem() != 0) {
+            SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
+            if (ss->hasPirateBase() != 0 && this->enemies != nullptr) {
+                for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                    KIPlayer *k = (*this->enemies)[i];
+                    if (k != 0 && k->getType() == 0x37a3) {
+                        k->geometry->updateReferenceMatrix();
+                        this->particleSystemMgr->addSystem(&k->geometry->getReferenceMatrix(),
+                                                           ParticleSettings::ParticleSet_8, false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        this->field_284 = this->particleSystemMgr->addSystem(
+                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
+                ParticleSettings::ParticleSet_7, false);
+
+        // tint the star-dust (set 7) and nebula (set 8) particles to the system's sky colour
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        ParticleSettings::SetDefinition &nebula = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_8];
+        if (Globals::status->inAlienOrbit() != 0) {
+            uint32_t c1 = dust.color0;
+            uint32_t c2 = nebula.color0;
+            c1 = (c1 & 0xff) | (0x9274d4u << 8);
+            c2 = (c2 & 0xff) | (0x9274d4u << 8);
+            nebula.color0 = c2;
+            dust.color0 = c1;
+        } else {
+            nebula.color0 = 0xe2282880u;
+            nebula.color1 = 0x00ff0080u;
+            int texIdx = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex();
+            int col = (int) g_ips_skyColors[texIdx];
+            int isSN = Globals::status->inSupernovaSystem();
+            float scale = isSN ? 0.5f : 0.6f;
+            int alpha = isSN ? 0xff : 0xbb;
+            int comp0 = (int)((float)((col >> 24) & 0xff) * scale);
+            int comp1 = (int)((float)((col >> 16) & 0xff) * scale);
+            int comp2 = (int)((float)((col >>  8) & 0xff) * scale);
+            uint32_t result = (uint32_t)(((unsigned)comp0 << 24) | ((unsigned)comp1 << 16) | ((unsigned)comp2 << 8) | (unsigned)alpha);
+            dust.color0 = result;
+            dust.color1 = result;
+        }
+    }
+
+    if (Globals::status->inSupernovaSystem() != 0 &&
+        Globals::status->getCurrentCampaignMission() != 0x59 &&
+        Globals::status->getCurrentCampaignMission() <= 0x9d) {
+        // star dust drifts away from the dying star
+        Vector drift = -AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = drift.x * 2000.0f;
+        dust.velBaseY = drift.y * 2000.0f;
+        dust.velBaseZ = drift.z * 2000.0f;
+    } else {
+        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
+        dust.velBaseX = 0.0f;
+        dust.velBaseY = 0.0f;
+        dust.velBaseZ = 0.0f;
+    }
+
+    if (this->field_80 != 0)
+        (this->field_80)->init();
+    if (this->particleSystemMgr != nullptr)
+        (this->particleSystemMgr)->init();
+    if (this->skybox2Mesh != 0)
+        (this->skybox2Mesh)->init();
+    if (this->field_8c != 0)
+        this->field_8c->init();
+    if (this->field_98 != 0)
+        (this->field_98)->init();
+
+    Matrix emitter0xa;
+    this->field_38 = this->field_74->addSystem(&emitter0xa, ParticleSettings::ParticleSet_0xa, false);
+    Matrix emitter0xb;
+    this->field_3c = this->field_74->addSystem(&emitter0xb, ParticleSettings::ParticleSet_0xb, false);
+    Matrix emitter0x14;
+    this->field_48 = this->field_74->addSystem(&emitter0x14, ParticleSettings::ParticleSet_0x14, false);
+    Matrix emitter0x15;
+    this->field_34 = this->field_74->addSystem(&emitter0x15, ParticleSettings::ParticleSet_0x15, false);
+    Matrix emitter0x16;
+    this->field_50 = this->field_74->addSystem(&emitter0x16, ParticleSettings::ParticleSet_0x16, false);
+    Matrix emitter0x17;
+    this->field_54 = this->field_74->addSystem(&emitter0x17, ParticleSettings::ParticleSet_0x17, false);
+    if (Globals::status->getCurrentCampaignMission() == 0x50) {
+        Matrix emitter0x18a;
+        this->field_58 = this->field_74->addSystem(&emitter0x18a, ParticleSettings::ParticleSet_0x18, false);
+        Matrix emitter0x18b;
+        this->field_5c = this->field_74->addSystem(&emitter0x18b, ParticleSettings::ParticleSet_0x18, false);
+    }
+
+    (this->field_74)->init();
+    (this->field_74)->enableSystemEmit(this->field_50, false);
+    (this->field_74)->enableSystemEmit(this->field_54, false);
+    if (Globals::status->getCurrentCampaignMission() == 0x50) {
+        (this->field_74)->enableSystemEmit(this->field_58, false);
+        (this->field_74)->enableSystemEmit(this->field_5c, false);
+    }
+
+    this->field_9c->init();
+    this->particleEmitBoolPtr->init();
+    this->particleRenderBoolPtr->init();
+    if (this->field_94 != 0)
+        this->field_94->init();
+}
+
+void Level::createAsteroids() {
+    using namespace AbyssEngine::AEMath;
+    static const int asteroidMeshes[4] = {16900, 16921, 16904, 18836};
+    static const int lodDistancesIPad[3] = {100000, 120000, 150000};
+    static const int lodDistancesNear[3] = {60000, 100000, 120000};
+    static const int lodDistancesFar[3] = {40000, 70000, 90000};
+
+    int systemVariant = Globals::status->inAlienOrbit() ? 0
+            : (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 22) << 1;
+    asteroids = new Array<KIPlayer *>();
+    int *probabilities = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation());
+
+    // the field layout is seeded by the station so it stays the same between visits
+    Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
+    ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
+    int x = Globals::rnd->nextInt(100000) - 50000;
+    int y = Globals::rnd->nextInt(100000) - 50000;
+    int z = Globals::rnd->nextInt(100000) + 20000;
+    bool alienOrbit = Globals::status->inAlienOrbit();
+    int mission = Globals::status->getCurrentCampaignMission();
+    if (alienOrbit) {
+        x = mission == 0x9a ? -70000 : -30000;
+        y = 0;
+        z = 30000;
+    } else if (mission == 0x72 && Globals::status->getStation()->getIndex() == 0x53) {
+        x = 30000;
+        y = 0;
+        z = 80000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x59 && Globals::status->inSupernovaOrbit()) {
+        x = -100000;
+        y = 0;
+        z = -50000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x5b && Globals::status->getStation()->getIndex() == 0x6e) {
+        x = 60000;
+        y = 0;
+        z = 50000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x91 && Globals::status->getStation()->getIndex() == 0x70) {
+        x = 50000;
+        y = 0;
+        z = 70000;
+    } else {
+        if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+    }
+    Globals::rnd->reset();
+
+    reinterpret_cast<Vector &>(stationPosition.x) = Vector{(float) x, (float) y, (float) z};
+    asteroidWaypoint = new Waypoint(x, y, z, nullptr);
+    collisionVolume = new BoundingSphere((float) x, (float) y, (float) z, 0.0f, 0.0f, 0.0f, 100000.0f);
+
+    int denseCount = Globals::rnd->nextInt(8) + 2;
+    bool alienField = Globals::status->inAlienOrbit();
+    Vector position = {0.0f, 0.0f, 0.0f};
+    int kind = 0x9a;
+    int cursor = 0;
+    for (unsigned int i = 0; i < asteroids->size(); i++) {
+        if (alienField) {
+            kind = 0xa4;
+        } else {
+            bool found = false;
+            while (!found) {
+                int roll = Globals::rnd->nextInt(100);
+                int next = 0;
+                found = false;
+                if (roll < probabilities[cursor + 1]) {
+                    kind = probabilities[cursor];
+                    next = cursor > 8 ? 0 : cursor + 2;
+                    found = kind == 0xd9 || kind < 0xa4;
+                }
+                cursor = next;
+            }
+        }
+
+        bool dense = (int) i < denseCount;
+        int spread = dense ? 60000 : 100000;
+        float half = (float) (spread / 2);
+        int variant = systemVariant;
+        if (Globals::status->inAlienOrbit()) {
+            variant = 1;
+        }
+        if (kind == 0xd9) {
+            variant = 3;
+        }
+        bool checkSpacing = i != 0 && dense;
+        int mesh = asteroidMeshes[variant];
+        for (;;) {
+            position.x = stationPosition.x - half + (float) Globals::rnd->nextInt(spread);
+            position.y = stationPosition.y - half + (float) Globals::rnd->nextInt(spread);
+            position.z = stationPosition.z - half + (float) Globals::rnd->nextInt(spread);
+            if (!checkSpacing) {
+                break;
+            }
+            bool spaced = false;
+            for (unsigned int j = 0; j < i; j++) {
+                int distance = (int) VectorLength((*asteroids)[j]->getPosition() - position);
+                spaced = spaced || distance > 8000;
+                if (distance > 8000) {
+                    break;
+                }
+            }
+            if (spaced) {
+                break;
+            }
+        }
+
+        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
+        unsigned short lodMeshes[3] = {(unsigned short) (mesh + 1), (unsigned short) (mesh + 2),
+                                       (unsigned short) (mesh + 3)};
+        if (Globals::iPad) {
+            int distances[3] = {lodDistancesIPad[0], lodDistancesIPad[1], lodDistancesIPad[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        } else if ((int) i < denseCount) {
+            int distances[3] = {lodDistancesNear[0], lodDistancesNear[1], lodDistancesNear[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        } else {
+            int distances[3] = {lodDistancesFar[0], lodDistancesFar[1], lodDistancesFar[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        }
+        int scale;
+        if ((int) i < denseCount) {
+            scale = Globals::rnd->nextInt(100) + 120;
+        } else {
+            scale = Globals::rnd->nextInt(70) + 30;
+        }
+        float size = (float) scale;
+        size *= 0.01f;
+        int type;
+        if (size < 0.4) {
+            type = 4;
+        } else if (size < 0.7) {
+            type = 5;
+        } else if (size < 0.92) {
+            type = 6;
+        } else if (Globals::rnd->nextInt(2) != 0) {
+            type = Globals::rnd->nextInt(3) + 4;
+        } else {
+            type = 7;
+        }
+        (*asteroids)[i] = new PlayerAsteroid(mesh, geometry, variant, kind, position, size, type);
+        (*asteroids)[i]->setLevel(this);
+        ((PlayerAsteroid *) (*asteroids)[i])->setAsteroidCenter(reinterpret_cast<Vector &>(stationPosition.x));
+    }
+    if (probabilities != nullptr) {
+        delete[] probabilities;
+    }
+}
+
 void Level::createSpace() {
     using namespace AbyssEngine::AEMath;
     static const unsigned short jumpgateMeshes[8 * 4] = {
@@ -740,197 +1084,6 @@ void Level::createSpace() {
     i_b = b;
 }
 
-void Level::initParticleSystems() {
-    static const uint32_t g_ips_skyColors[20] = {
-        0x00a020ff, 0x8c1402ff, 0x006d7bff, 0x2c9bd8ff,
-        0x7a7a7aff, 0xce5a46ff, 0x69a07dff, 0xa7a07eff,
-        0x7eb59fff, 0xcedee1ff, 0x9274d4ff, 0xdb6923ff,
-        0xffffffff, 0x9ae4ffff, 0xaeb77dff, 0xdb6923ff,
-        0x47665eff, 0x738d95ff, 0xaba075ff, 0x00000000,
-    };
-    static const uint32_t g_ips_shipTypeMap[32] = {
-        3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
-        2, 0, 2, 3, 3, 2, 0, 8, 8, 8, 0, 0, 0, 8, 3, 2,
-    };
-
-    if (this->player != nullptr) {
-        if (this->field_a4 != nullptr) {
-            this->field_a8 = new Array<int>();
-            ArraySetLength(this->field_a4->size(), *(this->field_a8));
-
-            for (unsigned int i = 0; i < this->field_a4->size(); i++) {
-                (*this->field_a8)[i] = this->field_80->addSystem(&this->player->player->transform,
-                                                                 (ParticleSettings::ParticleSet) (i + 29), false);
-                // engine flare particle set for this anchor
-                ParticleSettings::SetDefinition &set = ParticleSettingsRef::cur.sets[i + 29];
-                set.posRight = (*this->field_a4)[i]->getPosition().x;
-                set.posUp = (*this->field_a4)[i]->getPosition().y;
-                set.lifetime = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
-                                       ? (int) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * 80.0)
-                                       : 80;
-                set.lifeBase = (*this->field_a4)[i]->getScaling().x * 250.0f;
-                set.flLifetime = 8.0f;
-                set.count = 20;
-                set.posBase = -1000;
-                set.posDir = (*this->field_a4)[i]->getPosition().z;
-                set.velDir = (double) (*this->field_a4)[i]->getScaling().x * 1.5 < 1.0
-                                     ? (float) ((double) (*this->field_a4)[i]->getScaling().x * 1.5 * -4000.0)
-                                     : -4000.0f;
-                set.color0 = 0xddddddff;
-                set.color1 = 0;
-                set.drag = 0.8f;
-                switch (g_ips_shipTypeMap[Globals::status->getShip()->getIndex()]) {
-                    case 1:
-                        set.uvU0 = 0.376953125f;
-                        set.uvV0 = 0.001953125f;
-                        set.uvU1 = 0.498046875f;
-                        set.uvV1 = 0.123046875f;
-                        break;
-                    case 2:
-                        set.uvU0 = 0.12890625f;
-                        set.uvV0 = 0.005859375f;
-                        set.uvU1 = 0.24609375f;
-                        set.uvV1 = 0.12109375f;
-                        break;
-                    case 3:
-                        set.uvU0 = 0.005859375f;
-                        set.uvV0 = 0.005859375f;
-                        set.uvU1 = 0.119140625f;
-                        set.uvV1 = 0.119140625f;
-                        break;
-                    case 8:
-                        set.uvU0 = 0.501953125f;
-                        set.uvV0 = 0.001953125f;
-                        set.uvU1 = 0.623046875f;
-                        set.uvV1 = 0.123046875f;
-                        break;
-                    case 9:
-                        set.uvU0 = 0.626953125f;
-                        set.uvV0 = 0.001953125f;
-                        set.uvU1 = 0.748046875f;
-                        set.uvV1 = 0.123046875f;
-                        break;
-                    default:
-                        set.uvU0 = 0.251953125f;
-                        set.uvV0 = 0.001953125f;
-                        set.uvU1 = 0.373046875f;
-                        set.uvV1 = 0.123046875f;
-                        break;
-                }
-            }
-        }
-
-        this->movingStarsIndex = this->skybox2Mesh->addSystem(
-                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
-                ParticleSettings::ParticleSet_4, false);
-
-        if (Globals::status->getSystem() != 0) {
-            SolarSystem *ss = (SolarSystem *) Globals::status->getSystem();
-            if (ss->hasPirateBase() != 0 && this->enemies != nullptr) {
-                for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
-                    KIPlayer *k = (*this->enemies)[i];
-                    if (k != 0 && k->getType() == 0x37a3) {
-                        k->geometry->updateReferenceMatrix();
-                        this->particleSystemMgr->addSystem(&k->geometry->getReferenceMatrix(),
-                                                           ParticleSettings::ParticleSet_8, false);
-                        break;
-                    }
-                }
-            }
-        }
-
-        this->field_284 = this->particleSystemMgr->addSystem(
-                (Matrix *) Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()),
-                ParticleSettings::ParticleSet_7, false);
-
-        // tint the star-dust (set 7) and nebula (set 8) particles to the system's sky colour
-        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
-        ParticleSettings::SetDefinition &nebula = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_8];
-        if (Globals::status->inAlienOrbit() != 0) {
-            uint32_t c1 = dust.color0;
-            uint32_t c2 = nebula.color0;
-            c1 = (c1 & 0xff) | (0x9274d4u << 8);
-            c2 = (c2 & 0xff) | (0x9274d4u << 8);
-            nebula.color0 = c2;
-            dust.color0 = c1;
-        } else {
-            nebula.color0 = 0xe2282880u;
-            nebula.color1 = 0x00ff0080u;
-            int texIdx = ((SolarSystem *) Globals::status->getSystem())->getTextureIndex();
-            int col = (int) g_ips_skyColors[texIdx];
-            int isSN = Globals::status->inSupernovaSystem();
-            float scale = isSN ? 0.5f : 0.6f;
-            int alpha = isSN ? 0xff : 0xbb;
-            int comp0 = (int)((float)((col >> 24) & 0xff) * scale);
-            int comp1 = (int)((float)((col >> 16) & 0xff) * scale);
-            int comp2 = (int)((float)((col >>  8) & 0xff) * scale);
-            uint32_t result = (uint32_t)(((unsigned)comp0 << 24) | ((unsigned)comp1 << 16) | ((unsigned)comp2 << 8) | (unsigned)alpha);
-            dust.color0 = result;
-            dust.color1 = result;
-        }
-    }
-
-    if (Globals::status->inSupernovaSystem() != 0 &&
-        Globals::status->getCurrentCampaignMission() != 0x59 &&
-        Globals::status->getCurrentCampaignMission() <= 0x9d) {
-        // star dust drifts away from the dying star
-        Vector drift = -AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
-        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
-        dust.velBaseX = drift.x * 2000.0f;
-        dust.velBaseY = drift.y * 2000.0f;
-        dust.velBaseZ = drift.z * 2000.0f;
-    } else {
-        ParticleSettings::SetDefinition &dust = ParticleSettingsRef::cur.sets[ParticleSettings::ParticleSet_7];
-        dust.velBaseX = 0.0f;
-        dust.velBaseY = 0.0f;
-        dust.velBaseZ = 0.0f;
-    }
-
-    if (this->field_80 != 0)
-        (this->field_80)->init();
-    if (this->particleSystemMgr != nullptr)
-        (this->particleSystemMgr)->init();
-    if (this->skybox2Mesh != 0)
-        (this->skybox2Mesh)->init();
-    if (this->field_8c != 0)
-        this->field_8c->init();
-    if (this->field_98 != 0)
-        (this->field_98)->init();
-
-    Matrix emitter0xa;
-    this->field_38 = this->field_74->addSystem(&emitter0xa, ParticleSettings::ParticleSet_0xa, false);
-    Matrix emitter0xb;
-    this->field_3c = this->field_74->addSystem(&emitter0xb, ParticleSettings::ParticleSet_0xb, false);
-    Matrix emitter0x14;
-    this->field_48 = this->field_74->addSystem(&emitter0x14, ParticleSettings::ParticleSet_0x14, false);
-    Matrix emitter0x15;
-    this->field_34 = this->field_74->addSystem(&emitter0x15, ParticleSettings::ParticleSet_0x15, false);
-    Matrix emitter0x16;
-    this->field_50 = this->field_74->addSystem(&emitter0x16, ParticleSettings::ParticleSet_0x16, false);
-    Matrix emitter0x17;
-    this->field_54 = this->field_74->addSystem(&emitter0x17, ParticleSettings::ParticleSet_0x17, false);
-    if (Globals::status->getCurrentCampaignMission() == 0x50) {
-        Matrix emitter0x18a;
-        this->field_58 = this->field_74->addSystem(&emitter0x18a, ParticleSettings::ParticleSet_0x18, false);
-        Matrix emitter0x18b;
-        this->field_5c = this->field_74->addSystem(&emitter0x18b, ParticleSettings::ParticleSet_0x18, false);
-    }
-
-    (this->field_74)->init();
-    (this->field_74)->enableSystemEmit(this->field_50, false);
-    (this->field_74)->enableSystemEmit(this->field_54, false);
-    if (Globals::status->getCurrentCampaignMission() == 0x50) {
-        (this->field_74)->enableSystemEmit(this->field_58, false);
-        (this->field_74)->enableSystemEmit(this->field_5c, false);
-    }
-
-    this->field_9c->init();
-    this->particleEmitBoolPtr->init();
-    this->particleRenderBoolPtr->init();
-    if (this->field_94 != 0)
-        this->field_94->init();
-}
-
 void Level::createPlayer() {
     Ship *ship = Globals::status->getShip();
     Array<Item *> *equipment = Globals::status->getShip()->getEquipment();
@@ -1032,159 +1185,6 @@ void Level::createPlayer() {
         }
     }
     delete[] freeSlots;
-}
-
-void Level::createAsteroids() {
-    using namespace AbyssEngine::AEMath;
-    static const int asteroidMeshes[4] = {16900, 16921, 16904, 18836};
-    static const int lodDistancesIPad[3] = {100000, 120000, 150000};
-    static const int lodDistancesNear[3] = {60000, 100000, 120000};
-    static const int lodDistancesFar[3] = {40000, 70000, 90000};
-
-    int systemVariant = Globals::status->inAlienOrbit() ? 0
-            : (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 22) << 1;
-    asteroids = new Array<KIPlayer *>();
-    int *probabilities = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation());
-
-    // the field layout is seeded by the station so it stays the same between visits
-    Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
-    ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
-    int x = Globals::rnd->nextInt(100000) - 50000;
-    int y = Globals::rnd->nextInt(100000) - 50000;
-    int z = Globals::rnd->nextInt(100000) + 20000;
-    bool alienOrbit = Globals::status->inAlienOrbit();
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (alienOrbit) {
-        x = mission == 0x9a ? -70000 : -30000;
-        y = 0;
-        z = 30000;
-    } else if (mission == 0x72 && Globals::status->getStation()->getIndex() == 0x53) {
-        x = 30000;
-        y = 0;
-        z = 80000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x59 && Globals::status->inSupernovaOrbit()) {
-        x = -100000;
-        y = 0;
-        z = -50000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x5b && Globals::status->getStation()->getIndex() == 0x6e) {
-        x = 60000;
-        y = 0;
-        z = 50000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x91 && Globals::status->getStation()->getIndex() == 0x70) {
-        x = 50000;
-        y = 0;
-        z = 70000;
-    } else {
-        if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
-            x = 0;
-            y = 0;
-            z = 0;
-        }
-    }
-    Globals::rnd->reset();
-
-    reinterpret_cast<Vector &>(stationPosition.x) = Vector{(float) x, (float) y, (float) z};
-    asteroidWaypoint = new Waypoint(x, y, z, nullptr);
-    collisionVolume = new BoundingSphere((float) x, (float) y, (float) z, 0.0f, 0.0f, 0.0f, 100000.0f);
-
-    int denseCount = Globals::rnd->nextInt(8) + 2;
-    bool alienField = Globals::status->inAlienOrbit();
-    Vector position = {0.0f, 0.0f, 0.0f};
-    int kind = 0x9a;
-    int cursor = 0;
-    for (unsigned int i = 0; i < asteroids->size(); i++) {
-        if (alienField) {
-            kind = 0xa4;
-        } else {
-            bool found = false;
-            while (!found) {
-                int roll = Globals::rnd->nextInt(100);
-                int next = 0;
-                found = false;
-                if (roll < probabilities[cursor + 1]) {
-                    kind = probabilities[cursor];
-                    next = cursor > 8 ? 0 : cursor + 2;
-                    found = kind == 0xd9 || kind < 0xa4;
-                }
-                cursor = next;
-            }
-        }
-
-        bool dense = (int) i < denseCount;
-        int spread = dense ? 60000 : 100000;
-        float half = (float) (spread / 2);
-        int variant = systemVariant;
-        if (Globals::status->inAlienOrbit()) {
-            variant = 1;
-        }
-        if (kind == 0xd9) {
-            variant = 3;
-        }
-        bool checkSpacing = i != 0 && dense;
-        int mesh = asteroidMeshes[variant];
-        for (;;) {
-            position.x = stationPosition.x - half + (float) Globals::rnd->nextInt(spread);
-            position.y = stationPosition.y - half + (float) Globals::rnd->nextInt(spread);
-            position.z = stationPosition.z - half + (float) Globals::rnd->nextInt(spread);
-            if (!checkSpacing) {
-                break;
-            }
-            bool spaced = false;
-            for (unsigned int j = 0; j < i; j++) {
-                int distance = (int) VectorLength((*asteroids)[j]->getPosition() - position);
-                spaced = spaced || distance > 8000;
-                if (distance > 8000) {
-                    break;
-                }
-            }
-            if (spaced) {
-                break;
-            }
-        }
-
-        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
-        unsigned short lodMeshes[3] = {(unsigned short) (mesh + 1), (unsigned short) (mesh + 2),
-                                       (unsigned short) (mesh + 3)};
-        if (Globals::iPad) {
-            int distances[3] = {lodDistancesIPad[0], lodDistancesIPad[1], lodDistancesIPad[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        } else if ((int) i < denseCount) {
-            int distances[3] = {lodDistancesNear[0], lodDistancesNear[1], lodDistancesNear[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        } else {
-            int distances[3] = {lodDistancesFar[0], lodDistancesFar[1], lodDistancesFar[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        }
-        int scale;
-        if ((int) i < denseCount) {
-            scale = Globals::rnd->nextInt(100) + 120;
-        } else {
-            scale = Globals::rnd->nextInt(70) + 30;
-        }
-        float size = (float) scale;
-        size *= 0.01f;
-        int type;
-        if (size < 0.4) {
-            type = 4;
-        } else if (size < 0.7) {
-            type = 5;
-        } else if (size < 0.92) {
-            type = 6;
-        } else if (Globals::rnd->nextInt(2) != 0) {
-            type = Globals::rnd->nextInt(3) + 4;
-        } else {
-            type = 7;
-        }
-        (*asteroids)[i] = new PlayerAsteroid(mesh, geometry, variant, kind, position, size, type);
-        (*asteroids)[i]->setLevel(this);
-        ((PlayerAsteroid *) (*asteroids)[i])->setAsteroidCenter(reinterpret_cast<Vector &>(stationPosition.x));
-    }
-    if (probabilities != nullptr) {
-        delete[] probabilities;
-    }
 }
 
 void Level::createGasClouds() {
@@ -7399,3 +7399,20 @@ void Level::createScene() {
     }
 
 }
+
+#pragma GCC visibility push(hidden)
+extern const unsigned char kMissionCase[190] = {
+    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
+    190, 190, 190, 190, 190, 190, 152, 155, 154, 156, 157, 159, 167, 168, 160, 190,
+    169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
+    190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
+};
+#pragma GCC visibility pop
