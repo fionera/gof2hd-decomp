@@ -4398,3 +4398,5 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   the vendored libz/libzip member order is restored to the original's (third_party/build_match_lib.cmake)
   and `__cxa_end_catch` now lands after the zlib block. The whole zlib/zip PLT region is exact.
 - **HackingGame/MissionsWindow TU order: byte_exact +2** (`w3356`), PLT diff 344 -> 323.
+- **Layout.cpp pass 2 + ImagePart/ImageFactory/WantedWindow/SpaceLounge order: byte_exact 2714 -> 2755
+  (+41)**: `w3360` (+17), `w3361` (+24). PLT symbol diff 86 -> 68 -> ~50 lines.
