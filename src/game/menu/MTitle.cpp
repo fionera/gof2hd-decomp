@@ -7,12 +7,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
-// Layout anchor: the reconstructed createMission body is 4 bytes smaller than the
-// original's; keep the archive-sensitive .text size (and the MTitle layout) intact.
-[[gnu::used]] static int generatorMissionLayoutPad() {
-    return 0;
-}
-
 static Layout **g_currentLayout = &Globals::layout;
 static ImageFactory **g_imageFactory = &Globals::imageFactory;
 static FModSound **g_sound = &Globals::sound;

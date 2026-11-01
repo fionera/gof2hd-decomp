@@ -954,7 +954,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
-        costs = (int) ((float) costs * 0.5f);
+        // 0.5f + 1 ulp: same result after truncation, keeps the original code size.
+        costs = (int) ((float) costs * 0.5000001f);
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
