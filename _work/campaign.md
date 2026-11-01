@@ -4716,3 +4716,13 @@ LSDA records belong to the seven mismatched bodies; `.missioncase` is an extra 1
 Current differing bytes: `.text` 119,732; `.ARM.exidx` 2,710; `.ARM.extab` 119,153; `.dynsym`
 1,760; `.dynstr` 6,676; `.hash` 563; `.gnu.version` 52; `.rel.dyn` 68; `.rel.plt` 141;
 `.rodata`/`.data`/`.data.rel.ro`/`.plt`/`.got` 0.
+
+Wave-95 shortcut removal (gate-neutral, byte 4496 / linked 4496 throughout):
+- `kMissionCase[192]` + `#pragma clang section` removed (`w3570`): section count 28 -> 27,
+  `.shstrtab` 0x124 -> 0x117, matching the original's section table except `.ARM.extab` -8.
+- `s_processPad` anchor replaced by the real 16-byte unreferenced file-static object owned by
+  `TargetFollowCamera.cpp` at `0x2183a0` (`w3571`).
+- Eight `(void)` odr-use anchors in `Level.cpp` replaced by `[[gnu::used]]` definitions at the
+  same `.rodata` emission point (`w3574`).
+- `Globals.cpp` `#pragma pack(push,1)` removal is gate-neutral but needs a byte-array
+  restructuring; note only (`w3573`).
