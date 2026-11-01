@@ -4567,3 +4567,8 @@ original build flags.
 - **Radar::draw** (`w3430`, no change): 71.4% is a wide plateau — declaration order, `SetColor`
   placement, guard inversion and negated distance comparisons all compile to byte-identical
   code; 336 of 997 mismatched instructions are 1:1 register substitutions.
+- **Hud raceBadge alignment** (`w3436`, byte 4234 -> 4249): `alignas(16)` on `g_Hud_raceBadge`
+  in `Hud.cpp` closed 15 literal-pool-only functions at once (263 -> 248 "pct==100 but not
+  byte"). Method + ranked region table: `_work/reconstructions/literal_pool_sweep_w3436.md`.
+- **Gun::calcCharacterCollision** (`w3432`, no change), **MGame::OnTouchEnd** (`w3399`, no
+  change — the 4-byte delta is a scheduling `mov` pair, not a source-shape error).

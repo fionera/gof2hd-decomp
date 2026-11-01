@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4234,
+  "byte_exact": 4249,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -3898,7 +3898,7 @@
   {
    "name": "_ZN10RepairBeam6updateEiP5RadarP5LevelP3Hud",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1872,
    "usize": 1872
@@ -12954,7 +12954,7 @@
   {
    "name": "_ZN11SpaceLounge10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 7448,
    "usize": 7448
@@ -13106,7 +13106,7 @@
   {
    "name": "_ZN11SpaceLoungeC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1200,
    "usize": 1200
@@ -13114,7 +13114,7 @@
   {
    "name": "_ZN11SpaceLoungeC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1200,
    "usize": 1200
@@ -20050,7 +20050,7 @@
   {
    "name": "_ZN3Hud20drawOrbitInformationEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 608,
    "usize": 608
@@ -21842,7 +21842,7 @@
   {
    "name": "_ZN5Agent21getModPricePercentageEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -26090,7 +26090,7 @@
   {
    "name": "_ZN6Player14playShootSoundEiiPN11AbyssEngine6AEMath6VectorEf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -26138,7 +26138,7 @@
   {
    "name": "_ZN6Player14stopShootSoundEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -26234,7 +26234,7 @@
   {
    "name": "_ZN6Player16calcWeaponSoundsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 412,
    "usize": 412
@@ -27394,7 +27394,7 @@
   {
    "name": "_ZN6Status19nextCampaignMissionEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8492,
    "usize": 8492
@@ -29146,7 +29146,7 @@
   {
    "name": "_ZN7Station23getHiddenBlueprintIndexEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -29154,7 +29154,7 @@
   {
    "name": "_ZN7Station25stationHasHiddenBlueprintEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -29418,7 +29418,7 @@
   {
    "name": "_ZN8CutScene17replacePlayerShipEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 288,
    "usize": 288
@@ -33082,7 +33082,7 @@
   {
    "name": "_ZN9PlayerEgo20approachDockingPointEP3HudiP5Radar",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2532,
    "usize": 2532
@@ -33394,7 +33394,7 @@
   {
    "name": "_ZN9PlayerEgo6updateEiP5RadarP3HudP5RadioP11LevelScriptibi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8852,
    "usize": 8852
