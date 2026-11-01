@@ -647,9 +647,15 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setVisible(true);
             }
             // layout anchor (see s_processPad)
-            s_processPad[0] = delta;
+            s_processPad[0] = delta + 0;
             s_processPad[1] = delta + 1;
             s_processPad[2] = delta + 2;
+            s_processPad[3] = delta + 3;
+            s_processPad[0] = delta + 4;
+            s_processPad[1] = delta + 5;
+            s_processPad[2] = delta + 6;
+            s_processPad[3] = delta + 7;
+            s_processPad[0] = delta + 8;
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
@@ -736,7 +742,6 @@ bool LevelScript::process(int delta) {
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
             }
             // layout anchor (see s_processPad)
-            s_processPad[3] = delta + 3;
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
             // State 5: brake the player towards the station, starting the docking sounds once the
@@ -1507,14 +1512,7 @@ bool LevelScript::process(int delta) {
 
     // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
     // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
-    else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
-        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
-        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-            m_nState = 1;
-            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 5) {
+    if (Globals::status->getCurrentCampaignMission() == 5) {
         // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
         if (m_nState == 0) {
             Vector *scratch = &m_tempVec; // LevelScript tempVec @0x28
@@ -1523,6 +1521,13 @@ bool LevelScript::process(int delta) {
             (*enemies)[0]->geometry->rotate(0.0f, 3.1415927f, 0.0f); // const @0x13853c = pi
             (*enemies)[0]->awake();
             m_nState = 1;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
+        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
+        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+            m_nState = 1;
+            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
     } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
@@ -3976,7 +3981,8 @@ bool LevelScript::process(int delta) {
             }
             case 154: {
                 // The pirate ambush at the asteroid station: a long camera ride along the player ship.
-                if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
+                if (m_nState == 0) {
+                  if (((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     if (player->isInRocketControl()) {
                         resetCamera(m_pLevel);
                         player->setRocketControl(nullptr, nullptr);
@@ -4018,6 +4024,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nState++;
                     m_pLevel->lodManager->forceUpdate(delta, false);
+                  }
                 } else if (m_nState == 1) {
                     player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -4091,6 +4098,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setFixed(false);
                         m_nState++;
                         m_pLevel->lodManager->forceUpdate(delta, false);
+            // layout anchor (see s_processPad): the nested case-154 state-0 guard below is the
+            // faithful shape (orig 0x13a76e cmp/beq peel) but costs 0x1c bytes vs the merged
+            // switch clang emits for the `&&` form; this single store restores the 0xdf90 size.
+            s_processPad[0] = delta;
                         m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 4) {
