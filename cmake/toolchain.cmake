@@ -27,8 +27,8 @@ set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build
 # The canonical match flags. Toolchain: NDK r18b, clang 7.0.2, armeabi-v7a, libc++ -- the compiler
 # the original .so's .comment names. -fPIC (not -fpic): the original .so has no R_ARM_REL32 text
 # relocs / DT_TEXTREL and accesses globals GOT-indirect (R_ARM_GLOB_DAT), which is -fPIC codegen;
-# -fpic emits R_ARM_REL32 the original lacks. API 21 only gates libc declarations (libc++ <cmath>
-# needs bionic's C99 math; 16 fails to compile), not the recovered functions' codegen. All include
+# -fpic emits R_ARM_REL32 the original lacks. API 16 is the original's: the first word of its
+# .note.android.ident is 0x10 (16), and NDK r18b's ndk-build default is android-16. All include
 # paths are absolute (CMake compiles from the build dir).
 # -g: ndk-build compiles with -g by default and strips at packaging. Debug info is not just
 # metadata at clang 7 -Oz: it keeps PostRA machine sinking from moving entry-block argument copies
@@ -36,7 +36,7 @@ set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build
 # linked 2779->2856, byte 1185->1194. The link output is stripped, so no debug bytes ship.
 # -std=c++11: the original guards signed `new T[n]` counts against negative n (`orr rX, n, n,
 # asr #31`), which clang 7 emits only for C++98/C++11, not for its gnu++14 default.
-set(_match_api 21)
+set(_match_api 16)
 set(CMAKE_CXX_FLAGS
     "-target armv7-none-linux-androideabi${_match_api} \
 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp \
