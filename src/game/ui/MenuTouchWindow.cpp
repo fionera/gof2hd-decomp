@@ -1607,7 +1607,7 @@ void MenuTouchWindow::draw() {
                                             toggleY + layout->field_0x2c_rowHeight + layout->field_0x1c);
                 layout = Globals::layout;
                 this->optBtnD8->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
-                                            toggleY + this->sliderRowHeight + layout->field_0x1c +
+                                            this->sliderRowHeight + y + 7 + layout->field_0x1c +
                                                 layout->field_0x2c_rowHeight * 2);
                 layout = Globals::layout;
                 this->optBtnDC->setPosition(this->listTopY + this->listBottomY - 25 - layout->buttonInsetX,
