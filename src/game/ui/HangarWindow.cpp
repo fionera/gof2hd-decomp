@@ -574,6 +574,7 @@ void HangarWindow::render() {
                                     int right, left;
                                     if (tab == 1) {
                                         right = item->item->getStationAmount();
+                                        int pad1 = 0; (void) pad1;
                                         left = item->item->getAmount();
                                     } else {
                                         right = item->item->getAmount();
@@ -732,6 +733,7 @@ void HangarWindow::render() {
                         buttonOffset = 0;
                     } else if (item->isSlot()) {
                         name = *Globals::gameText->getText(174);
+                        int pad2 = 0; (void) pad2;
                         if (tab == 4 && i == items->size() - 1) {
                             (*this->buttons)[23]->setPosition(
                                 Globals::layout->buttonInsetX + this->hintOffsetX + listWidth / 2,
