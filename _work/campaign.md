@@ -4274,3 +4274,6 @@ mtw anchor for any size change before MenuTouchWindow.
   pointer keeps one `.data.rel.ro` relocation (so `.rel.dyn`/`.plt` stay put). `.data.rel.ro`
   12,296 -> 12,264 B = exact; `.rodata` size 269,159 -> 269,207 (+48, address still exact).
   Gate unchanged (byte 1527, linked 4493).
+- **`Status::getCampaignMission()` returns `Mission*`** (`w3262`): the original loads
+  `[r0,#0x198] -> [r0,#4] -> [r0,#0]`, i.e. a `Mission*`, not an `int`. Declaration, definition
+  and the redundant casts in `StarMap.cpp` fixed; byte-identical everywhere, gate unchanged.
