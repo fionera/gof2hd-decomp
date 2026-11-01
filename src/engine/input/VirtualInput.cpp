@@ -89,9 +89,14 @@ VirtualKey keys[kVirtualKeyCount] = {
     {"0", 0, 29, 0, 0, 0, Globals::sub_menu_buttons_x + 9, Globals::sub_menu_buttons_y + 9, 10, 0, 0, 0, 1410, -1, 0, 0, 0, IsSubMenuActive},
 };
 
-int stackX;
-int stackY;
-int wheelStack;
+constexpr int kDelayedKeyMax = 0x400;
+
+// Hidden external linkage: the original emits these before the anonymous-namespace
+// scalars but does not export them.
+#pragma GCC visibility push(hidden)
+int g_delayedKeyCount;
+int g_delayedKeys[kDelayedKeyMax];
+#pragma GCC visibility pop
 
 namespace {
     // Key/mouse state of the virtual input layer.
@@ -116,10 +121,6 @@ namespace {
     MouseState g_mouse = {1, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
 
     int g_mousePointerLatch = 1;
-
-    constexpr int kDelayedKeyMax = 0x400;
-    int g_delayedKeyCount;
-    int g_delayedKeys[kDelayedKeyMax];
 
     // Cheat speed control (0/1 flags; GlobalOpt narrows them to bytes).
     int g_speedUp;
@@ -322,8 +323,10 @@ done:
             g_slowMotion = 1;
             g_speedUp = 0;
         } else if (Globals::keys[42] != 0) {
-            g_speedUp = 0;
+            // Source order fixes the two literal-pool entries; the stores themselves
+            // are byte-identical either way.
             g_slowMotion = 0;
+            g_speedUp = 0;
         }
     }
 
@@ -424,6 +427,12 @@ void keyReleasedWithDelay(AbyssEngine::Engine * /*engine*/, int key) {
     g_delayedKeys[g_delayedKeyCount] = key;
     ++g_delayedKeyCount;
 }
+
+// Emitted after the delayed-key and speed globals: clang emits external definitions
+// in source order, while the original's .bss block has these three at 0x217980.
+int stackX;
+int stackY;
+int wheelStack;
 
 bool ArrowKeyPressed() {
     return keys[0].pressed != 0 || keys[1].pressed != 0 ||
