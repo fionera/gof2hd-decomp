@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4108, linked_exact 4495, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4115, linked_exact 4495, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,11 @@ order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). The 2026-11
 literal-pool pass then fixed the GOT first-reference order (byte 3921 -> 4105) and the
 `LowResourceTable`/`ResourceMaterial` link order witnessed by `.rodata` (byte 4105 -> 4107);
 the Level.cpp `.rodata` ordering pass then made `Level::createCampaignMission` byte-exact
-(byte 4107 -> 4108). See `_work/reconstructions/literal_pool_audit.md`. See
+(byte 4107 -> 4108). A further `.rodata` ordering pass fixed `Radar::drawCurrentLock`'s `%`
+literal and the libzip `zip_err_str`/`zip_open` order (byte 4108 -> 4112), and the Level
+padding-array removal restored the jumpgate/sky array sizes (byte 4112 -> 4115). Every ELF
+section is now size- and base-exact; the only remaining whole-file delta is `.rodata` content
+order, first divergence at 0x1e7570. See `_work/reconstructions/literal_pool_audit.md`. See
 `_work/reconstructions/data_layout_audit_2.md` and docs/VALIDATION.md.
 
 ## Update 2026-07-26 — historical (superseded by the update above)

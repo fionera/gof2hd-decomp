@@ -4460,3 +4460,8 @@ original build flags.
   kCarrierTurrets to the original .rodata order; `w3404` FModSound CategoryNames/LanguageAudio
   moved to file scope so the `FMOD_GOF2` string order matches). The first `.rodata` divergence
   moved from 0x1cafa0 to 0x1e5f50.
+- **Level pass 5 + Radar/libzip .rodata order: byte_exact 4108 -> 4115** (`w3409`/`w3410`).
+  `Radar::drawCurrentLock`'s `%` literal now precedes the `calcDistance` m/km strings and libzip's
+  `zip_err_str` precedes `zip_open`; the Level padding arrays were removed and the jumpgate/sky
+  array sizes restored. Every ELF section is now size- and base-exact. The first `.rodata`
+  content divergence is 0x1e7570 (`FileInterfaceAndroid`/`13FileInterface` string block).

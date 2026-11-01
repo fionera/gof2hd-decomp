@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4109,
+  "byte_exact": 4115,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -16330,7 +16330,7 @@
   {
    "name": "_ZN14DialogueWindow51pickGermanGenericTextBecauseWeSaved100EurosWithThatEiP5Agent",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 184,
    "usize": 184
@@ -19938,7 +19938,7 @@
   {
    "name": "_ZN3Hud13hudEventMedalEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 448,
    "usize": 448
@@ -20938,7 +20938,7 @@
   {
    "name": "_ZN4Ship11adjustPriceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -23602,7 +23602,7 @@
   {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 29676,
    "usize": 29676
@@ -24138,7 +24138,7 @@
   {
    "name": "_ZN5Radar12calcDistanceEffffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 624,
    "usize": 624
@@ -24170,7 +24170,7 @@
   {
    "name": "_ZN5Radar15drawCurrentLockEP3Hud",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1680,
    "usize": 1680
@@ -27978,7 +27978,7 @@
   {
    "name": "_ZN7BeamGunC1EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -27986,7 +27986,7 @@
   {
    "name": "_ZN7BeamGunC2EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224

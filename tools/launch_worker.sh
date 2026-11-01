@@ -28,9 +28,9 @@ Work method:
 3. Identify the real source shape (control flow, field offsets, constants, call order, temporaries) from Ghidra/Thumb, not from guesswork.
 4. Make a focused change, rebuild and measure. Keep only a real improvement.
 5. Before committing run: cmake --build cmake-build-match --target check -j8
-   Required: RATCHET PASS, byte_exact >= 2495, linked_exact >= 4494, lint CLEAN, drift 0. Do not update tools/verify_baseline.json. Do not commit report.json or docs unless the gate requires it.
-   Current layout: .text 0x1337cc (orig 0x1337c8, +4), .ARM.exidx 0x6fb8 (orig 0x6f70, +72), .rodata 0x1c9e50 (orig 0x1c9e10, +64) size 0x41b97 (orig 0x41b67, +48). The .text+.ARM.exidx sum is what anchors .rodata, so if your change alters a function size, report the new .text/.ARM.exidx and whether .rodata stayed at 0x1c9e50. Do not add padding anchors to compensate unless the result is gate-green and you say so.
-6. Commit with message: "<Area> pass: <what> (<before> -> <after>%, <size>B; gate byte N linked N, .text 0x1337cc)". Leave the worktree clean.
+   Required: RATCHET PASS, byte_exact >= 4115, linked_exact >= 4495, lint CLEAN, drift 0. Do not update tools/verify_baseline.json. Do not commit report.json or docs unless the gate requires it.
+   Current layout: .text 0x1337c8 EXACT @0x69440, .ARM.exidx 0x6f70 EXACT, .ARM.extab 0x26298 EXACT, .rodata 0x41b67 EXACT @0x1c9e10, .bss 0x69ac EXACT. Every section is size- and base-exact; do NOT add padding anchors. The only whole-file delta is .rodata content order (first divergence 0x1e7570).
+6. Commit with message: "<Area> pass: <what> (<before> -> <after>%, <size>B; gate byte N linked N, .text 0x1337c8)". Leave the worktree clean.
 7. If no real improvement is found, leave the worktree clean and report the best measured variant and why it did not win.
 
 Do not push. Do not harvest other workers. Focus only on the target function unless a shared struct/layout fix is the clear root cause. Report exact before/after counts.
