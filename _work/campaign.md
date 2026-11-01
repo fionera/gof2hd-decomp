@@ -4267,3 +4267,10 @@ mtw anchor for any size change before MenuTouchWindow.
   the symbol now compares (compared 4523 -> 4524). `.text` still 0x1337b0, `.rodata` 0x1c9e10.
   This is the first confirmation of the layout-drift theory: the +4 drift at 0x6db20 was
   breaking 14 functions that sit before the next drift point.
+- **Whole-file identity audit** (`w3274`, `_work/reconstructions/wholefile_audit.md`): section /
+  dynsym / exidx / data / text gap ranking with per-cluster fixes.
+- **`.data.rel.ro` exact** (`w3276`): the 44-byte `MenuTouchWindow_languageIds` anchor object is
+  gone — the 10-int table is a plain `.rodata` array as in the original and a 4-byte address-only
+  pointer keeps one `.data.rel.ro` relocation (so `.rel.dyn`/`.plt` stay put). `.data.rel.ro`
+  12,296 -> 12,264 B = exact; `.rodata` size 269,159 -> 269,207 (+48, address still exact).
+  Gate unchanged (byte 1527, linked 4493).

@@ -33,12 +33,12 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,440 | **−24** | the MenuTouchWindow anchor is now empty; the residual is the Rank-3 pads plus the `HangarWindow::initialize` shrink (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and address (0x1c9e10); the shader GLSL cluster now lives in per-TU arrays and the duplicate 45x3 table is gone. |
+| **.rodata** | 269,159 | 269,207 | **+48** | address still exact (0x1c9e10); the MenuTouchWindow language table now lives here as in the original, which costs +48 B of size. |
 | .ARM.exidx | 28,528 | 28,552 | **+24** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels; 3569 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md`). |
 | .ARM.extab | 156,312 | 156,304 | **−8** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
-| .data.rel.ro | 12,264 | 12,296 | **+32** | anonymous read-only-relocated data layout still differs. |
+| .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8); the language-table anchor object is gone. |
 | .data | 10,604 | 10,604 | **0** | exact (original TU order/sizes; gEngine moved out of Engine .bss). |
 | .bss | 27,052 | 27,096 | **+44** | anonymous zero-initialised-data layout still differs. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
@@ -51,7 +51,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now −24 B: the MenuTouchWindow anchor is empty and the remaining
    Rank-3 pads are partly removed; the residual is the `HangarWindow::initialize` shrink. This is
    a finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 1,056 B smaller, `.data` is now exact and `.bss` 44 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` 44 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
 3. **EH tables.** `.ARM.extab` is only 32 B smaller now (was 4,572 B): the app and vendored C
