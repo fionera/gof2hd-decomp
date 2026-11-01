@@ -4642,8 +4642,8 @@ original build flags.
 ## Session close-out (2026-11-01, byte 4171 -> 4494)
 
 Every ELF section is size- and base-exact. `.data` and `.data.rel.ro` are **byte-identical**;
-`.rodata` is byte-identical except 191 bytes at 0x1fb974/0x1fb999 (a leftover `kMissionCase`
-hack, worker `w3490`). `.plt` and `.got` are byte-identical. Remaining: 30 functions not
+`.rodata` is byte-identical again after `w3490` replaced the invented `kMissionCase` with the
+real `SHIP_HANGAR_OFFSETS[64]`. `.plt` and `.got` are byte-identical. Remaining: 30 functions not
 byte-exact (28 with real code differences, 2 at pct==100), `.bss` 288 bytes (relocation-driven),
 `.dynsym` 2089, `.dynstr` 13471, `.hash` 957, `.gnu.version` 95, `.rel.dyn` 136, `.rel.plt` 270,
 `.ARM.exidx` 2343, `.ARM.extab` 112482 raw bytes (sizes exact).

@@ -116,7 +116,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10); was byte-identical after the w3477 emission-order pass, now 191 bytes differ in two runs at 0x1fb974/0x1fb999 (a leftover `kMissionCase` hack in `CutScene.cpp`; see `_work/reconstructions/kMissionCase_real_table.md`). |
+| **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
