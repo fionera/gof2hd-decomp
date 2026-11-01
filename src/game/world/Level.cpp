@@ -2530,10 +2530,12 @@ void Level::createMission() {
                                                    wingRoute->getWaypoint(), true, false);
         return;
     }
-    int convoy = Globals::status->getCampaignMission() != 0 &&
-                  ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 &&
-                  Globals::status->getStation()->getIndex() ==
-                          ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation();
+    int convoy = 0;
+    if (Globals::status->getCampaignMission() != 0 &&
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 167 &&
+        Globals::status->getStation()->getIndex() ==
+                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation())
+        convoy = 1;
     int bigAlienWave = 0;
     int alienWave = 0;
     int pirateFortress = 0;
