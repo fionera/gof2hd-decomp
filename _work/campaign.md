@@ -4184,3 +4184,24 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::OnTouchEnd 85.10 -> 85.18%, 8132 B** (`w3246`): keep the `options` pointer
   volatile and restore the DLC store order (0,2,4,1,3 -> 0,1,2,3,4) so the switch bodies land in
   the original's order. Gate unchanged.
+- **Research wave 91 results** (all committed under `_work/reconstructions/`):
+  - `build_system_evidence.md` (w3301): the original is an **ndk-build r18b** build — API 16
+    (`.note.android.ident` word 0 = 0x10), `APP_STL=c++_static`, `LOCAL_ARM_NEON`, rtti+exceptions,
+    and `-Wl,-z,relro -Wl,-z,now`; nearly every flag we pass is an r18b default. No original build
+    script survives anywhere on disk. Toolchain switched to API 16 (gate-neutral, note now
+    byte-identical).
+  - `link_flags_research.md` (w3303): `-z now` is the only missing link flag; `.got` and `.plt`
+    are now byte-identical, `.dynamic`/`.got`/`.data` land on the original addresses.
+  - `layout_anchor_audit_v2.md` (w3304): `.ARM.exidx` is -277 entries (266 CANT + 11 real). The
+    original emits one end-of-TU CANTUNWIND entry per object; our ordering-file link drops them.
+    A no-ordering-file link reproduces the original's exidx. This is the largest remaining
+    section delta and the key to the `.rodata` address (and therefore to removing the
+    MenuTouchWindow `.text` anchor).
+  - `local_gap_audit.md` (w3306): the address drift is almost entirely our deliberate anchors
+    (`mtwTextLayoutAnchor` 2934 B, `levelTextAnchor`, `modStationTouchEndPad`, `is_equal`, ...);
+    removing the MenuTouchWindow anchor gives `.text = 0x133858` (+0x90 vs original) but costs
+    byte_exact unless the `.rodata`/exidx address is fixed first.
+  - `dynsym_order_audit.md` (w3307): archive order + `F` move raise the dynsym sequence match
+    5212 -> 5228 (landed).
+  - `data_layout_audit.md` (w3305): `.rodata` -1056 = -1777 (one missing duplicate shader copy)
+    +804 extra (264 B Item pad + 540 B duplicate Achievements table) -83 alignment.
