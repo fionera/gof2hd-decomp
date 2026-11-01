@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4105,
+  "byte_exact": 4107,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -1074,7 +1074,7 @@
   {
    "name": "_Z13loadPortraitsPN11AbyssEngine6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 21562,
    "usize": 21562
@@ -2066,7 +2066,7 @@
   {
    "name": "_Z27loadLowTexturesAndMaterialsPN11AbyssEngine6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 13642,
    "usize": 13642

@@ -6,14 +6,17 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4105, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4107, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
 placement of local functions in the section-ordering file. The 2026-11-01 data-layout pass
 dropped ten empty-`.text` CANTUNWIND sentinels that had inflated `.ARM.exidx` by 0x60 and
 pushed `.rodata` to 0x1c9e50 (byte 2646 -> 2732), and restored the original string-literal
-order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). See
+order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). The 2026-11-01
+literal-pool pass then fixed the GOT first-reference order (byte 3921 -> 4105) and the
+`LowResourceTable`/`ResourceMaterial` link order witnessed by `.rodata` (byte 4105 -> 4107);
+see `_work/reconstructions/literal_pool_audit.md`. See
 `_work/reconstructions/data_layout_audit_2.md` and docs/VALIDATION.md.
 
 ## Update 2026-07-26 — historical (superseded by the update above)
@@ -21,7 +24,7 @@ order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). See
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4524, byte_exact 4105, linked_exact 4494, avg 99.89%, stub_zero_size
+mode). Current: **compared 4524, byte_exact 4107, linked_exact 4494, avg 99.89%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
