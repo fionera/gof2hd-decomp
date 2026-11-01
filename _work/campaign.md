@@ -4593,3 +4593,8 @@ original build flags.
 - **`LevelScript::process`** (`w3445`): case-139 docking-type test order (fuzzy flat).
 - **dynsym app region** (`w3447`): `BSphere::Merge(Transform)` moved into `Vector.cpp`
   (first-reference order). Note: `_work/reconstructions/dynsym_app_region_order_w3447.md`.
+- **`.bss` COMMON-block order** (`w3449`, byte 4255 -> 4263): reordering the tentative-definition
+  block fixed 8 functions. Note: `_work/reconstructions/literal_pool_sweep_w3449.md`.
+- **dynsym link order round 2** (`w3452`): shared libs before crypto, libm before libc++abi.
+  `.dynsym` differing bytes 24,461 -> 1,791; `.rel.dyn` 2,741 -> 70; `.plt` now **exact**.
+- **`.data` is down to 3 differing bytes**; `.data.rel.ro` 667; `.bss` 288 (relocation-driven).
