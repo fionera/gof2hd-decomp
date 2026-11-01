@@ -4205,3 +4205,6 @@ mtw anchor for any size change before MenuTouchWindow.
     5212 -> 5228 (landed).
   - `data_layout_audit.md` (w3305): `.rodata` -1056 = -1777 (one missing duplicate shader copy)
     +804 extra (264 B Item pad + 540 B duplicate Achievements table) -83 alignment.
+- **HangarWindow::render 78.52 -> 78.55%, 9700 B** (`w3242`): move the `showBestDeal` pad store
+  after the scroll-hint `DrawImage2D` so the credit-list loop's register allocation matches the
+  original (positional matches 824 -> 853). Gate unchanged.
