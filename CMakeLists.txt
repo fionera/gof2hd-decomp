@@ -165,11 +165,11 @@ add_custom_command(OUTPUT "${_so}"
             ${_crtbegin} -L ${_libdir}
             ${_link_objs}
             --whole-archive ${_link_zlib} ${_link_libzip} --no-whole-archive
-            ${_link_openssl}
             -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
             ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
-            ${_link_libcxxabi}
+            ${_link_openssl}
             -l m
+            ${_link_libcxxabi}
             ${_link_aos}
             ${_link_libgcc}
             -l dl -l c
