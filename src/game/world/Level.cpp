@@ -4167,18 +4167,24 @@ void Level::createCampaignMission() {
                 (*this->enemies)[i]->setRoute(this->enemyRoute->getExactClone());
                 int x;
                 float z;
-                if (j < 2) {
-                    x = 2000 * j - 1000;
-                    z = 5000.0f;
-                } else if (j < 5) {
-                    x = j * 3000 - 9000;
-                    z = 7000.0f;
-                } else if (j < 9) {
-                    x = j * 3000 - 20000;
-                    z = 9000.0f;
-                } else {
-                    x = 0;
-                    z = 11000.0f;
+                unsigned k = j < 2 ? 0 : (j < 5 ? 1 : (j < 9 ? 2 : 3));
+                switch (k) {
+                    case 0:
+                        x = 2000 * j - 1000;
+                        z = 5000.0f;
+                        break;
+                    case 1:
+                        x = j * 3000 - 9000;
+                        z = 7000.0f;
+                        break;
+                    case 2:
+                        x = j * 3000 - 20000;
+                        z = 9000.0f;
+                        break;
+                    default:
+                        x = 0;
+                        z = 11000.0f;
+                        break;
                 }
                 this->spawnPosition = Vector{(float) x, 0.0f, z};
                 this->spawnPosition.x += (float) (Globals::rnd->nextInt(200) - 100);
