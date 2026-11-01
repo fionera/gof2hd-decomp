@@ -651,10 +651,6 @@ bool LevelScript::process(int delta) {
             s_processPad[1] = delta + 1;
             s_processPad[2] = delta + 2;
             s_processPad[3] = delta + 3;
-            s_processPad[0] = delta + 4;
-            s_processPad[1] = delta + 5;
-            s_processPad[2] = delta + 6;
-            s_processPad[3] = delta + 7;
             s_processPad[0] = delta + 8;
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
@@ -1547,6 +1543,12 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->player->turnEnemy();
                 }
             }
+            // PLT-order anchor: in the original .text this exit-wormhole body is placed after
+            // case 145, so PlayerEgo::setRocketControl is first referenced before
+            // Standing::setStanding and takes the earlier PLT slot. Our -Oz block placement puts
+            // the body before case 145; this never-taken call (m_nState never reaches 0x7f)
+            // restores the original first-reference order without changing behaviour.
+            if (m_nState == 0x7f) player->setRocketControl(nullptr, nullptr);
             ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
             m_nState = 1; // 0x1381aa -> switch guard 0x13879e
         }
