@@ -2672,401 +2672,6 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
     }
 
     switch (this->menuState) {
-        case 17:
-            // Campaign selection.
-            if (this->field_0x175) {
-                if (this->choiceWindow->OnTouchEnd(x, y) == 0)
-                    this->menuState = 12;
-                this->messageShowing = 0;
-                this->field_0x175 = 0;
-                return 0;
-            }
-            for (unsigned int i = 0; i < this->buttonsB8->size(); i++) {
-                if (!(*this->buttonsB8)[i]->OnTouchEnd(x, y))
-                    continue;
-                this->field_0x234 = i;
-                if ((i & 0x7fffffffu) == 1) {
-                    if (!Globals::options[53]) {
-                        NFC::iap_buy_dlc_valkyrie();
-                        return 0;
-                    }
-                } else if ((i & 0x7fffffffu) == 2) {
-                    if (!Globals::options[55]) {
-                        NFC::iap_buy_dlc_supernova();
-                        return 0;
-                    }
-                } else {
-                    this->menuState = 12;
-                }
-                this->menuState = 12;
-                break;
-            }
-            break;
-        case 15: {
-            // DLC store.
-            if (this->dlcMessageShowing) {
-                if (this->choiceWindow->OnTouchEnd(x, y) != 0)
-                    return 0;
-                ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
-                this->messageShowing = 0;
-                this->dlcMessageShowing = 0;
-                return 0;
-            }
-            if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
-                this->messageShowing = 0;
-                this->dlcResultDialogShowing = 0;
-                this->dlcErrorDialogShowing = 0;
-                return 0;
-            }
-            if (this->messageShowing) {
-                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    this->messageShowing = 0;
-                    ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseReadyFlag = 0;
-                }
-                return 0;
-            }
-            this->scrollWindowB->OnTouchEnd(x, y);
-            unsigned char *volatile options = Globals::options;
-            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-                TouchButton *button = (*this->scrollEntries)[i];
-                if (__builtin_expect(button->id == 60, 0)) { // lint: arm_builtin
-                    if (__builtin_expect(button->OnTouchEnd(x, y), 0)) { // lint: arm_builtin
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
-                        this->messageShowing = 0;
-                        this->purchaseRestorePending = 1;
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
-                    }
-                }
-                if (button->id == 52) {
-                    if (__builtin_expect(button->OnTouchEnd(x, y), 1)) { // lint: arm_builtin
-                        switch (this->field_0x1e0) {
-                            case 0:
-                                if (!options[53])
-                                    NFC::iap_buy_dlc_valkyrie();
-                                break;
-                            case 1:
-                                if (!options[54])
-                                    NFC::iap_buy_dlc_kaamo_club();
-                                break;
-                            case 2:
-                                if (!options[55])
-                                    NFC::iap_buy_dlc_supernova();
-                                break;
-                            case 3:
-                                if (!options[56])
-                                    NFC::iap_buy_dlc_vip();
-                                break;
-                            case 4:
-                                if (!options[57])
-                                    NFC::iap_buy_dlc_full_package();
-                                break;
-                        }
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = this->field_0x1e0;
-                        this->messageShowing = 0;
-                    }
-                }
-            }
-            int previous = this->field_0x1e0;
-            for (unsigned int i = 0; i < this->scrollSlots->size(); i++) {
-                if (!(*this->scrollSlots)[i]->OnTouchEnd(x, y))
-                    continue;
-                this->field_0x1e0 = i;
-                if (previous == (int) i) {
-                    // Tapping the selected DLC again buys it.
-                    switch (previous & 0x7fffffffu) {
-                        case 0:
-                            NFC::iap_buy_dlc_valkyrie();
-                            break;
-                        case 1:
-                            NFC::iap_buy_dlc_kaamo_club();
-                            break;
-                        case 2:
-                            NFC::iap_buy_dlc_supernova();
-                            break;
-                        case 3:
-                            NFC::iap_buy_dlc_vip();
-                            break;
-                        case 4:
-                            NFC::iap_buy_dlc_full_package();
-                            break;
-                    }
-                } else {
-                    this->scrollWindowB->setText(String(""), *Globals::gameText->getText(this->field_0x1e0 + 87));
-                }
-                break;
-            }
-            if (this->scrollbarHit &&
-                x > Globals::w - Globals::layout->buttonInsetX -
-                        Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0])) {
-                Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]);
-            }
-            break;
-        }
-        case 14:
-            // Language selection.
-            for (unsigned int i = 0; i < this->buttonsB0->size(); i++) {
-                if (!(*this->buttonsB0)[i]->OnTouchEnd(x, y))
-                    continue;
-                short previousLanguage = GameText::getLanguage();
-                int language;
-                switch ((*this->buttonsB0)[i]->id) {
-                    case 27: language = 0; break;
-                    case 28: language = 1; break;
-                    case 29: language = 4; break;
-                    case 30: language = 2; break;
-                    case 31: language = 3; break;
-                    case 32: language = 6; break;
-                    case 33: language = 5; break;
-                    case 34: language = 9; break;
-                    case 35: language = 12; break;
-                    case 36: language = 11; break;
-                    case 37: language = 10; break;
-                    case 38: language = 14; break;
-                    case 39: language = 15; break;
-                    default: continue;
-                }
-                Globals::globals->loadFont(language);
-                Globals::gameText->setLanguage((short) language, 3401);
-                if (previousLanguage == 1 || language == 1) {
-                    // Switching to/from the language with its own voice bank reloads the sound system.
-                    delete Globals::sound;
-                    Globals::sound = 0;
-                    Globals::sound = new FModSound();
-                    Globals::sound->init();
-                    Globals::switch_to_target_setting =
-                        Globals::appManager->GetCurrentApplicationModule() == 5 ? 1 : 2;
-                }
-                Globals::recordHandler->saveOptions();
-                Globals::achievements->resetNewMedals();
-                Globals::layout->reload();
-                if (Globals::appManager->GetCurrentApplicationModule() == 5)
-                    Globals::status->field_0x108 = 1;
-                Globals::appManager->SetCurrentApplicationModule(Globals::appManager->GetCurrentApplicationModule());
-            }
-            break;
-        case 13:
-            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                this->messageShowing = 0;
-                return 0;
-            }
-            break;
-        case 12:
-            // Difficulty selection for a new game.
-            if (this->returnToMenuSubFlag) {
-                int r = this->choiceWindow->OnTouchEnd(x, y);
-                if (r == 0) {
-                    if (this->field_0x234 == 1)
-                        this->startValkyrie();
-                    else if (this->field_0x234 == 2)
-                        this->startSupernova();
-                    else
-                        this->startGOF2();
-                } else if (r == 1) {
-                    this->returnToMenuSubFlag = 0;
-                    this->messageShowing = 0;
-                    return 0;
-                }
-                return 0;
-            }
-            for (unsigned int i = 0; i < this->buttonsB4->size(); i++) {
-                if (!(*this->buttonsB4)[i]->OnTouchEnd(x, y))
-                    continue;
-                float difficulty = i == 0 ? 0.5f : 1.5f;
-                this->fadeValue = difficulty;
-                optionFloat(44) = difficulty;
-                if (i != 0) {
-                    this->choiceWindow->set(*Globals::gameText->getText(26), true);
-                    this->messageShowing = 1;
-                    this->returnToMenuSubFlag = 1;
-                    return 0;
-                }
-                if (Globals::status->getPlayingTime() < 1) {
-                    this->choiceWindow->set(*Globals::gameText->getText(52), true);
-                    this->messageShowing = 1;
-                    this->returnToMenuSubFlag = 1;
-                } else {
-                    if (this->field_0x234 == 1)
-                        this->startValkyrie();
-                    else if (this->field_0x234 == 2)
-                        this->startSupernova();
-                    else
-                        this->startGOF2();
-                    return 0;
-                }
-            }
-            break;
-        case 11:
-            // Touch-control preview (iPad).
-            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
-                if (touchId != 0) {
-                    if (this->cinematicTouchIdA == touchId)
-                        this->cinematicTouchIdA = 0;
-                    if (this->cinematicTouchIdB == touchId)
-                        this->cinematicTouchIdB = 0;
-                }
-                this->cinematicTouchState = 0;
-                if (this->cinematicBtnA->OnTouchEnd(x, y))
-                    this->menuState = 3;
-                if (this->cinematicBtnB->OnTouchEnd(x, y)) {
-                    float controlSize = optionFloat(68);
-                    optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
-                    optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
-                    Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
-                                                    this->fireImageA, this->fireImageB, this->fireSize_0x74,
-                                                    this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
-                                                    this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a,
-                                                    this->fireCoord_0x6c, this->fireCoord_0x6e, this->fireCoord_0x70,
-                                                    this->fireCoord_0x72, this->fireCoord_0x4c, this->fireCoord_0x4e);
-                    Globals::globals->setCoordsSteer(optionInt(84), Globals::Canvas->GetImage2DWidth(this->steerImageA),
-                                                     Globals::Canvas->GetImage2DWidth(this->steerImageC),
-                                                     Globals::Canvas->GetImage2DWidth(this->steerImageB),
-                                                     this->steerCoord_0x2e, this->steerCoord_0x30,
-                                                     this->steerCoord_0x40, this->steerCoord_0x42,
-                                                     this->steerCoord_0x3c, this->steerCoord_0x3e,
-                                                     this->steerCoord_0x34, this->steerCoord_0x32,
-                                                     this->steerCoord_0x48, this->steerCoord_0x4a);
-                }
-            }
-            break;
-        case 10:
-            // Cargo overview message.
-            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                this->messageShowing = 0;
-                this->menuState = 0;
-            }
-            break;
-        case 9:
-            // Missions.
-            if (this->missionsWindow->OnTouchEnd(x, y))
-                this->menuState = 0;
-            break;
-        case 8:
-            // Control options.
-            if (this->messageShowing && this->field_0x176) {
-                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    double z = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
-                    double tilt = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0];
-                    if (z > 0.0) {
-                        if (tilt > 1.0)
-                            ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] = 1.0;
-                        tilt = 1.0 - ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] + 1.0;
-                    }
-                    optionFloat(28) = (float) tilt;
-                    optionFloat(32) =
-                        (float) ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
-                    this->messageShowing = 0;
-                    this->field_0x176 = 0;
-                }
-            }
-            if (optionFlag(17))
-                optionFloat(20) = (*this->sliders)[0]->getValue();
-            else
-                optionFloat(24) = (*this->sliders)[0]->getValue();
-            if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
-                x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
-                y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
-                y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
-                optionFlag(17) = 1;
-                this->optBtnD0->setHalfTransparent(true);
-                (*this->sliders)[0]->setValue(optionFloat(20));
-                Globals::sound->play(123, 0, 0, 0.0f);
-            }
-            if (this->downButtonPressed &&
-                x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
-                x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
-                y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
-                y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
-                optionFlag(17) = 0;
-                this->optBtnD0->setHalfTransparent(false);
-                (*this->sliders)[0]->setValue(optionFloat(24));
-                Globals::sound->play(123, 0, 0, 0.0f);
-            }
-            this->upButtonPressed = 0;
-            this->downButtonPressed = 0;
-            if (this->optBtnCC->OnTouchEnd(x, y)) {
-                int old = optionFlag(16);
-                optionFlag(16) = old ^ 1;
-                this->optBtnCC->setAlwaysPressed(!old);
-            }
-            if (this->optBtnD0->OnTouchEnd(x, y)) {
-                this->choiceWindow->set(*Globals::gameText->getText(493));
-                this->messageShowing = 1;
-                this->field_0x176 = 1;
-            }
-            (*this->sliders)[0]->OnTouchEnd(x, y);
-            break;
-        case 7:
-            // Sound options.
-            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                this->messageShowing = 0;
-                break;
-            }
-            if (this->optBtnD4->OnTouchEnd(x, y)) {
-                int old = optionFlag(13);
-                optionFlag(13) = old ^ 1;
-                this->optBtnD4->setAlwaysPressed(!old);
-                (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
-                Globals::sound->enableCategory(1, optionFlag(13));
-            }
-            if (this->optBtnD8->OnTouchEnd(x, y)) {
-                int old = optionFlag(12);
-                optionFlag(12) = old ^ 1;
-                this->optBtnD8->setAlwaysPressed(!old);
-                (*this->sliders)[2]->setHalfTransparent(!optionFlag(12));
-                Globals::sound->enableCategory(2, optionFlag(12));
-                Globals::sound->play(126, 0, 0, 0.0f);
-            }
-            if (this->optBtnDC->OnTouchEnd(x, y)) {
-                int old = optionFlag(14);
-                optionFlag(14) = old ^ 1;
-                this->optBtnDC->setAlwaysPressed(!old);
-                (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
-                Globals::sound->enableCategory(3, optionFlag(14));
-            }
-            optionFloat(0) = (*this->sliders)[1]->getValue();
-            optionFloat(4) = (*this->sliders)[2]->getValue();
-            optionFloat(8) = (*this->sliders)[3]->getValue();
-            optionFloat(36) = (*this->sliders)[4]->getValue();
-            optionFloat(40) = (*this->sliders)[5]->getValue();
-            for (unsigned int i = 1; i < this->sliders->size(); i++) {
-                if (!Globals::layout->field_0x284_sliderSlot5Enabled && i == 5)
-                    continue;
-                if (!(*this->sliders)[i]->OnTouchEnd(x, y))
-                    continue;
-                if (i == 2) {
-                    Globals::sound->play(126, 0, 0, 0.0f);
-                } else if (i == 5) {
-                    float quality = (*this->sliders)[5]->getValue();
-                    this->choiceWindow->set(
-                        *Globals::gameText->getText(quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512)));
-                    this->messageShowing = 1;
-                }
-            }
-            break;
-        case 4:
-            // About.
-            this->scrollWindowA->OnTouchEnd(x, y);
-            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
-                TouchButton *button = (*this->scrollEntries)[i];
-                if (button->id == 22) {
-                    if (button->OnTouchEnd(x, y)) {
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
-                        NFC::rateGame();
-                    }
-                } else if (button->id == 106) {
-                    if (button->OnTouchEnd(x, y)) {
-                        NFC::rateGame();
-                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
-                    }
-                } else if (button->id == 109) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openPrivacyPolicy();
-                } else if (button->id == 110) {
-                    if (button->OnTouchEnd(x, y))
-                        NFC::openTermsOfService();
-                }
-            }
-            break;
         case 3:
             // Options.
             if (Globals::iPad) {
@@ -3159,7 +2764,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 *(float *) &options[8] = (*this->sliders)[3]->getValue();
                 *(float *) &options[36] = (*this->sliders)[4]->getValue();
                 *(float *) &options[40] = (*this->sliders)[5]->getValue();
-                for (int i = 1; i < (int) this->sliders->size(); i++) {
+                for (int i = 1; i < this->sliders->size(); i++) {
                     if (!(*this->sliders)[i]->OnTouchEnd(x, y))
                         continue;
                     switch (i) {
@@ -3214,6 +2819,211 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
             }
             break;
+        case 4:
+            // About.
+            this->scrollWindowA->OnTouchEnd(x, y);
+            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+                TouchButton *button = (*this->scrollEntries)[i];
+                if (button->id == 22) {
+                    if (button->OnTouchEnd(x, y)) {
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rateRequested = 1;
+                        NFC::rateGame();
+                    }
+                } else if (button->id == 106) {
+                    if (button->OnTouchEnd(x, y)) {
+                        NFC::rateGame();
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->rated = 1;
+                    }
+                } else if (button->id == 109) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openPrivacyPolicy();
+                } else if (button->id == 110) {
+                    if (button->OnTouchEnd(x, y))
+                        NFC::openTermsOfService();
+                }
+            }
+            break;
+        case 15: {
+            // DLC store.
+            if (this->dlcMessageShowing) {
+                if (this->choiceWindow->OnTouchEnd(x, y) != 0)
+                    return 0;
+                ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMessageAck = 1;
+                this->messageShowing = 0;
+                this->dlcMessageShowing = 0;
+                return 0;
+            }
+            if (this->dlcErrorDialogShowing || this->dlcResultDialogShowing) {
+                this->messageShowing = 0;
+                this->dlcResultDialogShowing = 0;
+                this->dlcErrorDialogShowing = 0;
+                return 0;
+            }
+            if (this->messageShowing) {
+                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
+                    this->messageShowing = 0;
+                    ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseReadyFlag = 0;
+                }
+                return 0;
+            }
+            this->scrollWindowB->OnTouchEnd(x, y);
+            unsigned char *volatile options = Globals::options;
+            for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
+                TouchButton *button = (*this->scrollEntries)[i];
+                if (__builtin_expect(button->id == 60, 0)) { // lint: arm_builtin
+                    if (__builtin_expect(button->OnTouchEnd(x, y), 0)) { // lint: arm_builtin
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
+                        this->messageShowing = 0;
+                        this->purchaseRestorePending = 1;
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
+                    }
+                } else if (button->id == 52) {
+                    if (__builtin_expect(button->OnTouchEnd(x, y), 1)) { // lint: arm_builtin
+                        switch (this->field_0x1e0) {
+                            case 0:
+                                if (!options[53])
+                                    NFC::iap_buy_dlc_valkyrie();
+                                break;
+                            case 1:
+                                if (!options[54])
+                                    NFC::iap_buy_dlc_kaamo_club();
+                                break;
+                            case 2:
+                                if (!options[55])
+                                    NFC::iap_buy_dlc_supernova();
+                                break;
+                            case 3:
+                                if (!options[56])
+                                    NFC::iap_buy_dlc_vip();
+                                break;
+                            case 4:
+                                if (!options[57])
+                                    NFC::iap_buy_dlc_full_package();
+                                break;
+                        }
+                        ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = this->field_0x1e0;
+                        this->messageShowing = 0;
+                    }
+                }
+            }
+            int previous = this->field_0x1e0;
+            for (unsigned int i = 0; i < this->scrollSlots->size(); i++) {
+                if (!(*this->scrollSlots)[i]->OnTouchEnd(x, y))
+                    continue;
+                this->field_0x1e0 = i;
+                if (previous == (int) i) {
+                    // Tapping the selected DLC again buys it.
+                    switch (previous & 0x7fffffffu) {
+                        case 0:
+                            NFC::iap_buy_dlc_valkyrie();
+                            break;
+                        case 1:
+                            NFC::iap_buy_dlc_kaamo_club();
+                            break;
+                        case 2:
+                            NFC::iap_buy_dlc_supernova();
+                            break;
+                        case 3:
+                            NFC::iap_buy_dlc_vip();
+                            break;
+                        case 4:
+                            NFC::iap_buy_dlc_full_package();
+                            break;
+                    }
+                } else {
+                    this->scrollWindowB->setText(String(""), *Globals::gameText->getText(this->field_0x1e0 + 87));
+                }
+                break;
+            }
+            if (this->scrollbarHit &&
+                x > Globals::w - Globals::layout->buttonInsetX -
+                        Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0])) {
+                Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]);
+            }
+            break;
+        }
+        case 8:
+            // Control options.
+            if (this->messageShowing && this->field_0x176) {
+                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
+                    double z = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
+                    double tilt = ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0];
+                    if (z > 0.0) {
+                        if (tilt > 1.0)
+                            ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] = 1.0;
+                        tilt = 1.0 - ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[0] + 1.0;
+                    }
+                    optionFloat(28) = (float) tilt;
+                    optionFloat(32) =
+                        (float) ((AbyssEngine::Engine *) Globals::appManager->GetEngine())->GetAccelValue()[2];
+                    this->messageShowing = 0;
+                    this->field_0x176 = 0;
+                }
+            }
+            if (optionFlag(17))
+                optionFloat(20) = (*this->sliders)[0]->getValue();
+            else
+                optionFloat(24) = (*this->sliders)[0]->getValue();
+            if (this->upButtonPressed && x > this->listTopY + Globals::layout->buttonInsetX &&
+                x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
+                y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
+                optionFlag(17) = 1;
+                this->optBtnD0->setHalfTransparent(true);
+                (*this->sliders)[0]->setValue(optionFloat(20));
+                Globals::sound->play(123, 0, 0, 0.0f);
+            }
+            if (this->downButtonPressed &&
+                x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
+                x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
+                y > Globals::layout->buttonInsetX + Globals::layout->field_0xc_leftMargin &&
+                y < Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->listEntryWidth) {
+                optionFlag(17) = 0;
+                this->optBtnD0->setHalfTransparent(false);
+                (*this->sliders)[0]->setValue(optionFloat(24));
+                Globals::sound->play(123, 0, 0, 0.0f);
+            }
+            this->upButtonPressed = 0;
+            this->downButtonPressed = 0;
+            if (this->optBtnCC->OnTouchEnd(x, y)) {
+                int old = optionFlag(16);
+                optionFlag(16) = old ^ 1;
+                this->optBtnCC->setAlwaysPressed(!old);
+            }
+            if (this->optBtnD0->OnTouchEnd(x, y)) {
+                this->choiceWindow->set(*Globals::gameText->getText(493));
+                this->messageShowing = 1;
+                this->field_0x176 = 1;
+            }
+            (*this->sliders)[0]->OnTouchEnd(x, y);
+            break;
+        case 1:
+            // Load game.
+            if (this->messageShowing) {
+                if (this->listStateSuppress)
+                    return 0;
+                if (this->field_0x1da)
+                    return 0;
+                if (__builtin_expect(this->choiceWindow->OnTouchEnd(x, y) == 0, 1)) { // lint: arm_builtin
+                    if (this->choiceWindow->hasChoice() &&
+                        this->loadGame(this->selectedRow) == 0)
+                        return 0;
+                }
+                this->messageShowing = 0;
+            }
+            if (this->okButton->OnTouchEnd(x, y)) {
+                if ((*this->previewRecords)[this->selectedRow] == 0)
+                    return 0;
+                if (Globals::status->getPlayingTime() > 0) {
+                    this->choiceWindow->set(*Globals::gameText->getText(51), true);
+                    this->messageShowing = 1;
+                    return 0;
+                }
+                Globals::sound->play(123, 0, 0, 0.0f);
+                this->loadGame(this->selectedRow);
+                return 0;
+            }
+            break;
         case 2:
             // Save game.
             if (this->messageShowing) {
@@ -3256,32 +3066,134 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 return 0;
             }
             break;
-        case 1:
-            // Load game.
-            if (this->messageShowing) {
-                if (this->listStateSuppress)
-                    return 0;
-                if (this->field_0x1da)
-                    return 0;
-                if (__builtin_expect(this->choiceWindow->OnTouchEnd(x, y) == 0, 1)) { // lint: arm_builtin
-                    if (this->choiceWindow->hasChoice() &&
-                        this->loadGame(this->selectedRow) == 0)
-                        return 0;
-                }
+        case 13:
+            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
                 this->messageShowing = 0;
-            }
-            if (this->okButton->OnTouchEnd(x, y)) {
-                if ((*this->previewRecords)[this->selectedRow] == 0)
-                    return 0;
-                if (Globals::status->getPlayingTime() > 0) {
-                    this->choiceWindow->set(*Globals::gameText->getText(51), true);
-                    this->messageShowing = 1;
-                    return 0;
-                }
-                Globals::sound->play(123, 0, 0, 0.0f);
-                this->loadGame(this->selectedRow);
                 return 0;
             }
+            break;
+        case 11:
+            // Touch-control preview (iPad).
+            if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+                if (touchId != 0) {
+                    if (this->cinematicTouchIdA == touchId)
+                        this->cinematicTouchIdA = 0;
+                    if (this->cinematicTouchIdB == touchId)
+                        this->cinematicTouchIdB = 0;
+                }
+                this->cinematicTouchState = 0;
+                if (this->cinematicBtnA->OnTouchEnd(x, y))
+                    this->menuState = 3;
+                if (this->cinematicBtnB->OnTouchEnd(x, y)) {
+                    float controlSize = optionFloat(68);
+                    optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
+                    optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
+                    Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
+                                                    this->fireImageA, this->fireImageB, this->fireSize_0x74,
+                                                    this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
+                                                    this->fireCoord_0x66, this->fireCoord_0x68, this->fireCoord_0x6a,
+                                                    this->fireCoord_0x6c, this->fireCoord_0x6e, this->fireCoord_0x70,
+                                                    this->fireCoord_0x72, this->fireCoord_0x4c, this->fireCoord_0x4e);
+                    Globals::globals->setCoordsSteer(optionInt(84), Globals::Canvas->GetImage2DWidth(this->steerImageA),
+                                                     Globals::Canvas->GetImage2DWidth(this->steerImageC),
+                                                     Globals::Canvas->GetImage2DWidth(this->steerImageB),
+                                                     this->steerCoord_0x2e, this->steerCoord_0x30,
+                                                     this->steerCoord_0x40, this->steerCoord_0x42,
+                                                     this->steerCoord_0x3c, this->steerCoord_0x3e,
+                                                     this->steerCoord_0x34, this->steerCoord_0x32,
+                                                     this->steerCoord_0x48, this->steerCoord_0x4a);
+                }
+            }
+            break;
+        case 10:
+            // Cargo overview message.
+            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
+                this->messageShowing = 0;
+                this->menuState = 0;
+            }
+            break;
+        case 7:
+            // Sound options.
+            if (this->messageShowing && this->choiceWindow->OnTouchEnd(x, y) == 0) {
+                this->messageShowing = 0;
+                break;
+            }
+            if (this->optBtnD4->OnTouchEnd(x, y)) {
+                int old = optionFlag(13);
+                optionFlag(13) = old ^ 1;
+                this->optBtnD4->setAlwaysPressed(!old);
+                (*this->sliders)[1]->setHalfTransparent(!optionFlag(13));
+                Globals::sound->enableCategory(1, optionFlag(13));
+            }
+            if (this->optBtnD8->OnTouchEnd(x, y)) {
+                int old = optionFlag(12);
+                optionFlag(12) = old ^ 1;
+                this->optBtnD8->setAlwaysPressed(!old);
+                (*this->sliders)[2]->setHalfTransparent(!optionFlag(12));
+                Globals::sound->enableCategory(2, optionFlag(12));
+                Globals::sound->play(126, 0, 0, 0.0f);
+            }
+            if (this->optBtnDC->OnTouchEnd(x, y)) {
+                int old = optionFlag(14);
+                optionFlag(14) = old ^ 1;
+                this->optBtnDC->setAlwaysPressed(!old);
+                (*this->sliders)[3]->setHalfTransparent(!optionFlag(14));
+                Globals::sound->enableCategory(3, optionFlag(14));
+            }
+            optionFloat(0) = (*this->sliders)[1]->getValue();
+            optionFloat(4) = (*this->sliders)[2]->getValue();
+            optionFloat(8) = (*this->sliders)[3]->getValue();
+            optionFloat(36) = (*this->sliders)[4]->getValue();
+            optionFloat(40) = (*this->sliders)[5]->getValue();
+            for (unsigned int i = 1; i < this->sliders->size(); i++) {
+                if (!Globals::layout->field_0x284_sliderSlot5Enabled && i == 5)
+                    continue;
+                if (!(*this->sliders)[i]->OnTouchEnd(x, y))
+                    continue;
+                if (i == 2) {
+                    Globals::sound->play(126, 0, 0, 0.0f);
+                } else if (i == 5) {
+                    float quality = (*this->sliders)[5]->getValue();
+                    this->choiceWindow->set(
+                        *Globals::gameText->getText(quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512)));
+                    this->messageShowing = 1;
+                }
+            }
+            break;
+        case 17:
+            // Campaign selection.
+            if (this->field_0x175) {
+                if (this->choiceWindow->OnTouchEnd(x, y) == 0)
+                    this->menuState = 12;
+                this->messageShowing = 0;
+                this->field_0x175 = 0;
+                return 0;
+            }
+            for (unsigned int i = 0; i < this->buttonsB8->size(); i++) {
+                if (!(*this->buttonsB8)[i]->OnTouchEnd(x, y))
+                    continue;
+                this->field_0x234 = i;
+                if ((i & 0x7fffffffu) == 1) {
+                    if (!Globals::options[53]) {
+                        NFC::iap_buy_dlc_valkyrie();
+                        return 0;
+                    }
+                } else if ((i & 0x7fffffffu) == 2) {
+                    if (!Globals::options[55]) {
+                        NFC::iap_buy_dlc_supernova();
+                        return 0;
+                    }
+                } else {
+                    this->menuState = 12;
+                }
+                this->menuState = 12;
+                break;
+            }
+            break;
+        case 9:
+            // Missions.
+            if (this->missionsWindow->OnTouchEnd(x, y))
+                this->menuState = 0;
             break;
         case 0: {
             // Main menu.
@@ -3498,6 +3410,93 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             }
             break;
         }
+        case 12:
+            // Difficulty selection for a new game.
+            if (this->returnToMenuSubFlag) {
+                int r = this->choiceWindow->OnTouchEnd(x, y);
+                if (r == 0) {
+                    if (this->field_0x234 == 1)
+                        this->startValkyrie();
+                    else if (this->field_0x234 == 2)
+                        this->startSupernova();
+                    else
+                        this->startGOF2();
+                } else if (r == 1) {
+                    this->returnToMenuSubFlag = 0;
+                    this->messageShowing = 0;
+                    return 0;
+                }
+                return 0;
+            }
+            for (unsigned int i = 0; i < this->buttonsB4->size(); i++) {
+                if (!(*this->buttonsB4)[i]->OnTouchEnd(x, y))
+                    continue;
+                float difficulty = i == 0 ? 0.5f : 1.5f;
+                this->fadeValue = difficulty;
+                optionFloat(44) = difficulty;
+                if (i != 0) {
+                    this->choiceWindow->set(*Globals::gameText->getText(26), true);
+                    this->messageShowing = 1;
+                    this->returnToMenuSubFlag = 1;
+                    return 0;
+                }
+                if (Globals::status->getPlayingTime() < 1) {
+                    this->choiceWindow->set(*Globals::gameText->getText(52), true);
+                    this->messageShowing = 1;
+                    this->returnToMenuSubFlag = 1;
+                } else {
+                    if (this->field_0x234 == 1)
+                        this->startValkyrie();
+                    else if (this->field_0x234 == 2)
+                        this->startSupernova();
+                    else
+                        this->startGOF2();
+                    return 0;
+                }
+            }
+            break;
+        case 14:
+            // Language selection.
+            for (unsigned int i = 0; i < this->buttonsB0->size(); i++) {
+                if (!(*this->buttonsB0)[i]->OnTouchEnd(x, y))
+                    continue;
+                short previousLanguage = GameText::getLanguage();
+                int language;
+                switch ((*this->buttonsB0)[i]->id) {
+                    case 27: language = 0; break;
+                    case 28: language = 1; break;
+                    case 29: language = 4; break;
+                    case 30: language = 2; break;
+                    case 31: language = 3; break;
+                    case 32: language = 6; break;
+                    case 33: language = 5; break;
+                    case 34: language = 9; break;
+                    case 35: language = 12; break;
+                    case 36: language = 11; break;
+                    case 37: language = 10; break;
+                    case 38: language = 14; break;
+                    case 39: language = 15; break;
+                    default: continue;
+                }
+                Globals::globals->loadFont(language);
+                Globals::gameText->setLanguage((short) language, 3401);
+                if (previousLanguage == 1 || language == 1) {
+                    // Switching to/from the language with its own voice bank reloads the sound system.
+                    delete Globals::sound;
+                    Globals::sound = 0;
+                    Globals::sound = new FModSound();
+                    Globals::sound->init();
+                    Globals::switch_to_target_setting =
+                        Globals::appManager->GetCurrentApplicationModule() == 5 ? 1 : 2;
+                }
+                Globals::recordHandler->saveOptions();
+                Globals::achievements->resetNewMedals();
+                Globals::layout->reload();
+                if (Globals::appManager->GetCurrentApplicationModule() == 5)
+                    Globals::status->field_0x108 = 1;
+                Globals::appManager->SetCurrentApplicationModule(Globals::appManager->GetCurrentApplicationModule());
+            }
+            break;
     }
 
     if (this->menuState == 1 || this->menuState == 2) {
