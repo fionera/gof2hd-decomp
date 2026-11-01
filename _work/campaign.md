@@ -4280,3 +4280,7 @@ mtw anchor for any size change before MenuTouchWindow.
 - **TU end-marker alignment: byte_exact 1527 -> 1533** (`w3285`): the per-TU `.text.tuend.*`
   markers are now 4-byte aligned (KIPlayer/Explosion and every other app TU), which removes four
   `-2` drift points. `.text`/`.ARM.exidx`/`.rodata` unchanged, lint CLEAN, drift 0.
+- **GameText gap closed: byte_exact 1533 -> 1540** (`w3281`): the `+40` local-code gap after
+  `GameText::setSubstituteArray` was the `levelTextAnchor` pad landing inside the GameText TU;
+  it now lives in ConfigReader.cpp where it does not disturb the gap. `.text` 0x1337b0,
+  `.rodata` 0x1c9e10 unchanged.

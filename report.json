@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1533,
+  "byte_exact": 1540,
   "linked_exact": 4493,
   "fuzzy_perfect": 4495,
   "stub_zero_size": 0,
@@ -1002,7 +1002,7 @@
   {
    "name": "_Z12ArrayReleaseIPN11AbyssEngine18IApplicationModuleEEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -1938,7 +1938,7 @@
   {
    "name": "_Z19ArrayReleaseClassesIPN11AbyssEngine16ShaderBaseStructEEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 74,
    "usize": 74
@@ -8810,7 +8810,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager6ResumeEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 50,
    "usize": 50
@@ -8818,7 +8818,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager7SuspendEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 46,
    "usize": 46
@@ -22650,7 +22650,7 @@
   {
    "name": "_ZN5ArrayIPN11AbyssEngine16ShaderBaseStructEED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -22666,7 +22666,7 @@
   {
    "name": "_ZN5ArrayIPN11AbyssEngine18IApplicationModuleEED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -23066,7 +23066,7 @@
   {
    "name": "_ZN5ArrayIxED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
