@@ -4360,3 +4360,6 @@ highest-value work left.
 - **PlayerEgo/TouchSlider/Status TU reorder: byte_exact 1919 -> 1928 (+9)** (`w3318`): three more
   TUs reordered to the original definition order (PlayerEgo also gets the local
   `ArrayReleaseClasses` instantiation). PLT diff 1019 -> 846.
+- **Camera ATanf/Cosf order: byte_exact 1928 -> 1938 (+10)** (`w3331`): the 5-float
+  `CameraSetPerspective` is defined first so `ATanf` precedes `Cosf` in the PLT, exactly as in
+  the original.
