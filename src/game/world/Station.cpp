@@ -12,19 +12,6 @@
 static const int kHiddenBlueprints[5] = {132, 133, 134, 129, 123};
 static const int kPirateStations[4] = {1, 33, 47, 86};
 
-Station::Station() {
-    name = String("");
-    index = -1;
-    systemIndex = -1;
-    techLevel = 0;
-    textureIndex = 0;
-    visited = 0;
-    attackedFriends = 0;
-    items = nullptr;
-    ships = nullptr;
-    agents = nullptr;
-}
-
 Station::Station(String name, int index, int systemIndex, int techLevel, int textureIndex) {
     this->name = name;
     this->index = index;
@@ -36,6 +23,19 @@ Station::Station(String name, int index, int systemIndex, int techLevel, int tex
     this->items = nullptr;
     this->ships = nullptr;
     this->agents = nullptr;
+}
+
+Station::Station() {
+    name = String("");
+    index = -1;
+    systemIndex = -1;
+    techLevel = 0;
+    textureIndex = 0;
+    visited = 0;
+    attackedFriends = 0;
+    items = nullptr;
+    ships = nullptr;
+    agents = nullptr;
 }
 
 Station::~Station() {
@@ -67,36 +67,11 @@ Station::~Station() {
     }
 }
 
-int Station::getIndex() { return index; }
 int Station::getSystem() { return systemIndex; }
-int Station::getTecLevel() { return techLevel; }
-int Station::getTextureIndex() { return textureIndex; }
-unsigned char Station::isPlanet() { return planet; }
+
 String Station::getName() { return String(name, false); }
 
-Array<Agent *> *Station::getAgents() { return agents; }
-Array<Item *> *Station::getItems() { return items; }
-Array<Ship *> *Station::getShips() { return ships; }
-
-void Station::addItem(Item *item) {
-    int index = -1;
-    if (items != nullptr) {
-        if (items->size() != 0) {
-            for (uint32_t i = 0; i < items->size(); i++) {
-                if ((*items)[i]->equals(item)) {
-                    index = (int) i;
-                    break;
-                }
-            }
-        }
-    } else {
-        items = new Array<Item *>();
-    }
-    if (index >= 0)
-        (*items)[index]->changeAmount(item->getAmount());
-    else
-        ArrayAdd(item, *items);
-}
+int Station::getIndex() { return index; }
 
 void Station::setAttackedFriends(bool v) {
     attackedFriends = v;
@@ -110,6 +85,10 @@ bool Station::isAttackedByAliens() {
     return index == Globals::status->field_80;
 }
 
+unsigned char Station::isPlanet() { return planet; }
+
+int Station::getTextureIndex() { return textureIndex; }
+
 uint8_t Station::isDiscovered() {
     return Globals::galaxy->getVisited()[index];
 }
@@ -121,6 +100,14 @@ void Station::visit() {
     Globals::status->visitStation();
     Globals::galaxy->visitStation(index);
 }
+
+int Station::getTecLevel() { return techLevel; }
+
+Array<Ship *> *Station::getShips() { return ships; }
+
+Array<Item *> *Station::getItems() { return items; }
+
+Array<Agent *> *Station::getAgents() { return agents; }
 
 void Station::removeShips() {
     if (ships != nullptr) {
@@ -198,6 +185,26 @@ bool Station::hasShip(int index) {
         }
     }
     return 0;
+}
+
+void Station::addItem(Item *item) {
+    int index = -1;
+    if (items != nullptr) {
+        if (items->size() != 0) {
+            for (uint32_t i = 0; i < items->size(); i++) {
+                if ((*items)[i]->equals(item)) {
+                    index = (int) i;
+                    break;
+                }
+            }
+        }
+    } else {
+        items = new Array<Item *>();
+    }
+    if (index >= 0)
+        (*items)[index]->changeAmount(item->getAmount());
+    else
+        ArrayAdd(item, *items);
 }
 
 void Station::addShip(Ship *ship) {

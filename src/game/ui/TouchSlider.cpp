@@ -39,6 +39,8 @@ void TouchSlider::setPosition(int x, int y) {
     this->knobX = (int) (knobBase + this->value * trackRange);
 }
 
+
+
 TouchSlider::~TouchSlider() {
 }
 
@@ -64,7 +66,6 @@ void TouchSlider::setValue(float value) {
     float knobBase = (float) (this->x + this->knobWidth / 2);
     this->knobX = (int) (knobBase + trackRange * value);
 }
-
 void TouchSlider::setFixedScale(int numSteps) {
     this->numSteps = numSteps;
 }
@@ -144,3 +145,4 @@ bool TouchSlider::OnTouchEnd(int x, int y) {
     this->isDragging = 0;
     return result;
 }
+

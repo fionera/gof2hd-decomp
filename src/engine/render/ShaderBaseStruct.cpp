@@ -121,7 +121,6 @@ namespace AbyssEngine {
 
         return result;
     }
-
     void ShaderBaseStruct::UseShader(bool /*useExtra*/) {
         glUseProgram(this->program);
     }

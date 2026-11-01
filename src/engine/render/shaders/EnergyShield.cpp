@@ -52,7 +52,6 @@ namespace AbyssEngine {
         EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = String("EnergyShield", false);
     }
-
     void EnergyShield::Init(Engine *engine) {
         int program = this->ES2LoadProgram(kEnergyShieldVertexSource, kEnergyShieldFragmentSource);
         this->program = program;
@@ -146,4 +145,5 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
         }
     }
+
 }

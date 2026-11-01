@@ -1,4 +1,5 @@
 #include "game/mission/Status.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include <cstring>
 #include "game/core/Globals.h"
 #include "game/mission/PendingProduct.h"
@@ -21,7 +22,6 @@
 #include "game/world/Level.h"
 
 static SolarSystem *asSystem(int32_t v) { return (SolarSystem *) (intptr_t) v; }
-
 
 Status::Status() {
     missions = new Array<Mission *>();
@@ -245,7 +245,6 @@ void Status::setStation(Station *s) {
     delete stationList;
 }
 
-
 void Status::departStation(Station *dest) {
     if (!inAlienOrbit() && station->getIndex() == 108 && field_114 == 3) {
         voidStation->setItems(station->getItems(), true);
@@ -397,94 +396,6 @@ Mission *Status::getCampaignMission() {
 
 Mission *Status::getMission() { return mission; }
 
-void Status::moveWanted() {
-    Array<SolarSystem *> *systems = 0;
-    SystemPathFinder *pathFinder = 0;
-    unsigned i = 0;
-    bool initialized = false;
-    for (; i < this->wanted->size(); i++) {
-        if ((*this->wanted)[i]->isActive() && !(*this->wanted)[i]->isTerminated() &&
-            !Globals::status->inAlienOrbit() &&
-            (*this->wanted)[i]->getCurrentLocation() != Globals::status->station->getIndex()) {
-            if (!(Level::programmedStation != 0 &&
-                  Level::programmedStation->getIndex() == (*this->wanted)[i]->getCurrentLocation())) {
-                if (!initialized) {
-                    FileRead *fileRead = new FileRead();
-                    systems = fileRead->loadSystemsBinary();
-                    delete fileRead;
-                    pathFinder = new SystemPathFinder();
-                }
-                // Station lookups do not touch the reader instance, so no FileRead object is created.
-                FileRead *reader = 0;
-                Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
-                int fromSystem = from->getSystem();
-                Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
-                int toSystem = to->getSystem();
-                Array<int> *path;
-                if (from->getIndex() == to->getIndex()) {
-                    unsigned minJumps;
-                    unsigned maxJumps;
-                    if (i < 2) {
-                        maxJumps = 4;
-                        minJumps = 2;
-                    } else {
-                        int step = (int) (i - 1) % 6;
-                        minJumps = step / 3 + 2;
-                        maxJumps = 4 + step / 2;
-                    }
-                    (*this->wanted)[i]->setLastSeen((*this->wanted)[i]->getCurrentLocation());
-                    if (to != 0) {
-                        delete to;
-                    }
-                    to = Globals::globals->getRandomStation();
-                    toSystem = to->getSystem();
-                    path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
-                    while (true) {
-                        uint32_t *routes = (*systems)[to->getSystem()]->getRoutes();
-                        if (path != 0 && routes != 0 && path->size() >= minJumps && path->size() <= maxJumps &&
-                            (*Globals::status->systemVisibilities)[to->getSystem()] && to->getSystem() != 27 &&
-                            to->getSystem() != 28 && to->getSystem() != 25 && to->getSystem() != 26 &&
-                            to->getSystem() != 6 && to->getSystem() != from->getSystem()) {
-                            (*this->wanted)[i]->setTravelsTo(to->getIndex());
-                            break;
-                        }
-                        if (to != 0) {
-                            delete to;
-                        }
-                        to = Globals::globals->getRandomStation();
-                        toSystem = to->getSystem();
-                        path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
-                    }
-                } else if (fromSystem == toSystem) {
-                    (*this->wanted)[i]->setCurrentLocation((*this->wanted)[i]->getTravelsTo());
-                    path = 0;
-                } else {
-                    path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
-                    int gateIndex = (*systems)[(*path)[1]]->getWarpGateIndex();
-                    (*this->wanted)[i]->setCurrentLocation(gateIndex);
-                }
-                if (to != 0) {
-                    delete to;
-                }
-                if (from != 0) {
-                    delete from;
-                }
-                if (path != 0) {
-                    delete path;
-                }
-                initialized = true;
-            }
-        }
-    }
-    if (systems != 0) {
-        ArrayReleaseClasses(*systems);
-        delete systems;
-    }
-    if (pathFinder != 0) {
-        delete pathFinder;
-    }
-}
-
 int Status::getPassengers() { return reinterpret_cast<int32_t &>(_byte_0x34); }
 
 void Status::setPassengers(int p) { reinterpret_cast<int32_t &>(_byte_0x34) = p; }
@@ -530,7 +441,6 @@ void Status::setCurrentCampaignMission(int v) { currentCampaignMission = v; }
 
 // Campaign missions whose completion awards the medal flag at +0x17c.
 static const int kMedalCampaignMissions[3] = {93, 111, 143};
-
 void Status::nextCampaignMission(bool advance) {
     int mission = this->currentCampaignMission;
     this->currentCampaignMission = mission + 1;
@@ -1423,7 +1333,6 @@ struct DifficultyOptionView {
     uint8_t pad[0x2c];
     float difficulty;
 };
-
 bool Status::hardCoreMode() {
     return reinterpret_cast<DifficultyOptionView *>(Globals::options)->difficulty == 1.5f;
 }
@@ -1475,7 +1384,6 @@ static const unsigned char kMissionCase[190] = {
     169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
 };
-
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
     bool shortMission = notAtStation && extra > 2000;
@@ -1764,6 +1672,7 @@ void Status::removeMission(Mission *mission) {
 }
 
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
+
 int Status::getPlanetNames() { return planetNames; }
 
 int Status::getPlanetTextures() { return planetTextures; }
@@ -1791,7 +1700,6 @@ void Status::incGoodsProduced(int delta) { goodsProduced = delta + goodsProduced
 void Status::setCredits(int v) { credits = v; }
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
-
 void Status::checkForLevelUp() {
     int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
               currentCampaignMission + stationsVisited;
@@ -1990,7 +1898,6 @@ void Status::incCollectedBounties(int index) {
     }
 }
 
-
 int Status::isFreighterMissionStation(int station) {
     switch (station) {
         case 15:
@@ -2071,7 +1978,6 @@ int Status::wantedBoardAccessible() {
     }
     return 0;
 }
-
 
 int Status::activateNewWanted() {
     Array<Wanted *> *wanted = Globals::status->wanted;
@@ -2186,6 +2092,94 @@ int Status::activateNewWanted() {
         delete systems;
     }
     return activated;
+}
+
+void Status::moveWanted() {
+    Array<SolarSystem *> *systems = 0;
+    SystemPathFinder *pathFinder = 0;
+    unsigned i = 0;
+    bool initialized = false;
+    for (; i < this->wanted->size(); i++) {
+        if ((*this->wanted)[i]->isActive() && !(*this->wanted)[i]->isTerminated() &&
+            !Globals::status->inAlienOrbit() &&
+            (*this->wanted)[i]->getCurrentLocation() != Globals::status->station->getIndex()) {
+            if (!(Level::programmedStation != 0 &&
+                  Level::programmedStation->getIndex() == (*this->wanted)[i]->getCurrentLocation())) {
+                if (!initialized) {
+                    FileRead *fileRead = new FileRead();
+                    systems = fileRead->loadSystemsBinary();
+                    delete fileRead;
+                    pathFinder = new SystemPathFinder();
+                }
+                // Station lookups do not touch the reader instance, so no FileRead object is created.
+                FileRead *reader = 0;
+                Station *from = reader->loadStation((*this->wanted)[i]->getCurrentLocation());
+                int fromSystem = from->getSystem();
+                Station *to = reader->loadStation((*this->wanted)[i]->getTravelsTo());
+                int toSystem = to->getSystem();
+                Array<int> *path;
+                if (from->getIndex() == to->getIndex()) {
+                    unsigned minJumps;
+                    unsigned maxJumps;
+                    if (i < 2) {
+                        maxJumps = 4;
+                        minJumps = 2;
+                    } else {
+                        int step = (int) (i - 1) % 6;
+                        minJumps = step / 3 + 2;
+                        maxJumps = 4 + step / 2;
+                    }
+                    (*this->wanted)[i]->setLastSeen((*this->wanted)[i]->getCurrentLocation());
+                    if (to != 0) {
+                        delete to;
+                    }
+                    to = Globals::globals->getRandomStation();
+                    toSystem = to->getSystem();
+                    path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+                    while (true) {
+                        uint32_t *routes = (*systems)[to->getSystem()]->getRoutes();
+                        if (path != 0 && routes != 0 && path->size() >= minJumps && path->size() <= maxJumps &&
+                            (*Globals::status->systemVisibilities)[to->getSystem()] && to->getSystem() != 27 &&
+                            to->getSystem() != 28 && to->getSystem() != 25 && to->getSystem() != 26 &&
+                            to->getSystem() != 6 && to->getSystem() != from->getSystem()) {
+                            (*this->wanted)[i]->setTravelsTo(to->getIndex());
+                            break;
+                        }
+                        if (to != 0) {
+                            delete to;
+                        }
+                        to = Globals::globals->getRandomStation();
+                        toSystem = to->getSystem();
+                        path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+                    }
+                } else if (fromSystem == toSystem) {
+                    (*this->wanted)[i]->setCurrentLocation((*this->wanted)[i]->getTravelsTo());
+                    path = 0;
+                } else {
+                    path = pathFinder->getSystemPath(systems, fromSystem, toSystem);
+                    int gateIndex = (*systems)[(*path)[1]]->getWarpGateIndex();
+                    (*this->wanted)[i]->setCurrentLocation(gateIndex);
+                }
+                if (to != 0) {
+                    delete to;
+                }
+                if (from != 0) {
+                    delete from;
+                }
+                if (path != 0) {
+                    delete path;
+                }
+                initialized = true;
+            }
+        }
+    }
+    if (systems != 0) {
+        ArrayReleaseClasses(*systems);
+        delete systems;
+    }
+    if (pathFinder != 0) {
+        delete pathFinder;
+    }
 }
 
 void Status::resetGame() {

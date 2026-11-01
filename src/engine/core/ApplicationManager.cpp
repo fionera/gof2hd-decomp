@@ -959,7 +959,7 @@ uint64_t ApplicationManager::GetActionState() {
 void ApplicationManager::ResetKeyState() {
     this->keyState = 0;
 }
-long long ApplicationManager::GetCurrentTimeMillis() {
+int64_t ApplicationManager::GetCurrentTimeMillis() {
     return this->currentTimeMs;
 }
 uint64_t ApplicationManager::GetSystemTimeMillis() {

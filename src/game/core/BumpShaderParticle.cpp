@@ -120,7 +120,6 @@ namespace AbyssEngine {
         if (aVertexColorLoc >= 0)
             glDisableVertexAttribArray(aVertexColorLoc);
     }
-
     void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (uModelViewProjectionMatrixLoc >= 0)
             glUniformMatrix4fv(uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
@@ -191,4 +190,5 @@ namespace AbyssEngine {
             glVertexAttribPointer(aVertexColorLoc, 4, 0x1406, 0, 0, 0);
         }
     }
+
 }

@@ -126,7 +126,7 @@ namespace AbyssEngine {
 
         unsigned int GetCurrentApplicationModule() const;
 
-        long long GetCurrentTimeMillis();
+        int64_t GetCurrentTimeMillis();
 
         uint64_t GetElapsedTimeMillis();
 
