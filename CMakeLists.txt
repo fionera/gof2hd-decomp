@@ -132,6 +132,10 @@ add_custom_command(OUTPUT "${_so}"
     # strong definition must be a link error, not a silent first-wins pick.
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
+            # The original is fully RELRO-bound: DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, and its .got
+            # sits before .data inside PT_GNU_RELRO (gold only emits that order with -z now).
+            # Evidence: readelf -d/-lW on the original; without -z now gold puts .got after .data.
+            -z now
             --unresolved-symbols=ignore-all
             --exclude-libs=libgcc.a
             ${_order_flag}

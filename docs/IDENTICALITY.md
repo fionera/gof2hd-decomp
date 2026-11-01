@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1415, linked_exact 4493, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1458, linked_exact 4493, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1415, linked_exact 4493, avg 99.89%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1458, linked_exact 4493, avg 99.89%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -33,14 +33,16 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 38 non-linked exported functions plus the documented MenuTouchWindow layout anchor; local-code gaps are bracketed by the same neighbours. |
-| **.rodata** | 269,159 | 267,831 | **−1,328** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
-| .ARM.extab | 156,312 | 156,280 | −32 | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
+| **.rodata** | 269,159 | 268,103 | **−1,056** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
+| .ARM.exidx | 28,528 | 26,312 | **−2,216** | 267 functions have an unwind entry in the original and none in ours (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
+| .ARM.extab | 156,312 | 156,324 | **+12** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,296 | **+32** | anonymous read-only-relocated data layout still differs. |
 | .data | 10,604 | 10,604 | **0** | exact (original TU order/sizes; gEngine moved out of Engine .bss). |
-| .bss | 27,052 | 27,064 | **+12** | anonymous zero-initialised-data layout still differs. |
-| .got | 17,164 | 17,164 | 0 | same slot count; slot order still follows our link order. |
+| .bss | 27,052 | 27,096 | **+44** | anonymous zero-initialised-data layout still differs. |
+| .got | 17,164 | 17,164 | 0 | same slot count and now the same address (0x20fcf4); slot order still follows our link order. |
+| .dynamic | 328 | 328 | 0 | exact since the link passes `-z now` (DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, .dynamic at 0x20fba4). |
 
 ## The four real gaps (in priority/size order)
 
@@ -49,15 +51,17 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is +3,080 B because of the documented
    MenuTouchWindow layout anchor; the remaining function bodies still net smaller, so this is a
    finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 1,328 B smaller, `.data` is now exact and `.bss` 12 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 1,056 B smaller, `.data` is now exact and `.bss` 44 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
 3. **EH tables.** `.ARM.extab` is only 32 B smaller now (was 4,572 B): the app and vendored C
    objects were missing `-funwind-tables`. The residual is the net unwind-length difference of nine
    non-exact functions (`HangarWindow::render` −48, `Level::createShip` −20,
    `RecordHandler::recordStoreWrite` −16, ...).
-4. **Link metadata.** `.dynsym`/`.dynstr` sizes now match exactly; dynamic-symbol order and the GNU
-   build-id are content hashes that converge only when everything else does.
+4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
+   full-RELRO link (`-z now`) is now reproduced (BIND_NOW, `.got` before `.data` inside
+   `PT_GNU_RELRO`, `.got` at 0x20fcf4). Dynamic-symbol order and the GNU build-id are content
+   hashes that converge only when everything else does.
 
 ## Done
 - **Pass 1: strip** the link output (`strip --strip-all`) -> section set matches the original
@@ -76,7 +80,7 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 1415 byte_exact,
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 1458 byte_exact,
 4493 linked_exact, 4522 size_match of 4523; pct buckets {100:4494, 90-99:9, 80-89:12, 70-79:5,
 <60:3}. 1 function row size-MISMATCH (Generator -4 B); 22 size-match >=80%
 not-linked (the highest-value near-misses).

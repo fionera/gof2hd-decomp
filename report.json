@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4523,
   "avg_match": 99.89,
-  "byte_exact": 1415,
+  "byte_exact": 1458,
   "linked_exact": 4493,
   "fuzzy_perfect": 4494,
   "stub_zero_size": 0,
@@ -250,7 +250,7 @@
   {
    "name": "Blowfish_decipher",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -258,7 +258,7 @@
   {
    "name": "Blowfish_encipher",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -306,7 +306,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -314,7 +314,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -322,7 +322,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLinkGameGP",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -330,7 +330,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowAchievements",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -338,7 +338,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowLeaderboards",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -354,7 +354,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetAchievements",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -362,7 +362,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLeaderboardScore",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -370,7 +370,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLinkGameGP",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -378,7 +378,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowAchievements",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -386,7 +386,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowLeaderboards",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -394,7 +394,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -410,7 +410,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -610,7 +610,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setAPKPath",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -626,7 +626,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setEnvironmentVariables",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -634,7 +634,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setZIPPath",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -842,7 +842,7 @@
   {
    "name": "_Z10MouseWheelff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -858,7 +858,7 @@
   {
    "name": "_Z10SetKeyCodePKcii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -946,7 +946,7 @@
   {
    "name": "_Z11GetKeyStatePc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -954,7 +954,7 @@
   {
    "name": "_Z11GetKeyStatei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -1586,7 +1586,7 @@
   {
    "name": "_Z15ArrowKeyPressedv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -1602,7 +1602,7 @@
   {
    "name": "_Z15IsDialogVisiblei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -1610,7 +1610,7 @@
   {
    "name": "_Z15IsInPrimaryMenui",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -1618,7 +1618,7 @@
   {
    "name": "_Z15IsSubMenuActivei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -1626,7 +1626,7 @@
   {
    "name": "_Z15LowerMouseWheelv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 268,
    "usize": 268
@@ -1634,7 +1634,7 @@
   {
    "name": "_Z15keyEventPressedPN11AbyssEngine6EngineEPc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -1642,7 +1642,7 @@
   {
    "name": "_Z16keyEventReleasedPN11AbyssEngine6EngineEPc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -1666,7 +1666,7 @@
   {
    "name": "_Z18IsDialogNotVisiblei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -1970,7 +1970,7 @@
   {
    "name": "_Z19IsDialogNotVisible2i",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -1978,7 +1978,7 @@
   {
    "name": "_Z19IsStarMapNotVisiblei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -1994,7 +1994,7 @@
   {
    "name": "_Z19setValuesForGamepadff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -2018,7 +2018,7 @@
   {
    "name": "_Z21IsInGameSubMenuActivei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -2050,7 +2050,7 @@
   {
    "name": "_Z23ActualizeMouseVisibiltyi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 592,
    "usize": 592
@@ -2058,7 +2058,7 @@
   {
    "name": "_Z24IsInGameSubMenuNotActivei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -2082,7 +2082,7 @@
   {
    "name": "_Z31SwitchToOtherMouseConifgurationi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -7906,7 +7906,7 @@
   {
    "name": "_ZN11AbyssEngine16MeshConvertToVBOEPNS_4MeshE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -9642,7 +9642,7 @@
   {
    "name": "_ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1832,
    "usize": 1832
@@ -9650,7 +9650,7 @@
   {
    "name": "_ZN11AbyssEngine4MeshC1EPS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 284,
    "usize": 284
@@ -9658,7 +9658,7 @@
   {
    "name": "_ZN11AbyssEngine4MeshC2EPS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 284,
    "usize": 284
@@ -29354,7 +29354,7 @@
   {
    "name": "_ZN7_JNIEnv19CallStaticIntMethodEP7_jclassP10_jmethodIDz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -29362,7 +29362,7 @@
   {
    "name": "_ZN7_JNIEnv20CallStaticVoidMethodEP7_jclassP10_jmethodIDz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -29370,7 +29370,7 @@
   {
    "name": "_ZN7_JNIEnv23CallStaticBooleanMethodEP7_jclassP10_jmethodIDz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
