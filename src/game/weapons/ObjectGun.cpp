@@ -35,11 +35,6 @@ static const int MUZZLE_MESHES[233] = {
     14501, 14501, 14508, 14502, -1,
 };
 
-// Projectile mesh id for a gun item; hidden so it stays out of the export set.
-[[gnu::visibility("hidden")]] int ObjectGunProjectileMesh(int item) {
-    return MUZZLE_MESHES[item];
-}
-
 ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level)
     : dir(), up(), side() {
     this->useEgoOrientation = 0;
@@ -94,13 +89,13 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
 
     if (gun->field_0xa8 != 0)
         this->hasGeometry = 1;
-    else if (gun->isPlayerGun() && ObjectGunProjectileMesh(gun->itemIndex) >= 0)
+    else if (gun->isPlayerGun() && MUZZLE_MESHES[gun->itemIndex] >= 0)
         this->hasGeometry = gun->weaponType != ITEM_SORT_MINE;
     else
         this->hasGeometry = 0;
 
     this->geometry = this->hasGeometry
-                     ? new AEGeometry((uint16_t) ObjectGunProjectileMesh(gun->itemIndex), Globals::Canvas, false)
+                     ? new AEGeometry((uint16_t) MUZZLE_MESHES[gun->itemIndex], Globals::Canvas, false)
                      : nullptr;
     this->wasFiring = 0;
     this->deltaTime = 0;
@@ -136,7 +131,7 @@ void ObjectGun::update(int dt) {
     if (this->hasGeometry == 0 && !this->gun->isPlayerGun() && this->gun->owner != nullptr &&
         this->gun->owner->getKIPlayer() != nullptr && this->gun->owner->getKIPlayer()->field_0x3f_b != 0) {
         this->hasGeometry = 1;
-        this->geometry = new AEGeometry((uint16_t) ObjectGunProjectileMesh(this->gun->itemIndex), Globals::Canvas, false);
+        this->geometry = new AEGeometry((uint16_t) MUZZLE_MESHES[this->gun->itemIndex], Globals::Canvas, false);
     }
 
     if (this->hasGeometry != 0) {

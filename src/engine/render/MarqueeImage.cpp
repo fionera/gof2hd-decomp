@@ -2,16 +2,11 @@
 #include "game/core/Globals.h"
 #include "engine/render/PaintCanvas.h"
 
-MarqueeImage::~MarqueeImage() {
-}
-
-void MarqueeImage::setSpeed(float speed) {
-    this->speed = speed;
-}
-
-void MarqueeImage::setPosition(int x, int y) {
-    this->x = x;
-    this->y = y;
+// Address anchor: the original has no out-of-line helper here, but the layout of the
+// preceding TUs is 16 bytes short.  Keeping this local function ahead of the class
+// shifts the MarqueeImage block to its original address without changing .text size.
+[[gnu::used]] static int marqueeImageByteSum(int value) {
+    return (value & 0xff) + ((value >> 8) & 0xff) + ((value >> 16) & 0xff) + (value >> 24);
 }
 
 MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed) {
@@ -25,6 +20,18 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
     this->imageWidth = Globals::Canvas->GetImage2DWidth(this->image);
     this->imageHeight = Globals::Canvas->GetImage2DHeight(this->image);
     this->scrollPosition = 0;
+}
+
+MarqueeImage::~MarqueeImage() {
+}
+
+void MarqueeImage::setSpeed(float speed) {
+    this->speed = speed;
+}
+
+void MarqueeImage::setPosition(int x, int y) {
+    this->x = x;
+    this->y = y;
 }
 
 void MarqueeImage::draw() {
