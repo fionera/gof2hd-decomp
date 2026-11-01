@@ -22,53 +22,6 @@
 
 
 
-String::~String() {
-    if (this->data)
-        delete[] this->data;
-    this->data = nullptr;
-}
-
-char *String::GetAEChar() const {
-    if (this->length == 0) {
-        char *empty = new char[1];
-        empty[0] = 0;
-        return empty;
-    }
-    unsigned int n = this->length + 1;
-    char *out = new char[n];
-    for (unsigned int i = 0; i < n; i++)
-        out[i] = (char) this->data[i];
-    return out;
-}
-
-void String::ReplaceString(String find, String repl) {
-    if (this->data == nullptr || this->length == 0 || find.length == 0)
-        return;
-
-    String acc;
-    unsigned int pos = 0;
-    int idx;
-    while ((idx = (int) ((String *) (this))->IndexOf(pos, find)) != -1) {
-        acc += this->SubString(pos, (unsigned int) idx) + repl;
-        pos = (unsigned int) find.length + idx;
-    }
-
-    if (pos != 0 && pos < (unsigned int) this->length)
-        acc += this->SubString(pos, (unsigned int) this->length);
-
-    if (acc.length != 0)
-        this->Set(acc.data);
-}
-
-String *String::ReplaceChar(char from, char to) {
-    if (this->data == nullptr)
-        return this;
-    for (unsigned int i = 0; i < (unsigned int) this->length; i++)
-        if (this->data[i] == (unsigned char) from)
-            this->data[i] = (unsigned char) to;
-    return this;
-}
-
 void String::Reverse() {
     if (this->data != nullptr && GameText::getLanguage() == 9) {
         String copy(this->data, false);
@@ -77,147 +30,49 @@ void String::Reverse() {
     }
 }
 
-String *String::ToUpperCase() {
-    if (this->data == nullptr)
-        return this;
-    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
-        unsigned short c = this->data[i];
-        if ((unsigned short) (c - 'a') < 26 || (unsigned short) (c - 0xe0) < 31) {
-            this->data[i] = (unsigned short) (c - 0x20);
-        } else {
-            switch (c) {
-                case 0x81: this->data[i] = 0x9a;
-                    break;
-                case 0x82: this->data[i] = 0x90;
-                    break;
-                case 0x84: this->data[i] = 0x8e;
-                    break;
-                case 0x86: this->data[i] = 0x8f;
-                    break;
-                case 0x91: this->data[i] = 0x92;
-                    break;
-                case 0x94: this->data[i] = 0x99;
-                    break;
-                case 0xa4: this->data[i] = 0xa5;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    return this;
-}
-
-int String::ValueOf() {
-    char *bytes = ((String *) (this))->GetAEChar();
-    int v = atoi(bytes);
-    delete[] bytes;
-    return v;
-}
-
-void *String::Split(String sep) { // lint: void_ptr exported String method return type, signature must not change
-    // lint: void_ptr exported String method return type, signature must not change
-    if (this->data != nullptr && this->length != 0 && sep.length != 0) {
-        Array<String *> *arr = new Array<String *>();
-
-        unsigned int pos = 0;
-        unsigned int idx;
-        while ((idx = IndexOf(pos, sep)) != 0xffffffff) {
-            if (pos < idx)
-                ArrayAdd(new String(SubString(pos, idx)), *arr);
-            pos = (unsigned int) sep.length + idx;
-        }
-        if (pos != 0 && pos < (unsigned int) this->length)
-            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
-
-        if (arr->size() != 0)
-            return arr;
-
-        ArrayRemoveAll(*arr);
-        delete arr;
-    }
-    return 0;
-}
-
-
 unsigned short *String::operator[](int i) {
     if (i < 0 || i >= this->length)
         return &termChar;
     return this->data + i;
 }
 
-void String::Set(long long v) {
+String::String() : data(nullptr), length(0) {
+}
+
+String::String(const uint16_t *wstr, bool reverse) : data(nullptr) {
+    Set((const unsigned short *) wstr);
+    if (reverse) Reverse();
+}
+
+void String::Set(const unsigned short *s) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
-    if (v == 0) {
+    if (s == nullptr) {
         Set("");
         return;
     }
-    unsigned short *out = new unsigned short[20];
-    this->data = out;
-    this->length = 0;
-    unsigned long long magnitude;
-    if (v < 0) {
-        *out++ = '-';
-        this->length = 1;
-        magnitude = (unsigned long long) -v;
+    int len = StrLen(s);
+    this->length = len;
+    if (len == 0) {
+        this->data = new unsigned short[1];
+        this->data[0] = 0;
+    } else if (s[len - 1] != 0) {
+        unsigned short *out = new unsigned short[len + 1];
+        this->data = out;
+        memcpy(out, s, len * 2);
+        out[len] = 0;
     } else {
-        magnitude = (unsigned int) v; // binary: non-negative values keep only the low word
+        unsigned short *out = new unsigned short[len];
+        this->data = out;
+        memcpy(out, s, len * 2);
+        out[len - 1] = 0;
+        this->length = len - 1;
     }
-    int count = 0;
-    unsigned long long previous;
-    do {
-        unsigned int digit = (unsigned int) (magnitude % 10);
-        unsigned char c = (unsigned char) (digit | '0');
-        if (digit > 9)
-            c = (unsigned char) (digit + 'a' - 10);
-        out[count++] = c;
-        this->length++;
-        previous = magnitude;
-        magnitude /= 10;
-    } while (previous > 9);
-    out[count] = 0;
-    unsigned short *lo = out;
-    unsigned short *hi = out + count - 1;
-    do {
-        unsigned short t = *hi;
-        *hi = *lo;
-        *lo = t;
-        lo++;
-        hi--;
-    } while (lo < hi);
 }
 
-int String::StrLen(const char *s) {
-    const char *p = s;
-    while (*p++ != '\0') {
-    }
-    return (int) (p - s) - 1;
-}
-
-unsigned int String::Compare(const char *s) {
-    if (this->length == 0)
-        return 1;
-    const unsigned short *a = this->data;
-    bool reachedEnd = false;
-    int i = 0;
-    for (;;) {
-        if (a[i] == 0) {
-            reachedEnd = true;
-            break;
-        }
-        if (s[i] == 0 || (unsigned char) s[i] != a[i])
-            break;
-        i++;
-    }
-    if (s[i] == 0)
-        return a[i] != 0;
-    int d = a[i] - (unsigned char) s[i];
-    if (reachedEnd)
-        d = -1;
-    // When reachedEnd is set, d is -1; keep the sign extension after the select.
-    __builtin_assume(!reachedEnd || d == -1); // lint: arm_builtin
-    return (signed char) d;
+String::String(const char *cstr, bool reverse) : data(nullptr) {
+    Set(cstr);
+    if (reverse) Reverse();
 }
 
 void String::Set(const char *s) {
@@ -247,204 +102,23 @@ void String::Set(const char *s) {
     }
 }
 
-signed char String::Compare(const String &other) {
-    signed char result;
-    if (other.length == this->length) {
-        const unsigned short *a = this->data;
-        const unsigned short *b = other.data;
-        bool reachedEnd = false;
-        unsigned short ca, cb;
-        while (true) {
-            ca = *a;
-            cb = *b;
-            if (ca == 0) {
-                reachedEnd = true;
-                break;
-            }
-            if (cb != ca)
-                break;
-            b++;
-            a++;
-        }
-        if (cb == 0)
-            result = ca != 0;
-        else if (reachedEnd)
-            result = -1;
-        else
-            result = (signed char) (ca - cb);
-    } else {
-        result = -1;
-    }
-    return result;
+String::String(const String &other, bool reverse) : data(nullptr) {
+    Set(other.data);
+    if (reverse) Reverse();
 }
 
-String *String::Trim() {
-    if (this->data != nullptr && this->length != 0) {
-        unsigned int start = 0;
-        while (start < (unsigned int) this->length &&
-               (this->data[start] == ' ' || this->data[start] == '\t'))
-            start++;
-        unsigned int end = (unsigned int) this->length;
-        while (this->data[end - 1] == '\t' || this->data[end - 1] == ' ')
-            end--;
-        String trimmed = SubString(start, end);
-        Set(trimmed.data);
-    }
-    return this;
-}
-
-int String::GetStringLength(const char *s) {
-    const char *p = s;
-    while (*p++ != '\0') {
-    }
-    return (int) (p - s) - 1;
-}
-
-String *String::ToLowerCase() {
-    if (this->data == nullptr)
-        return this;
-    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
-        unsigned short c = this->data[i];
-        if ((unsigned short) (c - 'A') < 26 || (unsigned short) (c - 0xc0) < 31) {
-            this->data[i] = (unsigned short) (c + 0x20);
-        } else {
-            switch (c) {
-                case 0x9a: this->data[i] = 0x81;
-                    break;
-                case 0x90: this->data[i] = 0x82;
-                    break;
-                case 0x8e: this->data[i] = 0x84;
-                    break;
-                case 0x8f: this->data[i] = 0x86;
-                    break;
-                case 0x92: this->data[i] = 0x91;
-                    break;
-                case 0x99: this->data[i] = 0x94;
-                    break;
-                case 0xa5: this->data[i] = 0xa4;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }    return this;
-}
-
-String &String::operator=(const String &other) {
-    if (other.data != nullptr)
-        this->Set(other.data);
-    return *this;
-}
-
-void String::Set(const unsigned short *s) {
-    if (this->data) delete[] this->data;
+String::~String() {
+    if (this->data)
+        delete[] this->data;
     this->data = nullptr;
-    if (s == nullptr) {
-        Set("");
-        return;
-    }
-    int len = StrLen(s);
-    this->length = len;
-    if (len == 0) {
-        this->data = new unsigned short[1];
-        this->data[0] = 0;
-    } else if (s[len - 1] != 0) {
-        unsigned short *out = new unsigned short[len + 1];
-        this->data = out;
-        memcpy(out, s, len * 2);
-        out[len] = 0;
-    } else {
-        unsigned short *out = new unsigned short[len];
-        this->data = out;
-        memcpy(out, s, len * 2);
-        out[len - 1] = 0;
-        this->length = len - 1;
-    }
 }
 
-void String::ConvertFromUTF8() {
-    if (this->data == nullptr)
-        return;
-
-    char *bytes = GetAEChar();
-    uint16_t *wide = String::getWCharFromUtf8(GetAEChar(), this->length);
-    Set(wide);
-    delete[] bytes;
-    delete[] wide;
+String::operator unsigned short *() {
+    return this->data;
 }
 
-void String::Set(float v) {
-    int exponent;
-    int negative;
-    unsigned short *digits = computeFloatString(v, 10, &exponent, &negative, 1);
-    String result;
-    if (exponent <= 0) {
-        result.Set("0.");
-        for (int i = 0; i > exponent; i--)
-            result += String("0");
-    }
-    result += String(digits, false);
-    if (exponent >= 1)
-        result = result.SubString(0, exponent) + String(".") + result.SubString(exponent, result.length);
-    if (negative != 0)
-        result = String("-") + result;
-    delete[] digits;
-    Set(result.data);
-}
-
-Array<String *> *String::SplitTags(String tag) {
-    if (this->data != nullptr && this->length != 0 && tag.length != 0) {
-        tag = String("<") + tag + String(":");
-        Array<String *> *arr = new Array<String *>();
-
-        unsigned int endPos = 0;
-        unsigned int pos = 0;
-        unsigned int idx;
-        while ((idx = IndexOf(pos, tag)) != 0xffffffff) {
-            if (pos <= idx) {
-                ArrayAdd(new String(SubString(pos, idx)), *arr);
-                endPos = IndexOf(tag.length + idx, String(">"));
-                if (endPos == 0xffffffff)
-                    return arr;
-                ArrayAdd(new String(SubString(tag.length + idx, endPos)), *arr);
-            }
-            pos = endPos + 1;
-        }
-        if (pos != 0 && pos < (unsigned int) this->length)
-            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
-
-        if (arr->size() != 0)
-            return arr;
-
-        ArrayRemoveAll(*arr);
-        delete arr;
-    }
-    return nullptr;
-}
-
-
-int String::StrLen(const unsigned short *s) {
-    if (s == 0)
-        return 0;
-    const unsigned short *p = s;
-    while (*p++ != 0) {
-    }
-    return (int) (p - s) - 1;
-}
-
-String String::SubString(unsigned int start, unsigned int end) {
-    String sub;
-    if (start < end) {
-        unsigned int n = end - start;
-        if (sub.data) delete[] sub.data;
-        sub.data = nullptr;
-        sub.data = new unsigned short[n + 1];
-        memcpy(sub.data, this->data + start, n * 2);
-        sub.length = (int) n;
-        sub.data[n] = 0;
-        return sub;
-    }
-    return String();
+String::operator const unsigned short *() const {
+    return this->data;
 }
 
 uint16_t *String::getWCharFromUtf8(char *s, int len) {
@@ -542,30 +216,32 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
     return out;
 }
 
-unsigned int String::IndexOf(const String &needle) {
-    return this->IndexOf(0, needle);
+void String::ConvertFromUTF8() {
+    if (this->data == nullptr)
+        return;
+
+    char *bytes = GetAEChar();
+    uint16_t *wide = String::getWCharFromUtf8(GetAEChar(), this->length);
+    Set(wide);
+    delete[] bytes;
+    delete[] wide;
 }
 
-unsigned int String::IndexOf(unsigned int start, const String &needle) {
-    const unsigned short *nd = needle.data;
-    unsigned int nlen = (unsigned int) needle.length;
-    unsigned int slen = (unsigned int) this->length;
-    while (start < slen) {
-        if (nlen > slen - start)
-            return 0xffffffff;
-        if (nd[0] != this->data[start]) {
-            start++;
-            continue;
-        }
-        unsigned int k = 0;
-        while (nd[k] == this->data[start + k]) {
-            if (k + 1 >= nlen)
-                return start;
-            k++;
-        }
-        start += k;
+char *String::GetAEChar() const {
+    if (this->length == 0) {
+        char *empty = new char[1];
+        empty[0] = 0;
+        return empty;
     }
-    return 0xffffffff;
+    unsigned int n = this->length + 1;
+    char *out = new char[n];
+    for (unsigned int i = 0; i < n; i++)
+        out[i] = (char) this->data[i];
+    return out;
+}
+
+const unsigned short *String::GetAEWChar() const {
+    return this->data;
 }
 
 const unsigned short *String::operator[](int i) const {
@@ -574,40 +250,17 @@ const unsigned short *String::operator[](int i) const {
     return this->data + i;
 }
 
-const unsigned short *String::GetAEWChar() const {
-    return this->data;
+String &String::operator=(const String &other) {
+    if (other.data != nullptr)
+        this->Set(other.data);
+    return *this;
 }
 
-String::operator unsigned short *() {
-    return this->data;
-}
-
-String::operator const unsigned short *() const {
-    return this->data;
-}
-
-void String::PrintOut() {
-    // The release build compiled the actual print out; only the temporary C string remains.
-    char *bytes = this->GetAEChar();
+int String::ValueOf() {
+    char *bytes = ((String *) (this))->GetAEChar();
+    int v = atoi(bytes);
     delete[] bytes;
-}
-
-String::String() : data(nullptr), length(0) {
-}
-
-String::String(const char *cstr, bool reverse) : data(nullptr) {
-    Set(cstr);
-    if (reverse) Reverse();
-}
-
-String::String(const uint16_t *wstr, bool reverse) : data(nullptr) {
-    Set((const unsigned short *) wstr);
-    if (reverse) Reverse();
-}
-
-String::String(const String &other, bool reverse) : data(nullptr) {
-    Set(other.data);
-    if (reverse) Reverse();
+    return v;
 }
 
 String &String::operator+=(const String &other) {
@@ -639,6 +292,17 @@ String &String::operator+=(const char &c) {
     return *this;
 }
 
+String &String::operator+=(const long long &v) {
+    String tmp(v);
+    if (tmp.length != 0) {
+        int oldLength = this->length;
+        this->length = oldLength + tmp.length;
+        this->data = (unsigned short *) realloc(this->data, this->length * 2 + 2);
+        memcpy(this->data + oldLength, tmp.data, tmp.length * 2);
+    }
+    return *this;
+}
+
 String &String::operator+=(const int &v) {
     long long wide = v;
     return *this += wide;
@@ -655,63 +319,62 @@ String &String::operator+=(const float &v) {
     return *this;
 }
 
-String &String::operator+=(const long long &v) {
-    String tmp(v);
-    if (tmp.length != 0) {
-        int oldLength = this->length;
-        this->length = oldLength + tmp.length;
-        this->data = (unsigned short *) realloc(this->data, this->length * 2 + 2);
-        memcpy(this->data + oldLength, tmp.data, tmp.length * 2);
+int String::StrLen(const char *s) {
+    const char *p = s;
+    while (*p++ != '\0') {
     }
-    return *this;
+    return (int) (p - s) - 1;
 }
 
-unsigned short AbyssEngine::String::termChar;
-
-namespace AbyssEngine {
-    String operator+(const String &a, const String &b) {
-        String result(a);
-        result += b;
-        return String(result);
+int String::StrLen(const unsigned short *s) {
+    if (s == 0)
+        return 0;
+    const unsigned short *p = s;
+    while (*p++ != 0) {
     }
+    return (int) (p - s) - 1;
 }
 
-namespace AbyssEngine {
-    String operator+(const String &a, const long long &b) {
-        String result(a);
-        result += String(b);
-        return String(result);
+void String::Set(long long v) {
+    if (this->data) delete[] this->data;
+    this->data = nullptr;
+    if (v == 0) {
+        Set("");
+        return;
     }
-}
-
-namespace AbyssEngine {
-    String operator+(const float &a, const String &b) {
-        String result(a);
-        result += b;
-        return String(result);
+    unsigned short *out = new unsigned short[20];
+    this->data = out;
+    this->length = 0;
+    unsigned long long magnitude;
+    if (v < 0) {
+        *out++ = '-';
+        this->length = 1;
+        magnitude = (unsigned long long) -v;
+    } else {
+        magnitude = (unsigned int) v; // binary: non-negative values keep only the low word
     }
-}
-
-namespace AbyssEngine {
-    String operator+(const String &a, const int &b) {
-        String result(a);
-        result += String(b);
-        return String(result);
-    }
-}
-
-namespace AbyssEngine {
-    String operator+(const String &a) {
-        return String(a);
-    }
-}
-
-namespace AbyssEngine {
-    String operator+(const int &a, const String &b) {
-        String result(a);
-        result += b;
-        return String(result);
-    }
+    int count = 0;
+    unsigned long long previous;
+    do {
+        unsigned int digit = (unsigned int) (magnitude % 10);
+        unsigned char c = (unsigned char) (digit | '0');
+        if (digit > 9)
+            c = (unsigned char) (digit + 'a' - 10);
+        out[count++] = c;
+        this->length++;
+        previous = magnitude;
+        magnitude /= 10;
+    } while (previous > 9);
+    out[count] = 0;
+    unsigned short *lo = out;
+    unsigned short *hi = out + count - 1;
+    do {
+        unsigned short t = *hi;
+        *hi = *lo;
+        *lo = t;
+        lo++;
+        hi--;
+    } while (lo < hi);
 }
 
 namespace AbyssEngine {
@@ -719,29 +382,6 @@ namespace AbyssEngine {
         float ip = (float) (int) value;
         *intPart = ip;
         return value - ip;
-    }
-}
-
-namespace AbyssEngine {
-    String operator+(const long long &a, const String &b) {
-        String result(a);
-        result += b;
-        return String(result);
-    }
-}
-
-namespace AbyssEngine {
-    bool operator==(const String &a, const String &b) {
-        String copy(a);
-        return copy.Compare(b) == 0;
-    }
-}
-
-namespace AbyssEngine {
-    String operator+(const String &a, const float &b) {
-        String result(a);
-        result += String(b);
-        return String(result);
     }
 }
 
@@ -834,5 +474,363 @@ namespace AbyssEngine {
         }
         *limit = 0;
         return buf;
+    }
+}
+
+void String::Set(float v) {
+    int exponent;
+    int negative;
+    unsigned short *digits = computeFloatString(v, 10, &exponent, &negative, 1);
+    String result;
+    if (exponent <= 0) {
+        result.Set("0.");
+        for (int i = 0; i > exponent; i--)
+            result += String("0");
+    }
+    result += String(digits, false);
+    if (exponent >= 1)
+        result = result.SubString(0, exponent) + String(".") + result.SubString(exponent, result.length);
+    if (negative != 0)
+        result = String("-") + result;
+    delete[] digits;
+    Set(result.data);
+}
+
+String String::SubString(unsigned int start, unsigned int end) {
+    String sub;
+    if (start < end) {
+        unsigned int n = end - start;
+        if (sub.data) delete[] sub.data;
+        sub.data = nullptr;
+        sub.data = new unsigned short[n + 1];
+        memcpy(sub.data, this->data + start, n * 2);
+        sub.length = (int) n;
+        sub.data[n] = 0;
+        return sub;
+    }
+    return String();
+}
+
+signed char String::Compare(const String &other) {
+    signed char result;
+    if (other.length == this->length) {
+        const unsigned short *a = this->data;
+        const unsigned short *b = other.data;
+        bool reachedEnd = false;
+        unsigned short ca, cb;
+        while (true) {
+            ca = *a;
+            cb = *b;
+            if (ca == 0) {
+                reachedEnd = true;
+                break;
+            }
+            if (cb != ca)
+                break;
+            b++;
+            a++;
+        }
+        if (cb == 0)
+            result = ca != 0;
+        else if (reachedEnd)
+            result = -1;
+        else
+            result = (signed char) (ca - cb);
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+unsigned int String::Compare(const char *s) {
+    if (this->length == 0)
+        return 1;
+    const unsigned short *a = this->data;
+    bool reachedEnd = false;
+    int i = 0;
+    for (;;) {
+        if (a[i] == 0) {
+            reachedEnd = true;
+            break;
+        }
+        if (s[i] == 0 || (unsigned char) s[i] != a[i])
+            break;
+        i++;
+    }
+    if (s[i] == 0)
+        return a[i] != 0;
+    int d = a[i] - (unsigned char) s[i];
+    if (reachedEnd)
+        d = -1;
+    // When reachedEnd is set, d is -1; keep the sign extension after the select.
+    __builtin_assume(!reachedEnd || d == -1); // lint: arm_builtin
+    return (signed char) d;
+}
+
+unsigned int String::IndexOf(unsigned int start, const String &needle) {
+    const unsigned short *nd = needle.data;
+    unsigned int nlen = (unsigned int) needle.length;
+    unsigned int slen = (unsigned int) this->length;
+    while (start < slen) {
+        if (nlen > slen - start)
+            return 0xffffffff;
+        if (nd[0] != this->data[start]) {
+            start++;
+            continue;
+        }
+        unsigned int k = 0;
+        while (nd[k] == this->data[start + k]) {
+            if (k + 1 >= nlen)
+                return start;
+            k++;
+        }
+        start += k;
+    }
+    return 0xffffffff;
+}
+
+unsigned int String::IndexOf(const String &needle) {
+    return this->IndexOf(0, needle);
+}
+
+String *String::ReplaceChar(char from, char to) {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++)
+        if (this->data[i] == (unsigned char) from)
+            this->data[i] = (unsigned char) to;
+    return this;
+}
+
+String *String::ToUpperCase() {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
+        unsigned short c = this->data[i];
+        if ((unsigned short) (c - 'a') < 26 || (unsigned short) (c - 0xe0) < 31) {
+            this->data[i] = (unsigned short) (c - 0x20);
+        } else {
+            switch (c) {
+                case 0x81: this->data[i] = 0x9a;
+                    break;
+                case 0x82: this->data[i] = 0x90;
+                    break;
+                case 0x84: this->data[i] = 0x8e;
+                    break;
+                case 0x86: this->data[i] = 0x8f;
+                    break;
+                case 0x91: this->data[i] = 0x92;
+                    break;
+                case 0x94: this->data[i] = 0x99;
+                    break;
+                case 0xa4: this->data[i] = 0xa5;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    return this;
+}
+
+String *String::ToLowerCase() {
+    if (this->data == nullptr)
+        return this;
+    for (unsigned int i = 0; i < (unsigned int) this->length; i++) {
+        unsigned short c = this->data[i];
+        if ((unsigned short) (c - 'A') < 26 || (unsigned short) (c - 0xc0) < 31) {
+            this->data[i] = (unsigned short) (c + 0x20);
+        } else {
+            switch (c) {
+                case 0x9a: this->data[i] = 0x81;
+                    break;
+                case 0x90: this->data[i] = 0x82;
+                    break;
+                case 0x8e: this->data[i] = 0x84;
+                    break;
+                case 0x8f: this->data[i] = 0x86;
+                    break;
+                case 0x92: this->data[i] = 0x91;
+                    break;
+                case 0x99: this->data[i] = 0x94;
+                    break;
+                case 0xa5: this->data[i] = 0xa4;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }    return this;
+}
+
+String *String::Trim() {
+    if (this->data != nullptr && this->length != 0) {
+        unsigned int start = 0;
+        while (start < (unsigned int) this->length &&
+               (this->data[start] == ' ' || this->data[start] == '\t'))
+            start++;
+        unsigned int end = (unsigned int) this->length;
+        while (this->data[end - 1] == '\t' || this->data[end - 1] == ' ')
+            end--;
+        String trimmed = SubString(start, end);
+        Set(trimmed.data);
+    }
+    return this;
+}
+
+void *String::Split(String sep) { // lint: void_ptr exported String method return type, signature must not change
+    // lint: void_ptr exported String method return type, signature must not change
+    if (this->data != nullptr && this->length != 0 && sep.length != 0) {
+        Array<String *> *arr = new Array<String *>();
+
+        unsigned int pos = 0;
+        unsigned int idx;
+        while ((idx = IndexOf(pos, sep)) != 0xffffffff) {
+            if (pos < idx)
+                ArrayAdd(new String(SubString(pos, idx)), *arr);
+            pos = (unsigned int) sep.length + idx;
+        }
+        if (pos != 0 && pos < (unsigned int) this->length)
+            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
+
+        if (arr->size() != 0)
+            return arr;
+
+        ArrayRemoveAll(*arr);
+        delete arr;
+    }
+    return 0;
+}
+
+Array<String *> *String::SplitTags(String tag) {
+    if (this->data != nullptr && this->length != 0 && tag.length != 0) {
+        tag = String("<") + tag + String(":");
+        Array<String *> *arr = new Array<String *>();
+
+        unsigned int endPos = 0;
+        unsigned int pos = 0;
+        unsigned int idx;
+        while ((idx = IndexOf(pos, tag)) != 0xffffffff) {
+            if (pos <= idx) {
+                ArrayAdd(new String(SubString(pos, idx)), *arr);
+                endPos = IndexOf(tag.length + idx, String(">"));
+                if (endPos == 0xffffffff)
+                    return arr;
+                ArrayAdd(new String(SubString(tag.length + idx, endPos)), *arr);
+            }
+            pos = endPos + 1;
+        }
+        if (pos != 0 && pos < (unsigned int) this->length)
+            ArrayAdd(new String(SubString(pos, (unsigned int) this->length)), *arr);
+
+        if (arr->size() != 0)
+            return arr;
+
+        ArrayRemoveAll(*arr);
+        delete arr;
+    }
+    return nullptr;
+}
+
+void String::ReplaceString(String find, String repl) {
+    if (this->data == nullptr || this->length == 0 || find.length == 0)
+        return;
+
+    String acc;
+    unsigned int pos = 0;
+    int idx;
+    while ((idx = (int) ((String *) (this))->IndexOf(pos, find)) != -1) {
+        acc += this->SubString(pos, (unsigned int) idx) + repl;
+        pos = (unsigned int) find.length + idx;
+    }
+
+    if (pos != 0 && pos < (unsigned int) this->length)
+        acc += this->SubString(pos, (unsigned int) this->length);
+
+    if (acc.length != 0)
+        this->Set(acc.data);
+}
+
+int String::GetStringLength(const char *s) {
+    const char *p = s;
+    while (*p++ != '\0') {
+    }
+    return (int) (p - s) - 1;
+}
+
+void String::PrintOut() {
+    // The release build compiled the actual print out; only the temporary C string remains.
+    char *bytes = this->GetAEChar();
+    delete[] bytes;
+}
+
+unsigned short AbyssEngine::String::termChar;
+
+namespace AbyssEngine {
+    String operator+(const String &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a) {
+        return String(a);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const long long &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const long long &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const int &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const int &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const String &a, const float &b) {
+        String result(a);
+        result += String(b);
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    String operator+(const float &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
+namespace AbyssEngine {
+    bool operator==(const String &a, const String &b) {
+        String copy(a);
+        return copy.Compare(b) == 0;
     }
 }
