@@ -4598,3 +4598,10 @@ original build flags.
 - **dynsym link order round 2** (`w3452`): shared libs before crypto, libm before libc++abi.
   `.dynsym` differing bytes 24,461 -> 1,791; `.rel.dyn` 2,741 -> 70; `.plt` now **exact**.
 - **`.data` is down to 3 differing bytes**; `.data.rel.ro` 667; `.bss` 288 (relocation-driven).
+- **libc++abi/libzip TU alignment** (`w3460`, byte 4265 -> **4408**): the `.data`/`.data.rel.ro`
+  "libc++abi pointer" delta was really the **libzip archive members being laid out with 2-byte
+  TU starts instead of 4**. Fixing that (archive empty-`.text` markers `align=4`) and dropping
+  the 0x24-byte `levelTextAnchor()` in `AbyssEngine.cpp` makes `.data` **byte-identical** and
+  `.data.rel.ro` 667 -> 21 bytes. Cost: `.ARM.exidx` +8 B (3567 vs 3566 entries) and
+  `.ARM.extab` -0xc — an open, separate campaign. Note:
+  `_work/reconstructions/libcxxabi_text_placement_w3460.md`.
