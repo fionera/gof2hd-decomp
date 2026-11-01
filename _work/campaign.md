@@ -4417,3 +4417,5 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   fixed. `.text` 0x1337c8 @0x69440 and `.ARM.exidx` base 0x19cc08 now match the original exactly;
   `.ARM.exidx` size is +0x10 (orig 0x6f70, ours 0x6f80), `.ARM.extab` -0x1c, `.rodata` +0x30,
   `.bss` +0x1c. 86.4% of functions are now byte-exact.
+- **bss pass 1: `.bss` now EXACT 0x69ac** (`w3377`), byte-neutral. Remaining section deltas:
+  `.ARM.exidx` +0x10, `.ARM.extab` -0x1c, `.rodata` size +0x30 (base exact).
