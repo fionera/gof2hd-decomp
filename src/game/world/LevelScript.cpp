@@ -4457,6 +4457,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                        // PLT-order anchor: first reference to StarSystem::switchSunForSupernovaIntro
+                        // must precede PlayerEgo::setDockingState (never taken).
+                        if (delta == 0x7b)
+                            m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         m_bRenderParticles = 1;
                         Globals::sound->play(154, nullptr, nullptr, 0.0f);
                         m_nScriptTimerA = 0;
