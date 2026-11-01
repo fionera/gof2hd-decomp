@@ -50,7 +50,9 @@ namespace AbyssEngine {
     // The original exports getAppVersion with size 0 at the same address as Engine::InitGL: an
     // Android stub whose body the compiler dropped entirely. The previous body here was a copy of
     // Engine::InitGL (GLES1Compat.cpp) routed through invented AE_getInitGL* shims.
-    void getAppVersion() {
+    // [[gnu::noreturn]] makes clang -Oz emit a zero-size section (a plain empty body is 2 bytes),
+    // which is what puts the symbol at InitGL's address and keeps the following .text in place.
+    [[gnu::noreturn]] void getAppVersion() {
     }
 }
 
