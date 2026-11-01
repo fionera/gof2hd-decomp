@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4263, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4264, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -33,7 +33,11 @@ moved `g_levelXPTable`/`Status::checkForLevelUp` ahead of `kMissionCase`, making
 `0x1fc330..0x1fc390` byte-identical and `Status::checkForLevelUp` byte-exact (byte 4249 -> 4250;
 linked 4496 unchanged). The w3451 data-content pass then forced the original `.data` emission
 order for `gStoryFaces`/`gPirateFace` with a function-level `(void) gStoryFaces;` (byte 4254 ->
-4255), dropping `.data` differing bytes 260 -> 3 and `.data.rel.ro` 744 -> 670. The first
+4255), dropping `.data` differing bytes 260 -> 3 and `.data.rel.ro` 744 -> 670. The w3457
+`.data.rel.ro` content audit found the remaining 667 bytes are all `R_ARM_RELATIVE` address
+mirrors (646 B libc++abi `.text` vtables, 18 B `Level::createScene` `.rodata` table, 3 B `.bss`
+pointers); its libzip pass aligned `zip_file_strerror` to 4 bytes (byte 4263 -> 4264, all section
+sizes/bases unchanged). The first
 `.rodata` *content* divergence is now at 0x1fc390 (VMA); 13,266 bytes still differ. See
 `_work/reconstructions/data_content_round2_w3451.md`,
 `_work/reconstructions/rodata_content_map_round2.md`,
