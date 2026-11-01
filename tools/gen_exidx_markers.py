@@ -10,12 +10,13 @@ ordering index and only 6 sentinels survive.
 This script makes renamed copies of every link input:
 
   * each gof2 object (read from the gold response file produced by gen_link_order.py) is
-    copied, and a zero-size `.text` is renamed to `.text.tuend.o<NNN>`.  The marker is
-    normally forced to `sh_addralign=1` so it adds no padding between 2-aligned Thumb
-    functions; KIPlayer.cpp and Explosion.cpp are the exception (align 4) because their
-    successor TU (ListItem.cpp / Status.cpp) starts on a 4-byte boundary in the original
-    binary.  Aligning those two markers reproduces that boundary without touching `.text`
-    size or `.rodata`;
+    copied, and a zero-size `.text` is renamed to `.text.tuend.o<NNN>` with
+    `sh_addralign=4`.  The original's per-TU `.text` starts are 4-byte aligned (270 of the
+    271 witnessed `CANTUNWIND`-following functions; see
+    _work/reconstructions/section_order_derivation.md), but a clang function section is only
+    2-byte aligned, so without this the first function of a TU lands 2 bytes early whenever
+    the previous TU ends at 2 mod 4.  gold honours a zero-size section's alignment, so the
+    marker is what reproduces the original address;
   * each archive is unpacked and re-packed, with every member's zero-size `.text` renamed to
     `.text.tuend.a<AA>m<MMM>` with alignment 1.
 
@@ -136,13 +137,10 @@ def main() -> int:
     copies, markers = [], 0
     for i, obj in enumerate(objs):
         dst = os.path.join(objdir, f"o{i:03d}_{os.path.basename(obj)}")
-        # TUs followed by a TU whose first function is 4-aligned in the original
-        # (KIPlayer/Explosion/ApplicationManager/PlayerStation/ResourceMaterial/Wanted):
-        # align the boundary marker to 4 to match.
-        align = 4 if os.path.basename(obj) in (
-            "KIPlayer.cpp.obj", "Explosion.cpp.obj", "ApplicationManager.cpp.obj",
-            "PlayerStation.cpp.obj", "ResourceMaterial.cpp.obj", "Wanted.cpp.obj",
-            "Matrix.cpp.obj") else 1
+        # The original's TU starts are 4-byte aligned (270/271 exidx witnesses).  A
+        # zero-size marker's sh_addralign moves the next section, so this reproduces the
+        # original address of the next TU's first function.
+        align = 4
         if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align,
                              drop=os.path.basename(obj) in DROP_EMPTY_TEXT):
             markers += 1
