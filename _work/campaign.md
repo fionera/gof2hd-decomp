@@ -4323,3 +4323,10 @@ mtw anchor for any size change before MenuTouchWindow.
   moves to `GameText::getRegionCode`, so this is neutral until the anchor is deleted).
 - **`gof2hd2012.c` TU split** (`w3315`): the GOF2HD2012 JNI block is split out of `main.c`
   into its own TU (the second half of the JNI dynsym move). Gate unchanged at 1824.
+- **Engine.cpp source order: byte_exact 1824 -> 1882 (+58)** (`w3322`): Engine.cpp is reordered to
+  the original TU's address order, which fixes the PaintCanvas::Resume/Suspend, ShaderUpdate,
+  MatrixGetGLE and glColorMask/glDepthFunc/glGetString block at PLT ~614. The 16-byte
+  `arabicFormOffset` anchor is replaced by an equivalent `engineTextAnchor` at the end of
+  Engine.cpp and `kArabicForms[r]` indexing is restored.
+- **GameText_iPhone TU split** (`w3321`): the iPhone-only half of GameText is now its own TU
+  (`GameTextiPhone.cpp`), matching the original source dump.

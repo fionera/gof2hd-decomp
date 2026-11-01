@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1824,
+  "byte_exact": 1882,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -1138,7 +1138,7 @@
   {
    "name": "_Z14ArrayRemoveAllIPN11AbyssEngine16AESoundInterfaceEEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 34,
    "usize": 34
@@ -1474,7 +1474,7 @@
   {
    "name": "_Z14ArraySetLengthIPN11AbyssEngine16AESoundInterfaceEEvjR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -2370,7 +2370,7 @@
   {
    "name": "_Z8ArrayAddIPN11AbyssEngine16ShaderBaseStructEEvT_R5ArrayIS3_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -4514,7 +4514,7 @@
   {
    "name": "_ZN11AbyssEngine10QuaternionC1ENS_6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 14,
    "usize": 14
@@ -4530,7 +4530,7 @@
   {
    "name": "_ZN11AbyssEngine10QuaternionC1ERKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 14,
    "usize": 14
@@ -4554,7 +4554,7 @@
   {
    "name": "_ZN11AbyssEngine10QuaternionC2ENS_6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 14,
    "usize": 14
@@ -4570,7 +4570,7 @@
   {
    "name": "_ZN11AbyssEngine10QuaternionC2ERKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 14,
    "usize": 14
@@ -6730,7 +6730,7 @@
   {
    "name": "_ZN11AbyssEngine12FBOContainerC1EPNS_6EngineENS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 78,
    "usize": 78
@@ -6738,7 +6738,7 @@
   {
    "name": "_ZN11AbyssEngine12FBOContainerC2EPNS_6EngineENS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 78,
    "usize": 78
@@ -6746,7 +6746,7 @@
   {
    "name": "_ZN11AbyssEngine12FBOContainerD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 38,
    "usize": 38
@@ -6754,7 +6754,7 @@
   {
    "name": "_ZN11AbyssEngine12FBOContainerD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 38,
    "usize": 38
@@ -7690,7 +7690,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource13playMusicLoopEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -7714,7 +7714,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource17freeAllRessourcesEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -7746,7 +7746,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource4playEif",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -7754,7 +7754,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource4stopEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -7770,7 +7770,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource5pauseEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -7786,7 +7786,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource6resumeEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -7810,7 +7810,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource7releaseEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -7818,7 +7818,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource8SetSoundEPKNS_11AESoundInfoEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -7826,7 +7826,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource8playLoopEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -7834,7 +7834,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource9isPlayingEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -7842,7 +7842,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource9playMusicEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -7858,7 +7858,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessource9setVolumeEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -7866,7 +7866,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessourceC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -7874,7 +7874,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessourceC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -7882,7 +7882,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessourceD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 98,
    "usize": 98
@@ -7890,7 +7890,7 @@
   {
    "name": "_ZN11AbyssEngine16AESoundRessourceD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 98,
    "usize": 98
@@ -8066,7 +8066,7 @@
   {
    "name": "_ZN11AbyssEngine16esMatrixMultiplyEPNS_8ESMatrixES1_S1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -9746,7 +9746,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath14MatrixIdentityERNS0_6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -9754,7 +9754,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath14MatrixMultiplyERKNS0_6MatrixES3_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 10,
    "usize": 10
@@ -9762,7 +9762,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath15MatrixGetLookAtERKNS0_6VectorES3_S3_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -9778,7 +9778,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath16MatrixGetInverseERKNS0_6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 158,
    "usize": 158
@@ -9786,7 +9786,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath16MatrixSetScalingERNS0_6MatrixEfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -9802,7 +9802,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixERKNS0_6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -9810,7 +9810,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixERKNS0_6VectorES5_S5_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 66,
    "usize": 66
@@ -9818,7 +9818,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixEfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -9826,7 +9826,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath17MatrixSetRotationERNS0_6MatrixEfffNS0_13RotationOrderE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 724,
    "usize": 724
@@ -9842,7 +9842,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath20MatrixSetTranslationERNS0_6MatrixERKNS0_6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -9850,7 +9850,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath20MatrixSetTranslationERNS0_6MatrixEfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -9962,7 +9962,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath6MatrixaSERKS1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 58,
    "usize": 58
@@ -9978,7 +9978,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMath6MatrixmLERKS1_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 350,
    "usize": 350
@@ -10186,7 +10186,7 @@
   {
    "name": "_ZN11AbyssEngine6AEMathmlERKNS0_6MatrixES3_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 384,
    "usize": 384
@@ -10298,7 +10298,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine10ShaderInitEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 884,
    "usize": 884
@@ -10402,7 +10402,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine12ShaderUpdateEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 34,
    "usize": 34
@@ -10410,7 +10410,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine13AEClientStateEjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 258,
    "usize": 258
@@ -10482,7 +10482,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14GlowEnableGlowEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 42,
    "usize": 42
@@ -10490,7 +10490,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetEyePositionEfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -10498,7 +10498,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetModelMatrixERKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 408,
    "usize": 408
@@ -10506,7 +10506,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetOrthoMatrixEPfS1_b",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -10514,7 +10514,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14SetPerspMatrixEPf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 112,
    "usize": 112
@@ -10538,7 +10538,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine14ShaderRegisterEPNS_16ShaderBaseStructE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -10682,7 +10682,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine20IsExtensionSupportedEPKc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 110,
    "usize": 110
@@ -10706,7 +10706,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine21LightSetLightPositionEfffj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -10730,7 +10730,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine22LightSetLightDirectionEfffj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -10866,7 +10866,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine6ResumeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -10890,7 +10890,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine7SuspendEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -22626,7 +22626,7 @@
   {
    "name": "_ZN5ArrayIPN11AbyssEngine16AESoundInterfaceEEC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -22634,7 +22634,7 @@
   {
    "name": "_ZN5ArrayIPN11AbyssEngine16AESoundInterfaceEED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
