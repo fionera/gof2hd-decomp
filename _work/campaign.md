@@ -4284,3 +4284,5 @@ mtw anchor for any size change before MenuTouchWindow.
   `GameText::setSubstituteArray` was the `levelTextAnchor` pad landing inside the GameText TU;
   it now lives in ConfigReader.cpp where it does not disturb the gap. `.text` 0x1337b0,
   `.rodata` 0x1c9e10 unchanged.
+- **`.bss` 27,096 -> 27,080 (+44 -> +28)** (`w3275`): the Android globals move back to their
+  original TU (`NdkHooks.cpp` / `main.c`), not `VirtualInput.cpp`. Gate unchanged.
