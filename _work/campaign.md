@@ -4578,3 +4578,10 @@ original build flags.
 - **No change** (plateau confirmed): `RocketGun::update` (`w3413`, 86.9% — greedy-allocator
   colouring), `ModStation` ctor (`w3414`, 98.6% — post-RA scheduler artifact),
   `PlayerEgo::calcCollision` (`w3435`, 87.3% — the `i==0` guard perturbs loop rotation).
+- **`-fdata-sections` verdict** (`w3439`): the original was built **without** it. Proof: the
+  original's `.rodata` packs plain RTTI strings contiguously before a 16-aligned group, which is
+  clang's single-shared-`.rodata` emission; `-fdata-sections` splits them into per-symbol
+  sections and gold's orphan placement reorders them. Note:
+  `_work/reconstructions/fdata_sections_w3439.md`.
+- **`-mllvm` audit** (`w3426`): 123 global `-mllvm` variants measured, 0 improvements; the tree
+  has no `-mllvm` flags left. The original app TUs are LLVM 7.0.2 default codegen.
