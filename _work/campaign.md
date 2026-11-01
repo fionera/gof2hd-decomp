@@ -4477,3 +4477,6 @@ original build flags.
   Deleting `*` and listing the 134 unlisted `.text*` sections explicitly moves the first
   `.rodata` divergence from 0x1d760 to 0x301eb (VMA 0x1e7570 -> 0x1f2ffb) and leaves a 16-byte
   size delta to chase. See `_work/reconstructions/rodata_group_order.md`.
+- **Shader string mojibake fixed** (byte-neutral, 4115): `VertexColorAlphaTextureShader.cpp`
+  had `benÃ¶tigt` (UTF-8 C3 83 C2 B6) where the original has `benötigt` (C3 B6). The extra 0x83
+  byte was the first difference at `.rodata`+0x301eb in the no-`*` ordering experiment.

@@ -14,7 +14,7 @@ static const char kVertexColorAlphaTextureShaderFragmentSource[] =
     "//uniform lowp vec4  u_DiffuseColor;\n"
     "//uniform lowp vec4  u_SpecularColor;\n"
     "uniform highp vec4  glColor;\t\n"
-    "void main(){\tlowp vec4 colorTex   = texture2D( s_texture, v_texCoord );\tif ( colorTex.a < 0.5)\t\tdiscard;\tgl_FragColor = colorTex * v_color; // * glColor;  (Color scheint nicht benÃ¶tigt zu werden)\n"
+    "void main(){\tlowp vec4 colorTex   = texture2D( s_texture, v_texCoord );\tif ( colorTex.a < 0.5)\t\tdiscard;\tgl_FragColor = colorTex * v_color; // * glColor;  (Color scheint nicht benötigt zu werden)\n"
     "}";
 
 namespace AbyssEngine {
