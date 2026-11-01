@@ -4339,3 +4339,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **Shader TU source order: byte_exact 1909 -> 1919 (+10)** (`w3324`): the shader TUs are reordered
   so the glCreateShader/glShaderSource/glCompileShader/glGetShaderiv/glGetShaderInfoLog/
   glDeleteShader block lands in the original PLT order.
+- **RecordHandler/zip/NdkAutosave reorder** (`w3325`): RecordHandler.cpp is reordered to the
+  original .text order, the zip calls move into NdkHooks.cpp, `ndk_autosave` gets its own TU and
+  `GetCurrentTimeMillis` is signed. Gate unchanged at 1919.
