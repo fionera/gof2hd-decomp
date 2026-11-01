@@ -40,7 +40,6 @@ import sys
 DROP_EMPTY_TEXT = {
     "BackButton.c.obj",
     "main.c.obj",
-    "GOF2HD2012.c.obj",
 }
 
 # libcrypto's three plain-.text objects are each one section.  Give them unique names so
