@@ -4486,3 +4486,8 @@ original build flags.
   `kBlueprintSpacePoints` gap. Padding anchors make the function byte-exact but re-break the
   exact `.rodata` size and lose 4 other functions (4115 -> 4111), so the real fix is to
   reconstruct those missing blocks at their original position, not to pad.
+- **`createCampaignMission` compare encoding analysed** (`w3393`, redundant with master):
+  `kBlueprintSpacePoints` is 5 entries (master already has it). The remaining two compare
+  differences (`cmp #4; bhi` vs original `cmp #5; bcs`) are clang-7 DAGCombine's
+  `SETUGE 5 -> SETUGT 4` canonicalization, not a source-shape difference; ~20 source variants
+  produce identical IR. The 45 literal words are `.rodata` PIC deltas.
