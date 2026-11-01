@@ -311,6 +311,7 @@ void AEGeometry::setLodChildTransform(uint32_t param) {
         }
     }
 }
+
 void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, int *dists, int count) {
     this->lodMeshes = new uint16_t[count];
     this->lodDistancesSq = new unsigned long long[count];
@@ -411,4 +412,3 @@ void AEGeometry::DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b) {
     this->mergerIndex = (uint32_t) a;
     this->merger = b;
 }
-

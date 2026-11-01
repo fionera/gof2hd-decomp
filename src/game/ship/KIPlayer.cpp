@@ -1,5 +1,4 @@
 #include "game/ship/KIPlayer.h"
-#include "engine/core/ArrayReleaseClasses.h"
 #include "game/core/Globals.h"
 #include "engine/core/AERandom.h"
 #include "game/mission/Item.h"
@@ -13,6 +12,7 @@
 #include "game/core/String.h"
 #include "engine/render/AEGeometry.h"
 #include "game/ship/Ship.h"
+#include "engine/core/ArrayReleaseClasses.h"
 
 using AbyssEngine::Matrix;
 
@@ -238,6 +238,7 @@ uint8_t KIPlayer::isJumper() {
 void KIPlayer::setInitialRotation(Vector rotation) {
     (void) rotation;
 }
+
 void KIPlayer::reset() {
     if (this->player != 0)
         this->player->reset();
@@ -531,4 +532,3 @@ void KIPlayer::setPosition(float x, float y, float z) {
     v.z = z;
     this->setPosition(v);
 }
-

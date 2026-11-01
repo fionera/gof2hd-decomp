@@ -47,6 +47,7 @@ CutScene::CutScene(int mode) {
     this->geom34 = nullptr;
     this->rotationSpeed = 0.00005f;
 }
+
 CutScene::~CutScene() {
     delete this->rootGeom;
     this->rootGeom = nullptr;
@@ -74,6 +75,7 @@ CutScene::~CutScene() {
     }
     this->geometries = nullptr;
 }
+
 void CutScene::resetCamera() {
     if (this->mode == 4) {
         if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1) {
@@ -92,6 +94,7 @@ void CutScene::resetCamera() {
         (*this->level->getEnemies())[0]->getType();
     }
 }
+
 void CutScene::initialize() {
     if (this->level == nullptr)
         this->level = new Level(this->mode);
@@ -175,6 +178,7 @@ void CutScene::initialize() {
     this->initialized = 1;
     this->lastTime = this->currentTime;
 }
+
 void CutScene::checkForTurret() {
     if (this->turretGeom != nullptr)
         Globals::Canvas->TransformRemoveChild((*this->level->getEnemies())[0]->geometry->transform,
@@ -316,9 +320,11 @@ void CutScene::checkForTurret() {
 uint8_t CutScene::isInitialized() {
     return this->initialized;
 }
+
 void CutScene::update(int delta) {
     this->process(delta);
 }
+
 void CutScene::process(int /*delta*/) {
     if (!this->initialized)
         return;
@@ -467,12 +473,14 @@ void CutScene::process(int /*delta*/) {
         }
     }
 }
+
 void CutScene::update() {
     // The original forwards an uninitialised delta here (process() ignores it): the
     // tail call leaves r1 untouched.
     int delta;
     this->process(delta);
 }
+
 void CutScene::replacePlayerShip(int shipIndex, int race) {
     if (this->level->getEnemies() == nullptr)
         return;
@@ -494,12 +502,15 @@ void CutScene::replacePlayerShip(int shipIndex, int race) {
 
     this->checkForTurret();
 }
+
 void CutScene::render2D() {
     this->level->render2D();
 }
+
 void CutScene::renderBG() {
     this->level->renderBG((int) this->frameDelta);
 }
+
 void CutScene::render3D() {
     if (this->level != nullptr) {
         uint32_t t = (uint32_t) Globals::appManager->GetElapsedTimeMillis();
@@ -517,3 +528,4 @@ void CutScene::render3D() {
             (*this->geometries)[i]->render();
     }
 }
+

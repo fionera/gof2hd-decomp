@@ -38,8 +38,6 @@
 
 template void ArrayReleaseClasses<AbstractGun*>(Array<AbstractGun*> &);
 
-template void ArrayReleaseClasses<Agent*>(Array<Agent*> &);
-
 template void ArrayReleaseClasses<BoundingVolume*>(Array<BoundingVolume*> &);
 
 template void ArrayReleaseClasses<ImagePart*>(Array<ImagePart*> &);
@@ -54,23 +52,11 @@ template void ArrayReleaseClasses<ParticleSystemMesh*>(Array<ParticleSystemMesh*
 
 template void ArrayReleaseClasses<ParticleSystemSprite*>(Array<ParticleSystemSprite*> &);
 
-template void ArrayReleaseClasses<RadioMessage*>(Array<RadioMessage*> &);
-
-template void ArrayReleaseClasses<RepairBeam*>(Array<RepairBeam*> &);
-
 template void ArrayReleaseClasses<Ship*>(Array<Ship*> &);
-
-template void ArrayReleaseClasses<SolarSystem*>(Array<SolarSystem*> &);
-
-template void ArrayReleaseClasses<SpacePoint*>(Array<SpacePoint*> &);
-
-template void ArrayReleaseClasses<Station*>(Array<Station*> &);
 
 template void ArrayReleaseClasses<TouchButton*>(Array<TouchButton*> &);
 
 template void ArrayReleaseClasses<TouchSlider*>(Array<TouchSlider*> &);
-
-template void ArrayReleaseClasses<Wanted*>(Array<Wanted*> &);
 
 template void ArrayReleaseClasses<Waypoint*>(Array<Waypoint*> &);
 
@@ -100,10 +86,6 @@ template void ArraySetLength<Array<ImagePart *> *>(unsigned int, Array<Array<Ima
 
 template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
 
-template void ArrayReleaseClasses<PendingProduct *>(Array<PendingProduct *> &);
-
-
-template void ArrayReleaseClasses<BluePrint *>(Array<BluePrint *> &);
 
 template void ArrayReleaseClasses<Array<ListItem *> *>(Array<Array<ListItem *> *> &);
 

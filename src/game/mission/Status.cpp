@@ -23,6 +23,8 @@
 
 static SolarSystem *asSystem(int32_t v) { return (SolarSystem *) (intptr_t) v; }
 
+
+
 Status::Status() {
     missions = new Array<Mission *>();
     stationStack = new Array<Station *>();
@@ -245,6 +247,7 @@ void Status::setStation(Station *s) {
     delete stationList;
 }
 
+
 void Status::departStation(Station *dest) {
     if (!inAlienOrbit() && station->getIndex() == 108 && field_114 == 3) {
         voidStation->setItems(station->getItems(), true);
@@ -441,6 +444,7 @@ void Status::setCurrentCampaignMission(int v) { currentCampaignMission = v; }
 
 // Campaign missions whose completion awards the medal flag at +0x17c.
 static const int kMedalCampaignMissions[3] = {93, 111, 143};
+
 void Status::nextCampaignMission(bool advance) {
     int mission = this->currentCampaignMission;
     this->currentCampaignMission = mission + 1;
@@ -1333,6 +1337,7 @@ struct DifficultyOptionView {
     uint8_t pad[0x2c];
     float difficulty;
 };
+
 bool Status::hardCoreMode() {
     return reinterpret_cast<DifficultyOptionView *>(Globals::options)->difficulty == 1.5f;
 }
@@ -1384,6 +1389,7 @@ static const unsigned char kMissionCase[190] = {
     169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166,
 };
+
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
     bool shortMission = notAtStation && extra > 2000;
@@ -1671,9 +1677,7 @@ void Status::removeMission(Mission *mission) {
     }
 }
 
-void Status::visitStation() { stationsVisited = stationsVisited + 1; }
-
-int Status::getPlanetNames() { return planetNames; }
+void Status::visitStation() { stationsVisited = stationsVisited + 1; }int Status::getPlanetNames() { return planetNames; }
 
 int Status::getPlanetTextures() { return planetTextures; }
 
@@ -1700,6 +1704,7 @@ void Status::incGoodsProduced(int delta) { goodsProduced = delta + goodsProduced
 void Status::setCredits(int v) { credits = v; }
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
+
 void Status::checkForLevelUp() {
     int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
               currentCampaignMission + stationsVisited;
@@ -1794,9 +1799,6 @@ void Status::setWingmen(Array<String *> *list) {
     }
 }
 
-String Status::replaceHash(String text, String replacement) {
-    return replaceHash(text, replacement, String("#"));
-}
 
 String Status::replaceHash(String text, String replacement, String hash) {
     int index = (int) text.IndexOf(hash);
@@ -1808,6 +1810,10 @@ String Status::replaceHash(String text, String replacement, String hash) {
         return String(replacement) + text.SubString(hash.length + index, text.length);
     }
     return text;
+}
+
+String Status::replaceHash(String text, String replacement) {
+    return replaceHash(text, replacement, String("#"));
 }
 
 bool Status::stringHasToken(String haystack, String needle) {
@@ -1898,6 +1904,7 @@ void Status::incCollectedBounties(int index) {
     }
 }
 
+
 int Status::isFreighterMissionStation(int station) {
     switch (station) {
         case 15:
@@ -1978,6 +1985,7 @@ int Status::wantedBoardAccessible() {
     }
     return 0;
 }
+
 
 int Status::activateNewWanted() {
     Array<Wanted *> *wanted = Globals::status->wanted;
