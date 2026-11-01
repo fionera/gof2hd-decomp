@@ -4726,3 +4726,17 @@ Wave-95 shortcut removal (gate-neutral, byte 4496 / linked 4496 throughout):
   same `.rodata` emission point (`w3574`).
 - `Globals.cpp` `#pragma pack(push,1)` removal is gate-neutral but needs a byte-array
   restructuring; note only (`w3573`).
+
+Wave-95/94 confirmed plateaus (worktrees removed, no commit):
+- `Level::createMission` (`w3528`): content is right (multiset diff ~15 instructions); the gap is
+  `-Oz` MachineBlockPlacement block permutation. The faithful 96/127 split and the un-cached
+  `getCampaignMission` both perturb MBP and lose more LCS than they gain.
+- `HangarWindow::render` (`w3529`): the faithful `NEST` control-flow shape is byte-identical to
+  baseline (readability only); forcing the second GOT load costs ~0.3% and 16 B.
+- `Globals::Globals` (`w3530`): remaining gap is register allocation / literal-pool placement;
+  every more faithful ordering breaks one of the two long instruction runs.
+- `Status::missionCompleted` (`w3533`): the rank-table workaround bought case order but paid 8 B
+  of code + 1 pool word; the direct `(short)` switch (now landed by `w3570`) is the faithful form.
+- `MGame::OnTouchEnd` (`w3544`): campaign-chain compare order is 15,22,43,42,65,81,74,95,96,100,
+  110,120,126,127,134,144,155,161,162 with 127 a separate `else if` after 126 jumping to the
+  shared 96 body; `hudTouchFlags` bit-chain order matches; app-module values match as a multiset.
