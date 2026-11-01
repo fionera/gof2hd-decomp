@@ -50,7 +50,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,143 | **-16** | base exact (0x1c9e10); output-group order now matches the original. The -16 bytes and the remaining content diffs are per-object string/table content (first: 0x1f9ffb, a double-encoded `ö`), not group ordering (see `_work/reconstructions/rodata_group_order.md`). |
+| **.rodata** | 269,159 | 269,143 | **-16** | base exact (0x1c9e10); output-group order now matches the original. The -16 bytes and the remaining content diffs are per-object string/table content (first: 0x1e9f90, `Generator.cpp`'s `kAgentOfferItems`/`kKaamoStationItems` emission order), not group ordering (see `_work/reconstructions/rodata_group_order.md`). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact: 3566 entries; CANTUNWIND 272, inline 856, extab 2438 all match. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact since the EH landing-pad split in `Level::createShip` (see `_work/reconstructions/exidx_extab_audit.md`). |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; only a handful of local symbol-order permutations remain. |

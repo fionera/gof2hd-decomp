@@ -217,3 +217,5 @@ python3 tools/ratchet.py --build-dir cmake-build-match --update-baseline
 Master already contains the `benötigt` mojibake fix (`50c89e36`), so on current master the
 first `.rodata` content diff is the next item after 0x1f9ffb, not the double-encoded `ö`.
 The `-16 B` `.rodata` size delta is still open (DialogueWindow table region around 0x39a9c).
+On current master the first `.rodata` content diff is 0x31780 (VMA 0x1e9f90): `Generator.cpp`
+emits `kKaamoStationItems` before `kAgentOfferItems`, while the original has the reverse.

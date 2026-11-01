@@ -4501,3 +4501,9 @@ original build flags.
   `linked_exact` 4495 unchanged; lint CLEAN; drift 0. A `.text*`-only variant reaches 4179 but
   moves gold's `** common` block to the end of `.bss` and grows `.bss` by 12 B; `.bss*` keeps
   the exact 0x69ac. See `_work/reconstructions/rodata_group_order.md`.
+- **`.rodata` output-group ordering landed: byte_exact 4115 -> 4171** (`w3412`). The trailing
+  `*` in `gen_section_order.py` is replaced by `.text*`/`.data*`/`.bss*`, leaving `.rodata*`
+  unlisted so plain `.rodata` keeps gold's index 0 and interleaves with the merge groups in
+  input order. Every section stays exact except `.rodata` (0x41b57 vs 0x41b67, -16 B). The first
+  remaining content diff is 0x1e9f90: `Generator.cpp` emits `kKaamoStationItems` before
+  `kAgentOfferItems`; the original has the reverse.
