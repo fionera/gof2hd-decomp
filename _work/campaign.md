@@ -4638,3 +4638,27 @@ original build flags.
 - **`Level::createMission`** (`w3476`): 83.36 -> 83.56%.
 - **`LevelScript::process`** (`w3478`): campaign cases 135/145 reordered to the tbh body order
   (fuzzy 54.4 -> 54.1%, structurally closer).
+
+## Session close-out (2026-11-01, byte 4171 -> 4494)
+
+Every ELF section is size- and base-exact. `.data` and `.data.rel.ro` are **byte-identical**;
+`.rodata` is byte-identical except 191 bytes at 0x1fb974/0x1fb999 (a leftover `kMissionCase`
+hack, worker `w3490`). `.plt` and `.got` are byte-identical. Remaining: 30 functions not
+byte-exact (28 with real code differences, 2 at pct==100), `.bss` 288 bytes (relocation-driven),
+`.dynsym` 2089, `.dynstr` 13471, `.hash` 957, `.gnu.version` 95, `.rel.dyn` 136, `.rel.plt` 270,
+`.ARM.exidx` 2343, `.ARM.extab` 112482 raw bytes (sizes exact).
+
+Build-flag verdicts (all measured, see `_work/reconstructions/`):
+- The original is an **NDK r18b ndk-build** product; an actual `ndk-build` probe reproduces the
+  original's `DT_NEEDED` order and `--whole-archive zlib libzip --no-whole-archive crypto` link
+  order exactly (`android_mk_reconstruction.md`).
+- `-fdata-sections` is an ndk-build default but the original was built **without** it
+  (`fdata_sections_w3439.md`).
+- `-fpic` vs `-fPIC` is codegen-identical here (`fpic_vs_fPIC_got.md`).
+- `-fmerge-all-constants` is a no-op (`merge_all_constants.md`).
+- 123 `-mllvm` variants: no improvement; the tree has no `-mllvm` flags
+  (`mllvm_flag_audit.md`).
+- Symbol visibility: the original uses default visibility; hidden/inlines-hidden/protected are
+  all worse or neutral (`symbol_visibility_export_policy.md`).
+- Vendored archives: zlib 1.2.3, libzip 0.9.3, libcrypto GCC 4.9 / OpenSSL 1.1.0-line
+  (`vendored_archive_provenance.md`).

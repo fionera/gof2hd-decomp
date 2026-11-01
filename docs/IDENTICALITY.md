@@ -108,12 +108,12 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10); **content byte-identical (0 differing bytes)** since the w3477 emission-order pass. |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10); was byte-identical after the w3477 emission-order pass, now 191 bytes differ in two runs at 0x1fb974/0x1fb999 (a leftover `kMissionCase` hack in `CutScene.cpp`; see `_work/reconstructions/kMissionCase_real_table.md`). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
-| .data.rel.ro | 12,264 | 12,264 | **0** | size+base exact; 3 content bytes differ (one libc++abi pointer pair). |
+| .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
