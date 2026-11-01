@@ -19,125 +19,220 @@
 #include "game/menu/ModStation.h"
 
 
-bool WantedWindow::OnTouchMove(int x, int y) {
-    if (this->showingMap != 0) {
-        this->starMap->OnTouchMove(x, y);
-        return false;
-    }
-
-    Layout **layout = &Globals::layout;
-    if ((((*layout)->field_0xc_leftMargin < y) &&
-         (y < Globals::h - (*layout)->field_0x10_rightMargin) &&
-         (x < Globals::w / 2)) ||
-        (Globals::mouse_wheel != 0)) {
-        int delta = y - this->lastDragY;
-        this->dragDelta = delta;
-        this->scrollDamping = 1.0f;
-        this->scrollOffset += delta;
-        this->lastDragY = y;
-    }
-
-    if (Globals::w / 2 < x) {
-        this->scrollWindow->OnTouchMove(x, y);
-    }
-
-    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
-        (*this->buttons)[i]->OnTouchMove(x, y);
-    }
-
-    (*layout)->OnTouchMove(x, y);
-    if (this->detailButton != nullptr) {
-        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
-        if (wanted->isActive() != 0) {
-            this->detailButton->OnTouchMove(x, y);
-        }
-    }
-
-    uint32_t selected = this->getWantedAtPosition(x, y);
-    int moved = y - this->touchStartY;
-    if (moved < 0) {
-        moved = -moved;
-    }
-    if (moved > 5) {
-        selected = 0xffffffffu;
-    }
-    this->highlightedWanted = selected;
-    return false;
-}
-
-void WantedWindow::update(int dt) {
-    if (this->showingMap != 0) {
-        this->starMap->update(dt);
-        return;
-    }
-
-    (*this->buttons)[1]->setAlwaysPressed(true);
-    this->scrollWindow->update(dt);
-
-    if (this->dragging == 0) {
-        float delta = this->scrollDamping * this->scrollVelocity;
-        float mag = -delta;
-        if (0.0f < delta) {
-            mag = delta;
-        }
-        this->scrollVelocity = delta;
-        if (mag > 1.0f) {
-            this->scrollOffset = (int) (delta + (float) this->scrollOffset);
-        }
-    }
-
-    int scroll = this->scrollOffset;
-    if (scroll > 0) {
-        this->scrollDamping = 1.0f;
-        this->scrollVelocity = (float) -scroll * 0.5f;
-    }
-
-    int limit = this->visibleHeight - this->contentHeight;
-    if (limit <= -1) {
-        if (scroll < limit) {
-            this->scrollDamping = 1.0f;
-            this->scrollVelocity = (float) (limit - scroll) * 0.5f;
-        }
-    } else {
-        this->scrollOffset = 0;
-        this->scrollVelocity = 0;
-    }
+WantedWindow::WantedWindow() {
+    this->detailButton = nullptr;
+    this->starMap = nullptr;
+    this->imageParts = nullptr;
+    PaintCanvas **canvas = &Globals::Canvas;
+    int h = (*canvas)->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
+    this->wantedList = nullptr;
+    this->halfTextHeight = h / 2 - 1;
+    this->mission = nullptr;
+    this->scrollWindow = nullptr;
+    this->buttons = nullptr;
+    (*canvas)->Image2DCreate(0x454, reinterpret_cast<unsigned int &>(this->bgImage));
+    this->init();
 }
 
 
-bool WantedWindow::OnTouchBegin(int x, int y) {
-    if (this->showingMap != 0) {
-        this->starMap->OnTouchBegin(x, y);
-        return false;
-    }
-
-    this->lastDragY = y;
-    this->touchStartY = y;
+void WantedWindow::init() {
+    this->scrollOffset = 0;
+    this->lastDragY = 0;
+    this->scrollOffsetSnapshot = 0;
     this->dragDelta = 0;
-    this->dragging = 1;
-    this->scrollWindow->OnTouchBegin(x, y);
+    this->scrollDamping = 0.0f;
+    this->scrollVelocity = 0.0f;
+    this->touchStartY = 0;
+    this->dragging = 0;
 
-    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
-        (*this->buttons)[i]->OnTouchBegin(x, y);
+    // Only the wanted persons posted on this system's board are listed.
+    this->wantedList = new Array<Wanted *>();
+    Array<Wanted *> *allWanted = Globals::status->getWanted();
+    int detailWidth = Globals::layout->field_0xcc - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
+    for (unsigned int i = 0; i < allWanted->size(); i++) {
+        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != (*allWanted)[i]->getBoard())
+            continue;
+        if ((((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 0 &&
+             Globals::status->getCurrentCampaignMission() > 127) ||
+            (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != 0 &&
+             Globals::status->getCurrentCampaignMission() >= 162))
+            ArrayAdd((*allWanted)[i], *this->wantedList);
     }
 
-    (Globals::layout)->OnTouchBegin(x, y);
-    if (this->detailButton != nullptr) {
-        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
-        if (wanted->isActive() != 0) {
-            this->detailButton->OnTouchBegin(x, y);
+    int width;
+    int halfWidth;
+    int height;
+    if (Globals::iPad) {
+        if (Globals::iPadHD) {
+            height = 703;
+            halfWidth = 457;
+            width = 914;
+        } else {
+            height = 1000;
+            width = 1300;
+            if (!Globals::iPadLarge) {
+                height = 500;
+                width = 650;
+            }
+            halfWidth = (unsigned int) width >> 1;
+        }
+        this->windowWidth = width;
+        this->windowHeight = height;
+        this->windowX = (Globals::w >> 1) - halfWidth;
+        this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
+    } else {
+        width = Globals::w;
+        height = Globals::h;
+        this->windowX = 0;
+        this->windowY = 0;
+        this->windowWidth = width;
+        this->windowHeight = height;
+    }
+
+    // Preselect the first active wanted person.
+    this->selectedWanted = 0;
+    for (unsigned int i = 0; i < this->wantedList->size(); i++) {
+        if ((*this->wantedList)[i]->isActive()) {
+            this->selectedWanted = i;
+            break;
         }
     }
+    if (this->selectedWanted == this->wantedList->size() - 1 &&
+        !(*this->wantedList)[this->selectedWanted]->isActive())
+        this->selectedWanted = 0;
+    this->highlightedWanted = this->selectedWanted;
+    this->selectWanted(this->selectedWanted);
 
-    this->highlightedWanted = this->getWantedAtPosition(x, y);
-    return false;
+    this->buttons = new Array<TouchButton *>();
+    ArraySetLength(2, *this->buttons);
+    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(3219), 3,
+                                          this->windowX + this->windowWidth -
+                                          Globals::layout->getHelpButtonOffset(),
+                                          this->windowY, 18);
+    (*this->buttons)[0] = new TouchButton(*Globals::gameText->getText(129), 3,
+                                          this->windowX + this->windowWidth -
+                                          Globals::layout->getHelpButtonOffset() -
+                                          (*this->buttons)[1]->getWidth() + Globals::layout->field_0x38,
+                                          this->windowY, 18);
+    (*this->buttons)[1]->setAlwaysPressed(true);
+    Globals::layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
+
+    this->contentHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x70_rowHeight) *
+                          this->wantedList->size();
+    this->visibleHeight = this->windowHeight - Globals::layout->field_0x10_rightMargin -
+                          Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
+                          Globals::layout->field_0x24 - Globals::layout->field_0x5c +
+                          Globals::layout->field_0x2c_rowHeight;
+
+    if (this->detailButton != nullptr)
+        delete this->detailButton;
+    this->detailButton = nullptr;
+    this->starMap = nullptr;
+    this->showingMap = 0;
+    this->hangarUpdate = 0;
+    this->detailButton = new TouchButton(
+            *Globals::gameText->getText(424), 0,
+            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+            this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight -
+            Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
+            detailWidth, 33, 4);
+    this->hangarUpdate = 0;
+    this->lastButtonHit = 1;
 }
 
-void WantedWindow::render3D() {
-    if (this->showingMap != 0) {
-        this->starMap->render();
+
+WantedWindow::~WantedWindow() {
+    if (this->imageParts != nullptr) {
+        ArrayReleaseClasses(*this->imageParts);
+        delete this->imageParts;
     }
+    this->imageParts = nullptr;
+
+    if (this->buttons != nullptr) {
+        ArrayReleaseClasses(*this->buttons);
+        delete this->buttons;
+    }
+    this->buttons = nullptr;
+
+    delete this->detailButton;
+    this->detailButton = nullptr;
+
+    delete this->wantedList;
+    this->wantedList = nullptr;
+
+    delete this->mission;
+    this->mission = nullptr;
+
+    delete this->scrollWindow;
+    this->scrollWindow = nullptr;
 }
+
+
+void WantedWindow::selectWanted(int idx) {
+    delete this->imageParts;
+    this->imageParts = nullptr;
+    delete this->scrollWindow;
+    this->scrollWindow = nullptr;
+
+    this->imageParts = Globals::imageFactory->loadChar((*this->wantedList)[idx]->getImageParts());
+    this->nameText = (*this->wantedList)[idx]->getName();
+
+    if ((*this->wantedList)[idx]->isActive()) {
+        Station *lastSeen = (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getLastSeen());
+        Station *travelsTo =
+                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getTravelsTo());
+        Station *current =
+                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getCurrentLocation());
+        SolarSystem *lastSeenSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(lastSeen->getSystem());
+        SolarSystem *travelsToSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(travelsTo->getSystem());
+        SolarSystem *currentSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(current->getSystem());
+        this->fromText = lastSeen->getName() + String(" (", false) + lastSeenSystem->getName() + String(")", false);
+        this->toText = travelsTo->getName() + String(" (", false) + travelsToSystem->getName() + String(")", false);
+        this->atText = current->getName() + String(" (", false) + currentSystem->getName() + String(")", false);
+        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
+        delete lastSeen;
+        delete travelsTo;
+        delete current;
+    } else if ((*this->wantedList)[idx]->isTerminated()) {
+        this->fromText = String(" -- ", false);
+        this->toText = String(" --", false);
+        this->atText = String(" --", false);
+        this->rewardText = String(" --", false);
+    } else {
+        this->fromText = *Globals::gameText->getText(3229);
+        this->toText = *Globals::gameText->getText(3229);
+        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
+        this->atText = *Globals::gameText->getText(3229);
+    }
+    int detailId = (*this->wantedList)[idx]->isTerminated() ? 3227 : 3228;
+    this->detailText = *Globals::gameText->getText(detailId);
+
+    int top = this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
+              Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
+    int height = this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight - top -
+                 Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x2d8 - Globals::layout->field_0x24;
+    if ((*this->wantedList)[idx]->isActive())
+        height = height - Globals::layout->field_0x4c - Globals::layout->field_0x30_rowHeight;
+    this->scrollWindow = new ScrollTouchWindow(
+            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
+            Globals::layout->field_0x2d8 + (Globals::layout->field_0x2c_rowHeight + top),
+            (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
+            height, false);
+
+    String body("", false);
+    body = *Globals::gameText->getText(3223);
+    body += String("\n", false) + this->fromText;
+    body += String("\n\n", false) + *Globals::gameText->getText(3224);
+    body += String("\n", false) + this->toText;
+    body += String("\n\n", false) + *Globals::gameText->getText((*this->wantedList)[idx]->getIndex() + 3174);
+    this->scrollWindow->setText("", body);
+}
+
+
+void WantedWindow::setHangarUpdate(bool needsUpdate) {
+    this->hangarUpdate = needsUpdate;
+}
+
 
 float WantedWindow::getRelativeScrollStartPos() {
     int pos = this->scrollOffset;
@@ -151,119 +246,21 @@ float WantedWindow::getRelativeScrollStartPos() {
 }
 
 
-uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
-    if (x >= this->windowX + (this->windowWidth >> 1)) {
-        return 0xffffffffu;
-    }
-
-    Array<Wanted *> *list = this->wantedList;
-    Layout *layout = Globals::layout;
-    int numerator = y - this->windowY;
-    numerator -= layout->field_0xc_leftMargin;
-    numerator -= layout->field_0x20_top;
-    numerator -= layout->field_0x5c;
-    numerator -= this->scrollOffset;
-    int idx = numerator / (layout->field_0x70_rowHeight + layout->field_0x34);
-    if ((uint32_t) idx > (uint32_t)((int) list->size() - 1)) {
-        return 0xffffffffu;
-    }
-    return (uint32_t) idx;
+float WantedWindow::getRelativeScrollHeight() {
+    if (this->contentHeight < this->visibleHeight)
+        return 0.0f;
+    if (this->scrollOffset > 0)
+        return (float) (this->visibleHeight - this->scrollOffset) / (float) this->contentHeight;
+    if (this->scrollOffset < this->visibleHeight - this->contentHeight)
+        return (float) (this->scrollOffset + this->contentHeight) / (float) this->contentHeight;
+    return (float) this->visibleHeight / (float) this->contentHeight;
 }
 
 
-bool WantedWindow::OnTouchEnd(int x, int y) {
-    if (this->showingMap) {
-        if (this->starMap->OnTouchEnd(x, y)) {
-            // Back from the star map: restore the window frame.
-            int height;
-            int halfWidth;
-            int width;
-            if (Globals::iPad) {
-                if (Globals::iPadHD) {
-                    height = 703;
-                    halfWidth = 457;
-                    width = 914;
-                } else {
-                    height = 1000;
-                    width = 1300;
-                    if (!Globals::iPadLarge) {
-                        height = 500;
-                        width = 650;
-                    }
-                    halfWidth = (unsigned int) width >> 1;
-                }
-                this->windowWidth = width;
-                this->windowHeight = height;
-                this->windowX = (Globals::w >> 1) - halfWidth;
-                this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
-            } else {
-                width = Globals::w;
-                height = Globals::h;
-                this->windowX = 0;
-                this->windowY = 0;
-                this->windowWidth = width;
-                this->windowHeight = height;
-            }
-
-            this->showingMap = 0;
-        }
-        return false;
+void WantedWindow::render3D() {
+    if (this->showingMap != 0) {
+        this->starMap->render();
     }
-
-    int delta = this->dragDelta;
-    this->scrollDamping = 0.9f;
-    this->dragging = 0;
-    this->scrollOffset += delta;
-    this->scrollOffsetSnapshot = this->scrollOffset;
-    this->scrollVelocity = (delta < 0 ? -delta : delta) > 3 ? (float) delta : 0.0f;
-    this->scrollWindow->OnTouchEnd(x, y);
-    for (unsigned int i = 0; i < this->buttons->size(); ++i) {
-        if ((*this->buttons)[i]->OnTouchEnd(x, y))
-            this->lastButtonHit = i;
-    }
-    if ((int) this->highlightedWanted > -1) {
-        int index = this->getWantedAtPosition(x, y);
-        this->selectedWanted = index;
-        this->highlightedWanted = index;
-        this->selectWanted(index);
-    }
-
-    if (this->detailButton != nullptr && (*this->wantedList)[this->selectedWanted]->isActive() &&
-        this->detailButton->OnTouchEnd(x, y)) {
-        // Show the wanted person's last known position on the star map.
-        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
-        Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(
-                (*this->wantedList)[this->selectedWanted]->getLastSeen());
-        StarMap *map;
-        if (this->starMap != nullptr) {
-            delete this->mission;
-            this->mission = nullptr;
-            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
-            this->starMap->init(true, this->mission, false, -1);
-            map = this->starMap;
-        } else {
-            delete this->mission;
-            this->mission = nullptr;
-            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
-            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap =
-                    new StarMap(true, this->mission, false, -1);
-            map = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
-            this->starMap = map;
-        }
-        map->setStart(station->getSystem(), (*this->wantedList)[this->selectedWanted]->getLastSeen());
-        delete station;
-        this->showingMap = 1;
-        Globals::layout->resetWindowDimensions();
-        return false;
-    }
-
-    if (Globals::layout->OnTouchEnd(x, y)) {
-        Globals::layout->resetWindowDimensions();
-        return true;
-    }
-    if (Globals::layout->helpPressed())
-        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
-    return false;
 }
 
 
@@ -382,226 +379,236 @@ void WantedWindow::draw() {
 }
 
 
-void WantedWindow::init() {
-    this->scrollOffset = 0;
-    this->lastDragY = 0;
-    this->scrollOffsetSnapshot = 0;
-    this->dragDelta = 0;
-    this->scrollDamping = 0.0f;
-    this->scrollVelocity = 0.0f;
-    this->touchStartY = 0;
-    this->dragging = 0;
-
-    // Only the wanted persons posted on this system's board are listed.
-    this->wantedList = new Array<Wanted *>();
-    Array<Wanted *> *allWanted = Globals::status->getWanted();
-    int detailWidth = Globals::layout->field_0xcc - Globals::layout->buttonInsetX - Globals::layout->field_0x4c;
-    for (unsigned int i = 0; i < allWanted->size(); i++) {
-        if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != (*allWanted)[i]->getBoard())
-            continue;
-        if ((((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 0 &&
-             Globals::status->getCurrentCampaignMission() > 127) ||
-            (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() != 0 &&
-             Globals::status->getCurrentCampaignMission() >= 162))
-            ArrayAdd((*allWanted)[i], *this->wantedList);
+uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
+    if (x >= this->windowX + (this->windowWidth >> 1)) {
+        return 0xffffffffu;
     }
 
-    int width;
-    int halfWidth;
-    int height;
-    if (Globals::iPad) {
-        if (Globals::iPadHD) {
-            height = 703;
-            halfWidth = 457;
-            width = 914;
-        } else {
-            height = 1000;
-            width = 1300;
-            if (!Globals::iPadLarge) {
-                height = 500;
-                width = 650;
-            }
-            halfWidth = (unsigned int) width >> 1;
-        }
-        this->windowWidth = width;
-        this->windowHeight = height;
-        this->windowX = (Globals::w >> 1) - halfWidth;
-        this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
-    } else {
-        width = Globals::w;
-        height = Globals::h;
-        this->windowX = 0;
-        this->windowY = 0;
-        this->windowWidth = width;
-        this->windowHeight = height;
+    Array<Wanted *> *list = this->wantedList;
+    Layout *layout = Globals::layout;
+    int numerator = y - this->windowY;
+    numerator -= layout->field_0xc_leftMargin;
+    numerator -= layout->field_0x20_top;
+    numerator -= layout->field_0x5c;
+    numerator -= this->scrollOffset;
+    int idx = numerator / (layout->field_0x70_rowHeight + layout->field_0x34);
+    if ((uint32_t) idx > (uint32_t)((int) list->size() - 1)) {
+        return 0xffffffffu;
     }
-
-    // Preselect the first active wanted person.
-    this->selectedWanted = 0;
-    for (unsigned int i = 0; i < this->wantedList->size(); i++) {
-        if ((*this->wantedList)[i]->isActive()) {
-            this->selectedWanted = i;
-            break;
-        }
-    }
-    if (this->selectedWanted == this->wantedList->size() - 1 &&
-        !(*this->wantedList)[this->selectedWanted]->isActive())
-        this->selectedWanted = 0;
-    this->highlightedWanted = this->selectedWanted;
-    this->selectWanted(this->selectedWanted);
-
-    this->buttons = new Array<TouchButton *>();
-    ArraySetLength(2, *this->buttons);
-    (*this->buttons)[1] = new TouchButton(*Globals::gameText->getText(3219), 3,
-                                          this->windowX + this->windowWidth -
-                                          Globals::layout->getHelpButtonOffset(),
-                                          this->windowY, 18);
-    (*this->buttons)[0] = new TouchButton(*Globals::gameText->getText(129), 3,
-                                          this->windowX + this->windowWidth -
-                                          Globals::layout->getHelpButtonOffset() -
-                                          (*this->buttons)[1]->getWidth() + Globals::layout->field_0x38,
-                                          this->windowY, 18);
-    (*this->buttons)[1]->setAlwaysPressed(true);
-    Globals::layout->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
-
-    this->contentHeight = (Globals::layout->field_0x34 + Globals::layout->field_0x70_rowHeight) *
-                          this->wantedList->size();
-    this->visibleHeight = this->windowHeight - Globals::layout->field_0x10_rightMargin -
-                          Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
-                          Globals::layout->field_0x24 - Globals::layout->field_0x5c +
-                          Globals::layout->field_0x2c_rowHeight;
-
-    if (this->detailButton != nullptr)
-        delete this->detailButton;
-    this->detailButton = nullptr;
-    this->starMap = nullptr;
-    this->showingMap = 0;
-    this->hangarUpdate = 0;
-    this->detailButton = new TouchButton(
-            *Globals::gameText->getText(424), 0,
-            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
-            this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight -
-            Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24,
-            detailWidth, 33, 4);
-    this->hangarUpdate = 0;
-    this->lastButtonHit = 1;
+    return (uint32_t) idx;
 }
 
-
-WantedWindow::WantedWindow() {
-    this->detailButton = nullptr;
-    this->starMap = nullptr;
-    this->imageParts = nullptr;
-    PaintCanvas **canvas = &Globals::Canvas;
-    int h = (*canvas)->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
-    this->wantedList = nullptr;
-    this->halfTextHeight = h / 2 - 1;
-    this->mission = nullptr;
-    this->scrollWindow = nullptr;
-    this->buttons = nullptr;
-    (*canvas)->Image2DCreate(0x454, reinterpret_cast<unsigned int &>(this->bgImage));
-    this->init();
-}
-
-WantedWindow::~WantedWindow() {
-    if (this->imageParts != nullptr) {
-        ArrayReleaseClasses(*this->imageParts);
-        delete this->imageParts;
-    }
-    this->imageParts = nullptr;
-
-    if (this->buttons != nullptr) {
-        ArrayReleaseClasses(*this->buttons);
-        delete this->buttons;
-    }
-    this->buttons = nullptr;
-
-    delete this->detailButton;
-    this->detailButton = nullptr;
-
-    delete this->wantedList;
-    this->wantedList = nullptr;
-
-    delete this->mission;
-    this->mission = nullptr;
-
-    delete this->scrollWindow;
-    this->scrollWindow = nullptr;
-}
-
-void WantedWindow::setHangarUpdate(bool needsUpdate) {
-    this->hangarUpdate = needsUpdate;
-}
 
 unsigned char WantedWindow::hangarNeedsUpdate() { return this->hangarUpdate; }
 
-float WantedWindow::getRelativeScrollHeight() {
-    if (this->contentHeight < this->visibleHeight)
-        return 0.0f;
-    if (this->scrollOffset > 0)
-        return (float) (this->visibleHeight - this->scrollOffset) / (float) this->contentHeight;
-    if (this->scrollOffset < this->visibleHeight - this->contentHeight)
-        return (float) (this->scrollOffset + this->contentHeight) / (float) this->contentHeight;
-    return (float) this->visibleHeight / (float) this->contentHeight;
+
+void WantedWindow::update(int dt) {
+    if (this->showingMap != 0) {
+        this->starMap->update(dt);
+        return;
+    }
+
+    (*this->buttons)[1]->setAlwaysPressed(true);
+    this->scrollWindow->update(dt);
+
+    if (this->dragging == 0) {
+        float delta = this->scrollDamping * this->scrollVelocity;
+        float mag = -delta;
+        if (0.0f < delta) {
+            mag = delta;
+        }
+        this->scrollVelocity = delta;
+        if (mag > 1.0f) {
+            this->scrollOffset = (int) (delta + (float) this->scrollOffset);
+        }
+    }
+
+    int scroll = this->scrollOffset;
+    if (scroll > 0) {
+        this->scrollDamping = 1.0f;
+        this->scrollVelocity = (float) -scroll * 0.5f;
+    }
+
+    int limit = this->visibleHeight - this->contentHeight;
+    if (limit <= -1) {
+        if (scroll < limit) {
+            this->scrollDamping = 1.0f;
+            this->scrollVelocity = (float) (limit - scroll) * 0.5f;
+        }
+    } else {
+        this->scrollOffset = 0;
+        this->scrollVelocity = 0;
+    }
 }
 
 
-void WantedWindow::selectWanted(int idx) {
-    delete this->imageParts;
-    this->imageParts = nullptr;
-    delete this->scrollWindow;
-    this->scrollWindow = nullptr;
-
-    this->imageParts = Globals::imageFactory->loadChar((*this->wantedList)[idx]->getImageParts());
-    this->nameText = (*this->wantedList)[idx]->getName();
-
-    if ((*this->wantedList)[idx]->isActive()) {
-        Station *lastSeen = (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getLastSeen());
-        Station *travelsTo =
-                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getTravelsTo());
-        Station *current =
-                (Station *) (intptr_t) Globals::galaxy->getStation((*this->wantedList)[idx]->getCurrentLocation());
-        SolarSystem *lastSeenSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(lastSeen->getSystem());
-        SolarSystem *travelsToSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(travelsTo->getSystem());
-        SolarSystem *currentSystem = (SolarSystem *) (intptr_t) Globals::galaxy->getSystem(current->getSystem());
-        this->fromText = lastSeen->getName() + String(" (", false) + lastSeenSystem->getName() + String(")", false);
-        this->toText = travelsTo->getName() + String(" (", false) + travelsToSystem->getName() + String(")", false);
-        this->atText = current->getName() + String(" (", false) + currentSystem->getName() + String(")", false);
-        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
-        delete lastSeen;
-        delete travelsTo;
-        delete current;
-    } else if ((*this->wantedList)[idx]->isTerminated()) {
-        this->fromText = String(" -- ", false);
-        this->toText = String(" --", false);
-        this->atText = String(" --", false);
-        this->rewardText = String(" --", false);
-    } else {
-        this->fromText = *Globals::gameText->getText(3229);
-        this->toText = *Globals::gameText->getText(3229);
-        this->rewardText = String((*this->wantedList)[idx]->getReward()) + String("$", false);
-        this->atText = *Globals::gameText->getText(3229);
+bool WantedWindow::OnTouchBegin(int x, int y) {
+    if (this->showingMap != 0) {
+        this->starMap->OnTouchBegin(x, y);
+        return false;
     }
-    int detailId = (*this->wantedList)[idx]->isTerminated() ? 3227 : 3228;
-    this->detailText = *Globals::gameText->getText(detailId);
 
-    int top = this->windowY + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
-              Globals::layout->field_0x5c + Globals::layout->field_0x2c_rowHeight;
-    int height = this->windowY - Globals::layout->field_0x2c_rowHeight + this->windowHeight - top -
-                 Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x2d8 - Globals::layout->field_0x24;
-    if ((*this->wantedList)[idx]->isActive())
-        height = height - Globals::layout->field_0x4c - Globals::layout->field_0x30_rowHeight;
-    this->scrollWindow = new ScrollTouchWindow(
-            this->windowX + (this->windowWidth >> 1) + Globals::layout->field_0x2c_rowHeight,
-            Globals::layout->field_0x2d8 + (Globals::layout->field_0x2c_rowHeight + top),
-            (this->windowWidth >> 1) - Globals::layout->field_0x2c_rowHeight - Globals::layout->buttonInsetX,
-            height, false);
+    this->lastDragY = y;
+    this->touchStartY = y;
+    this->dragDelta = 0;
+    this->dragging = 1;
+    this->scrollWindow->OnTouchBegin(x, y);
 
-    String body("", false);
-    body = *Globals::gameText->getText(3223);
-    body += String("\n", false) + this->fromText;
-    body += String("\n\n", false) + *Globals::gameText->getText(3224);
-    body += String("\n", false) + this->toText;
-    body += String("\n\n", false) + *Globals::gameText->getText((*this->wantedList)[idx]->getIndex() + 3174);
-    this->scrollWindow->setText("", body);
+    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
+        (*this->buttons)[i]->OnTouchBegin(x, y);
+    }
+
+    (Globals::layout)->OnTouchBegin(x, y);
+    if (this->detailButton != nullptr) {
+        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
+        if (wanted->isActive() != 0) {
+            this->detailButton->OnTouchBegin(x, y);
+        }
+    }
+
+    this->highlightedWanted = this->getWantedAtPosition(x, y);
+    return false;
+}
+
+
+bool WantedWindow::OnTouchMove(int x, int y) {
+    if (this->showingMap != 0) {
+        this->starMap->OnTouchMove(x, y);
+        return false;
+    }
+
+    Layout **layout = &Globals::layout;
+    if ((((*layout)->field_0xc_leftMargin < y) &&
+         (y < Globals::h - (*layout)->field_0x10_rightMargin) &&
+         (x < Globals::w / 2)) ||
+        (Globals::mouse_wheel != 0)) {
+        int delta = y - this->lastDragY;
+        this->dragDelta = delta;
+        this->scrollDamping = 1.0f;
+        this->scrollOffset += delta;
+        this->lastDragY = y;
+    }
+
+    if (Globals::w / 2 < x) {
+        this->scrollWindow->OnTouchMove(x, y);
+    }
+
+    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
+        (*this->buttons)[i]->OnTouchMove(x, y);
+    }
+
+    (*layout)->OnTouchMove(x, y);
+    if (this->detailButton != nullptr) {
+        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
+        if (wanted->isActive() != 0) {
+            this->detailButton->OnTouchMove(x, y);
+        }
+    }
+
+    uint32_t selected = this->getWantedAtPosition(x, y);
+    int moved = y - this->touchStartY;
+    if (moved < 0) {
+        moved = -moved;
+    }
+    if (moved > 5) {
+        selected = 0xffffffffu;
+    }
+    this->highlightedWanted = selected;
+    return false;
+}
+
+
+bool WantedWindow::OnTouchEnd(int x, int y) {
+    if (this->showingMap) {
+        if (this->starMap->OnTouchEnd(x, y)) {
+            // Back from the star map: restore the window frame.
+            int height;
+            int halfWidth;
+            int width;
+            if (Globals::iPad) {
+                if (Globals::iPadHD) {
+                    height = 703;
+                    halfWidth = 457;
+                    width = 914;
+                } else {
+                    height = 1000;
+                    width = 1300;
+                    if (!Globals::iPadLarge) {
+                        height = 500;
+                        width = 650;
+                    }
+                    halfWidth = (unsigned int) width >> 1;
+                }
+                this->windowWidth = width;
+                this->windowHeight = height;
+                this->windowX = (Globals::w >> 1) - halfWidth;
+                this->windowY = (Globals::h >> 1) - ((unsigned int) height >> 1);
+            } else {
+                width = Globals::w;
+                height = Globals::h;
+                this->windowX = 0;
+                this->windowY = 0;
+                this->windowWidth = width;
+                this->windowHeight = height;
+            }
+
+            this->showingMap = 0;
+        }
+        return false;
+    }
+
+    int delta = this->dragDelta;
+    this->scrollDamping = 0.9f;
+    this->dragging = 0;
+    this->scrollOffset += delta;
+    this->scrollOffsetSnapshot = this->scrollOffset;
+    this->scrollVelocity = (delta < 0 ? -delta : delta) > 3 ? (float) delta : 0.0f;
+    this->scrollWindow->OnTouchEnd(x, y);
+    for (unsigned int i = 0; i < this->buttons->size(); ++i) {
+        if ((*this->buttons)[i]->OnTouchEnd(x, y))
+            this->lastButtonHit = i;
+    }
+    if ((int) this->highlightedWanted > -1) {
+        int index = this->getWantedAtPosition(x, y);
+        this->selectedWanted = index;
+        this->highlightedWanted = index;
+        this->selectWanted(index);
+    }
+
+    if (this->detailButton != nullptr && (*this->wantedList)[this->selectedWanted]->isActive() &&
+        this->detailButton->OnTouchEnd(x, y)) {
+        // Show the wanted person's last known position on the star map.
+        this->starMap = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+        Station *station = (Station *) (intptr_t) Globals::galaxy->getStation(
+                (*this->wantedList)[this->selectedWanted]->getLastSeen());
+        StarMap *map;
+        if (this->starMap != nullptr) {
+            delete this->mission;
+            this->mission = nullptr;
+            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
+            this->starMap->init(true, this->mission, false, -1);
+            map = this->starMap;
+        } else {
+            delete this->mission;
+            this->mission = nullptr;
+            this->mission = new Mission(0, 0, (*this->wantedList)[this->selectedWanted]->getTravelsTo());
+            ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap =
+                    new StarMap(true, this->mission, false, -1);
+            map = ((ModStation *) Globals::appManager->GetApplicationModule(5))->starMap;
+            this->starMap = map;
+        }
+        map->setStart(station->getSystem(), (*this->wantedList)[this->selectedWanted]->getLastSeen());
+        delete station;
+        this->showingMap = 1;
+        Globals::layout->resetWindowDimensions();
+        return false;
+    }
+
+    if (Globals::layout->OnTouchEnd(x, y)) {
+        Globals::layout->resetWindowDimensions();
+        return true;
+    }
+    if (Globals::layout->helpPressed())
+        Globals::layout->initHelpWindow(String(*Globals::gameText->getText(635), false));
+    return false;
 }

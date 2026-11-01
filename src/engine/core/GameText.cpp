@@ -54,11 +54,9 @@ namespace {
     };
 }
 
-// Byte offset of an Arabic letter's row in kArabicForms. The two call sites inline this
-// arithmetic; hidden linkage keeps the out-of-line body out of the export set.
-[[gnu::visibility("hidden")]] unsigned int arabicFormOffset(unsigned int code) {
-    return (code - 0x621) * 20;
-}
+// Byte offset of an Arabic letter's row in kArabicForms. The original inlines this arithmetic
+// at both call sites and has no out-of-line body; a macro reproduces that exactly.
+#define arabicFormOffset(code) (((code) - 0x621) * 20)
 
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
 // Kept as a macro: at -Oz an inline helper is not inlined and changes convertStringFromArabic's
