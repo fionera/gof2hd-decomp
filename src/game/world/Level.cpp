@@ -4086,7 +4086,7 @@ void Level::createCampaignMission() {
             break;
         }
         case 145: {
-            int coords[3] = {-50000, 0, 50000};
+            int coords[3] = {-45000, 0, 60000};
             this->enemyRoute = new Route(coords, 3);
             this->enemies = new Array<KIPlayer *>();
             ArraySetLength(14, *this->enemies);
