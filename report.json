@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4253,
+  "byte_exact": 4254,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -105,7 +105,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 83.2,
+   "pct": 83.4,
    "byte": false,
    "linked": false,
    "osize": 17172,
@@ -23866,7 +23866,7 @@
   {
    "name": "_ZN5MGame12OnTouchBeginEiiPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2936,
    "usize": 2936
