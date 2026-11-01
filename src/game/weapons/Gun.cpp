@@ -588,7 +588,6 @@ void Gun::calcCharacterCollision() {
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
-        Player *volatile enemySlot = enemy;
         if (mine) {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
@@ -597,6 +596,7 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
+            Player *volatile enemySlot = enemy;
             enemy = enemySlot;
             Vector position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];

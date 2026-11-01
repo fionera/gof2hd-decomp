@@ -252,7 +252,12 @@ void HangarWindow::initialize() {
     Layout *layout = Globals::layout;
     this->visibleHeight = Globals::h - layout->field_0x10_rightMargin - layout->field_0xc_leftMargin -
                           layout->field_0x20_top - layout->field_0x24;
-    this->hintOffsetX = 0;
+    int hintX = 0;
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
+        Globals::Canvas->Image2DCreate(1700, *(unsigned int *) &this->hintImage);
+        hintX = (int) ((float) Globals::w * 0.2f);
+    }
+    this->hintOffsetX = hintX;
     this->selectedItem = 0;
     this->buyMode = 0;
     this->specialMode = 0;
