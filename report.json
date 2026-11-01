@@ -4,11 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-<<<<<<< HEAD
-  "byte_exact": 2936,
-=======
-  "byte_exact": 3885,
->>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
+  "byte_exact": 3907,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -19262,7 +19258,7 @@
   {
    "name": "_ZN20ParticleSystemSprite11setParticleERKN11AbyssEngine6AEMath6VectorEfjffffbffS4_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 240,
    "usize": 240
@@ -19278,7 +19274,7 @@
   {
    "name": "_ZN20ParticleSystemSprite12updateSingleEif",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 680,
    "usize": 680
@@ -19286,7 +19282,7 @@
   {
    "name": "_ZN20ParticleSystemSprite22updateAreaExitParticleEif",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 700,
    "usize": 700
@@ -19302,7 +19298,7 @@
   {
    "name": "_ZN20ParticleSystemSprite5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -19326,7 +19322,7 @@
   {
    "name": "_ZN20ParticleSystemSprite6renderEPN11AbyssEngine11PaintCanvasEjjNS0_9BlendModeE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -31270,7 +31266,7 @@
   {
    "name": "_ZN9BluePrint22getAutoCompletionPriceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -31286,7 +31282,7 @@
   {
    "name": "_ZN9BluePrint5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -31334,7 +31330,7 @@
   {
    "name": "_ZN9BluePrintC1Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -31342,7 +31338,7 @@
   {
    "name": "_ZN9BluePrintC2Ei",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188

@@ -4412,3 +4412,8 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   `initParticleSystems` before `createPlayer`, `createStaticObject` before `createMission`.
 - **Sparks/BluePrint + StatusWindow/Radar TU order: byte_exact 2928 -> 2936 (+8)** (`w3368`, `w3366`).
   PLT symbol diff 32 -> ~20 lines.
+- **exidx/extab pass 1: byte_exact 2936 -> 3907 (+971); `.text` now EXACT** (`w3367`):
+  stale anchors removed from `AbyssEngine.cpp`/`MarqueeImage.cpp` and the exidx-marker generator
+  fixed. `.text` 0x1337c8 @0x69440 and `.ARM.exidx` base 0x19cc08 now match the original exactly;
+  `.ARM.exidx` size is +0x10 (orig 0x6f70, ours 0x6f80), `.ARM.extab` -0x1c, `.rodata` +0x30,
+  `.bss` +0x1c. 86.4% of functions are now byte-exact.
