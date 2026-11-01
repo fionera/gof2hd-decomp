@@ -123,10 +123,6 @@ RecordHandler::RecordHandler() {
 RecordHandler::~RecordHandler() {
 }
 
-bool RecordHandler::notEnoughMemory() {
-    return (int)AEFile::GetDeviceFreeSpace() < 900;
-}
-
 Array<GameRecord *> *RecordHandler::readAllPreviewRecords() {
     Array<GameRecord *> *records = new Array<GameRecord *>();
     ArraySetLength(Globals::recordSlots, *records);
@@ -164,6 +160,322 @@ Array<GameRecord *> *RecordHandler::readAllRecords() {
         (*records)[i] = this->recordStoreRead(i);
     }
     return records;
+}
+
+float RecordHandler::loadResolutionValue(float resolution) {
+    if (AEFile::FileExist(this->optionsPath) != 0) {
+        unsigned int fd;
+        AEFile::OpenRead(this->optionsPath, &fd);
+        OptionsBuffer options;
+        AEFile::Read(options.byte_0x10, fd);
+        AEFile::Read(options.byte_0x11, fd);
+        AEFile::Read(options.f_0x14, fd);
+        AEFile::Read(options.f_0x18, fd);
+        AEFile::Read(options.f_0x1c, fd);
+        AEFile::Read(options.f_0x00, fd);
+        AEFile::Read(options.byte_0x0c, fd);
+        AEFile::Read(options.byte_0x0d, fd);
+        AEFile::Read(options.f_0x04, fd);
+        AEFile::Read(options.f_0x24, fd);
+        AEFile::Read(options.f_0x28, fd);
+        String name;
+        AEFile::Read(name, fd, false);
+        int lastRecord;
+        bool flag;
+        AEFile::Read(lastRecord, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.i32_0x54, fd);
+        AEFile::Read(options.i32_0x58, fd);
+        AEFile::Read(options.volumeSfx, fd);
+        AEFile::Read(options.byte_0x0e, fd);
+        AEFile::Read(options.byte_0x32, fd);
+        AEFile::Read(options.byte_0x33, fd);
+        AEFile::Read(options.byte_0x34, fd);
+        AEFile::Read(options.volumeMusic, fd);
+        short language = -1;
+        AEFile::Read(language, fd);
+        AEFile::Read(flag, fd);
+        AEFile::Read(options.byte_0x35, fd);
+        AEFile::Read(options.byte_0x36, fd);
+        AEFile::Read(options.byte_0x3a, fd);
+        AEFile::Read(options.byte_0x3b, fd);
+        AEFile::Read(options.byte_0x3c, fd);
+        AEFile::Read(options.byte_0x37, fd);
+        AEFile::Read(options.byte_0x3d, fd);
+        AEFile::Read(options.byte_0x3e, fd);
+        AEFile::Read(options.byte_0x3f, fd);
+        AEFile::Read(options.byte_0x40, fd);
+        AEFile::Read(options.byte_0x41, fd);
+        AEFile::Read(options.volumeAmbient, fd);
+        resolution = options.volumeAmbient;
+        AEFile::Close(fd);
+    }
+    return resolution;
+}
+
+void RecordHandler::loadOptions() {
+    if (AEFile::FileExist(this->optionsPath) == 0) {
+        return;
+    }
+    unsigned int fd;
+    AEFile::OpenRead(this->optionsPath, &fd);
+    bool valid = this->checkHash(fd);
+    AEFile::Close(fd);
+    if (!valid) {
+        return;
+    }
+    AEFile::OpenRead(this->optionsPath, &fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Read(options->byte_0x10, fd);
+    AEFile::Read(options->byte_0x11, fd);
+    Globals::status->_pad_0xfa[0] = options->byte_0x11;
+    AEFile::Read(options->f_0x14, fd);
+    AEFile::Read(options->f_0x18, fd);
+    AEFile::Read(options->f_0x1c, fd);
+    AEFile::Read(options->f_0x00, fd);
+    AEFile::Read(options->byte_0x0c, fd);
+    AEFile::Read(options->byte_0x0d, fd);
+    AEFile::Read(options->f_0x04, fd);
+    AEFile::Read(options->f_0x24, fd);
+    AEFile::Read(options->f_0x28, fd);
+
+    if (Globals::instantActionPlayerName != 0) {
+        delete Globals::instantActionPlayerName;
+        Globals::instantActionPlayerName = 0;
+    }
+    String name;
+    AEFile::Read(name, fd, false);
+    if (name.length != 0) {
+        Globals::instantActionPlayerName = new String(name);
+    }
+
+    AEFile::Read(Globals::lastRecordWritten, fd);
+    AEFile::Read(Globals::first_start_ever, fd);
+    AEFile::Read(options->i32_0x54, fd);
+    AEFile::Read(options->i32_0x58, fd);
+    AEFile::Read(options->volumeSfx, fd);
+    AEFile::Read(options->byte_0x0e, fd);
+    AEFile::Read(options->byte_0x32, fd);
+    AEFile::Read(options->byte_0x33, fd);
+    AEFile::Read(options->byte_0x34, fd);
+    AEFile::Read(options->volumeMusic, fd);
+    short language = -1;
+    AEFile::Read(language, fd);
+    AEFile::Read(Globals::startLiteVersionWithMoreCredits, fd);
+    AEFile::Read(options->byte_0x35, fd);
+    AEFile::Read(options->byte_0x36, fd);
+    AEFile::Read(options->byte_0x3a, fd);
+    AEFile::Read(options->byte_0x3b, fd);
+    AEFile::Read(options->byte_0x3c, fd);
+    AEFile::Read(options->byte_0x37, fd);
+    AEFile::Read(options->byte_0x3d, fd);
+    AEFile::Read(options->byte_0x3e, fd);
+    AEFile::Read(options->byte_0x3f, fd);
+    AEFile::Read(options->byte_0x40, fd);
+    AEFile::Read(options->byte_0x41, fd);
+    AEFile::Read(options->volumeAmbient, fd);
+    AEFile::Read(options->byte_0x48, fd);
+    AEFile::Read(options->byte_0x38, fd);
+    AEFile::Read(options->byte_0x4e, fd);
+    AEFile::Read(options->byte_0x49, fd);
+    AEFile::Read(options->byte_0x4a, fd);
+    AEFile::Read(options->byte_0x4b, fd);
+    AEFile::Read(options->byte_0x4c, fd);
+    AEFile::Read(options->byte_0x4d, fd);
+    AEFile::Read(options->i32_0x50, fd);
+    AEFile::Read(options->byte_0x60, fd);
+    AEFile::Read(options->byte_0x61, fd);
+    AEFile::Close(fd);
+
+    if (language > -1) {
+        if (language == 9) {
+            language = 0;
+        }
+        Globals::gameText->setLanguage(language, 3401);
+        Globals::globals->loadFont(language);
+    }
+    if (Globals::sound != 0) {
+        Globals::sound->setAudioLanguage(language);
+        Globals::sound->enableCategory(1, options->byte_0x0d);
+        Globals::sound->enableCategory(2, options->byte_0x0c);
+        Globals::sound->enableCategory(3, options->byte_0x0e);
+        Globals::sound->setVolume(1, options->f_0x00);
+        Globals::sound->setVolume(2, options->f_0x04);
+        Globals::sound->setVolume(3, options->volumeSfx);
+    }
+    // The original reads this flag after the handle has already been closed.
+    AEFile::Read(options->byte_0x62, fd);
+}
+
+void RecordHandler::saveOptions() {
+    if (AEFile::FileExist(this->optionsPath) != 0) {
+        AEFile::FileDelete(this->optionsPath);
+    }
+    unsigned int fd;
+    AEFile::OpenWrite(this->optionsPath, &fd);
+    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
+    AEFile::Write(options->byte_0x10, fd);
+    AEFile::Write(options->byte_0x11, fd);
+    AEFile::Write(options->f_0x14, fd);
+    AEFile::Write(options->f_0x18, fd);
+    AEFile::Write(options->f_0x1c, fd);
+    AEFile::Write(options->f_0x00, fd);
+    AEFile::Write(options->byte_0x0c, fd);
+    AEFile::Write(options->byte_0x0d, fd);
+    AEFile::Write(options->f_0x04, fd);
+    AEFile::Write(options->f_0x24, fd);
+    AEFile::Write(options->f_0x28, fd);
+    if (Globals::instantActionPlayerName != 0) {
+        AEFile::Write(*Globals::instantActionPlayerName, fd, false);
+    } else {
+        AEFile::Write(String(""), fd, false);
+    }
+    AEFile::Write((int32_t) Globals::lastRecordWritten, fd);
+    AEFile::Write(Globals::first_start_ever, fd);
+    AEFile::Write(options->i32_0x54, fd);
+    AEFile::Write(options->i32_0x58, fd);
+    AEFile::Write(options->volumeSfx, fd);
+    AEFile::Write(options->byte_0x0e, fd);
+    AEFile::Write(options->byte_0x32, fd);
+    AEFile::Write(options->byte_0x33, fd);
+    AEFile::Write(options->byte_0x34, fd);
+    AEFile::Write(options->volumeMusic, fd);
+    AEFile::Write(GameText::getLanguage(), fd);
+    AEFile::Write(Globals::startLiteVersionWithMoreCredits, fd);
+    AEFile::Write(options->byte_0x35, fd);
+    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write(options->byte_0x3a, fd);
+    AEFile::Write(options->byte_0x3b, fd);
+    AEFile::Write(options->byte_0x3c, fd);
+    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write(options->byte_0x3d, fd);
+    AEFile::Write(options->byte_0x3e, fd);
+    AEFile::Write(options->byte_0x3f, fd);
+    AEFile::Write(options->byte_0x40, fd);
+    AEFile::Write(options->byte_0x41, fd);
+    AEFile::Write(options->volumeAmbient, fd);
+    AEFile::Write(options->byte_0x48, fd);
+    AEFile::Write(options->byte_0x38, fd);
+    AEFile::Write(options->byte_0x4e, fd);
+    AEFile::Write(options->byte_0x49, fd);
+    AEFile::Write(options->byte_0x4a, fd);
+    AEFile::Write(options->byte_0x4b, fd);
+    AEFile::Write(options->byte_0x4c, fd);
+    AEFile::Write(options->byte_0x4d, fd);
+    AEFile::Write(options->i32_0x50, fd);
+    AEFile::Write(options->byte_0x60, fd);
+    AEFile::Write(options->byte_0x61, fd);
+    AEFile::Write(options->byte_0x62, fd);
+    AEFile::Close(fd);
+    this->addHashToOptions();
+}
+
+void RecordHandler::addHashToOptions() {
+    signed char *data = 0;
+    int length = this->readOptionsFileAsByteArray(&data);
+    if (length < 0) {
+        return;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
+
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsOptionsFile(hashed, length + 32);
+
+    delete[] data;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
+}
+
+int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
+    String path = (fromBackup ? this->backupDir : this->recordDir) + String(slot);
+    if (AEFile::FileExist(path) != 0) {
+        unsigned int fd;
+        AEFile::OpenRead(path, &fd);
+        int size = AEFile::GetFileSize(fd);
+        *out = new signed char[size];
+        AEFile::Read(size, *out, fd);
+        AEFile::Close(fd);
+        return size;
+    }
+    return -1;
+}
+
+int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
+    String path = (toBackup ? this->backupDir : this->recordDir) + String(slot);
+    if (AEFile::FileExist(path) != 0) {
+        AEFile::FileDelete(path);
+    }
+    unsigned int fd;
+    AEFile::OpenWrite(path, &fd);
+    AEFile::Write((uint32_t) n, buf, fd);
+    AEFile::Close(fd);
+    return n;
+}
+
+int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
+    String tmp(this->optionsPath, false);
+    int sz;
+    if (AEFile::FileExist(tmp) != 0) {
+        unsigned int fd;
+        AEFile::OpenRead(tmp, &fd);
+        sz = AEFile::GetFileSize(fd);
+        signed char *buf = new signed char[sz];
+        *out = buf;
+        AEFile::Read(sz, buf, fd);
+        AEFile::Close(fd);
+    } else {
+        sz = -1;
+    }
+    return sz;
+}
+
+int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
+    String tmp(this->optionsPath, false);
+    if (AEFile::FileExist(tmp) != 0)
+        AEFile::FileDelete(tmp);
+    unsigned int fd;
+    AEFile::OpenWrite(tmp, &fd);
+    AEFile::Write((uint32_t)n, buf, fd);
+    AEFile::Close(fd);
+    return n;
+}
+
+void RecordHandler::addHash(int slot) {
+    signed char *data = 0;
+    int length = this->readRecordAsByteArray(&data, slot, false);
+    if (length < 0) {
+        return;
+    }
+    unsigned char *digest = new unsigned char[32];
+    Sha256Context *context = new Sha256Context;
+    SHA256_Init(context);
+    SHA256_Update(context, data, length);
+    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
+    SHA256_Update(context, salt, 25);
+    SHA256_Update(context, g_android_origami_super_club, 16);
+    SHA256_Final(digest, context);
+
+    signed char *hashed = new signed char[length + 32];
+    memcpy(hashed, data, length);
+    memcpy(hashed + length, digest, 32);
+    this->writeByteArrayAsRecord(hashed, length + 32, slot, false);
+
+    delete[] data;
+    data = 0;
+    delete[] hashed;
+    delete[] digest;
+    delete context;
 }
 
 GameRecord *RecordHandler::recordStoreRead(int slot) {
@@ -743,153 +1055,12 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
+bool RecordHandler::notEnoughMemory() {
+    return (int)AEFile::GetDeviceFreeSpace() < 900;
+}
+
 GameRecord *RecordHandler::readRecord(int slot) {
     return this->recordStoreRead(slot);
-}
-
-float RecordHandler::loadResolutionValue(float resolution) {
-    if (AEFile::FileExist(this->optionsPath) != 0) {
-        unsigned int fd;
-        AEFile::OpenRead(this->optionsPath, &fd);
-        OptionsBuffer options;
-        AEFile::Read(options.byte_0x10, fd);
-        AEFile::Read(options.byte_0x11, fd);
-        AEFile::Read(options.f_0x14, fd);
-        AEFile::Read(options.f_0x18, fd);
-        AEFile::Read(options.f_0x1c, fd);
-        AEFile::Read(options.f_0x00, fd);
-        AEFile::Read(options.byte_0x0c, fd);
-        AEFile::Read(options.byte_0x0d, fd);
-        AEFile::Read(options.f_0x04, fd);
-        AEFile::Read(options.f_0x24, fd);
-        AEFile::Read(options.f_0x28, fd);
-        String name;
-        AEFile::Read(name, fd, false);
-        int lastRecord;
-        bool flag;
-        AEFile::Read(lastRecord, fd);
-        AEFile::Read(flag, fd);
-        AEFile::Read(options.i32_0x54, fd);
-        AEFile::Read(options.i32_0x58, fd);
-        AEFile::Read(options.volumeSfx, fd);
-        AEFile::Read(options.byte_0x0e, fd);
-        AEFile::Read(options.byte_0x32, fd);
-        AEFile::Read(options.byte_0x33, fd);
-        AEFile::Read(options.byte_0x34, fd);
-        AEFile::Read(options.volumeMusic, fd);
-        short language = -1;
-        AEFile::Read(language, fd);
-        AEFile::Read(flag, fd);
-        AEFile::Read(options.byte_0x35, fd);
-        AEFile::Read(options.byte_0x36, fd);
-        AEFile::Read(options.byte_0x3a, fd);
-        AEFile::Read(options.byte_0x3b, fd);
-        AEFile::Read(options.byte_0x3c, fd);
-        AEFile::Read(options.byte_0x37, fd);
-        AEFile::Read(options.byte_0x3d, fd);
-        AEFile::Read(options.byte_0x3e, fd);
-        AEFile::Read(options.byte_0x3f, fd);
-        AEFile::Read(options.byte_0x40, fd);
-        AEFile::Read(options.byte_0x41, fd);
-        AEFile::Read(options.volumeAmbient, fd);
-        resolution = options.volumeAmbient;
-        AEFile::Close(fd);
-    }
-    return resolution;
-}
-
-void RecordHandler::loadOptions() {
-    if (AEFile::FileExist(this->optionsPath) == 0) {
-        return;
-    }
-    unsigned int fd;
-    AEFile::OpenRead(this->optionsPath, &fd);
-    bool valid = this->checkHash(fd);
-    AEFile::Close(fd);
-    if (!valid) {
-        return;
-    }
-    AEFile::OpenRead(this->optionsPath, &fd);
-    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
-    AEFile::Read(options->byte_0x10, fd);
-    AEFile::Read(options->byte_0x11, fd);
-    Globals::status->_pad_0xfa[0] = options->byte_0x11;
-    AEFile::Read(options->f_0x14, fd);
-    AEFile::Read(options->f_0x18, fd);
-    AEFile::Read(options->f_0x1c, fd);
-    AEFile::Read(options->f_0x00, fd);
-    AEFile::Read(options->byte_0x0c, fd);
-    AEFile::Read(options->byte_0x0d, fd);
-    AEFile::Read(options->f_0x04, fd);
-    AEFile::Read(options->f_0x24, fd);
-    AEFile::Read(options->f_0x28, fd);
-
-    if (Globals::instantActionPlayerName != 0) {
-        delete Globals::instantActionPlayerName;
-        Globals::instantActionPlayerName = 0;
-    }
-    String name;
-    AEFile::Read(name, fd, false);
-    if (name.length != 0) {
-        Globals::instantActionPlayerName = new String(name);
-    }
-
-    AEFile::Read(Globals::lastRecordWritten, fd);
-    AEFile::Read(Globals::first_start_ever, fd);
-    AEFile::Read(options->i32_0x54, fd);
-    AEFile::Read(options->i32_0x58, fd);
-    AEFile::Read(options->volumeSfx, fd);
-    AEFile::Read(options->byte_0x0e, fd);
-    AEFile::Read(options->byte_0x32, fd);
-    AEFile::Read(options->byte_0x33, fd);
-    AEFile::Read(options->byte_0x34, fd);
-    AEFile::Read(options->volumeMusic, fd);
-    short language = -1;
-    AEFile::Read(language, fd);
-    AEFile::Read(Globals::startLiteVersionWithMoreCredits, fd);
-    AEFile::Read(options->byte_0x35, fd);
-    AEFile::Read(options->byte_0x36, fd);
-    AEFile::Read(options->byte_0x3a, fd);
-    AEFile::Read(options->byte_0x3b, fd);
-    AEFile::Read(options->byte_0x3c, fd);
-    AEFile::Read(options->byte_0x37, fd);
-    AEFile::Read(options->byte_0x3d, fd);
-    AEFile::Read(options->byte_0x3e, fd);
-    AEFile::Read(options->byte_0x3f, fd);
-    AEFile::Read(options->byte_0x40, fd);
-    AEFile::Read(options->byte_0x41, fd);
-    AEFile::Read(options->volumeAmbient, fd);
-    AEFile::Read(options->byte_0x48, fd);
-    AEFile::Read(options->byte_0x38, fd);
-    AEFile::Read(options->byte_0x4e, fd);
-    AEFile::Read(options->byte_0x49, fd);
-    AEFile::Read(options->byte_0x4a, fd);
-    AEFile::Read(options->byte_0x4b, fd);
-    AEFile::Read(options->byte_0x4c, fd);
-    AEFile::Read(options->byte_0x4d, fd);
-    AEFile::Read(options->i32_0x50, fd);
-    AEFile::Read(options->byte_0x60, fd);
-    AEFile::Read(options->byte_0x61, fd);
-    AEFile::Close(fd);
-
-    if (language > -1) {
-        if (language == 9) {
-            language = 0;
-        }
-        Globals::gameText->setLanguage(language, 3401);
-        Globals::globals->loadFont(language);
-    }
-    if (Globals::sound != 0) {
-        Globals::sound->setAudioLanguage(language);
-        Globals::sound->enableCategory(1, options->byte_0x0d);
-        Globals::sound->enableCategory(2, options->byte_0x0c);
-        Globals::sound->enableCategory(3, options->byte_0x0e);
-        Globals::sound->setVolume(1, options->f_0x00);
-        Globals::sound->setVolume(2, options->f_0x04);
-        Globals::sound->setVolume(3, options->volumeSfx);
-    }
-    // The original reads this flag after the handle has already been closed.
-    AEFile::Read(options->byte_0x62, fd);
 }
 
 bool RecordHandler::checkHash(unsigned int fd) {
@@ -925,177 +1096,6 @@ bool RecordHandler::checkHash(unsigned int fd) {
     delete[] digest;
     delete context;
     return valid;
-}
-
-void RecordHandler::saveOptions() {
-    if (AEFile::FileExist(this->optionsPath) != 0) {
-        AEFile::FileDelete(this->optionsPath);
-    }
-    unsigned int fd;
-    AEFile::OpenWrite(this->optionsPath, &fd);
-    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
-    AEFile::Write(options->byte_0x10, fd);
-    AEFile::Write(options->byte_0x11, fd);
-    AEFile::Write(options->f_0x14, fd);
-    AEFile::Write(options->f_0x18, fd);
-    AEFile::Write(options->f_0x1c, fd);
-    AEFile::Write(options->f_0x00, fd);
-    AEFile::Write(options->byte_0x0c, fd);
-    AEFile::Write(options->byte_0x0d, fd);
-    AEFile::Write(options->f_0x04, fd);
-    AEFile::Write(options->f_0x24, fd);
-    AEFile::Write(options->f_0x28, fd);
-    if (Globals::instantActionPlayerName != 0) {
-        AEFile::Write(*Globals::instantActionPlayerName, fd, false);
-    } else {
-        AEFile::Write(String(""), fd, false);
-    }
-    AEFile::Write((int32_t) Globals::lastRecordWritten, fd);
-    AEFile::Write(Globals::first_start_ever, fd);
-    AEFile::Write(options->i32_0x54, fd);
-    AEFile::Write(options->i32_0x58, fd);
-    AEFile::Write(options->volumeSfx, fd);
-    AEFile::Write(options->byte_0x0e, fd);
-    AEFile::Write(options->byte_0x32, fd);
-    AEFile::Write(options->byte_0x33, fd);
-    AEFile::Write(options->byte_0x34, fd);
-    AEFile::Write(options->volumeMusic, fd);
-    AEFile::Write(GameText::getLanguage(), fd);
-    AEFile::Write(Globals::startLiteVersionWithMoreCredits, fd);
-    AEFile::Write(options->byte_0x35, fd);
-    AEFile::Write(options->byte_0x36, fd);
-    AEFile::Write(options->byte_0x3a, fd);
-    AEFile::Write(options->byte_0x3b, fd);
-    AEFile::Write(options->byte_0x3c, fd);
-    AEFile::Write(options->byte_0x37, fd);
-    AEFile::Write(options->byte_0x3d, fd);
-    AEFile::Write(options->byte_0x3e, fd);
-    AEFile::Write(options->byte_0x3f, fd);
-    AEFile::Write(options->byte_0x40, fd);
-    AEFile::Write(options->byte_0x41, fd);
-    AEFile::Write(options->volumeAmbient, fd);
-    AEFile::Write(options->byte_0x48, fd);
-    AEFile::Write(options->byte_0x38, fd);
-    AEFile::Write(options->byte_0x4e, fd);
-    AEFile::Write(options->byte_0x49, fd);
-    AEFile::Write(options->byte_0x4a, fd);
-    AEFile::Write(options->byte_0x4b, fd);
-    AEFile::Write(options->byte_0x4c, fd);
-    AEFile::Write(options->byte_0x4d, fd);
-    AEFile::Write(options->i32_0x50, fd);
-    AEFile::Write(options->byte_0x60, fd);
-    AEFile::Write(options->byte_0x61, fd);
-    AEFile::Write(options->byte_0x62, fd);
-    AEFile::Close(fd);
-    this->addHashToOptions();
-}
-
-void RecordHandler::addHashToOptions() {
-    signed char *data = 0;
-    int length = this->readOptionsFileAsByteArray(&data);
-    if (length < 0) {
-        return;
-    }
-    unsigned char *digest = new unsigned char[32];
-    Sha256Context *context = new Sha256Context;
-    SHA256_Init(context);
-    SHA256_Update(context, data, length);
-    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
-    SHA256_Update(context, salt, 25);
-    SHA256_Update(context, g_android_origami_super_club, 16);
-    SHA256_Final(digest, context);
-
-    signed char *hashed = new signed char[length + 32];
-    memcpy(hashed, data, length);
-    memcpy(hashed + length, digest, 32);
-    this->writeByteArrayAsOptionsFile(hashed, length + 32);
-
-    delete[] data;
-    data = 0;
-    delete[] hashed;
-    delete[] digest;
-    delete context;
-}
-
-int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
-    String path = (fromBackup ? this->backupDir : this->recordDir) + String(slot);
-    if (AEFile::FileExist(path) != 0) {
-        unsigned int fd;
-        AEFile::OpenRead(path, &fd);
-        int size = AEFile::GetFileSize(fd);
-        *out = new signed char[size];
-        AEFile::Read(size, *out, fd);
-        AEFile::Close(fd);
-        return size;
-    }
-    return -1;
-}
-
-int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
-    String path = (toBackup ? this->backupDir : this->recordDir) + String(slot);
-    if (AEFile::FileExist(path) != 0) {
-        AEFile::FileDelete(path);
-    }
-    unsigned int fd;
-    AEFile::OpenWrite(path, &fd);
-    AEFile::Write((uint32_t) n, buf, fd);
-    AEFile::Close(fd);
-    return n;
-}
-
-int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
-    String tmp(this->optionsPath, false);
-    int sz;
-    if (AEFile::FileExist(tmp) != 0) {
-        unsigned int fd;
-        AEFile::OpenRead(tmp, &fd);
-        sz = AEFile::GetFileSize(fd);
-        signed char *buf = new signed char[sz];
-        *out = buf;
-        AEFile::Read(sz, buf, fd);
-        AEFile::Close(fd);
-    } else {
-        sz = -1;
-    }
-    return sz;
-}
-
-int RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
-    String tmp(this->optionsPath, false);
-    if (AEFile::FileExist(tmp) != 0)
-        AEFile::FileDelete(tmp);
-    unsigned int fd;
-    AEFile::OpenWrite(tmp, &fd);
-    AEFile::Write((uint32_t)n, buf, fd);
-    AEFile::Close(fd);
-    return n;
-}
-
-void RecordHandler::addHash(int slot) {
-    signed char *data = 0;
-    int length = this->readRecordAsByteArray(&data, slot, false);
-    if (length < 0) {
-        return;
-    }
-    unsigned char *digest = new unsigned char[32];
-    Sha256Context *context = new Sha256Context;
-    SHA256_Init(context);
-    SHA256_Update(context, data, length);
-    char salt[] = "#+\xc2\xa7R0LL3r(0aSter&_%=$+#";
-    SHA256_Update(context, salt, 25);
-    SHA256_Update(context, g_android_origami_super_club, 16);
-    SHA256_Final(digest, context);
-
-    signed char *hashed = new signed char[length + 32];
-    memcpy(hashed, data, length);
-    memcpy(hashed + length, digest, 32);
-    this->writeByteArrayAsRecord(hashed, length + 32, slot, false);
-
-    delete[] data;
-    data = 0;
-    delete[] hashed;
-    delete[] digest;
-    delete context;
 }
 
 Mission *RecordHandler::readMission(unsigned int fd) {
