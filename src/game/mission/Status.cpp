@@ -229,8 +229,8 @@ void Status::incKills() {
 
 int Status::getStationsVisited() { return stationsVisited; }
 
-int Status::getCampaignMission() {
-    return (int) (intptr_t)(*missions)[0];
+Mission *Status::getCampaignMission() {
+    return (*missions)[0];
 }
 
 void Status::setJumpgateUsed(int v) { jumpgatesUsed = v; }

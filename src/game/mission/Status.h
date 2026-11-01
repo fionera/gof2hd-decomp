@@ -234,7 +234,7 @@ public:
 
     int getCurrentCampaignMission();
 
-    int getCampaignMission();
+    Mission *getCampaignMission();
 
     Mission *getMission();
 

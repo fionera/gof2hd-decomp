@@ -678,7 +678,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
     // Key icons: discovered, wanted/campaign target, freelance target, jump gate, pending product.
     if (stationMode ? (int) (*this->stations)[index]->isDiscovered() : (*this->systems)[index]->isFullyDiscovered())
         this->iconBuffer[0] = this->keyImageDiscovered;
-    Mission *campaign = (Mission *) Globals::status->getCampaignMission();
+    Mission *campaign = Globals::status->getCampaignMission();
     Mission *freelance = Globals::status->getFreelanceMission();
     if (Globals::status->getCurrentCampaignMission() == 52 &&
         (stationMode ? (*this->stations)[index]->getIndex() == 74
@@ -686,7 +686,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         this->iconBuffer[1] = this->keyImageWanted;
     if (Globals::status->getCurrentCampaignMission() == 116 && stationMode &&
         (*this->stations)[index]->getIndex() >= 90 && (*this->stations)[index]->getIndex() <= 94 &&
-        !(((Mission *) Globals::status->getCampaignMission())->getStatusValue() &
+        !(Globals::status->getCampaignMission()->getStatusValue() &
           (1 << ((*this->stations)[index]->getIndex() - 90)))) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 120 &&
@@ -697,12 +697,12 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 125 && stationMode &&
                Globals::status->isFreighterMissionStation((*this->stations)[index]->getIndex()) &&
-               !(((Mission *) Globals::status->getCampaignMission())->getStatusValue() &
+               !(Globals::status->getCampaignMission()->getStatusValue() &
                  (1 << Globals::status->getFreighterMissionStationBit((*this->stations)[index]->getIndex())))) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 125 && !stationMode &&
                Globals::status->isFreighterMissionStation((*this->systems)[index]->getWarpGateIndex()) &&
-               !(((Mission *) Globals::status->getCampaignMission())->getStatusValue() &
+               !(Globals::status->getCampaignMission()->getStatusValue() &
                  (1 << Globals::status->getFreighterMissionStationBit((*this->systems)[index]->getWarpGateIndex())))) {
         this->iconBuffer[1] = this->keyImageWanted;
     }
