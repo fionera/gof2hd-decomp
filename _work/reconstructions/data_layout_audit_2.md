@@ -229,3 +229,24 @@ cmake --build cmake-build-match --target check  -j8
 The two committed fixes are `tools/gen_exidx_markers.py` (DROP_EMPTY_TEXT) and the three
 shader `.cpp` definition reorders. The FModSound reorder is staged in
 `/tmp/FModSound_moved.cpp` for the PLT-order campaign.
+
+## Coordinator note (wave 93, byte_exact 4105)
+
+First `.rodata` divergence is at **0x1cafa0**:
+
+```
+orig:  ... "se\0FMOD_GOF2\0master\0music\0sfx\0voice\0english\0deutsch\0" ...
+ours:  ... "se\0master\0music\0sfx\0voice\0english\0deutsch\0FMOD_GOF2\0" ...
+```
+
+`FMOD_GOF2` is `src/engine/audio/FModSound.cpp:155` (inside `FModSound::freeAllEvents`),
+`master/music/sfx/voice` is `kCats` at line 93 and `english/deutsch` is `kLangs` at line 127
+(both inside `FModSound::init`). So the original TU defines `freeAllEvents` **before** `init`.
+
+Moving `freeAllEvents` above `init` does fix that string order but costs 10 byte_exact because it
+changes the `.dynsym`/PLT first-reference order (PLT diff 14 -> 20 lines). The fix must therefore
+be done together with the PLT order (move the other FModSound functions so the PLT sequence is
+preserved), or by finding a different function that emits `FMOD_GOF2` earlier.
+
+Second divergence block starts at **0x1e3740**: a large run of `data/assets/...` path strings is
+reordered (`.aei` texture paths). Map those to their TUs with the section-ordering file.
