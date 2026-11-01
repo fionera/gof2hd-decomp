@@ -4378,3 +4378,6 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   ConfigReader/Engine/ShaderBaseStruct/EnergyShield/AbyssEngine) stacked on `da761aa9` and merged
   onto master's later PLT passes. Its duplicate `GameText_Android.cpp` and `NdkHooks`
   `ndk_autosave` copy were dropped (master already split both). PLT symbol diff 552 -> ~410.
+- **Merge `wave87-w3319`: byte_exact 2487 -> 2495 (+8)**: GameText lifecycle split
+  (`GameTextInit.cpp` after Quaternion) + Route.cpp reorder. Master's w3305 ordering kept for
+  Transform/PaintCanvas/RecordHandler/Level (taking w3319's versions there cost -121).

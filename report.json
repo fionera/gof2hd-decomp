@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 2487,
+  "byte_exact": 2495,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -24458,7 +24458,7 @@
   {
    "name": "_ZN5Route5cloneEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 320,
    "usize": 320
@@ -24466,7 +24466,7 @@
   {
    "name": "_ZN5Route5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -24514,7 +24514,7 @@
   {
    "name": "_ZN5RouteC1EPiP5ArrayIP8KIPlayerES0_i",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 154,
    "usize": 154
@@ -24522,7 +24522,7 @@
   {
    "name": "_ZN5RouteC1EPii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 162,
    "usize": 162
@@ -24530,7 +24530,7 @@
   {
    "name": "_ZN5RouteC2EPiP5ArrayIP8KIPlayerES0_i",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 154,
    "usize": 154
@@ -24538,7 +24538,7 @@
   {
    "name": "_ZN5RouteC2EPii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 162,
    "usize": 162
@@ -24546,7 +24546,7 @@
   {
    "name": "_ZN5RouteD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -24554,7 +24554,7 @@
   {
    "name": "_ZN5RouteD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
