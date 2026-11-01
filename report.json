@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1695,
+  "byte_exact": 1824,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -81,7 +81,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.5,
+   "pct": 78.6,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -3266,7 +3266,7 @@
   {
    "name": "_ZN10MeshMerger6updateEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 320,
    "usize": 320
@@ -3274,7 +3274,7 @@
   {
    "name": "_ZN10MeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -4170,7 +4170,7 @@
   {
    "name": "_ZN11AMeshMergerD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -4178,7 +4178,7 @@
   {
    "name": "_ZN11AMeshMergerD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -4978,7 +4978,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10DrawStringEjPKtiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 82,
    "usize": 82
@@ -4986,7 +4986,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10DrawStringEjRKNS_6StringEiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 90,
    "usize": 90
@@ -5002,7 +5002,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10FontCreateEtRjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -5018,7 +5018,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEtRjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 240,
    "usize": 240
@@ -5034,7 +5034,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas10MeshCreateEttatRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -5090,7 +5090,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 220,
    "usize": 220
@@ -5098,7 +5098,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiih",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -5106,7 +5106,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiihh",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 484,
    "usize": 484
@@ -5114,7 +5114,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas11DrawImage2DEjiiiihhh",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 708,
    "usize": 708
@@ -5122,7 +5122,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas12CameraCreateERj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -5130,7 +5130,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas12DrawRegion2DEjfiiiiff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 584,
    "usize": 584
@@ -5138,7 +5138,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas12DrawRegion2DEjiiiifiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 728,
    "usize": 728
@@ -5234,7 +5234,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawRectangleEiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 364,
    "usize": 364
@@ -5242,7 +5242,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTextLinesEjP5ArrayIPNS_6StringEEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -5250,7 +5250,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTextLinesEjP5ArrayIPNS_6StringEEiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 102,
    "usize": 102
@@ -5258,7 +5258,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTextLinesEjP5ArrayIPNS_6StringEEiijb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 102,
    "usize": 102
@@ -5266,7 +5266,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTransformEPNS_9TransformERKNS_6AEMath6MatrixERS4_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 212,
    "usize": 212
@@ -5274,7 +5274,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13DrawTransformEjPKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 580,
    "usize": 580
@@ -5306,7 +5306,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13Image2DCreateEtRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -5314,7 +5314,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13MeshSet2DMaskEjii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -5330,7 +5330,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13SetMatForGlowEPNS_8MaterialE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 384,
    "usize": 384
@@ -5354,7 +5354,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13TextureCreateEtPFvPNS_5ImageEPvES3_Rjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -5362,7 +5362,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13TextureCreateEtRjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 18,
    "usize": 18
@@ -5378,7 +5378,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14CameraGetLocalEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -5434,7 +5434,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14MaterialCreateERjNS_9BlendModeEjt",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 74,
    "usize": 74
@@ -5442,7 +5442,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14MaterialCreateEtRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -5466,7 +5466,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14ReloadTexturesEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -5498,7 +5498,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15FogSetParameterENS_7FogModeEfffj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -5522,7 +5522,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15MeshGetTriCountEPNS_4MeshE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 38,
    "usize": 38
@@ -5554,7 +5554,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15TransformCreateERj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -5562,7 +5562,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas15TransformCreateEtRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 268,
    "usize": 268
@@ -5586,7 +5586,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 428,
    "usize": 428
@@ -5594,7 +5594,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEjNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 396,
    "usize": 396
@@ -5602,7 +5602,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16DrawSpriteSystemEjNS_6AEMath6MatrixES2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 436,
    "usize": 436
@@ -5618,7 +5618,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16GetReverseStringENS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -5650,7 +5650,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16TransformAddMeshEjtb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 200,
    "usize": 200
@@ -5666,7 +5666,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetMeshResourceIdERNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -5674,7 +5674,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetMeshResourceIdERNS_6StringEt",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 86,
    "usize": 86
@@ -5682,7 +5682,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6MatrixERNS1_6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 392,
    "usize": 392
@@ -5690,7 +5690,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERKNS_6AEMath6VectorERS2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -5698,7 +5698,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17GetScreenPositionERNS_6AEMath6MatrixERKNS1_6VectorERS4_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 604,
    "usize": 604
@@ -5706,7 +5706,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17MeshCloneMaterialEjRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -5714,7 +5714,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17SpriteSystemSetUvEjtffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -5730,7 +5730,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17TransformGetLocalEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -5778,7 +5778,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas18SetProjOrthoMatrixEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 204,
    "usize": 204
@@ -5794,7 +5794,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas18SpriteSystemCreateEtbRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -5802,7 +5802,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas18SpriteSystemCreateEtbtRj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -5834,7 +5834,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas19ReleaseAllResourcesEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 568,
    "usize": 568
@@ -5850,7 +5850,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas19SpriteSystemSetRGBAEjtffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -5866,7 +5866,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas19TextureCreateGlobalENS_6StringEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -5898,7 +5898,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20GetTextureResourceIdERNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -5914,7 +5914,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20RemoveAllMatsForGlowEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -5922,7 +5922,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20SpriteSystemSetAllUvEjffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -5930,7 +5930,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas20TransformGetTriCountEPNS_9TransformE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -5954,7 +5954,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas21SetProjectionMatrix3dEfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -6042,7 +6042,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas24MeshChangeMaterialInternEPNS_9TransformEPNS_8MaterialE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -6058,7 +6058,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas25MeshChangeShaderAnimValueEPNS_9TransformEfj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -6106,7 +6106,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas29MaterialResourceChangeTextureEjji",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -6122,7 +6122,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas33TransformGet2DPickedTextureRegionEPNS_9TransformEiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 364,
    "usize": 364
@@ -6146,7 +6146,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas5End3dEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3236,
    "usize": 3236
@@ -6154,7 +6154,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas5EndBGEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -6162,7 +6162,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas6ResumeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -6170,7 +6170,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas7Begin2dEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -6218,7 +6218,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas8DrawLineEiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 436,
    "usize": 436
@@ -6226,7 +6226,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas8DrawMeshEPNS_4MeshERNS_6AEMath6MatrixES5_jS5_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1296,
    "usize": 1296
@@ -6258,7 +6258,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas8SetColorEhhhh",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -6266,7 +6266,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas8SetColorEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -6274,7 +6274,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas9FogEnableEbNS_7FogModeE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -6298,7 +6298,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvasC1EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 520,
    "usize": 520
@@ -6306,7 +6306,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvasC2EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 520,
    "usize": 520
@@ -6314,7 +6314,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvasD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 532,
    "usize": 532
@@ -6322,7 +6322,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvasD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 532,
    "usize": 532
@@ -8802,7 +8802,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager6ResumeEb",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 50,
    "usize": 50
@@ -8810,7 +8810,7 @@
   {
    "name": "_ZN11AbyssEngine18ApplicationManager7SuspendEv",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 46,
    "usize": 46
@@ -9202,7 +9202,7 @@
   {
    "name": "_ZN11AbyssEngine20CameraSetPerspectiveEffffPNS_6CameraE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -9210,7 +9210,7 @@
   {
    "name": "_ZN11AbyssEngine20CameraSetPerspectiveEfffffPNS_6CameraE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 180,
    "usize": 180
@@ -9562,7 +9562,7 @@
   {
    "name": "_ZN11AbyssEngine26CameraIsPointinViewFrustumERKNS_6AEMath6VectorEPNS0_6MatrixEPNS_6CameraE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 384,
    "usize": 384
@@ -9570,7 +9570,7 @@
   {
    "name": "_ZN11AbyssEngine27CameraIsSphereinViewFrustumERKNS_6AEMath6VectorEfPNS0_6MatrixEPNS_6CameraE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 436,
    "usize": 436
@@ -10258,7 +10258,7 @@
   {
    "name": "_ZN11AbyssEngine6CameraC2Efffff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -11002,7 +11002,7 @@
   {
    "name": "_ZN11AbyssEngine6String13ReplaceStringES0_S0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 260,
    "usize": 260
@@ -11066,7 +11066,7 @@
   {
    "name": "_ZN11AbyssEngine6String4TrimEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -11074,7 +11074,7 @@
   {
    "name": "_ZN11AbyssEngine6String5SplitES0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -11130,7 +11130,7 @@
   {
    "name": "_ZN11AbyssEngine6String7ReverseEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -11138,7 +11138,7 @@
   {
    "name": "_ZN11AbyssEngine6String7ValueOfEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -11162,7 +11162,7 @@
   {
    "name": "_ZN11AbyssEngine6String9SubStringEjj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 168,
    "usize": 168
@@ -11170,7 +11170,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC1EPKcb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11178,7 +11178,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC1EPKtb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11186,7 +11186,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC1ERKS0_b",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -11202,7 +11202,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC2EPKcb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11210,7 +11210,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC2EPKtb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11218,7 +11218,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC2ERKS0_b",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -11234,7 +11234,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC2Ef",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -11314,7 +11314,7 @@
   {
    "name": "_ZN11AbyssEngine6StringpLERKS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -11330,7 +11330,7 @@
   {
    "name": "_ZN11AbyssEngine6StringpLERKf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -11338,7 +11338,7 @@
   {
    "name": "_ZN11AbyssEngine6StringpLERKi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -11346,7 +11346,7 @@
   {
    "name": "_ZN11AbyssEngine6StringpLERKx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -11570,7 +11570,7 @@
   {
    "name": "_ZN11AbyssEngine8KeyFrameC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -11578,7 +11578,7 @@
   {
    "name": "_ZN11AbyssEngine8MaterialC2EPS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 276,
    "usize": 276
@@ -11586,7 +11586,7 @@
   {
    "name": "_ZN11AbyssEngine8MaterialC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -11594,7 +11594,7 @@
   {
    "name": "_ZN11AbyssEngine8MaterialD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -11810,7 +11810,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform10InCameraVFEPNS_6AEMath6MatrixEPNS_6CameraE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 304,
    "usize": 304
@@ -11818,7 +11818,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform10SetVFCFlagEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 78,
    "usize": 78
@@ -11834,7 +11834,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform11AddKeyFrameERKNS_6AEMath6VectorES4_S4_S4_S4_S4_i",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -11842,7 +11842,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform12InternUpdateExb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2112,
    "usize": 2112
@@ -11850,7 +11850,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform14InsertKeyFrameEPKfxi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1276,
    "usize": 1276
@@ -11858,7 +11858,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform14InsertKeyFrameEPNS_8KeyFrameEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -11866,7 +11866,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform15UpdateKeyFramesEPNS_8KeyFrameEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1288,
    "usize": 1288
@@ -11914,7 +11914,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform23SetAnimationRangeInTimeExx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -11930,7 +11930,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform24InitAnimationRangeInTimeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 102,
    "usize": 102
@@ -11938,7 +11938,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform26PauseAnimationWithKeyFrameEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -11946,7 +11946,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform27PauseAnimationWithTimeStampEx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -11986,7 +11986,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformC1EPS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 596,
    "usize": 596
@@ -11994,7 +11994,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 480,
    "usize": 480
@@ -12002,7 +12002,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformC2EPS0_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 596,
    "usize": 596
@@ -12010,7 +12010,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 480,
    "usize": 480
@@ -12018,7 +12018,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -12026,7 +12026,7 @@
   {
    "name": "_ZN11AbyssEngine9TransformD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -12034,7 +12034,7 @@
   {
    "name": "_ZN11AbyssEngineeqERKNS_6StringES2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -12066,7 +12066,7 @@
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringERKf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -12074,7 +12074,7 @@
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringERKi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -12082,7 +12082,7 @@
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringERKx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -12090,7 +12090,7 @@
   {
    "name": "_ZN11AbyssEngineplERKNS_6StringES2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -12098,7 +12098,7 @@
   {
    "name": "_ZN11AbyssEngineplERKfRKNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -12106,7 +12106,7 @@
   {
    "name": "_ZN11AbyssEngineplERKiRKNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -12114,7 +12114,7 @@
   {
    "name": "_ZN11AbyssEngineplERKxRKNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -12122,7 +12122,7 @@
   {
    "name": "_ZN11AbyssEnginepsERKNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -13266,7 +13266,7 @@
   {
    "name": "_ZN11TouchButton19replaceTextKeepSizeERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -15338,7 +15338,7 @@
   {
    "name": "_ZN13LodMeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -19986,7 +19986,7 @@
   {
    "name": "_ZN3Hud15drawEventStringEN11AbyssEngine6StringEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -24698,7 +24698,7 @@
   {
    "name": "_ZN6AEFile11findPakFileERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 360,
    "usize": 360
@@ -27074,7 +27074,7 @@
   {
    "name": "_ZN6Status14stringHasTokenEN11AbyssEngine6StringES1_",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 26,
    "usize": 26

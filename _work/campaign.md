@@ -4312,3 +4312,7 @@ mtw anchor for any size change before MenuTouchWindow.
   original TU splits (`Curve.cpp`, `GLES1Compat.cpp`, ...) pulled a large block of dynsym/PLT slots
   back into place. `.text` 0x1337b0, `.rodata` 0x1c9e10 exact. This is the single biggest gain of
   the session and confirms the PLT/dynsym theory.
+- **PLT order passes 2-4: byte_exact 1695 -> 1824 (+129)** (`w3305`): AEFile `OpenRead`-after-`Open`
+  + Camera source order (1692 -> 1700), String/Transform source order + KeyFrame `memclr4`
+  (1700 -> 1748), PaintCanvas source order (1748 -> 1831). All `.text` 0x1337b0, `.rodata`
+  0x1c9e10. Total PLT-order gain this session: 1544 -> 1824 (+280).
