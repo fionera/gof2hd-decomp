@@ -134,10 +134,6 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-
-
-
-
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->init();
 
@@ -208,6 +204,9 @@ static const int g_dw_briefingScript[120] = {
     26, 2249, 0, 2250, 31, 2283, 0, 2284, 31, 2285, 0, 2286, 49, 2879, 0, 2880, 49, 2881, 0, 2882,
 };
 
+// The original TU's table is 2060 ints: the last four entries are zero and are never
+// read (sum(g_dw_successCounts) == 2056, and loadContent's max index is 2055), but they
+// are present in the original's .rodata at 0x205ec0..0x205ed0.
 static const int g_dw_successScript[2060] = {
     0, 1700, 2, 1701, 0, 1702, 2, 1703, 0, 1704, 2, 1705, 0, 1706, 2, 1707, 2, 1708, 0, 1709,
     2, 1710, 2, 1711, 0, 1712, 2, 1713, 0, 1714, 2, 1715, 2, 1716, 0, 1717, 16, 1718, 2, 1728,
