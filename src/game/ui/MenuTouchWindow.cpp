@@ -447,7 +447,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                      Globals::layout->field_0x30_rowHeight) +
                     (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
             }
-            bool special = (i | 1) == 9;
+            bool special = (i | 1) != 9;
             int spacing = Globals::Canvas->FontGetSpacing(
                 special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
             TouchButton *language = new TouchButton(
