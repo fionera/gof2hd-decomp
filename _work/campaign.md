@@ -4585,3 +4585,11 @@ original build flags.
   `_work/reconstructions/fdata_sections_w3439.md`.
 - **`-mllvm` audit** (`w3426`): 123 global `-mllvm` variants measured, 0 improvements; the tree
   has no `-mllvm` flags left. The original app TUs are LLVM 7.0.2 default codegen.
+- **`Level::createMission`** (`w3440`): convoy offset switch block + store order, 83.24 -> 83.37%.
+- **`MGame::OnUpdate`** (`w3441`, byte 4253 -> 4254): `GameTextInit.cpp` folded into `GameText.cpp`
+  so `GameText::currentLang` lands at its original `.data` slot; differing bytes 22 -> 17.
+- **data content map** (`w3443`, byte 4252 -> 4254): key addends, 63-entry `gStoryFaceTable`,
+  GameText link order. Note: `_work/reconstructions/data_content_map_w3443.md`.
+- **`LevelScript::process`** (`w3445`): case-139 docking-type test order (fuzzy flat).
+- **dynsym app region** (`w3447`): `BSphere::Merge(Transform)` moved into `Vector.cpp`
+  (first-reference order). Note: `_work/reconstructions/dynsym_app_region_order_w3447.md`.
