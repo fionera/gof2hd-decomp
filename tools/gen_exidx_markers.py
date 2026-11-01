@@ -10,15 +10,18 @@ ordering index and only 6 sentinels survive.
 This script makes renamed copies of every link input:
 
   * each gof2 object (read from the gold response file produced by gen_link_order.py) is
-    copied, and a zero-size `.text` is renamed to `.text.tuend.o<NNN>` with `sh_addralign`
-    forced to 1 (a 4-aligned zero-size section between 2-aligned Thumb functions would add
-    padding to `.text`);
+    copied, and a zero-size `.text` is renamed to `.text.tuend.o<NNN>`.  The marker is
+    normally forced to `sh_addralign=1` so it adds no padding between 2-aligned Thumb
+    functions; KIPlayer.cpp and Explosion.cpp are the exception (align 4) because their
+    successor TU (ListItem.cpp / Status.cpp) starts on a 4-byte boundary in the original
+    binary.  Aligning those two markers reproduces that boundary without touching `.text`
+    size or `.rodata`;
   * each archive is unpacked and re-packed, with every member's zero-size `.text` renamed to
-    `.text.tuend.a<AA>m<MMM>` the same way.
+    `.text.tuend.a<AA>m<MMM>` with alignment 1.
 
 The copies are written under <out-dir>; `link_order.rsp` and `archives.rsp` in that directory
 list them, and gen_section_order.py inserts each marker after its owner's last `.text.*`
-section.  Alignment 1 is load-bearing: without it `.text` grows by 0x18.
+section.
 
 Usage: gen_exidx_markers.py <out-dir> <objcopy> <ar> <link-order.rsp> <archive>...
 """
@@ -61,12 +64,12 @@ def patch_align(path, name, align):
     raise SystemExit(f"{path}: section {name} not found")
 
 
-def rename_empty_text(objcopy, src, dst, marker):
+def rename_empty_text(objcopy, src, dst, marker, align=1):
     shutil.copyfile(src, dst)
     if has_empty_plain_text(dst):
         subprocess.run([objcopy, "--rename-section", f".text={marker}", dst],
                        check=True, capture_output=True)
-        patch_align(dst, marker, 1)
+        patch_align(dst, marker, align)
         return True
     return False
 
@@ -108,7 +111,10 @@ def main() -> int:
     copies, markers = [], 0
     for i, obj in enumerate(objs):
         dst = os.path.join(objdir, f"o{i:03d}_{os.path.basename(obj)}")
-        if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}"):
+        # KIPlayer/Explosion are followed by a TU whose first function is 4-aligned in
+        # the original (ListItem/Status); align the boundary marker to 4 to match.
+        align = 4 if os.path.basename(obj) in ("KIPlayer.cpp.obj", "Explosion.cpp.obj") else 1
+        if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align):
             markers += 1
         copies.append(dst)
     with open(os.path.join(outdir, "link_order.rsp"), "w") as f:

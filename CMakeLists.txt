@@ -94,7 +94,8 @@ add_custom_command(OUTPUT "${_linkorder}"
 # carries an empty plain `.text`; the original (un-ordered) link kept one sentinel per TU, but our
 # ordering file lists `.text` once, so all 272 empty sections collapse to one index and only 6
 # survive.  Copy every object/archive member, rename its empty `.text` to a unique `.text.tuend.*`
-# marker (sh_addralign=1 so a 4-aligned zero-size section adds no padding), and have
+# marker (sh_addralign=1 so a 4-aligned zero-size section adds no padding; two mid-game
+# markers use align 4 to reproduce the original TU boundary), and have
 # gen_section_order.py place each marker after its owner's last section in the finished order.
 set(_marker_dir "${CMAKE_BINARY_DIR}/exidx_markers")
 set(_marker_stamp "${_marker_dir}/stamp")
