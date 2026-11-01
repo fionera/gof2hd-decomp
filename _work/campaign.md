@@ -4154,3 +4154,14 @@ mtw anchor for any size change before MenuTouchWindow.
   arithmetic as the original's unsigned division of `initialLifetime * i` by `positions.count`
   (`(float) ((uint32_t) (total * (int) i) / n)`) with a signed `total`; the `total - life` term is
   a signed conversion. Residual is `elapsed` in r5 vs the original r4 (greedy RA).
+- **Link: `-z now` (full RELRO) — byte_exact 1415 -> 1458** (`9b46ec31`): the original has
+  `DT_FLAGS=BIND_NOW`, `DT_FLAGS_1=NOW`, and `PT_GNU_RELRO` covering `.got`, which sits *before*
+  `.data`; gold only emits that order with `-z now`. Without it our `.got` landed after `.data`
+  and outside RELRO. With it `.got` is at 0x20fcf4, `.data` at 0x214000 and `.dynamic` (0x148) at
+  0x20fba4 — all exactly the original. 43 functions became byte-exact because their GOT-relative
+  literal-pool words now resolve to the original addresses. `.init_array`/`.fini_array` contents
+  already match exactly. Residual RELRO delta is 0x20 (`.data.rel.ro` +0x20).
+- **Research wave 91 launched (7 agents)**: build-system archaeology, ELF/flag matrix v2,
+  link-flag forensics, layout/anchor audit v2 (+ the 267 missing `.ARM.exidx` entries), data-layout
+  audit (`.rodata` -1056), local-function gap audit (address drift), dynsym-order audit (TU
+  membership). Deliverables land as `_work/reconstructions/*.md`.
