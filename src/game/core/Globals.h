@@ -265,7 +265,7 @@ public:
     static int lastCampaignMissionFailCount;
     static bool startLiteVersionWithMoreCredits;
     static AbyssEngine::AERandom *rnd;
-    static void *font; // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
+    static unsigned int font;
     // lint: void_ptr (opaque LoadingCallback userdata; ApplicationManager::SetLoadingCallback takes void*)
     static int keys[255];
     static float bankZ;
@@ -286,7 +286,7 @@ public:
     static int pause_y;
     static float pause_z;
     static GameText *gameText;
-    static void *fontAlien; // lint: void_ptr (unknown alien-font handle, never referenced)
+    static unsigned int fontAlien;
     static Generator *generator;
 };
 

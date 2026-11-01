@@ -410,8 +410,7 @@ void Layout::reload() {
         new TouchButton(img471, 1, Globals::w, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
 
-    int th = Globals::Canvas->GetTextHeight(
-        static_cast<unsigned int>(reinterpret_cast<unsigned long>(Globals::font)));
+    int th = Globals::Canvas->GetTextHeight(Globals::font);
     this->choiceWindowOpen = 0;
     this->choiceWindow = nullptr;
     this->tipLines = nullptr;

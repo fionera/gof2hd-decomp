@@ -126,10 +126,10 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script) {
 
         String text(*Globals::gameText->getText((*this->messages)[i]->getTextID()));
 
-        void *font = imageId == 56 ? Globals::fontAlien : Globals::font; // lint: void_ptr (Globals font handles)
+        unsigned int font = imageId == 56 ? Globals::fontAlien : Globals::font;
         if (imageId == 19)
             font = Globals::fontAlien;
-        this->font = (unsigned int) (uintptr_t) font;
+        this->font = font;
 
         Globals::globals->getLineArray(this->font, text,
                                        this->boxWidth - 10 - Globals::layout->field_0x2d4, this->rows);
