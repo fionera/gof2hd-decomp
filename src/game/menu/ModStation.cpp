@@ -1655,53 +1655,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) { // lint: void_ptr
     reinterpret_cast<float &>(this->field_0xf8) = (velocity < 0 ? -velocity : velocity) > 3 ? (float) velocity : 0.0f;
 }
 
-void ModStation::checkMedals() {
-    Globals::globals->reportLeaderboards();
-    if (!this->flag_0x6a && !this->flag_0x63) {
-        if (Globals::status->getCurrentCampaignMission() == 1)
-            addAchievement(0, 1);
-        this->medalArray = nullptr;
-        int *medals = Globals::achievements->getNewMedals();
-        int count = 0;
-        this->medalCount = 0;
-        for (int i = 0; i < 45; i++) {
-            if (medals[i] >= 1)
-                this->medalCount = ++count;
-        }
-        if (count > 0) {
-            this->medalArray = new Array<int *>();
-            ArraySetLength(this->medalCount, *this->medalArray);
-            this->medalCount = 0;
-            for (int i = 0; i < 45; i++) {
-                if (medals[i] >= 1) {
-                    (*this->medalArray)[this->medalCount] = new int[2];
-                    (*this->medalArray)[this->medalCount][0] = i;
-                    (*this->medalArray)[this->medalCount][1] = medals[i];
-                    this->medalCount++;
-                }
-            }
-            this->flag_0x6a = 1;
-            this->medalIndex = 0;
-            this->medalChoiceWindow = new ChoiceWindow();
-            this->medalChoiceWindow->setMedal((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
-            if (!Globals::status->hardCoreMode())
-                Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[0][1]]);
-            addAchievement((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
-        }
-    } else {
-        this->medalIndex++;
-        if (this->medalIndex >= this->medalCount) {
-            this->flag_0x6a = 0;
-            return;
-        }
-        this->medalChoiceWindow->setMedal((*this->medalArray)[this->medalIndex][0],
-                                          (*this->medalArray)[this->medalIndex][1]);
-        if (!Globals::status->hardCoreMode())
-            Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[this->medalIndex][1]]);
-        addAchievement((*this->medalArray)[this->medalIndex][0], (*this->medalArray)[this->medalIndex][1]);
-    }
-}
-
 void ModStation::resetIdleCamForHangar() {
     if (this->cutScene != nullptr)
         this->cutScene->resetCamera();
@@ -2796,6 +2749,53 @@ void ModStation::addAchievement(int medalId, int kind) {
             g_android_current_achievements[1] = medalId * 3 + 1;
     }
     g_android_current_achievements[2] = (medalId * 3 + 3) - kind;
+}
+
+void ModStation::checkMedals() {
+    Globals::globals->reportLeaderboards();
+    if (!this->flag_0x6a && !this->flag_0x63) {
+        if (Globals::status->getCurrentCampaignMission() == 1)
+            addAchievement(0, 1);
+        this->medalArray = nullptr;
+        int *medals = Globals::achievements->getNewMedals();
+        int count = 0;
+        this->medalCount = 0;
+        for (int i = 0; i < 45; i++) {
+            if (medals[i] >= 1)
+                this->medalCount = ++count;
+        }
+        if (count > 0) {
+            this->medalArray = new Array<int *>();
+            ArraySetLength(this->medalCount, *this->medalArray);
+            this->medalCount = 0;
+            for (int i = 0; i < 45; i++) {
+                if (medals[i] >= 1) {
+                    (*this->medalArray)[this->medalCount] = new int[2];
+                    (*this->medalArray)[this->medalCount][0] = i;
+                    (*this->medalArray)[this->medalCount][1] = medals[i];
+                    this->medalCount++;
+                }
+            }
+            this->flag_0x6a = 1;
+            this->medalIndex = 0;
+            this->medalChoiceWindow = new ChoiceWindow();
+            this->medalChoiceWindow->setMedal((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
+            if (!Globals::status->hardCoreMode())
+                Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[0][1]]);
+            addAchievement((*this->medalArray)[0][0], (*this->medalArray)[0][1]);
+        }
+    } else {
+        this->medalIndex++;
+        if (this->medalIndex >= this->medalCount) {
+            this->flag_0x6a = 0;
+            return;
+        }
+        this->medalChoiceWindow->setMedal((*this->medalArray)[this->medalIndex][0],
+                                          (*this->medalArray)[this->medalIndex][1]);
+        if (!Globals::status->hardCoreMode())
+            Globals::status->changeCredits(gMedalCreditReward[(*this->medalArray)[this->medalIndex][1]]);
+        addAchievement((*this->medalArray)[this->medalIndex][0], (*this->medalArray)[this->medalIndex][1]);
+    }
 }
 
 void ModStation::showMapWindow() {
