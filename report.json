@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4441,
+  "byte_exact": 4463,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -14394,7 +14394,7 @@
   {
    "name": "_ZN12ImageFactory10createCharEbi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -14466,7 +14466,7 @@
   {
    "name": "_ZN12ImageFactory9loadImageEiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 268,
    "usize": 268
@@ -14474,7 +14474,7 @@
   {
    "name": "_ZN12ImageFactoryC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -14482,7 +14482,7 @@
   {
    "name": "_ZN12ImageFactoryC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -15594,7 +15594,7 @@
   {
    "name": "_ZN13PlayerFighter6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 10376,
    "usize": 10376
@@ -15642,7 +15642,7 @@
   {
    "name": "_ZN13PlayerFighterC1EiiP6PlayerP10AEGeometryfffb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1324,
    "usize": 1324
@@ -15650,7 +15650,7 @@
   {
    "name": "_ZN13PlayerFighterC2EiiP6PlayerP10AEGeometryfffb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1324,
    "usize": 1324
@@ -16930,7 +16930,7 @@
   {
    "name": "_ZN14PlayerCreature4rageEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -17002,7 +17002,7 @@
   {
    "name": "_ZN14PlayerCreature9getWeightEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -17010,7 +17010,7 @@
   {
    "name": "_ZN14PlayerCreatureC1EiiP6PlayerP10AEGeometryfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 204,
    "usize": 204
@@ -17018,7 +17018,7 @@
   {
    "name": "_ZN14PlayerCreatureC2EiiP6PlayerP10AEGeometryfff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 204,
    "usize": 204
@@ -20682,7 +20682,7 @@
   {
    "name": "_ZN4Item27canBeInstalledMultipleTimesEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -23082,7 +23082,7 @@
   {
    "name": "_ZN5Level10assignGunsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2948,
    "usize": 2948
@@ -23122,7 +23122,7 @@
   {
    "name": "_ZN5Level11createSpaceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3076,
    "usize": 3076
@@ -23378,7 +23378,7 @@
   {
    "name": "_ZN5Level15createAsteroidsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1588,
    "usize": 1588
@@ -23602,7 +23602,7 @@
   {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 29676,
    "usize": 29676
@@ -23722,7 +23722,7 @@
   {
    "name": "_ZN5Level9createGunEiiiiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2012,
    "usize": 2012
@@ -28114,7 +28114,7 @@
   {
    "name": "_ZN7Globals12getShipGroupEiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1856,
    "usize": 1856
@@ -28202,7 +28202,7 @@
   {
    "name": "_ZN7Globals18getDialogueSoundIdEiP5Agent",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1724,
    "usize": 1724
@@ -28242,7 +28242,7 @@
   {
    "name": "_ZN7Globals21getRandomEnemyFighterEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 176,
    "usize": 176
@@ -28938,7 +28938,7 @@
   {
    "name": "_ZN7StarMap14initStarSystemEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2076,
    "usize": 2076
@@ -28978,7 +28978,7 @@
   {
    "name": "_ZN7StarMap4initEbP7Missionbi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2220,
    "usize": 2220

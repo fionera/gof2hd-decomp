@@ -113,7 +113,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
-| .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8). |
+| .data.rel.ro | 12,264 | 12,264 | **0** | size+base exact; 3 content bytes differ (one libc++abi pointer pair). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |

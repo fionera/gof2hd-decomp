@@ -4622,3 +4622,10 @@ original build flags.
 - **`Generator::createMission` size-exact** (`w3465`): the body is now 1996 B (was 1992) via a
   pool-loaded `0.5f`; the `generatorMissionLayoutPad()` anchor in `MTitle.cpp` is gone. Fuzzy
   73.8 -> 73.6 (a scheduling trade), but `.text` layout no longer depends on a padding anchor.
+- **`.rodata` byte-identical** (`w3477`, byte 4441 -> **4463**): the remaining 8,826 bytes were
+  pure table emission order (word multiset 6,586/6,586 common, 0 unique). Three `Level` function
+  moves, a section pragma on `PlayerCreature`'s 16-byte table and three `(void)` odr-use anchors
+  reproduce the original order. `.rodata` is now **0 / 269,159 differing bytes**; `.data` is also
+  0 and `.data.rel.ro` is down to 3. Note: `_work/reconstructions/rodata_content_round5_w3477.md`.
+  Follow-up: the `#pragma clang section` and `(void)` odr-use anchors are not ideal "plain C++";
+  they should eventually be replaced by the original TU split.
