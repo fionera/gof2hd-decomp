@@ -48,6 +48,53 @@ static const char kEnergyShieldFragmentSource[] =
 namespace AbyssEngine {
     int EnergyShield::ShaderIndex = -1;
 
+    EnergyShield::EnergyShield() {
+        EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("EnergyShield", false);
+    }
+
+    void EnergyShield::Init(Engine *engine) {
+        int program = this->ES2LoadProgram(kEnergyShieldVertexSource, kEnergyShieldFragmentSource);
+        this->program = program;
+
+        this->aPositionLoc = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
+        this->uModelViewMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewMatrix");
+        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
+        this->sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
+        this->sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uRimColorLoc = glGetUniformLocation(this->program, "u_RimColor");
+        this->uTexelSizeLoc = glGetUniformLocation(this->program, "u_texelSize");
+
+        glActiveTexture(0x84c7);
+        ((::Engine *) engine)->ActivateRefractFBO();
+
+        this->uVertTimeLoc = glGetUniformLocation(this->program, "u_vertTime");
+        this->uTimeLoc = glGetUniformLocation(this->program, "u_time");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
+
+        glUseProgram(this->program);
+
+        for (int i = 0; i != 2; i = i + 1) {
+            if ((&this->sTexture0Loc)[i] >= 0)
+                glUniform1i((&this->sTexture0Loc)[i], i);
+        }
+        glUniform1i(this->sTextureBaseLoc, 7);
+    }
+
+    void EnergyShield::SetInActive() {
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
+    }
+
     void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine) {
         ::Engine *host = (::Engine *) engine;
         if (this->uModelViewProjectionMatrixLoc >= 0)
@@ -98,52 +145,5 @@ namespace AbyssEngine {
             glBindBuffer(0x8892, mesh->normalVBO);
             glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
         }
-    }
-
-    void EnergyShield::SetInActive() {
-        if (this->aPositionLoc >= 0)
-            glDisableVertexAttribArray(this->aPositionLoc);
-        if (this->aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        if (this->aNormalLoc >= 0)
-            glDisableVertexAttribArray(this->aNormalLoc);
-    }
-
-    void EnergyShield::Init(Engine *engine) {
-        int program = this->ES2LoadProgram(kEnergyShieldVertexSource, kEnergyShieldFragmentSource);
-        this->program = program;
-
-        this->aPositionLoc = glGetAttribLocation(program, "a_position");
-        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
-
-        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
-        this->uModelViewProjectionMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewProjectionMatrix");
-        this->uModelViewMatrixLoc = glGetUniformLocation(this->program, "u_ModelViewMatrix");
-        this->uEyeposmodelLoc = glGetUniformLocation(this->program, "u_eyeposmodel");
-        this->sTexture0Loc = glGetUniformLocation(this->program, "s_texture[0]");
-        this->sTexture1Loc = glGetUniformLocation(this->program, "s_texture[1]");
-        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
-        this->uRimColorLoc = glGetUniformLocation(this->program, "u_RimColor");
-        this->uTexelSizeLoc = glGetUniformLocation(this->program, "u_texelSize");
-
-        glActiveTexture(0x84c7);
-        ((::Engine *) engine)->ActivateRefractFBO();
-
-        this->uVertTimeLoc = glGetUniformLocation(this->program, "u_vertTime");
-        this->uTimeLoc = glGetUniformLocation(this->program, "u_time");
-        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
-
-        glUseProgram(this->program);
-
-        for (int i = 0; i != 2; i = i + 1) {
-            if ((&this->sTexture0Loc)[i] >= 0)
-                glUniform1i((&this->sTexture0Loc)[i], i);
-        }
-        glUniform1i(this->sTextureBaseLoc, 7);
-    }
-
-    EnergyShield::EnergyShield() {
-        EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("EnergyShield", false);
     }
 }

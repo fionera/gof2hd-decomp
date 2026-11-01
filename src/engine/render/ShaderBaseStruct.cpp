@@ -20,16 +20,32 @@ namespace AbyssEngine {
     ShaderBaseStruct::~ShaderBaseStruct() {
     }
 
-    void ShaderBaseStruct::UseShader(bool /*useExtra*/) {
-        glUseProgram(this->program);
-    }
-
     void ShaderBaseStruct::DeleteShader() {
         glDeleteProgram(this->program);
     }
 
-    void ShaderBaseStruct::Update() {
-        this->dirty = 1;
+    uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source) {
+        uint32_t shader = glCreateShader(type);
+
+        if (shader != 0) {
+            int status;
+            glShaderSource(shader, 1, &source, 0);
+            glCompileShader(shader);
+            glGetShaderiv(shader, 0x8b81, &status);
+            if (status == 0) {
+                int logLength = 0;
+                glGetShaderiv(shader, 0x8b84, &logLength);
+                if (logLength >= 2) {
+                    char *log = (char *) malloc(logLength);
+                    glGetShaderInfoLog(shader, logLength, 0, log);
+                    free(log);
+                }
+                glDeleteShader(shader);
+                shader = 0;
+            }
+        }
+
+        return shader;
     }
 
     uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *fragmentSource) {
@@ -74,30 +90,6 @@ namespace AbyssEngine {
         return program;
     }
 
-    uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source) {
-        uint32_t shader = glCreateShader(type);
-
-        if (shader != 0) {
-            int status;
-            glShaderSource(shader, 1, &source, 0);
-            glCompileShader(shader);
-            glGetShaderiv(shader, 0x8b81, &status);
-            if (status == 0) {
-                int logLength = 0;
-                glGetShaderiv(shader, 0x8b84, &logLength);
-                if (logLength >= 2) {
-                    char *log = (char *) malloc(logLength);
-                    glGetShaderInfoLog(shader, logLength, 0, log);
-                    free(log);
-                }
-                glDeleteShader(shader);
-                shader = 0;
-            }
-        }
-
-        return shader;
-    }
-
     uint32_t ShaderBaseStruct::LoadBindShader(const char *vertexPath, const char *fragmentPath) {
         uint32_t result = 0;
 
@@ -129,4 +121,13 @@ namespace AbyssEngine {
 
         return result;
     }
+
+    void ShaderBaseStruct::UseShader(bool /*useExtra*/) {
+        glUseProgram(this->program);
+    }
+
+    void ShaderBaseStruct::Update() {
+        this->dirty = 1;
+    }
+
 }

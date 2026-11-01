@@ -93,7 +93,7 @@ namespace AbyssEngine {
             if (this->uSpecularColorLoc >= 0)
                 glUniform4fv(this->uSpecularColorLoc, 1, engine->materialSpecular);
 
-            float pulse = std::sinf((float) engine->appManager->GetCurrentTimeMillis() / 1000.0f) + 2.0f;
+            float pulse = std::sinf((float) (long long) engine->appManager->GetCurrentTimeMillis() / 1000.0f) + 2.0f;
             glUniform1f(this->uTimevalueLoc, pulse);
             this->dirty = 0;
         }
