@@ -4342,3 +4342,18 @@ mtw anchor for any size change before MenuTouchWindow.
 - **RecordHandler/zip/NdkAutosave reorder** (`w3325`): RecordHandler.cpp is reordered to the
   original .text order, the zip calls move into NdkHooks.cpp, `ndk_autosave` gets its own TU and
   `GetCurrentTimeMillis` is signed. Gate unchanged at 1919.
+
+## Wave 92 summary (this session)
+
+byte_exact **1513 -> 1919** (+406), linked_exact **4492 -> 4494**, avg 99.89, `.text` 0x1337a4
+(orig 0x1337c8), `.ARM.exidx` 0x6fb8, `.rodata` 0x1c9e30, `.data.rel.ro` and `.data` exact,
+`.bss` +28 (was +44).
+
+The decisive discovery: **the PLT entry order follows the `.dynsym` order** (gold inserts a
+symbol at its first definition/reference), and a shifted PLT slot breaks every `blx <plt>` in
+the file even when the function itself is at its exact original address. Reordering TUs to the
+original definition order (Mesh, AEFile, Camera, String, Transform, PaintCanvas, Engine,
+shaders, WantedWindow, RecordHandler, ...) and restoring the original TU splits
+(Curve, GLES1Compat, GameText_iPhone, GOF2HD2012, BackButton, NdkAutosave, ...) took byte_exact
+1544 -> 1919. The PLT symbol diff is down from 1354 to ~898 lines; continuing that diff is the
+highest-value work left.
