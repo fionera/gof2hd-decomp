@@ -34,12 +34,23 @@ against `../_work/bins/android_2.0.16_libgof2hdaa.so` with this tree's NDK r18b 
   (E2 -519, E3 -11, E4 -1380) because they disturb PLT/GOT/`.rodata` order.
   The current TU split is therefore load-bearing; do not move these definitions
   without re-running the full gate.
+* **`.ARM.extab` is a direct witness of the within-TU compile order.** The
+  original was linked without a section-ordering file, so its `.text` order is
+  its compile order; `.ARM.extab` records are emitted per function in the
+  object's function order, and the section-ordering file orders `.text*` only,
+  not `.ARM.extab`. In the original, every one of the 190 mapped TUs has its
+  extab records in ascending `.text`-address order; in our tree **77 of 191 TUs
+  do not**. Function-level alignment: 2271/2438 extab functions in order, 196
+  gaps (ratio 0.9315). This is the largest remaining TU-compile-order delta and
+  is independent of the `.text` order (which is already exact).
 * Two baseline facts contradict the task brief's "every ELF section is already
   size- and base-exact": `.ARM.extab` is **8 bytes short** (`0x26290` vs
   `0x26298`) and there is an extra `.missioncase` section (0xc0 bytes at
   `0x20b977`, from `#pragma clang section rodata=".missioncase"` in
   `Status.cpp`), which also makes `.shstrtab` +13 bytes. Neither shifts any
-  other section address (`.missioncase` sits in existing padding).
+  other section address (`.missioncase` sits in existing padding). The extab
+  size delta is a record-order/alignment consequence, not shorter LSDA records
+  (see §6).
 
 ## 1. Baseline
 
@@ -62,7 +73,9 @@ drift: 0 field(s) across 0 class(es)
 `.text` `0x1337c8 @ 0x69440`.
 
 Section fingerprint (stripped ours vs original; `diffbytes` is a literal byte
-compare; `.bss` has no file bytes):
+compare; `.bss` has no file bytes). This table is the **pre-E1 baseline**; E1
+changes only `.dynsym` (1768 -> 1760) and the `.bss` address order (279 -> 289),
+not any size or base:
 
 | section | orig size | ours size | diffbytes |
 |---|---:|---:|---:|
@@ -85,10 +98,14 @@ compare; `.bss` has no file bytes):
 | `.ARM.extab` | **0x26298** | **0x26290** | 119153 |
 | `.shstrtab` | **0x117** | **0x124** | 256 |
 
-`.ARM.extab` is 8 bytes short. The two shortened LSDA records are
-`ndk_iapBoughtConsumable` (`0x945d8`, 368 -> 360) and `RemoveTouches`
-(`0x95150`, 88 -> 80); the code bytes of both functions are exact. The extra
-`.missioncase` section is the only other section-set difference.
+`.ARM.extab` is 8 bytes short and its records are laid out in a different
+order: the first `.ARM.exidx` entry points at extab `0x1a650c` in the original
+but `0x1a64f4` in ours (-24 bytes). The per-record encoded LSDA lengths are
+**identical** (sum delta 0 over all 2438 extab records), so this is an extab
+input-section order/alignment difference, not a shorter LSDA. `.ARM.exidx`
+itself has the same 3566 entries (2438 extab / 856 inline / 272 cantunwind) and
+the same function addresses. The extra `.missioncase` section is the only other
+section-set difference.
 
 ## 2. Model: gold's `.dynsym` order is first-mention order
 
@@ -101,11 +118,12 @@ global symtab in ELF order; clang 7.0.2 emits that table **sorted
 lexicographically by mangled name**. Therefore the `.dynsym` order is the first
 object that *mentions* a name, and within one object it is lexicographic.
 
-Simulation (self-contained; reads the `.symtab` global entries in file order):
+Simulation (self-contained; reads the `.symtab` global entries in file order;
+`symtab.py` is committed under `_work/reconstructions/w3560/`):
 
 ```python
-import sys, os
-sys.path.insert(0, '/tmp/w3560')
+import sys
+sys.path.insert(0, '_work/reconstructions/w3560')
 from symtab import parse          # ELF32 .symtab reader, file order
 objs = ['cmake-build-match/crtbegin_so_renamed.o']
 objs += [l.strip() for l in open('cmake-build-match/link_order.rsp') if l.strip()]
@@ -116,7 +134,7 @@ for o in objs:
         if n and s['bind'] in (1, 2) and n not in keys:
             keys[n] = len(keys) + 1
             order.append(n)
-ours = [l.rstrip('\n').split(' ', 4)[4] for l in open('/tmp/w3560/ours.dynsym')
+ours = [l.rstrip('\n').split(' ', 4)[4] for l in open('/tmp/ours.dynsym')
         if l.rstrip('\n').split(' ', 4)[3] != '0']
 sim = [n for n in order if n in set(ours)]
 print(len(sim), sim == ours[:len(sim)])   # -> 4935 True
@@ -176,7 +194,8 @@ It is first referenced inside `LevelScript::process`, whose call layout is still
 
 `.bss` is size- and base-exact, but its internal object order is observable from
 the exported `.bss` symbol addresses. 302 exported `.bss` objects; 279 are in the
-same address order (ratio 0.950331). Four localized groups differ:
+same address order (ratio 0.950331) **before E1**. Four localized groups differ
+(pre-E1):
 
 | group | original order (ascending address) | ours |
 |---|---|---|
@@ -200,7 +219,78 @@ definition or its first odr-use**, whichever comes first.
   before any use) do follow definition order. Moving the `Level::r/g/b`
   definitions to the bottom lets the first-use order take over.
 
-## 6. Controlled A/B experiments
+## 6. `.ARM.extab` order: the within-TU compile-order witness
+
+The original link had no section-ordering file, so its `.text` order *is* its
+compile order. With `-ffunction-sections`, each function's `.ARM.extab` record
+is emitted in the object's function order, and the section-ordering file only
+lists `.text*` sections (0 `.ARM.extab` entries in `section_order.txt`), so the
+final `.ARM.extab` order is our **source** function order. Comparing the two
+extab sequences therefore reconstructs the original within-TU compile order
+independently of the already-exact `.text` order.
+
+Method (the committed script is `_work/reconstructions/w3560/extab_order.py`):
+
+```python
+# parse .ARM.exidx (3566 entries); for each extab record keep (extab_addr, fn_addr)
+# sort by extab_addr; map fn_addr -> owning object; check ascending fn_addr
+```
+
+Results:
+
+| metric | original | ours |
+|---|---:|---:|
+| extab records | 2438 | 2438 |
+| TUs with extab records | 191 | 191 |
+| TUs whose extab order is ascending `.text` address | **190/190 mapped** | **114/191** |
+| function-level `difflib` matched / gaps | — | 2271 / **196** (ratio 0.9315) |
+| owner-level `difflib` matched / gaps | — | 2427 / 14 (ratio 0.9955) |
+
+So the object link order is right (owner sequence 99.55% and the 14 owner gaps
+are the same within-TU/archive issues as §4), but the **function order inside
+77 TUs is not the original's**. The largest inversions (number of out-of-order
+function pairs within the TU's extab sequence):
+
+| TU | extab funcs | inversions |
+|---|---:|---:|
+| `PaintCanvas.cpp` | 149 | 730 |
+| `TouchButton.cpp` | 16 | 75 |
+| `ChoiceWindow.cpp` | 14 | 46 |
+| `Hud.cpp` | 28 | 32 |
+| `Ship.cpp` | 37 | 29 |
+| `ListItemWindow.cpp` | 9 | 28 |
+| `Engine.cpp` | 42 | 26 |
+| `Level.cpp` | 64 | 26 |
+| `BluePrint.cpp` | 10 | 22 |
+| `Status.cpp` | 59 | 21 |
+| `RecordHandler.cpp` | 38 | 18 |
+| `DialogueWindow.cpp` | 16 | 14 |
+| `GlowPPShader.cpp` | 7 | 10 |
+| `BoundingVolume.cpp` | 7 | 9 |
+| `CutScene.cpp` | 12 | 8 |
+| `TargetFollowCamera.cpp` | 9 | 7 |
+| `MeshMerger.cpp` | 7 | 6 |
+| `Item.cpp` | 17 | 5 |
+| `WantedWindow.cpp` | 14 | 5 |
+| `BoundingSphere.cpp` | 4 | 5 |
+| `SpaceLounge.cpp` | 18 | 5 |
+
+The first function-level divergence is `VirtualInput.cpp`: the original extab
+order is `keyReleased` (`0x6a458`) then `SendStoredKeyUpEvents` (`0x6a5e4`);
+ours is reversed. The original `.text` order is also `keyReleased` then
+`SendStoredKeyUpEvents` (`section_order.txt` lines 54-55), so the target is
+simply the original `.text` order. The same pattern holds for the other 76 TUs.
+
+**Implication:** the `.ARM.extab` content can only become byte-identical by
+reordering the function definitions in those 77 TUs to the original `.text`
+order (or by adding `.ARM.extab` entries to the section-ordering file, which is
+a linker-side workaround rather than a TU reconstruction). This is a large but
+mechanical pass: the target order is already in `section_order.txt`, and the
+extab sequence gives an independent check per TU. The 8-byte `.ARM.extab` size
+delta is a consequence of the record order/alignment; the per-record encoded
+LSDA lengths are identical (sum delta 0 over all 2438 records).
+
+## 7. Controlled A/B experiments
 
 All builds are the full `check` target; "before" is the unmodified baseline
 (byte 4496 / linked 4496). No `--update-baseline` was used.
@@ -220,7 +310,7 @@ TUs and removes 8 differing `.dynsym` bytes. E2/E3/E4 all fix their target
 `.dynsym` gap but cost `byte_exact` through PLT/GOT/`.rodata` order, which is
 exactly the "TU split is load-bearing" effect.
 
-## 7. Conclusions
+## 8. Conclusions
 
 1. **Object link order is reconstructed correctly.** The byte-identical
    `.rodata`, `.data`, `.data.rel.ro`, `.got`, `.dynamic`, `.init_array`,
@@ -239,11 +329,16 @@ exactly the "TU split is load-bearing" effect.
    it follows definition order (E1). `FileInterfaceAndroid`/`AEFile` need their
    first uses reordered (or an odr-use anchor), which is a code-shape change and
    was not attempted here.
-5. The brief's "every ELF section is size- and base-exact" is currently false:
-   `.ARM.extab` is -8 and `.missioncase` is an extra section. Both are code/EH
-   issues, not link-order issues.
+5. **`.ARM.extab` is the largest remaining compile-order witness**: 77 of 191
+   TUs have their functions in a different order from the original. The target
+   order is the original `.text` order (already in `section_order.txt`); the
+   extab sequence is an independent per-TU check. This is a source-order pass,
+   not a link-order pass.
+6. The brief's "every ELF section is size- and base-exact" is currently false:
+   `.ARM.extab` is -8 (record order/alignment) and `.missioncase` is an extra
+   section. Both are code/EH issues, not object-link-order issues.
 
-## 8. Reproduction
+## 9. Reproduction
 
 ```bash
 cmake --preset default
@@ -252,12 +347,31 @@ cmake --build cmake-build-match --target lint  -j8
 cmake --build cmake-build-match --target drift -j8
 
 # section fingerprint + dynsym/plt/.bss order (same script used for every table)
-python3 /tmp/w3560/fp.py > /tmp/w3560/fp.txt
+python3 _work/reconstructions/w3560/fp.py > /tmp/fp.txt
 
-# .dynsym defined-symbol alignment
+# .ARM.extab within-TU compile order (needs an unstripped link output)
+python3 _work/reconstructions/w3560/extab_order.py \
+    ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/ours_unstripped.so \
+    cmake-build-match/link_order.rsp
+
+# first-mention simulation (needs the committed ELF32 .symtab reader)
 python3 - <<'PY'
-import difflib, struct
-# ... ELF32 SHT_DYNSYM reader (see tools/verify/elf.py); names only, shndx != 0
+import sys
+sys.path.insert(0, '_work/reconstructions/w3560')
+from symtab import parse
+objs = ['cmake-build-match/crtbegin_so_renamed.o']
+objs += [l.strip() for l in open('cmake-build-match/link_order.rsp') if l.strip()]
+keys, order = {}, []
+for o in objs:
+    for s in parse(o):
+        n = s['name']
+        if n and s['bind'] in (1, 2) and n not in keys:
+            keys[n] = len(keys) + 1
+            order.append(n)
+ours = [l.rstrip('\n').split(' ', 4)[4] for l in open('/tmp/ours.dynsym')
+        if l.rstrip('\n').split(' ', 4)[3] != '0']
+sim = [n for n in order if n in set(ours)]
+print(len(sim), sim == ours[:len(sim)])   # -> 4935 True
 PY
 
 # .plt symbol sequence
