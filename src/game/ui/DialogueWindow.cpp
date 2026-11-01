@@ -22,18 +22,6 @@ struct EngineSoundConfig {
     uint8_t autoAdvanceEnabled;
 };
 
-bool DialogueWindow::OnTouchBegin(int x, int y) {
-    if (this->choiceActive != 0) {
-        this->choiceWindow->OnTouchBegin(x, y);
-    } else {
-        this->scrollWindow->OnTouchBegin(x, y);
-        this->prevButton->OnTouchBegin(x, y);
-        this->nextButton->OnTouchBegin(x, y);
-        this->moreButton->OnTouchBegin(x, y);
-    }
-    return false;
-}
-
 static const int g_dw_briefingCounts[0xa2] = {
     4, 0, 10, 0, 2, 0, 0, 8, 0, 0, 0, 2, 0, 0, 2, 0, 4, 0, 0, 0,
     0, 4, 0, 2, 8, 0, 6, 0, 0, 2, 0, 0, 2, 0, 0, 0, 4, 0, 2, 0,
@@ -58,43 +46,122 @@ static const int g_dw_successCounts[0xa2] = {
     6, 12,
 };
 
-int DialogueWindow::getMode() {
-    return this->kind;
+
+DialogueWindow::DialogueWindow() {
+    this->init();
 }
 
-int DialogueWindow::length() {
-    Mission *mission = this->mission;
-    if (mission != 0 && mission->isCampaignMission() != 0) {
-        if (this->kind == 0) {
-            return g_dw_briefingCounts[this->campaignMission] / 2;
-        }
-        if (this->kind == 1) {
-            return g_dw_successCounts[this->campaignMission] / 2;
-        }
-        return 1;
-    }
-    if (this->kind == 0 && this->mission != 0 &&
-        this->mission->getTargetStation() == 0x6c) {
-        int result = 6;
-        if (Globals::status->field_114 == 2) result = 0x12;
-        return result;
-    }
-    return 1;
+[[gnu::aligned(4)]] DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
+    this->init();
+    this->level = level;
+    this->set(mission, kind, -1);
 }
 
-int DialogueWindow::nextPage() {
-    int currentPage = this->page;
-    int len = this->length();
-    if (currentPage < len - 1) {
-        this->page += 1;
-        this->loadContent();
-        return 1;
+static const char g_dw_defaultAgentName[] = "";
+
+void DialogueWindow::init() {
+    this->briefingOffsets = new int[0xa2];
+    this->successOffsets = new int[0xa2];
+
+    int briefingSum = 0;
+    int successSum = 0;
+    for (int i = 0; i < 0xa2; i++) {
+        this->briefingOffsets[i] = briefingSum;
+        this->successOffsets[i] = successSum;
+        briefingSum += g_dw_briefingCounts[i];
+        successSum += g_dw_successCounts[i];
     }
-    return 0;
+
+    this->agentName = String(g_dw_defaultAgentName, false);
+
+    this->mission = 0;
+    this->choiceWindow = 0;
+    this->level = 0;
+    this->clientImage = 0;
+    this->faceParts = 0;
+    this->voiceSound = -1;
+    this->autoAdvanceTimer = 0;
+    this->mirrorFace = false;
+
+    this->frameWidth = Globals::layout->field_0x54;
+    this->frameHeight = Globals::layout->field_0x58;
+    this->frameX = Globals::w / 2 - this->frameWidth / 2;
+    this->frameY = Globals::h / 2 - this->frameHeight / 2;
+
+    this->scrollWindow = new ScrollTouchWindow(
+        this->frameX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
+        Globals::layout->windowTopInset + this->frameY,
+        this->frameWidth - Globals::layout->field_0x4c * 2 - Globals::layout->field_0x2d4,
+        this->frameHeight - Globals::layout->field_0x4c * 2 - Globals::layout->windowTopInset -
+            Globals::layout->field_0x30_rowHeight,
+        false);
+
+    this->choiceWindow = new ChoiceWindow();
+
+    this->prevButton = new TouchButton(*Globals::gameText->getText(0xb3), 5,
+                                       this->frameX + Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x21, 4);
+
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0xb4), 6,
+                                       this->frameX + this->frameWidth - Globals::layout->field_0x4c,
+                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
+                                       Globals::layout->field_0x50, 0x22, 4);
+
+    this->moreButton = new TouchButton(*Globals::gameText->getText(0x18b), 0,
+                                       this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 -
+                                           Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
+    this->choiceActive = 0;
 }
 
-bool DialogueWindow::hasLevel() {
-    return this->level != 0;
+void DialogueWindow::set(Mission *mission, int kind, int campaign) {
+    this->mission = mission;
+    this->kind = kind;
+    if (kind == 2) {
+        Agent *agent = mission->getAgent();
+        if (agent != 0 && agent->isGenericAgent() == 0)
+            agent->setOfferAccepted(false);
+        mission->setFailed(true);
+    } else if (kind == 1) {
+        mission->getAgent();
+        mission->setWon(true);
+    }
+    this->page = 0;
+    if (campaign == -1)
+        campaign = Globals::status->getCurrentCampaignMission();
+    this->campaignMission = campaign;
+    this->loadContent();
+}
+
+static const char g_dw_emptyString[] = "";
+
+
+
+
+DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
+    this->init();
+
+    this->scrollWindow->setText(String(g_dw_emptyString, false), String(*text, false));
+
+    this->moreButton->setVisible(false);
+    this->prevButton->setVisible(false);
+
+    this->faceParts = (Globals::imageFactory)->loadChar(parts);
+    delete this->nextButton;
+    this->nextButton = 0;
+
+    this->nextButton = new TouchButton(*Globals::gameText->getText(0x20c), 0, this->frameX + this->frameWidth / 2,
+                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
+                                       this->frameWidth - Globals::layout->field_0x4c * 4 - Globals::layout->field_0x50 * 2,
+                                       0x24, 4);
+
+    this->agentName = *(agentName);
+    this->page = 0;
+    this->voiceSound = -1;
+    this->pauseLength = 0;
 }
 
 DialogueWindow::~DialogueWindow() {
@@ -120,33 +187,6 @@ DialogueWindow::~DialogueWindow() {
     this->moreButton = 0;
 }
 
-bool DialogueWindow::OnTouchMove(int x, int y) {
-    if (this->choiceActive != 0) {
-        this->choiceWindow->OnTouchMove(x, y);
-    } else {
-        this->scrollWindow->OnTouchMove(x, y);
-        this->prevButton->OnTouchMove(x, y);
-        this->nextButton->OnTouchMove(x, y);
-        this->moreButton->OnTouchMove(x, y);
-    }
-    return false;
-}
-
-bool DialogueWindow::isFirstPage() {
-    return this->page == 0;
-}
-
-int DialogueWindow::previousPage() {
-    if (this->page <= 0) return 0;
-    this->page = this->page - 1;
-    this->loadContent();
-    return 1;
-}
-
-bool DialogueWindow::isLastPage() {
-    return this->page == this->length() - 1;
-}
-
 bool DialogueWindow::hasBriefingDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_briefingCounts[id] > 0;
@@ -155,25 +195,6 @@ bool DialogueWindow::hasBriefingDialogue(int id) {
 bool DialogueWindow::hasSuccessDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_successCounts[id] > 0;
-}
-
-void DialogueWindow::set(Mission *mission, int kind, int campaign) {
-    this->mission = mission;
-    this->kind = kind;
-    if (kind == 2) {
-        Agent *agent = mission->getAgent();
-        if (agent != 0 && agent->isGenericAgent() == 0)
-            agent->setOfferAccepted(false);
-        mission->setFailed(true);
-    } else if (kind == 1) {
-        mission->getAgent();
-        mission->setWon(true);
-    }
-    this->page = 0;
-    if (campaign == -1)
-        campaign = Globals::status->getCurrentCampaignMission();
-    this->campaignMission = campaign;
-    this->loadContent();
 }
 
 
@@ -637,10 +658,6 @@ void DialogueWindow::loadContent() {
     }
 }
 
-DialogueWindow::DialogueWindow() {
-    this->init();
-}
-
 static EngineSoundConfig g_dw_soundConfig_storage;
 static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
 
@@ -660,140 +677,43 @@ void DialogueWindow::update(int dt) {
     }
 }
 
+int DialogueWindow::nextPage() {
+    int currentPage = this->page;
+    int len = this->length();
+    if (currentPage < len - 1) {
+        this->page += 1;
+        this->loadContent();
+        return 1;
+    }
+    return 0;
+}
 
-
-
-
-
-bool DialogueWindow::OnTouchEnd(int x, int y) {
-    if (this->choiceActive != 0) {
-        int result = this->choiceWindow->OnTouchEnd(x, y);
-        if (result == 0) {
-            this->choiceActive = 0;
-            if (Globals::status->getCurrentCampaignMission() == 0x0f) {
-                Globals::sound->play(0xa2, 0, 0, 0);
-                Globals::sound->stop(Globals::sound->currentMusicEvent);
-                Globals::sound->play(0x88, 0, 0, 0);
-            }
-            if (this->voiceSound != -1)
-                Globals::sound->stop(this->voiceSound);
-            return true;
-        } else if (result == 1) {
-            this->choiceActive = 0;
+int DialogueWindow::length() {
+    Mission *mission = this->mission;
+    if (mission != 0 && mission->isCampaignMission() != 0) {
+        if (this->kind == 0) {
+            return g_dw_briefingCounts[this->campaignMission] / 2;
         }
-        return false;
-    }
-
-    this->scrollWindow->OnTouchEnd(x, y);
-    if (this->prevButton->OnTouchEnd(x, y) != 0) {
-        (Globals::sound)->stop(this->voiceSound);
-        this->previousPage();
-    }
-    if (this->nextButton->OnTouchEnd(x, y) != 0) {
-        (Globals::sound)->stop(this->voiceSound);
-        if (this->nextPage() == 0) {
-            return true;
+        if (this->kind == 1) {
+            return g_dw_successCounts[this->campaignMission] / 2;
         }
+        return 1;
     }
-    if (this->moreButton->OnTouchEnd(x, y) != 0) {
-        this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
-        this->choiceActive = 1;
+    if (this->kind == 0 && this->mission != 0 &&
+        this->mission->getTargetStation() == 0x6c) {
+        int result = 6;
+        if (Globals::status->field_114 == 2) result = 0x12;
+        return result;
     }
-    return false;
+    return 1;
 }
 
-static const char g_dw_defaultAgentName[] = "";
-
-void DialogueWindow::init() {
-    this->briefingOffsets = new int[0xa2];
-    this->successOffsets = new int[0xa2];
-
-    int briefingSum = 0;
-    int successSum = 0;
-    for (int i = 0; i < 0xa2; i++) {
-        this->briefingOffsets[i] = briefingSum;
-        this->successOffsets[i] = successSum;
-        briefingSum += g_dw_briefingCounts[i];
-        successSum += g_dw_successCounts[i];
-    }
-
-    this->agentName = String(g_dw_defaultAgentName, false);
-
-    this->mission = 0;
-    this->choiceWindow = 0;
-    this->level = 0;
-    this->clientImage = 0;
-    this->faceParts = 0;
-    this->voiceSound = -1;
-    this->autoAdvanceTimer = 0;
-    this->mirrorFace = false;
-
-    this->frameWidth = Globals::layout->field_0x54;
-    this->frameHeight = Globals::layout->field_0x58;
-    this->frameX = Globals::w / 2 - this->frameWidth / 2;
-    this->frameY = Globals::h / 2 - this->frameHeight / 2;
-
-    this->scrollWindow = new ScrollTouchWindow(
-        this->frameX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4,
-        Globals::layout->windowTopInset + this->frameY,
-        this->frameWidth - Globals::layout->field_0x4c * 2 - Globals::layout->field_0x2d4,
-        this->frameHeight - Globals::layout->field_0x4c * 2 - Globals::layout->windowTopInset -
-            Globals::layout->field_0x30_rowHeight,
-        false);
-
-    this->choiceWindow = new ChoiceWindow();
-
-    this->prevButton = new TouchButton(*Globals::gameText->getText(0xb3), 5,
-                                       this->frameX + Globals::layout->field_0x4c,
-                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
-                                       Globals::layout->field_0x50, 0x21, 4);
-
-    this->nextButton = new TouchButton(*Globals::gameText->getText(0xb4), 6,
-                                       this->frameX + this->frameWidth - Globals::layout->field_0x4c,
-                                       this->frameY - Globals::layout->field_0x4c + this->frameHeight,
-                                       Globals::layout->field_0x50, 0x22, 4);
-
-    this->moreButton = new TouchButton(*Globals::gameText->getText(0x18b), 0,
-                                       this->frameX + this->frameWidth / 2,
-                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
-                                       this->frameWidth - Globals::layout->field_0x4c * 4 -
-                                           Globals::layout->field_0x50 * 2,
-                                       0x24, 4);
-    this->choiceActive = 0;
+bool DialogueWindow::hasLevel() {
+    return this->level != 0;
 }
 
-static const char g_dw_emptyString[] = "";
-
-
-
-
-DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
-    this->init();
-
-    this->scrollWindow->setText(String(g_dw_emptyString, false), String(*text, false));
-
-    this->moreButton->setVisible(false);
-    this->prevButton->setVisible(false);
-
-    this->faceParts = (Globals::imageFactory)->loadChar(parts);
-    delete this->nextButton;
-    this->nextButton = 0;
-
-    this->nextButton = new TouchButton(*Globals::gameText->getText(0x20c), 0, this->frameX + this->frameWidth / 2,
-                                       this->frameY + this->frameHeight - Globals::layout->field_0x4c,
-                                       this->frameWidth - Globals::layout->field_0x4c * 4 - Globals::layout->field_0x50 * 2,
-                                       0x24, 4);
-
-    this->agentName = *(agentName);
-    this->page = 0;
-    this->voiceSound = -1;
-    this->pauseLength = 0;
-}
-
-[[gnu::aligned(4)]] DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
-    this->init();
+void DialogueWindow::setLevel(Level *level) {
     this->level = level;
-    this->set(mission, kind, -1);
 }
 
 // Generic German dialogue text ids, one table per dialogue kind: two variants per
@@ -874,7 +794,89 @@ void DialogueWindow::draw() {
         Globals::is_dialogue_window_visible = 1;
     }
 }
+bool DialogueWindow::OnTouchBegin(int x, int y) {
+    if (this->choiceActive != 0) {
+        this->choiceWindow->OnTouchBegin(x, y);
+    } else {
+        this->scrollWindow->OnTouchBegin(x, y);
+        this->prevButton->OnTouchBegin(x, y);
+        this->nextButton->OnTouchBegin(x, y);
+        this->moreButton->OnTouchBegin(x, y);
+    }
+    return false;
+}
 
-void DialogueWindow::setLevel(Level *level) {
-    this->level = level;
+bool DialogueWindow::OnTouchMove(int x, int y) {
+    if (this->choiceActive != 0) {
+        this->choiceWindow->OnTouchMove(x, y);
+    } else {
+        this->scrollWindow->OnTouchMove(x, y);
+        this->prevButton->OnTouchMove(x, y);
+        this->nextButton->OnTouchMove(x, y);
+        this->moreButton->OnTouchMove(x, y);
+    }
+    return false;
+}
+
+
+
+
+
+
+bool DialogueWindow::OnTouchEnd(int x, int y) {
+    if (this->choiceActive != 0) {
+        int result = this->choiceWindow->OnTouchEnd(x, y);
+        if (result == 0) {
+            this->choiceActive = 0;
+            if (Globals::status->getCurrentCampaignMission() == 0x0f) {
+                Globals::sound->play(0xa2, 0, 0, 0);
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
+                Globals::sound->play(0x88, 0, 0, 0);
+            }
+            if (this->voiceSound != -1)
+                Globals::sound->stop(this->voiceSound);
+            return true;
+        } else if (result == 1) {
+            this->choiceActive = 0;
+        }
+        return false;
+    }
+
+    this->scrollWindow->OnTouchEnd(x, y);
+    if (this->prevButton->OnTouchEnd(x, y) != 0) {
+        (Globals::sound)->stop(this->voiceSound);
+        this->previousPage();
+    }
+    if (this->nextButton->OnTouchEnd(x, y) != 0) {
+        (Globals::sound)->stop(this->voiceSound);
+        if (this->nextPage() == 0) {
+            return true;
+        }
+    }
+    if (this->moreButton->OnTouchEnd(x, y) != 0) {
+        this->choiceWindow->set(*Globals::gameText->getText(0x18c), true);
+        this->choiceActive = 1;
+    }
+    return false;
+}
+
+
+
+int DialogueWindow::getMode() {
+    return this->kind;
+}
+
+bool DialogueWindow::isFirstPage() {
+    return this->page == 0;
+}
+
+int DialogueWindow::previousPage() {
+    if (this->page <= 0) return 0;
+    this->page = this->page - 1;
+    this->loadContent();
+    return 1;
+}
+
+bool DialogueWindow::isLastPage() {
+    return this->page == this->length() - 1;
 }

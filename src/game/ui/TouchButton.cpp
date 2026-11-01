@@ -7,6 +7,17 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/GameText.h"
 
+TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
+                         unsigned char flags0, unsigned char flags1) {
+    PaintCanvas **canvas = &Globals::Canvas;
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
+
+    String tmp("", false);
+    this->init(tmp, kind, a, -1, -1, b, c, d, flags0, flags1);
+}
+
+
 void TouchButton::setVisible(bool value) {
     this->visible = value;
 }
@@ -395,15 +406,6 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
 }
 
 
-TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
-                         unsigned char flags0, unsigned char flags1) {
-    PaintCanvas **canvas = &Globals::Canvas;
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
-
-    String tmp("", false);
-    this->init(tmp, kind, a, -1, -1, b, c, d, flags0, flags1);
-}
 
 
 void TouchButton::draw() {

@@ -29,107 +29,305 @@
 
 static unsigned int g_Hud_heImportantMask = 0;
 
-void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
-                           unsigned int x, unsigned int y) {
-    (void) t0;
-    (void) t1;
-    (void) ego;
-    (void) letterbox;
-    (void) x;
-    (void) y;
+
+Hud::Hud() {
+    init();
 }
 
-void Hud::enableFireForTutorial(bool value) {
-    this->fireForTutorial = value;
-}
 
-void Hud::setVisible(bool value) {
-    this->visible = value;
-}
 
-void Hud::drawCredits() {
-}
+static int **g_Hud_initOutX = nullptr;
 
-void Hud::drawBigNumber(int x, int y, int value, bool flag) {
-    (void) x;
-    (void) y;
-    (void) value;
-    (void) flag;
-}
+static int **g_Hud_initOutY = nullptr;
 
-int Hud::hudAction(int action, Level *lvl, Radar *radar) {
-    (void) action;
-    (void) lvl;
-    (void) radar;
-    return 0;
-}
+static const int g_Hud_raceBadge[4] = {1190, 1187, 1189, 1188};
+static const char g_Hud_initMsg[1] = {0};
 
-void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
-    this->field_0x0 = p1;
-    this->field_0x280 = p3;
-    this->field_0x281 = p4;
-    if (p2 && p3) {
-        this->timeExtenderDuration = 0x7d0;
-        this->timeExtenderTimer = 0x50;
+void Hud::init() {
+    Globals::Canvas->Image2DCreate(1196, this->shieldFrameImage);
+    Globals::Canvas->Image2DCreate(1197, this->shieldFrameHitImage);
+    Globals::Canvas->Image2DCreate(1198, this->shieldBarBgImage);
+    Globals::Canvas->Image2DCreate(1199, this->shieldBarFillImage);
+    Globals::Canvas->Image2DCreate(1194, this->armorFrameImage);
+    Globals::Canvas->Image2DCreate(1195, this->armorFrameLowImage);
+    Globals::Canvas->Image2DCreate(1191, this->armorBarBgImage);
+    Globals::Canvas->Image2DCreate(1192, this->armorRegenFillImage);
+    Globals::Canvas->Image2DCreate(1316, this->armorBarFillImage);
+    Globals::Canvas->Image2DCreate(8025, this->image_0x2d0);
+    Globals::Canvas->Image2DCreate(8026, this->image_0x2cc);
+    Globals::Canvas->Image2DCreate(8027, this->barDividerImage);
+    Globals::Canvas->Image2DCreate(1193, this->lockBracketImage);
+    Globals::Canvas->Image2DCreate(1211, this->image_0x34c);
+    Globals::Canvas->Image2DCreate(1210, this->image_0x350);
+    if (Globals::iPad != 0) {
+        Globals::Canvas->Image2DCreate(1222, this->image_0x4);
+        Globals::Canvas->Image2DCreate(1706, this->image_0x8);
+        this->image_0x348 = this->image_0x4;
+    } else {
+        Globals::Canvas->Image2DCreate(1222, this->image_0x348);
     }
-}
+    Globals::Canvas->Image2DCreate(1205, this->orbitMarkerIdleImage);
+    Globals::Canvas->Image2DCreate(1204, this->autoTurretOnImage);
+    Globals::Canvas->Image2DCreate(1334, this->autoTurretOffImage);
+    Globals::Canvas->Image2DCreate(1213, this->reticleImage);
+    Globals::Canvas->Image2DCreate(1212, this->missionBannerImage);
+    Globals::Canvas->Image2DCreate(1209, this->pauseButtonPressedImage);
+    Globals::Canvas->Image2DCreate(1208, this->pauseButtonImage);
+    Globals::Canvas->Image2DCreate(1203, this->fuelGaugeIconImage);
+    Globals::Canvas->Image2DCreate(1202, this->fuelGaugeBarImage);
+    Globals::Canvas->Image2DCreate(1201, this->image_0x30c);
+    Globals::Canvas->Image2DCreate(1200, this->image_0x310);
+    Globals::Canvas->Image2DCreate(1207, this->image_0x304);
+    Globals::Canvas->Image2DCreate(1206, this->image_0x308);
+    Globals::Canvas->Image2DCreate(1217, this->image_0x31c);
+    Globals::Canvas->Image2DCreate(1221, this->image_0x320);
+    Globals::Canvas->Image2DCreate(1312, this->image_0x324);
+    Globals::Canvas->Image2DCreate(1219, this->image_0x354);
+    Globals::Canvas->Image2DCreate(1218, this->image_0x358);
+    Globals::Canvas->Image2DCreate(1231, this->quickMenuTopImage);
+    Globals::Canvas->Image2DCreate(1233, this->quickMenuMiddleImage);
+    Globals::Canvas->Image2DCreate(1232, this->quickMenuBottomImage);
+    Globals::Canvas->Image2DCreate(1335, this->image_0x370);
+    Globals::Canvas->Image2DCreate(1336, this->image_0x374);
+    Globals::Canvas->Image2DCreate(1337, this->image_0x37c);
+    Globals::Canvas->Image2DCreate(1338, this->image_0x378);
+    Globals::Canvas->Image2DCreate(1338, this->image_0x388);
+    Globals::Canvas->Image2DCreate(8001, this->image_0x38c);
+    Globals::Canvas->Image2DCreate(1317, this->image_0x360);
+    Globals::Canvas->Image2DCreate(1318, this->image_0x364);
+    Globals::Canvas->Image2DCreate(1323, this->image_0x368);
+    Globals::Canvas->Image2DCreate(1324, this->image_0x36c);
+    Globals::Canvas->Image2DCreate(1320, this->fireButtonImages[0]);
+    Globals::Canvas->Image2DCreate(1319, this->fireButtonPressedImages[0]);
+    Globals::Canvas->Image2DCreate(1257, this->fireButtonImages[1]);
+    Globals::Canvas->Image2DCreate(1258, this->fireButtonPressedImages[1]);
+    Globals::Canvas->Image2DCreate(1214, this->fireButtonImages[2]);
+    Globals::Canvas->Image2DCreate(1215, this->fireButtonPressedImages[2]);
+    Globals::Canvas->Image2DCreate(1322, this->fireButtonImages[3]);
+    Globals::Canvas->Image2DCreate(1321, this->fireButtonPressedImages[3]);
+    Globals::Canvas->Image2DCreate(1344, this->image_0x390);
+    Globals::Canvas->Image2DCreate(1345, this->image_0x394);
+    Globals::Canvas->Image2DCreate(1343, this->image_0x398);
+    Globals::Canvas->Image2DCreate(1346, this->image_0x39c);
+    Globals::Canvas->Image2DCreate(1347, this->image_0x3a0);
+    Globals::Canvas->Image2DCreate(1350, this->image_0x314);
+    Globals::Canvas->Image2DCreate(1351, this->image_0x318);
+    Globals::Canvas->Image2DCreate(8024, this->image_0x3a4);
+    Globals::Canvas->Image2DCreate(8023, this->image_0x3a8);
+    Globals::Canvas->Image2DCreate(1201, this->image_0x3ac);
+    Globals::Canvas->Image2DCreate(1200, this->image_0x3b0);
+    Globals::Canvas->Image2DCreate(8003, this->image_0x334);
+    Globals::Canvas->Image2DCreate(8002, this->image_0x344);
+    Globals::Canvas->Image2DCreate(8000, this->image_0x380);
+    Globals::Canvas->Image2DCreate(8033, this->image_0x338);
+    Globals::Canvas->Image2DCreate(8032, this->image_0x33c);
+    Globals::Canvas->Image2DCreate(8031, this->image_0x384);
+    Globals::Canvas->Image2DCreate(8028, this->image_0x340);
 
-void Hud::playerHit() {
-    this->shieldHitFlash = 1;
+    this->field_0x4a2 = 0;
+    this->field_0x4ac = 0;
+    this->field_0x4b4 = 0;
+    this->field_0x4b0 = 0;
+    this->field_0x4a3 = 0;
+    this->field_0x4a1 = 0;
+    this->field_0x4b8 = 0;
+    this->field_0x4a4 = 0;
+    this->field_0x4d8 = Globals::layout->field_0x130;
+    this->field_0x4dc = Globals::layout->field_0x134;
+    this->analogStickRadius = Globals::layout->field_0x138;
+    this->field_0x4d4 = Globals::layout->field_0x12c;
+    this->field_0x4e4 = Globals::layout->field_0x13c;
+    this->field_0x4ec = Globals::layout->field_0x144;
+    this->field_0x4e8 = Globals::layout->field_0x140;
+    this->field_0x4f0 = Globals::layout->field_0x148;
+    this->field_0x434 = Globals::w - Globals::layout->field_0x14c;
+    this->field_0x436 = Globals::h - this->field_0x4d4 - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) - Globals::layout->field_0x150;
+    this->field_0x3f0 = Globals::Canvas->GetImage2DWidth(this->reticleImage);
+    this->field_0x3e4 = Globals::w - Globals::layout->field_0x154 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
+    this->field_0x3e6 = Globals::h - Globals::layout->field_0x158 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
+    this->field_0x3ec = Globals::w - Globals::layout->field_0x15c - this->field_0x3f0;
+    this->field_0x3ee = Globals::h - Globals::layout->field_0x160 - this->field_0x3f0;
+    this->field_0x3ea = Globals::layout->field_0x164;
+    this->field_0x3e0 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0x354) / 2;
+    this->field_0x3e2 = Globals::layout->field_0x168;
+    this->field_0x3f6 = Globals::Canvas->GetImage2DWidth(this->fireButtonImages[0]);
+    this->field_0x3f2 = Globals::w - this->field_0x3f6 - Globals::layout->field_0x16c;
+    this->field_0x3f4 = Globals::h - Globals::layout->field_0x170 - Globals::Canvas->GetImage2DHeight(this->fireButtonImages[0]);
+    this->field_0x41a = Globals::Canvas->GetImage2DWidth(this->image_0x34c);
+    this->field_0x41c = Globals::layout->field_0x174;
+    this->field_0x416 = Globals::w - Globals::layout->field_0x178 - this->field_0x41a;
+    this->field_0x418 = Globals::h - Globals::layout->field_0x17c - Globals::Canvas->GetImage2DHeight(this->image_0x34c);
+    this->field_0x3fc = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3f8 = Globals::layout->field_0x180;
+    this->field_0x3fa = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
+    this->field_0x402 = Globals::Canvas->GetImage2DWidth(this->image_0x310);
+    this->field_0x3fe = Globals::w - Globals::layout->field_0x180 - this->field_0x3fc;
+    this->field_0x400 = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
+    this->field_0x40e = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
+    this->field_0x40a = Globals::w - this->field_0x40e - Globals::layout->field_0x194;
+    this->field_0x40c = Globals::layout->field_0x198;
+    this->field_0x438 = Globals::w - Globals::Canvas->GetImage2DWidth(this->image_0x320) - Globals::layout->field_0x19c;
+    this->field_0x43a = Globals::layout->field_0x1a0;
+    this->field_0x430 = Globals::Canvas->GetImage2DWidth(this->image_0x31c);
+    this->field_0x45c = Globals::Canvas->GetImage2DWidth(this->image_0x3a4);
+    this->field_0x454 = Globals::w / 2 - this->field_0x45c / 2 - Globals::layout->helpWindowX;
+    this->field_0x458 = Globals::layout->helpWindowX + Globals::w / 2 - this->field_0x45c / 2;
+    this->field_0x45a = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x45e = Globals::w / 2 - this->field_0x45c / 2;
+    this->field_0x456 = Globals::h / 2 - Globals::layout->helpWindowY;
+    this->field_0x460 = this->field_0x3ee;
+    this->field_0x42c = Globals::layout->field_0x1a4;
+    this->field_0x42e = Globals::h - Globals::layout->field_0x1a8 - Globals::Canvas->GetImage2DHeight(this->image_0x31c);
+    this->field_0x422 = Globals::Canvas->GetImage2DWidth(this->image_0x304);
+    this->reticleX = this->field_0x42c + this->field_0x430 / 2;
+    this->lockBracketX = this->field_0x42c + this->field_0x430 / 2;
+    this->reticleY = this->field_0x42e + this->field_0x430 / 2;
+    this->lockBracketY = this->field_0x42e + this->field_0x430 / 2;
+    this->field_0x414 = Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
+    this->field_0x410 = Globals::layout->field_0x1ac;
+    this->field_0x412 = Globals::h - Globals::layout->field_0x1b0 - this->field_0x414;
+    this->field_0x408 = Globals::Canvas->GetImage2DWidth(this->image_0x394);
+    this->field_0x404 = Globals::layout->field_0x188;
+    this->field_0x406 = Globals::h - Globals::layout->field_0x18c - this->field_0x408;
+    this->field_0x450 = Globals::layout->field_0x190;
+
+    if (Globals::iPad != 0) {
+        this->field_0x3c4 = Globals::w - Globals::layout->buttonInsetX - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage);
+        this->menuOriginY = this->field_0x418 - Globals::layout->field_0x2c_rowHeight - 6 * Globals::layout->field_0x30_rowHeight - Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
+        Globals::globals->setCoordsSteer(*(int *) &Globals::options[84], Globals::Canvas->GetImage2DWidth(this->image_0x31c),
+                                         Globals::Canvas->GetImage2DWidth(this->image_0x310),
+                                         Globals::Canvas->GetImage2DWidth(this->fuelGaugeBarImage), this->field_0x3f8, this->field_0x3fa, this->field_0x42c,
+                                         this->field_0x42e, this->reticleX, this->reticleY, this->field_0x410, this->field_0x412, this->field_0x404, this->field_0x406);
+        this->lockBracketX = this->reticleX;
+        this->lockBracketY = this->reticleY;
+        Globals::globals->setCoordsFire(*(int *) &Globals::options[88], Globals::Canvas->GetImage2DWidth(this->image_0x4),
+                                        this->image_0x4, this->image_0x8, this->image_0x348, this->field_0xc, this->field_0xe, this->field_0x3e4, this->field_0x3e6, this->field_0x416,
+                                        this->field_0x418, this->field_0x3f2, this->field_0x3f4, this->field_0x3ec, this->field_0x3ee, this->field_0x3fe, this->field_0x400);
+        this->steerOption = *(int *) &Globals::options[84];
+        this->fireOption = *(int *) &Globals::options[88];
+    } else {
+        this->field_0x3c4 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage) / 2;
+        this->menuOriginY = Globals::layout->field_0x1b4;
+    }
+    this->menuRowHeight = Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
+    this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
+    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
+    this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
+    this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
+    this->field_0x43c = Globals::layout->field_0x1c4;
+    this->field_0x43e = Globals::layout->field_0x1c4 + Globals::Canvas->GetImage2DWidth(this->shieldFrameImage);
+    this->field_0x444 = Globals::layout->field_0x1c8;
+    this->field_0x448 = Globals::layout->field_0x1cc;
+    this->field_0x442 = Globals::layout->field_0x1d0;
+    this->field_0x44a = Globals::layout->field_0x1d4;
+    this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
+    this->field_0x440 = this->field_0x43e;
+    this->field_0x44c = Globals::Canvas->GetImage2DHeight(this->shieldBarFillImage);
+    this->field_0x48c = 0;
+    this->autofireEnabled = 0;
+    this->field_0x488 = 0;
+    this->field_0x490 = 0;
+    this->field_0x484 = 0;
+    this->field_0x476 = 1;
+    this->field_0x474 = 1;
+    this->field_0x498 = 0;
+    this->field_0x49c = 0;
+    this->timeExtenderTimer = 0;
+    this->field_0x4c4 = 0;
+    this->fireForTutorial = 0;
+    this->quickMenuOpen = 0;
+    this->field_0x15c = -1;
+    this->eventQueue = new Array<ListItem *>();
+    ArraySetLength(20, *this->eventQueue);
+    this->field_0x160 = Globals::w >> 1;
+    this->field_0x164 = Globals::h - this->field_0x4e4;
+    Hud::RADAR_WIDTH = Globals::w - 28;
+    Hud::RADAR_HEIGHT = Globals::h - 33 - this->field_0x4e4 - this->field_0x4ec - Globals::layout->field_0x1d8;
+    this->field_0x1dc[2] = 0;
+    this->field_0x1d0 = 10000;
+    this->field_0x218 = Globals::w - 5;
+    this->hasBoostButton = Globals::status->getShip()->getBoostDelay() > 0;
+    this->hasShieldBar = Globals::status->getShip()->getMaxShieldHP() > 0;
+    this->hasArmorRegen = Globals::status->getShip()->getMaxArmorHP() > 0;
+    this->hasAutofireUI = Globals::status->getShip()->getFirePower() > 0.0f;
+    this->hasCloak = Globals::status->getShip()->hasCloak();
+    this->field_0x234 = 0;
+    this->eventQueueDirty = 0;
+    this->cargoFullFlag = 0;
+    this->field_0x236 = 0;
+    this->visible = 1;
+    this->jumpMapSelectedFlag = 0;
+    this->eventQueueTimer = 0;
+    this->eventQueuePaused = 0;
+    this->shieldHitFlash = 0;
+    this->field_0x276 = 0;
     this->field_0x46c = 0;
-}
-
-void Hud::addToEventQueue(ListItem *item) {
-    for (unsigned int i = 1; i < this->eventQueue->size(); i++) {
-        if ((*this->eventQueue)[i] == 0) {
-            (*this->eventQueue)[i] = item;
-            this->eventQueueDirty = 1;
-            return;
-        }
+    this->field_0x4cc = 0;
+    this->currentSecondaryWeapon = 0;
+    this->menuButtons = 0;
+    this->field_0x4d0 = 0;
+    this->field_0x277 = 0;
+    this->weaponSelectState = 0;
+    this->factionLogoImage = -1;
+    this->fuelGaugeValue = 0;
+    this->timeExtenderTimer = -1;
+    this->field_0x280 = 1;
+    this->field_0x0 = 0;
+    this->field_0x281 = 0;
+    this->timeExtenderDuration = -1;
+    this->cargoAggregateCount = 0;
+    this->field_0x4c8 = 0;
+    this->hackingGameActive = 0;
+    this->keyArray = new Array<void *>(); // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
+    ArraySetLength(25, *this->keyArray);
+    this->elementBits = new int[25];
+    for (int i = 0; i < 25; i++) {
+        (*this->keyArray)[i] = 0;
+        this->elementBits[i] = 0;
     }
+    this->touchFlags = 0;
+    if (Globals::status->inAlienOrbit() == 0)
+        Globals::Canvas->Image2DCreate(g_Hud_raceBadge[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()],
+                                       this->factionLogoImage);
+    this->secondaryLabelTimerSeed = -1;
+    this->secondaryLabelTimer = 0;
+    this->field_0x51c = String("");
+    this->closeHudMenu();
+    this->checkIfQuickMenuIsEmpty();
+    this->releaseAllKeys();
+    this->uintArray = 0;
+    int pauseWidth = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
+    Globals::pause_x = Globals::w - pauseWidth - Globals::layout->field_0x194;
+    Globals::pause_y = Globals::layout->field_0x198;
 }
 
-unsigned int Hud::firePressed() {
-    return (reinterpret_cast<const unsigned char &>(this->touchFlags) >> 4) & 1;
-}
-
-void Hud::resetAnalogStick() {
-    this->lockBracketX = this->reticleX;
-    this->lockBracketY = this->reticleY;
-}
-
-float Hud::getAnalogY() {
-    float num = (float) ((int) this->lockBracketY - (int) this->reticleY);
-    float den = (float) this->analogStickRadius;
-    return num / den;
-}
-
-bool Hud::cargoFull() {
-    return this->cargoFullFlag;
-}
-
-unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    unsigned int ret = 0;
-    int i = 0;
-    for (; i != 0x19; i = i + 1) {
-        if ((*this->keyArray)[i] == key) {
-            ret = (unsigned int) this->elementBits[i];
-            this->touchFlags = this->touchFlags & ~ret;
-            (*this->keyArray)[i] = 0;
-            this->elementBits[i] = 0;
-        }
+void Hud::closeHudMenu() {
+    if (this->menuButtons != 0) {
+        ArrayReleaseClasses(*this->menuButtons);
+        delete this->menuButtons;
+        this->menuButtons = 0;
     }
-    if (this->quickMenuOpen != 0) {
-        Array<TouchButton *> *btns = this->menuButtons;
-        if (btns != 0) {
-            for (unsigned int j = 0; j < btns->size(); j = j + 1) {
-                (*btns)[j]->OnTouchEnd((int) a, (int) b);
-                btns = this->menuButtons;
+    this->quickMenuOpen = 0;
+}
+
+void Hud::checkIfQuickMenuIsEmpty() {
+    Array<Item *> *equip = Globals::status->getShip()->getEquipment(1);
+    this->equipmentArray = equip;
+
+    bool hasSecondary = false;
+    if (equip != 0) {
+        for (unsigned int i = 0; i < equip->size(); i++) {
+            if ((*equip)[i] != 0) {
+                hasSecondary = true;
+                break;
             }
         }
     }
-    return ret;
+    if (!hasSecondary && Globals::status->getShip()->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0)
+        this->quickMenuEmpty = !Globals::status->getShip()->hasCloak();
+    else
+        this->quickMenuEmpty = 0;
+    updateSecondaryWeaponString();
 }
 
 void Hud::releaseAllKeys() {
@@ -146,39 +344,686 @@ void Hud::releaseAllKeys() {
     this->field_0x288 = 0;
 }
 
-void Hud::closeHudMenu() {
+
+
+
+static const char g_Hud_swSep[1] = {0};
+static const char g_Hud_swEnd[1] = {0};
+
+void Hud::updateSecondaryWeaponString() {
+    if (this->currentSecondaryWeapon == 0)
+        return;
+    this->field_0x3b4 = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 0x4fa) + String(" (") +
+                        String(this->currentSecondaryWeapon->getAmount()) + String(")");
+    this->secondaryLabelX = (Globals::w >> 1) -
+                            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x3b4) >> 1);
+}
+
+
+
+static CargoBay **g_Hud_imCargoA = nullptr;
+
+static CargoBay **g_Hud_imCargoB = nullptr;
+
+
+
+void Hud::initHudMenu(int menuType, Level *level) {
     if (this->menuButtons != 0) {
         ArrayReleaseClasses(*this->menuButtons);
         delete this->menuButtons;
         this->menuButtons = 0;
     }
-    this->quickMenuOpen = 0;
+    this->menuButtons = new Array<TouchButton *>();
+    this->menuType = menuType;
+    if (this->equipmentArray != 0)
+        delete this->equipmentArray;
+    this->equipmentArray = 0;
+    this->equipmentArray = Globals::status->getShip()->getEquipment(1);
+    this->updateSecondaryWeaponString();
+    this->field_0x4cc = 0;
+    int rowGap = Globals::layout->field_0x1dc;
+    int y = this->menuBaseY;
+    if (Globals::iPad != 0) {
+        float top = (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
+                                         : (float) *(int *) &Globals::options[88] -
+                                           (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f)) < 0.0f
+                        ? 0.0f
+                        : (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
+                                               : (float) *(int *) &Globals::options[88] -
+                                                 (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f));
+        this->menuOriginY = (int) top;
+        y = (int) top + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + 1;
+        this->menuBaseY = y;
+    }
+
+    switch (menuType) {
+        case 0: {
+            bool hasSecondary = false;
+            if (this->equipmentArray != 0) {
+                for (unsigned int i = 0; i < this->equipmentArray->size(); i++) {
+                    if ((*this->equipmentArray)[i] != 0) {
+                        hasSecondary = true;
+                        break;
+                    }
+                }
+            }
+            if (hasSecondary) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(266), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x200;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getWingmen() != 0 && Globals::status->inSupernovaSystem() == 0 &&
+                Globals::status->getCurrentCampaignMission() != 158) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(306), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x400;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getShip()->hasCloak()) {
+                Item *cloak = Globals::status->getShip()->getFirstEquipmentOfSort(21);
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(cloak->getIndex() + 1274), 0,
+                                                      this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                button->setPressProgressHighlight(false);
+                if (level->getPlayer()->isCloaked() || level->getPlayer()->isChargingCloak() ||
+                    level->getPlayer()->isRechargingCloak()) {
+                    if (level->getPlayer()->isRechargingCloak())
+                        button->setPressProgress(level->getPlayer()->getCloakRechargeRate());
+                    button->setHalfTransparent(true);
+                }
+                button->id = 0x800;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::status->getShip()->hasJumpDrive()) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(1359), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                if (level->getPlayer()->isChargingDrive() || level->getPlayer()->emergencySystemActive())
+                    button->setHalfTransparent(true);
+                button->id = 0x1000;
+                ArrayAdd(button, *this->menuButtons);
+            }
+            Item *fuel = Globals::status->getShip()->getCargo(122);
+            this->fuelGaugeValue = fuel != 0 ? fuel->getAmount() : 0;
+            Globals::Canvas->Image2DCreate(1269, this->image_0x35c);
+            break;
+        }
+        case 1:
+            for (int i = 0; (unsigned int) i < this->equipmentArray->size(); i++) {
+                if ((*this->equipmentArray)[i] == 0)
+                    continue;
+                TouchButton *button = new TouchButton(
+                        *Globals::gameText->getText((*this->equipmentArray)[i]->getIndex() + 1274) +
+                        String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")"), false),
+                        0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                button->id = i == 0 ? 0x2000 : i == 1 ? 0x4000 : i == 2 ? 0x8000 : 0x10000;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            Globals::Canvas->Image2DCreate(1270, this->image_0x35c);
+            break;
+        case 2: {
+            int textIds[4] = {307, 308, 309, (unsigned char) Globals::status->field_f8 != 0 ? 311 : 310};
+            int keys[4];
+            keys[0] = 0x20000;
+            keys[1] = 0x40000;
+            keys[2] = 0x80000;
+            keys[3] = 0x100000;
+            for (unsigned int i = 0; i < 4; i++) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(textIds[i]), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = keys[i];
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            Globals::Canvas->Image2DCreate(1267, this->image_0x35c);
+            break;
+        }
+        case 3: {
+            if (Globals::iPad != 0)
+                this->field_0x4cc = Globals::layout->buttonInsetX - this->field_0x3c4;
+            if (Globals::status->inAlienOrbit() == 0) {
+                TouchButton *button = new TouchButton(*Globals::gameText->getText(549), 0, this->field_0x3d4, y,
+                                                      this->field_0x3dc, 0x11, 4);
+                button->id = 0x1000000;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+                if (!Globals::status->inEmptyOrbit()) {
+                    TouchButton *dock = new TouchButton(
+                            String(Globals::status->getStation()->getName(), false) +
+                            (Globals::status->getStation()->getIndex() == 101
+                                     ? String("")
+                                     : String(" ") + *Globals::gameText->getText(136)),
+                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                    dock->id = 0x800000;
+                    ArrayAdd(dock, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
+                    TouchButton *gate = new TouchButton(*Globals::gameText->getText(547), 0, this->field_0x3d4, y,
+                                                        this->field_0x3dc, 0x11, 4);
+                    gate->id = 0x400000;
+                    ArrayAdd(gate, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (level->getPlayer()->getRoute() != 0 &&
+                    (unsigned char) ((Route *) (intptr_t) level->getPlayer()->getRoute())->getLastWaypoint()->state == 0) {
+                    TouchButton *route = new TouchButton(*Globals::gameText->getText(573), 0, this->field_0x3d4, y,
+                                                         this->field_0x3dc, 0x11, 4);
+                    route->id = 0x2000000;
+                    ArrayAdd(route, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+                if (Level::programmedStation != 0) {
+                    TouchButton *autopilot = new TouchButton(
+                            *Globals::gameText->getText(546) + String(": ") +
+                            String(Level::programmedStation->getName(), false),
+                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
+                    autopilot->id = 0x200000;
+                    ArrayAdd(autopilot, *this->menuButtons);
+                    y += rowGap + Globals::layout->field_0x30_rowHeight;
+                }
+            }
+            int targets = level->getNumDockingTargets();
+            for (int i = 0; i < targets; i++) {
+                if (((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName().length == 0)
+                    continue;
+                TouchButton *button = new TouchButton(
+                        ((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName(), 0, this->field_0x3d4,
+                        y, this->field_0x3dc, 0x11, 4);
+                button->id = 0x4000000 << i;
+                ArrayAdd(button, *this->menuButtons);
+                y += rowGap + Globals::layout->field_0x30_rowHeight;
+            }
+            if (Globals::iPad == 0 && this->menuButtons->size() >= 5) {
+                for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+                    TouchButton *button = (*this->menuButtons)[i];
+                    button->setPosition((int) button->getPosition().x,
+                                        (int) ((*this->menuButtons)[i]->getPosition().y -
+                                               (float) Globals::layout->field_0x30_rowHeight));
+                }
+            }
+            Globals::Canvas->Image2DCreate(1268, this->image_0x35c);
+            break;
+        }
+    }
+
+    unsigned int count = this->menuButtons->size();
+    if (Globals::iPad != 0) {
+        if (count != 0) {
+            int shift = (4 - count) * (rowGap + Globals::layout->field_0x30_rowHeight);
+            if (menuType == 3)
+                shift -= Globals::layout->field_0x30_rowHeight;
+            this->field_0x4d0 = shift;
+            for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+                (*this->menuButtons)[i]->translate(this->field_0x4cc, this->field_0x4d0);
+                if (i < 10) {
+                    Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
+                    Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
+                }
+            }
+        }
+    } else {
+        this->field_0x4d0 = count >= 5 ? -Globals::layout->field_0x30_rowHeight : 0;
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
+            if (i < 10) {
+                Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
+                Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
+            }
+        }
+    }
+    this->quickMenuOpen = 1;
 }
 
-float Hud::getAnalogX() {
-    float num = (float) ((int) this->lockBracketX - (int) this->reticleX);
-    float den = (float) this->analogStickRadius;
-    return num / den;
+void Hud::setCurrentSecondaryWeapon(Item *item) {
+    this->currentSecondaryWeapon = item;
+    this->updateSecondaryWeaponString();
 }
 
-void Hud::setAutofireEnabled(bool value) {
-    this->autofireEnabled = value;
+
+
+
+
+void Hud::drawEventQueue() {
+    unsigned char targetMode = Radar::drawTarget;
+    int barY = targetMode != 0 ? this->field_0x3e2 : 0;
+    int alpha = (int) ((float) this->eventQueueTimer / 2000.0f * 255.0f);
+    if (alpha > 255)
+        alpha = 510 - alpha;
+    int bannerY = Globals::layout->field_0x1e4;
+    float bannerScale = Globals::layout->eventBannerScale;
+    int y = bannerY + barY;
+    Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
+    int textOffset = (int) ((targetMode == 0 ? -2.0f : -1.0f) * bannerScale);
+    Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3e0,
+                                 (Radar::drawTarget != 0 ? this->field_0x3e2 : 0) - Globals::layout->field_0x1e4);
+    ListItem *item = (*this->eventQueue)[1];
+    if (item != 0) {
+        if (item->buttonKind == 1)
+            Globals::Canvas->SetColor(0xff, 0x2a, 0, (unsigned char) alpha);
+        else if (item->buttonKind == 2)
+            Globals::Canvas->SetColor(0, 0xed, 0, (unsigned char) alpha);
+        else if (item->buttonKind == 3)
+            Globals::Canvas->SetColor(0xff, 0x80, 0, (unsigned char) alpha);
+        else
+            Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *item->name,
+                                    (Globals::w >> 1) -
+                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *item->name) / 2,
+                                    textOffset + y, false);
+    }
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
-bool Hud::isHackingGameActive() {
-    return this->hackingGameActive;
+void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
+    this->field_0x0 = p1;
+    this->field_0x280 = p3;
+    this->field_0x281 = p4;
+    if (p2 && p3) {
+        this->timeExtenderDuration = 0x7d0;
+        this->timeExtenderTimer = 0x50;
+    }
+}
+
+void Hud::updateQueue(int dt) {
+    this->eventQueueTimer += dt;
+    if (this->eventQueueTimer > 4000) {
+        this->eventQueueTimer = 0;
+        if ((*this->eventQueue)[0] != 0)
+            delete (*this->eventQueue)[0];
+        (*this->eventQueue)[0] = 0;
+        for (unsigned int i = 0; i + 1 < this->eventQueue->size(); i++)
+            (*this->eventQueue)[i] = (*this->eventQueue)[i + 1];
+        if ((*this->eventQueue)[1] == 0)
+            this->eventQueueDirty = 0;
+        this->eventQueuePaused = 0;
+    } else if (this->eventQueuePaused == 0 && this->eventQueueTimer > 2000) {
+        this->eventQueuePaused = 1;
+    }
+}
+
+void Hud::clearQueue() {
+    unsigned int i = 1;
+    while (i < this->eventQueue->size()) {
+        delete (*this->eventQueue)[i];
+        (*this->eventQueue)[i] = 0;
+        i = i + 1;
+    }
+    this->eventQueuePaused = 0;
+}
+
+
+
+void Hud::hudEventMedal(int medalId, int percent) {
+    if (percent >= 100)
+        percent = 100;
+    this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
+    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)))
+        return;
+    this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->eventScrolls = 0;
+    this->field_0x1dc[2] = 1;
+    this->letterbox = wide;
+}
+
+bool Hud::sameHudEventAsBefore(String str) {
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
+        ListItem *e = (*this->eventQueue)[i];
+        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
+            return true;
+    }
+    return false;
+}
+
+void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
+    switch (eventId) {
+        case 36:
+        case 38:
+        case 40:
+        case 42:
+            this->field_0x1e0 = *Globals::gameText->getText(3200);
+            this->weaponSelectState = 0;
+            break;
+        case 5:
+            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(38);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 10:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + String(Globals::status->getStation()->getName(), false) +
+                                (Globals::status->getStation()->getIndex() == 101 ? String("") : String(" ") + *Globals::gameText->getText(136));
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 12:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(547);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 13:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(548);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 15:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(545);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 17:
+            this->field_0x1e0 = *Globals::gameText->getText(308);
+            break;
+        case 28:
+            this->field_0x276 = 1;
+            this->field_0x464 = 0;
+            return;
+        case 34:
+            this->field_0x1e0 = *Globals::gameText->getText(3199);
+            break;
+        case 35:
+            this->field_0x27a = 1;
+            this->field_0x468 = 0;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 0;
+            return;
+        case 39:
+            this->field_0x27a = 0;
+            this->field_0x468 = 0;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 0;
+            return;
+        case 45:
+            this->field_0x1e0 = *Globals::gameText->getText(3202);
+            break;
+        case 1:
+            if (this->hasAutofireUI == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(38);
+            break;
+        case 2:
+            if (this->hasAutofireUI == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(39);
+            break;
+        case 3:
+            if (this->hasBoostButton == 0 || !ego->readyToBoost())
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(314);
+            break;
+        case 4:
+            if (this->hasBoostButton == 0)
+                return;
+            this->field_0x1e0 = *Globals::gameText->getText(315);
+            break;
+        case 6:
+            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(39);
+            Globals::sound->play(29, 0, 0, 0.0f);
+            break;
+        case 7:
+            this->field_0x1e0 = *Globals::gameText->getText(553);
+            break;
+        case 8:
+            this->field_0x1e0 = *Globals::gameText->getText(539);
+            break;
+        case 9:
+            this->field_0x1e0 = *Globals::gameText->getText(540);
+            break;
+        case 11:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(550);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 14:
+            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(549);
+            Globals::sound->play(28, 0, 0, 0.0f);
+            break;
+        case 16:
+            this->field_0x1e0 = *Globals::gameText->getText(307);
+            break;
+        case 18:
+            this->field_0x1e0 = *Globals::gameText->getText(309);
+            break;
+        case 19:
+            this->field_0x1e0 = this->eventLines[19];
+            break;
+        case 20:
+            this->field_0x1e0 = *Globals::gameText->getText(541);
+            break;
+        case 21:
+            this->field_0x1e0 = *Globals::gameText->getText(525);
+            break;
+        case 22:
+            this->field_0x1e0 = *Globals::gameText->getText(542);
+            break;
+        case 23:
+            this->field_0x1e0 = *Globals::gameText->getText(543);
+            break;
+        case 24:
+            this->field_0x1e0 = *Globals::gameText->getText(544);
+            break;
+        case 25:
+            this->field_0x277 = 1;
+            this->field_0x464 = 0;
+            return;
+        case 26:
+            this->field_0x277 = 0;
+            return;
+        case 27:
+            this->field_0x1e0 = *Globals::gameText->getText(322);
+            break;
+        case 29:
+            this->field_0x276 = 0;
+            return;
+        case 31:
+            this->field_0x1e0 = *Globals::gameText->getText(324);
+            break;
+        case 32:
+            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(38);
+            break;
+        case 33:
+            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(39);
+            break;
+        case 37:
+            this->field_0x27a = 1;
+            this->field_0x468 = 0;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 1;
+            return;
+        case 41:
+            this->field_0x27a = 0;
+            this->field_0x468 = 0;
+            this->weaponSelectState = 1;
+            this->field_0x279 = 1;
+            break;
+        case 43:
+            this->field_0x1e0 = *Globals::gameText->getText(3203);
+            break;
+        case 44:
+            this->field_0x1e0 = *Globals::gameText->getText(3201);
+            break;
+        case 46:
+            this->field_0x1e0 = *Globals::gameText->getText(316);
+            break;
+        case 47:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1476);
+            this->clearQueue();
+            break;
+        case 30:
+            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
+            this->clearQueue();
+            break;
+    }
+    if (this->sameHudEventAsBefore(this->field_0x1e0))
+        return;
+    ListItem *item;
+    if (eventId == 27 || eventId == 30 || eventId == 31 || eventId == 47)
+        item = new ListItem(new String(this->field_0x1e0), 1);
+    else
+        item = new ListItem(new String(this->field_0x1e0));
+    this->addToEventQueue(item);
+    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
+                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
+    this->eventScrolls = 0;
+    this->field_0x1dc[2] = 1;
+    this->letterbox = wide;
+}
+
+int Hud::sameHudEventAsBeforeAggregate(String str) {
+    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
+        ListItem *e = (*this->eventQueue)[i];
+        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
+            return (int) i;
+    }
+    return -1;
+}
+
+void Hud::playerHit() {
+    this->shieldHitFlash = 1;
+    this->field_0x46c = 0;
+}
+
+
+static const char g_Hud_ccHashX[1] = {0};
+static const char g_Hud_ccHashN[1] = {0};
+static const char g_Hud_ccUnit[1] = {0};
+static const char g_Hud_ccUnit2[1] = {0};
+
+void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender,
+                     bool slotMode, bool aggregate) {
+    this->cargoFullFlag = cargoFull;
+    this->field_0x1d0 = 0;
+    ListItem *item;
+    if (missionDelivery) {
+        this->field_0x1f4 = *Globals::gameText->getText(537);
+        this->field_0x1f4 = Globals::status->replaceHash(
+            String(this->field_0x1f4, false),
+            String(*Globals::gameText->getText(Globals::status->getMission()->getType() == 3 ? 1390 : 1391), false),
+            String("#N"));
+        this->field_0x1f4 = Globals::status->replaceHash(String(this->field_0x1f4, false), String(1), String("#Q"));
+        item = new ListItem(new String(this->field_0x1f4, false));
+        item->itemId = itemId;
+        this->addToEventQueue(item);
+        return;
+    } else {
+        if (cargoFull) {
+            this->field_0x1f4 = *Globals::gameText->getText(322);
+            this->addToEventQueue(new ListItem(new String(this->field_0x1f4, false), 1));
+            return;
+        }
+        if (count < 1)
+            return;
+        if (aggregate && this->eventQueueDirty) {
+            String text = String(String(this->cargoAggregateCount) + String("t "), false) +
+                          *Globals::gameText->getText(itemId + 1274);
+            int index = this->sameHudEventAsBeforeAggregate(String(text, false));
+            if (index >= 0) {
+                this->eventQueueTimer = 2000;
+                this->cargoAggregateCount += count;
+                *(*this->eventQueue)[index]->name = String(String(this->cargoAggregateCount) + String("t "), false) +
+                                                    *Globals::gameText->getText(itemId + 1274);
+                return;
+            }
+        }
+        this->cargoAggregateCount = count;
+        this->field_0x1f4 = String(String(count) + String("t "), false) + *Globals::gameText->getText(itemId + 1274);
+        item = new ListItem(new String(this->field_0x1f4, false));
+        item->itemId = itemId;
+        if (!slotMode || extender)
+            item->buttonKind = 2;
+        if (slotMode)
+            item->selectable = 1;
+    }
+    this->addToEventQueue(item);
+}
+
+bool Hud::cargoFull() {
+    return this->cargoFullFlag;
 }
 
 void Hud::setHackingGameActive(bool value) {
     this->hackingGameActive = value;
 }
 
-void Hud::setJumpMapSelected(bool value) {
-    this->jumpMapSelectedFlag = value;
+unsigned int Hud::firePressed() {
+    return (reinterpret_cast<const unsigned char &>(this->touchFlags) >> 4) & 1;
 }
 
-bool Hud::jumpMapSelected() {
-    return this->jumpMapSelectedFlag;
+void Hud::drawPauseButton() {
+    Globals::Canvas->SetColor(0xffffffff);
+    if ((this->touchFlags & 1) != 0)
+        Globals::Canvas->DrawImage2D(this->pauseButtonPressedImage, this->field_0x40a, this->field_0x40c);
+    else
+        Globals::Canvas->DrawImage2D(this->pauseButtonImage, this->field_0x40a, this->field_0x40c);
+}
+
+
+
+void Hud::drawChallengeModeScore(int unused) {
+    (void) unused;
+    int digitW, overlap, y, digitH, screenW;
+    int step;
+    int half, halfStep, left;
+    Globals::Canvas->SetColor(0xffffffff);
+    digitW = this->digitSprite->getFrameWidth();
+    overlap = Globals::layout->field_0x2c_rowHeight;
+    digitH = this->digitSprite->getFrameHeight();
+    int scoreValue = Globals::status->field_0x184;
+    y = Globals::layout->field_0x2c_rowHeight;
+    screenW = Globals::w;
+    String score(scoreValue);
+    step = digitW - overlap;
+    half = screenW / 2;
+    halfStep = step * 7 / 2;
+    if (score.size() < 7) {
+        int pad = 7 - score.size();
+        for (int i = 0; i < pad; i++)
+            score = String("0") + score;
+    }
+    Globals::Canvas->SetColor(0x77ccffff);
+    left = half - halfStep;
+    int x = left;
+    for (unsigned int i = 0; i < score.size(); i++) {
+        int frame = score.SubString(i, i + 1).ValueOf();
+        this->digitSprite->setFrame(frame);
+        this->digitSprite->setPosition(x, y);
+        this->digitSprite->draw(1.0f, 1.0f);
+        x += step;
+    }
+    if (Globals::status->field_0x180 > 0 && Globals::status->field_0x18c >= 2) {
+        Globals::Canvas->SetColor(0xffffffff);
+        int rowGap = Globals::layout->field_0x2c_rowHeight;
+        y = y + digitH + rowGap;
+        if (Globals::status->field_0x180 <= 3000) {
+            if (Globals::status->field_0x180 % 100 < 50)
+                return;
+            int multiplier = Globals::status->field_0x18c;
+            String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
+            int bonusY = digitH + y;
+            int offset = -step;
+            for (unsigned int i = 0; i < bonus.size(); i++) {
+                int frame = bonus.SubString(i, i + 1).ValueOf();
+                this->digitSprite->setFrame(frame);
+                offset += step;
+                this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
+                                               bonusY + Globals::layout->field_0x2c_rowHeight);
+                this->digitSprite->draw(1.0f, 1.0f);
+            }
+        }
+        Globals::Canvas->DrawImage2D(this->multiplierIconImage, rowGap + left, y);
+        float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
+        float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
+        String multiplier(Globals::status->field_0x18c);
+        int mx = half + rowGap - halfStep;
+        // Keep the multiplier digits on-screen if the computed origin is off the left edge.
+        if (mx < 0)
+            y = half;
+        for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
+            int frame = multiplier.SubString(i - 1, i).ValueOf();
+            this->digitSprite->setFrame(frame);
+            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
+            mx += step;
+            this->digitSprite->draw(scale, scale);
+        }
+    }
+    Globals::Canvas->SetColor(0xffffffff);
 }
 
 static Level **g_Hud_level = nullptr;
@@ -820,22 +1665,41 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     Globals::Canvas->SetColor(savedColor);
 }
 
-void Hud::updateQueue(int dt) {
-    this->eventQueueTimer += dt;
-    if (this->eventQueueTimer > 4000) {
-        this->eventQueueTimer = 0;
-        if ((*this->eventQueue)[0] != 0)
-            delete (*this->eventQueue)[0];
-        (*this->eventQueue)[0] = 0;
-        for (unsigned int i = 0; i + 1 < this->eventQueue->size(); i++)
-            (*this->eventQueue)[i] = (*this->eventQueue)[i + 1];
-        if ((*this->eventQueue)[1] == 0)
-            this->eventQueueDirty = 0;
-        this->eventQueuePaused = 0;
-    } else if (this->eventQueuePaused == 0 && this->eventQueueTimer > 2000) {
-        this->eventQueuePaused = 1;
+void Hud::drawEventString(String text, bool rightAlign) {
+    PaintCanvas *canvas = Globals::Canvas;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    if (this->letterbox != 0) {
+        int x;
+        if (rightAlign)
+            x = this->field_0x4f0 + 1;
+        else
+            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
+    } else {
+        int baseX = this->field_0x160;
+        int margin = this->field_0x4e8;
+        int x;
+        if (rightAlign)
+            x = -3 - margin;
+        else
+            x = margin + 3 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
     }
 }
+
+void Hud::drawBigNumber(int x, int y, int value, bool flag) {
+    (void) x;
+    (void) y;
+    (void) value;
+    (void) flag;
+}
+
+void Hud::resetAnalogStick() {
+    this->lockBracketX = this->reticleX;
+    this->lockBracketY = this->reticleY;
+}
+
+void Hud::drawTitleImage(bool visible) {}
 
 
 
@@ -880,33 +1744,91 @@ void Hud::drawOrbitInformation() {
     }
 }
 
-unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
-    unsigned int i = 0;
-    for (; i <= 0x18; i = i + 1) {
-        if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
-            goto found;
-    }
 
-    return touchBegin(a, b, key);
-found:
-    int dx = (int) a - (int) this->reticleX;
-    int dy = (int) b - (int) this->reticleY;
-    float f = (float) (dy * dy + dx * dx);
-    float r = Globals::globals->sqrt(f);
-    int denom = this->analogStickRadius;
-    int len = (int) r;
-    if (denom < len) {
-        short s = (short) (denom * dx / len);
-        short base = this->reticleY;
-        this->lockBracketX = s + this->reticleX;
-        s = (short) (denom * dy / len);
-        this->lockBracketY = s + base;
-    } else {
-        this->lockBracketX = (short) a;
-        this->lockBracketY = (short) b;
+void Hud::drawMenu(int unused) {
+    (void) unused;
+    Globals::layout->drawMask();
+    Globals::Canvas->DrawImage2D(this->quickMenuTopImage, this->field_0x3c4 + this->field_0x4cc,
+                                 this->field_0x4d0 + this->menuOriginY);
+    Globals::Canvas->DrawImage2D(this->image_0x35c, this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2,
+                                 this->menuOriginY + this->field_0x4d0 + this->menuRowHeight / 2 -
+                                     Globals::layout->quickMenuHeaderLift,
+                                 0x11, 0x44);
+    int y = this->menuOriginY + this->field_0x4d0 + this->menuRowHeight;
+    if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
+        for (unsigned int i = 0; i < this->menuButtons->size() - 1; i++) {
+            Globals::Canvas->DrawImage2D(this->quickMenuMiddleImage, this->field_0x3c4 + this->field_0x4cc, y);
+            y += this->field_0x3d0;
+        }
     }
-    return 0x20;
+    Globals::Canvas->DrawImage2D(this->quickMenuBottomImage, this->field_0x3c4 + this->field_0x4cc, y);
+    if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
+        for (unsigned int i = 0; i < this->menuButtons->size(); i++)
+            (*this->menuButtons)[i]->draw();
+    }
+    if (this->menuType != 0)
+        return;
+    if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
+        String label = String("X ") + String(this->fuelGaugeValue);
+        int rowH = Globals::layout->field_0x30_rowHeight;
+        int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+        int gy = Globals::layout->field_0x288 + (y + rowH / 2);
+        Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
+        Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
+                                     Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
+                                     0x12);
+        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, label, Globals::layout->quickMenuIconGap + gx,
+                                    gy + Globals::Canvas->GetImage2DHeight(this->image_0x374) / 2 -
+                                        Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
+                                        Globals::layout->field_0x234,
+                                    false);
+    }
+}
+
+void Hud::enableFireForTutorial(bool value) {
+    this->fireForTutorial = value;
+}
+
+void Hud::setVisible(bool value) {
+    this->visible = value;
+}
+
+float Hud::getAnalogX() {
+    float num = (float) ((int) this->lockBracketX - (int) this->reticleX);
+    float den = (float) this->analogStickRadius;
+    return num / den;
+}
+
+float Hud::getAnalogY() {
+    float num = (float) ((int) this->lockBracketY - (int) this->reticleY);
+    float den = (float) this->analogStickRadius;
+    return num / den;
+}
+
+void Hud::setAutofireEnabled(bool value) {
+    this->autofireEnabled = value;
+}
+
+bool Hud::isHackingGameActive() {
+    return this->hackingGameActive;
+}
+
+void Hud::setJumpMapSelected(bool value) {
+    this->jumpMapSelectedFlag = value;
+}
+
+bool Hud::jumpMapSelected() {
+    return this->jumpMapSelectedFlag;
+}
+
+void Hud::addToEventQueue(ListItem *item) {
+    for (unsigned int i = 1; i < this->eventQueue->size(); i++) {
+        if ((*this->eventQueue)[i] == 0) {
+            (*this->eventQueue)[i] = item;
+            this->eventQueueDirty = 1;
+            return;
+        }
+    }
 }
 
 
@@ -1018,150 +1940,6 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     return 0;
 }
 
-Hud::Hud() {
-    init();
-}
-
-
-static const char g_Hud_ccHashX[1] = {0};
-static const char g_Hud_ccHashN[1] = {0};
-static const char g_Hud_ccUnit[1] = {0};
-static const char g_Hud_ccUnit2[1] = {0};
-
-void Hud::catchCargo(int itemId, int count, bool cargoFull, bool missionDelivery, bool extender,
-                     bool slotMode, bool aggregate) {
-    this->cargoFullFlag = cargoFull;
-    this->field_0x1d0 = 0;
-    ListItem *item;
-    if (missionDelivery) {
-        this->field_0x1f4 = *Globals::gameText->getText(537);
-        this->field_0x1f4 = Globals::status->replaceHash(
-            String(this->field_0x1f4, false),
-            String(*Globals::gameText->getText(Globals::status->getMission()->getType() == 3 ? 1390 : 1391), false),
-            String("#N"));
-        this->field_0x1f4 = Globals::status->replaceHash(String(this->field_0x1f4, false), String(1), String("#Q"));
-        item = new ListItem(new String(this->field_0x1f4, false));
-        item->itemId = itemId;
-        this->addToEventQueue(item);
-        return;
-    } else {
-        if (cargoFull) {
-            this->field_0x1f4 = *Globals::gameText->getText(322);
-            this->addToEventQueue(new ListItem(new String(this->field_0x1f4, false), 1));
-            return;
-        }
-        if (count < 1)
-            return;
-        if (aggregate && this->eventQueueDirty) {
-            String text = String(String(this->cargoAggregateCount) + String("t "), false) +
-                          *Globals::gameText->getText(itemId + 1274);
-            int index = this->sameHudEventAsBeforeAggregate(String(text, false));
-            if (index >= 0) {
-                this->eventQueueTimer = 2000;
-                this->cargoAggregateCount += count;
-                *(*this->eventQueue)[index]->name = String(String(this->cargoAggregateCount) + String("t "), false) +
-                                                    *Globals::gameText->getText(itemId + 1274);
-                return;
-            }
-        }
-        this->cargoAggregateCount = count;
-        this->field_0x1f4 = String(String(count) + String("t "), false) + *Globals::gameText->getText(itemId + 1274);
-        item = new ListItem(new String(this->field_0x1f4, false));
-        item->itemId = itemId;
-        if (!slotMode || extender)
-            item->buttonKind = 2;
-        if (slotMode)
-            item->selectable = 1;
-    }
-    this->addToEventQueue(item);
-}
-
-void Hud::drawEventString(String text, bool rightAlign) {
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-    if (this->letterbox != 0) {
-        int x;
-        if (rightAlign)
-            x = this->field_0x4f0 + 1;
-        else
-            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
-        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
-    } else {
-        int baseX = this->field_0x160;
-        int margin = this->field_0x4e8;
-        int x;
-        if (rightAlign)
-            x = -3 - margin;
-        else
-            x = margin + 3 - canvas->GetTextWidth(font, text);
-        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
-    }
-}
-
-void Hud::setCurrentSecondaryWeapon(Item *item) {
-    this->currentSecondaryWeapon = item;
-    this->updateSecondaryWeaponString();
-}
-
-int Hud::sameHudEventAsBeforeAggregate(String str) {
-    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
-        ListItem *e = (*this->eventQueue)[i];
-        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
-            return (int) i;
-    }
-    return -1;
-}
-
-
-
-
-static const char g_Hud_swSep[1] = {0};
-static const char g_Hud_swEnd[1] = {0};
-
-void Hud::updateSecondaryWeaponString() {
-    if (this->currentSecondaryWeapon == 0)
-        return;
-    this->field_0x3b4 = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 0x4fa) + String(" (") +
-                        String(this->currentSecondaryWeapon->getAmount()) + String(")");
-    this->secondaryLabelX = (Globals::w >> 1) -
-                            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x3b4) >> 1);
-}
-
-
-
-
-
-void Hud::drawEventQueue() {
-    unsigned char targetMode = Radar::drawTarget;
-    int barY = targetMode != 0 ? this->field_0x3e2 : 0;
-    int alpha = (int) ((float) this->eventQueueTimer / 2000.0f * 255.0f);
-    if (alpha > 255)
-        alpha = 510 - alpha;
-    int bannerY = Globals::layout->field_0x1e4;
-    float bannerScale = Globals::layout->eventBannerScale;
-    int y = bannerY + barY;
-    Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
-    int textOffset = (int) ((targetMode == 0 ? -2.0f : -1.0f) * bannerScale);
-    Globals::Canvas->DrawImage2D(this->image_0x354, this->field_0x3e0,
-                                 (Radar::drawTarget != 0 ? this->field_0x3e2 : 0) - Globals::layout->field_0x1e4);
-    ListItem *item = (*this->eventQueue)[1];
-    if (item != 0) {
-        if (item->buttonKind == 1)
-            Globals::Canvas->SetColor(0xff, 0x2a, 0, (unsigned char) alpha);
-        else if (item->buttonKind == 2)
-            Globals::Canvas->SetColor(0, 0xed, 0, (unsigned char) alpha);
-        else if (item->buttonKind == 3)
-            Globals::Canvas->SetColor(0xff, 0x80, 0, (unsigned char) alpha);
-        else
-            Globals::Canvas->SetColor(0xff, 0xff, 0xff, (unsigned char) alpha);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *item->name,
-                                    (Globals::w >> 1) -
-                                    Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, *item->name) / 2,
-                                    textOffset + y, false);
-    }
-    Globals::Canvas->SetColor(0xffffffff);
-}
-
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
     unsigned int e = touchedElement(a, b);
@@ -1199,852 +1977,76 @@ unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) { // lin
     return this->touchFlags;
 }
 
-bool Hud::sameHudEventAsBefore(String str) {
-    for (unsigned int i = this->eventQueue->size() - 1; (int) i > 0; i--) {
-        ListItem *e = (*this->eventQueue)[i];
-        if (e != 0 && ((String *) e->name)->Compare(str) == 0)
-            return true;
+unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    unsigned int i = 0;
+    for (; i <= 0x18; i = i + 1) {
+        if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
+            goto found;
     }
-    return false;
-}
 
-
-
-static int **g_Hud_initOutX = nullptr;
-
-static int **g_Hud_initOutY = nullptr;
-
-static const int g_Hud_raceBadge[4] = {1190, 1187, 1189, 1188};
-static const char g_Hud_initMsg[1] = {0};
-
-void Hud::init() {
-    Globals::Canvas->Image2DCreate(1196, this->shieldFrameImage);
-    Globals::Canvas->Image2DCreate(1197, this->shieldFrameHitImage);
-    Globals::Canvas->Image2DCreate(1198, this->shieldBarBgImage);
-    Globals::Canvas->Image2DCreate(1199, this->shieldBarFillImage);
-    Globals::Canvas->Image2DCreate(1194, this->armorFrameImage);
-    Globals::Canvas->Image2DCreate(1195, this->armorFrameLowImage);
-    Globals::Canvas->Image2DCreate(1191, this->armorBarBgImage);
-    Globals::Canvas->Image2DCreate(1192, this->armorRegenFillImage);
-    Globals::Canvas->Image2DCreate(1316, this->armorBarFillImage);
-    Globals::Canvas->Image2DCreate(8025, this->image_0x2d0);
-    Globals::Canvas->Image2DCreate(8026, this->image_0x2cc);
-    Globals::Canvas->Image2DCreate(8027, this->barDividerImage);
-    Globals::Canvas->Image2DCreate(1193, this->lockBracketImage);
-    Globals::Canvas->Image2DCreate(1211, this->image_0x34c);
-    Globals::Canvas->Image2DCreate(1210, this->image_0x350);
-    if (Globals::iPad != 0) {
-        Globals::Canvas->Image2DCreate(1222, this->image_0x4);
-        Globals::Canvas->Image2DCreate(1706, this->image_0x8);
-        this->image_0x348 = this->image_0x4;
+    return touchBegin(a, b, key);
+found:
+    int dx = (int) a - (int) this->reticleX;
+    int dy = (int) b - (int) this->reticleY;
+    float f = (float) (dy * dy + dx * dx);
+    float r = Globals::globals->sqrt(f);
+    int denom = this->analogStickRadius;
+    int len = (int) r;
+    if (denom < len) {
+        short s = (short) (denom * dx / len);
+        short base = this->reticleY;
+        this->lockBracketX = s + this->reticleX;
+        s = (short) (denom * dy / len);
+        this->lockBracketY = s + base;
     } else {
-        Globals::Canvas->Image2DCreate(1222, this->image_0x348);
+        this->lockBracketX = (short) a;
+        this->lockBracketY = (short) b;
     }
-    Globals::Canvas->Image2DCreate(1205, this->orbitMarkerIdleImage);
-    Globals::Canvas->Image2DCreate(1204, this->autoTurretOnImage);
-    Globals::Canvas->Image2DCreate(1334, this->autoTurretOffImage);
-    Globals::Canvas->Image2DCreate(1213, this->reticleImage);
-    Globals::Canvas->Image2DCreate(1212, this->missionBannerImage);
-    Globals::Canvas->Image2DCreate(1209, this->pauseButtonPressedImage);
-    Globals::Canvas->Image2DCreate(1208, this->pauseButtonImage);
-    Globals::Canvas->Image2DCreate(1203, this->fuelGaugeIconImage);
-    Globals::Canvas->Image2DCreate(1202, this->fuelGaugeBarImage);
-    Globals::Canvas->Image2DCreate(1201, this->image_0x30c);
-    Globals::Canvas->Image2DCreate(1200, this->image_0x310);
-    Globals::Canvas->Image2DCreate(1207, this->image_0x304);
-    Globals::Canvas->Image2DCreate(1206, this->image_0x308);
-    Globals::Canvas->Image2DCreate(1217, this->image_0x31c);
-    Globals::Canvas->Image2DCreate(1221, this->image_0x320);
-    Globals::Canvas->Image2DCreate(1312, this->image_0x324);
-    Globals::Canvas->Image2DCreate(1219, this->image_0x354);
-    Globals::Canvas->Image2DCreate(1218, this->image_0x358);
-    Globals::Canvas->Image2DCreate(1231, this->quickMenuTopImage);
-    Globals::Canvas->Image2DCreate(1233, this->quickMenuMiddleImage);
-    Globals::Canvas->Image2DCreate(1232, this->quickMenuBottomImage);
-    Globals::Canvas->Image2DCreate(1335, this->image_0x370);
-    Globals::Canvas->Image2DCreate(1336, this->image_0x374);
-    Globals::Canvas->Image2DCreate(1337, this->image_0x37c);
-    Globals::Canvas->Image2DCreate(1338, this->image_0x378);
-    Globals::Canvas->Image2DCreate(1338, this->image_0x388);
-    Globals::Canvas->Image2DCreate(8001, this->image_0x38c);
-    Globals::Canvas->Image2DCreate(1317, this->image_0x360);
-    Globals::Canvas->Image2DCreate(1318, this->image_0x364);
-    Globals::Canvas->Image2DCreate(1323, this->image_0x368);
-    Globals::Canvas->Image2DCreate(1324, this->image_0x36c);
-    Globals::Canvas->Image2DCreate(1320, this->fireButtonImages[0]);
-    Globals::Canvas->Image2DCreate(1319, this->fireButtonPressedImages[0]);
-    Globals::Canvas->Image2DCreate(1257, this->fireButtonImages[1]);
-    Globals::Canvas->Image2DCreate(1258, this->fireButtonPressedImages[1]);
-    Globals::Canvas->Image2DCreate(1214, this->fireButtonImages[2]);
-    Globals::Canvas->Image2DCreate(1215, this->fireButtonPressedImages[2]);
-    Globals::Canvas->Image2DCreate(1322, this->fireButtonImages[3]);
-    Globals::Canvas->Image2DCreate(1321, this->fireButtonPressedImages[3]);
-    Globals::Canvas->Image2DCreate(1344, this->image_0x390);
-    Globals::Canvas->Image2DCreate(1345, this->image_0x394);
-    Globals::Canvas->Image2DCreate(1343, this->image_0x398);
-    Globals::Canvas->Image2DCreate(1346, this->image_0x39c);
-    Globals::Canvas->Image2DCreate(1347, this->image_0x3a0);
-    Globals::Canvas->Image2DCreate(1350, this->image_0x314);
-    Globals::Canvas->Image2DCreate(1351, this->image_0x318);
-    Globals::Canvas->Image2DCreate(8024, this->image_0x3a4);
-    Globals::Canvas->Image2DCreate(8023, this->image_0x3a8);
-    Globals::Canvas->Image2DCreate(1201, this->image_0x3ac);
-    Globals::Canvas->Image2DCreate(1200, this->image_0x3b0);
-    Globals::Canvas->Image2DCreate(8003, this->image_0x334);
-    Globals::Canvas->Image2DCreate(8002, this->image_0x344);
-    Globals::Canvas->Image2DCreate(8000, this->image_0x380);
-    Globals::Canvas->Image2DCreate(8033, this->image_0x338);
-    Globals::Canvas->Image2DCreate(8032, this->image_0x33c);
-    Globals::Canvas->Image2DCreate(8031, this->image_0x384);
-    Globals::Canvas->Image2DCreate(8028, this->image_0x340);
-
-    this->field_0x4a2 = 0;
-    this->field_0x4ac = 0;
-    this->field_0x4b4 = 0;
-    this->field_0x4b0 = 0;
-    this->field_0x4a3 = 0;
-    this->field_0x4a1 = 0;
-    this->field_0x4b8 = 0;
-    this->field_0x4a4 = 0;
-    this->field_0x4d8 = Globals::layout->field_0x130;
-    this->field_0x4dc = Globals::layout->field_0x134;
-    this->analogStickRadius = Globals::layout->field_0x138;
-    this->field_0x4d4 = Globals::layout->field_0x12c;
-    this->field_0x4e4 = Globals::layout->field_0x13c;
-    this->field_0x4ec = Globals::layout->field_0x144;
-    this->field_0x4e8 = Globals::layout->field_0x140;
-    this->field_0x4f0 = Globals::layout->field_0x148;
-    this->field_0x434 = Globals::w - Globals::layout->field_0x14c;
-    this->field_0x436 = Globals::h - this->field_0x4d4 - Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) - Globals::layout->field_0x150;
-    this->field_0x3f0 = Globals::Canvas->GetImage2DWidth(this->reticleImage);
-    this->field_0x3e4 = Globals::w - Globals::layout->field_0x154 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
-    this->field_0x3e6 = Globals::h - Globals::layout->field_0x158 - Globals::Canvas->GetImage2DWidth(this->autoTurretOnImage);
-    this->field_0x3ec = Globals::w - Globals::layout->field_0x15c - this->field_0x3f0;
-    this->field_0x3ee = Globals::h - Globals::layout->field_0x160 - this->field_0x3f0;
-    this->field_0x3ea = Globals::layout->field_0x164;
-    this->field_0x3e0 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->image_0x354) / 2;
-    this->field_0x3e2 = Globals::layout->field_0x168;
-    this->field_0x3f6 = Globals::Canvas->GetImage2DWidth(this->fireButtonImages[0]);
-    this->field_0x3f2 = Globals::w - this->field_0x3f6 - Globals::layout->field_0x16c;
-    this->field_0x3f4 = Globals::h - Globals::layout->field_0x170 - Globals::Canvas->GetImage2DHeight(this->fireButtonImages[0]);
-    this->field_0x41a = Globals::Canvas->GetImage2DWidth(this->image_0x34c);
-    this->field_0x41c = Globals::layout->field_0x174;
-    this->field_0x416 = Globals::w - Globals::layout->field_0x178 - this->field_0x41a;
-    this->field_0x418 = Globals::h - Globals::layout->field_0x17c - Globals::Canvas->GetImage2DHeight(this->image_0x34c);
-    this->field_0x3fc = Globals::Canvas->GetImage2DWidth(this->image_0x310);
-    this->field_0x3f8 = Globals::layout->field_0x180;
-    this->field_0x3fa = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
-    this->field_0x402 = Globals::Canvas->GetImage2DWidth(this->image_0x310);
-    this->field_0x3fe = Globals::w - Globals::layout->field_0x180 - this->field_0x3fc;
-    this->field_0x400 = Globals::h - Globals::layout->field_0x184 - this->field_0x3fc;
-    this->field_0x40e = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
-    this->field_0x40a = Globals::w - this->field_0x40e - Globals::layout->field_0x194;
-    this->field_0x40c = Globals::layout->field_0x198;
-    this->field_0x438 = Globals::w - Globals::Canvas->GetImage2DWidth(this->image_0x320) - Globals::layout->field_0x19c;
-    this->field_0x43a = Globals::layout->field_0x1a0;
-    this->field_0x430 = Globals::Canvas->GetImage2DWidth(this->image_0x31c);
-    this->field_0x45c = Globals::Canvas->GetImage2DWidth(this->image_0x3a4);
-    this->field_0x454 = Globals::w / 2 - this->field_0x45c / 2 - Globals::layout->helpWindowX;
-    this->field_0x458 = Globals::layout->helpWindowX + Globals::w / 2 - this->field_0x45c / 2;
-    this->field_0x45a = Globals::h / 2 - Globals::layout->helpWindowY;
-    this->field_0x45e = Globals::w / 2 - this->field_0x45c / 2;
-    this->field_0x456 = Globals::h / 2 - Globals::layout->helpWindowY;
-    this->field_0x460 = this->field_0x3ee;
-    this->field_0x42c = Globals::layout->field_0x1a4;
-    this->field_0x42e = Globals::h - Globals::layout->field_0x1a8 - Globals::Canvas->GetImage2DHeight(this->image_0x31c);
-    this->field_0x422 = Globals::Canvas->GetImage2DWidth(this->image_0x304);
-    this->reticleX = this->field_0x42c + this->field_0x430 / 2;
-    this->lockBracketX = this->field_0x42c + this->field_0x430 / 2;
-    this->reticleY = this->field_0x42e + this->field_0x430 / 2;
-    this->lockBracketY = this->field_0x42e + this->field_0x430 / 2;
-    this->field_0x414 = Globals::Canvas->GetImage2DWidth(this->fuelGaugeIconImage);
-    this->field_0x410 = Globals::layout->field_0x1ac;
-    this->field_0x412 = Globals::h - Globals::layout->field_0x1b0 - this->field_0x414;
-    this->field_0x408 = Globals::Canvas->GetImage2DWidth(this->image_0x394);
-    this->field_0x404 = Globals::layout->field_0x188;
-    this->field_0x406 = Globals::h - Globals::layout->field_0x18c - this->field_0x408;
-    this->field_0x450 = Globals::layout->field_0x190;
-
-    if (Globals::iPad != 0) {
-        this->field_0x3c4 = Globals::w - Globals::layout->buttonInsetX - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage);
-        this->menuOriginY = this->field_0x418 - Globals::layout->field_0x2c_rowHeight - 6 * Globals::layout->field_0x30_rowHeight - Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
-        Globals::globals->setCoordsSteer(*(int *) &Globals::options[84], Globals::Canvas->GetImage2DWidth(this->image_0x31c),
-                                         Globals::Canvas->GetImage2DWidth(this->image_0x310),
-                                         Globals::Canvas->GetImage2DWidth(this->fuelGaugeBarImage), this->field_0x3f8, this->field_0x3fa, this->field_0x42c,
-                                         this->field_0x42e, this->reticleX, this->reticleY, this->field_0x410, this->field_0x412, this->field_0x404, this->field_0x406);
-        this->lockBracketX = this->reticleX;
-        this->lockBracketY = this->reticleY;
-        Globals::globals->setCoordsFire(*(int *) &Globals::options[88], Globals::Canvas->GetImage2DWidth(this->image_0x4),
-                                        this->image_0x4, this->image_0x8, this->image_0x348, this->field_0xc, this->field_0xe, this->field_0x3e4, this->field_0x3e6, this->field_0x416,
-                                        this->field_0x418, this->field_0x3f2, this->field_0x3f4, this->field_0x3ec, this->field_0x3ee, this->field_0x3fe, this->field_0x400);
-        this->steerOption = *(int *) &Globals::options[84];
-        this->fireOption = *(int *) &Globals::options[88];
-    } else {
-        this->field_0x3c4 = Globals::w / 2 - Globals::Canvas->GetImage2DWidth(this->quickMenuTopImage) / 2;
-        this->menuOriginY = Globals::layout->field_0x1b4;
-    }
-    this->menuRowHeight = Globals::Canvas->GetImage2DHeight(this->quickMenuTopImage);
-    this->field_0x3d0 = Globals::Canvas->GetImage2DHeight(this->quickMenuMiddleImage);
-    this->field_0x3d4 = this->field_0x3c4 + Globals::layout->field_0x1b8;
-    this->menuBaseY = this->menuOriginY + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x1bc;
-    this->field_0x3dc = Globals::Canvas->GetImage2DWidth(this->quickMenuMiddleImage) - Globals::layout->field_0x1c0;
-    this->field_0x43c = Globals::layout->field_0x1c4;
-    this->field_0x43e = Globals::layout->field_0x1c4 + Globals::Canvas->GetImage2DWidth(this->shieldFrameImage);
-    this->field_0x444 = Globals::layout->field_0x1c8;
-    this->field_0x448 = Globals::layout->field_0x1cc;
-    this->field_0x442 = Globals::layout->field_0x1d0;
-    this->field_0x44a = Globals::layout->field_0x1d4;
-    this->field_0x446 = Globals::Canvas->GetImage2DWidth(this->shieldBarFillImage);
-    this->field_0x440 = this->field_0x43e;
-    this->field_0x44c = Globals::Canvas->GetImage2DHeight(this->shieldBarFillImage);
-    this->field_0x48c = 0;
-    this->autofireEnabled = 0;
-    this->field_0x488 = 0;
-    this->field_0x490 = 0;
-    this->field_0x484 = 0;
-    this->field_0x476 = 1;
-    this->field_0x474 = 1;
-    this->field_0x498 = 0;
-    this->field_0x49c = 0;
-    this->timeExtenderTimer = 0;
-    this->field_0x4c4 = 0;
-    this->fireForTutorial = 0;
-    this->quickMenuOpen = 0;
-    this->field_0x15c = -1;
-    this->eventQueue = new Array<ListItem *>();
-    ArraySetLength(20, *this->eventQueue);
-    this->field_0x160 = Globals::w >> 1;
-    this->field_0x164 = Globals::h - this->field_0x4e4;
-    Hud::RADAR_WIDTH = Globals::w - 28;
-    Hud::RADAR_HEIGHT = Globals::h - 33 - this->field_0x4e4 - this->field_0x4ec - Globals::layout->field_0x1d8;
-    this->field_0x1dc[2] = 0;
-    this->field_0x1d0 = 10000;
-    this->field_0x218 = Globals::w - 5;
-    this->hasBoostButton = Globals::status->getShip()->getBoostDelay() > 0;
-    this->hasShieldBar = Globals::status->getShip()->getMaxShieldHP() > 0;
-    this->hasArmorRegen = Globals::status->getShip()->getMaxArmorHP() > 0;
-    this->hasAutofireUI = Globals::status->getShip()->getFirePower() > 0.0f;
-    this->hasCloak = Globals::status->getShip()->hasCloak();
-    this->field_0x234 = 0;
-    this->eventQueueDirty = 0;
-    this->cargoFullFlag = 0;
-    this->field_0x236 = 0;
-    this->visible = 1;
-    this->jumpMapSelectedFlag = 0;
-    this->eventQueueTimer = 0;
-    this->eventQueuePaused = 0;
-    this->shieldHitFlash = 0;
-    this->field_0x276 = 0;
-    this->field_0x46c = 0;
-    this->field_0x4cc = 0;
-    this->currentSecondaryWeapon = 0;
-    this->menuButtons = 0;
-    this->field_0x4d0 = 0;
-    this->field_0x277 = 0;
-    this->weaponSelectState = 0;
-    this->factionLogoImage = -1;
-    this->fuelGaugeValue = 0;
-    this->timeExtenderTimer = -1;
-    this->field_0x280 = 1;
-    this->field_0x0 = 0;
-    this->field_0x281 = 0;
-    this->timeExtenderDuration = -1;
-    this->cargoAggregateCount = 0;
-    this->field_0x4c8 = 0;
-    this->hackingGameActive = 0;
-    this->keyArray = new Array<void *>(); // lint: void_ptr (opaque touch-handle element type, matches exported void* touchId)
-    ArraySetLength(25, *this->keyArray);
-    this->elementBits = new int[25];
-    for (int i = 0; i < 25; i++) {
-        (*this->keyArray)[i] = 0;
-        this->elementBits[i] = 0;
-    }
-    this->touchFlags = 0;
-    if (Globals::status->inAlienOrbit() == 0)
-        Globals::Canvas->Image2DCreate(g_Hud_raceBadge[((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace()],
-                                       this->factionLogoImage);
-    this->secondaryLabelTimerSeed = -1;
-    this->secondaryLabelTimer = 0;
-    this->field_0x51c = String("");
-    this->closeHudMenu();
-    this->checkIfQuickMenuIsEmpty();
-    this->releaseAllKeys();
-    this->uintArray = 0;
-    int pauseWidth = Globals::Canvas->GetImage2DWidth(this->pauseButtonPressedImage);
-    Globals::pause_x = Globals::w - pauseWidth - Globals::layout->field_0x194;
-    Globals::pause_y = Globals::layout->field_0x198;
+    return 0x20;
 }
 
-void Hud::drawPauseButton() {
-    Globals::Canvas->SetColor(0xffffffff);
-    if ((this->touchFlags & 1) != 0)
-        Globals::Canvas->DrawImage2D(this->pauseButtonPressedImage, this->field_0x40a, this->field_0x40c);
-    else
-        Globals::Canvas->DrawImage2D(this->pauseButtonImage, this->field_0x40a, this->field_0x40c);
+unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    unsigned int ret = 0;
+    int i = 0;
+    for (; i != 0x19; i = i + 1) {
+        if ((*this->keyArray)[i] == key) {
+            ret = (unsigned int) this->elementBits[i];
+            this->touchFlags = this->touchFlags & ~ret;
+            (*this->keyArray)[i] = 0;
+            this->elementBits[i] = 0;
+        }
+    }
+    if (this->quickMenuOpen != 0) {
+        Array<TouchButton *> *btns = this->menuButtons;
+        if (btns != 0) {
+            for (unsigned int j = 0; j < btns->size(); j = j + 1) {
+                (*btns)[j]->OnTouchEnd((int) a, (int) b);
+                btns = this->menuButtons;
+            }
+        }
+    }
+    return ret;
 }
 
-void Hud::checkIfQuickMenuIsEmpty() {
-    Array<Item *> *equip = Globals::status->getShip()->getEquipment(1);
-    this->equipmentArray = equip;
-
-    bool hasSecondary = false;
-    if (equip != 0) {
-        for (unsigned int i = 0; i < equip->size(); i++) {
-            if ((*equip)[i] != 0) {
-                hasSecondary = true;
-                break;
-            }
-        }
-    }
-    if (!hasSecondary && Globals::status->getShip()->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0)
-        this->quickMenuEmpty = !Globals::status->getShip()->hasCloak();
-    else
-        this->quickMenuEmpty = 0;
-    updateSecondaryWeaponString();
+int Hud::hudAction(int action, Level *lvl, Radar *radar) {
+    (void) action;
+    (void) lvl;
+    (void) radar;
+    return 0;
 }
 
-
-void Hud::drawMenu(int unused) {
-    (void) unused;
-    Globals::layout->drawMask();
-    Globals::Canvas->DrawImage2D(this->quickMenuTopImage, this->field_0x3c4 + this->field_0x4cc,
-                                 this->field_0x4d0 + this->menuOriginY);
-    Globals::Canvas->DrawImage2D(this->image_0x35c, this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2,
-                                 this->menuOriginY + this->field_0x4d0 + this->menuRowHeight / 2 -
-                                     Globals::layout->quickMenuHeaderLift,
-                                 0x11, 0x44);
-    int y = this->menuOriginY + this->field_0x4d0 + this->menuRowHeight;
-    if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        for (unsigned int i = 0; i < this->menuButtons->size() - 1; i++) {
-            Globals::Canvas->DrawImage2D(this->quickMenuMiddleImage, this->field_0x3c4 + this->field_0x4cc, y);
-            y += this->field_0x3d0;
-        }
-    }
-    Globals::Canvas->DrawImage2D(this->quickMenuBottomImage, this->field_0x3c4 + this->field_0x4cc, y);
-    if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
-        for (unsigned int i = 0; i < this->menuButtons->size(); i++)
-            (*this->menuButtons)[i]->draw();
-    }
-    if (this->menuType != 0)
-        return;
-    if (Globals::status->getShip()->hasCloak() || Globals::status->getShip()->hasJumpDrive()) {
-        String label = String("X ") + String(this->fuelGaugeValue);
-        int rowH = Globals::layout->field_0x30_rowHeight;
-        int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
-        int gy = Globals::layout->field_0x288 + (y + rowH / 2);
-        Globals::Canvas->DrawImage2D(this->image_0x374, gx, gy, 0x11, 0x14);
-        Globals::Canvas->DrawImage2D(this->image_0x370, gx - Globals::layout->quickMenuIconGap,
-                                     Globals::layout->field_0x30_rowHeight + gy + Globals::layout->field_0x28c, 0x11,
-                                     0x12);
-        Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, label, Globals::layout->quickMenuIconGap + gx,
-                                    gy + Globals::Canvas->GetImage2DHeight(this->image_0x374) / 2 -
-                                        Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 +
-                                        Globals::layout->field_0x234,
-                                    false);
-    }
+void Hud::drawCredits() {
 }
-
-void Hud::clearQueue() {
-    unsigned int i = 1;
-    while (i < this->eventQueue->size()) {
-        delete (*this->eventQueue)[i];
-        (*this->eventQueue)[i] = 0;
-        i = i + 1;
-    }
-    this->eventQueuePaused = 0;
-}
-
-void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
-    switch (eventId) {
-        case 36:
-        case 38:
-        case 40:
-        case 42:
-            this->field_0x1e0 = *Globals::gameText->getText(3200);
-            this->weaponSelectState = 0;
-            break;
-        case 5:
-            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(38);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 10:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + String(Globals::status->getStation()->getName(), false) +
-                                (Globals::status->getStation()->getIndex() == 101 ? String("") : String(" ") + *Globals::gameText->getText(136));
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 12:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(547);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 13:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(548);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 15:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(545);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 17:
-            this->field_0x1e0 = *Globals::gameText->getText(308);
-            break;
-        case 28:
-            this->field_0x276 = 1;
-            this->field_0x464 = 0;
-            return;
-        case 34:
-            this->field_0x1e0 = *Globals::gameText->getText(3199);
-            break;
-        case 35:
-            this->field_0x27a = 1;
-            this->field_0x468 = 0;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 0;
-            return;
-        case 39:
-            this->field_0x27a = 0;
-            this->field_0x468 = 0;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 0;
-            return;
-        case 45:
-            this->field_0x1e0 = *Globals::gameText->getText(3202);
-            break;
-        case 1:
-            if (this->hasAutofireUI == 0)
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(38);
-            break;
-        case 2:
-            if (this->hasAutofireUI == 0)
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(37) + String(" ") + *Globals::gameText->getText(39);
-            break;
-        case 3:
-            if (this->hasBoostButton == 0 || !ego->readyToBoost())
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(314);
-            break;
-        case 4:
-            if (this->hasBoostButton == 0)
-                return;
-            this->field_0x1e0 = *Globals::gameText->getText(315);
-            break;
-        case 6:
-            this->field_0x1e0 = *Globals::gameText->getText(571) + String(" ") + *Globals::gameText->getText(39);
-            Globals::sound->play(29, 0, 0, 0.0f);
-            break;
-        case 7:
-            this->field_0x1e0 = *Globals::gameText->getText(553);
-            break;
-        case 8:
-            this->field_0x1e0 = *Globals::gameText->getText(539);
-            break;
-        case 9:
-            this->field_0x1e0 = *Globals::gameText->getText(540);
-            break;
-        case 11:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(550);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 14:
-            this->field_0x1e0 = *Globals::gameText->getText(546) + String(": ") + *Globals::gameText->getText(549);
-            Globals::sound->play(28, 0, 0, 0.0f);
-            break;
-        case 16:
-            this->field_0x1e0 = *Globals::gameText->getText(307);
-            break;
-        case 18:
-            this->field_0x1e0 = *Globals::gameText->getText(309);
-            break;
-        case 19:
-            this->field_0x1e0 = this->eventLines[19];
-            break;
-        case 20:
-            this->field_0x1e0 = *Globals::gameText->getText(541);
-            break;
-        case 21:
-            this->field_0x1e0 = *Globals::gameText->getText(525);
-            break;
-        case 22:
-            this->field_0x1e0 = *Globals::gameText->getText(542);
-            break;
-        case 23:
-            this->field_0x1e0 = *Globals::gameText->getText(543);
-            break;
-        case 24:
-            this->field_0x1e0 = *Globals::gameText->getText(544);
-            break;
-        case 25:
-            this->field_0x277 = 1;
-            this->field_0x464 = 0;
-            return;
-        case 26:
-            this->field_0x277 = 0;
-            return;
-        case 27:
-            this->field_0x1e0 = *Globals::gameText->getText(322);
-            break;
-        case 29:
-            this->field_0x276 = 0;
-            return;
-        case 31:
-            this->field_0x1e0 = *Globals::gameText->getText(324);
-            break;
-        case 32:
-            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(38);
-            break;
-        case 33:
-            this->field_0x1e0 = *Globals::gameText->getText(218) + String(" ") + *Globals::gameText->getText(39);
-            break;
-        case 37:
-            this->field_0x27a = 1;
-            this->field_0x468 = 0;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 1;
-            return;
-        case 41:
-            this->field_0x27a = 0;
-            this->field_0x468 = 0;
-            this->weaponSelectState = 1;
-            this->field_0x279 = 1;
-            break;
-        case 43:
-            this->field_0x1e0 = *Globals::gameText->getText(3203);
-            break;
-        case 44:
-            this->field_0x1e0 = *Globals::gameText->getText(3201);
-            break;
-        case 46:
-            this->field_0x1e0 = *Globals::gameText->getText(316);
-            break;
-        case 47:
-            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1476);
-            this->clearQueue();
-            break;
-        case 30:
-            this->field_0x1e0 = String(String("-") + String(arg) + String("t "), false) + *Globals::gameText->getText(1396);
-            this->clearQueue();
-            break;
-    }
-    if (this->sameHudEventAsBefore(this->field_0x1e0))
-        return;
-    ListItem *item;
-    if (eventId == 27 || eventId == 30 || eventId == 31 || eventId == 47)
-        item = new ListItem(new String(this->field_0x1e0), 1);
-    else
-        item = new ListItem(new String(this->field_0x1e0));
-    this->addToEventQueue(item);
-    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
-                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
-    this->eventScrolls = 0;
-    this->field_0x1dc[2] = 1;
-    this->letterbox = wide;
-}
-
-
-
-void Hud::drawChallengeModeScore(int unused) {
-    (void) unused;
-    int digitW, overlap, y, digitH, screenW;
-    int step;
-    int half, halfStep, left;
-    Globals::Canvas->SetColor(0xffffffff);
-    digitW = this->digitSprite->getFrameWidth();
-    overlap = Globals::layout->field_0x2c_rowHeight;
-    digitH = this->digitSprite->getFrameHeight();
-    int scoreValue = Globals::status->field_0x184;
-    y = Globals::layout->field_0x2c_rowHeight;
-    screenW = Globals::w;
-    String score(scoreValue);
-    step = digitW - overlap;
-    half = screenW / 2;
-    halfStep = step * 7 / 2;
-    if (score.size() < 7) {
-        int pad = 7 - score.size();
-        for (int i = 0; i < pad; i++)
-            score = String("0") + score;
-    }
-    Globals::Canvas->SetColor(0x77ccffff);
-    left = half - halfStep;
-    int x = left;
-    for (unsigned int i = 0; i < score.size(); i++) {
-        int frame = score.SubString(i, i + 1).ValueOf();
-        this->digitSprite->setFrame(frame);
-        this->digitSprite->setPosition(x, y);
-        this->digitSprite->draw(1.0f, 1.0f);
-        x += step;
-    }
-    if (Globals::status->field_0x180 > 0 && Globals::status->field_0x18c >= 2) {
-        Globals::Canvas->SetColor(0xffffffff);
-        int rowGap = Globals::layout->field_0x2c_rowHeight;
-        y = y + digitH + rowGap;
-        if (Globals::status->field_0x180 <= 3000) {
-            if (Globals::status->field_0x180 % 100 < 50)
-                return;
-            int multiplier = Globals::status->field_0x18c;
-            String bonus((int) ((1.0f + (float) multiplier * 0.05f) * (float) (multiplier * 1000)));
-            int bonusY = digitH + y;
-            int offset = -step;
-            for (unsigned int i = 0; i < bonus.size(); i++) {
-                int frame = bonus.SubString(i, i + 1).ValueOf();
-                this->digitSprite->setFrame(frame);
-                offset += step;
-                this->digitSprite->setPosition(Globals::w / 2 - bonus.size() * step / 2 + offset,
-                                               bonusY + Globals::layout->field_0x2c_rowHeight);
-                this->digitSprite->draw(1.0f, 1.0f);
-            }
-        }
-        Globals::Canvas->DrawImage2D(this->multiplierIconImage, rowGap + left, y);
-        float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
-        float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
-        String multiplier(Globals::status->field_0x18c);
-        int mx = half + rowGap - halfStep;
-        // Keep the multiplier digits on-screen if the computed origin is off the left edge.
-        if (mx < 0)
-            y = half;
-        for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
-            int frame = multiplier.SubString(i - 1, i).ValueOf();
-            this->digitSprite->setFrame(frame);
-            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
-            mx += step;
-            this->digitSprite->draw(scale, scale);
-        }
-    }
-    Globals::Canvas->SetColor(0xffffffff);
-}
-
-
-
-void Hud::hudEventMedal(int medalId, int percent) {
-    if (percent >= 100)
-        percent = 100;
-    this->field_0x1e0 = *Globals::gameText->getText(medalId + 1507) + String(":") + String(percent) + String("%");
-    if (this->sameHudEventAsBefore(String(this->field_0x1e0, false)))
-        return;
-    this->addToEventQueue(new ListItem(new String(this->field_0x1e0, false), 3));
-    bool wide = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x1e0) >
-                Globals::w / 2 - this->field_0x4e8 - 2 * this->field_0x4f0;
-    this->eventScrolls = 0;
-    this->field_0x1dc[2] = 1;
-    this->letterbox = wide;
-}
-
-
-
-static CargoBay **g_Hud_imCargoA = nullptr;
-
-static CargoBay **g_Hud_imCargoB = nullptr;
-
-
-
-void Hud::initHudMenu(int menuType, Level *level) {
-    if (this->menuButtons != 0) {
-        ArrayReleaseClasses(*this->menuButtons);
-        delete this->menuButtons;
-        this->menuButtons = 0;
-    }
-    this->menuButtons = new Array<TouchButton *>();
-    this->menuType = menuType;
-    if (this->equipmentArray != 0)
-        delete this->equipmentArray;
-    this->equipmentArray = 0;
-    this->equipmentArray = Globals::status->getShip()->getEquipment(1);
-    this->updateSecondaryWeaponString();
-    this->field_0x4cc = 0;
-    int rowGap = Globals::layout->field_0x1dc;
-    int y = this->menuBaseY;
-    if (Globals::iPad != 0) {
-        float top = (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
-                                         : (float) *(int *) &Globals::options[88] -
-                                           (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f)) < 0.0f
-                        ? 0.0f
-                        : (this->menuType == 3 ? (float) *(int *) &Globals::options[84]
-                                               : (float) *(int *) &Globals::options[88] -
-                                                 (Globals::iPadHD != 0 ? 112.5f : Globals::iPadLarge != 0 ? 160.0f : 80.0f));
-        this->menuOriginY = (int) top;
-        y = (int) top + this->menuRowHeight - Globals::layout->field_0x30_rowHeight / 2 + 1;
-        this->menuBaseY = y;
-    }
-
-    switch (menuType) {
-        case 0: {
-            bool hasSecondary = false;
-            if (this->equipmentArray != 0) {
-                for (unsigned int i = 0; i < this->equipmentArray->size(); i++) {
-                    if ((*this->equipmentArray)[i] != 0) {
-                        hasSecondary = true;
-                        break;
-                    }
-                }
-            }
-            if (hasSecondary) {
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(266), 0, this->field_0x3d4, y,
-                                                      this->field_0x3dc, 0x11, 4);
-                button->id = 0x200;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            if (Globals::status->getWingmen() != 0 && Globals::status->inSupernovaSystem() == 0 &&
-                Globals::status->getCurrentCampaignMission() != 158) {
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(306), 0, this->field_0x3d4, y,
-                                                      this->field_0x3dc, 0x11, 4);
-                button->id = 0x400;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            if (Globals::status->getShip()->hasCloak()) {
-                Item *cloak = Globals::status->getShip()->getFirstEquipmentOfSort(21);
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(cloak->getIndex() + 1274), 0,
-                                                      this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
-                button->setPressProgressHighlight(false);
-                if (level->getPlayer()->isCloaked() || level->getPlayer()->isChargingCloak() ||
-                    level->getPlayer()->isRechargingCloak()) {
-                    if (level->getPlayer()->isRechargingCloak())
-                        button->setPressProgress(level->getPlayer()->getCloakRechargeRate());
-                    button->setHalfTransparent(true);
-                }
-                button->id = 0x800;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            if (Globals::status->getShip()->hasJumpDrive()) {
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(1359), 0, this->field_0x3d4, y,
-                                                      this->field_0x3dc, 0x11, 4);
-                if (level->getPlayer()->isChargingDrive() || level->getPlayer()->emergencySystemActive())
-                    button->setHalfTransparent(true);
-                button->id = 0x1000;
-                ArrayAdd(button, *this->menuButtons);
-            }
-            Item *fuel = Globals::status->getShip()->getCargo(122);
-            this->fuelGaugeValue = fuel != 0 ? fuel->getAmount() : 0;
-            Globals::Canvas->Image2DCreate(1269, this->image_0x35c);
-            break;
-        }
-        case 1:
-            for (int i = 0; (unsigned int) i < this->equipmentArray->size(); i++) {
-                if ((*this->equipmentArray)[i] == 0)
-                    continue;
-                TouchButton *button = new TouchButton(
-                        *Globals::gameText->getText((*this->equipmentArray)[i]->getIndex() + 1274) +
-                        String(String(" (") + String((*this->equipmentArray)[i]->getAmount()) + String(")"), false),
-                        0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
-                button->id = i == 0 ? 0x2000 : i == 1 ? 0x4000 : i == 2 ? 0x8000 : 0x10000;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            Globals::Canvas->Image2DCreate(1270, this->image_0x35c);
-            break;
-        case 2: {
-            int textIds[4] = {307, 308, 309, (unsigned char) Globals::status->field_f8 != 0 ? 311 : 310};
-            int keys[4];
-            keys[0] = 0x20000;
-            keys[1] = 0x40000;
-            keys[2] = 0x80000;
-            keys[3] = 0x100000;
-            for (unsigned int i = 0; i < 4; i++) {
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(textIds[i]), 0, this->field_0x3d4, y,
-                                                      this->field_0x3dc, 0x11, 4);
-                button->id = keys[i];
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            Globals::Canvas->Image2DCreate(1267, this->image_0x35c);
-            break;
-        }
-        case 3: {
-            if (Globals::iPad != 0)
-                this->field_0x4cc = Globals::layout->buttonInsetX - this->field_0x3c4;
-            if (Globals::status->inAlienOrbit() == 0) {
-                TouchButton *button = new TouchButton(*Globals::gameText->getText(549), 0, this->field_0x3d4, y,
-                                                      this->field_0x3dc, 0x11, 4);
-                button->id = 0x1000000;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-                if (!Globals::status->inEmptyOrbit()) {
-                    TouchButton *dock = new TouchButton(
-                            String(Globals::status->getStation()->getName(), false) +
-                            (Globals::status->getStation()->getIndex() == 101
-                                     ? String("")
-                                     : String(" ") + *Globals::gameText->getText(136)),
-                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
-                    dock->id = 0x800000;
-                    ArrayAdd(dock, *this->menuButtons);
-                    y += rowGap + Globals::layout->field_0x30_rowHeight;
-                }
-                if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->currentOrbitHasWarpGate()) {
-                    TouchButton *gate = new TouchButton(*Globals::gameText->getText(547), 0, this->field_0x3d4, y,
-                                                        this->field_0x3dc, 0x11, 4);
-                    gate->id = 0x400000;
-                    ArrayAdd(gate, *this->menuButtons);
-                    y += rowGap + Globals::layout->field_0x30_rowHeight;
-                }
-                if (level->getPlayer()->getRoute() != 0 &&
-                    (unsigned char) ((Route *) (intptr_t) level->getPlayer()->getRoute())->getLastWaypoint()->state == 0) {
-                    TouchButton *route = new TouchButton(*Globals::gameText->getText(573), 0, this->field_0x3d4, y,
-                                                         this->field_0x3dc, 0x11, 4);
-                    route->id = 0x2000000;
-                    ArrayAdd(route, *this->menuButtons);
-                    y += rowGap + Globals::layout->field_0x30_rowHeight;
-                }
-                if (Level::programmedStation != 0) {
-                    TouchButton *autopilot = new TouchButton(
-                            *Globals::gameText->getText(546) + String(": ") +
-                            String(Level::programmedStation->getName(), false),
-                            0, this->field_0x3d4, y, this->field_0x3dc, 0x11, 4);
-                    autopilot->id = 0x200000;
-                    ArrayAdd(autopilot, *this->menuButtons);
-                    y += rowGap + Globals::layout->field_0x30_rowHeight;
-                }
-            }
-            int targets = level->getNumDockingTargets();
-            for (int i = 0; i < targets; i++) {
-                if (((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName().length == 0)
-                    continue;
-                TouchButton *button = new TouchButton(
-                        ((PlayerFixedObject *) (intptr_t) level->getDockingTarget(i))->getName(), 0, this->field_0x3d4,
-                        y, this->field_0x3dc, 0x11, 4);
-                button->id = 0x4000000 << i;
-                ArrayAdd(button, *this->menuButtons);
-                y += rowGap + Globals::layout->field_0x30_rowHeight;
-            }
-            if (Globals::iPad == 0 && this->menuButtons->size() >= 5) {
-                for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
-                    TouchButton *button = (*this->menuButtons)[i];
-                    button->setPosition((int) button->getPosition().x,
-                                        (int) ((*this->menuButtons)[i]->getPosition().y -
-                                               (float) Globals::layout->field_0x30_rowHeight));
-                }
-            }
-            Globals::Canvas->Image2DCreate(1268, this->image_0x35c);
-            break;
-        }
-    }
-
-    unsigned int count = this->menuButtons->size();
-    if (Globals::iPad != 0) {
-        if (count != 0) {
-            int shift = (4 - count) * (rowGap + Globals::layout->field_0x30_rowHeight);
-            if (menuType == 3)
-                shift -= Globals::layout->field_0x30_rowHeight;
-            this->field_0x4d0 = shift;
-            for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
-                (*this->menuButtons)[i]->translate(this->field_0x4cc, this->field_0x4d0);
-                if (i < 10) {
-                    Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
-                    Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
-                }
-            }
-        }
-    } else {
-        this->field_0x4d0 = count >= 5 ? -Globals::layout->field_0x30_rowHeight : 0;
-        for (unsigned int i = 0; i < this->menuButtons->size(); i++) {
-            if (i < 10) {
-                Globals::sub_menu_buttons_x[i] = (int) (*this->menuButtons)[i]->getPosition().x;
-                Globals::sub_menu_buttons_y[i] = (int) (*this->menuButtons)[i]->getPosition().y;
-            }
-        }
-    }
-    this->quickMenuOpen = 1;
+void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
+                           unsigned int x, unsigned int y) {
+    (void) t0;
+    (void) t1;
+    (void) ego;
+    (void) letterbox;
+    (void) x;
+    (void) y;
 }
 
 Hud::~Hud() {
@@ -2063,8 +2065,6 @@ Hud::~Hud() {
         delete this->uintArray;
     this->uintArray = 0;
 }
-
-void Hud::drawTitleImage(bool visible) {}
 
 int Hud::RADAR_WIDTH;
 int Hud::RADAR_HEIGHT;
