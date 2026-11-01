@@ -4612,3 +4612,13 @@ original build flags.
   reproduced. Note: `_work/reconstructions/virtualinput_bss_order_w3470.md`.
 - Current raw content diff: `.data` **0 bytes**, `.data.rel.ro` 21, `.bss` 288,
   `.rodata` 13121, `.dynsym` 2255, `.rel.dyn` 139, `.rel.plt` 275.
+- **Level `.rodata` block + `Status::missionCompleted`** (`w3472`, byte 4414 -> **4441**): the
+  invented `kMissionCase[190]` is gone (replaced by a `(short)` switch), `g_ips_shipTypeMap` is
+  64 entries, `jumpgateMeshes` is 16 `uint16`, and the Hud `_RACE_IMAGES_BIG` is the 10-int
+  plain `.rodata` table. The Level block is now start- and size-exact (0x18a4 @ 0x1fc3d0) and
+  `.rodata` content diff drops 13121 -> 8826 bytes. Notes:
+  `_work/reconstructions/Status-missionCompleted-4bytes-w3472.md`,
+  `_work/reconstructions/level_rodata_shipTypeMap_64_w3469.md`.
+- **`Generator::createMission` size-exact** (`w3465`): the body is now 1996 B (was 1992) via a
+  pool-loaded `0.5f`; the `generatorMissionLayoutPad()` anchor in `MTitle.cpp` is gone. Fuzzy
+  73.8 -> 73.6 (a scheduling trade), but `.text` layout no longer depends on a padding anchor.
