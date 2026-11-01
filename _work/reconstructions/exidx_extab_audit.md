@@ -275,3 +275,223 @@ Scratch parsers live under `/tmp/w3367/` (`elf_exidx.py`, `diff_exidx2.py`,
 committed changes are `src/engine/render/MarqueeImage.cpp`,
 `src/engine/core/AbyssEngine.cpp`, `tools/gen_exidx_markers.py`, and the two
 docs.
+
+---
+
+# w3376: close the exception-table delta
+
+Scope: remove the last `+0x10` `.ARM.exidx` / `-0x1c` `.ARM.extab` delta without moving
+`.text` (`0x1337c8`) or the `.rodata` base (`0x1c9e10`). Worktree `wt/w3376`, branch
+`wave87-w3376`, HEAD `1fcdd328`.
+
+## Result
+
+| section | original | before (HEAD `1fcdd328`) | after | delta after |
+|---|---:|---:|---:|---:|
+| `.text` | `0x1337c8` | `0x1337c8` | **`0x1337c8`** | **0** |
+| `.ARM.exidx` | `0x06f70` | `0x06f80` (+0x10) | **`0x06f70`** | **0** |
+| `.ARM.extab` | `0x26298` | `0x2627c` (−0x1c) | **`0x2628c`** | **−0xc** |
+| `.rodata` | `0x41b67` @ `0x1c9e10` | `0x41b97` @ `0x1c9e10` | `0x41b97` @ `0x1c9e10` | +0x30 (base exact) |
+| `.bss` | `0x069ac` @ `0x216970` | `0x069c8` @ `0x216980` | `0x069c8` @ `0x216980` | +0x1c |
+| `.rel.dyn` | `0x07048` | `0x07048` | `0x07048` | **0** |
+
+Gate: **byte_exact 3907 → 3914 (+7)**, linked_exact 4494 (unchanged), avg 99.89,
+`RATCHET PASS`, `drift` 0 fields. `.ARM.exidx` is now **exact** (3566 entries:
+CANT 272, inline 856, extab 2438 — the same split as the original).
+
+The +7 byte-exact are all in the `ConfigReader` TU: `GetNewLine`, `ParseFile`,
+`ConfigReader::ConfigReader` (C1/C2), `ConfigReader::~ConfigReader` (D1/D2),
+`Array<TokenStruct>::~Array`. They were already 100 % fuzzy but their literal pools
+were 4–8 B out of place; restoring the original TU size made them byte-identical.
+
+## Method / tooling
+
+`_work/reconstructions/exidx_table.py` is the committed, self-contained parser (the
+w3367 scratch parsers lived in `/tmp`). It decodes:
+
+* `.ARM.exidx` as 8-byte `(prel31 fn, word1)` entries;
+* `word1 == 1` → `EXIDX_CANTUNWIND`; `word1 & 0x80000000` → inline compact model;
+  otherwise a prel31 to `.ARM.extab`;
+* the LSDA with the real libc++abi layout
+  (`sources/cxx-stl/llvm-libc++abi/src/cxa_personality.cpp`):
+  `lpStartEncoding`+`lpStart`, `ttypeEncoding`+`classInfoOffset` (encoded with
+  `ttypeEncoding`), `callSiteEncoding`+`callSiteTableLength` (ULEB128), then
+  `(start, length, landingPad, action)` call-site rows.
+
+```sh
+# full per-entry table: entry#, exidx address, function+offset, kind, model, extab
+python3 _work/reconstructions/exidx_table.py ../_work/bins/android_2.0.16_libgof2hdaa.so
+python3 _work/reconstructions/exidx_table.py cmake-build-match/libgof2hdaa.so
+
+# per-function kind-sequence + extab-record-length diff
+python3 _work/reconstructions/exidx_table.py --diff \
+    ../_work/bins/android_2.0.16_libgof2hdaa.so cmake-build-match/libgof2hdaa.so
+```
+
+Every extab target is used by exactly one exidx entry in both binaries (no shared
+LSDA records), so record lengths are recovered as the distance between consecutive
+extab targets in address order.
+
+## 1. The `+0x10` was two artificial `.text` anchors
+
+Both extra entries were **inline model-0** entries for hand-written layout anchors,
+not real landing pads:
+
+| anchor | TU | size | exidx entry | why it existed |
+|---|---|---:|---|---|
+| `levelMissionPad(int)` | `ConfigReader.cpp` | 8 B | `INL0` at `GetNewLine+275` (`0x878e0`) | padded `.text` after an earlier anchor trim |
+| `mtwTextLayoutAnchor()` | `MenuTouchWindow.cpp` | 0 B | `INL0` at `Wanted::getCurrentLocation+3` (`0x12299c`) | kept one `.data.rel.ro` relocation so `.rel.dyn` stayed `0x7048` |
+
+`levelMissionPad` was deleted; the `ConfigReader` functions below grew by exactly the
+same 8 B, so `.text` stayed exact and the entry disappeared.
+
+`mtwTextLayoutAnchor` was replaced by a plain `.data.rel.ro` reference to the symbol the
+original stores at `0x20de20`:
+
+```cpp
+extern const char _ZTI15PlayerStaticFar[];
+[[gnu::used]] static const void *const mtwPlayerStaticFarTypeInfoRef = _ZTI15PlayerStaticFar;
+```
+
+This keeps exactly one `.rel.dyn` entry (`.rel.dyn` stays `0x7048`, so `.rel.plt`/`.plt`
+and every function address stay put) but has no `.ARM.exidx` companion. The original's
+`0x20de20` slot is `R_ARM_ABS32 _ZTI15PlayerStaticFar`, so this is also the correct data.
+
+Removing the two anchors alone gives `.exidx 0x6f78` and moves `.rodata` to `0x1c9e00`
+(the `text+exidx+extab` sum falls to `0x1c9dfc`). The extab fix below puts the sum back
+to `0x1c9e04`, inside the 16-byte alignment window.
+
+## 2. `ConfigReader` landing-pad trampolines (`+0x10` extab, `+8` text)
+
+The three `ConfigReader` token readers were 4/8/4 B short in the LSDA call-site table
+(`ReadTimer` 28 vs 32, `ReadKeyMap` 96 vs 104, `ReadVibration` 28 vs 32). The original
+emits an extra `b.n` trampoline landing pad for the *second* potentially-throwing call
+in each function, i.e. one extra call-site row:
+
+```
+orig ReadTimer         ours (before)
+... blx __stack_chk_fail   ... bl __stack_chk_fail
+    b.n 873f0              mov r4, r0        <- shared cleanup
+    mov r4, r0
+```
+
+The generated code is identical; only the EH cleanup grouping differs. Three
+semantically-null locals (all optimised away) reproduce clang's grouping:
+
+| function | change | .text | extab |
+|---|---|---:|---:|
+| `ReadTimer` | `int value = line.ValueOf(); engine->timerInterval = value;` | +4 | 28 → 32 |
+| `ReadKeyMap` | `int dummy = 0; (void) dummy;` before the trailing `ArrayRemoveAll(keys)` | +4 | 96 → 104 |
+| `ReadVibration` | `int on = line.Compare("ON"); if (on == 0) …` | +0 | 28 → 32 |
+
+Net `+8` `.text` (cancelled by deleting `levelMissionPad`) and `+0x10` `.extab`.
+The three functions' disassembly now matches the original instruction-for-instruction
+(including the `b.n` + `nop`), and the four `ConfigReader` extab records are exactly
+`32 / 104 / 32 / 12` as in the original.
+
+## 3. Remaining `.ARM.extab` delta: `−0xc`
+
+| function | original | ours | Δ | note |
+|---|---:|---:|---:|---|
+| `HangarWindow::render` | 948 | 912 | −36 | body/call-site layout |
+| `RecordHandler::readWanted` | 656 | 640 | −16 | body/call-site layout |
+| `Level::createShip` (mis-attributed as `ArrayAdd<KIPlayer>`) | 336 | 328 | −8 | body/call-site layout |
+| `Hud::drawChallengeModeScore` | 476 | 492 | +16 | ours larger |
+| `StarMap::drawOnScreenInfo` | 116 | 128 | +12 | ours larger |
+| `__cxa_demangle` | 2144 | 2156 | +12 | vendored libc++abi |
+| `Generator::createAgent` | 172 | 176 | +4 | ours larger |
+| `LevelScript::~LevelScript` | 348 | 352 | +4 | ours larger |
+| **total** | | | **−12 = −0xc** | |
+
+These are the same functions that are still not byte-exact. Because the current
+`text+exidx+extab` sum is `0x1c9e04`, the extab may grow by at most `+0xc` before
+`.rodata` moves to `0x1c9e20`; fixing all eight lands exactly on the original
+`0x1c9e10` boundary, but fixing any single large one (`HangarWindow` −36,
+`readWanted` −16) must be paired with a compensating positive delta.
+
+## 4. Per-function kind-sequence diff (16 functions, offsets ignored)
+
+The total entry count and the CANT/INL/EXT split are now exact. The residual kind-sequence
+differences are all *placement* differences caused by the remaining body-size deltas
+(libzip's −2 B local functions, `Layout::C1`'s 272 B pad, libc++abi), plus the two
+`DROP_EMPTY_TEXT` TUs:
+
+```
+SetGPIsLinked              orig CANT+EXT   ours EXT
+BackButtonPressed          orig CANT+INL   ours (none)
+isInMainMenu               orig CANT+INL   ours (none)
+ArrayReleaseClasses<...>   orig EXT        ours CANT+EXT
+loadLowTexturesAndMaterials orig EXT       ours CANT+EXT
+ArrayAdd<ParticleSet>      orig EXT        ours CANT+EXT
+GetTouch                   orig CANT+EXT   ours EXT
+ResourceMaterial::C2       orig EXT        ours CANT+EXT
+AEMath::VectorLerp         orig EXT        ours CANT+EXT
+Layout::C2                 orig EXT        ours INL+EXT
+bad_typeid::what           orig CANT+EXT+CANT+INL  ours CANT+EXT+INL
+__cxa_deleted_virtual      orig 24 entries ours 23 (missing CANT@603)
+__cxa_demangle             orig 239        ours 240 (tail)
+ndk_autosave               orig INL        ours CANT+INL
+ndk_resetNativeItem...     orig CANT+EXT   ours EXT
+ndk_setNativeItem...       orig EXT        ours CANT+EXT
+```
+
+The libzip/`_zip_*` offset-only shifts (e.g. `_zip_fclose` CANT/EXT at +111 vs +109)
+are omitted from this list; they are the −2 B local-function cascade documented in §6
+of the w3367 section.
+
+## 5. Measured experiments (negative results, for the record)
+
+All were reverted; they are useful because they show why the simple fixes do not work.
+
+| experiment | `.text` | `.exidx` | `.extab` | `.rodata` base | byte_exact |
+|---|---:|---:|---:|---:|---:|
+| HEAD | `0x1337c8` | `0x6f80` | `0x2627c` | `0x1c9e10` | 3907 |
+| typeinfo ref only (no extab/text compensation) | `0x1337c8` | `0x6f78` | `0x2627c` | **`0x1c9e00`** | 1706 |
+| `Level::createShip` `catch (int)` + `catch (...)` | `0x1337e8` | `0x6f80` | `0x26284` | `0x1c9e10` | 2323 |
+| `Level::createShip` `catch (const std::exception&)` + `catch (...)` | `0x1337c8` | `0x6f78` | `0x26284` | `0x1c9e10` | 2876 |
+
+The `std::exception` variant keeps `.text` exact but `.rel.dyn` shrinks by 8 (the
+`_ZTIi` GLOB_DAT goes away), which moves `.rel.plt`/`.plt` and every PLT call site:
+byte_exact collapses. **`.rel.dyn` must stay `0x7048`**; that is why the
+`mtwTextLayoutAnchor` replacement is a `.data.rel.ro` reference rather than deleting the
+relocation.
+
+ConfigReader A/B variants that did **not** reproduce the original (all keep the 28-byte
+record): braces, `else`, `return`, `String tmp`, `String line; line = …`,
+`String(GetNewLine())`, `-fexceptions`, `-fno-rtti`, `-O0/-O1/-O2/-O3/-Os`, and
+`-fno-exceptions` (12/16/12, too small). The `int` locals above are the only variants
+that produce the original `b.n` trampoline.
+
+## 6. Reproduction
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w3376
+cmake --build cmake-build-match --target link_so -j8
+cmake --build cmake-build-match --target check   -j8   # RATCHET PASS, byte 3914
+cmake --build cmake-build-match --target drift   -j8   # 0 fields
+
+NDK=.cache/ndk/android-ndk-r18b
+RE=$NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-readelf
+$RE -SW cmake-build-match/libgof2hdaa.so | grep -E '\.text |\.ARM.exidx|\.ARM.extab|\.rodata |\.bss |\.rel.dyn'
+
+python3 _work/reconstructions/exidx_table.py --diff \
+    ../_work/bins/android_2.0.16_libgof2hdaa.so cmake-build-match/libgof2hdaa.so
+```
+
+## 7. Ranked remaining causes
+
+1. **`HangarWindow::render` (−36)** — largest single extab delta; fix with the body
+   reconstruction campaign.
+2. **`RecordHandler::readWanted` (−16)** — 4 call-site rows short; same class of
+   clang EH-grouping difference as the ConfigReader readers (try a null local near the
+   `AEFile::Read` block).
+3. **`Level::createShip` (−8)** — the artificial `try { setEmpData } catch (...)` is not
+   the original cleanup shape; the original LSDA has 57 call-site rows with
+   `callSiteEncoding 0x01`, ours uses a different header/encoding.
+4. **`Hud::drawChallengeModeScore` (+16), `StarMap::drawOnScreenInfo` (+12),
+   `Generator::createAgent` (+4), `LevelScript::~LevelScript` (+4)** — ours is larger;
+   fixing them needs a compensating negative delta to stay inside the `.rodata` window.
+5. **`__cxa_demangle` (+12)** — vendored libc++abi codegen.
+6. **`Layout::C1`** — 272 B short (the `layoutCtorPad` anchor supplies it); the pad's
+   `INL0` entry is the `Layout::C2` kind-sequence difference. Reconstructing the real
+   ctor body fixes `.text`, the exidx entry and the extab record together.

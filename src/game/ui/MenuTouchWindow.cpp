@@ -274,10 +274,11 @@ static const int g_mtw_upTextIds[16] = {};
 
 
 
-[[gnu::used]] static void mtwTextLayoutAnchor();
-// Address-only reference keeps the out-of-line anchor alive; the 10-int table itself is a
-// plain .rodata array (the original has it in .rodata, not .data.rel.ro).
-[[gnu::used]] static void (*const mtwTextLayoutAnchorRef)() = mtwTextLayoutAnchor;
+// .data.rel.ro slot at 0x20de20: the original holds an R_ARM_ABS32 to the
+// PlayerStaticFar typeinfo here.  Keeping the reference (rather than a zero-size
+// out-of-line anchor) preserves the .rel.dyn entry without adding an .ARM.exidx row.
+extern const char _ZTI15PlayerStaticFar[];
+[[gnu::used]] static const void *const mtwPlayerStaticFarTypeInfoRef = _ZTI15PlayerStaticFar; // lint: void_ptr (typeinfo pointer slot)
 static const int MenuTouchWindow_languageIds[10] = {27, 28, 30, 29, 31, 32, 33, 35, 38, 39};
 static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14, 12, 13};
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
@@ -3831,11 +3832,3 @@ void MenuTouchWindow::startSupernovaChallenge() {
     Globals::status->field_64 = -1;
     Globals::appManager->SetCurrentApplicationModule(2);
 }
-
-// Empty layout anchor: the 2934-byte body was removed in the w3269 layout pass.  The
-// address-only pointer above keeps this out-of-line symbol (and therefore one
-// .data.rel.ro relocation, which holds .rel.dyn/.plt at their original size) in the
-// link without touching any scored function.  The original has no function here, so
-// the body is zero-size (the unreachable builtin emits no instruction, unlike an empty
-// body's `bx lr`); its exidx sentinel still holds .rel.dyn at the original size.
-[[gnu::used]] static void mtwTextLayoutAnchor() { __builtin_unreachable(); } // lint: arm_builtin

@@ -54,8 +54,8 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact since the stale `marqueeImageByteSum` anchor was deleted and `levelTextAnchor` was trimmed to 0x24 B (see `_work/reconstructions/exidx_extab_audit.md`). |
 | **.rodata** | 269,159 | 269,207 | **+48** | address exact (0x1c9e10); the size delta is the 12 per-TU literal/table differences listed in `data_layout_audit_2.md`. |
-| .ARM.exidx | 28,528 | 28,544 | **+16** | 3566 vs 3568 entries: CANTUNWIND count now exact (272); +1 inline and +1 extab entry remain (see `_work/reconstructions/exidx_extab_audit.md`). |
-| .ARM.extab | 156,312 | 156,284 | **−28** | nine non-exact functions have different LSDA record lengths; total −0x1c is fully accounted for in `_work/reconstructions/exidx_extab_audit.md`. |
+| .ARM.exidx | 28,528 | 28,528 | **0** | exact: 3566 entries; CANTUNWIND 272, inline 856, extab 2438 all match. The two artificial `.text` anchors (`levelMissionPad`, `mtwTextLayoutAnchor`) were removed (see `_work/reconstructions/exidx_extab_audit.md`). |
+| .ARM.extab | 156,312 | 156,300 | **−12** | eight non-exact functions have different LSDA record lengths; total −0xc is fully accounted for in `_work/reconstructions/exidx_extab_audit.md`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8); the language-table anchor object is gone. |
@@ -71,6 +71,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now exact
    (0x1337c8); the remaining differences are per-function body deltas. This is a finishing
    campaign, not a missing-code campaign.
+<<<<<<< HEAD
 2. **Anonymous data layout.** `.rodata` is 48 B larger; `.data`, `.data.rel.ro` and `.bss` are now
    exact. Exported data objects already match 843/843. The residual is local const/string data and
    literal pools owned by the remaining non-exact TUs.
@@ -79,6 +80,17 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    non-exact functions (`HangarWindow::render` −36, `Hud::draw` +16, `RecordHandler::recordStoreWrite`
    −16, `ConfigReader::RegisterTokenReadFunction` −16, `__cxa_demangle` +12, `StarMap::draw` +12,
    `Level::createShip` −8, `Generator::createMission` +4, `LevelScript::process` +4).
+=======
+2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` is 28 B larger than the original;
+   exported data objects already match 843/843. The residual is local const/string/initialised data
+   and literal pools owned by the remaining non-exact TUs.
+3. **EH tables.** `.ARM.exidx` is now exact (28,528 B). `.ARM.extab` is 12 B smaller (was
+   4,572 B): the app and vendored C objects were missing `-funwind-tables`. The residual is the net
+   unwind-length difference of eight non-exact functions (`HangarWindow::render` −36,
+   `Hud::drawChallengeModeScore` +16, `RecordHandler::readWanted` −16, `__cxa_demangle` +12,
+   `StarMap::drawOnScreenInfo` +12, `Level::createShip` −8, `Generator::createAgent` +4,
+   `LevelScript::~LevelScript` +4).
+>>>>>>> 44c486bf (exidx/extab pass 2: .ARM.exidx exact, extab -0x1c -> -0xc (byte 3907 -> 3914))
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is now reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). Dynamic-symbol order and the GNU build-id are content

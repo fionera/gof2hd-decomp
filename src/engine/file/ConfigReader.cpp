@@ -32,8 +32,12 @@ namespace AbyssEngine {
         // [TIMER]: one line with the timer value.
         void ReadTimer(ConfigReader *reader, Engine *engine) {
             String line = reader->GetNewLine();
-            if (line.Compare("EOF") != 0)
-                engine->timerInterval = line.ValueOf();
+            if (line.Compare("EOF") != 0) {
+                // The local (optimised away) makes clang emit the original's second
+                // landing-pad trampoline for the ValueOf call site.
+                int value = line.ValueOf();
+                engine->timerInterval = value;
+            }
         }
 
         // [KEYMAP]: up to 64 "<code>,<name>" lines; the mapping is only applied when all 64 are present.
@@ -66,14 +70,23 @@ namespace AbyssEngine {
                     delete keys[i];
                 keys[i] = nullptr;
             }
+            // Local (optimised away): reproduces the original's separate landing pad
+            // for the trailing ArrayRemoveAll call site.
+            int dummy = 0;
+            (void) dummy;
             ArrayRemoveAll(keys);
         }
 
         // [VIBRATION]: "ON" enables vibration support.
         void ReadVibration(ConfigReader *reader, Engine *engine) {
             String line = reader->GetNewLine();
-            if (line.Compare("EOF") != 0 && line.Compare("ON") == 0)
-                engine->vibrationSupported = true;
+            if (line.Compare("EOF") != 0) {
+                // Local (optimised away): reproduces the original's separate landing
+                // pad for the second Compare call site.
+                int on = line.Compare("ON");
+                if (on == 0)
+                    engine->vibrationSupported = true;
+            }
         }
     }
 
@@ -128,14 +141,3 @@ namespace AbyssEngine {
         return line;
     }
 }
-
-// .text layout anchor: createMission now ends 4 B short of the original TU size after its
-// direct anchor call removed the literal-pool word.  This 8-byte out-of-line function sits
-// immediately after setPlayerEngineColor in the section order (the last non-byte-exact
-// function before the Array<T> block), so it restores the original .text size without
-// moving any byte-exact function.  Hidden visibility keeps it out of .dynsym.
-#pragma GCC visibility push(hidden)
-int levelMissionPad(int a) {
-    return (a + 1) * 2;
-}
-#pragma GCC visibility pop

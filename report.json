@@ -6578,7 +6578,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReader10GetNewLineEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 276,
    "usize": 276
@@ -6594,7 +6594,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReader9ParseFileENS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 280,
    "usize": 280
@@ -6602,7 +6602,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReaderC1EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -6610,7 +6610,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReaderC2EPNS_6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -6618,7 +6618,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReaderD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -6626,7 +6626,7 @@
   {
    "name": "_ZN11AbyssEngine12ConfigReaderD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -22586,7 +22586,7 @@
   {
    "name": "_ZN5ArrayIPN11AbyssEngine11TokenStructEED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
