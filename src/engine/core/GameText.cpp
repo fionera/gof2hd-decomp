@@ -54,12 +54,6 @@ namespace {
     };
 }
 
-// Byte offset of an Arabic letter's row in kArabicForms. The two call sites inline this
-// arithmetic; hidden linkage keeps the out-of-line body out of the export set.
-[[gnu::visibility("hidden")]] unsigned int arabicFormOffset(unsigned int code) {
-    return (code - 0x621) * 20;
-}
-
 // A letter that joins to its neighbour (Arabic block, except the Arabic comma and question mark).
 // Kept as a macro: at -Oz an inline helper is not inlined and changes convertStringFromArabic's
 // 728-byte code shape.
@@ -67,6 +61,14 @@ namespace {
 
 String GameText::getRegionCode() {
     return String("gb");
+}
+
+// Byte offset of an Arabic letter's row in kArabicForms. Both call sites inline this
+// arithmetic; hidden linkage keeps the out-of-line body out of the export set. The body is
+// also the 16-byte .text layout anchor; placing it after getRegionCode keeps the original's
+// gap-free getRegionCode entry at 0x7efcc.
+[[gnu::visibility("hidden")]] unsigned int arabicFormOffset(unsigned int code) {
+    return (code - 0x621) * 20;
 }
 
 String GameText::convertStringFromArabic(String in) {
