@@ -4605,3 +4605,10 @@ original build flags.
   `.data.rel.ro` 667 -> 21 bytes. Cost: `.ARM.exidx` +8 B (3567 vs 3566 entries) and
   `.ARM.extab` -0xc — an open, separate campaign. Note:
   `_work/reconstructions/libcxxabi_text_placement_w3460.md`.
+- **exidx/extab restored** (`w3462`, byte 4408 -> 4409): `.ARM.exidx` 0x6f70 and `.ARM.extab`
+  0x26298 are exact again after the libc++abi TU-alignment fix, and the entry kinds match.
+  Note: `_work/reconstructions/exidx_extab_exact_w3462.md`.
+- **VirtualInput `.bss` order** (`w3470`, byte 4409 -> 4414): intra-TU declaration order
+  reproduced. Note: `_work/reconstructions/virtualinput_bss_order_w3470.md`.
+- Current raw content diff: `.data` **0 bytes**, `.data.rel.ro` 21, `.bss` 288,
+  `.rodata` 13121, `.dynsym` 2255, `.rel.dyn` 139, `.rel.plt` 275.
