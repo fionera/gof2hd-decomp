@@ -1,4 +1,5 @@
 #include "game/ship/PlayerEgo.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include <cstring>
 #include <sys/cdefs.h>
 #include "game/world/Station.h"
