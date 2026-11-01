@@ -3,13 +3,8 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-<<<<<<< HEAD
   "avg_match": 99.89,
-  "byte_exact": 2806,
-=======
-  "avg_match": 99.9,
-  "byte_exact": 2734,
->>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
+  "byte_exact": 2923,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -1647,7 +1642,7 @@
   {
    "name": "_Z17BuildResourceListPN11AbyssEngine6EngineE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 171316,
    "usize": 171316
@@ -3431,7 +3426,7 @@
   {
    "name": "_ZN10MiningGame8render2DEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1456,
    "usize": 1456
@@ -3479,7 +3474,7 @@
   {
    "name": "_ZN10ModStation10OnRender2DEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1816,
    "usize": 1816
@@ -3631,7 +3626,7 @@
   {
    "name": "_ZN10ModStation14showCBSMessageEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 228,
    "usize": 228
@@ -3647,7 +3642,7 @@
   {
    "name": "_ZN10ModStation20checkPendingProductsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 664,
    "usize": 664
@@ -14159,7 +14154,7 @@
   {
    "name": "_ZN12HangarWindow10initializeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3052,
    "usize": 3052
@@ -14167,7 +14162,7 @@
   {
    "name": "_ZN12HangarWindow10selectItemEP8ListItem",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1872,
    "usize": 1872
@@ -14207,7 +14202,7 @@
   {
    "name": "_ZN12HangarWindow11transactionEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 932,
    "usize": 932
@@ -14215,7 +14210,7 @@
   {
    "name": "_ZN12HangarWindow12OnTouchBeginEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1196,
    "usize": 1196
@@ -14271,7 +14266,7 @@
   {
    "name": "_ZN12HangarWindow20showCreditsBuyWindowEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 532,
    "usize": 532
@@ -14279,7 +14274,7 @@
   {
    "name": "_ZN12HangarWindow21showFreeCreditsWindowEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 452,
    "usize": 452
@@ -14303,7 +14298,7 @@
   {
    "name": "_ZN12HangarWindow25autoEquipSecondaryWeaponsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 584,
    "usize": 584
@@ -15007,7 +15002,7 @@
   {
    "name": "_ZN12StatusWindow16getMedalHintTextEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1132,
    "usize": 1132
@@ -15031,7 +15026,7 @@
   {
    "name": "_ZN12StatusWindow4drawEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6280,
    "usize": 6280
@@ -15111,7 +15106,7 @@
   {
    "name": "_ZN12WantedWindow12selectWantedEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1904,
    "usize": 1904
@@ -15839,7 +15834,7 @@
   {
    "name": "_ZN13RecordHandler10writeAgentEP5Agentj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 592,
    "usize": 592
@@ -16495,7 +16490,7 @@
   {
    "name": "_ZN14ListItemWindow4drawEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1892,
    "usize": 1892
@@ -17687,7 +17682,7 @@
   {
    "name": "_ZN15MenuTouchWindow16drawLoadSaveMenuEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1188,
    "usize": 1188
@@ -17727,7 +17722,7 @@
   {
    "name": "_ZN15MenuTouchWindow19createRecordButtonsEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1564,
    "usize": 1564
@@ -17759,7 +17754,7 @@
   {
    "name": "_ZN15MenuTouchWindow23startSupernovaChallengeEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 764,
    "usize": 764
@@ -24327,7 +24322,7 @@
   {
    "name": "_ZN5Radio6updateElP9PlayerEgoP11LevelScript",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 792,
    "usize": 792
@@ -25231,7 +25226,7 @@
   {
    "name": "_ZN6Layout10drawFooterEbb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 888,
    "usize": 888
@@ -25375,7 +25370,7 @@
   {
    "name": "_ZN6Layout13formatCreditsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -25463,7 +25458,7 @@
   {
    "name": "_ZN6Layout24drawMissionRewardMessageEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 672,
    "usize": 672
@@ -25527,7 +25522,7 @@
   {
    "name": "_ZN6Layout7drawTipEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 300,
    "usize": 300
@@ -28223,7 +28218,7 @@
   {
    "name": "_ZN7Globals19getAgentMissionTextEP5Agent",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 9518,
    "usize": 9518
@@ -29015,7 +29010,7 @@
   {
    "name": "_ZN7StarMap7drawKeyEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 620,
    "usize": 620
@@ -29639,7 +29634,7 @@
   {
    "name": "_ZN8FileRead19loadWeaponPositionsEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 500,
    "usize": 500
@@ -35895,7 +35890,7 @@
   {
    "name": "zip_close",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2532,
    "usize": 2532

@@ -4403,3 +4403,8 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **ModStation order + Level.cpp createScene move: byte_exact 2755 -> 2806 (+51)** (`w3362` +22,
   `w3359` +29). createScene belongs to the original Level.cpp TU after all; with the current
   section ordering the move is now a gain (it was -40 before the zlib/PLT passes). PLT diff 68 -> 54.
+- **Data-layout pass 1: byte_exact 2806 -> 2923 (+117), `.rodata` base now EXACT 0x1c9e10** (`w3357`):
+  ten empty-`.text` CANTUNWIND sentinels were removed from the exidx-marker generator and the
+  shader literal order fixed. `.ARM.exidx` 0x6fb8 -> 0x6f50 (orig 0x6f70), `.ARM.extab`
+  0x2627c (orig 0x26298). This is the first time `.rodata` has landed on its original address;
+  1739 functions are still "linked but not byte" because of literal-pool words.
