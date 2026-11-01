@@ -2113,17 +2113,18 @@ case4Tail:
                 this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
-    // Exception-table anchor: the landing pad keeps .ARM.extab (and therefore the
-    // .rodata base that Item::canBeInstalledMultipleTimes indexes) at its original
-    // address.  The pad stores below are gone because this landing pad replaces the
-    // bytes they used to contribute to createMission's size.
-    try {
-        this->objectivesA = new Objective(18, 0, hunterCount, this);
-    } catch (...) {
-    }
+    this->objectivesA = new Objective(18, 0, hunterCount, this);
     levelTextAnchor();
+    // Size anchor: the original createMission is 0x4314 bytes.  The try/catch this
+    // replaces kept the size but referenced __cxa_end_catch from Level.cpp, which
+    // created its PLT slot before zlib and shifted the whole zlib/libzip PLT block.
+    // Five volatile stores reproduce the landing pad's bytes without a PLT reference.
     volatile int pad;
-    (void) pad;
+    pad = 1;
+    pad = 2;
+    pad = 3;
+    pad = 4;
+    pad = 5;
     }
     return;
 }

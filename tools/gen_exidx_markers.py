@@ -156,6 +156,11 @@ def main() -> int:
                         break
             member_paths.append(dst)
         dst_arch = os.path.join(ardir, os.path.basename(arch))
+        # ar rcs replaces same-named members in place but never removes stale ones; when the
+        # archive's member order changes the marker names (m<NNN>_...) change too, so start
+        # from a clean archive or the old members survive as duplicates.
+        if os.path.exists(dst_arch):
+            os.remove(dst_arch)
         subprocess.run([ar, "rcs", dst_arch] + member_paths, check=True, capture_output=True)
         arch_copies.append(dst_arch)
     with open(os.path.join(outdir, "archives.rsp"), "w") as f:

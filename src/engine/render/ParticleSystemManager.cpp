@@ -1,6 +1,7 @@
 
 
 #include "engine/core/Array.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/render/ParticleSettingsRef.h"
 
 #include "engine/render/ParticleSystemMesh.h"

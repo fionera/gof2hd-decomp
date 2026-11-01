@@ -15,6 +15,5 @@ namespace AbyssEngine {
     layoutPad = 1;  layoutPad = 2;
     if (layoutPad == -1)
         levelTextAnchor();
-    layoutPad = 3;
-    layoutPad = 4;
+    layoutPad = 100;  layoutPad = 101;  layoutPad = 102;  layoutPad = 103;  layoutPad = 104;
 }

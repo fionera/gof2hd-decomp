@@ -71,7 +71,12 @@ if(GOF2_LIB STREQUAL "zlib")
     ensure_source("${SRC}" "https://zlib.net/fossils/zlib-1.2.3.tar.gz")
     set(OBJDIR "${SRC}/_obj_gof2")
     file(MAKE_DIRECTORY "${OBJDIR}")
-    set(units adler32 compress crc32 deflate infback inffast inflate inftrees trees uncompr zutil)
+    # Member order = the original libz.a's link order, recovered from the original's .text
+    # function layout (and cross-checked against its PLT first-reference order): the archive
+    # members are laid out inflate, compress, deflate, crc32, infback, zutil, inftrees,
+    # uncompr, trees, inffast, adler32.  Gold scans relocations (and thus creates PLT entries)
+    # in input-member order, so this order is what makes the zlib PLT block match.
+    set(units inflate compress deflate crc32 infback zutil inftrees uncompr trees inffast adler32)
     set(objs "")
     # -mthumb: the original .so has all zlib functions in Thumb mode (clang defaults to ARM).
     foreach(u ${units})
@@ -120,13 +125,28 @@ elseif(GOF2_LIB STREQUAL "libzip")
 ")
     set(OBJDIR "${SRC}/lib/_obj_gof2")
     file(MAKE_DIRECTORY "${OBJDIR}")
-    file(GLOB _csrc "${SRC}/lib/zip_*.c")
-    list(APPEND _csrc "${SRC}/lib/mkstemp.c")
+    # Member order = the original libzip.a's link order, recovered from the original's .text
+    # function layout (and cross-checked against its PLT first-reference order).  Gold scans
+    # relocations (and thus creates PLT entries) in input-member order, so this order is what
+    # makes the libzip PLT block match.  zip_err_str.c has no .text; it is kept next to the
+    # other error-table members.
+    set(units
+        zip_memdup zip_add zip_filerange_crc zip_get_name zip_file_strerror
+        zip_fopen_index zip_source_buffer zip_error_clear zip_get_archive_comment
+        zip_source_file zip_set_name zip_file_error_get zip_file_get_offset
+        zip_unchange zip_new zip_close zip_add_dir zip_error_get_sys_type
+        zip_set_archive_comment zip_name_locate zip_unchange_archive zip_source_free
+        zip_get_num_files zip_source_filep zip_error zip_strerror zip_entry_new
+        zip_get_archive_flag zip_set_archive_flag zip_unchange_data zip_fread
+        zip_rename zip_source_zip zip_stat_index zip_source_function zip_replace
+        zip_delete zip_set_file_comment zip_stat zip_get_file_comment mkstemp
+        zip_entry_free zip_open zip_error_get zip_fclose zip_dirent zip_free
+        zip_file_error_clear zip_error_to_str zip_stat_init zip_fopen
+        zip_unchange_all zip_error_strerror zip_err_str)
     set(objs "")
     # -mthumb: the original .so has all libzip functions in Thumb mode (clang defaults to ARM).
-    foreach(c ${_csrc})
-        get_filename_component(_n "${c}" NAME_WE)
-        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-Oz;-g;-fstack-protector-strong;-I.;-mthumb" "${c}")
+    foreach(_n ${units})
+        compile("${OBJDIR}/${_n}.o" "${SRC}/lib" "-Oz;-g;-fstack-protector-strong;-I.;-mthumb" "${SRC}/lib/${_n}.c")
         list(APPEND objs "${OBJDIR}/${_n}.o")
     endforeach()
     archive("${TP_DIR}/libzip/libzip_gof2.a" ${objs})

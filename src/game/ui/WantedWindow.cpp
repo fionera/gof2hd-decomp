@@ -9,6 +9,7 @@
 #include "engine/core/GameText.h"
 #include "engine/render/ImageFactory.h"
 #include "engine/render/ImagePart.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 #include "game/world/SolarSystem.h"
