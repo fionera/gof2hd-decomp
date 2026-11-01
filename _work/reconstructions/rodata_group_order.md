@@ -217,5 +217,9 @@ python3 tools/ratchet.py --build-dir cmake-build-match --update-baseline
 Master already contains the `benötigt` mojibake fix (`50c89e36`), so on current master the
 first `.rodata` content diff is the next item after 0x1f9ffb, not the double-encoded `ö`.
 The `-16 B` `.rodata` size delta is still open (DialogueWindow table region around 0x39a9c).
-On current master the first `.rodata` content diff is 0x31780 (VMA 0x1e9f90): `Generator.cpp`
-emits `kKaamoStationItems` before `kAgentOfferItems`, while the original has the reverse.
+On current master the first `.rodata` content diff was 0x31780 (VMA 0x1fb590, not the
+`0x1e9f90` typo in older notes): `Generator.cpp` emitted `kKaamoStationItems` before
+`kAgentOfferItems`, while the original has the reverse. The w3386 follow-up removed the two
+duplicate nine-value tables, so the whole `Generator.cpp` block `0x1fb590..0x1fb7d8` is now
+byte-identical and the first diff is 0x1fb8c8 (`Hud.cpp`'s `g_Hud_raceBadge`). See
+`_work/reconstructions/generator_rodata_order.md`.

@@ -4528,3 +4528,11 @@ original build flags.
   by a `generatorMissionLayoutPad()` anchor in `MTitle.cpp` (removing it drops byte_exact to
   2510 because `.text` shifts). The real fix is the missing 4 bytes of `createMission` body,
   after which the anchor must go.
+- **Generator `.rodata` emission order fixed** (`w3386`): the three identical nine-value arrays
+  (`kAgentOfferItems`, `kNeverUnlockedItems`, `kaamoSpecialItems`) were merged by LLVM and emitted
+  in the wrong order. Keeping one table (`kAgentOfferItems`) reproduces the original HD symbol-dump
+  order and makes `Generator.cpp`'s whole `.rodata` block `0x1fb590..0x1fb7d8` byte-identical.
+  Gate: byte 4171 -> 4177, linked 4495 unchanged, size_match 4523/4524, lint CLEAN, drift 0.
+  The old `0x1e9f90` first-diff VMA in the bullet above is a typo; it was `0x1fb590` (offset
+  `0x31780`). The next first diff is `0x1fb8c8`, `Hud.cpp`'s `g_Hud_raceBadge` merge constant.
+  See `_work/reconstructions/generator_rodata_order.md`.

@@ -22,6 +22,9 @@ static const int kBlockedMissionStations[52] = {
 };
 
 
+// Agent offer items.  The original has one table for this, the never-auto-unlocked
+// shop items, and the Kaamo special-item check; duplicate copies here are merged by
+// LLVM and change the .rodata emission order.
 static const int kAgentOfferItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 static const int kAgentOfferShips[6] = {55, 56, 57, 58, 59, 60};
 static const int kAgentEnemyRaces[4] = {2, 3, 0, 1};
@@ -37,16 +40,10 @@ static const int kShipRaces[64] = {
 
 // Items sold at the Kaamo Club station (106).
 static const int kKaamoStationItems[10] = {101, 102, 103, 107, 108, 109, 114, 124, 0, 0};
-// Items never auto-unlocked into a shop when their occurrence is 0.
-static const int kNeverUnlockedItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 
 
 // Chance (in %) that a randomly drawn loot item of each Item type is accepted.
 static const int kLootTypeChance[5] = {10, 40, 2, 10, 100};
-
-
-static const int
-kaamoSpecialItems[9] = {200, 220, 208, 213, 216, 228, 229, 230, 231};
 
 
 Generator::Generator() {
@@ -74,7 +71,7 @@ bool Generator::isKaamoSpecialItem(int item) {
         if (i > 8) {
             return false;
         }
-        int current = kaamoSpecialItems[i];
+        int current = kAgentOfferItems[i];
         ++i;
         if (current == item) {
             return true;
@@ -181,7 +178,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
                 } else {
                     bool blocked = false;
                     for (unsigned k = 0; k < 9; ++k) {
-                        if (kNeverUnlockedItems[k] == index) {
+                        if (kAgentOfferItems[k] == index) {
                             blocked = true;
                             break;
                         }
