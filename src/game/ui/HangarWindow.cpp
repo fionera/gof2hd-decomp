@@ -574,7 +574,6 @@ void HangarWindow::render() {
                                     int right, left;
                                     if (tab == 1) {
                                         right = item->item->getStationAmount();
-                                        int pad1 = 0; (void) pad1;
                                         left = item->item->getAmount();
                                     } else {
                                         right = item->item->getAmount();
