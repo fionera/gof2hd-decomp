@@ -41,7 +41,7 @@
 // reconstructed loop below compiles 0x1c bytes shorter because -Oz keeps the cached enemy
 // pointer in a register instead of reloading it.  These volatile stores restore the body's
 // original size/register pressure (the values are never read).
-static volatile int s_processPad[8];
+static volatile int s_processPad[4];
 
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);

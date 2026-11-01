@@ -14,7 +14,9 @@ namespace AbyssEngine {
 // it is -0x24 (see _work/reconstructions/exidx_extab_audit.md).  Do not add/remove stores here
 // without re-measuring .text.
 [[gnu::visibility("hidden")]] void levelTextAnchor() {
+#pragma clang section bss=".bss.anchor"
     static volatile int layoutPad;
+#pragma clang section bss=""
     layoutPad = 1;  layoutPad = 2;
     if (layoutPad == -1)
         levelTextAnchor();

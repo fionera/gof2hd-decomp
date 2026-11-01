@@ -142,7 +142,7 @@ static const float SpaceLounge_cameraStartRot[4] = {0.03f, 0.03f, 0.21f, 1.87f};
 static const float SpaceLounge_cameraEndRot[4] = {0.04f, 0.43f, 0.6f, 0.46f};
 
 // Character descriptor for the anonymous silhouette (all parts default).
-static int SpaceLounge_silhouetteChar[8];
+static int SpaceLounge_silhouetteChar[5];
 
 #define SPACELOUNGE_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define SPACELOUNGE_MAX(a, b) ((a) < (b) ? (b) : (a))

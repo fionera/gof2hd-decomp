@@ -226,6 +226,9 @@ def main() -> int:
     order.append(".data.__cxa_unexpected_handler")
     order.append(".data._ZL5cause")
     order.append("*")          # keep unlisted sections after the listed ones, not before
+    # The levelTextAnchor .bss pad lives in its own input section so it can be ordered after
+    # the archive .bss (libzip/libcrypto/libc++abi), matching the original .bss tail size.
+    order.append(".bss.anchor")
 
     # Place each empty-TU marker after the LAST of its owner's sections in the finished order.
     # (Attaching it to the owner's last *listed* section is not enough: a weak/local section can
