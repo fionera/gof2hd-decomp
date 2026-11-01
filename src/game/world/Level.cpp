@@ -528,13 +528,12 @@ int Level::init() {
 
 void Level::createSpace() {
     using namespace AbyssEngine::AEMath;
-    static const unsigned short jumpgateMeshes[12 * 4] = {
+    static const unsigned short jumpgateMeshes[8 * 4] = {
             15000, 15002, 15001, 15003, 15004, 15006, 15005, 15007, 15008, 15010, 15009, 15011,
             15012, 15014, 15013, 15015, 14725, 0, 14726, 0, 14723, 0, 14725, 0, 14722, 0, 14725, 0,
-            14720, 0, 14721, 0, 2, 0, 2, 0, 2, 0, 4, 0, 3, 0, 3, 0, 2, 0, 3, 0};
-    static const unsigned short jumpgateLodMeshes[12 * 2] = {
-            15016, 15020, 15017, 15021, 15018, 15022, 15019, 15023, 16900, 0, 16921, 0, 16904, 0,
-            18836, 0, 11, 0, 0, 0, 10, 0, 12, 0};
+            14720, 0, 14721, 0};
+    static const unsigned short jumpgateLodMeshes[4 * 2] = {
+            15016, 15020, 15017, 15021, 15018, 15022, 15019, 15023};
 
     if (skyboxMesh == -1) {
         if (Globals::status->inAlienOrbit()) {
@@ -742,11 +741,12 @@ void Level::createSpace() {
 }
 
 void Level::initParticleSystems() {
-    static const uint32_t g_ips_skyColors[16] = {
+    static const uint32_t g_ips_skyColors[20] = {
         0x00a020ff, 0x8c1402ff, 0x006d7bff, 0x2c9bd8ff,
         0x7a7a7aff, 0xce5a46ff, 0x69a07dff, 0xa7a07eff,
         0x7eb59fff, 0xcedee1ff, 0x9274d4ff, 0xdb6923ff,
         0xffffffff, 0x9ae4ffff, 0xaeb77dff, 0xdb6923ff,
+        0x47665eff, 0x738d95ff, 0xaba075ff, 0x00000000,
     };
     static const uint32_t g_ips_shipTypeMap[32] = {
         3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
@@ -1226,18 +1226,14 @@ void Level::createGasClouds() {
 static int g_tommyFace[8] = {4, 2, 0, 2, 2};
 
 // Station turret hardpoints per race: {race, position.xyz, rotation.xyz}.
-// Rows 4..13 are .rodata placement padding: the original's Level.cpp .rodata has 0x2a8
-// bytes of (not-yet-reconstructed) data before the createCampaignMission tables.  Only
-// rows 0..3 are read; keeping the extra rows here pins those tables at the original offsets.
-static const float kStationTurrets[14][2][7] = {
+static const float kStationTurrets[4][2][7] = {
     {{0.0f, 0.0f, -1097.14f, -4178.23f, 0.0f, 0.0f, 3.1415927f}, {0.0f, 0.0f, 1158.09f, 1180.59f, 0.0f, 0.0f, 0.0f}},
     {{1.0f, 0.0f, -1096.98f, -2691.52f, 0.0f, 0.0f, 3.1415927f}, {1.0f, 0.0f, 1893.48f, 1068.07f, 0.0f, 0.0f, 0.0f}},
     {{2.0f, 0.0f, -484.719f, 1741.22f, 0.0f, 0.0f, 3.1415927f}, {2.0f, 0.0f, 1458.84f, -2304.28f, 0.0f, 0.0f, 0.0f}},
     {{3.0f, 0.0f, -516.08f, -3744.45f, 0.0f, 0.0f, 3.1415927f}, {3.0f, 0.0f, 515.766f, -3744.45f, 0.0f, 0.0f, 0.0f}},
 };
 // Alien station / outpost gun hardpoints: {position.xyz, rotation.xyz}.
-// Rows 8..12 are .rodata placement padding (see kStationTurrets); only rows 0..7 are read.
-static const float kAlienStationTurrets[13][6] = {
+static const float kAlienStationTurrets[8][6] = {
     {-6725.879f, 2458.2627f, -66.07605f, -0.0f, 1.570796f, 0.0f},
     {5824.434f, 2458.2627f, 10243.145f, -0.0f, -1.570796f, -0.0f},
     {-6725.879f, 2458.2627f, 2099.9644f, -0.0f, 1.570796f, 0.0f},
@@ -1270,8 +1266,7 @@ static const int kBlueprintRaces[5] = {1, 3, 2, 0, 2};
 static const float kBlueprintPositions[5][3] = {
     {-20000.0f, 30000.0f, 80000.0f}, {40000.0f, -30000.0f, 100000.0f}, {-80000.0f, 80000.0f, -90000.0f},
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
-// Elements 5..40 are .rodata placement padding (see kStationTurrets); only 0..4 are read.
-static const int kBlueprintSpacePoints[41] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
+static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
 
 // Defined in AbyssEngine.cpp (a late-linked TU) so the section-ordering pass places it after the
 // game code instead of before it.
