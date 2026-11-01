@@ -4150,3 +4150,7 @@ mtw anchor for any size change before MenuTouchWindow.
   bounds check live (`objects->size() <= i` instead of the always-true `>= i`) and swap the
   collision-zero compare to `Vector{0,0,0} != collision` so the `AEMath::ne` argument order
   matches the original. Size and `.text` unchanged; the faithful `i == 0` guard still scores 83.2%.
+- **RocketGun::update 86.7 -> 86.9%, 1908 B** (`968e3772`, w3168): reconstruct the cluster phase
+  arithmetic as the original's unsigned division of `initialLifetime * i` by `positions.count`
+  (`(float) ((uint32_t) (total * (int) i) / n)`) with a signed `total`; the `total - life` term is
+  a signed conversion. Residual is `elapsed` in r5 vs the original r4 (greedy RA).
