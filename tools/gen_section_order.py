@@ -208,7 +208,18 @@ def main() -> int:
     for markers, seq in marker_members:
         idxs = [i for t in seq for i in pos.get(t, [])]
         if idxs:
-            inserts.setdefault(max(idxs), []).extend(markers)
+            # ApplicationManager.cpp has two function blocks in the original order; its
+            # empty-.text sentinel sits after the last function in source order (CheckCrack),
+            # not after the later GetEngine accessor.  Anchor it there so the Engine TU
+            # starts on the original's 4-byte boundary.
+            if any("ApplicationManager" in t for t in seq):
+                last = None
+                for t in seq:
+                    if t in pos:
+                        last = pos[t][-1]
+                inserts.setdefault(last, []).extend(markers)
+            else:
+                inserts.setdefault(max(idxs), []).extend(markers)
         else:
             tail.extend(markers)   # member has no listed/local section: keep it before `*`
     placed = []
