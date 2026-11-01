@@ -2,9 +2,10 @@
  *
  * This TU is C, not C++ (binary evidence):
  *  - its log strings name it ("dataDirectory in main.c: %s");
- *  - its uninitialized globals (g_pVM, g_pEnv, g_pClass, AccIndex, flstat_rootPath, g_android_*) are
+ *  - its uninitialized globals (g_pVM, g_pEnv, g_pClass, AccIndex, flstat_rootPath) are
  *    COMMON symbols: the linker placed them at the very end of .bss, sorted by size/name, which only
- *    C tentative definitions produce;
+ *    C tentative definitions produce (the g_android_* counters live in GOF2HD2012.c for the same
+ *    reason);
  *  - the Java_* wrappers call the ndk23_* layer through main.c's own prototypes, which disagree with
  *    the NdkHooks.cpp definitions (renderstep hands two ints to ndk23_newrender(long long), the touch
  *    wrapper drops the clazz slot).

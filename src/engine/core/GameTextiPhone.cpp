@@ -63,13 +63,6 @@ String GameText::getRegionCode() {
     return String("gb");
 }
 
-// Byte offset of an Arabic letter's row in kArabicForms. Both call sites inline this
-// arithmetic; hidden linkage keeps the out-of-line body out of the export set. The body is
-// also the 16-byte .text layout anchor; placing it after getRegionCode keeps the original's
-// gap-free getRegionCode entry at 0x7efcc.
-[[gnu::visibility("hidden")]] unsigned int arabicFormOffset(unsigned int code) {
-    return (code - 0x621) * 20;
-}
 
 String GameText::convertStringFromArabic(String in) {
     String work(in);
@@ -116,8 +109,7 @@ String GameText::convertStringFromArabic(String in) {
             }
             if (afterNonJoiner) {
                 for (int r = 0; r <= 40; ++r) {
-                    const unsigned int *row = reinterpret_cast<const unsigned int *>(
-                        reinterpret_cast<const char *>(kArabicForms) + arabicFormOffset(r + 0x621));
+                    const unsigned int *row = kArabicForms[r];
                     if (row[0] == buf[i]) {
                         int form = 1;
                         if (i < last && IS_ARABIC_JOINING(buf[i + 1]))
@@ -132,7 +124,7 @@ String GameText::convertStringFromArabic(String in) {
 
         for (int r = 0; r < 41; ++r) {
             const unsigned int *row = reinterpret_cast<const unsigned int *>(
-                reinterpret_cast<const char *>(kArabicForms) + arabicFormOffset(r + 0x621));
+                reinterpret_cast<const char *>(kArabicForms) + (r * 20));
             if (row[0] != buf[i])
                 continue;
             int form;

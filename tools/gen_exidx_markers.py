@@ -127,7 +127,8 @@ def main() -> int:
         # align the boundary marker to 4 to match.
         align = 4 if os.path.basename(obj) in (
             "KIPlayer.cpp.obj", "Explosion.cpp.obj", "ApplicationManager.cpp.obj",
-            "PlayerStation.cpp.obj", "ResourceMaterial.cpp.obj", "Wanted.cpp.obj") else 1
+            "PlayerStation.cpp.obj", "ResourceMaterial.cpp.obj", "Wanted.cpp.obj",
+            "Matrix.cpp.obj") else 1
         if rename_empty_text(objcopy, obj, dst, f".text.tuend.o{i:03d}", align):
             markers += 1
         copies.append(dst)

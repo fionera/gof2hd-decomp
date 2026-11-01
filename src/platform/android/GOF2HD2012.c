@@ -1,9 +1,15 @@
-/* GOF2HD2012.c -- the achievement / leaderboard JNI surface of the GOF2HD2012 Java class.
+/* GOF2HD2012.c -- the Google-Play Games / leaderboard JNI glue.
  *
- * Binary evidence for this being its own TU (not part of main.c): the original's .ARM.exidx has a
- * TU sentinel at .text 0x6b9d8 (end of main.c, right after ToJNI_isInMainMenu) and another at
- * 0x6ba90 (end of this TU).  The .dynsym likewise groups the eleven GOF2HD2012_* functions and the
- * six g_android_* achievement globals after main.c's symbols, not among them.
+ * Original TU (binary evidence, no source-dump witness): the 11 GOF2HD2012_* wrappers and the
+ * six g_android_* counters form one alphabetical .dynsym run (index 226..242) *after* main.c's
+ * run (150..225), i.e. they were a separate object linked immediately after main.c.  Their
+ * functions sit at .text 0x6b9d8..0x6ba90, right after main.c's last function (testPurchase
+ * 0x6b8c4) and before Mesh.cpp (0x6c4d4), which is exactly where an object keyed on its first
+ * strong-function address lands.
+ *
+ * The counters are C tentative definitions: the original places them in the COMMON block at the
+ * end of .bss (0x21d2c0..0x21d31c), sorted by size then name, which only C tentative
+ * definitions produce.
  */
 #include <jni.h>
 
@@ -13,6 +19,7 @@ int g_android_link_game_gp;
 int g_android_gp_is_linked;
 int g_android_show_achievements;
 int g_android_show_leaderboards;
+int g_android_back_button_pressed;
 
 jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore(JNIEnv *env, jclass clazz,
                                                                            jint index) {

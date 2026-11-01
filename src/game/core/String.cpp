@@ -496,6 +496,14 @@ void String::Set(float v) {
     Set(result.data);
 }
 
+namespace AbyssEngine {
+    String operator+(const String &a, const String &b) {
+        String result(a);
+        result += b;
+        return String(result);
+    }
+}
+
 String String::SubString(unsigned int start, unsigned int end) {
     String sub;
     if (start < end) {
@@ -764,16 +772,6 @@ void String::PrintOut() {
     delete[] bytes;
 }
 
-unsigned short AbyssEngine::String::termChar;
-
-namespace AbyssEngine {
-    String operator+(const String &a, const String &b) {
-        String result(a);
-        result += b;
-        return String(result);
-    }
-}
-
 namespace AbyssEngine {
     String operator+(const String &a) {
         return String(a);
@@ -834,3 +832,5 @@ namespace AbyssEngine {
         return copy.Compare(b) == 0;
     }
 }
+
+unsigned short AbyssEngine::String::termChar;

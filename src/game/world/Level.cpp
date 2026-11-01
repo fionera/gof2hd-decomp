@@ -1583,7 +1583,7 @@ static const int kBlueprintSpacePoints[9] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
 
 // Defined in ConfigReader.cpp so the section-ordering pass places it after the ConfigReader
 // block instead of between ArrayAdd<int> and GameText::getText.
-[[gnu::visibility("hidden")]] void levelTextAnchor();
+[[gnu::visibility("hidden")]] int levelTextAnchor();
 
 void Level::createMission() {
     Mission *mission = Globals::status->getMission();
