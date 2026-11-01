@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 3912,
+  "byte_exact": 3914,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -17,19 +17,19 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 50.8,
+   "pct": 45.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6800
+   "usize": 7072
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 50.8,
+   "pct": 45.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
-   "usize": 6800
+   "usize": 7072
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -25586,7 +25586,7 @@
   {
    "name": "_ZN6LayoutD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 86,
    "usize": 86
@@ -25594,7 +25594,7 @@
   {
    "name": "_ZN6LayoutD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 86,
    "usize": 86

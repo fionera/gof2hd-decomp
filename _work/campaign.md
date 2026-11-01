@@ -4422,3 +4422,5 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **ParticleSystemManager PLT order: byte_exact 3907 -> 3912 (+5)** (`w3372`). PLT symbol diff -> ~14 lines.
 - Held branch `hold-exidx-exact`: `.ARM.exidx` exact (0x6f70 @0x19cc08) but `.ARM.extab` -0x24,
   which puts `.rodata` at 0x1c9df0 and costs 160 byte-exact; it lands when the extab is fixed.
+- **Layout::Layout size-exact: byte_exact 3912 -> 3914 (+2)** (`w3375`): the ctor is now the
+  original 7072 B (was 6800 + a 274 B pad) with .text still exact.
