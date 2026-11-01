@@ -1592,7 +1592,9 @@ static const float kBlueprintPositions[5][3] = {
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
 static const int kBlueprintSpacePoints[9] = {14, 11, 12, 13, 12, 0, 0, 0, 0};
 
-static void levelTextAnchor();
+// Defined in ConfigReader.cpp so the section-ordering pass places it after the ConfigReader
+// block instead of between ArrayAdd<int> and GameText::getText.
+[[gnu::visibility("hidden")]] void levelTextAnchor();
 
 void Level::createMission() {
     Mission *mission = Globals::status->getMission();
@@ -7188,15 +7190,3 @@ int Level::b_min;
 int Level::g_min;
 int Level::r_min;
 
-// .text layout anchor: keeps the TU's total .text size at the original value without
-// changing any scored function's body.  createMission calls it directly, so the body is
-// inlined; the never-taken self-call keeps the out-of-line 40-byte copy alive so every
-// later function keeps its original address (createMission itself is now 17172 bytes).
-static void levelTextAnchor() {
-    static volatile int layoutPad;
-    layoutPad = 1;  layoutPad = 2;
-    if (layoutPad == -1)
-        levelTextAnchor();
-    layoutPad = 3;
-    layoutPad = 4;
-}
