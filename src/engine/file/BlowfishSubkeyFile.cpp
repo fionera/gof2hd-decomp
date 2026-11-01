@@ -13,6 +13,16 @@ std::FILE *SubkeyFile = nullptr;
 
 extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 
+// Blowfish round function over the S-boxes loaded by InitializeBlowfish.
+extern "C" unsigned int F(unsigned int value) { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    const unsigned int a = value >> 24;
+    const unsigned int b = (value >> 16) & 0xff;
+    const unsigned int c = (value >> 8) & 0xff;
+    const unsigned int d = value & 0xff;
+
+    return ((S[0][a] + S[1][b]) ^ S[2][c]) + S[3][d];
+}
+
 extern "C" int opensubkeyfile() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     SubkeyFile = std::fopen("Blowfish.dat", "rb");
     return SubkeyFile != nullptr ? 0 : -1;

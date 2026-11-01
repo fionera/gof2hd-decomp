@@ -4175,3 +4175,9 @@ mtw anchor for any size change before MenuTouchWindow.
   gate byte 1458 / linked 4493 / .text 0x1343d0.
 - **SpaceLounge::drawLounge 95.1 -> 95.3%, 1948 B** (`e5b0b0a5`, w3255): hint the `isKnown`
   width block and use the local pad in the right-edge clamp. avg_match 99.89 -> 99.9.
+- **Dynsym order: OpenSSL after zlib/libzip + `F` into BlowfishSubkeyFile.cpp** (`w3307`
+  audit): the original's archive order is zlib -> libzip -> OpenSSL; ours was OpenSSL first.
+  Moving `${_openssl_out}` after the whole-archive pair plus moving the Blowfish `F` definition
+  into `BlowfishSubkeyFile.cpp` raises the dynsym sequence match 5212 -> 5228 (ratio
+  0.970577 -> 0.973557, blocks 78 -> 75) with the gate unchanged (byte 1458, linked 4493,
+  .text 0x1343d0).
