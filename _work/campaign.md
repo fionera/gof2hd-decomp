@@ -4250,3 +4250,14 @@ mtw anchor for any size change before MenuTouchWindow.
   `Achievements` 45x3 table. Combined with the anchor/exidx work the whole data layout now lands:
   `.text 0x1337b0` (-24), `.ARM.exidx 0x6f88` (+24), `.rodata` exact address and size,
   `.got 0x20fcf4`, `.data 0x214000`, `.dynamic 0x20fba4` all exact. byte 1513, linked 4492.
+- **Radar: last scoped `-mllvm` compensation removed** (`w3265`): the 80:1
+  MachineBranchProbabilityInfo weight was tuned for a 0.1% fuzzy gain that no longer exists on
+  the current master — Radar::draw is 71.8%, 9908 B with or without it. The only remaining
+  non-original flag is the Level::createScene `-sink-insts-to-avoid-spills` (w3277).
+- **`.text` layout drift identified as the dominant byte_exact gap** (coordinator):
+  `tools/text_drift.py` shows 2979 linked-but-not-byte functions are almost all at the wrong
+  address — a shifted function's literal-pool words differ by exactly the shift (e.g.
+  `MTitle::OnRelease` @0x97a2c vs 0x97a5c, every pool word +0x30). Only 3 exported functions
+  have the wrong size; the drift is local (static) function sizes: PaintCanvas +16, GameText
+  +40, ConfigReader -8, ... cumulative +48 across 0x87672..0x147e24, i.e. **1269 exported
+  functions sit in the +48 block**. See `_work/reconstructions/text-layout-drift.md`.
