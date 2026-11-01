@@ -1385,9 +1385,8 @@ void Status::checkForLevelUp() {
 // Mission type -> case-label rank. The original jump table lays the case bodies
 // out in source order; ranking the types keeps clang's ascending table order
 // aligned with that layout. Placed in its own section so .rodata stays exact.
-#pragma GCC visibility push(hidden)
 #pragma clang section rodata=".missioncase"
-extern const unsigned char kMissionCase[192] = {
+static const unsigned char kMissionCase[192] = {
     0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
@@ -1398,11 +1397,10 @@ extern const unsigned char kMissionCase[192] = {
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 152, 155, 154, 156, 157, 159, 167, 168, 160, 190,
-    169, 190, 161, 171, 172, 173, 162, 163, 174, 176, 150, 177, 182, 190, 151, 190,
+    169, 161, 162, 171, 172, 173, 174, 163, 176, 177, 150, 177, 182, 190, 151, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 165, 190, 190, 190, 190, 166, 190, 190,
 };
 #pragma clang section rodata=""
-#pragma GCC visibility pop
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
