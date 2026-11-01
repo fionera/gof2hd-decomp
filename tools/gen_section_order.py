@@ -46,6 +46,26 @@ import sys
 # See the plain `.text` placement note in main().
 PLAIN_TEXT_LEAD = 0x180
 
+# Local-only archive members (no .dynsym witness) whose original .text placement is
+# known from the original's .ARM.exidx/disassembly.  Keyed by the member's first
+# .text.* section; the value is the exported section they immediately follow.
+# libc++abi.a's fallback_malloc.o sits between cxa_virtual.o and private_typeinfo.o;
+# abort_message.o is pulled on the linker's second archive pass and lands after
+# stdlib_stdexcept.o (std::bad_typeid::what), before cxa_default_handlers.o.
+LOCAL_ONLY_AFTER = {
+    ".text._ZN10__cxxabiv130__aligned_malloc_with_fallbackEj": ".text.__cxa_deleted_virtual",
+    ".text.abort_message": ".text._ZNKSt10bad_typeid4whatEv",
+}
+
+
+# libcrypto's plain-.text objects are renamed by gen_exidx_markers.py so they can be
+# placed individually.  Anchor each at the first exported symbol of its object.
+CRYPTO_TEXT_ANCHOR = {
+    ".text.crypto_sha256": ".text.SHA224_Init",
+    ".text.crypto_armv4cpuid": ".text.OPENSSL_atomic_add",
+    ".text.crypto_sha256_armv4": ".text.sha256_block_data_order",
+}
+
 
 def elf_text_sections(data):
     """(.text.* names in section-header order, has_nonempty_plain_.text, tuend markers)."""
@@ -161,6 +181,16 @@ def main() -> int:
             seq, _has_plain, markers = elf_text_sections(data)
             if markers:
                 marker_members.append((markers, seq))
+            if seq and seq[0] in CRYPTO_TEXT_ANCHOR:
+                before.setdefault(CRYPTO_TEXT_ANCHOR[seq[0]], []).append(seq[0])
+                continue
+            if seq and not any(s in listed for s in seq) and seq[0] in LOCAL_ONLY_AFTER:
+                anchor = LOCAL_ONLY_AFTER[seq[0]]
+                for s in seq:
+                    if s not in seen:
+                        seen.add(s)
+                        after.setdefault(anchor, []).append(s)
+                continue
             pending = []           # locals seen before this object's first listed section
             anchor = None
             for s in seq:
@@ -206,6 +236,12 @@ def main() -> int:
         pos.setdefault(n, []).append(i)
     inserts, tail = {}, []
     for markers, seq in marker_members:
+        if seq and seq[0] in LOCAL_ONLY_AFTER:
+            # Keep these members' empty-TU sentinels in the trailing group: the original
+            # link's late-pulled members have no ordered witness, and leaving the markers
+            # adjacent to the relocated functions adds two exidx entries, moving .rodata.
+            tail.extend(markers)
+            continue
         idxs = [i for t in seq for i in pos.get(t, [])]
         if idxs:
             # ApplicationManager.cpp has two function blocks in the original order; its

@@ -32,6 +32,17 @@ import subprocess
 import sys
 
 
+# libcrypto's three plain-.text objects are each one section.  Give them unique names so
+# the ordering file can place them individually: the original interleaves them with the
+# zip TUs and orders armv4cpuid.o before sha256-armv4.o, which gold's same-name `.text`
+# grouping cannot express.
+CRYPTO_TEXT_RENAME = {
+    "armv4cpuid.o": ".text.crypto_armv4cpuid",
+    "sha256.o": ".text.crypto_sha256",
+    "sha256-armv4.o": ".text.crypto_sha256_armv4",
+}
+
+
 def elf_sections(data):
     """[(name, type, flags, size, align, header_offset)] for an ELF32 relocatable."""
     if data[:4] != b"\x7fELF" or data[4] != 1:
@@ -134,6 +145,13 @@ def main() -> int:
             dst = src + ".marked"
             if rename_empty_text(objcopy, src, dst, f".text.tuend.a{ai:03d}m{mi:03d}"):
                 markers += 1
+            else:
+                for key, newname in CRYPTO_TEXT_RENAME.items():
+                    if key in name:
+                        subprocess.run([objcopy, "--rename-section",
+                                        f".text={newname}", dst],
+                                       check=True, capture_output=True)
+                        break
             member_paths.append(dst)
         dst_arch = os.path.join(ardir, os.path.basename(arch))
         subprocess.run([ar, "rcs", dst_arch] + member_paths, check=True, capture_output=True)
