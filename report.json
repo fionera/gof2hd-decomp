@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1919,
+  "byte_exact": 1928,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -3274,7 +3274,7 @@
   {
    "name": "_ZN10MeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -14514,7 +14514,7 @@
   {
    "name": "_ZN12MarqueeImage4drawEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -14546,7 +14546,7 @@
   {
    "name": "_ZN12MarqueeImageC1Etiiif",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -14554,7 +14554,7 @@
   {
    "name": "_ZN12MarqueeImageC2Etiiif",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -15330,7 +15330,7 @@
   {
    "name": "_ZN13LodMeshMerger6updateEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 454,
    "usize": 454
@@ -15338,7 +15338,7 @@
   {
    "name": "_ZN13LodMeshMerger7setMeshEiat",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -21578,7 +21578,7 @@
   {
    "name": "_ZN4Ship8makeShipEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 18,
    "usize": 18
@@ -25146,7 +25146,7 @@
   {
    "name": "_ZN6Galaxy22getPlasmaProbabilitiesEP7Station",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 388,
    "usize": 388
@@ -25154,7 +25154,7 @@
   {
    "name": "_ZN6Galaxy24getAsteroidProbabilitiesEP7Station",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 432,
    "usize": 432

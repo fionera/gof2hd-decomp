@@ -4357,3 +4357,6 @@ shaders, WantedWindow, RecordHandler, ...) and restoring the original TU splits
 (Curve, GLES1Compat, GameText_iPhone, GOF2HD2012, BackButton, NdkAutosave, ...) took byte_exact
 1544 -> 1919. The PLT symbol diff is down from 1354 to ~898 lines; continuing that diff is the
 highest-value work left.
+- **PlayerEgo/TouchSlider/Status TU reorder: byte_exact 1919 -> 1928 (+9)** (`w3318`): three more
+  TUs reordered to the original definition order (PlayerEgo also gets the local
+  `ArrayReleaseClasses` instantiation). PLT diff 1019 -> 846.
