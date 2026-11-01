@@ -223,7 +223,7 @@ static const int gMedalCreditReward[4] = {0, 5000, 2500, 1000};
 
 
 // Mission reward replacing an out-of-range reward, campaign missions 55..61.
-static const int gCampaignRewardOverride[7] = {200000, 6666, 6666, 100000, 6666, 6666, 50000};
+static const int gCampaignRewardOverride[8] = {200000, 6666, 6666, 100000, 6666, 6666, 50000, 0};
 
 
 

@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4171, linked_exact 4495, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4182, linked_exact 4495, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -22,10 +22,12 @@ literal and the libzip `zip_err_str`/`zip_open` order (byte 4108 -> 4112), and t
 padding-array removal restored the jumpgate/sky array sizes (byte 4112 -> 4115). The
 2026-11-01 `.rodata` output-group pass then replaced the trailing `*` in the section-ordering
 file with `.text*`/`.data*`/`.bss*`, so plain `.rodata` inputs stay at gold's index 0 and
-interleave with the merge groups in input order (byte 4115 -> 4171). Every ELF section is
-size- and base-exact except `.rodata` itself, which is now 16 bytes smaller (0x41b57 vs
-0x41b67); the first content divergence moved from 0x1e7570 to 0x1f9ffb and is a per-object
-string/table difference, not output-group ordering. See
+interleave with the merge groups in input order (byte 4115 -> 4171). The 2026-11-01 data-layout
+pass then fixed the last three `.rodata` size deltas (ModStation reward table, MissionsWindow goal
+text default, DialogueWindow success script/alignment), making **every ELF section size- and
+base-exact**, `.rodata` included (0x41b67 @ 0x1c9e10), and byte_exact 4171 -> 4182. The first
+`.rodata` *content* divergence is at 0x1e9f90 (VMA) and is a per-object table emission-order
+difference, not group ordering or size. See
 `_work/reconstructions/rodata_group_order.md`. See `_work/reconstructions/literal_pool_audit.md`
 and `_work/reconstructions/data_layout_audit_2.md`.
 
@@ -51,7 +53,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,143 | **-16** | base exact (0x1c9e10); output-group order now matches the original. The -16 bytes and the remaining content diffs are per-object string/table content (first: 0x1e9f90, `Generator.cpp`'s `kAgentOfferItems`/`kKaamoStationItems` emission order), not group ordering (see `_work/reconstructions/rodata_group_order.md`). |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; the remaining content diffs are per-object table emission order (first: 0x1e9f90, `Generator.cpp`'s `kAgentOfferItems`/`kKaamoStationItems`), not group ordering (see `_work/reconstructions/rodata_group_order.md`). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact: 3566 entries; CANTUNWIND 272, inline 856, extab 2438 all match. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact since the EH landing-pad split in `Level::createShip` (see `_work/reconstructions/exidx_extab_audit.md`). |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; only a handful of local symbol-order permutations remain. |
@@ -69,12 +71,11 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    `Level::createShip` (73.2%), `Generator::createMission` (73.6%), `HangarWindow::render`
    (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%). The `.text` total is
    exact (0x1337c8); these are per-function body/register-allocation deltas, not missing code.
-2. **`.rodata` content.** The output-group order is fixed (plain `.rodata` now interleaves with
-   the merge groups in input order); the first differing byte is 0x1f9ffb, a double-encoded
-   `ö` in `VertexColorAlphaTextureShader.cpp`. 279 of the 290 plain `.rodata` input sections
-   are byte-identical at their new addresses; the other 11 are per-object content/table
-   differences. The section is 16 bytes smaller than the original as a net result. 381
-   functions are instruction-identical and differ only by a literal-pool word.
+2. **`.rodata` content.** Size and base are exact; output-group order is fixed (plain `.rodata`
+   now interleaves with the merge groups in input order). The first differing byte is 0x1e9f90
+   (VMA), `Generator.cpp`'s `kAgentOfferItems`/`kKaamoStationItems` emission order. 14,640 bytes
+   still differ across the section, all per-object content/table ordering. 381 functions are
+   instruction-identical and differ only by a literal-pool word.
 3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are both exact; the last 0x24 B came from an EH
    landing-pad split in `Level::createShip`.
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's

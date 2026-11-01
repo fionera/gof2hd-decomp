@@ -57,8 +57,6 @@ DialogueWindow::DialogueWindow() {
     this->set(mission, kind, -1);
 }
 
-static const char g_dw_defaultAgentName[] = "";
-
 void DialogueWindow::init() {
     this->briefingOffsets = new int[0xa2];
     this->successOffsets = new int[0xa2];
@@ -72,7 +70,7 @@ void DialogueWindow::init() {
         successSum += g_dw_successCounts[i];
     }
 
-    this->agentName = String(g_dw_defaultAgentName, false);
+    this->agentName = String("", false);
 
     this->mission = 0;
     this->choiceWindow = 0;
@@ -136,7 +134,6 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-static const char g_dw_emptyString[] = "";
 
 
 
@@ -144,7 +141,7 @@ static const char g_dw_emptyString[] = "";
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->init();
 
-    this->scrollWindow->setText(String(g_dw_emptyString, false), String(*text, false));
+    this->scrollWindow->setText(String("", false), String(*text, false));
 
     this->moreButton->setVisible(false);
     this->prevButton->setVisible(false);
@@ -211,7 +208,7 @@ static const int g_dw_briefingScript[120] = {
     26, 2249, 0, 2250, 31, 2283, 0, 2284, 31, 2285, 0, 2286, 49, 2879, 0, 2880, 49, 2881, 0, 2882,
 };
 
-static const int g_dw_successScript[2056] = {
+static const int g_dw_successScript[2060] = {
     0, 1700, 2, 1701, 0, 1702, 2, 1703, 0, 1704, 2, 1705, 0, 1706, 2, 1707, 2, 1708, 0, 1709,
     2, 1710, 2, 1711, 0, 1712, 2, 1713, 0, 1714, 2, 1715, 2, 1716, 0, 1717, 16, 1718, 2, 1728,
     0, 1729, 16, 1730, 2, 1733, 0, 1734, 2, 1735, 0, 1736, 2, 1737, 0, 1739, 2, 1740, 2, 1741,
@@ -315,15 +312,16 @@ static const int g_dw_successScript[2056] = {
     26, 3073, 0, 3074, 1, 3075, 0, 3105, 1, 3106, 0, 3107, 1, 3108, 0, 3109, 38, 3110, 40, 3111,
     1, 3112, 0, 3113, 6, 3114, 56, 3115, 40, 3116, 38, 3117, 1, 3118, 38, 3119, 40, 3120, 6, 3122,
     17, 3123, 6, 3124, 4, 3126, 0, 3127, 38, 3128, 0, 3129, 38, 3130, 40, 3131,
+    0, 0, 0, 0,
 };
 
 // Station 108 (the Valkyrie hangar) scripted briefings, depending on the story state.
-static const int g_dw_station108ScriptLate[36] = {
+alignas(16) static const int g_dw_station108ScriptLate[36] = {
     4, 459, 0, 460, 4, 461, 0, 462, 4, 463, 0, 464, 4, 465, 0, 466, 4, 467, 0, 468,
     4, 469, 0, 470, 4, 471, 0, 472, 4, 473, 0, 474, 4, 475, 16, 476,
 };
 
-static const int g_dw_station108Script[12] = {
+alignas(16) static const int g_dw_station108Script[12] = {
     4, 479, 0, 480, 4, 481, 0, 482, 4, 483, 0, 484,
 };
 

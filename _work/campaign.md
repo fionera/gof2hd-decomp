@@ -4504,8 +4504,12 @@ original build flags.
 - **`.rodata` output-group ordering landed: byte_exact 4115 -> 4171** (`w3412`). The trailing
   `*` in `gen_section_order.py` is replaced by `.text*`/`.data*`/`.bss*`, leaving `.rodata*`
   unlisted so plain `.rodata` keeps gold's index 0 and interleaves with the merge groups in
-  input order. Every section stays exact except `.rodata` (0x41b57 vs 0x41b67, -16 B). The first
-  remaining content diff is 0x1e9f90: `Generator.cpp` emits `kKaamoStationItems` before
+  input order. The 2026-11-01 data-layout pass (harvested from `w3387`) then closed the last
+  three `.rodata` size deltas — ModStation `gCampaignRewardOverride[8]` with a trailing 0,
+  MissionsWindow `CAMPAIGN_GOAL_TEXT_DEFAULT` split, DialogueWindow `g_dw_successScript[2060]`
+  + `alignas(16)` station-108 scripts — so **every ELF section is now size- and base-exact**,
+  `.rodata` included (0x41b67 @ 0x1c9e10). byte_exact 4171 -> 4182. The first remaining
+  `.rodata` *content* diff is 0x1e9f90: `Generator.cpp` emits `kKaamoStationItems` before
   `kAgentOfferItems`; the original has the reverse.
 - **`g_ips_shipTypeMap` is 64 entries, not 32** (not landed; content-only, size-neutral):
   the original's table at 0x1fc3d0 is 0x100 bytes; the first 32 words equal

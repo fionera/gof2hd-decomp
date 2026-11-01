@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4171,
+  "byte_exact": 4182,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -57,11 +57,11 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 73.6,
+   "pct": 73.8,
    "byte": false,
    "linked": false,
    "osize": 1996,
-   "usize": 1996
+   "usize": 1992
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
@@ -145,7 +145,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 87.6,
+   "pct": 87.5,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -153,7 +153,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 87.6,
+   "pct": 87.5,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -13298,7 +13298,7 @@
   {
    "name": "_ZN11TouchButton4initERKN11AbyssEngine6StringEjiiiiiihh",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1816,
    "usize": 1816
@@ -16290,7 +16290,7 @@
   {
    "name": "_ZN14DialogueWindow18hasSuccessDialogueEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -16298,7 +16298,7 @@
   {
    "name": "_ZN14DialogueWindow19hasBriefingDialogueEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -16322,7 +16322,7 @@
   {
    "name": "_ZN14DialogueWindow4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 652,
    "usize": 652
@@ -16330,7 +16330,7 @@
   {
    "name": "_ZN14DialogueWindow51pickGermanGenericTextBecauseWeSaved100EurosWithThatEiP5Agent",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 184,
    "usize": 184
@@ -16338,7 +16338,7 @@
   {
    "name": "_ZN14DialogueWindow6lengthEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -16394,7 +16394,7 @@
   {
    "name": "_ZN14DialogueWindowC1EPN11AbyssEngine6StringES2_Pi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 376,
    "usize": 376
@@ -16418,7 +16418,7 @@
   {
    "name": "_ZN14DialogueWindowC2EPN11AbyssEngine6StringES2_Pi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 376,
    "usize": 376
@@ -20938,7 +20938,7 @@
   {
    "name": "_ZN4Ship11adjustPriceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -27978,7 +27978,7 @@
   {
    "name": "_ZN7BeamGunC1EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224
@@ -27986,7 +27986,7 @@
   {
    "name": "_ZN7BeamGunC2EiP3GuniP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 224,
    "usize": 224

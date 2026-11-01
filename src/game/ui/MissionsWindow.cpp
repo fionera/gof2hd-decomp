@@ -39,8 +39,11 @@ static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagB) == 0x37,
 
 
 
+// Objective text id used when no campaign mission is active (original .rodata @ 0x202858).
+[[gnu::used]] static const int CAMPAIGN_GOAL_TEXT_DEFAULT = 7500;
+
 // Objective text id of each campaign mission (original .rodata @ 0x20285c).
-static const int CAMPAIGN_GOAL_TEXT[164] = {
+static const int CAMPAIGN_GOAL_TEXT[163] = {
     749, 749, 749, 749, 749, 749, 749, 749, 749, 749, 652, 653, 654, 655, 656, 749,
     657, 749, 658, 749, 659, 659, 749, 660, 661, 749, 749, 749, 662, 749, 749, 749,
     663, 664, 665, 666, 667, 749, 668, 749, 669, 749, 749, 749, 670, 670, 671, 749,
@@ -51,7 +54,7 @@ static const int CAMPAIGN_GOAL_TEXT[164] = {
     712, 713, 714, 715, 716, 717, 718, 718, 719, 719, 720, 721, 721, 722, 722, 723,
     724, 724, 725, 726, 726, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736,
     736, 737, 738, 739, 740, 740, 740, 740, 741, 742, 743, 743, 744, 745, 746, 747,
-    748, 748, 748, 0,
+    748, 748, 748,
 };
 
 
