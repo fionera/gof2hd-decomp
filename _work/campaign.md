@@ -4465,3 +4465,9 @@ original build flags.
   `zip_err_str` precedes `zip_open`; the Level padding arrays were removed and the jumpgate/sky
   array sizes restored. Every ELF section is now size- and base-exact. The first `.rodata`
   content divergence is 0x1e7570 (`FileInterfaceAndroid`/`13FileInterface` string block).
+- **`.aezdata` removal: RW LOAD and `.bss` VMA now exact** (byte-neutral, 4115). The last
+  invented section was a dead `static char pakExtension[8] = ".aez"` in `AEFile.cpp` wrapped in
+  `#pragma clang section data=".aezdata"`. It occupied 0x21696c..0x216974 and pushed `.bss` from
+  0x216970 to 0x216980. Removing it makes the RW LOAD (`0x9dcc` file / `0x1077c` mem) and
+  `.bss` (0x216970/0x69ac) byte-for-byte layout-exact. Every ELF section and program header now
+  matches the original; the only whole-file delta is `.rodata` content order (0x1e7570).

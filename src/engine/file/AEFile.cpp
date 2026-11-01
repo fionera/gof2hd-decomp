@@ -4,10 +4,6 @@
 #include "engine/file/AEPakFile.h"
 #include "engine/file/AENormalFile.h"
 
-#pragma clang section data=".aezdata"
-[[gnu::used]] static char pakExtension[8] = ".aez";
-#pragma clang section data=""
-
 AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
     : fileInterface(fileInterface),
       sizeLimit(static_cast<uint32_t>(sizeLimit)),
