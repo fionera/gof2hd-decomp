@@ -107,7 +107,7 @@ void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDevice(JNIEnv 
 }
 
 char *dataDirectory = NULL;
-char *zipDirectory = NULL;
+extern char *zipDirectory;
 
 FILE *SubkeyFile;
 
