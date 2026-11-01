@@ -4169,3 +4169,7 @@ mtw anchor for any size change before MenuTouchWindow.
   w3237): with the flag gone the 57232-byte body still scores 54.6% and the `s_processPad[4]`
   store is no longer needed, so the whole LevelScript TU is back on LLVM 7.0.2 defaults. Gate
   unchanged: byte 1458, linked 4493, .text 0x1343d0.
+- **ModStation ctor: drop the scoped 20:12 branch-weight flag** (`328163a9`, w3256): a plain
+  pointer check in the ctor reproduces the original `OnInitialize` EH landing-pad order without
+  `-mllvm -likely-branch-weight=20 -mllvm -unlikely-branch-weight=12`. 1008 B, 98.6% unchanged;
+  gate byte 1458 / linked 4493 / .text 0x1343d0.

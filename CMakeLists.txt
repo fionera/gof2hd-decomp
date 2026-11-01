@@ -35,12 +35,10 @@ if(GOF2_MATCH_LAYOUT)
     target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 endif()
 
-# ModStation::OnInitialize's lazy CutScene check is a pointer comparison, so LLVM's
-# BranchProbabilityInfo pointer heuristic (20:12) picks the wrong successor probability and the
-# EH landing pads are laid out in the wrong order.  The original's branch metadata is 20:12, i.e.
-# the __builtin_expect hint in OnInitialize was compiled with these weights.  Scope the flag to
-# this TU: the other __builtin_expect/__predict_true users in the tree match with the 2000:1
-# default.
+# ModStation::OnInitialize's lazy CutScene check is a plain pointer comparison.  LLVM's
+# BranchProbabilityInfo pointer heuristic already gives the original 20:12 successor probability,
+# so the source must NOT wrap it in __builtin_expect (which would override the heuristic with the
+# 2000:1 default and lay the EH landing pads out in the wrong order).
 # Level::createScene caches &Globals::rnd in r8 and reloads it at every nextInt.  LLVM's
 # pre-RA MachineLICM sink (sink-insts-to-avoid-spills) reproduces that shape; scoped to this TU
 # so the sibling Level.cpp functions keep their baseline allocation.
@@ -53,10 +51,6 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene
 # sibling Radar.cpp helpers keep the default.
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
-
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/ModStation.cpp"
-    PROPERTIES COMPILE_OPTIONS
-    "-mllvm;-likely-branch-weight=20;-mllvm;-unlikely-branch-weight=12")
 
 # =================================================================================================
 # Whole-.so link -- produce libgof2hdaa.so the original's shape

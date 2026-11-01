@@ -340,7 +340,7 @@ ModStation::~ModStation() {
 
 int ModStation::OnInitialize() {
     this->dialogueMission = nullptr;
-    if (__builtin_expect(this->cutScene == nullptr, 1)) { // lint: arm_builtin
+    if (this->cutScene == nullptr) {
         this->cutScene = new CutScene(23);
         this->cutScene->initialize();
     }
