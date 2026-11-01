@@ -54,11 +54,15 @@ set (drop `Vector`/`BuildResourceList`/`LowResourceTable`/`Array`/`ArrayInstanti
 keep `BackButton`/`main`), moved the NdkHooks/NdkAutosave sentinels to the original's
 witnessed boundaries, and added a 12-byte dead-local pad in `HangarWindow::render` to
 restore its LSDA record. **`.ARM.exidx` is now `0x6f70` (3566 entries, CANT 272, inline
-856, extab 2438) and `.ARM.extab` is `0x26298`**, both size- and base-exact, so all 27
-ELF sections are size- and base-exact; byte 4408 -> 4409. The remaining EH content is
-one `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
-record-length deltas that net to zero. See
-`_work/reconstructions/exidx_extab_exact_w3462.md`.
+856, extab 2438) and `.ARM.extab` was `0x26298`**, both size- and base-exact at that point;
+byte 4408 -> 4409. The remaining EH content is one `Generator::createMission` CANT/INL
+offset (4-byte body shortfall) and seven extab record-length deltas. Those seven records
+belong to the seven still-mismatched bodies (`Generator::createMission`,
+`Level::createShip`, `StarMap::draw`, `RecordHandler::recordStoreWrite`,
+`LevelScript::process`, `HangarWindow::render`, `Hud::draw`) and now net **-8 bytes**, so
+`.ARM.extab` is `0x26290` (156,304 B) until those bodies match. See
+`_work/reconstructions/exidx_extab_exact_w3462.md` and
+`_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
 
 The w3472 `Status::missionCompleted` pass then recovered the 4-byte `.text` shortfall that
 had blocked the Level `.rodata` block. The original switches directly on `m->getType()` and is
@@ -111,6 +115,34 @@ byte-identical), string pools and -Oz same-TU inlining all follow it) and origin
 object **link order**. The `drift` target (fixed to
 the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has been reconciled.
 
+## Build reconstruction (wave 95, 2026-11-01)
+
+The original build is now pinned by evidence, not by A/B alone:
+
+* **`-ffunction-sections` was used.** The original `.ARM.exidx` has 193 `CANTUNWIND` entries
+  that share their target address with a real entry; that is gold's `fix_exidx_coverage()`
+  sentinel for the empty plain `.text` section every `-ffunction-sections` object carries. A
+  rebuild without the flag produces only 52. The original was linked **without** a
+  section-ordering file: its `.text` is grouped by original TU (2,231 mapped functions, 105 TUs,
+  104 transitions, 0 interleaving). Our ordering file is needed only because 144 of 195 objects
+  currently have their functions interleaved with other objects; it disappears when TU
+  membership converges. See `_work/reconstructions/ffunction_sections_and_order_file.md`.
+* **`-g` is codegen-relevant at `-Oz`.** `-g`, `-g2`, `-g3` and all DWARF variants are identical
+  (byte 4496); `-g0`, `-g1` and `-gline-tables-only` drop to byte 2069 because entry-block
+  argument copies are no longer kept from PostRA sinking. The tree's `-g` is correct. See
+  `_work/reconstructions/debug_info_flags_w3564.md`.
+* **`.dynsym` order is gold's hash-map iteration = first-mention order over the link inputs.**
+  The model (name_key ^ version_key, SGI `hash_map` ascending buckets) reproduces our entire
+  `.dynsym` 5,577/5,577; `.dynstr` and `.hash` follow from it with no independent order. The
+  app region is exactly first-mention over crtbegin + 203 objects (4,935/4,935). See
+  `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and
+  `_work/reconstructions/tu_compile_link_order_w3560.md`.
+* **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
+  `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
+  `abort_message.cpp` path, and the only app source-file witness is `main.c` in three log
+  strings. No app source path survives. See
+  `_work/reconstructions/build_metadata_source_paths_w3566.md`.
+
 ## Section-size deltas (stripped ours vs original)
 
 | section | orig | ours | delta | meaning |
@@ -118,10 +150,11 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
-| .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
-| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The seven per-function LSDA records that differ belong to the seven mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
+| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,331/5,577 entries at the same index (1,760 differing bytes). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The residual is within-TU first-mention and archive-member order, not link order — see `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
+| .missioncase | absent | 192 | **+192** | source artifact: `#pragma clang section rodata=".missioncase"` around the invented `kMissionCase[192]` rank table in `Status.cpp`. It sits in an existing gap (no address shifts) but adds an ELF section and 13 bytes of `.shstrtab`. Remove with the rank-table dispatch. |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
@@ -139,15 +172,19 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    byte-identical (0 differing bytes, w3477). The baseline 8,826-byte gap was pure table
    emission order (word multiset 6,586/6,586 common, 0 unique). See
    `_work/reconstructions/rodata_content_round5_w3477.md`.
-3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are now size- and base-exact (3566 entries,
-   CANTUNWIND 272, inline 856, extab 2438). The remaining content delta is one
-   `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
-   record-length deltas that net to zero; raw prel31 operands still differ with local
-   `.text` layout. See `_work/reconstructions/exidx_extab_exact_w3462.md`.
+3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272,
+   inline 856, extab 2438); `.ARM.extab` is 8 B short (156,304 vs 156,312). The delta is
+   exactly the seven LSDA records of the seven mismatched bodies (net -8 B); one
+   `Generator::createMission` CANT/INL offset (4-byte body shortfall) also remains. The 194
+   duplicate-address exidx entries are fully explained (193 empty-`.text` CANTUNWIND
+   sentinels from `-ffunction-sections` + 1 zero-size `AbyssEngine::getAppVersion`), and are
+   already reproduced address-for-address. Raw prel31 operands still differ with local
+   `.text` layout. See `_work/reconstructions/exidx_extab_exact_w3462.md` and
+   `_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now
-   exact; the remaining `.dynsym` order delta (5330/5578 same index) is gold's hash-table
+   exact; the remaining `.dynsym` order delta (5,331/5,577 same index) is gold's hash-table
    iteration order over the symbol-insertion sequence, not a tunable link knob. The GNU
    build-id is a content hash that converges last.
 

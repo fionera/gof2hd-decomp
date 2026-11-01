@@ -4676,3 +4676,43 @@ Landed so far: `#pragma clang section` removed (Blowfish TU became a C TU with C
   `Hud::draw` 88.3 -> 88.7%, `Level::createMission` 83.7 -> 83.8%,
   `LevelScript::process` 53.0 -> 52.8% (structural reorder), `Status::missionCompleted`
   rank table corrected (file-static).
+
+## Wave 95 (build-provenance research, 2026-11-01)
+
+Baseline at wave start: byte 4496 / linked 4496, `.text` 0x1337c8, 28 functions not byte-exact.
+Nine research workers; six landed so far (notes only except w3560).
+
+- **w3560 TU/link order**: `.bss` emission order restored for the LODManager touch globals and
+  the Level statics (exported `.bss` address order 279 -> 289 of 302, `.dynsym` differing bytes
+  1768 -> 1760, gate unchanged). The object link order is proven by the byte-identical
+  `.rodata`/`.data`/`.data.rel.ro`/`.got`/`.dynamic`/`.init_array`/`.fini_array`/`.plt`; the
+  `.dynsym` app region is exactly first-mention over crtbegin + 203 objects (4935/4935).
+  TU-move re-tests: NdkAutosave->NdkHooks merge 3977 (-519), touch globals -> NdkAutosave 4485
+  (-11), loadPortraits -> BuildResourceList 3116 (-1380). Note:
+  `_work/reconstructions/tu_compile_link_order_w3560.md`.
+- **w3561 `-ffunction-sections`**: proven used (193 CANTUNWIND sentinels from the empty plain
+  `.text`; a no-flag rebuild gives 52). The original was linked without a section-ordering file
+  (its `.text` is TU-contiguous: 2,231 mapped functions, 105 TUs, 0 interleaving); our file is
+  needed only because 144/195 objects are currently interleaved. Removing it now: byte 4496 ->
+  1527. Note: `_work/reconstructions/ffunction_sections_and_order_file.md`.
+- **w3564 `-g`**: codegen-relevant at `-Oz`. `-g`/`-g2`/`-g3`/DWARF variants all byte 4496;
+  `-g0`/`-g1`/`-gline-tables-only` drop to byte 2069. Current flag is correct. Note:
+  `_work/reconstructions/debug_info_flags_w3564.md`.
+- **w3565 exidx duplicates**: the 194 duplicate-address groups are 193 empty-`.text`
+  CANTUNWIND sentinels (gold `fix_exidx_coverage`) + 1 zero-size `AbyssEngine::getAppVersion`,
+  already reproduced address-for-address. Note:
+  `_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
+- **w3566 build metadata**: `.note.android.ident` byte-identical to the NDK r18b API-16
+  `crtbegin_so.o`; the only path string is libc++abi's buildbot `abort_message.cpp`; the only
+  app source witness is `main.c`. No app source paths survive. Note:
+  `_work/reconstructions/build_metadata_source_paths_w3566.md`.
+- **w3567 dynsym order**: gold's hash-map iteration = first-mention order over link inputs; the
+  model reproduces our whole `.dynsym` 5577/5577, and `.dynstr`/`.hash` follow from it. Note:
+  `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`.
+
+Docs corrected: `.ARM.extab` is **8 B short** (156,304 vs 156,312) because the seven differing
+LSDA records belong to the seven mismatched bodies; `.missioncase` is an extra 192-byte section
+(`#pragma clang section` around the invented `kMissionCase[192]` rank table in `Status.cpp`).
+Current differing bytes: `.text` 119,732; `.ARM.exidx` 2,710; `.ARM.extab` 119,153; `.dynsym`
+1,760; `.dynstr` 6,676; `.hash` 563; `.gnu.version` 52; `.rel.dyn` 68; `.rel.plt` 141;
+`.rodata`/`.data`/`.data.rel.ro`/`.plt`/`.got` 0.
