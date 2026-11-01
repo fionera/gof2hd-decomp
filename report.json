@@ -3,8 +3,8 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.9,
-  "byte_exact": 2755,
+  "avg_match": 99.89,
+  "byte_exact": 2806,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -78,6 +78,14 @@
    "linked": false,
    "osize": 9700,
    "usize": 9700
+  },
+  {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 80.2,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2252
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -174,14 +182,6 @@
    "linked": false,
    "osize": 944,
    "usize": 944
-  },
-  {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 93.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2252
   },
   {
    "name": "_ZN7StarMap4drawEv",
@@ -2962,7 +2962,7 @@
   {
    "name": "_ZN10GameRecord4loadEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2696,
    "usize": 2696
@@ -3618,7 +3618,7 @@
   {
    "name": "_ZN10ModStation14addAchievementEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -3666,7 +3666,7 @@
   {
    "name": "_ZN10ModStation8OnUpdateEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3652,
    "usize": 3652
@@ -4098,7 +4098,7 @@
   {
    "name": "_ZN10StarSystem6renderEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 996,
    "usize": 996
@@ -12362,7 +12362,7 @@
   {
    "name": "_ZN11LevelScript12skipCutsceneEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 412,
    "usize": 412
@@ -14010,7 +14010,7 @@
   {
    "name": "_ZN12ChoiceWindow3setERKN11AbyssEngine6StringES3_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -14018,7 +14018,7 @@
   {
    "name": "_ZN12ChoiceWindow3setERKN11AbyssEngine6StringES3_b",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -14378,7 +14378,7 @@
   {
    "name": "_ZN12HangarWindowD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -14386,7 +14386,7 @@
   {
    "name": "_ZN12HangarWindowD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -14746,7 +14746,7 @@
   {
    "name": "_ZN12PlayerTurret6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 764,
    "usize": 764
@@ -14906,7 +14906,7 @@
   {
    "name": "_ZN12RadioMessage9triggeredExP9PlayerEgoP11LevelScript",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1684,
    "usize": 1684
@@ -14986,7 +14986,7 @@
   {
    "name": "_ZN12StatusWindow11OnTouchMoveEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 264,
    "usize": 264
@@ -14994,7 +14994,7 @@
   {
    "name": "_ZN12StatusWindow12OnTouchBeginEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -15066,7 +15066,7 @@
   {
    "name": "_ZN12StatusWindowD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 106,
    "usize": 106
@@ -15074,7 +15074,7 @@
   {
    "name": "_ZN12StatusWindowD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 106,
    "usize": 106
@@ -15082,7 +15082,7 @@
   {
    "name": "_ZN12WantedWindow10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 924,
    "usize": 924
@@ -15162,7 +15162,7 @@
   {
    "name": "_ZN12WantedWindow4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 908,
    "usize": 908
@@ -15202,7 +15202,7 @@
   {
    "name": "_ZN12WantedWindowD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 228,
    "usize": 228
@@ -15210,7 +15210,7 @@
   {
    "name": "_ZN12WantedWindowD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 228,
    "usize": 228
@@ -15490,7 +15490,7 @@
   {
    "name": "_ZN13PlayerFighter17setWingmanCommandEiP8KIPlayer",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -15554,7 +15554,7 @@
   {
    "name": "_ZN13PlayerFighter5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 252,
    "usize": 252
@@ -15586,7 +15586,7 @@
   {
    "name": "_ZN13PlayerFighter6reviveEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 308,
    "usize": 308
@@ -15850,7 +15850,7 @@
   {
    "name": "_ZN13RecordHandler11readMissionEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 668,
    "usize": 668
@@ -15866,7 +15866,7 @@
   {
    "name": "_ZN13RecordHandler11writeWantedEP6Wantedj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 312,
    "usize": 312
@@ -15898,7 +15898,7 @@
   {
    "name": "_ZN13RecordHandler15recordStoreReadEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 5416,
    "usize": 5416
@@ -15914,7 +15914,7 @@
   {
    "name": "_ZN13RecordHandler16recordStoreWriteEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3988,
    "usize": 3988
@@ -16546,7 +16546,7 @@
   {
    "name": "_ZN14MissionsWindow10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1088,
    "usize": 1088
@@ -16618,7 +16618,7 @@
   {
    "name": "_ZN14MissionsWindowC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -16626,7 +16626,7 @@
   {
    "name": "_ZN14MissionsWindowC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -16634,7 +16634,7 @@
   {
    "name": "_ZN14MissionsWindowD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 166,
    "usize": 166
@@ -16642,7 +16642,7 @@
   {
    "name": "_ZN14MissionsWindowD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 166,
    "usize": 166
@@ -16938,7 +16938,7 @@
   {
    "name": "_ZN14PlayerCreature5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -17778,7 +17778,7 @@
   {
    "name": "_ZN15MenuTouchWindow6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1596,
    "usize": 1596
@@ -17826,7 +17826,7 @@
   {
    "name": "_ZN15MenuTouchWindowD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 538,
    "usize": 538
@@ -17834,7 +17834,7 @@
   {
    "name": "_ZN15MenuTouchWindowD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 538,
    "usize": 538
@@ -18218,7 +18218,7 @@
   {
    "name": "_ZN17PlayerFixedObject5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -18250,7 +18250,7 @@
   {
    "name": "_ZN17PlayerFixedObject6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2768,
    "usize": 2768
@@ -23074,7 +23074,7 @@
   {
    "name": "_ZN5Level10applyKillsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -23154,7 +23154,7 @@
   {
    "name": "_ZN5Level11updateOrbitEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 968,
    "usize": 968
@@ -23178,7 +23178,7 @@
   {
    "name": "_ZN5Level12attackWantedEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -23250,7 +23250,7 @@
   {
    "name": "_ZN5Level13createWingmenEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 660,
    "usize": 660
@@ -23282,7 +23282,7 @@
   {
    "name": "_ZN5Level13uncoverWantedEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -23306,7 +23306,7 @@
   {
    "name": "_ZN5Level14connectPlayersEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1160,
    "usize": 1160
@@ -23402,7 +23402,7 @@
   {
    "name": "_ZN5Level16createSentryGunsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 232,
    "usize": 232
@@ -23522,7 +23522,7 @@
   {
    "name": "_ZN5Level19createStaticObjectsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 592,
    "usize": 592
@@ -23554,7 +23554,7 @@
   {
    "name": "_ZN5Level20createFighterTurretsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 272,
    "usize": 272
@@ -23666,7 +23666,7 @@
   {
    "name": "_ZN5Level5resetEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 256,
    "usize": 256
@@ -23682,7 +23682,7 @@
   {
    "name": "_ZN5Level6updateExb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 760,
    "usize": 760
@@ -23714,7 +23714,7 @@
   {
    "name": "_ZN5Level8renderBGEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1320,
    "usize": 1320
@@ -23738,7 +23738,7 @@
   {
    "name": "_ZN5Level9enemyDiedEib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 504,
    "usize": 504
@@ -24394,7 +24394,7 @@
   {
    "name": "_ZN5Route13getExactCloneEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 66,
    "usize": 66

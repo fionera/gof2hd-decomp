@@ -4400,3 +4400,6 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **HackingGame/MissionsWindow TU order: byte_exact +2** (`w3356`), PLT diff 344 -> 323.
 - **Layout.cpp pass 2 + ImagePart/ImageFactory/WantedWindow/SpaceLounge order: byte_exact 2714 -> 2755
   (+41)**: `w3360` (+17), `w3361` (+24). PLT symbol diff 86 -> 68 -> ~50 lines.
+- **ModStation order + Level.cpp createScene move: byte_exact 2755 -> 2806 (+51)** (`w3362` +22,
+  `w3359` +29). createScene belongs to the original Level.cpp TU after all; with the current
+  section ordering the move is now a gain (it was -40 before the zlib/PLT passes). PLT diff 68 -> 54.
