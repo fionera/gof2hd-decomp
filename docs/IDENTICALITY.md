@@ -40,7 +40,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8); the language-table anchor object is gone. |
 | .data | 10,604 | 10,604 | **0** | exact (original TU order/sizes; gEngine moved out of Engine .bss). |
-| .bss | 27,052 | 27,096 | **+44** | anonymous zero-initialised-data layout still differs. |
+| .bss | 27,052 | 27,080 | **+28** | anonymous zero-initialised-data layout still differs (local-static ordering/padding). |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
 | .dynamic | 328 | 328 | 0 | exact since the link passes `-z now` (DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, .dynamic at 0x20fba4). |
 
@@ -51,7 +51,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now −24 B: the MenuTouchWindow anchor is empty and the remaining
    Rank-3 pads are partly removed; the residual is the `HangarWindow::initialize` shrink. This is
    a finishing campaign, not a missing-code campaign.
-2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` 44 B larger than the original;
+2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` is 28 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
 3. **EH tables.** `.ARM.extab` is only 32 B smaller now (was 4,572 B): the app and vendored C

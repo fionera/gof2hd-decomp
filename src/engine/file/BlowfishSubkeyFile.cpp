@@ -9,7 +9,6 @@ extern "C" unsigned int P[18]; // lint: extern_c (native ABI boundary; original 
 unsigned int P[18];
 
 extern "C" std::FILE *SubkeyFile; // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-std::FILE *SubkeyFile = nullptr;
 
 extern "C" unsigned int F(unsigned int value); // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
 

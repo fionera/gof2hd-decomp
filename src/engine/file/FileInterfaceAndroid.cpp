@@ -316,8 +316,6 @@ void FileInterfaceAndroid::SetAppRootDir(void *p) { // lint: void_ptr virtual ov
         this->appRootDir = (const char *) p;
 }
 
-struct zip *APKArchive = nullptr;
-struct zip *ZIPArchive = nullptr;
 void FileInterfaceAndroid::SetZipDirectory(void *p) { // lint: void_ptr virtual override param (FileInterface)
     // lint: void_ptr virtual override param (FileInterface)
     if (p != 0)

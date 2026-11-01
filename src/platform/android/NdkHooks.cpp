@@ -54,6 +54,15 @@ int gi_iap_buy_credit_pack3_pressed;
 int gi_iap_buy_credit_pack4_pressed;
 int gi_iap_buy_credit_pack5_pressed;
 
+int currentstate;
+int stateChanged;
+int sound_off;
+
+AbyssEngine::Engine *gEngine = nullptr;
+
+struct zip *APKArchive = nullptr;
+struct zip *ZIPArchive = nullptr;
+
 // Low-pass filtered gravity and its negation as handed to the engine.
 static double gGravity[3];
 static double gNegGravity[3];

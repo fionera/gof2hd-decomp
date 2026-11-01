@@ -15,6 +15,7 @@
 #include <android/log.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 /* main.c's view of the ndk layer (see the header note for the two prototypes that differ). */
@@ -54,7 +55,7 @@ JavaVM *g_pVM;
 
 JNIEnv *g_pEnv;
 jobject g_pClass;
-jobject g_pActivity = NULL;
+extern jobject g_pActivity;
 
 char *ndk_APK_Path = NULL;
 char *ndk_ZIP_Path = NULL;
@@ -110,6 +111,8 @@ void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDevice(JNIEnv 
 
 char *dataDirectory = NULL;
 char *zipDirectory = NULL;
+
+FILE *SubkeyFile;
 
 void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories(JNIEnv *env, jclass clazz,
                                                                  jstring rootDir, jstring zipDir) {

@@ -4,6 +4,8 @@
 
 const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunctionCalls";
 
+jobject g_pActivity;
+
 namespace {
 extern const char *deviceInfoPath;
 }
