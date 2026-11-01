@@ -91,12 +91,11 @@ VirtualKey keys[kVirtualKeyCount] = {
 
 constexpr int kDelayedKeyMax = 0x400;
 
-// Hidden external linkage: the original emits these before the anonymous-namespace
-// scalars but does not export them.
-#pragma GCC visibility push(hidden)
-int g_delayedKeyCount;
-int g_delayedKeys[kDelayedKeyMax];
-#pragma GCC visibility pop
+// File-static: the original emits these before the anonymous-namespace scalars
+// but does not export them.  SendStoredKeyUpEvents is defined before keyPressed
+// so clang's first-use ordering reproduces the original .bss order.
+static int g_delayedKeyCount;
+static int g_delayedKeys[kDelayedKeyMax];
 
 namespace {
     // Key/mouse state of the virtual input layer.
@@ -242,6 +241,12 @@ void keyEventPressed(AbyssEngine::Engine *engine, char *name) {
         if (std::strcmp(key.name, name) == 0)
             keyPressed(engine, key.keyCode);
     }
+}
+
+void SendStoredKeyUpEvents(AbyssEngine::Engine *engine) {
+    for (int i = 0; i < g_delayedKeyCount; ++i)
+        keyReleased(engine, g_delayedKeys[i]);
+    g_delayedKeyCount = 0;
 }
 
 void keyPressed(AbyssEngine::Engine *engine, int key) {
@@ -413,12 +418,6 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
         default:
             break;
     }
-}
-
-void SendStoredKeyUpEvents(AbyssEngine::Engine *engine) {
-    for (int i = 0; i < g_delayedKeyCount; ++i)
-        keyReleased(engine, g_delayedKeys[i]);
-    g_delayedKeyCount = 0;
 }
 
 void keyReleasedWithDelay(AbyssEngine::Engine * /*engine*/, int key) {

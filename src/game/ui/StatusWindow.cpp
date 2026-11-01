@@ -17,7 +17,7 @@
 // layout's fixed padding.  The constructor inlines this helper at both call
 // sites; `static inline` keeps the dead out-of-line copy from being emitted
 // (the original has no such function).
-[[gnu::visibility("hidden")]] static inline int statusWindowMedalRowsHeight(int medalCount, int rowHeight) {
+static inline int statusWindowMedalRowsHeight(int medalCount, int rowHeight) {
     return medalCount / 3 * rowHeight + 10;
 }
 

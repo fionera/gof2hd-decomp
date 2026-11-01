@@ -11,6 +11,8 @@ class AEGeometry;
 
 using AbyssEngine::Matrix;
 using AbyssEngine::Vector;
+// Shared .bss layout anchor (see TargetFollowCamera.cpp).
+[[gnu::visibility("hidden")]] extern volatile int s_processPad[4];
 
 class TargetFollowCamera {
 public:

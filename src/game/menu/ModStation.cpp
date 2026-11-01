@@ -1,4 +1,5 @@
 #include "game/menu/ModStation.h"
+#include "platform/android/GOF2HD2012.h"
 #include <cstddef>
 #include "game/core/Globals.h"
 #include "engine/core/AERandom.h"
@@ -7,7 +8,6 @@
 #include "engine/core/NFC.h"
 #include "game/world/Level.h"
 #include "game/ship/Agent.h"
-extern int g_android_current_achievements[3];
 #include "engine/core/GameText.h"
 #include "game/ship/Ship.h"
 #include "engine/audio/FModSound.h"

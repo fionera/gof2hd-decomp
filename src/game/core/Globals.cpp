@@ -1,4 +1,5 @@
 #include "game/core/Globals.h"
+#include "platform/android/GOF2HD2012.h"
 #include "engine/math/AEMath.h"
 #include <arm_neon.h>
 #include <cstdint>
@@ -330,8 +331,6 @@ unsigned char Globals::iap_hack_dlc3Bought;
 
 #include <new>
 
-
-extern int g_android_leaderboard_scores[8];
 
 #pragma pack(push, 1)
 struct Q16 {

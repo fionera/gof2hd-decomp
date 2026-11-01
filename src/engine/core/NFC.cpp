@@ -7,7 +7,7 @@ const char *NFC::interface_path = "net/fishlabs/gof2hdallandroid2012/NativeFunct
 jobject g_pActivity;
 
 namespace {
-extern const char *deviceInfoPath;
+const char *deviceInfoPath = "net/fishlabs/ow_utils/DeviceInfo";
 }
 
 NFC::NFC() {
@@ -232,9 +232,4 @@ int NFC::getHeight() {
     jint value = g_pEnv->CallStaticIntMethod(cls, method);
     clearPendingException(g_pEnv);
     return value;
-}
-
-
-namespace {
-const char *deviceInfoPath = "net/fishlabs/ow_utils/DeviceInfo";
 }

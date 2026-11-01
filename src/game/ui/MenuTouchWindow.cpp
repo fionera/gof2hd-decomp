@@ -1,4 +1,5 @@
 #include "engine/core/ArrayReleaseClasses.h"
+#include "platform/android/GOF2HD2012.h"
 #include "game/ui/MenuTouchWindow.h"
 #include "engine/render/ImageFactory.h"
 #include "game/menu/ModStation.h"
@@ -229,12 +230,6 @@ static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); }
 
 // lint: void_ptr (external symbol; param type is mangling-load-bearing)
 
-
-// g_android_link_game_gp is the Google-Play "link game" flag (JniBridge.cpp)
-extern int g_android_link_game_gp;
-extern int g_android_gp_is_linked;
-extern int g_android_show_achievements;
-extern int g_android_show_leaderboards;
 
 // Globals::options is the raw OptionsRecord image; the menus access its fields by offset.
 static inline bool &optionFlag(int offset) { return *reinterpret_cast<bool *>(&Globals::options[offset]); }
