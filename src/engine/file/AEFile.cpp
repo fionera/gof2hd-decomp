@@ -191,9 +191,6 @@ void AEFile::collectFilesInPakFiles(String &path) {
 
     Close(0);
 }
-uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
-    return Open(path, OPEN_READ, handle);
-}
 bool AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle) { // lint: void_ptr ABI signature (Pv mangled)
     // lint: void_ptr ABI signature (Pv mangled)
     if (AEFile::fileInterface != nullptr && handle < AEFile::file->size()) {
@@ -433,6 +430,9 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
         AEFile::file->data()[0] = file;
     }
     return 1;
+}
+uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
+    return Open(path, OPEN_READ, handle);
 }
 uint32_t AEFile::OpenRead(const char *path, uint32_t *handle) {
     String string(path);
