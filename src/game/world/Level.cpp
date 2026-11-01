@@ -2253,15 +2253,6 @@ void Level::createMission() {
     }
     bool resetStation = false;
     switch (Globals::status->getStation()->getIndex()) {
-        case 102:
-        case 103:
-        case 104:
-            this->friendCount = 0;
-            this->hostileCount = Globals::rnd->nextInt(5) + 3;
-            raid = true;
-            raidRace = 8;
-            resetStation = true;
-            break;
         case 10:
         case 100:
         case 101:
@@ -2269,6 +2260,15 @@ void Level::createMission() {
             this->friendCount = 0;
             raid = false;
             this->hostileCount = 0;
+            resetStation = true;
+            break;
+        case 102:
+        case 103:
+        case 104:
+            this->friendCount = 0;
+            this->hostileCount = Globals::rnd->nextInt(5) + 3;
+            raid = true;
+            raidRace = 8;
             resetStation = true;
             break;
     }
