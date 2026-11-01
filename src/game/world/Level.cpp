@@ -2566,9 +2566,10 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6774, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
-            v = MatrixRotateVector(rotation, Vector{kBaseTurrets[k][3], kBaseTurrets[k][4], kBaseTurrets[k][5]});
+            const float *t = kBaseTurrets[k];
+            v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             gun->geometry->setRotation(v);
-            v = MatrixRotateVector(rotation, Vector{kBaseTurrets[k][0], kBaseTurrets[k][1], kBaseTurrets[k][2]});
+            v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = 1;
