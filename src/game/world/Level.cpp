@@ -2024,8 +2024,12 @@ void Level::createMission() {
                 ((PlayerFixedObject *) (*this->enemies)[1])->setMoving(false);
                 ((PlayerFixedObject *) (*this->enemies)[1])->setDockingType(1);
                 ((PlayerFixedObject *) (*this->enemies)[1])->setName(*Globals::gameText->getText(3209));
-                struct ConvoyCoords9 { int a, b, c, d, e, f, g, h, i; };
-                ConvoyCoords9 convoyCoords = {-1, -1, -1, 0, 0, 40000, -1, -1, -1};
+                // 9 ints. The trailing 1-element array is deliberate: it makes the
+                // type a "small array" for -fstack-protector-strong, which is the slot
+                // class the original's frame implies (this 36-byte slot is placed after
+                // the Matrix slot and before the plain 12-byte locals).
+                struct ConvoyCoords9 { int a, b, c, d, e, f, g, h, i[1]; };
+                ConvoyCoords9 convoyCoords = {-1, -1, -1, 0, 0, 40000, -1, -1, {-1}};
                 int waitTimes[3] = {10000, 0, 10000};
                 Array<KIPlayer *> *stops = new Array<KIPlayer *>();
                 ArraySetLength(3, *stops);

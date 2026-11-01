@@ -4211,3 +4211,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **MenuTouchWindow::draw 99.8 -> 100.0%, 13052 B** (`w3261`): restore the original switch-case
   order and the case-3 branch shape (302/297-line reorder). fuzzy_perfect 4494 -> 4495; still not
   linked-exact. Gate unchanged.
+- **Level::createMission 83.9 -> 84.3%, 17172 B** (`w3245`): put `convoyCoords[9]` in the same
+  small-array stack slot class as the original, which fixes the sp+260/sp+272 colouring.
+  Gate unchanged.
