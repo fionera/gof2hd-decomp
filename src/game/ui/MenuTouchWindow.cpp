@@ -326,8 +326,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             row = 2;
         }
         this->addButton(1, *Globals::gameText->getText(29), row, this->buttons, mainButtonOffset);
-        int next = row + 2;
         this->addButton(3, *Globals::gameText->getText(31), row + 1, this->buttons, mainButtonOffset);
+        int next = row + 2;
         if (Globals::iPad) {
             this->addButton(25, *Globals::gameText->getText(0), row + 2, this->buttons, mainButtonOffset);
             next = row + 3;
@@ -677,7 +677,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                              (int) ((double) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                               Globals::layout->field_0x1c * 3 +
                                               Globals::layout->field_0x2c_rowHeight * 6) +
-                                    (double) this->sliderSpacing * 2.5 + (double) sliderTop),
+                                    (double) this->sliderSpacing * 2.5 + (double) sliderTop2),
                              *(float *) &Globals::options[36]),
              *this->sliders);
     ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
@@ -685,7 +685,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                               Globals::layout->field_0x1c * 3 +
                                               Globals::layout->field_0x2c_rowHeight * 8) +
                                     (double) this->sliderSpacing * 2.5 + (double) this->sliderRowHeight +
-                                    (double) sliderTop),
+                                    (double) sliderTop2),
                              *(float *) &Globals::options[40]),
              *this->sliders);
     ArrayAdd(new TouchSlider(2, Globals::layout->buttonInsetX + this->metricC,
@@ -3237,9 +3237,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->leaderboardDialogShowing) {
                     int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 1)
-                        Globals::globals->reportLeaderboards();
-                    if (r == 0)
+                    if (r < 2)
                         Globals::globals->reportLeaderboards();
                     this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
@@ -3398,8 +3396,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->messageShowing = 1;
                     this->returnToMenuShowing = 1;
                     return 0;
-                }
-                if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
+                } else if (id == 53 && (*this->scrollEntries)[i]->OnTouchEnd(x, y)) {
                     MtwAppData *appData = (MtwAppData *) Globals::appManager->GetApplicationData();
                     appData->dlcMenuAckFlag = 0;
                     ((MtwAppData *) Globals::appManager->GetApplicationData())->dlcMenuRequestFlag = 1;
