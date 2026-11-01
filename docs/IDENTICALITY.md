@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4264, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4408, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -34,11 +34,16 @@ moved `g_levelXPTable`/`Status::checkForLevelUp` ahead of `kMissionCase`, making
 linked 4496 unchanged). The w3451 data-content pass then forced the original `.data` emission
 order for `gStoryFaces`/`gPirateFace` with a function-level `(void) gStoryFaces;` (byte 4254 ->
 4255), dropping `.data` differing bytes 260 -> 3 and `.data.rel.ro` 744 -> 670. The w3457
-`.data.rel.ro` content audit found the remaining 667 bytes are all `R_ARM_RELATIVE` address
-mirrors (646 B libc++abi `.text` vtables, 18 B `Level::createScene` `.rodata` table, 3 B `.bss`
+`.data.rel.ro` content audit found the then-remaining 667 bytes were all `R_ARM_RELATIVE`
+address mirrors (libc++abi `.text` vtables, 18 B `Level::createScene` `.rodata` table, 3 B `.bss`
 pointers); its libzip pass aligned `zip_file_strerror` to 4 bytes (byte 4263 -> 4264, all section
-sizes/bases unchanged). The first
-`.rodata` *content* divergence is now at 0x1fc390 (VMA); 13,266 bytes still differ. See
+sizes/bases unchanged). The w3460 libc++abi-placement pass then gave every archive member's
+empty-`.text` sentinel a 4-byte alignment (the original's TU starts), removed the 0x24-byte
+`levelTextAnchor` anchor and placed the `fallback_malloc.o`/`abort_message.o` markers next to
+their owners: **`.data` is now byte-identical (3 -> 0 differing bytes)** and `.data.rel.ro` drops
+667 -> 21 bytes (18 B `Level::createScene` `.rodata` table + 3 B `.bss` pointer order), byte
+4265 -> 4408. The first
+`.rodata` *content* divergence is now at 0x1fb7f8 (VMA); 13,121 bytes still differ. See
 `_work/reconstructions/data_content_round2_w3451.md`,
 `_work/reconstructions/rodata_content_map_round2.md`,
 `_work/reconstructions/rodata_group_order.md`, `_work/reconstructions/literal_pool_audit.md`
@@ -66,9 +71,9 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 14,515 content bytes still differ (first: 0x1fb8c8), all per-object table/string emission order. |
-| .ARM.exidx | 28,528 | 28,528 | **0** | exact: 3566 entries; CANTUNWIND 272, inline 856, extab 2438 all match. |
-| .ARM.extab | 156,312 | 156,312 | **0** | exact since the EH landing-pad split in `Level::createShip` (see `_work/reconstructions/exidx_extab_audit.md`). |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 13,121 content bytes still differ (first: 0x1fb7f8), all per-object table/string emission order. |
+| .ARM.exidx | 28,528 | 28,536 | **+8** | 3567 entries vs 3566 (CANTUNWIND 275 vs 272, inline 854 vs 856, extab 2438). The +1 entry is the open exidx/extab campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`). |
+| .ARM.extab | 156,312 | 156,300 | **-12** | 0xc under; the net -4 B is absorbed by `.rodata`'s 16-byte alignment, so `.rodata` base stays exact. Open campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`). |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8). |
@@ -85,11 +90,14 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%). The `.text` total is
    exact (0x1337c8); these are per-function body/register-allocation deltas, not missing code.
 2. **`.rodata` content.** Size and base are exact; output-group order is fixed (plain `.rodata`
-   now interleaves with the merge groups in input order). The first differing byte is 0x1fb8c8
-   (VMA); 14,515 bytes still differ, all per-object content/table ordering. 314 functions are
+   now interleaves with the merge groups in input order). The first differing byte is 0x1fb7f8
+   (VMA); 13,121 bytes still differ, all per-object content/table ordering. 314 functions are
    instruction-identical and differ only by a literal-pool word.
-3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are both exact; the last 0x24 B came from an EH
-   landing-pad split in `Level::createShip`.
+3. **EH tables.** `.ARM.exidx` is +8 B (3567 vs 3566 entries; CANTUNWIND 275 vs 272, inline
+   854 vs 856, extab 2438) and `.ARM.extab` is -0xc; the net -4 B is absorbed by `.rodata`'s
+   16-byte alignment. The w3460 archive-marker pass restored the original CANTUNWIND entries at
+   `fallback_malloc.o`/`abort_message.o`, but the exidx/extab content is not yet one-for-one;
+   matching it is the next campaign (see `_work/reconstructions/libcxxabi_text_placement_w3460.md`).
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now

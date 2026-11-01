@@ -18,7 +18,11 @@ This script makes renamed copies of every link input:
     the previous TU ends at 2 mod 4.  gold honours a zero-size section's alignment, so the
     marker is what reproduces the original address;
   * each archive is unpacked and re-packed, with every member's zero-size `.text` renamed to
-    `.text.tuend.a<AA>m<MMM>` with alignment 1.
+    `.text.tuend.a<AA>m<MMM>` with alignment 4.  The original's archive TUs (libzip, libc++abi,
+    ...) start on a 4-byte boundary; a clang function section is only 2-byte aligned, so the
+    zero-size marker's alignment is what reproduces the next TU's first-function address.
+    (This is the `-0x24` libc++abi `.text` shift: without it the libzip block is 0x1c bytes
+    short, and libcrypto/libc++abi slide 0x20/0x24 earlier.)
 
 The copies are written under <out-dir>; `link_order.rsp` and `archives.rsp` in that directory
 list them, and gen_section_order.py inserts each marker after its owner's last `.text.*`
@@ -158,7 +162,8 @@ def main() -> int:
             src = os.path.join(mdir, f"m{mi:03d}_{name}")
             open(src, "wb").write(body)
             dst = src + ".marked"
-            if rename_empty_text(objcopy, src, dst, f".text.tuend.a{ai:03d}m{mi:03d}"):
+            if rename_empty_text(objcopy, src, dst, f".text.tuend.a{ai:03d}m{mi:03d}",
+                                 align=4):
                 markers += 1
             else:
                 for key, newname in CRYPTO_TEXT_RENAME.items():

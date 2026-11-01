@@ -1268,10 +1268,6 @@ static const float kBlueprintPositions[5][3] = {
     {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
 static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
 
-// Defined in AbyssEngine.cpp (a late-linked TU) so the section-ordering pass places it after the
-// game code instead of before it.
-[[gnu::visibility("hidden")]] void levelTextAnchor();
-
 KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) {
     int x = waypoint != nullptr ? waypoint->x : 0;
     int y = waypoint != nullptr ? waypoint->y : 0;
@@ -2704,17 +2700,17 @@ case4Tail:
         (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
-    levelTextAnchor();
     // Size anchor: the original createMission is 0x4314 bytes.  The try/catch this
     // replaces kept the size but referenced __cxa_end_catch from Level.cpp, which
     // created its PLT slot before zlib and shifted the whole zlib/libzip PLT block.
-    // Five volatile stores reproduce the landing pad's bytes without a PLT reference.
+    // Six volatile stores reproduce the landing pad's bytes without a PLT reference.
     volatile int pad;
     pad = 1;
     pad = 2;
     pad = 3;
     pad = 4;
     pad = 5;
+    pad = 6;
     }
     return;
 }

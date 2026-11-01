@@ -266,12 +266,10 @@ def main() -> int:
         pos.setdefault(n, []).append(i)
     inserts, tail = {}, []
     for markers, seq in marker_members:
-        if seq and seq[0] in LOCAL_ONLY_AFTER:
-            # Keep these members' empty-TU sentinels in the trailing group: the original
-            # link's late-pulled members have no ordered witness, and leaving the markers
-            # adjacent to the relocated functions adds two exidx entries, moving .rodata.
-            tail.extend(markers)
-            continue
+        # Place every member's empty-TU sentinel next to its owner, including the
+        # LOCAL_ONLY_AFTER members (fallback_malloc.o / abort_message.o).  The original's
+        # CANTUNWIND entries sit at those members' first-function addresses; keeping them in
+        # the trailing group merged two of them away and left .ARM.exidx 0x10 short.
         idxs = [i for t in seq for i in pos.get(t, [])]
         if idxs:
             # ApplicationManager.cpp has two function blocks in the original order; its

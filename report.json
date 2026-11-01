@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4265,
+  "byte_exact": 4408,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -754,7 +754,7 @@
   {
    "name": "SHA224",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -762,7 +762,7 @@
   {
    "name": "SHA224_Final",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -770,7 +770,7 @@
   {
    "name": "SHA224_Init",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -778,7 +778,7 @@
   {
    "name": "SHA224_Update",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -786,7 +786,7 @@
   {
    "name": "SHA256",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -794,7 +794,7 @@
   {
    "name": "SHA256_Final",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1048,
    "usize": 1048
@@ -802,7 +802,7 @@
   {
    "name": "SHA256_Init",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -810,7 +810,7 @@
   {
    "name": "SHA256_Transform",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -818,7 +818,7 @@
   {
    "name": "SHA256_Update",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 272,
    "usize": 272
@@ -33874,7 +33874,7 @@
   {
    "name": "_ZNKSt10bad_typeid4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33882,7 +33882,7 @@
   {
    "name": "_ZNKSt13bad_exception4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33890,7 +33890,7 @@
   {
    "name": "_ZNKSt16bad_array_length4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33898,7 +33898,7 @@
   {
    "name": "_ZNKSt20bad_array_new_length4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33906,7 +33906,7 @@
   {
    "name": "_ZNKSt8bad_cast4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33914,7 +33914,7 @@
   {
    "name": "_ZNKSt9bad_alloc4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33922,7 +33922,7 @@
   {
    "name": "_ZNKSt9exception4whatEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -33930,7 +33930,7 @@
   {
    "name": "_ZNSt10bad_typeidC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -33938,7 +33938,7 @@
   {
    "name": "_ZNSt10bad_typeidC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -33946,7 +33946,7 @@
   {
    "name": "_ZNSt10bad_typeidD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -33954,7 +33954,7 @@
   {
    "name": "_ZNSt10bad_typeidD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -33962,7 +33962,7 @@
   {
    "name": "_ZNSt10bad_typeidD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -33970,7 +33970,7 @@
   {
    "name": "_ZNSt13bad_exceptionD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -33994,7 +33994,7 @@
   {
    "name": "_ZNSt16bad_array_lengthC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34002,7 +34002,7 @@
   {
    "name": "_ZNSt16bad_array_lengthC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34010,7 +34010,7 @@
   {
    "name": "_ZNSt16bad_array_lengthD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34034,7 +34034,7 @@
   {
    "name": "_ZNSt20bad_array_new_lengthC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34042,7 +34042,7 @@
   {
    "name": "_ZNSt20bad_array_new_lengthC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34050,7 +34050,7 @@
   {
    "name": "_ZNSt20bad_array_new_lengthD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34074,7 +34074,7 @@
   {
    "name": "_ZNSt8bad_castC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34082,7 +34082,7 @@
   {
    "name": "_ZNSt8bad_castC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34090,7 +34090,7 @@
   {
    "name": "_ZNSt8bad_castD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34098,7 +34098,7 @@
   {
    "name": "_ZNSt8bad_castD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34106,7 +34106,7 @@
   {
    "name": "_ZNSt8bad_castD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34114,7 +34114,7 @@
   {
    "name": "_ZNSt9bad_allocC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34122,7 +34122,7 @@
   {
    "name": "_ZNSt9bad_allocC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34130,7 +34130,7 @@
   {
    "name": "_ZNSt9bad_allocD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34154,7 +34154,7 @@
   {
    "name": "_ZNSt9exceptionD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34178,7 +34178,7 @@
   {
    "name": "_ZNSt9type_infoD0Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34202,7 +34202,7 @@
   {
    "name": "_ZSt10unexpectedv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -34210,7 +34210,7 @@
   {
    "name": "_ZSt13get_terminatev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -34218,7 +34218,7 @@
   {
    "name": "_ZSt13set_terminatePFvvE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -34226,7 +34226,7 @@
   {
    "name": "_ZSt14get_unexpectedv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -34234,7 +34234,7 @@
   {
    "name": "_ZSt14set_unexpectedPFvvE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -34242,7 +34242,7 @@
   {
    "name": "_ZSt15get_new_handlerv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -34250,7 +34250,7 @@
   {
    "name": "_ZSt15set_new_handlerPFvvE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -34258,7 +34258,7 @@
   {
    "name": "_ZSt9terminatev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 84,
    "usize": 84
@@ -34266,7 +34266,7 @@
   {
    "name": "_ZdaPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34274,7 +34274,7 @@
   {
    "name": "_ZdaPvRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34282,7 +34282,7 @@
   {
    "name": "_ZdaPvSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34290,7 +34290,7 @@
   {
    "name": "_ZdaPvSt11align_val_tRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34298,7 +34298,7 @@
   {
    "name": "_ZdaPvj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34306,7 +34306,7 @@
   {
    "name": "_ZdaPvjSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -34314,7 +34314,7 @@
   {
    "name": "_ZdlPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34322,7 +34322,7 @@
   {
    "name": "_ZdlPvRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34330,7 +34330,7 @@
   {
    "name": "_ZdlPvSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34338,7 +34338,7 @@
   {
    "name": "_ZdlPvSt11align_val_tRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34346,7 +34346,7 @@
   {
    "name": "_ZdlPvj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34354,7 +34354,7 @@
   {
    "name": "_ZdlPvjSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -34362,7 +34362,7 @@
   {
    "name": "_Znaj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34370,7 +34370,7 @@
   {
    "name": "_ZnajRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -34378,7 +34378,7 @@
   {
    "name": "_ZnajSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4,
    "usize": 4
@@ -34386,7 +34386,7 @@
   {
    "name": "_ZnajSt11align_val_tRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -34394,7 +34394,7 @@
   {
    "name": "_Znwj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -34402,7 +34402,7 @@
   {
    "name": "_ZnwjRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -34410,7 +34410,7 @@
   {
    "name": "_ZnwjSt11align_val_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -34418,7 +34418,7 @@
   {
    "name": "_ZnwjSt11align_val_tRKSt9nothrow_t",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -34426,7 +34426,7 @@
   {
    "name": "__cxa_allocate_dependent_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 30,
    "usize": 30
@@ -34434,7 +34434,7 @@
   {
    "name": "__cxa_allocate_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 42,
    "usize": 42
@@ -34442,7 +34442,7 @@
   {
    "name": "__cxa_begin_catch",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 112,
    "usize": 112
@@ -34450,7 +34450,7 @@
   {
    "name": "__cxa_begin_cleanup",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -34458,7 +34458,7 @@
   {
    "name": "__cxa_call_unexpected",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 408,
    "usize": 408
@@ -34466,7 +34466,7 @@
   {
    "name": "__cxa_current_exception_type",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -34474,7 +34474,7 @@
   {
    "name": "__cxa_current_primary_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -34482,7 +34482,7 @@
   {
    "name": "__cxa_decrement_exception_refcount",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 64,
    "usize": 64
@@ -34490,7 +34490,7 @@
   {
    "name": "__cxa_deleted_virtual",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34498,7 +34498,7 @@
   {
    "name": "__cxa_demangle",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 568,
    "usize": 568
@@ -34506,7 +34506,7 @@
   {
    "name": "__cxa_end_catch",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -34530,7 +34530,7 @@
   {
    "name": "__cxa_free_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34546,7 +34546,7 @@
   {
    "name": "__cxa_get_globals",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -34554,7 +34554,7 @@
   {
    "name": "__cxa_get_globals_fast",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -34562,7 +34562,7 @@
   {
    "name": "__cxa_guard_abort",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -34570,7 +34570,7 @@
   {
    "name": "__cxa_guard_acquire",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -34578,7 +34578,7 @@
   {
    "name": "__cxa_guard_release",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -34594,7 +34594,7 @@
   {
    "name": "__cxa_pure_virtual",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34602,7 +34602,7 @@
   {
    "name": "__cxa_rethrow",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -34610,7 +34610,7 @@
   {
    "name": "__cxa_rethrow_primary_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -34618,7 +34618,7 @@
   {
    "name": "__cxa_throw",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 92,
    "usize": 92
@@ -34626,7 +34626,7 @@
   {
    "name": "__cxa_uncaught_exception",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -34634,7 +34634,7 @@
   {
    "name": "__cxa_uncaught_exceptions",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -34642,7 +34642,7 @@
   {
    "name": "__dynamic_cast",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 208,
    "usize": 208
@@ -34650,7 +34650,7 @@
   {
    "name": "__gxx_personality_v0",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 348,
    "usize": 348
@@ -34746,7 +34746,7 @@
   {
    "name": "_zip_cdir_free",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -34754,7 +34754,7 @@
   {
    "name": "_zip_cdir_grow",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -34762,7 +34762,7 @@
   {
    "name": "_zip_cdir_new",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 98,
    "usize": 98
@@ -34770,7 +34770,7 @@
   {
    "name": "_zip_cdir_write",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 196,
    "usize": 196
@@ -34778,7 +34778,7 @@
   {
    "name": "_zip_dirent_finalize",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -34794,7 +34794,7 @@
   {
    "name": "_zip_dirent_read",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 724,
    "usize": 724
@@ -34802,7 +34802,7 @@
   {
    "name": "_zip_dirent_torrent_normalize",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 216,
    "usize": 216
@@ -34810,7 +34810,7 @@
   {
    "name": "_zip_dirent_write",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 344,
    "usize": 344
@@ -34818,7 +34818,7 @@
   {
    "name": "_zip_entry_free",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -34826,7 +34826,7 @@
   {
    "name": "_zip_entry_new",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 118,
    "usize": 118
@@ -34850,7 +34850,7 @@
   {
    "name": "_zip_error_fini",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 18,
    "usize": 18
@@ -34858,7 +34858,7 @@
   {
    "name": "_zip_error_get",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 34,
    "usize": 34
@@ -34882,7 +34882,7 @@
   {
    "name": "_zip_error_strerror",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 280,
    "usize": 280
@@ -34898,7 +34898,7 @@
   {
    "name": "_zip_file_get_offset",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -34914,7 +34914,7 @@
   {
    "name": "_zip_free",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -34938,7 +34938,7 @@
   {
    "name": "_zip_mkstemp",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -34946,7 +34946,7 @@
   {
    "name": "_zip_name_locate",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -34954,7 +34954,7 @@
   {
    "name": "_zip_new",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 74,
    "usize": 74
@@ -34978,7 +34978,7 @@
   {
    "name": "_zip_replace",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 106,
    "usize": 106
@@ -34986,7 +34986,7 @@
   {
    "name": "_zip_set_name",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -34994,7 +34994,7 @@
   {
    "name": "_zip_source_file_or_p",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 152,
    "usize": 152
@@ -35002,7 +35002,7 @@
   {
    "name": "_zip_unchange",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -35010,7 +35010,7 @@
   {
    "name": "_zip_unchange_data",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -35882,7 +35882,7 @@
   {
    "name": "zip_add_dir",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -35890,7 +35890,7 @@
   {
    "name": "zip_close",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2532,
    "usize": 2532
@@ -35898,7 +35898,7 @@
   {
    "name": "zip_delete",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -35914,7 +35914,7 @@
   {
    "name": "zip_error_get",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35922,7 +35922,7 @@
   {
    "name": "zip_error_get_sys_type",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -35930,7 +35930,7 @@
   {
    "name": "zip_error_to_str",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -35938,7 +35938,7 @@
   {
    "name": "zip_fclose",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 110,
    "usize": 110
@@ -35946,7 +35946,7 @@
   {
    "name": "zip_file_error_clear",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35954,7 +35954,7 @@
   {
    "name": "zip_file_error_get",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35970,7 +35970,7 @@
   {
    "name": "zip_fopen",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 34,
    "usize": 34
@@ -35986,7 +35986,7 @@
   {
    "name": "zip_fread",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 282,
    "usize": 282
@@ -36010,7 +36010,7 @@
   {
    "name": "zip_get_file_comment",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -36034,7 +36034,7 @@
   {
    "name": "zip_name_locate",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -36042,7 +36042,7 @@
   {
    "name": "zip_open",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1200,
    "usize": 1200
@@ -36050,7 +36050,7 @@
   {
    "name": "zip_rename",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -36058,7 +36058,7 @@
   {
    "name": "zip_replace",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -36066,7 +36066,7 @@
   {
    "name": "zip_set_archive_comment",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -36082,7 +36082,7 @@
   {
    "name": "zip_set_file_comment",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 116,
    "usize": 116
@@ -36098,7 +36098,7 @@
   {
    "name": "zip_source_file",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -36106,7 +36106,7 @@
   {
    "name": "zip_source_filep",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 54,
    "usize": 54
@@ -36114,7 +36114,7 @@
   {
    "name": "zip_source_free",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -36122,7 +36122,7 @@
   {
    "name": "zip_source_function",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 58,
    "usize": 58
@@ -36130,7 +36130,7 @@
   {
    "name": "zip_source_zip",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 324,
    "usize": 324
@@ -36138,7 +36138,7 @@
   {
    "name": "zip_stat",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -36146,7 +36146,7 @@
   {
    "name": "zip_stat_index",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 202,
    "usize": 202
@@ -36162,7 +36162,7 @@
   {
    "name": "zip_strerror",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -36170,7 +36170,7 @@
   {
    "name": "zip_unchange",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -36178,7 +36178,7 @@
   {
    "name": "zip_unchange_all",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 50,
    "usize": 50
@@ -36186,7 +36186,7 @@
   {
    "name": "zip_unchange_archive",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 30,
    "usize": 30
