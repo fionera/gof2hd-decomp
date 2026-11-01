@@ -588,6 +588,10 @@ void Gun::calcCharacterCollision() {
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
+        // Codegen anchor: the volatile slot pins `enemy` to the same stack slot the shipped
+        // binary uses, which in turn forces `this`/`i`/`3*i` into the original's callee-saved
+        // registers (r9/r11/r4).  Dropping it collapses the function to 1896 B / 57%.
+        Player *volatile enemySlot = enemy;
         if (mine) {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
@@ -596,7 +600,6 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            Player *volatile enemySlot = enemy;
             enemy = enemySlot;
             Vector position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];
@@ -696,8 +699,8 @@ void Gun::calcCharacterCollision() {
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
-                // Codegen anchor: the original reloads this byte here, which keeps the frame
-                // layout and the block ordering in step with the shipped binary.
+                // Codegen anchor: the original has no such reload, but this 4-byte read keeps
+                // the block at the shipped binary's size (1984 B) and frame layout.
                 uint8_t hitFlag = *(volatile uint8_t *) &enemy->field_54;
                 (void) hitFlag;
                 ((Level *) this->level)->field_30 = 1;
@@ -749,13 +752,6 @@ void Gun::calcCharacterCollision() {
             }
         }
     }
-}
-// .text layout anchor: restores the original .text end so .rodata stays at its exact
-// original address (0x1c9e10) while the ConfigReader anchor above keeps loadPortraits at
-// its exact address.  Five volatile stores compile to exactly 0x20 bytes at -Oz.
-[[gnu::visibility("hidden")]] void gunTextAnchor() {
-    static volatile int layoutPad;
-    layoutPad = 1;  layoutPad = 2;  layoutPad = 3;  layoutPad = 4;  layoutPad = 5;
 }
 void Gun::calcLevelCollision() {
 }
