@@ -51,48 +51,506 @@ static inline unsigned char *firstListEntry(unsigned char *list) {
     return reinterpret_cast<unsigned char **>(arrayData(list))[0];
 }
 
-void LevelScript::render3D() {
-    if (m_pGeometry6) m_pGeometry6->render();
-    if (m_pGeometry5) m_pGeometry5->render();
-    if (m_pGeometry0) m_pGeometry0->render();
-    if (m_pGeometry1) m_pGeometry1->render();
-    if (m_pGeometry2) m_pGeometry2->render();
-    if (m_pGeometry3) m_pGeometry3->render();
+LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera)
+    : m_tempVec(), m_camVec(), m_dirVec() {
+    m_pHud = hud;
+    m_pRadar = radar;
+    m_pCamera = camera;
+    m_pLevel = level;
+    hud->drawTitleImage(false);
+    m_nState = 0;
+    m_bStartSequence = 1;
+    m_bStartSequenceOver = 0;
+    field_0x10 = 0;
+    m_bCinematicBreak = 1;
+    m_nTimeLimit = level->getTimeLimit();
+    m_nScriptTime = 0;
+    field_0x24 = 0;
+    field_0x8c = 0;
+    m_nScriptTimerA = 0;
+    m_nScriptTimerB = 0;
+    m_nFlashCountdown = 0;
+    m_bRenderParticles = 0;
+    field_0xa9 = 0;
+    m_pParticleGeom0 = nullptr;
+    m_pParticleGeom1 = nullptr;
+    m_pParticleGeom2 = nullptr;
+    m_pGeometry0 = nullptr;
+    m_pGeometry1 = nullptr;
+    m_pGeometry2 = nullptr;
+    m_pGeometry3 = nullptr;
+    m_pExplosion = nullptr;
+    m_pGeometry4 = nullptr;
+    m_pGeometry5 = nullptr;
+    m_pGeometry6 = nullptr;
+    field_0x12 = 0;
+    camera->setLookAtCam(true);
 
-    if (m_pExplosion && m_pExplosion->isPlaying()) {
-        m_pExplosion->render();
+    if (level->getPlayer() == nullptr)
+        m_bStartSequence = 0;
+    else
+        level->getPlayer()->player->setVulnerable(false);
+    level->getPlayer()->setCollide(false);
+
+
+    if (Globals::status->getCurrentCampaignMission() == 0) {
+        m_nScriptTimerA = 0;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->player->setVulnerable(true);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setPosition(Vector{-1000.0f, -500.0f, -40000.0f});
+        level->getPlayer()->setPosition(0.0f, 0.0f, -60000.0f);
+        level->getPlayer()->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+        for (int i = 0; i < 3; i++) {
+            (*level->getEnemies())[i]->setToSleep();
+            (*level->getEnemies())[i]->geometry->setVisible(false);
+            ((PlayerFighter *) (*level->getEnemies())[i])->field_0x128 = 0;
+            (*level->getEnemies())[i]->player->enemyFlagsLo = 0;
+        }
+        level->lodManager->forceUpdate(30, false);
+        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
+    } else if (Globals::status->getCurrentCampaignMission() == 1) {
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setRotation(0.462f, 0.462f, 1.5339f);
+        level->getPlayer()->setFreeze(true);
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
+        level->getPlayer()->setExhaustVisible(false);
+        level->getPlayer()->StopEngineSound();
+        (*level->getEnemies())[0]->StopEngineSound();
+        camera->setPosition(1500.0f, 1600.0f, -3000.0f);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setTarget(level->getPlayer()->geometry);
+        Globals::layout->startFade(false, 255, 5000);
+    } else if (Globals::status->getCurrentCampaignMission() == 81 && Globals::status->inAlienOrbit()) {
+        m_nScriptTimerA = 0;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->freeze = 1;
+        level->getPlayer()->player->setVulnerable(false);
+        level->getPlayer()->setVisible(false);
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setPosition(Vector{-20000.0f, 800.0f, 120000.0f});
+        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
+        ((PlayerStation *) (*level->getEnemies())[0])->rootGeometry->setVisible(false);
+        level->lodManager->forceUpdate(30, false);
+        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
+        m_pGeometry5->setScaling(30.0f, 30.0f, 30.0f);
+    } else if (Globals::status->getCurrentCampaignMission() == 78) {
+        camera->setPosition(2000.0f, -1500.0f, 16000.0f);
+        field_0x24 = 0;
+        m_bStartSequence = 0;
+        m_bStartSequenceOver = 1;
+        level->getPlayer()->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
+        m_nState = 1;
+        m_bCinematicBreak = 1;
+        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
+        m_pGeometry5->setScaling(20.0f, 20.0f, 20.0f);
+    } else if (Globals::status->getCurrentCampaignMission() == 89) {
+        m_nScriptTimerA = 0;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->freeze = 1;
+        level->getPlayer()->player->setVulnerable(false);
+        level->getPlayer()->setVisible(false);
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        m_pGeometry4 = new AEGeometry(Globals::Canvas);
+        m_pGeometry4->setPosition((*level->getEnemies())[1]->getPosition());
+        m_pGeometry4->setDirection(-level->getStarSystem()->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
+        m_pGeometry4->moveForward(-100000.0f);
+        m_pGeometry4->translate(m_pGeometry4->getRightVector() * 200000.0f);
+        camera->setTarget(m_pGeometry4);
+        camera->setPosition((*level->getEnemies())[1]->getPosition());
+        camera->translate(10000.0f, 1500.0f, -20000.0f);
+        (*level->getEnemies())[0]->geometry->setPosition(
+                Vector{-25000.0f, 800.0f, 120000.0f} + 1000.0f * level->getStarSystem()->getLightDirection());
+        (*level->getEnemies())[0]->geometry->setDirection(level->getStarSystem()->getLightDirection(),
+                                                         Vector{0.0f, 1.0f, 0.0f});
+        (*level->getEnemies())[0]->geometry->translate(Vector{3000.0f, 0.0f, 3000.0f});
+        m_pGeometry6 = new AEGeometry(14229, Globals::Canvas, false);
+        m_pGeometry6->setScaling(1.0f, 1.0f, 500000.0f);
+        m_nState = 1;
+        level->lodManager->forceUpdate(30, false);
+    } else if (Globals::status->getCurrentCampaignMission() == 105 && Globals::status->inSupernovaOrbit()) {
+        m_bCinematicBreak = 1;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->setCollide(false);
+        m_bStartSequence = 0;
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setTarget(level->getPlayer()->geometry);
+        camera->setPosition((*level->getEnemies())[1]->getPosition());
+        camera->translate(5000.0f, 1500.0f, -20000.0f);
+        camera->setPosition(level->getPlayer()->getPosition() + level->getPlayer()->GetDirVector() * -2400.0f +
+                            level->getPlayer()->GetUpVector() * 500.0f);
+        level->getPlayer()->player->setVulnerable(true);
+        if (!Level::doInstantJump)
+            setAutoPilotToProgrammedStation();
+        m_nState = 1;
+        m_nScriptTimerA = 0;
+    } else if (Globals::status->getCurrentCampaignMission() == 106) {
+        level->getPlayer()->setPosition(300000.0f, 0.0f, 300000.0f);
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->freeze = 1;
+        level->getPlayer()->player->setVulnerable(false);
+        Vector lightDir = VectorNormalize(level->getStarSystem()->getLightDirection());
+        level->getPlayer()->geometry->setDirection(lightDir, Vector{0.0f, 1.0f, 0.0f});
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setPosition(level->getPlayer()->getPosition() + Vector{2200.0f, 1300.0f, -4000.0f});
+        m_bCinematicBreak = 1;
+        Globals::layout->startFade(false, -1, 8000);
+        m_nState = 1;
+    } else if (Globals::status->getCurrentCampaignMission() == 144) {
+        m_pGeometry4 = new AEGeometry(Globals::Canvas);
+        m_pGeometry4->setPosition(30000.0f, 10000.0f, 160000.0f);
+        m_pGeometry4->setDirection(Vector{1.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+        m_bCinematicBreak = 1;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->setCollide(false);
+        level->getPlayer()->setActive(false);
+        level->getPlayer()->setVisible(false);
+        level->getPlayer()->setFreeze(true);
+        m_bStartSequence = 0;
+        m_bStartSequenceOver = 1;
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        camera->setLookAtCam(true);
+        camera->setTarget(m_pGeometry4);
+        m_tempVec = (*level->getEnemies())[0]->getPosition();
+        m_tempVec += Vector{-4600.0f, 1000.0f, -4300.0f};
+        camera->setPosition(m_tempVec);
+        if (!Level::doInstantJump)
+            setAutoPilotToProgrammedStation();
+        m_nState = 1;
+        m_nScriptTimerA = 0;
+    } else if (Globals::status->getCurrentCampaignMission() == 131 && !Globals::status->inAlienOrbit() &&
+               ((Station *) Globals::status->getStation())->getIndex() == 112) {
+        m_bCinematicBreak = 1;
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->setCollide(false);
+        level->getPlayer()->setPosition(-65000.0f, 0.0f, 95000.0f);
+        level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                   Vector{0.0f, 1.0f, 0.0f});
+        m_bStartSequence = 0;
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setTarget(level->getPlayer()->geometry);
+        camera->setPosition(level->getPlayer()->getPosition() - level->getPlayer()->GetDirVector() * 2400.0f +
+                            level->getPlayer()->GetUpVector() * 500.0f -
+                            level->getPlayer()->geometry->getRightVector() * 600.0f);
+        camera->update(10);
+        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+        Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
+        m_tempVec = MatrixGetPosition(local);
+        camera->setFixed(true);
+        MatrixSetTranslation(local, m_tempVec);
+        camera->setLocal(local);
+        if (!Level::doInstantJump)
+            setAutoPilotToProgrammedStation();
+        m_nState = 1;
+        m_nScriptTimerA = 0;
+    } else if (Globals::status->getCurrentCampaignMission() == 158 && !Globals::status->inAlienOrbit() &&
+               ((Station *) Globals::status->getStation())->getIndex() == 111) {
+        m_pGeometry4 = new AEGeometry(Globals::Canvas);
+        m_pGeometry4->setDirection(Vector{1.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
+        m_bStartSequence = 0;
+        m_bStartSequenceOver = 1;
+        level->getPlayer()->setPosition(-50000.0f, 0.0f, 15000.0f);
+        hud->visible = 0;
+        radar->enabled = 0;
+        level->getPlayer()->setFreeze(true);
+        level->getPlayer()->player->setVulnerable(false);
+        Vector lightDir = VectorNormalize(level->getStarSystem()->getLightDirection());
+        level->getPlayer()->geometry->setDirection(lightDir, Vector{0.0f, 1.0f, 0.0f});
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setPosition(level->getPlayer()->getPosition() + Vector{-28000.0f, 500.0f, 8500.0f});
+        m_pGeometry4->setPosition(*camera->getPosition());
+        m_pGeometry4->setDirection(VectorNormalize(lightDir), Vector{0.0f, 1.0f, 0.0f});
+        m_pGeometry4->moveForward(50000.0f);
+        camera->setTarget(m_pGeometry4);
+        m_bCinematicBreak = 1;
+        Globals::layout->startFade(false, -1, 8000);
+        Array<KIPlayer *> *enemies = level->getEnemies();
+        (*enemies)[0]->player->setEnemies(nullptr);
+        (*enemies)[0]->player->addEnemy(level->getPlayer()->player);
+        for (int i = 1; i < 4; i++) {
+            (*enemies)[i]->player->setEnemies(nullptr);
+            (*enemies)[i]->player->setEnemy(level->getPlayer()->player);
+            Gun *gun = (*(*(*enemies)[i]->player->guns)[0])[0];
+            gun->damage = (int) ((float) gun->damage * 0.3f);
+            if (level->field_b0 != nullptr) {
+                for (unsigned j = 0; j < level->field_b0->size(); j++) {
+                    (*enemies)[i]->player->addEnemy((*level->field_b0)[j]->player);
+                    (*level->field_b0)[j]->player->addEnemy((*enemies)[i]->player);
+                }
+            }
+        }
+        (*enemies)[0]->setActive(false);
+        (*enemies)[0]->setVisible(false);
+        level->getPlayer()->setPosition(m_pGeometry4->getPosition());
+        level->getPlayer()->geometry->setDirection(
+                VectorNormalize(*camera->getPosition() - m_pGeometry4->getPosition() + Vector{20000.0f, 0.0f, 0.0f}),
+                Vector{0.0f, 1.0f, 0.0f});
+        level->getPlayer()->geometry->moveForward(30000.0f);
+        level->getPlayer()->setSpeed(0.1f);
+        m_nState = 1;
+    } else {
+        unsigned char streamOut = Level::initStreamOutPosition;
+        int range = streamOut == 0 ? 2000 : 500;
+        m_tempVec.x = (float) (Globals::rnd->nextInt(range) + 500);
+        m_tempVec.y = (float) (Globals::rnd->nextInt(range) + 500);
+        m_tempVec.z = streamOut == 0 ? 9000.0f : 7000.0f;
+        if (Globals::rnd->nextInt(2) == 0)
+            m_tempVec.x = -m_tempVec.x;
+        if (Globals::rnd->nextInt(2) == 0)
+            m_tempVec.y = -m_tempVec.y;
+
+        if (Globals::status->getCurrentCampaignMission() == 48) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 55000.0f);
+            Vector dir = level->getPlayer()->geometry->getDirection();
+            dir.x += 0.00001f;
+            level->getPlayer()->geometry->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+            level->getPlayer()->setAutoPilot((*level->getLandmarks())[0]);
+        } else if (Globals::status->getCurrentCampaignMission() == 65 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 170000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+            Vector pos = level->getPlayer()->getPosition();
+            pos.x -= 3000.0f;
+            (*level->getEnemies())[0]->setPosition(pos.x, pos.y, pos.z);
+            (*level->getEnemies())[0]->geometry->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 87 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 210000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 91 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, -130000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 92 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 200000.0f);
+            level->getPlayer()->geometry->setDirection(
+                    VectorNormalize((*level->getEnemies())[3]->getPosition() - level->getPlayer()->getPosition()),
+                    Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 102 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(90000.0f, 6000.0f, 150000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 123 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 180000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if ((Globals::status->getCurrentCampaignMission() > 84 ||
+                    Globals::status->getCurrentCampaignMission() == 135) &&
+                   !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() == 103) {
+            level->getPlayer()->setPosition(70000.0f, 0.0f, 100000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 114 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, -120000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 137 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(20000.0f, 0.0f, 150000.0f);
+            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
+                                                       Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(20000.0f, 0.0f, 190000.0f);
+            level->getPlayer()->geometry->setDirection(
+                    VectorNormalize((*level->getEnemies())[1]->getPosition() - level->getPlayer()->getPosition()),
+                    Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->getCurrentCampaignMission() == 142 && !Globals::status->inAlienOrbit() &&
+                   ((Station *) Globals::status->getStation())->getIndex() ==
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+            level->getPlayer()->setPosition(60000.0f, 0.0f, 120000.0f);
+            level->getPlayer()->geometry->setDirection(
+                    VectorNormalize(((Route *) (intptr_t) level->getPlayer()->getRoute())->getWaypoint(0)->getPosition() -
+                                    level->getPlayer()->getPosition()),
+                    Vector{0.0f, 1.0f, 0.0f});
+            (*level->getEnemies())[0]->setPosition(level->getPlayer()->getPosition() +
+                                                   level->getPlayer()->geometry->getRightVector() * 2100.0f +
+                                                   level->getPlayer()->geometry->getDirection() * 2000.0f);
+            (*level->getEnemies())[0]->geometry->setDirection(level->getPlayer()->GetDirVector(),
+                                                             Vector{0.0f, 1.0f, 0.0f});
+        } else if (Globals::status->inAlienOrbit() && Globals::status->getCurrentCampaignMission() == 154) {
+            level->getPlayer()->setPosition(0.0f, 0.0f, 140000.0f);
+            (*level->getEnemies())[0]->setPosition(level->getPlayer()->getPosition() +
+                                                   level->getPlayer()->geometry->getRightVector() * 2600.0f +
+                                                   level->getPlayer()->geometry->getDirection() * 4000.0f);
+            (*level->getEnemies())[0]->geometry->setDirection(level->getPlayer()->GetDirVector(),
+                                                             Vector{0.0f, 1.0f, 0.0f});
+            (*level->getEnemies())[0]->player->setEnemy((*level->getEnemies())[1]->player);
+            for (unsigned i = 0; i < level->getEnemies()->size(); i++) {
+                if ((*level->getEnemies())[i]->field_0x3e)
+                    (*level->getEnemies())[i]->player->setEnemies(nullptr);
+                if ((*level->getEnemies())[i]->shipGroup == 9)
+                    (*level->getEnemies())[i]->field_0x25 = 0;
+            }
+        }
+
+        Matrix playerMatrix = level->getPlayer()->geometry->getMatrix();
+        m_camVec = MatrixRotateVector(playerMatrix, m_tempVec);
+        m_camVec += level->getPlayer()->geometry->getPosition();
+        camera->setPosition(m_camVec);
+        bool inAlienOrbit = Globals::status->inAlienOrbit();
+        if (inAlienOrbit || Level::comingFromAlienWorld) {
+            if (Globals::status->getCurrentCampaignMission() <= 42) {
+                m_tempVec = level->getPlayer()->getPosition();
+                m_dirVec = level->getPlayer()->geometry->getDirection();
+                m_dirVec *= 10000.0f;
+                m_tempVec -= m_dirVec;
+                ((PlayerWormHole *) (*level->getLandmarks())[3])->reset(true);
+                (*level->getLandmarks())[3]->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                (*level->getLandmarks())[3]->setVisible(true);
+            }
+            Level::comingFromAlienWorld = 0;
+        }
     }
 
-    if (m_bRenderParticles && m_pParticleGeom0) {
-        m_pParticleGeom0->render();
-        m_pParticleGeom1->render();
-        m_pParticleGeom2->render();
+    if (Globals::status->getCurrentCampaignMission() == 80) {
+        m_pGeometry0 = new AEGeometry(14370, Globals::Canvas, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingSphere.radius =
+                1000000.0f;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        m_pGeometry0->setVisible(false);
+        m_pGeometry0->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
+        AEGeometry *stationRoot = ((PlayerStation *) (*level->getLandmarks())[0])->rootGeometry;
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->childTransform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->parentTransform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
+                 ((PlayerStation *) (*level->getLandmarks())[0])->meshTransform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
+        m_pExplosion = new Explosion(0);
+        m_pExplosion->addFireStreaks();
+        m_pExplosion->setScaling(3.0f);
+        m_pGeometry6 = new AEGeometry(Globals::Canvas);
+        m_pGeometry6->setVisible(false);
+        m_pGeometry1 = new AEGeometry(14366, Globals::Canvas, false);
+        m_pGeometry1->setPosition(((PlayerStation *) (*level->getEnemies())[0])->rootGeometry->getPosition());
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
+        m_pGeometry5->setScaling(20.0f, 20.0f, 20.0f);
     }
-}
 
-bool LevelScript::startSequenceOver() {
-    return m_bStartSequenceOver;
-}
-
-void LevelScript::resetCamera(Level *level) {
-    if (level->getPlayer() != 0) {
-        TargetFollowCamera *camera = m_pCamera;
-        PlayerEgo *player = (PlayerEgo *) level->getPlayer();
-        camera->setTarget(player->geometry);
-        m_pCamera->setTargetOffset(Vector{0.0f, 600.0f, -650.0f});
-        m_pCamera->setCamOffset(Vector{0.0f, 600.0f, -1338.0f});
+    if (Globals::status->getCurrentCampaignMission() == 41 && Globals::status->inAlienOrbit()) {
+        field_0xe0 = level->field_74->addSystem(&(*level->getEnemies())[0]->geometry->getReferenceMatrix(),
+                                               (ParticleSettings::ParticleSet) 40, false);
+        level->field_74->enableSystemEmit(field_0xe0, false);
+        field_0xe4 = level->field_74->addSystem(&(*level->getEnemies())[0]->geometry->getReferenceMatrix(),
+                                               (ParticleSettings::ParticleSet) 41, false);
+        level->field_74->enableSystemEmit(field_0xe4, false);
+        level->lodManager->forceUpdate(30, false);
+        m_pParticleGeom0 = new AEGeometry(14285, Globals::Canvas, false);
+        m_pParticleGeom1 = new AEGeometry(14286, Globals::Canvas, false);
+        m_pParticleGeom2 = new AEGeometry(14287, Globals::Canvas, false);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom1->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom2->transform))
+                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
+    } else if (Globals::status->getCurrentCampaignMission() == 157 && !Globals::status->inAlienOrbit() &&
+               ((Station *) Globals::status->getStation())->getIndex() ==
+                       ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
+        m_pGeometry1 = new AEGeometry(19061, Globals::Canvas, false);
+        AEGeometry *part0 = new AEGeometry(19062, Globals::Canvas, false);
+        AEGeometry *part1 = new AEGeometry(19063, Globals::Canvas, false);
+        m_pGeometry1->addChild(part0->transform);
+        m_pGeometry1->addChild(part1->transform);
+        m_pGeometry2 = new AEGeometry(19095, Globals::Canvas, false);
+        m_pGeometry3 = new AEGeometry(19097, Globals::Canvas, false);
+        AEGeometry *part2 = new AEGeometry(19096, Globals::Canvas, false);
+        AEGeometry *part3 = new AEGeometry(19098, Globals::Canvas, false);
+        m_pGeometry2->addChild(part2->transform);
+        m_pGeometry3->addChild(part3->transform);
+        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))->SetVisible(false);
+        m_pGeometry2->setVisible(false);
+        m_pGeometry3->setVisible(false);
+        delete part0;
+        delete part1;
+        delete part2;
+        delete part3;
     }
-}
 
-void LevelScript::skipSequence() {
-    if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
-        field_0x24 = 0x1b59;
-        m_pLevel->getPlayer()->player->setVulnerable(true);
+    Globals::layout->enableFillScreen(false);
+
+    if (!Globals::status->inAlienOrbit() && Globals::status->getCampaignMission() != 0 &&
+        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 163 &&
+        Globals::status->field_90 != nullptr) {
+        for (unsigned i = 0; i < Globals::status->field_90->size(); i++) {
+            if ((*Globals::status->field_90)[i] == ((Station *) Globals::status->getStation())->getIndex()) {
+                field_0xa9 = 1;
+                break;
+            }
+        }
     }
-}
 
-bool LevelScript::startSequence() {
-    return m_bStartSequence;
+    if (Globals::status->getCurrentCampaignMission() == 95 || Globals::status->getCurrentCampaignMission() == 99 ||
+        Globals::status->getCurrentCampaignMission() == 109 || Globals::status->getCurrentCampaignMission() == 119 ||
+        Globals::status->getCurrentCampaignMission() == 126 || Globals::status->getCurrentCampaignMission() == 133 ||
+        Globals::status->getCurrentCampaignMission() == 160 || Globals::status->getCurrentCampaignMission() == 161) {
+        hud->visible = 0;
+        radar->enabled = 0;
+        m_bCinematicBreak = 1;
+        level->getPlayer()->setComputerControlled(true);
+        level->getPlayer()->freeze = 1;
+        level->getPlayer()->player->setVulnerable(false);
+        level->getPlayer()->setVisible(false);
+        Globals::sound->stop(level->getPlayer()->field_0x1c);
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
+        camera->setPosition(Vector{-15000.0f, 800.0f, 75000.0f});
+        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
+        level->lodManager->forceUpdate(30, false);
+        m_nScriptTimerA = 0;
+    }
 }
 
 void LevelScript::setAutoPilotToProgrammedStation() {
@@ -145,63 +603,6 @@ LevelScript::~LevelScript() {
     delete m_pGeometry4;
     m_pGeometry4 = 0;
 }
-
-bool LevelScript::canSkipCutsceneNow() {
-    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
-        if (!(m_nState >= 1 && m_nState <= 9)) {
-            return 0;
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
-        if (!(m_nState >= 2 && m_nState <= 4)) {
-            return 0;
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 0x9e && m_nState > 1) {
-        return 0;
-    }
-    return 1;
-}
-
-void LevelScript::resetStartSequenceOver() {
-    m_bStartSequenceOver = 0;
-    field_0x24 = 0;
-}
-
-void LevelScript::skipCutscene() {
-    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
-        if (m_nState >= 1 && m_nState <= 9) {
-            m_nState = 9;
-            for (int i = 0; i != 8; ++i) {
-                (*m_pLevel->getMessages())[i]->trigger();
-                (*m_pLevel->getMessages())[i]->finish();
-            }
-            m_nScriptTimerA = 2001;
-            ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setAIDisabled(false);
-            KIPlayer *fighter = (*m_pLevel->getEnemies())[0];
-            Vector position = (*m_pLevel->getEnemies())[0]->getRoute()->getWaypoint(0)->getPosition();
-            fighter->setPosition(position);
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
-        if (m_nState <= 4) {
-            for (int i = 0; i != 4; ++i) {
-                (*m_pLevel->getMessages())[i]->trigger();
-                (*m_pLevel->getMessages())[i]->finish();
-            }
-            m_nScriptTimerA = 18001;
-            m_nState = 4;
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 0x9e) {
-        m_nScriptTimerB = 12001;
-        for (int i = 0; i != 3; ++i) {
-            (*m_pLevel->getMessages())[i]->trigger();
-            (*m_pLevel->getMessages())[i]->finish();
-        }
-        (*m_pLevel->getEnemies())[0]->setPosition(-2077.0f, 0.0f, 20233.0f);
-        (*m_pLevel->getEnemies())[0]->setVisible(true);
-        (*m_pLevel->getEnemies())[0]->setActive(true);
-        m_nState = 2;
-    }
-}
-
 
 bool LevelScript::process(int delta) {
     // Reconstruction pass 1 of _ZN11LevelScript7processEi (original 0xdf90 bytes @ 0x137d18).
@@ -4851,511 +5252,110 @@ bool LevelScript::process(int delta) {
     return m_bCinematicBreak != 0;
 }
 
+void LevelScript::resetCamera(Level *level) {
+    if (level->getPlayer() != 0) {
+        TargetFollowCamera *camera = m_pCamera;
+        PlayerEgo *player = (PlayerEgo *) level->getPlayer();
+        camera->setTarget(player->geometry);
+        m_pCamera->setTargetOffset(Vector{0.0f, 600.0f, -650.0f});
+        m_pCamera->setCamOffset(Vector{0.0f, 600.0f, -1338.0f});
+    }
+}
+
 void LevelScript::lookBehind() {
     m_pCamera->setTargetOffset(Vector{0.0f, 0.0f, -950.0f});
     m_pCamera->setCamOffset(Vector{0.0f, 600.0f, 2230.0f});
 }
 
-LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera)
-    : m_tempVec(), m_camVec(), m_dirVec() {
-    m_pHud = hud;
-    m_pRadar = radar;
-    m_pCamera = camera;
-    m_pLevel = level;
-    hud->drawTitleImage(false);
-    m_nState = 0;
-    m_bStartSequence = 1;
+void LevelScript::render3D() {
+    if (m_pGeometry6) m_pGeometry6->render();
+    if (m_pGeometry5) m_pGeometry5->render();
+    if (m_pGeometry0) m_pGeometry0->render();
+    if (m_pGeometry1) m_pGeometry1->render();
+    if (m_pGeometry2) m_pGeometry2->render();
+    if (m_pGeometry3) m_pGeometry3->render();
+
+    if (m_pExplosion && m_pExplosion->isPlaying()) {
+        m_pExplosion->render();
+    }
+
+    if (m_bRenderParticles && m_pParticleGeom0) {
+        m_pParticleGeom0->render();
+        m_pParticleGeom1->render();
+        m_pParticleGeom2->render();
+    }
+}
+
+void LevelScript::skipSequence() {
+    if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
+        field_0x24 = 0x1b59;
+        m_pLevel->getPlayer()->player->setVulnerable(true);
+    }
+}
+
+bool LevelScript::canSkipCutsceneNow() {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (!(m_nState >= 1 && m_nState <= 9)) {
+            return 0;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
+        if (!(m_nState >= 2 && m_nState <= 4)) {
+            return 0;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e && m_nState > 1) {
+        return 0;
+    }
+    return 1;
+}
+
+void LevelScript::skipCutscene() {
+    if (Globals::status->getCurrentCampaignMission() == 0x9a) {
+        if (m_nState >= 1 && m_nState <= 9) {
+            m_nState = 9;
+            for (int i = 0; i != 8; ++i) {
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
+            }
+            m_nScriptTimerA = 2001;
+            ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setAIDisabled(false);
+            KIPlayer *fighter = (*m_pLevel->getEnemies())[0];
+            Vector position = (*m_pLevel->getEnemies())[0]->getRoute()->getWaypoint(0)->getPosition();
+            fighter->setPosition(position);
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9d) {
+        if (m_nState <= 4) {
+            for (int i = 0; i != 4; ++i) {
+                (*m_pLevel->getMessages())[i]->trigger();
+                (*m_pLevel->getMessages())[i]->finish();
+            }
+            m_nScriptTimerA = 18001;
+            m_nState = 4;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 0x9e) {
+        m_nScriptTimerB = 12001;
+        for (int i = 0; i != 3; ++i) {
+            (*m_pLevel->getMessages())[i]->trigger();
+            (*m_pLevel->getMessages())[i]->finish();
+        }
+        (*m_pLevel->getEnemies())[0]->setPosition(-2077.0f, 0.0f, 20233.0f);
+        (*m_pLevel->getEnemies())[0]->setVisible(true);
+        (*m_pLevel->getEnemies())[0]->setActive(true);
+        m_nState = 2;
+    }
+}
+
+
+void LevelScript::resetStartSequenceOver() {
     m_bStartSequenceOver = 0;
-    field_0x10 = 0;
-    m_bCinematicBreak = 1;
-    m_nTimeLimit = level->getTimeLimit();
-    m_nScriptTime = 0;
     field_0x24 = 0;
-    field_0x8c = 0;
-    m_nScriptTimerA = 0;
-    m_nScriptTimerB = 0;
-    m_nFlashCountdown = 0;
-    m_bRenderParticles = 0;
-    field_0xa9 = 0;
-    m_pParticleGeom0 = nullptr;
-    m_pParticleGeom1 = nullptr;
-    m_pParticleGeom2 = nullptr;
-    m_pGeometry0 = nullptr;
-    m_pGeometry1 = nullptr;
-    m_pGeometry2 = nullptr;
-    m_pGeometry3 = nullptr;
-    m_pExplosion = nullptr;
-    m_pGeometry4 = nullptr;
-    m_pGeometry5 = nullptr;
-    m_pGeometry6 = nullptr;
-    field_0x12 = 0;
-    camera->setLookAtCam(true);
+}
 
-    if (level->getPlayer() == nullptr)
-        m_bStartSequence = 0;
-    else
-        level->getPlayer()->player->setVulnerable(false);
-    level->getPlayer()->setCollide(false);
+bool LevelScript::startSequenceOver() {
+    return m_bStartSequenceOver;
+}
 
-
-    if (Globals::status->getCurrentCampaignMission() == 0) {
-        m_nScriptTimerA = 0;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->player->setVulnerable(true);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setPosition(Vector{-1000.0f, -500.0f, -40000.0f});
-        level->getPlayer()->setPosition(0.0f, 0.0f, -60000.0f);
-        level->getPlayer()->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-        for (int i = 0; i < 3; i++) {
-            (*level->getEnemies())[i]->setToSleep();
-            (*level->getEnemies())[i]->geometry->setVisible(false);
-            ((PlayerFighter *) (*level->getEnemies())[i])->field_0x128 = 0;
-            (*level->getEnemies())[i]->player->enemyFlagsLo = 0;
-        }
-        level->lodManager->forceUpdate(30, false);
-        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
-    } else if (Globals::status->getCurrentCampaignMission() == 1) {
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setRotation(0.462f, 0.462f, 1.5339f);
-        level->getPlayer()->setFreeze(true);
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
-        level->getPlayer()->setExhaustVisible(false);
-        level->getPlayer()->StopEngineSound();
-        (*level->getEnemies())[0]->StopEngineSound();
-        camera->setPosition(1500.0f, 1600.0f, -3000.0f);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setTarget(level->getPlayer()->geometry);
-        Globals::layout->startFade(false, 255, 5000);
-    } else if (Globals::status->getCurrentCampaignMission() == 81 && Globals::status->inAlienOrbit()) {
-        m_nScriptTimerA = 0;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->freeze = 1;
-        level->getPlayer()->player->setVulnerable(false);
-        level->getPlayer()->setVisible(false);
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setPosition(Vector{-20000.0f, 800.0f, 120000.0f});
-        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
-        ((PlayerStation *) (*level->getEnemies())[0])->rootGeometry->setVisible(false);
-        level->lodManager->forceUpdate(30, false);
-        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
-        m_pGeometry5->setScaling(30.0f, 30.0f, 30.0f);
-    } else if (Globals::status->getCurrentCampaignMission() == 78) {
-        camera->setPosition(2000.0f, -1500.0f, 16000.0f);
-        field_0x24 = 0;
-        m_bStartSequence = 0;
-        m_bStartSequenceOver = 1;
-        level->getPlayer()->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
-        m_nState = 1;
-        m_bCinematicBreak = 1;
-        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
-        m_pGeometry5->setScaling(20.0f, 20.0f, 20.0f);
-    } else if (Globals::status->getCurrentCampaignMission() == 89) {
-        m_nScriptTimerA = 0;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->freeze = 1;
-        level->getPlayer()->player->setVulnerable(false);
-        level->getPlayer()->setVisible(false);
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        m_pGeometry4 = new AEGeometry(Globals::Canvas);
-        m_pGeometry4->setPosition((*level->getEnemies())[1]->getPosition());
-        m_pGeometry4->setDirection(-level->getStarSystem()->getLightDirection(), Vector{0.0f, 1.0f, 0.0f});
-        m_pGeometry4->moveForward(-100000.0f);
-        m_pGeometry4->translate(m_pGeometry4->getRightVector() * 200000.0f);
-        camera->setTarget(m_pGeometry4);
-        camera->setPosition((*level->getEnemies())[1]->getPosition());
-        camera->translate(10000.0f, 1500.0f, -20000.0f);
-        (*level->getEnemies())[0]->geometry->setPosition(
-                Vector{-25000.0f, 800.0f, 120000.0f} + 1000.0f * level->getStarSystem()->getLightDirection());
-        (*level->getEnemies())[0]->geometry->setDirection(level->getStarSystem()->getLightDirection(),
-                                                         Vector{0.0f, 1.0f, 0.0f});
-        (*level->getEnemies())[0]->geometry->translate(Vector{3000.0f, 0.0f, 3000.0f});
-        m_pGeometry6 = new AEGeometry(14229, Globals::Canvas, false);
-        m_pGeometry6->setScaling(1.0f, 1.0f, 500000.0f);
-        m_nState = 1;
-        level->lodManager->forceUpdate(30, false);
-    } else if (Globals::status->getCurrentCampaignMission() == 105 && Globals::status->inSupernovaOrbit()) {
-        m_bCinematicBreak = 1;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->setCollide(false);
-        m_bStartSequence = 0;
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setTarget(level->getPlayer()->geometry);
-        camera->setPosition((*level->getEnemies())[1]->getPosition());
-        camera->translate(5000.0f, 1500.0f, -20000.0f);
-        camera->setPosition(level->getPlayer()->getPosition() + level->getPlayer()->GetDirVector() * -2400.0f +
-                            level->getPlayer()->GetUpVector() * 500.0f);
-        level->getPlayer()->player->setVulnerable(true);
-        if (!Level::doInstantJump)
-            setAutoPilotToProgrammedStation();
-        m_nState = 1;
-        m_nScriptTimerA = 0;
-    } else if (Globals::status->getCurrentCampaignMission() == 106) {
-        level->getPlayer()->setPosition(300000.0f, 0.0f, 300000.0f);
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->freeze = 1;
-        level->getPlayer()->player->setVulnerable(false);
-        Vector lightDir = VectorNormalize(level->getStarSystem()->getLightDirection());
-        level->getPlayer()->geometry->setDirection(lightDir, Vector{0.0f, 1.0f, 0.0f});
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setPosition(level->getPlayer()->getPosition() + Vector{2200.0f, 1300.0f, -4000.0f});
-        m_bCinematicBreak = 1;
-        Globals::layout->startFade(false, -1, 8000);
-        m_nState = 1;
-    } else if (Globals::status->getCurrentCampaignMission() == 144) {
-        m_pGeometry4 = new AEGeometry(Globals::Canvas);
-        m_pGeometry4->setPosition(30000.0f, 10000.0f, 160000.0f);
-        m_pGeometry4->setDirection(Vector{1.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
-        m_bCinematicBreak = 1;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->setCollide(false);
-        level->getPlayer()->setActive(false);
-        level->getPlayer()->setVisible(false);
-        level->getPlayer()->setFreeze(true);
-        m_bStartSequence = 0;
-        m_bStartSequenceOver = 1;
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        camera->setLookAtCam(true);
-        camera->setTarget(m_pGeometry4);
-        m_tempVec = (*level->getEnemies())[0]->getPosition();
-        m_tempVec += Vector{-4600.0f, 1000.0f, -4300.0f};
-        camera->setPosition(m_tempVec);
-        if (!Level::doInstantJump)
-            setAutoPilotToProgrammedStation();
-        m_nState = 1;
-        m_nScriptTimerA = 0;
-    } else if (Globals::status->getCurrentCampaignMission() == 131 && !Globals::status->inAlienOrbit() &&
-               ((Station *) Globals::status->getStation())->getIndex() == 112) {
-        m_bCinematicBreak = 1;
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->setCollide(false);
-        level->getPlayer()->setPosition(-65000.0f, 0.0f, 95000.0f);
-        level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                   Vector{0.0f, 1.0f, 0.0f});
-        m_bStartSequence = 0;
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setTarget(level->getPlayer()->geometry);
-        camera->setPosition(level->getPlayer()->getPosition() - level->getPlayer()->GetDirVector() * 2400.0f +
-                            level->getPlayer()->GetUpVector() * 500.0f -
-                            level->getPlayer()->geometry->getRightVector() * 600.0f);
-        camera->update(10);
-        AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
-        Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-        m_tempVec = MatrixGetPosition(local);
-        camera->setFixed(true);
-        MatrixSetTranslation(local, m_tempVec);
-        camera->setLocal(local);
-        if (!Level::doInstantJump)
-            setAutoPilotToProgrammedStation();
-        m_nState = 1;
-        m_nScriptTimerA = 0;
-    } else if (Globals::status->getCurrentCampaignMission() == 158 && !Globals::status->inAlienOrbit() &&
-               ((Station *) Globals::status->getStation())->getIndex() == 111) {
-        m_pGeometry4 = new AEGeometry(Globals::Canvas);
-        m_pGeometry4->setDirection(Vector{1.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
-        m_bStartSequence = 0;
-        m_bStartSequenceOver = 1;
-        level->getPlayer()->setPosition(-50000.0f, 0.0f, 15000.0f);
-        hud->visible = 0;
-        radar->enabled = 0;
-        level->getPlayer()->setFreeze(true);
-        level->getPlayer()->player->setVulnerable(false);
-        Vector lightDir = VectorNormalize(level->getStarSystem()->getLightDirection());
-        level->getPlayer()->geometry->setDirection(lightDir, Vector{0.0f, 1.0f, 0.0f});
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setPosition(level->getPlayer()->getPosition() + Vector{-28000.0f, 500.0f, 8500.0f});
-        m_pGeometry4->setPosition(*camera->getPosition());
-        m_pGeometry4->setDirection(VectorNormalize(lightDir), Vector{0.0f, 1.0f, 0.0f});
-        m_pGeometry4->moveForward(50000.0f);
-        camera->setTarget(m_pGeometry4);
-        m_bCinematicBreak = 1;
-        Globals::layout->startFade(false, -1, 8000);
-        Array<KIPlayer *> *enemies = level->getEnemies();
-        (*enemies)[0]->player->setEnemies(nullptr);
-        (*enemies)[0]->player->addEnemy(level->getPlayer()->player);
-        for (int i = 1; i < 4; i++) {
-            (*enemies)[i]->player->setEnemies(nullptr);
-            (*enemies)[i]->player->setEnemy(level->getPlayer()->player);
-            Gun *gun = (*(*(*enemies)[i]->player->guns)[0])[0];
-            gun->damage = (int) ((float) gun->damage * 0.3f);
-            if (level->field_b0 != nullptr) {
-                for (unsigned j = 0; j < level->field_b0->size(); j++) {
-                    (*enemies)[i]->player->addEnemy((*level->field_b0)[j]->player);
-                    (*level->field_b0)[j]->player->addEnemy((*enemies)[i]->player);
-                }
-            }
-        }
-        (*enemies)[0]->setActive(false);
-        (*enemies)[0]->setVisible(false);
-        level->getPlayer()->setPosition(m_pGeometry4->getPosition());
-        level->getPlayer()->geometry->setDirection(
-                VectorNormalize(*camera->getPosition() - m_pGeometry4->getPosition() + Vector{20000.0f, 0.0f, 0.0f}),
-                Vector{0.0f, 1.0f, 0.0f});
-        level->getPlayer()->geometry->moveForward(30000.0f);
-        level->getPlayer()->setSpeed(0.1f);
-        m_nState = 1;
-    } else {
-        unsigned char streamOut = Level::initStreamOutPosition;
-        int range = streamOut == 0 ? 2000 : 500;
-        m_tempVec.x = (float) (Globals::rnd->nextInt(range) + 500);
-        m_tempVec.y = (float) (Globals::rnd->nextInt(range) + 500);
-        m_tempVec.z = streamOut == 0 ? 9000.0f : 7000.0f;
-        if (Globals::rnd->nextInt(2) == 0)
-            m_tempVec.x = -m_tempVec.x;
-        if (Globals::rnd->nextInt(2) == 0)
-            m_tempVec.y = -m_tempVec.y;
-
-        if (Globals::status->getCurrentCampaignMission() == 48) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 55000.0f);
-            Vector dir = level->getPlayer()->geometry->getDirection();
-            dir.x += 0.00001f;
-            level->getPlayer()->geometry->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
-            level->getPlayer()->setAutoPilot((*level->getLandmarks())[0]);
-        } else if (Globals::status->getCurrentCampaignMission() == 65 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 170000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-            Vector pos = level->getPlayer()->getPosition();
-            pos.x -= 3000.0f;
-            (*level->getEnemies())[0]->setPosition(pos.x, pos.y, pos.z);
-            (*level->getEnemies())[0]->geometry->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 87 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 210000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 91 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, -130000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 92 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 200000.0f);
-            level->getPlayer()->geometry->setDirection(
-                    VectorNormalize((*level->getEnemies())[3]->getPosition() - level->getPlayer()->getPosition()),
-                    Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 102 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(90000.0f, 6000.0f, 150000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 123 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 180000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if ((Globals::status->getCurrentCampaignMission() > 84 ||
-                    Globals::status->getCurrentCampaignMission() == 135) &&
-                   !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() == 103) {
-            level->getPlayer()->setPosition(70000.0f, 0.0f, 100000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 114 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, -120000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 137 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(20000.0f, 0.0f, 150000.0f);
-            level->getPlayer()->geometry->setDirection(VectorNormalize(-level->getPlayer()->getPosition()),
-                                                       Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 139 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(20000.0f, 0.0f, 190000.0f);
-            level->getPlayer()->geometry->setDirection(
-                    VectorNormalize((*level->getEnemies())[1]->getPosition() - level->getPlayer()->getPosition()),
-                    Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->getCurrentCampaignMission() == 142 && !Globals::status->inAlienOrbit() &&
-                   ((Station *) Globals::status->getStation())->getIndex() ==
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-            level->getPlayer()->setPosition(60000.0f, 0.0f, 120000.0f);
-            level->getPlayer()->geometry->setDirection(
-                    VectorNormalize(((Route *) (intptr_t) level->getPlayer()->getRoute())->getWaypoint(0)->getPosition() -
-                                    level->getPlayer()->getPosition()),
-                    Vector{0.0f, 1.0f, 0.0f});
-            (*level->getEnemies())[0]->setPosition(level->getPlayer()->getPosition() +
-                                                   level->getPlayer()->geometry->getRightVector() * 2100.0f +
-                                                   level->getPlayer()->geometry->getDirection() * 2000.0f);
-            (*level->getEnemies())[0]->geometry->setDirection(level->getPlayer()->GetDirVector(),
-                                                             Vector{0.0f, 1.0f, 0.0f});
-        } else if (Globals::status->inAlienOrbit() && Globals::status->getCurrentCampaignMission() == 154) {
-            level->getPlayer()->setPosition(0.0f, 0.0f, 140000.0f);
-            (*level->getEnemies())[0]->setPosition(level->getPlayer()->getPosition() +
-                                                   level->getPlayer()->geometry->getRightVector() * 2600.0f +
-                                                   level->getPlayer()->geometry->getDirection() * 4000.0f);
-            (*level->getEnemies())[0]->geometry->setDirection(level->getPlayer()->GetDirVector(),
-                                                             Vector{0.0f, 1.0f, 0.0f});
-            (*level->getEnemies())[0]->player->setEnemy((*level->getEnemies())[1]->player);
-            for (unsigned i = 0; i < level->getEnemies()->size(); i++) {
-                if ((*level->getEnemies())[i]->field_0x3e)
-                    (*level->getEnemies())[i]->player->setEnemies(nullptr);
-                if ((*level->getEnemies())[i]->shipGroup == 9)
-                    (*level->getEnemies())[i]->field_0x25 = 0;
-            }
-        }
-
-        Matrix playerMatrix = level->getPlayer()->geometry->getMatrix();
-        m_camVec = MatrixRotateVector(playerMatrix, m_tempVec);
-        m_camVec += level->getPlayer()->geometry->getPosition();
-        camera->setPosition(m_camVec);
-        bool inAlienOrbit = Globals::status->inAlienOrbit();
-        if (inAlienOrbit || Level::comingFromAlienWorld) {
-            if (Globals::status->getCurrentCampaignMission() <= 42) {
-                m_tempVec = level->getPlayer()->getPosition();
-                m_dirVec = level->getPlayer()->geometry->getDirection();
-                m_dirVec *= 10000.0f;
-                m_tempVec -= m_dirVec;
-                ((PlayerWormHole *) (*level->getLandmarks())[3])->reset(true);
-                (*level->getLandmarks())[3]->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
-                (*level->getLandmarks())[3]->setVisible(true);
-            }
-            Level::comingFromAlienWorld = 0;
-        }
-    }
-
-    if (Globals::status->getCurrentCampaignMission() == 80) {
-        m_pGeometry0 = new AEGeometry(14370, Globals::Canvas, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))->boundingSphere.radius =
-                1000000.0f;
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry0->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        m_pGeometry0->setVisible(false);
-        m_pGeometry0->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
-        AEGeometry *stationRoot = ((PlayerStation *) (*level->getLandmarks())[0])->rootGeometry;
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->childTransform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(stationRoot->parentTransform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(
-                 ((PlayerStation *) (*level->getLandmarks())[0])->meshTransform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
-        m_pExplosion = new Explosion(0);
-        m_pExplosion->addFireStreaks();
-        m_pExplosion->setScaling(3.0f);
-        m_pGeometry6 = new AEGeometry(Globals::Canvas);
-        m_pGeometry6->setVisible(false);
-        m_pGeometry1 = new AEGeometry(14366, Globals::Canvas, false);
-        m_pGeometry1->setPosition(((PlayerStation *) (*level->getEnemies())[0])->rootGeometry->getPosition());
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        m_pGeometry5 = new AEGeometry(15027, Globals::Canvas, false);
-        m_pGeometry5->setScaling(20.0f, 20.0f, 20.0f);
-    }
-
-    if (Globals::status->getCurrentCampaignMission() == 41 && Globals::status->inAlienOrbit()) {
-        field_0xe0 = level->field_74->addSystem(&(*level->getEnemies())[0]->geometry->getReferenceMatrix(),
-                                               (ParticleSettings::ParticleSet) 40, false);
-        level->field_74->enableSystemEmit(field_0xe0, false);
-        field_0xe4 = level->field_74->addSystem(&(*level->getEnemies())[0]->geometry->getReferenceMatrix(),
-                                               (ParticleSettings::ParticleSet) 41, false);
-        level->field_74->enableSystemEmit(field_0xe4, false);
-        level->lodManager->forceUpdate(30, false);
-        m_pParticleGeom0 = new AEGeometry(14285, Globals::Canvas, false);
-        m_pParticleGeom1 = new AEGeometry(14286, Globals::Canvas, false);
-        m_pParticleGeom2 = new AEGeometry(14287, Globals::Canvas, false);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom1->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom2->transform))
-                ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-    } else if (Globals::status->getCurrentCampaignMission() == 157 && !Globals::status->inAlienOrbit() &&
-               ((Station *) Globals::status->getStation())->getIndex() ==
-                       ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation()) {
-        m_pGeometry1 = new AEGeometry(19061, Globals::Canvas, false);
-        AEGeometry *part0 = new AEGeometry(19062, Globals::Canvas, false);
-        AEGeometry *part1 = new AEGeometry(19063, Globals::Canvas, false);
-        m_pGeometry1->addChild(part0->transform);
-        m_pGeometry1->addChild(part1->transform);
-        m_pGeometry2 = new AEGeometry(19095, Globals::Canvas, false);
-        m_pGeometry3 = new AEGeometry(19097, Globals::Canvas, false);
-        AEGeometry *part2 = new AEGeometry(19096, Globals::Canvas, false);
-        AEGeometry *part3 = new AEGeometry(19098, Globals::Canvas, false);
-        m_pGeometry2->addChild(part2->transform);
-        m_pGeometry3->addChild(part3->transform);
-        ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry1->transform))->SetVisible(false);
-        m_pGeometry2->setVisible(false);
-        m_pGeometry3->setVisible(false);
-        delete part0;
-        delete part1;
-        delete part2;
-        delete part3;
-    }
-
-    Globals::layout->enableFillScreen(false);
-
-    if (!Globals::status->inAlienOrbit() && Globals::status->getCampaignMission() != 0 &&
-        ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getType() == 163 &&
-        Globals::status->field_90 != nullptr) {
-        for (unsigned i = 0; i < Globals::status->field_90->size(); i++) {
-            if ((*Globals::status->field_90)[i] == ((Station *) Globals::status->getStation())->getIndex()) {
-                field_0xa9 = 1;
-                break;
-            }
-        }
-    }
-
-    if (Globals::status->getCurrentCampaignMission() == 95 || Globals::status->getCurrentCampaignMission() == 99 ||
-        Globals::status->getCurrentCampaignMission() == 109 || Globals::status->getCurrentCampaignMission() == 119 ||
-        Globals::status->getCurrentCampaignMission() == 126 || Globals::status->getCurrentCampaignMission() == 133 ||
-        Globals::status->getCurrentCampaignMission() == 160 || Globals::status->getCurrentCampaignMission() == 161) {
-        hud->visible = 0;
-        radar->enabled = 0;
-        m_bCinematicBreak = 1;
-        level->getPlayer()->setComputerControlled(true);
-        level->getPlayer()->freeze = 1;
-        level->getPlayer()->player->setVulnerable(false);
-        level->getPlayer()->setVisible(false);
-        Globals::sound->stop(level->getPlayer()->field_0x1c);
-        m_bStartSequenceOver = 1;
-        camera->setLookAtCam(true);
-        camera->setPosition(Vector{-15000.0f, 800.0f, 75000.0f});
-        level->getPlayer()->setPosition(0.0f, 0.0f, 0.0f);
-        level->lodManager->forceUpdate(30, false);
-        m_nScriptTimerA = 0;
-    }
+bool LevelScript::startSequence() {
+    return m_bStartSequence;
 }
 
 int LevelScript::getEvent() {
