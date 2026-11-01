@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4469,
+  "byte_exact": 4492,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -33,19 +33,11 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 54.4,
+   "pct": 54.1,
    "byte": false,
    "linked": false,
    "osize": 57232,
    "usize": 57232
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 57.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -72,20 +64,20 @@
    "usize": 1996
   },
   {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 77.1,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
-  },
-  {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.7,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -113,7 +105,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 83.4,
+   "pct": 83.6,
    "byte": false,
    "linked": false,
    "osize": 17172,
@@ -126,6 +118,14 @@
    "linked": false,
    "osize": 8132,
    "usize": 8132
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 86.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN9RocketGun6updateEi",
@@ -3466,7 +3466,7 @@
   {
    "name": "_ZN10ModStation10OnKeyPressExx",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2516,
    "usize": 2516
@@ -10362,7 +10362,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine12DoPostEffectEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 340,
    "usize": 340
@@ -10474,7 +10474,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine13SetPostEffectEjb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 352,
    "usize": 352
@@ -13058,7 +13058,7 @@
   {
    "name": "_ZN11SpaceLounge4initEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2256,
    "usize": 2256
@@ -13178,7 +13178,7 @@
   {
    "name": "_ZN11TouchButton11setPositionEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -13218,7 +13218,7 @@
   {
    "name": "_ZN11TouchButton12setYPositionEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -13314,7 +13314,7 @@
   {
    "name": "_ZN11TouchButton7setTextERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 248,
    "usize": 248
@@ -13994,7 +13994,7 @@
   {
    "name": "_ZN12ChoiceWindow13setMiscButtonERKN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 332,
    "usize": 332
@@ -14074,7 +14074,7 @@
   {
    "name": "_ZN12ChoiceWindow6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -14106,7 +14106,7 @@
   {
    "name": "_ZN12ChoiceWindow9setHeightEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 200,
    "usize": 200
@@ -15034,7 +15034,7 @@
   {
    "name": "_ZN12StatusWindow6reInitEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 288,
    "usize": 288
@@ -16266,7 +16266,7 @@
   {
    "name": "_ZN14DialogueWindow11loadContentEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 3484,
    "usize": 3484
@@ -20738,7 +20738,7 @@
   {
    "name": "_ZN4Item8isInListEPS_P5ArrayIS0_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -20746,7 +20746,7 @@
   {
    "name": "_ZN4Item8isInListEiP5ArrayIPS_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -21474,7 +21474,7 @@
   {
    "name": "_ZN4Ship8addCargoEP4Item",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 62,
    "usize": 62
@@ -21482,7 +21482,7 @@
   {
    "name": "_ZN4Ship8addCargoEP5ArrayIP4ItemE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -27962,7 +27962,7 @@
   {
    "name": "_ZN7BeamGun8setEnemyEP6Player",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -29762,7 +29762,7 @@
   {
    "name": "_ZN8GameText7getTextEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 292,
    "usize": 292
@@ -33730,7 +33730,7 @@
   {
    "name": "_ZN9SpriteGun6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -33738,7 +33738,7 @@
   {
    "name": "_ZN9SpriteGun8setEnemyEP6Player",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35538,7 +35538,7 @@
   {
    "name": "ndk23_Init",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 296,
    "usize": 296
@@ -35546,7 +35546,7 @@
   {
    "name": "ndk23_InitWithZip",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 300,
    "usize": 300
@@ -35578,7 +35578,7 @@
   {
    "name": "ndk23_handleAcceleration",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 276,
    "usize": 276
