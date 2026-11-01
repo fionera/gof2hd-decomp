@@ -4555,3 +4555,9 @@ original build flags.
 - **No improvement found**: `Globals::Globals` (`w3393`, 80.5%), `MenuTouchWindow::OnTouchBegin`
   (`w3418`, 97.2% — `&Globals::layout` rematerialisation, no source shape reproduces it),
   `StarMap::draw` (`w3392`, -1 byte when simplified).
+- **TU-start 4-byte alignment** (`w3424`, byte 4188 -> 4233): the original's per-TU `.text`
+  blocks are 4-byte aligned (visible in `.ARM.exidx` entry addresses); the exidx-marker
+  generator now pads each empty `.text` marker to 4 bytes, which reproduces the original's
+  function start addresses. Note: `_work/reconstructions/section_order_derivation.md`.
+  Caveat recorded there: with the archive markers also aligned, `.text` grows 36 bytes because
+  our archive/local code is 36 bytes smaller than the original's.

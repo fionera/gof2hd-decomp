@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4188,
+  "byte_exact": 4233,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -7610,7 +7610,7 @@
   {
    "name": "_ZN11AbyssEngine15ResourceTextureC2ERKNS_6StringEf",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -25186,7 +25186,7 @@
   {
    "name": "_ZN6GalaxyC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -25194,7 +25194,7 @@
   {
    "name": "_ZN6GalaxyC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -25202,7 +25202,7 @@
   {
    "name": "_ZN6GalaxyD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 46,
    "usize": 46
@@ -25210,7 +25210,7 @@
   {
    "name": "_ZN6GalaxyD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 46,
    "usize": 46
@@ -34714,7 +34714,7 @@
   {
    "name": "_tr_flush_block",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 964,
    "usize": 964
@@ -34722,7 +34722,7 @@
   {
    "name": "_tr_init",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -34738,7 +34738,7 @@
   {
    "name": "_tr_tally",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -34890,7 +34890,7 @@
   {
    "name": "_zip_file_fillbuf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 158,
    "usize": 158
@@ -34906,7 +34906,7 @@
   {
    "name": "_zip_filerange_crc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 184,
    "usize": 184
@@ -34922,7 +34922,7 @@
   {
    "name": "_zip_get_name",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 90,
    "usize": 90
@@ -34930,7 +34930,7 @@
   {
    "name": "_zip_memdup",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -35018,7 +35018,7 @@
   {
    "name": "adler32",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 516,
    "usize": 516
@@ -35026,7 +35026,7 @@
   {
    "name": "adler32_combine",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -35042,7 +35042,7 @@
   {
    "name": "compress",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -35050,7 +35050,7 @@
   {
    "name": "compress2",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 136,
    "usize": 136
@@ -35066,7 +35066,7 @@
   {
    "name": "crc32",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 644,
    "usize": 644
@@ -35074,7 +35074,7 @@
   {
    "name": "crc32_combine",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 208,
    "usize": 208
@@ -35090,7 +35090,7 @@
   {
    "name": "deflate",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1732,
    "usize": 1732
@@ -35098,7 +35098,7 @@
   {
    "name": "deflateBound",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 40,
    "usize": 40
@@ -35106,7 +35106,7 @@
   {
    "name": "deflateCopy",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 280,
    "usize": 280
@@ -35122,7 +35122,7 @@
   {
    "name": "deflateInit2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 416,
    "usize": 416
@@ -35130,7 +35130,7 @@
   {
    "name": "deflateInit_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -35138,7 +35138,7 @@
   {
    "name": "deflateParams",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -35154,7 +35154,7 @@
   {
    "name": "deflateReset",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 192,
    "usize": 192
@@ -35162,7 +35162,7 @@
   {
    "name": "deflateSetDictionary",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 194,
    "usize": 194
@@ -35194,7 +35194,7 @@
   {
    "name": "get_crc_table",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -35394,7 +35394,7 @@
   {
    "name": "inflate",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 4360,
    "usize": 4360
@@ -35402,7 +35402,7 @@
   {
    "name": "inflateBack",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2568,
    "usize": 2568
@@ -35418,7 +35418,7 @@
   {
    "name": "inflateBackInit_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 148,
    "usize": 148
@@ -35426,7 +35426,7 @@
   {
    "name": "inflateCopy",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 206,
    "usize": 206
@@ -35450,7 +35450,7 @@
   {
    "name": "inflateInit2_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -35458,7 +35458,7 @@
   {
    "name": "inflateInit_",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 10,
    "usize": 10
@@ -35482,7 +35482,7 @@
   {
    "name": "inflateSetDictionary",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 138,
    "usize": 138
@@ -35490,7 +35490,7 @@
   {
    "name": "inflateSync",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -35506,7 +35506,7 @@
   {
    "name": "inflate_fast",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 972,
    "usize": 972
@@ -35514,7 +35514,7 @@
   {
    "name": "inflate_table",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 928,
    "usize": 928
@@ -35842,7 +35842,7 @@
   {
    "name": "uncompress",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 144,
    "usize": 144
@@ -35850,7 +35850,7 @@
   {
    "name": "zError",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -35858,7 +35858,7 @@
   {
    "name": "zcalloc",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -35866,7 +35866,7 @@
   {
    "name": "zcfree",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35874,7 +35874,7 @@
   {
    "name": "zip_add",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -35906,7 +35906,7 @@
   {
    "name": "zip_error_clear",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 6,
    "usize": 6
@@ -35978,7 +35978,7 @@
   {
    "name": "zip_fopen_index",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 476,
    "usize": 476
@@ -36018,7 +36018,7 @@
   {
    "name": "zip_get_name",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 8,
    "usize": 8
@@ -36090,7 +36090,7 @@
   {
    "name": "zip_source_buffer",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -36202,7 +36202,7 @@
   {
    "name": "zlibVersion",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
