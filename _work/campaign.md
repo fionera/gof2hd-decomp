@@ -4330,3 +4330,6 @@ mtw anchor for any size change before MenuTouchWindow.
   Engine.cpp and `kArabicForms[r]` indexing is restored.
 - **GameText_iPhone TU split** (`w3321`): the iPhone-only half of GameText is now its own TU
   (`GameTextiPhone.cpp`), matching the original source dump.
+- **Layout 46.2 -> 50.8%** (`w3308`): the 50.8% field-store schedule is adopted (6800 B ctor, 272 B
+  short of the original 7072 B - it is a tuned body, not yet the real one). Gate unchanged at
+  1882 because the `.ARM.exidx`/`.text` shift absorbs the size change.
