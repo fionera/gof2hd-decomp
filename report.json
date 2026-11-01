@@ -2,13 +2,13 @@
  "summary": {
   "original_functions": 4524,
   "ours_functions": 4524,
-  "compared": 4523,
+  "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1513,
-  "linked_exact": 4492,
-  "fuzzy_perfect": 4494,
+  "byte_exact": 1527,
+  "linked_exact": 4493,
+  "fuzzy_perfect": 4495,
   "stub_zero_size": 0,
-  "orig_zero_size": 1,
+  "orig_zero_size": 0,
   "missing": 0,
   "wrong_type": 0,
   "absent": 0,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 71.8,
+   "pct": 71.7,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -6570,7 +6570,7 @@
   {
    "name": "_ZN11AbyssEngine12CheatHandlerD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 98,
    "usize": 98
@@ -6578,7 +6578,7 @@
   {
    "name": "_ZN11AbyssEngine12CheatHandlerD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 98,
    "usize": 98
@@ -7318,6 +7318,14 @@
    "linked": true,
    "osize": 16,
    "usize": 16
+  },
+  {
+   "name": "_ZN11AbyssEngine13getAppVersionEv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 0,
+   "usize": 0
   },
   {
    "name": "_ZN11AbyssEngine14GenericShader111SetInActiveEv",
@@ -10426,7 +10434,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine13GetDeviceInfoEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -10858,7 +10866,7 @@
   {
    "name": "_ZN11AbyssEngine6Engine6InitGLEbii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 408,
    "usize": 408
@@ -19034,7 +19042,7 @@
   {
    "name": "_ZN20FileInterfaceAndroid12GetDirPreFixEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -19162,7 +19170,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC1EP7__sFILEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -19170,7 +19178,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC1EP8_jobjectb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -19186,7 +19194,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -19194,7 +19202,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC2EP7__sFILEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -19202,7 +19210,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC2EP8_jobjectb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -19218,7 +19226,7 @@
   {
    "name": "_ZN20FileInterfaceAndroidC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -29338,7 +29346,7 @@
   {
    "name": "_ZN7_JNIEnv13CallIntMethodEP8_jobjectP10_jmethodIDz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -29346,7 +29354,7 @@
   {
    "name": "_ZN7_JNIEnv14CallVoidMethodEP8_jobjectP10_jmethodIDz",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -36201,9 +36209,7 @@
   }
  ],
  "stub_zero_size": [],
- "orig_zero_size": [
-  "_ZN11AbyssEngine13getAppVersionEv"
- ],
+ "orig_zero_size": [],
  "missing": [],
  "extra": [],
  "wrong_type": []

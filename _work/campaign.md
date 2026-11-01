@@ -4261,3 +4261,9 @@ mtw anchor for any size change before MenuTouchWindow.
   have the wrong size; the drift is local (static) function sizes: PaintCanvas +16, GameText
   +40, ConfigReader -8, ... cumulative +48 across 0x87672..0x147e24, i.e. **1269 exported
   functions sit in the +48 block**. See `_work/reconstructions/text-layout-drift.md`.
+- **`getAppVersion` zero-size stub removed: byte_exact 1513 -> 1527, linked_exact 4492 -> 4493**
+  (`w3280`): the 2-byte `return 0;` stub for a symbol the original exports with size 0 was
+  adding +4 B of .text drift at 0x6db20. Declaring it size-0 (no body) removes the drift and
+  the symbol now compares (compared 4523 -> 4524). `.text` still 0x1337b0, `.rodata` 0x1c9e10.
+  This is the first confirmation of the layout-drift theory: the +4 drift at 0x6db20 was
+  breaking 14 functions that sit before the next drift point.
