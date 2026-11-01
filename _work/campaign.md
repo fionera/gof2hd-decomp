@@ -4381,3 +4381,6 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **Merge `wave87-w3319`: byte_exact 2487 -> 2495 (+8)**: GameText lifecycle split
   (`GameTextInit.cpp` after Quaternion) + Route.cpp reorder. Master's w3305 ordering kept for
   Transform/PaintCanvas/RecordHandler/Level (taking w3319's versions there cost -121).
+- **HangarList/ListItem TU order: byte_exact 2495 -> 2523 (+28)** (`w3348`): HangarList.cpp and
+  MiningGame.cpp reordered to the original first-reference order, which fixes the ListItem/Ship/
+  MarqueeImage PLT block (index ~2587).

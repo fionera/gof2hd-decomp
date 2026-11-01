@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 2495,
+  "byte_exact": 2523,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -113,7 +113,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 85.2,
+   "pct": 85.3,
    "byte": false,
    "linked": false,
    "osize": 8132,
@@ -1714,7 +1714,7 @@
   {
    "name": "_Z19ArrayReleaseClassesIP11TouchSliderEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -1874,7 +1874,7 @@
   {
    "name": "_Z19ArrayReleaseClassesIP8ListItemEvR5ArrayIT_E",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -3002,7 +3002,7 @@
   {
    "name": "_ZN10HangarList11fillBuyListEP8ListItem",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 712,
    "usize": 712
@@ -3010,7 +3010,7 @@
   {
    "name": "_ZN10HangarList11initShipTabEP4Ship",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 672,
    "usize": 672
@@ -3018,7 +3018,7 @@
   {
    "name": "_ZN10HangarList11initShopTabEP5ArrayIP4ItemEPS0_IP4ShipE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 592,
    "usize": 592
@@ -3354,7 +3354,7 @@
   {
    "name": "_ZN10MiningGame16isInCurrentLayerEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -3394,7 +3394,7 @@
   {
    "name": "_ZN10MiningGame6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1184,
    "usize": 1184
@@ -3434,7 +3434,7 @@
   {
    "name": "_ZN10MiningGameC1EiiP3Hud",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 972,
    "usize": 972
@@ -3442,7 +3442,7 @@
   {
    "name": "_ZN10MiningGameC2EiiP3Hud",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 972,
    "usize": 972
@@ -4114,7 +4114,7 @@
   {
    "name": "_ZN10StarSystem8render2DEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 172,
    "usize": 172
@@ -4146,7 +4146,7 @@
   {
    "name": "_ZN10StarSystemD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -4154,7 +4154,7 @@
   {
    "name": "_ZN10StarSystemD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 132,
    "usize": 132
@@ -12666,7 +12666,7 @@
   {
    "name": "_ZN11MovingStarsC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 320,
    "usize": 320
@@ -12674,7 +12674,7 @@
   {
    "name": "_ZN11MovingStarsC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 320,
    "usize": 320
@@ -14178,7 +14178,7 @@
   {
    "name": "_ZN12HangarWindow11demountItemEP4Itemi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 404,
    "usize": 404
@@ -14218,7 +14218,7 @@
   {
    "name": "_ZN12HangarWindow12readyToCloseEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -14234,7 +14234,7 @@
   {
    "name": "_ZN12HangarWindow13highlightItemEP8ListItem",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 100,
    "usize": 100
@@ -14290,7 +14290,7 @@
   {
    "name": "_ZN12HangarWindow24currentItemIsHighlightedEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -14314,7 +14314,7 @@
   {
    "name": "_ZN12HangarWindow27refreshCurrentContentHeightEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -14322,7 +14322,7 @@
   {
    "name": "_ZN12HangarWindow37refreshCargoAvailabilityForBlueprintsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 188,
    "usize": 188
@@ -15242,7 +15242,7 @@
   {
    "name": "_ZN13AutoPilotList4drawEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 232,
    "usize": 232
@@ -15258,7 +15258,7 @@
   {
    "name": "_ZN13AutoPilotList5touchEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -16650,7 +16650,7 @@
   {
    "name": "_ZN14PendingProductC1EP9BluePrint",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -16666,7 +16666,7 @@
   {
    "name": "_ZN14PendingProductC2EP9BluePrint",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 128,
    "usize": 128
@@ -17386,7 +17386,7 @@
   {
    "name": "_ZN14ScrollTouchBox12OnTouchBeginEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 30,
    "usize": 30
@@ -17450,7 +17450,7 @@
   {
    "name": "_ZN14ScrollTouchBox7setTextEN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -24226,7 +24226,7 @@
   {
    "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 232,
    "usize": 232
@@ -28050,7 +28050,7 @@
   {
    "name": "_ZN7BombGunC1EP3GunjiibP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 600,
    "usize": 600
@@ -28058,7 +28058,7 @@
   {
    "name": "_ZN7BombGunC2EP3GunjiibP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 600,
    "usize": 600
@@ -29530,7 +29530,7 @@
   {
    "name": "_ZN8FileRead11loadStationEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 38,
    "usize": 38
