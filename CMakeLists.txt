@@ -39,12 +39,6 @@ endif()
 # BranchProbabilityInfo pointer heuristic already gives the original 20:12 successor probability,
 # so the source must NOT wrap it in __builtin_expect (which would override the heuristic with the
 # 2000:1 default and lay the EH landing pads out in the wrong order).
-# Level::createScene caches &Globals::rnd in r8 and reloads it at every nextInt.  LLVM's
-# pre-RA MachineLICM sink (sink-insts-to-avoid-spills) reproduces that shape; scoped to this TU
-# so the sibling Level.cpp functions keep their baseline allocation.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-sink-insts-to-avoid-spills")
-
 # =================================================================================================
 # Whole-.so link -- produce libgof2hdaa.so the original's shape
 # =================================================================================================

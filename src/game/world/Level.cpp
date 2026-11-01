@@ -7276,14 +7276,14 @@ void Level::createScene() {
                 shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
+            AbyssEngine::AERandom *rnd = Globals::rnd;
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
             const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
-                AbyssEngine::AERandom *rnd = Globals::rnd;
                 if (rnd->nextInt(100) <= 29) {
-                    race = rnd->nextInt(4);
+                    race = Globals::rnd->nextInt(4);
                     if (Globals::rnd->nextInt(100) < 30)
                         race = 8;
                 }
@@ -7393,9 +7393,4 @@ void Level::createScene() {
             return;
     }
 
-    // Merging createScene into Level.cpp lets clang share the literal pool with createMission
-    // and shaves 8 bytes off the function.  This store restores the original 0x8cc size so the
-    // addresses of createCampaignMission/createShip and everything after them stay put.
-    volatile int pad;
-    pad = 1;
 }
