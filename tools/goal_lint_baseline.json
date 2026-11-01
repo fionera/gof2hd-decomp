@@ -2,35 +2,18 @@
  "arm_builtin": {
   "engine/core/KeyFrame.h": 1,
   "engine/file/AEFile.cpp": 1,
-  "engine/math/AEMath.cpp": 2,
-  "engine/render/IParticleSystem.cpp": 2,
   "game/ui/WantedWindow.cpp": 1,
-  "game/world/Level.cpp": 1,
-  "game/world/StarMap.cpp": 2
+  "game/world/Level.cpp": 1
  },
  "one_class": {},
  "operator_call": {
-  "engine/core/AbyssEngine.cpp": 61,
-  "engine/core/Array.h": 6,
-  "engine/render/LODManager.cpp": 25,
-  "engine/render/LodMeshMerger.cpp": 1,
-  "engine/render/PaintCanvas.cpp": 22,
-  "engine/render/ResourceTransform.cpp": 2,
-  "engine/render/ShaderBaseStruct.cpp": 3,
-  "game/core/Globals.cpp": 4,
-  "game/menu/ModStation.cpp": 16,
-  "game/mission/GameRecord.cpp": 4,
-  "game/ui/MenuTouchWindow.cpp": 26,
-  "game/ui/MissionsWindow.cpp": 2,
-  "game/world/Level.cpp": 45,
-  "game/world/StarMap.cpp": 2,
+  "engine/core/Array.h": 5,
+  "engine/render/Curve.cpp": 6,
+  "game/ui/MenuTouchWindow.cpp": 3,
+  "game/world/Level.cpp": 3,
   "platform/android/NdkHooks.cpp": 2
  },
  "void_ptr": {
-  "engine/audio/FModSound.cpp": 2,
-  "engine/render/PaintCanvas.cpp": 12,
-  "game/menu/ModStation.cpp": 8,
-  "game/menu/SpaceLounge.cpp": 4,
   "game/ui/MenuTouchWindow.cpp": 5
  }
 }

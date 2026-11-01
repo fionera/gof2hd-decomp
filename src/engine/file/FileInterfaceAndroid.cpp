@@ -246,6 +246,13 @@ const char *FileInterfaceAndroid::GetAppRootDir() {
     return this->appRootDir;
 }
 
+int GetStringLength(AbyssEngine::String str) {
+    const unsigned short *p = str.GetAEWChar();
+    while (*p++) {
+    }
+    return static_cast<int>(p - str.GetAEWChar()) - 1;
+}
+
 uint32_t FileInterfaceAndroid::FileExist(String name) {
     String apkPath("assets/");
     apkPath += name;

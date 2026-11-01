@@ -310,18 +310,6 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     int MeshConvertToVBOIntern(Mesh * mesh);
     int TransformConvertToVBO(Transform * t);
-
-    int MeshConvertToVBO(Mesh *mesh) {
-        int result = -4;
-        if (mesh != 0 && Engine::vboSupported) {
-            if (mesh->uploaded != 0 || mesh->vboEligible == 0)
-                return -4;
-            MeshConvertToVBOIntern(mesh);
-            TransformConvertToVBO(mesh->animation);
-            result = 1;
-        }
-        return result;
-    }
 }
 
 namespace AbyssEngine {
@@ -858,6 +846,20 @@ namespace AbyssEngine {
             engine->RenderMesh(mesh);
         }
         return 1;
+    }
+}
+
+namespace AbyssEngine {
+    int MeshConvertToVBO(Mesh *mesh) {
+        int result = -4;
+        if (mesh != 0 && Engine::vboSupported) {
+            if (mesh->uploaded != 0 || mesh->vboEligible == 0)
+                return -4;
+            MeshConvertToVBOIntern(mesh);
+            TransformConvertToVBO(mesh->animation);
+            result = 1;
+        }
+        return result;
     }
 }
 

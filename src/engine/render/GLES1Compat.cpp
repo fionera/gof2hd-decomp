@@ -88,6 +88,12 @@ void glTexEnvi(GLenum, GLenum, GLint) {
 // Android platform half of AbyssEngine::Engine. The original (cf. iOS Engine_iPhone.mm) keeps these
 // in the platform TU next to the GLES1 stubs: in the .so they sit contiguously at 0x6daf2-0x6ddf0
 // right after glMaterialf, so they live here rather than in Engine.cpp.
+unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const char *label) {
+    (void) name;
+    (void) label;
+    return glIdentifier;
+}
+
 namespace AbyssEngine {
 
 void Engine::SetScreenOrientation(AbyssEngine::LandscapeMode orientation) {
@@ -97,6 +103,13 @@ void Engine::initFileInterface() {
     FileInterfaceAndroid *fileInterface = new FileInterfaceAndroid();
     this->fileInterface = fileInterface;
     return AEFile::SetInterface((FileInterface *) fileInterface);
+}
+
+// The original exports getAppVersion with size 0 at the same address as Engine::InitGL: an
+// Android stub whose body the compiler dropped entirely.  [[gnu::noreturn]] makes clang -Oz
+// emit a zero-size section (a plain empty body is 2 bytes), which is what puts the symbol at
+// InitGL's address and keeps the following .text in place.
+[[gnu::noreturn]] void getAppVersion() {
 }
 
 int Engine::InitGL(bool shaders, int width, int height) {

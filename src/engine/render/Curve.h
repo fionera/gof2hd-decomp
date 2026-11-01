@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-    struct CurveKeyframe; // defined in AbyssEngine.cpp (the only TU that touches keyframes)
+    struct CurveKeyframe; // defined in Curve.cpp (the only TU that touches keyframes)
 
     struct Curve {
         uint16_t count;
