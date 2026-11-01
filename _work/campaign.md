@@ -4387,3 +4387,10 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **Layout.cpp / RecordHandler.cpp / LevelScript.cpp TU order: byte_exact 2523 -> 2552 (+29)**:
   `w3345` (Layout.cpp first-reference order, +16), `w3347` (RecordHandler.cpp order, readWanted
   now byte-exact, +29), `w3351` (LevelScript.cpp order, +2). PLT symbol diff 380 -> 252 lines.
+- **Gun::calcCharacterCollision: 63.3 -> 82.7%, byte_exact 2552 -> 2646 (+94)** (`w3343`): the
+  volatile enemy-slot hoist moves back to the outer loop and the compensating `.text` anchor is
+  gone, so every function after the anchor shifts back onto its original address.
+- **Hud/DialogueWindow/TouchButton TU order: PLT diff 252 -> 198** (`w3350`), byte-neutral.
+- `w3341`'s Level.cpp move of `createScene` (structurally correct per the layout dumps) is a
+  measured -40 because it grows `.text` by 32 B and shifts `.rodata` +16; not landed. Redo it
+  together with a size-neutral fix.
