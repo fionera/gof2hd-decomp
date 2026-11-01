@@ -6,6 +6,26 @@
 #include "game/world/Station.h"
 #include "game/core/String.h"
 
+BluePrint::BluePrint(int item) {
+    itemIndex = item;
+    Item *it = (*Globals::items)[item];
+    int type = it->getType();
+    batchMultiplier = (type == 1) ? 10 : 1;
+    stationIndex = -1;
+    Array<int> *quantities = (Array<int> *) it->getQuantities();
+    ingredientCounters = nullptr;
+    if (it->getIngredients() != nullptr) {
+        ingredientCounters = new Array<int>();
+        ArraySetLength(it->getIngredients()->size(), *ingredientCounters);
+        for (uint32_t i = 0; i < ingredientCounters->size(); i++)
+            (*ingredientCounters)[i] = (*quantities)[i];
+    }
+    locked = 0;
+    productionCount = 0;
+    spentValue = 0;
+    remainingBatch = batchMultiplier;
+}
+
 int BluePrint::getAutoCompletionPrice() {
     if (itemIndex == 0xd2)
         return getIngredientsValue() + 0x1e8480;
@@ -109,26 +129,6 @@ int BluePrint::getIngredientsValue() {
         total += (*ingredientCounters)[i] * price;
     }
     return total;
-}
-
-BluePrint::BluePrint(int item) {
-    itemIndex = item;
-    Item *it = (*Globals::items)[item];
-    int type = it->getType();
-    batchMultiplier = (type == 1) ? 10 : 1;
-    stationIndex = -1;
-    Array<int> *quantities = (Array<int> *) it->getQuantities();
-    ingredientCounters = nullptr;
-    if (it->getIngredients() != nullptr) {
-        ingredientCounters = new Array<int>();
-        ArraySetLength(it->getIngredients()->size(), *ingredientCounters);
-        for (uint32_t i = 0; i < ingredientCounters->size(); i++)
-            (*ingredientCounters)[i] = (*quantities)[i];
-    }
-    locked = 0;
-    productionCount = 0;
-    spentValue = 0;
-    remainingBatch = batchMultiplier;
 }
 
 int BluePrint::getBaseQuantity() { return batchMultiplier; }

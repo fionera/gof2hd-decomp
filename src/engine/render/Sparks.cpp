@@ -8,6 +8,14 @@ static PaintCanvas **g_Sparks_canvas_ctor = &Globals::Canvas;
 
 static AERandom **g_Sparks_random_ctor = &Globals::rnd;
 
+static PaintCanvas **g_Sparks_canvas_translate = &Globals::Canvas;
+
+static PaintCanvas **g_Sparks_canvas_explode_rocket = &Globals::Canvas;
+
+static PaintCanvas **g_Sparks_canvas_explode_single = &Globals::Canvas;
+
+static AERandom **g_Sparks_random_explode = &Globals::rnd;
+
 Sparks::Sparks(int kind) {
     uint32_t count = 5;
     if (kind == 0)
@@ -47,50 +55,9 @@ Sparks::Sparks(int kind) {
     this->elapsed = 0;
 }
 
-static PaintCanvas **g_Sparks_canvas_translate = &Globals::Canvas;
-
-void Sparks::translate(Vector const &v) {
-    PaintCanvas **canvas = g_Sparks_canvas_translate;
-    for (uint32_t i = 0; i < this->count; i++)
-        (*canvas)->SpriteSystemAddPosition(this->spriteSystem, (uint16_t) i,
-                                           v.x, v.y, v.z);
-}
-
-Sparks::~Sparks() {
-    delete[] this->lifetimeThresholds;
-    this->lifetimeThresholds = nullptr;
-}
-
-void Sparks::explode(Vector const &v) {
-    return this->explode((int) v.x, (int) v.y, (int) v.z);
-}
-
 bool Sparks::isRocket() {
     return this->kind == 1;
 }
-
-void Sparks::update(int step) {
-    if (this->active == 0)
-        return;
-
-    this->elapsed += step;
-    for (uint32_t i = 0; i < this->count; i++) {
-        if (this->elapsed > this->lifetimeThresholds[i])
-            Globals::Canvas->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i,
-                                                 (int16_t) (this->lifetime - (this->elapsed << 1)));
-    }
-
-    if ((this->kind == 1 && this->elapsed * 2 > this->lifetime) || this->elapsed > 500) {
-        this->elapsed = 0;
-        this->active = 0;
-    }
-}
-
-static PaintCanvas **g_Sparks_canvas_explode_rocket = &Globals::Canvas;
-
-static PaintCanvas **g_Sparks_canvas_explode_single = &Globals::Canvas;
-
-static AERandom **g_Sparks_random_explode = &Globals::rnd;
 
 void Sparks::explode(int x, int y, int z) {
     int x0 = x;
@@ -122,6 +89,10 @@ void Sparks::explode(int x, int y, int z) {
     this->active = 1;
 }
 
+void Sparks::explode(Vector const &v) {
+    return this->explode((int) v.x, (int) v.y, (int) v.z);
+}
+
 void Sparks::render() {
     if (this->active != 0) {
         Globals::Canvas->SetTexture(this->texture, 0xffffffff);
@@ -148,4 +119,33 @@ void Sparks::render() {
         canvas->SetWorldViewMatrix(matrix);
         Globals::Canvas->DrawSpriteSystem(this->spriteSystem);
     }
+}
+
+void Sparks::update(int step) {
+    if (this->active == 0)
+        return;
+
+    this->elapsed += step;
+    for (uint32_t i = 0; i < this->count; i++) {
+        if (this->elapsed > this->lifetimeThresholds[i])
+            Globals::Canvas->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i,
+                                                 (int16_t) (this->lifetime - (this->elapsed << 1)));
+    }
+
+    if ((this->kind == 1 && this->elapsed * 2 > this->lifetime) || this->elapsed > 500) {
+        this->elapsed = 0;
+        this->active = 0;
+    }
+}
+
+void Sparks::translate(Vector const &v) {
+    PaintCanvas **canvas = g_Sparks_canvas_translate;
+    for (uint32_t i = 0; i < this->count; i++)
+        (*canvas)->SpriteSystemAddPosition(this->spriteSystem, (uint16_t) i,
+                                           v.x, v.y, v.z);
+}
+
+Sparks::~Sparks() {
+    delete[] this->lifetimeThresholds;
+    this->lifetimeThresholds = nullptr;
 }
