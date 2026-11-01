@@ -245,26 +245,12 @@ ParticleSystemManager::~ParticleSystemManager() {
     release();
 }
 
-void ParticleSystemManager::release() {
-    releaseSprites();
-    this->canvas = nullptr;
-    ArrayReleaseClasses(this->meshSystems);
-}
-
 void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam) {
     if (this->cameraSet == cam)
         return;
     this->cameraSet = cam;
     releaseSprites();
     initSprites();
-}
-
-void ParticleSystemManager::releaseSprites() {
-    ArrayReleaseClasses(this->spriteSystems);
-    if (this->spriteSystemId != 0xffffffff) {
-        this->canvas->ReleaseSpriteSystemResource(this->spriteSystemId);
-        this->spriteSystemId = 0xffffffff;
-    }
 }
 
 void ParticleSystemManager::render3d() {
@@ -292,6 +278,20 @@ void ParticleSystemManager::renderSprites() {
         ParticleSystemSprite::render(
             this->canvas, this->spriteSystemId, this->spriteMeshId,
             static_cast<AbyssEngine::BlendMode>(this->spriteBlendMode));
+}
+
+void ParticleSystemManager::release() {
+    releaseSprites();
+    this->canvas = nullptr;
+    ArrayReleaseClasses(this->meshSystems);
+}
+
+void ParticleSystemManager::releaseSprites() {
+    ArrayReleaseClasses(this->spriteSystems);
+    if (this->spriteSystemId != 0xffffffff) {
+        this->canvas->ReleaseSpriteSystemResource(this->spriteSystemId);
+        this->spriteSystemId = 0xffffffff;
+    }
 }
 
 void ParticleSystemManager::renderPost3d() {

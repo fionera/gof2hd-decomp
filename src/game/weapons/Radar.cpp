@@ -370,7 +370,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         this->field_0x1a8 =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
-        if (__builtin_expect(this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet(), 1)) { // lint: arm_builtin
+        if (this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet()) {
             int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
             Array<int> *targets = (Array<int> *) this->level->getStarSystem()->getPlanetTargets();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
