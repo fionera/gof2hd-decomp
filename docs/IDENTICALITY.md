@@ -141,6 +141,12 @@ The original build is now pinned by evidence, not by A/B alone:
   app region is exactly first-mention over crtbegin + 203 objects (4,935/4,935). See
   `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and
   `_work/reconstructions/tu_compile_link_order_w3560.md`.
+* **Shortcut removal (same wave).** The `s_processPad` anchor is replaced by the real 16-byte
+  unreferenced file-static object that `TargetFollowCamera.cpp` owns at `0x2183a0`; the eight
+  `(void)` odr-use anchors in `Level.cpp` are replaced by `[[gnu::used]]` definitions at the
+  same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
+  `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
+  `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
   `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
   `abort_message.cpp` path, and the only app source-file witness is `main.c` in three log
