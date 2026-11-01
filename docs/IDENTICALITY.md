@@ -7,10 +7,14 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 ## Update 2026-10-26
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Current: **byte_exact 2936, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 =======
 Current: **byte_exact 2734, linked_exact 4494, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 >>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
+=======
+Current: **byte_exact 3885, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+>>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -26,10 +30,14 @@ The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
 <<<<<<< HEAD
+<<<<<<< HEAD
 mode). Current: **compared 4524, byte_exact 2936, linked_exact 4494, avg 99.89%, stub_zero_size
 =======
 mode). Current: **compared 4524, byte_exact 2734, linked_exact 4494, avg 99.9%, stub_zero_size
 >>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
+=======
+mode). Current: **compared 4524, byte_exact 3885, linked_exact 4494, avg 99.89%, stub_zero_size
+>>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -44,10 +52,10 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,500 | **+36** | the MenuTouchWindow anchor is now empty; the residual is the Rank-3 pads plus the `HangarWindow::initialize` shrink (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
-| **.rodata** | 269,159 | 269,207 | **+48** | address still exact (0x1c9e10); the MenuTouchWindow language table now lives here as in the original, which costs +48 B of size. |
-| .ARM.exidx | 28,528 | 28,504 | **−24** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels, and ten empty-`.text` objects with no original sentinel are now dropped; 3563 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md` and `data_layout_audit_2.md`). |
-| .ARM.extab | 156,312 | 156,300 | **−12** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact since the stale `marqueeImageByteSum` anchor was deleted and `levelTextAnchor` was trimmed to 0x24 B (see `_work/reconstructions/exidx_extab_audit.md`). |
+| **.rodata** | 269,159 | 269,207 | **+48** | address exact (0x1c9e10); the size delta is the 12 per-TU literal/table differences listed in `data_layout_audit_2.md`. |
+| .ARM.exidx | 28,528 | 28,544 | **+16** | 3566 vs 3568 entries: CANTUNWIND count now exact (272); +1 inline and +1 extab entry remain (see `_work/reconstructions/exidx_extab_audit.md`). |
+| .ARM.extab | 156,312 | 156,284 | **−28** | nine non-exact functions have different LSDA record lengths; total −0x1c is fully accounted for in `_work/reconstructions/exidx_extab_audit.md`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | exact (0x20cbb0/0x2fe8); the language-table anchor object is gone. |
@@ -60,16 +68,17 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 
 1. **31 non-linked exported functions.** 4494 of 4524 compared functions are linked-exact; the
    remaining 30 are the long tail (1 at 100% fuzzy but not linked — the case-157 compare encoding —
-   9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now −24 B: the MenuTouchWindow anchor is empty and the remaining
-   Rank-3 pads are partly removed; the residual is the `HangarWindow::initialize` shrink. This is
-   a finishing campaign, not a missing-code campaign.
+   9 in 90–99%, 12 in 80–89%, 5 in 70–79%, 3 below 60%). The `.text` total is now exact
+   (0x1337c8); the remaining differences are per-function body deltas. This is a finishing
+   campaign, not a missing-code campaign.
 2. **Anonymous data layout.** `.rodata` is 48 B larger, `.data` and `.data.rel.ro` are now exact and `.bss` is 28 B larger than the original;
    exported data objects already match 843/843. The residual is local const/string/initialised data
    and literal pools owned by the remaining non-exact TUs.
-3. **EH tables.** `.ARM.extab` is only 12 B smaller now (was 4,572 B): the app and vendored C
+3. **EH tables.** `.ARM.extab` is 28 B smaller now (was 4,572 B): the app and vendored C
    objects were missing `-funwind-tables`. The residual is the net unwind-length difference of nine
-   non-exact functions (`HangarWindow::render` −48, `Level::createShip` −20,
-   `RecordHandler::recordStoreWrite` −16, ...).
+   non-exact functions (`HangarWindow::render` −36, `Hud::draw` +16, `RecordHandler::recordStoreWrite`
+   −16, `ConfigReader::RegisterTokenReadFunction` −16, `__cxa_demangle` +12, `StarMap::draw` +12,
+   `Level::createShip` −8, `Generator::createMission` +4, `LevelScript::process` +4).
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is now reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). Dynamic-symbol order and the GNU build-id are content

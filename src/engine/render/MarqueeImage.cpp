@@ -2,13 +2,6 @@
 #include "game/core/Globals.h"
 #include "engine/render/PaintCanvas.h"
 
-// Address anchor: the original has no out-of-line helper here, but the layout of the
-// preceding TUs is 16 bytes short.  Keeping this local function ahead of the class
-// shifts the MarqueeImage block to its original address without changing .text size.
-[[gnu::used]] static int marqueeImageByteSum(int value) {
-    return (value & 0xff) + ((value >> 8) & 0xff) + ((value >> 16) & 0xff) + (value >> 24);
-}
-
 MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed) {
     Globals::Canvas->Image2DCreate(image, this->image);
 

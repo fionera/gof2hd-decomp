@@ -32,22 +32,15 @@ import subprocess
 import sys
 
 
-# Ten app objects whose empty plain `.text` sentinel is dropped entirely.  The original
-# link's CANTUNWIND set is not fully recoverable from the stripped binary; these ten
-# zero-size sections only affect `.ARM.exidx` size.  Dropping them moves `.rodata` back
-# to the original 0x1c9e10 base (the 0x60-byte read-only layout delta) without moving
-# any function.  See _work/reconstructions/data_layout_audit_2.md.
+# App objects whose empty plain `.text` sentinel is dropped entirely.  The original link's
+# CANTUNWIND set is not fully recoverable from the stripped binary; these zero-size sections
+# only affect `.ARM.exidx` size (they never move a function).  The set is tuned so the
+# `.text`+`.ARM.exidx`+`.ARM.extab` total still rounds to the original 0x1c9e10 `.rodata`
+# base (the window is only 16 bytes wide).  See _work/reconstructions/exidx_extab_audit.md.
 DROP_EMPTY_TEXT = {
     "BackButton.c.obj",
-    "NFC.cpp.obj",
-    "VirtualInput.cpp.obj",
-    "BlowfishSubkeyFile.cpp.obj",
     "main.c.obj",
     "GOF2HD2012.c.obj",
-    "Mesh.cpp.obj",
-    "GLES1Compat.cpp.obj",
-    "FileInterfaceAndroid.cpp.obj",
-    "EaseInOutMatrix.cpp.obj",
 }
 
 # libcrypto's three plain-.text objects are each one section.  Give them unique names so

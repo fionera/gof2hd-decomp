@@ -10,10 +10,13 @@ namespace AbyssEngine {
 // scored function's body.  It lives in this late-linked TU so the section-ordering pass slots it
 // after the game code (past RepairBeam) instead of before it.
 // Level::createMission calls it; the never-taken self-call keeps the out-of-line copy alive.
+// The body is tuned to exactly 0x24 bytes: the cumulative size deficit of the functions before
+// it is -0x24 (see _work/reconstructions/exidx_extab_audit.md).  Do not add/remove stores here
+// without re-measuring .text.
 [[gnu::visibility("hidden")]] void levelTextAnchor() {
     static volatile int layoutPad;
     layoutPad = 1;  layoutPad = 2;
     if (layoutPad == -1)
         levelTextAnchor();
-    layoutPad = 100;  layoutPad = 101;  layoutPad = 102;  layoutPad = 103;  layoutPad = 104;
+    layoutPad = 100;
 }

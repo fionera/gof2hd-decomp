@@ -214,10 +214,14 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Current numbers (of **4524** compared): **byte_exact 2936, linked_exact 4494, avg 99.89%**
 =======
 Current numbers (of **4524** compared): **byte_exact 2734, linked_exact 4494, avg 99.9%**
 >>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
+=======
+Current numbers (of **4524** compared): **byte_exact 3885, linked_exact 4494, avg 99.89%**
+>>>>>>> ca8aa889 (exidx/extab pass 1: make .text exact via stale-anchor removal (byte 2923 -> 3885))
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
