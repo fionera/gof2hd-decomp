@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 2523,
+  "byte_exact": 2552,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -338,7 +338,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigamiSuperClub",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -394,7 +394,7 @@
   {
    "name": "Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 60,
    "usize": 60
@@ -12306,7 +12306,7 @@
   {
    "name": "_ZN11HackingGame8render2DEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 2090,
    "usize": 2090
@@ -12346,7 +12346,7 @@
   {
    "name": "_ZN11LevelScript10lookBehindEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -12354,7 +12354,7 @@
   {
    "name": "_ZN11LevelScript11resetCameraEP5Level",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 124,
    "usize": 124
@@ -15826,7 +15826,7 @@
   {
    "name": "_ZN13RecordHandler10readWantedEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 484,
    "usize": 484
@@ -15842,7 +15842,7 @@
   {
    "name": "_ZN13RecordHandler11loadOptionsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 864,
    "usize": 864
@@ -15882,7 +15882,7 @@
   {
    "name": "_ZN13RecordHandler14readAllRecordsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -15922,7 +15922,7 @@
   {
    "name": "_ZN13RecordHandler19loadResolutionValueEf",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 496,
    "usize": 496
@@ -15938,7 +15938,7 @@
   {
    "name": "_ZN13RecordHandler21readAllPreviewRecordsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 88,
    "usize": 88
@@ -15962,7 +15962,7 @@
   {
    "name": "_ZN13RecordHandler22recordStoreReadPreviewEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 236,
    "usize": 236
@@ -15970,7 +15970,7 @@
   {
    "name": "_ZN13RecordHandler22writeByteArrayAsRecordEPaiib",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 156,
    "usize": 156
@@ -16002,7 +16002,7 @@
   {
    "name": "_ZN13RecordHandler27writeByteArrayAsOptionsFileEPai",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 120,
    "usize": 120
@@ -16034,7 +16034,7 @@
   {
    "name": "_ZN13RecordHandler9readAgentEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 1012,
    "usize": 1012
@@ -17674,7 +17674,7 @@
   {
    "name": "_ZN15MenuTouchWindow15setCutsceneModeEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 62,
    "usize": 62
@@ -17730,7 +17730,7 @@
   {
    "name": "_ZN15MenuTouchWindow20setSkipButtonVisibleEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 62,
    "usize": 62
@@ -17738,7 +17738,7 @@
   {
    "name": "_ZN15MenuTouchWindow20showSupernovaMessageEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
@@ -25274,7 +25274,7 @@
   {
    "name": "_ZN6Layout10drawWindowEN11AbyssEngine6StringEb",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 140,
    "usize": 140
@@ -25282,7 +25282,7 @@
   {
    "name": "_ZN6Layout10drawWindowEN11AbyssEngine6StringEiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 104,
    "usize": 104
@@ -25322,7 +25322,7 @@
   {
    "name": "_ZN6Layout12drawBGBorderEjjiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -25330,7 +25330,7 @@
   {
    "name": "_ZN6Layout12drawBGBorderEjjiiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 684,
    "usize": 684
@@ -25362,7 +25362,7 @@
   {
    "name": "_ZN6Layout13drawScrollBarEiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 300,
    "usize": 300
@@ -25482,7 +25482,7 @@
   {
    "name": "_ZN6Layout6drawBGEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -25498,7 +25498,7 @@
   {
    "name": "_ZN6Layout6updateEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 86,
    "usize": 86
@@ -25506,7 +25506,7 @@
   {
    "name": "_ZN6Layout7drawBoxEiiiiiN11AbyssEngine6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 108,
    "usize": 108
@@ -25530,7 +25530,7 @@
   {
    "name": "_ZN6Layout7initTipEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 184,
    "usize": 184
@@ -28354,7 +28354,7 @@
   {
    "name": "_ZN7Globals9drawLinesEjP5ArrayIPN11AbyssEngine6StringEEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -28378,7 +28378,7 @@
   {
    "name": "_ZN7GlobalsD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 468,
    "usize": 468
@@ -28386,7 +28386,7 @@
   {
    "name": "_ZN7GlobalsD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 468,
    "usize": 468

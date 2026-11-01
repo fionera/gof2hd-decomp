@@ -4384,3 +4384,6 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
 - **HangarList/ListItem TU order: byte_exact 2495 -> 2523 (+28)** (`w3348`): HangarList.cpp and
   MiningGame.cpp reordered to the original first-reference order, which fixes the ListItem/Ship/
   MarqueeImage PLT block (index ~2587).
+- **Layout.cpp / RecordHandler.cpp / LevelScript.cpp TU order: byte_exact 2523 -> 2552 (+29)**:
+  `w3345` (Layout.cpp first-reference order, +16), `w3347` (RecordHandler.cpp order, readWanted
+  now byte-exact, +29), `w3351` (LevelScript.cpp order, +2). PLT symbol diff 380 -> 252 lines.
