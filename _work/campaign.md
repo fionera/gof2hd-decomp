@@ -4572,3 +4572,9 @@ original build flags.
   byte"). Method + ranked region table: `_work/reconstructions/literal_pool_sweep_w3436.md`.
 - **Gun::calcCharacterCollision** (`w3432`, no change), **MGame::OnTouchEnd** (`w3399`, no
   change — the 4-byte delta is a scheduling `mov` pair, not a source-shape error).
+- **Status `.rodata` order** (`w3438`, byte 4249 -> 4250): `g_levelXPTable` must precede
+  `kMissionCase`. Round-2 map: `_work/reconstructions/rodata_content_map_round2.md`.
+- **SpaceLounge::drawLounge** (`w3415`): clamp-condition reassociation, 95.34 -> 95.47%.
+- **No change** (plateau confirmed): `RocketGun::update` (`w3413`, 86.9% — greedy-allocator
+  colouring), `ModStation` ctor (`w3414`, 98.6% — post-RA scheduler artifact),
+  `PlayerEgo::calcCollision` (`w3435`, 87.3% — the `i==0` guard perturbs loop rotation).
