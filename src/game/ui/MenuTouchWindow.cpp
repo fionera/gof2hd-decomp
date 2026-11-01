@@ -811,10 +811,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowA->setTextCentered(true);
 
     TouchButton *credits;
-    if (Globals::iPadAssetsWithLowerRes || !Globals::iPad) {
-        credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
-                                  Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
-    } else {
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes) {
         credits = new TouchButton(*Globals::gameText->getText(98), 7,
                                   (int) ((float) (this->slotListWidth + Globals::layout->buttonInsetX) +
                                          (float) this->slotTextWidth * 0.5f),
@@ -822,6 +819,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       Globals::layout->field_0x24 -
                                       Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c),
                                   36);
+    } else {
+        credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
+                                  Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     }
     credits->id = 52;
     ArrayAdd(credits, *this->scrollEntries);
