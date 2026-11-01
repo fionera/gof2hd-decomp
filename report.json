@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 4107,
+  "byte_exact": 4109,
   "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -23602,7 +23602,7 @@
   {
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 29676,
    "usize": 29676
@@ -31530,7 +31530,7 @@
   {
    "name": "_ZN9FModSound13freeAllEventsEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 260,
    "usize": 260

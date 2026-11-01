@@ -4456,3 +4456,7 @@ original build flags.
 - **Literal-pool audit passes 2-3: byte_exact 4105 -> 4107, linked_exact 4494 -> 4495**
   (`w3390` link order from the .rodata witness; `w3398` `Level::createCampaignMission`
   case-157 spawn-slot selector now reproduces the original `cmp #5/#9 bcs` form).
+- **Literal-pool passes 4-5: byte_exact 4107 -> 4109** (`w3401` Level.cpp case-114..125 tables +
+  kCarrierTurrets to the original .rodata order; `w3404` FModSound CategoryNames/LanguageAudio
+  moved to file scope so the `FMOD_GOF2` string order matches). The first `.rodata` divergence
+  moved from 0x1cafa0 to 0x1e5f50.
