@@ -4453,3 +4453,6 @@ original build flags.
   matches the original except the `.rodata` content size (+0x40)**: `.text` 0x1337c8 @0x69440,
   `.ARM.exidx` 0x6f70 @0x19cc08, `.ARM.extab` 0x26298 @0x1a3b78, `.rodata` base 0x1c9e10,
   `.bss` 0x69ac, `.data`/`.data.rel.ro`/`.got`/`.dynamic`/`.plt` — all exact.
+- **Literal-pool audit passes 2-3: byte_exact 4105 -> 4107, linked_exact 4494 -> 4495**
+  (`w3390` link order from the .rodata witness; `w3398` `Level::createCampaignMission`
+  case-157 spawn-slot selector now reproduces the original `cmp #5/#9 bcs` form).

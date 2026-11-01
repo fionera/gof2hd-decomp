@@ -5,7 +5,7 @@
   "compared": 4524,
   "avg_match": 99.89,
   "byte_exact": 4107,
-  "linked_exact": 4494,
+  "linked_exact": 4495,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
@@ -23603,7 +23603,7 @@
    "name": "_ZN5Level21createCampaignMissionEv",
    "pct": 100.0,
    "byte": false,
-   "linked": false,
+   "linked": true,
    "osize": 29676,
    "usize": 29676
   },
