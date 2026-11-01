@@ -24,29 +24,6 @@ namespace AbyssEngine {
     namespace AEMath {
     }
 
-    void CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam) {
-        if (cam != 0) {
-            float *f = (float *) cam;
-            f[1] = fov;
-            f[2] = aspectNum;
-
-            float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
-            float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
-            float scale = s / c;
-            f[0x12] = scale;
-            f[0x13] = (aspectDen / near) * scale;
-            f[0x14] = aspectDen / near;
-
-            float at = AbyssEngine::AEMath::ATanf((aspectDen / near) * scale);
-            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(at);
-        }
-    }
-}
-
-namespace AbyssEngine {
-    namespace AEMath {
-    }
-
     void CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
                               Camera *cam) {
         if (cam != 0) {
@@ -64,6 +41,29 @@ namespace AbyssEngine {
 
             f[0x16] = 1.0f / AbyssEngine::AEMath::Cosf(half);
             f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]));
+        }
+    }
+}
+
+namespace AbyssEngine {
+    namespace AEMath {
+    }
+
+    void CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam) {
+        if (cam != 0) {
+            float *f = (float *) cam;
+            f[1] = fov;
+            f[2] = aspectNum;
+
+            float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
+            float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
+            float scale = s / c;
+            f[0x12] = scale;
+            f[0x13] = (aspectDen / near) * scale;
+            f[0x14] = aspectDen / near;
+
+            float at = AbyssEngine::AEMath::ATanf((aspectDen / near) * scale);
+            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(at);
         }
     }
 }
