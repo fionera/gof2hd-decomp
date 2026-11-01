@@ -4480,3 +4480,9 @@ original build flags.
 - **Shader string mojibake fixed** (byte-neutral, 4115): `VertexColorAlphaTextureShader.cpp`
   had `benÃ¶tigt` (UTF-8 C3 83 C2 B6) where the original has `benötigt` (C3 B6). The extra 0x83
   byte was the first difference at `.rodata`+0x301eb in the no-`*` ordering experiment.
+- **`createCampaignMission` residual analysed** (`w3406`, not landed): all 45 differing words
+  are PIC deltas into `.rodata` caused by missing `g_cg_meshTable`/`g_cg_soundTable`/
+  `createMission` coord blocks before `kBaseTurrets` (0x328 bytes) plus a 0x80-byte
+  `kBlueprintSpacePoints` gap. Padding anchors make the function byte-exact but re-break the
+  exact `.rodata` size and lose 4 other functions (4115 -> 4111), so the real fix is to
+  reconstruct those missing blocks at their original position, not to pad.
