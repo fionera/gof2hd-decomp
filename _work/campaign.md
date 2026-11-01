@@ -4292,3 +4292,13 @@ mtw anchor for any size change before MenuTouchWindow.
   from the outer loop into the inner loop — that function is now 1920/1984 B and 63.3% (was
   82.7%), so it is a size error to fix in the layout assembly. Gate: byte 1540 -> 1544,
   linked 4493 -> 4494.
+- **CheckCrack/glError/MTitle gaps + Generator size-exact** (`w3293`): the three `+-2/4` drift
+  points after ApplicationManager/Engine/MTitle are gone and `Generator::createMission` is
+  1996/1996 B (73.6%). Gate unchanged (byte 1544, linked 4494).
+- **Layout 45.8 -> 46.2%** (`w3236`): if/else chains for the 10 innermost iPad ternaries, still
+  7072 B. Gate unchanged.
+- **PLT order identified as the dominant byte_exact blocker** (coordinator): `RepairBeam::update`
+  sits at its exact original address with an identical instruction stream but is not byte-exact;
+  every differing byte is a `blx <plt>` offset. Both files have 3674 PLT entries but the order
+  differs (`MTitle::OnTouchMove` @0x61df4 orig vs @0x61e00 ours), so every later slot shifts.
+  `diff` of the two PLT symbol sequences shows 1354 differing lines.
