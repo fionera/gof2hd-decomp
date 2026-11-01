@@ -33,7 +33,7 @@ size- and base-exact.
 Required work method:
 1. If cmake-build-match is missing: cmake --preset default
 2. Establish the current baseline with: cmake --build cmake-build-match --target check -j8
-   (record byte_exact / linked_exact / size / lint / drift; baseline is byte 4494, linked 4496).
+   (record byte_exact / linked_exact / size / lint / drift; baseline is byte 4496, linked 4496, .text 0x1337c8).
 3. Run controlled experiments. For compile-flag A/B use a scratch copy of the build dir or edit
    cmake/toolchain.cmake, rebuild, and record the full gate numbers. Never --update-baseline.
 4. Write a self-contained note in _work/reconstructions/ (new file or a clearly-marked section)
