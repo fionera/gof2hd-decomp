@@ -4232,3 +4232,8 @@ mtw anchor for any size change before MenuTouchWindow.
   literal-pool words match.
 - **Level::createShip 73.1 -> 73.2%, 2764 B** (`w3239`): make the loop index `unsigned x`, which
   matches the original's zero-extension in the hull-box loop. Gate unchanged (byte 1495).
+- **Anchor-removal measurement on top of the exidx fix** (coordinator): emptying
+  `mtwTextLayoutAnchor` now gives `.text 0x133850` (+0x88), `.ARM.exidx 0x6fa8` (+0x38),
+  `.rodata 0x1c9ed0` (+0xC0), `.got/.data/.dynamic` exact, but `byte_exact 1473` (-22). The
+  remaining `.text` excess is the ~136 B of Rank-3 prologue anchors. w3269 is tasked with the
+  gate-green combination.
