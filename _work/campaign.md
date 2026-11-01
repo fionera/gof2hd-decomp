@@ -4519,3 +4519,8 @@ original build flags.
   `.data.rel.ro` 5 / 5; non-PIC `.text` delta into `.bss` 2 / 2. Largest `.rodata` buckets:
   0x1e6000 (77 runs/29 funcs), 0x1fd000 (64/11, Level block), 0x1fb000 (61/40), 0x1fc000 (23/8).
   This is the priority map for the remaining byte-exact gap.
+- **`Generator::createMission` 0.5f cost factor** (`w3386`): the original multiplies by `0.5f`,
+  not `0.5000001f`; fuzzy 73.6 -> 73.8%, size 1996 -> 1992 B. The 4-byte loss is currently held
+  by a `generatorMissionLayoutPad()` anchor in `MTitle.cpp` (removing it drops byte_exact to
+  2510 because `.text` shifts). The real fix is the missing 4 bytes of `createMission` body,
+  after which the anchor must go.
