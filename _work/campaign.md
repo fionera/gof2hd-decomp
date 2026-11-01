@@ -4629,3 +4629,12 @@ original build flags.
   0 and `.data.rel.ro` is down to 3. Note: `_work/reconstructions/rodata_content_round5_w3477.md`.
   Follow-up: the `#pragma clang section` and `(void)` odr-use anchors are not ideal "plain C++";
   they should eventually be replaced by the original TU split.
+- **pct==100 closeout** (`w3485`, byte 4469 -> **4492**): 23 of the 27 instruction-identical
+  functions closed (item/ship/beam/sprite-gun/choice-window/ndk23/TouchButton/StatusWindow/
+  DialogueWindow/GameText/AbyssEngine post-effect/ModStation/SpaceLounge). Note:
+  `_work/reconstructions/pct100_27_w3485.md`.
+- **`Status::missionCompleted`** (`w3474`): 57.7 -> 86.7% at the same 1432 B size (rank-table
+  dispatch restored for source-order bodies).
+- **`Level::createMission`** (`w3476`): 83.36 -> 83.56%.
+- **`LevelScript::process`** (`w3478`): campaign cases 135/145 reordered to the tbh body order
+  (fuzzy 54.4 -> 54.1%, structurally closer).
