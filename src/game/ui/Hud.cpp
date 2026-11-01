@@ -960,7 +960,7 @@ void Hud::drawChallengeModeScore(int unused) {
     (void) unused;
     int digitW, overlap, y, digitH, screenW;
     int step;
-    int half, halfStep, left;
+    int half, halfStep, left, x;
     Globals::Canvas->SetColor(0xffffffff);
     digitW = this->digitSprite->getFrameWidth();
     overlap = Globals::layout->field_0x2c_rowHeight;
@@ -979,7 +979,7 @@ void Hud::drawChallengeModeScore(int unused) {
     }
     Globals::Canvas->SetColor(0x77ccffff);
     left = half - halfStep;
-    int x = left;
+    x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
         int frame = score.SubString(i, i + 1).ValueOf();
         this->digitSprite->setFrame(frame);
