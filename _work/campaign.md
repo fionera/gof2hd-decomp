@@ -4507,3 +4507,9 @@ original build flags.
   input order. Every section stays exact except `.rodata` (0x41b57 vs 0x41b67, -16 B). The first
   remaining content diff is 0x1e9f90: `Generator.cpp` emits `kKaamoStationItems` before
   `kAgentOfferItems`; the original has the reverse.
+- **`g_ips_shipTypeMap` is 64 entries, not 32** (not landed; content-only, size-neutral):
+  the original's table at 0x1fc3d0 is 0x100 bytes; the first 32 words equal
+  `Generator.cpp`'s `kShipRaces[0..31]` and the next 32 equal `kShipRaces[32..63]`
+  (`8,0,0,2,0,0,0,1,0,1,1,2,1,3,3,3,3,1,1,0,8,1,1,0,3,2,0,0,8,1,3,1`). Extending the
+  map adds 0x80 to `.rodata` (currently -16) but does not change byte_exact, so it waits for
+  the other missing 0x80 bytes.
