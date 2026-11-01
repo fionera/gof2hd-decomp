@@ -1,5 +1,8 @@
 #include "engine/math/Vector.h"
 #include "engine/math/AEMath.h"
+#include "engine/math/BSphere.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Transform.h"
 
 #include <cmath>
 
@@ -206,5 +209,45 @@ namespace AbyssEngine {
         Vector VectorLerp(const Vector &from, const Vector &to, float t) {
             return from + (to - from) * t;
         }
+        Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
+
+        Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+
+        // Vector::operator= is defined in this TU; keep the rotated-radius copy as a three-register
+        // store (the original inlines the same field copy).
+        static inline Vector &CopyVector(Vector &dst, const Vector &src) {
+            dst.x = src.x;
+            dst.y = src.y;
+            dst.z = src.z;
+            return dst;
+        }
+
+        void BSphere::Merge(const Transform &t) {
+            // World-space bounds of the transform: moved centre, radius scaled by the largest axis.
+            BSphere sphere;
+            sphere.radius2 = 1.0f;
+            {
+                Vector center = MatrixTransformVector(t.worldMatrix, t.boundingSphere.center);
+                sphere.center.x = center.x;
+                sphere.center.y = center.y;
+                sphere.center.z = center.z;
+            }
+            Vector v;
+            v.x = t.boundingSphere.radius;
+            v.y = t.boundingSphere.radius;
+            v.z = t.boundingSphere.radius;
+            Vector rotated = MatrixRotateVector(t.worldMatrix, v);
+            CopyVector(v, rotated);
+            float ax = v.x > 0.0f ? v.x : -v.x;
+            float ay = v.y > 0.0f ? v.y : -v.y;
+            float az = v.z > 0.0f ? v.z : -v.z;
+            if (ax > ay)
+                ay = ax;
+            if (ay > az)
+                az = ay;
+            sphere.radius = az;
+            Merge(sphere);
+        }
+
     }
 }
