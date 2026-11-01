@@ -47,12 +47,6 @@ endif()
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelCreateScene.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-sink-insts-to-avoid-spills")
 
-# LevelScript::process is dominated by greedy-allocator split-candidate choices.  The original's
-# local-interval cost accounting is reproduced by this scoped flag (LLVM's spelling); the sibling
-# LevelScript functions keep their baseline allocation.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/LevelScript.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-condsider-local-interval-cost")
-
 # Radar::draw's autopilot / otherLock / off-screen-blip __builtin_expect hints pick the wrong
 # block layout at LLVM's default 2000:1 weights; the original's cold autopilot block lands after
 # the planet loop at a much flatter likely:unlikely ratio.  Scope the weights to this TU so the

@@ -4165,3 +4165,7 @@ mtw anchor for any size change before MenuTouchWindow.
   link-flag forensics, layout/anchor audit v2 (+ the 267 missing `.ARM.exidx` entries), data-layout
   audit (`.rodata` -1056), local-function gap audit (address drift), dynsym-order audit (TU
   membership). Deliverables land as `_work/reconstructions/*.md`.
+- **LevelScript::process: drop the scoped `-condsider-local-interval-cost` flag** (`f8cf69c5`,
+  w3237): with the flag gone the 57232-byte body still scores 54.6% and the `s_processPad[4]`
+  store is no longer needed, so the whole LevelScript TU is back on LLVM 7.0.2 defaults. Gate
+  unchanged: byte 1458, linked 4493, .text 0x1343d0.
