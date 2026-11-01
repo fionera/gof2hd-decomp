@@ -1222,48 +1222,6 @@ void Level::createGasClouds() {
 
 static int g_tommyFace[8] = {4, 2, 0, 2, 2};
 
-// Station turret hardpoints per race: {race, position.xyz, rotation.xyz}.
-static const float kStationTurrets[4][2][7] = {
-    {{0.0f, 0.0f, -1097.14f, -4178.23f, 0.0f, 0.0f, 3.1415927f}, {0.0f, 0.0f, 1158.09f, 1180.59f, 0.0f, 0.0f, 0.0f}},
-    {{1.0f, 0.0f, -1096.98f, -2691.52f, 0.0f, 0.0f, 3.1415927f}, {1.0f, 0.0f, 1893.48f, 1068.07f, 0.0f, 0.0f, 0.0f}},
-    {{2.0f, 0.0f, -484.719f, 1741.22f, 0.0f, 0.0f, 3.1415927f}, {2.0f, 0.0f, 1458.84f, -2304.28f, 0.0f, 0.0f, 0.0f}},
-    {{3.0f, 0.0f, -516.08f, -3744.45f, 0.0f, 0.0f, 3.1415927f}, {3.0f, 0.0f, 515.766f, -3744.45f, 0.0f, 0.0f, 0.0f}},
-};
-// Alien station / outpost gun hardpoints: {position.xyz, rotation.xyz}.
-static const float kAlienStationTurrets[8][6] = {
-    {-6725.879f, 2458.2627f, -66.07605f, -0.0f, 1.570796f, 0.0f},
-    {5824.434f, 2458.2627f, 10243.145f, -0.0f, -1.570796f, -0.0f},
-    {-6725.879f, 2458.2627f, 2099.9644f, -0.0f, 1.570796f, 0.0f},
-    {5824.434f, 2458.2627f, 8436.65f, -0.0f, -1.570796f, -0.0f},
-    {-5548.711f, -2743.1519f, 11954.467f, -3.141593f, 1.570796f, -0.0f},
-    {-5548.711f, -2743.1519f, -3710.504f, -3.141593f, 1.570796f, -0.0f},
-    {4981.259f, -2743.1519f, 14659.006f, 3.141593f, -2.181661f, 0.0f},
-    {0.0f, 2458.2627f, -32811.1f, -0.0f, -0.0f, -0.0f},
-};
-static const float kAlienOutpostTurrets[7][6] = {
-    {5321.74f, 1893.1f, -15570.7f, 0.0f, 0.0f, -1.5707964f},
-    {2355.67f, 1115.48f, 7324.1f, 0.0f, 0.0f, -1.5707964f},
-    {0.0f, -4261.28f, 4876.28f, 0.0f, 0.0f, 3.1415927f},
-    {-5321.74f, 1893.1f, -15570.7f, 0.0f, 0.0f, 1.5707964f},
-    {0.0f, 5668.84f, -13871.7f, 0.0f, 0.0f, 0.0f},
-    {-2355.67f, 1115.48f, 7324.1f, 0.0f, 0.0f, 1.5707964f},
-    {0.000200685f, 2855.3f, 4161.15f, 0.0f, 0.0f, 0.0f},
-};
-// Pirate base gun hardpoints: {position.xyz, rotation.xyz}.
-static const float kBaseTurrets[5][6] = {
-    {10283.18f, -1122.7914f, 26039.262f, 0.0f, 0.0f, 0.0f},
-    {-10171.174f, -1082.702f, 25906.553f, 0.0f, 0.0f, 0.0f},
-    {-15624.387f, -787.1992f, -7569.43f, 0.0f, 0.0f, 0.0f},
-    {15624.387f, -787.1992f, -7569.43f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 4901.473f, 3083.9644f, 0.0f, 0.0f, 0.0f},
-};
-static const int kPirateStationCoords[4][3] = {
-    {-200000, -100000, 50000}, {50000, 200000, -100000}, {140000, -150000, 7000}, {170000, -170000, 10000}};
-static const int kBlueprintRaces[5] = {1, 3, 2, 0, 2};
-static const float kBlueprintPositions[5][3] = {
-    {-20000.0f, 30000.0f, 80000.0f}, {40000.0f, -30000.0f, 100000.0f}, {-80000.0f, 80000.0f, -90000.0f},
-    {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
-static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
 
 // Keep createStaticObjects ahead of createMission and createStaticObject behind
 // createRadioMessages: clang emits a function's section at its first *use*, so this
@@ -1774,22 +1732,55 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
         case 46:
             Globals::globals->addSoundResourceToList(12);
     }
-    // Emission-order references: the original Level TU emits the station/blueprint
-    // tables here, before createMission's local coordinate tables.
-    (void) kStationTurrets;
-    (void) kAlienStationTurrets;
-    (void) kAlienOutpostTurrets;
-    (void) kBaseTurrets;
-    (void) kPirateStationCoords;
-    (void) kBlueprintRaces;
-    (void) kBlueprintPositions;
-    (void) kBlueprintSpacePoints;
     gun->setLevel(this);
     if (this->playerGuns == nullptr)
         this->playerGuns = new Array<AbstractGun *>();
     ArrayAdd(weapon, *this->playerGuns);
     return gun;
 }
+
+// Station turret hardpoints per race: {race, position.xyz, rotation.xyz}.
+[[gnu::used]] static const float kStationTurrets[4][2][7] = {
+    {{0.0f, 0.0f, -1097.14f, -4178.23f, 0.0f, 0.0f, 3.1415927f}, {0.0f, 0.0f, 1158.09f, 1180.59f, 0.0f, 0.0f, 0.0f}},
+    {{1.0f, 0.0f, -1096.98f, -2691.52f, 0.0f, 0.0f, 3.1415927f}, {1.0f, 0.0f, 1893.48f, 1068.07f, 0.0f, 0.0f, 0.0f}},
+    {{2.0f, 0.0f, -484.719f, 1741.22f, 0.0f, 0.0f, 3.1415927f}, {2.0f, 0.0f, 1458.84f, -2304.28f, 0.0f, 0.0f, 0.0f}},
+    {{3.0f, 0.0f, -516.08f, -3744.45f, 0.0f, 0.0f, 3.1415927f}, {3.0f, 0.0f, 515.766f, -3744.45f, 0.0f, 0.0f, 0.0f}},
+};
+// Alien station / outpost gun hardpoints: {position.xyz, rotation.xyz}.
+[[gnu::used]] static const float kAlienStationTurrets[8][6] = {
+    {-6725.879f, 2458.2627f, -66.07605f, -0.0f, 1.570796f, 0.0f},
+    {5824.434f, 2458.2627f, 10243.145f, -0.0f, -1.570796f, -0.0f},
+    {-6725.879f, 2458.2627f, 2099.9644f, -0.0f, 1.570796f, 0.0f},
+    {5824.434f, 2458.2627f, 8436.65f, -0.0f, -1.570796f, -0.0f},
+    {-5548.711f, -2743.1519f, 11954.467f, -3.141593f, 1.570796f, -0.0f},
+    {-5548.711f, -2743.1519f, -3710.504f, -3.141593f, 1.570796f, -0.0f},
+    {4981.259f, -2743.1519f, 14659.006f, 3.141593f, -2.181661f, 0.0f},
+    {0.0f, 2458.2627f, -32811.1f, -0.0f, -0.0f, -0.0f},
+};
+[[gnu::used]] static const float kAlienOutpostTurrets[7][6] = {
+    {5321.74f, 1893.1f, -15570.7f, 0.0f, 0.0f, -1.5707964f},
+    {2355.67f, 1115.48f, 7324.1f, 0.0f, 0.0f, -1.5707964f},
+    {0.0f, -4261.28f, 4876.28f, 0.0f, 0.0f, 3.1415927f},
+    {-5321.74f, 1893.1f, -15570.7f, 0.0f, 0.0f, 1.5707964f},
+    {0.0f, 5668.84f, -13871.7f, 0.0f, 0.0f, 0.0f},
+    {-2355.67f, 1115.48f, 7324.1f, 0.0f, 0.0f, 1.5707964f},
+    {0.000200685f, 2855.3f, 4161.15f, 0.0f, 0.0f, 0.0f},
+};
+// Pirate base gun hardpoints: {position.xyz, rotation.xyz}.
+[[gnu::used]] static const float kBaseTurrets[5][6] = {
+    {10283.18f, -1122.7914f, 26039.262f, 0.0f, 0.0f, 0.0f},
+    {-10171.174f, -1082.702f, 25906.553f, 0.0f, 0.0f, 0.0f},
+    {-15624.387f, -787.1992f, -7569.43f, 0.0f, 0.0f, 0.0f},
+    {15624.387f, -787.1992f, -7569.43f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 4901.473f, 3083.9644f, 0.0f, 0.0f, 0.0f},
+};
+[[gnu::used]] static const int kPirateStationCoords[4][3] = {
+    {-200000, -100000, 50000}, {50000, 200000, -100000}, {140000, -150000, 7000}, {170000, -170000, 10000}};
+[[gnu::used]] static const int kBlueprintRaces[5] = {1, 3, 2, 0, 2};
+[[gnu::used]] static const float kBlueprintPositions[5][3] = {
+    {-20000.0f, 30000.0f, 80000.0f}, {40000.0f, -30000.0f, 100000.0f}, {-80000.0f, 80000.0f, -90000.0f},
+    {40000.0f, 20000.0f, 140000.0f}, {40000.0f, 20000.0f, 140000.0f}};
+[[gnu::used]] static const int kBlueprintSpacePoints[5] = {14, 11, 12, 13, 12};
 
 void Level::createMission() {
     Mission *mission = Globals::status->getMission();
