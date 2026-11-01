@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 1540,
-  "linked_exact": 4493,
-  "fuzzy_perfect": 4495,
+  "byte_exact": 1544,
+  "linked_exact": 4494,
+  "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -38,6 +38,14 @@
    "linked": false,
    "osize": 57232,
    "usize": 57232
+  },
+  {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 63.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1920
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -96,14 +104,6 @@
    "usize": 612
   },
   {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 82.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1984
-  },
-  {
    "name": "_ZN5Level13createMissionEv",
    "pct": 84.3,
    "byte": false,
@@ -118,14 +118,6 @@
    "linked": false,
    "osize": 8132,
    "usize": 8132
-  },
-  {
-   "name": "_ZN12HangarWindow10initializeEv",
-   "pct": 85.3,
-   "byte": false,
-   "linked": false,
-   "osize": 3052,
-   "usize": 2984
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
@@ -14160,6 +14152,14 @@
    "usize": 5828
   },
   {
+   "name": "_ZN12HangarWindow10initializeEv",
+   "pct": 100.0,
+   "byte": false,
+   "linked": true,
+   "osize": 3052,
+   "usize": 3052
+  },
+  {
    "name": "_ZN12HangarWindow10selectItemEP8ListItem",
    "pct": 100.0,
    "byte": false,
@@ -14922,7 +14922,7 @@
   {
    "name": "_ZN12RadioMessageC1Eiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -14930,7 +14930,7 @@
   {
    "name": "_ZN12RadioMessageC1Eiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 102,
    "usize": 102
@@ -14946,7 +14946,7 @@
   {
    "name": "_ZN12RadioMessageC2Eiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -14954,7 +14954,7 @@
   {
    "name": "_ZN12RadioMessageC2Eiiiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 102,
    "usize": 102

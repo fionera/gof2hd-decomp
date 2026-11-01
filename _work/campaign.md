@@ -4286,3 +4286,9 @@ mtw anchor for any size change before MenuTouchWindow.
   `.rodata` 0x1c9e10 unchanged.
 - **`.bss` 27,096 -> 27,080 (+44 -> +28)** (`w3275`): the Android globals move back to their
   original TU (`NdkHooks.cpp` / `main.c`), not `VirtualInput.cpp`. Gate unchanged.
+- **`HangarWindow::initialize` 85.3% -> 100% linked, 3052/3052 B** (`w3273`): restored the real
+  iPad hint block (`hintX`, `Image2DCreate(1700, ...)`, `0.2f` width math, `hintOffsetX`). To keep
+  `.text` at 0x1337b0 the worker moved a `volatile` enemy reload in `Gun::calcCharacterCollision`
+  from the outer loop into the inner loop — that function is now 1920/1984 B and 63.3% (was
+  82.7%), so it is a size error to fix in the layout assembly. Gate: byte 1540 -> 1544,
+  linked 4493 -> 4494.
