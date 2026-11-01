@@ -9,67 +9,72 @@ namespace AbyssEngine {
     bool CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius,
                                     AEMath::Matrix *matrix, Camera *camera);
 
-    void Transform::SetCurrentAnimationTime(longlong value) {
-        this->currentTime = value;
+
+    Transform::Transform()
+        : translation(), scale(), localTranslation(),
+          localScale() {
+        this->animationLength = 0;
+        this->color = -1;
+        this->animating = true;
+        this->rangeStart = 0;
+        this->rangeEnd = 0;
+        this->animationSpeed = 1.0f;
+        this->currentTime = 0;
+        this->currentKeyFrameIndex = 0;
+
+        this->rotation = this->localRotation = Quaternion();
+        this->translation = this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
+        this->scale = this->localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
+        this->rotationMatrix = this->localMatrix = AEMath::Matrix();
+
+        this->localMatrix.m[5] = -1.0f;
+        this->flags = 2;
+        this->vfcEnabled = true;
+        this->keyFramesShared = false;
+        this->visible = true;
+        this->animationStart = 0;
     }
 
-    void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
-        longlong start;
-        if (first < 0 || (int) this->keyFrames.size() <= first) {
-            start = 0;
+    Transform::Transform(Transform *other)
+        : translation(), scale(), localTranslation(),
+          localScale() {
+        if (other == 0) {
+            // The original "delegates" by constructing (and immediately destroying) a temporary.
+            Transform();
         } else {
-            start = this->keyFrames[first]->timestamp;
-        }
+            this->animationStart = other->animationStart;
+            this->animating = true;
+            this->animationSpeed = 1.0f;
+            this->animationLength = other->animationLength;
+            this->rangeStart = other->rangeStart;
+            this->color = -1;
+            this->rangeEnd = other->rangeEnd;
+            this->currentTime = other->currentTime;
+            this->currentKeyFrameIndex = other->currentKeyFrameIndex;
+            this->rotation = other->rotation;
+            this->translation = other->translation;
+            this->scale = other->scale;
+            this->rotationMatrix = other->rotationMatrix;
+            this->localRotation = other->localRotation;
+            this->localTranslation = other->localTranslation;
+            this->localScale = other->localScale;
+            this->localMatrix = other->localMatrix;
+            this->flags = other->flags;
 
-        longlong end;
-        if (last >= 0 && last <= (int) this->keyFrames.size()) {
-            end = this->keyFrames[last]->timestamp;
-        } else {
-            end = 0;
-        }
-        SetAnimationRangeInTime(start, end);
-    }
-
-    void Transform::SetVisible(bool value) {
-        this->visible = value;
-    }
-
-    void Transform::SetVFCFlag(bool value) {
-        for (uint i = 0; i < this->meshes.size(); ++i) {
-            Mesh *mesh = this->meshes[i];
-            if (mesh != 0) {
-                Transform *child = mesh->animation;
-                if (child != 0) {
-                    child->SetVFCFlag(value);
-                }
+            for (uint i = 0; i < other->meshes.size(); ++i) {
+                Mesh *mesh = new Mesh(other->meshes[i]);
+                ArrayAdd(mesh, this->meshes);
             }
-        }
-        for (uint i = 0; i < this->children.size(); ++i) {
-            Transform *child = this->children[i];
-            if (child != 0) {
-                child->SetVFCFlag(value);
+            ArraySet(other->keyFrames, this->keyFrames);
+            for (uint i = 0; i < other->children.size(); ++i) {
+                Transform * child = new Transform(other->children[i]);
+                ArrayAdd(child, this->children);
             }
+            this->boundingSphere = other->boundingSphere;
+            this->visible = true;
+            this->vfcEnabled = true;
+            this->keyFramesShared = true;
         }
-        this->vfcEnabled = value;
-    }
-
-    void Transform::PauseAnimationWithKeyFrame(int index) {
-        if (index >= 0 && index < (int) this->keyFrames.size()) {
-            longlong time = this->keyFrames[index]->timestamp;
-            this->currentTime = time;
-            InternUpdate(time, false);
-        }
-        this->animating = false;
-    }
-
-    void Transform::PauseAnimationWithTimeStamp(longlong time) {
-        this->currentTime = time;
-        InternUpdate(time, false);
-        this->animating = false;
-    }
-
-    void Transform::SetAnimationSpeed(float value) {
-        this->animationSpeed = value;
     }
 
     void Transform::CollectAnimationData() {
@@ -109,10 +114,19 @@ namespace AbyssEngine {
         }
     }
 
-    Transform::~Transform() {
-        if (this->keyFramesShared == false) {
-            ArrayReleaseClasses(this->keyFrames);
+    void Transform::SetAnimationState(AnimationMode mode, void *) { // lint: void_ptr method parameter baked into mangled symbol
+        if (mode == static_cast<AnimationMode>(3)) {
+            this->animating = true;
+            this->currentTime = this->rangeStart;
+        } else {
+            if (mode == AnimationMode_0)
+                this->animating = false;
+            this->flags = mode;
         }
+    }
+
+    void Transform::SetAnimationSpeed(float value) {
+        this->animationSpeed = value;
     }
 
     void Transform::InitAnimationRangeInTime() {
@@ -139,156 +153,6 @@ namespace AbyssEngine {
             this->children[i]->InitAnimationRangeInTime();
         }
         Update(0, false);
-    }
-
-    int Transform::IsRunning() {
-        longlong start = this->rangeStart;
-        longlong current = this->currentTime;
-        if (start < current &&
-            current < this->rangeEnd &&
-            this->animating) {
-            return 1;
-        }
-        return 0;
-    }
-
-    void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-        // Re-blend the keys before the edited one for every channel it sets...
-        for (int i = 0; i + 1 < index; i++) {
-            KeyFrame *next = this->keyFrames[i + 1];
-            longlong keyTime = keyFrame->timestamp;
-            float toNext = (float) (keyTime - next->timestamp);
-            KeyFrame *prev = this->keyFrames[i];
-            float toPrev = (float) (keyTime - prev->timestamp);
-            float t = 1.0f - toNext / toPrev;
-            ulonglong channels = keyFrame->channels;
-            if ((channels & 0x40) != 0 && (next->channels & 0x40) == 0)
-                next->rotation.x = prev->rotation.x + t * (keyFrame->rotation.x - prev->rotation.x);
-            if ((channels & 0x80) != 0 && (next->channels & 0x80) == 0)
-                next->rotation.y = prev->rotation.y + t * (keyFrame->rotation.y - prev->rotation.y);
-            if ((channels & 0x100) != 0 && (next->channels & 0x100) == 0)
-                next->rotation.z = prev->rotation.z + t * (keyFrame->rotation.z - prev->rotation.z);
-            if ((channels & 0x1) != 0 && (next->channels & 0x1) == 0)
-                next->translation.x = prev->translation.x + t * (keyFrame->translation.x - prev->translation.x);
-            if ((channels & 0x2) != 0 && (next->channels & 0x2) == 0)
-                next->translation.y = prev->translation.y + t * (keyFrame->translation.y - prev->translation.y);
-            if ((channels & 0x4) != 0 && (next->channels & 0x4) == 0)
-                next->translation.z = prev->translation.z + t * (keyFrame->translation.z - prev->translation.z);
-            if ((channels & 0x8) != 0 && (next->channels & 0x8) == 0)
-                next->scale.x = prev->scale.x + t * (keyFrame->scale.x - prev->scale.x);
-            if ((channels & 0x10) != 0 && (next->channels & 0x10) == 0)
-                next->scale.y = prev->scale.y + t * (keyFrame->scale.y - prev->scale.y);
-            if ((channels & 0x20) != 0 && (next->channels & 0x20) == 0)
-                next->scale.z = prev->scale.z + t * (keyFrame->scale.z - prev->scale.z);
-            if ((channels & 0x200) != 0 && (next->channels & 0x200) == 0)
-                next->alpha = prev->alpha + t * (keyFrame->alpha - prev->alpha);
-            if ((channels & 0x10000) != 0 && (next->channels & 0x10000) == 0)
-                next->localRotation.x = prev->localRotation.x + t * (keyFrame->localRotation.x - prev->localRotation.x);
-            if ((channels & 0x20000) != 0 && (next->channels & 0x20000) == 0)
-                next->localRotation.y = prev->localRotation.y + t * (keyFrame->localRotation.y - prev->localRotation.y);
-            if ((channels & 0x40000) != 0 && (next->channels & 0x40000) == 0)
-                next->localRotation.z = prev->localRotation.z + t * (keyFrame->localRotation.z - prev->localRotation.z);
-            if ((channels & 0x400) != 0 && (next->channels & 0x400) == 0)
-                next->localTranslation.x = prev->localTranslation.x + t * (keyFrame->localTranslation.x - prev->localTranslation.x);
-            if ((channels & 0x800) != 0 && (next->channels & 0x800) == 0)
-                next->localTranslation.y = prev->localTranslation.y + t * (keyFrame->localTranslation.y - prev->localTranslation.y);
-            if ((channels & 0x1000) != 0 && (next->channels & 0x1000) == 0)
-                next->localTranslation.z = prev->localTranslation.z + t * (keyFrame->localTranslation.z - prev->localTranslation.z);
-            if ((channels & 0x2000) != 0 && (next->channels & 0x2000) == 0)
-                next->localScale.x = prev->localScale.x + t * (keyFrame->localScale.x - prev->localScale.x);
-            if ((channels & 0x4000) != 0 && (next->channels & 0x4000) == 0)
-                next->localScale.y = prev->localScale.y + t * (keyFrame->localScale.y - prev->localScale.y);
-            if ((channels & 0x8000) != 0 && (next->channels & 0x8000) == 0)
-                next->localScale.z = prev->localScale.z + t * (keyFrame->localScale.z - prev->localScale.z);
-            next->channels |= channels;
-        }
-
-        // ...and copy them into the later keys that do not animate them yet.
-        for (uint j = index + 1; j < this->keyFrames.size(); j++) {
-            ulonglong channels = keyFrame->channels;
-            if ((channels & 0x40) != 0 && (this->keyFrames[j]->channels & 0x40) == 0)
-                this->keyFrames[j]->rotation.x = keyFrame->rotation.x;
-            if ((channels & 0x80) != 0 && (this->keyFrames[j]->channels & 0x80) == 0)
-                this->keyFrames[j]->rotation.y = keyFrame->rotation.y;
-            if ((channels & 0x100) != 0 && (this->keyFrames[j]->channels & 0x100) == 0)
-                this->keyFrames[j]->rotation.z = keyFrame->rotation.z;
-            if ((channels & 0x1) != 0 && (this->keyFrames[j]->channels & 0x1) == 0)
-                this->keyFrames[j]->translation.x = keyFrame->translation.x;
-            if ((channels & 0x2) != 0 && (this->keyFrames[j]->channels & 0x2) == 0)
-                this->keyFrames[j]->translation.y = keyFrame->translation.y;
-            if ((channels & 0x4) != 0 && (this->keyFrames[j]->channels & 0x4) == 0)
-                this->keyFrames[j]->translation.z = keyFrame->translation.z;
-            if ((channels & 0x8) != 0 && (this->keyFrames[j]->channels & 0x8) == 0)
-                this->keyFrames[j]->scale.x = keyFrame->scale.x;
-            if ((channels & 0x10) != 0 && (this->keyFrames[j]->channels & 0x10) == 0)
-                this->keyFrames[j]->scale.y = keyFrame->scale.y;
-            if ((channels & 0x20) != 0 && (this->keyFrames[j]->channels & 0x20) == 0)
-                this->keyFrames[j]->scale.z = keyFrame->scale.z;
-            if ((channels & 0x200) != 0 && (this->keyFrames[j]->channels & 0x200) == 0)
-                this->keyFrames[j]->alpha = keyFrame->alpha;
-            if ((channels & 0x10000) != 0 && (this->keyFrames[j]->channels & 0x10000) == 0)
-                this->keyFrames[j]->localRotation.x = keyFrame->localRotation.x;
-            if ((channels & 0x20000) != 0 && (this->keyFrames[j]->channels & 0x20000) == 0)
-                this->keyFrames[j]->localRotation.y = keyFrame->localRotation.y;
-            if ((channels & 0x40000) != 0 && (this->keyFrames[j]->channels & 0x40000) == 0)
-                this->keyFrames[j]->localRotation.z = keyFrame->localRotation.z;
-            if ((channels & 0x400) != 0 && (this->keyFrames[j]->channels & 0x400) == 0)
-                this->keyFrames[j]->localTranslation.x = keyFrame->localTranslation.x;
-            if ((channels & 0x800) != 0 && (this->keyFrames[j]->channels & 0x800) == 0)
-                this->keyFrames[j]->localTranslation.y = keyFrame->localTranslation.y;
-            if ((channels & 0x1000) != 0 && (this->keyFrames[j]->channels & 0x1000) == 0)
-                this->keyFrames[j]->localTranslation.z = keyFrame->localTranslation.z;
-            if ((channels & 0x2000) != 0 && (this->keyFrames[j]->channels & 0x2000) == 0)
-                this->keyFrames[j]->localScale.x = keyFrame->localScale.x;
-            if ((channels & 0x4000) != 0 && (this->keyFrames[j]->channels & 0x4000) == 0)
-                this->keyFrames[j]->localScale.y = keyFrame->localScale.y;
-            if ((channels & 0x8000) != 0 && (this->keyFrames[j]->channels & 0x8000) == 0)
-                this->keyFrames[j]->localScale.z = keyFrame->localScale.z;
-        }
-    }
-
-    void Transform::SetAnimationLength(longlong value) {
-        this->animationLength = value;
-        this->rangeEnd = value;
-    }
-
-    void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
-        longlong length = this->animationLength;
-        if (length == 0) {
-            return;
-        }
-
-        longlong rangeEnd = end;
-        if (end < 0 || length < end) {
-            rangeEnd = length;
-        }
-        this->rangeEnd = rangeEnd;
-
-        this->rangeStart = start >= 0 ? (length < start ? 0 : start) : 0;
-
-        longlong current = this->currentTime;
-        this->currentTime = current < start ? start : (current > end ? end : current);
-
-        for (uint i = 0; i < this->meshes.size(); ++i) {
-            Mesh *mesh = this->meshes[i];
-            if (mesh != 0) {
-                Transform *child = mesh->animation;
-                if (child != 0) {
-                    child->SetAnimationRangeInTime(start, end);
-                }
-            }
-        }
-        for (uint i = 0; i < this->children.size(); ++i) {
-            this->children[i]->SetAnimationRangeInTime(start, end);
-        }
-        Update(0, false);
-    }
-
-    void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
-        ArrayAdd((KeyFrame *) 0, this->keyFrames);
-        for (int i = (int) this->keyFrames.size() - 1; i > index; i--)
-            this->keyFrames[i] = this->keyFrames[i - 1];
-        this->keyFrames[index] = keyFrame;
     }
 
     void Transform::Update(longlong time, bool updateBounds) {
@@ -340,84 +204,67 @@ namespace AbyssEngine {
         }
     }
 
-    void Transform::DebugOut(int value) {}
-
-    Transform::Transform(Transform *other)
-        : translation(), scale(), localTranslation(),
-          localScale() {
-        if (other == 0) {
-            // The original "delegates" by constructing (and immediately destroying) a temporary.
-            Transform();
-        } else {
-            this->animationStart = other->animationStart;
-            this->animating = true;
-            this->animationSpeed = 1.0f;
-            this->animationLength = other->animationLength;
-            this->rangeStart = other->rangeStart;
-            this->color = -1;
-            this->rangeEnd = other->rangeEnd;
-            this->currentTime = other->currentTime;
-            this->currentKeyFrameIndex = other->currentKeyFrameIndex;
-            this->rotation = other->rotation;
-            this->translation = other->translation;
-            this->scale = other->scale;
-            this->rotationMatrix = other->rotationMatrix;
-            this->localRotation = other->localRotation;
-            this->localTranslation = other->localTranslation;
-            this->localScale = other->localScale;
-            this->localMatrix = other->localMatrix;
-            this->flags = other->flags;
-
-            for (uint i = 0; i < other->meshes.size(); ++i) {
-                Mesh *mesh = new Mesh(other->meshes[i]);
-                ArrayAdd(mesh, this->meshes);
-            }
-            ArraySet(other->keyFrames, this->keyFrames);
-            for (uint i = 0; i < other->children.size(); ++i) {
-                Transform * child = new Transform(other->children[i]);
-                ArrayAdd(child, this->children);
-            }
-            this->boundingSphere = other->boundingSphere;
-            this->visible = true;
-            this->vfcEnabled = true;
-            this->keyFramesShared = true;
+    void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
+        longlong length = this->animationLength;
+        if (length == 0) {
+            return;
         }
+
+        longlong rangeEnd = end;
+        if (end < 0 || length < end) {
+            rangeEnd = length;
+        }
+        this->rangeEnd = rangeEnd;
+
+        this->rangeStart = start >= 0 ? (length < start ? 0 : start) : 0;
+
+        longlong current = this->currentTime;
+        this->currentTime = current < start ? start : (current > end ? end : current);
+
+        for (uint i = 0; i < this->meshes.size(); ++i) {
+            Mesh *mesh = this->meshes[i];
+            if (mesh != 0) {
+                Transform *child = mesh->animation;
+                if (child != 0) {
+                    child->SetAnimationRangeInTime(start, end);
+                }
+            }
+        }
+        for (uint i = 0; i < this->children.size(); ++i) {
+            this->children[i]->SetAnimationRangeInTime(start, end);
+        }
+        Update(0, false);
     }
 
-    void Transform::SetAnimationState(AnimationMode mode, void *) { // lint: void_ptr method parameter baked into mangled symbol
-        if (mode == static_cast<AnimationMode>(3)) {
-            this->animating = true;
-            this->currentTime = this->rangeStart;
+    void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
+        longlong start;
+        if (first < 0 || (int) this->keyFrames.size() <= first) {
+            start = 0;
         } else {
-            if (mode == AnimationMode_0)
-                this->animating = false;
-            this->flags = mode;
+            start = this->keyFrames[first]->timestamp;
         }
+
+        longlong end;
+        if (last >= 0 && last <= (int) this->keyFrames.size()) {
+            end = this->keyFrames[last]->timestamp;
+        } else {
+            end = 0;
+        }
+        SetAnimationRangeInTime(start, end);
     }
 
-    Transform::Transform()
-        : translation(), scale(), localTranslation(),
-          localScale() {
-        this->animationLength = 0;
-        this->color = -1;
-        this->animating = true;
-        this->rangeStart = 0;
-        this->rangeEnd = 0;
-        this->animationSpeed = 1.0f;
-        this->currentTime = 0;
-        this->currentKeyFrameIndex = 0;
+    void Transform::SetAnimationLength(longlong value) {
+        this->animationLength = value;
+        this->rangeEnd = value;
+    }
 
-        this->rotation = this->localRotation = Quaternion();
-        this->translation = this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
-        this->scale = this->localScale = AEMath::Vector{1.0f, 1.0f, 1.0f};
-        this->rotationMatrix = this->localMatrix = AEMath::Matrix();
-
-        this->localMatrix.m[5] = -1.0f;
-        this->flags = 2;
-        this->vfcEnabled = true;
-        this->keyFramesShared = false;
-        this->visible = true;
-        this->animationStart = 0;
+    void Transform::PauseAnimationWithKeyFrame(int index) {
+        if (index >= 0 && index < (int) this->keyFrames.size()) {
+            longlong time = this->keyFrames[index]->timestamp;
+            this->currentTime = time;
+            InternUpdate(time, false);
+        }
+        this->animating = false;
     }
 
     void Transform::InternUpdate(longlong time, bool updateBounds) {
@@ -572,6 +419,12 @@ namespace AbyssEngine {
         }
     }
 
+    void Transform::PauseAnimationWithTimeStamp(longlong time) {
+        this->currentTime = time;
+        InternUpdate(time, false);
+        this->animating = false;
+    }
+
     void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
                                 const AEMath::Vector &c, const AEMath::Vector &d,
                                 const AEMath::Vector &e, const AEMath::Vector &f,
@@ -588,6 +441,108 @@ namespace AbyssEngine {
         ArrayAdd(keyFrame, this->keyFrames);
         if (this->animationLength < timestamp) {
             this->animationLength = timestamp;
+        }
+    }
+
+    void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
+        ArrayAdd((KeyFrame *) 0, this->keyFrames);
+        for (int i = (int) this->keyFrames.size() - 1; i > index; i--)
+            this->keyFrames[i] = this->keyFrames[i - 1];
+        this->keyFrames[index] = keyFrame;
+    }
+
+    void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
+        // Re-blend the keys before the edited one for every channel it sets...
+        for (int i = 0; i + 1 < index; i++) {
+            KeyFrame *next = this->keyFrames[i + 1];
+            longlong keyTime = keyFrame->timestamp;
+            float toNext = (float) (keyTime - next->timestamp);
+            KeyFrame *prev = this->keyFrames[i];
+            float toPrev = (float) (keyTime - prev->timestamp);
+            float t = 1.0f - toNext / toPrev;
+            ulonglong channels = keyFrame->channels;
+            if ((channels & 0x40) != 0 && (next->channels & 0x40) == 0)
+                next->rotation.x = prev->rotation.x + t * (keyFrame->rotation.x - prev->rotation.x);
+            if ((channels & 0x80) != 0 && (next->channels & 0x80) == 0)
+                next->rotation.y = prev->rotation.y + t * (keyFrame->rotation.y - prev->rotation.y);
+            if ((channels & 0x100) != 0 && (next->channels & 0x100) == 0)
+                next->rotation.z = prev->rotation.z + t * (keyFrame->rotation.z - prev->rotation.z);
+            if ((channels & 0x1) != 0 && (next->channels & 0x1) == 0)
+                next->translation.x = prev->translation.x + t * (keyFrame->translation.x - prev->translation.x);
+            if ((channels & 0x2) != 0 && (next->channels & 0x2) == 0)
+                next->translation.y = prev->translation.y + t * (keyFrame->translation.y - prev->translation.y);
+            if ((channels & 0x4) != 0 && (next->channels & 0x4) == 0)
+                next->translation.z = prev->translation.z + t * (keyFrame->translation.z - prev->translation.z);
+            if ((channels & 0x8) != 0 && (next->channels & 0x8) == 0)
+                next->scale.x = prev->scale.x + t * (keyFrame->scale.x - prev->scale.x);
+            if ((channels & 0x10) != 0 && (next->channels & 0x10) == 0)
+                next->scale.y = prev->scale.y + t * (keyFrame->scale.y - prev->scale.y);
+            if ((channels & 0x20) != 0 && (next->channels & 0x20) == 0)
+                next->scale.z = prev->scale.z + t * (keyFrame->scale.z - prev->scale.z);
+            if ((channels & 0x200) != 0 && (next->channels & 0x200) == 0)
+                next->alpha = prev->alpha + t * (keyFrame->alpha - prev->alpha);
+            if ((channels & 0x10000) != 0 && (next->channels & 0x10000) == 0)
+                next->localRotation.x = prev->localRotation.x + t * (keyFrame->localRotation.x - prev->localRotation.x);
+            if ((channels & 0x20000) != 0 && (next->channels & 0x20000) == 0)
+                next->localRotation.y = prev->localRotation.y + t * (keyFrame->localRotation.y - prev->localRotation.y);
+            if ((channels & 0x40000) != 0 && (next->channels & 0x40000) == 0)
+                next->localRotation.z = prev->localRotation.z + t * (keyFrame->localRotation.z - prev->localRotation.z);
+            if ((channels & 0x400) != 0 && (next->channels & 0x400) == 0)
+                next->localTranslation.x = prev->localTranslation.x + t * (keyFrame->localTranslation.x - prev->localTranslation.x);
+            if ((channels & 0x800) != 0 && (next->channels & 0x800) == 0)
+                next->localTranslation.y = prev->localTranslation.y + t * (keyFrame->localTranslation.y - prev->localTranslation.y);
+            if ((channels & 0x1000) != 0 && (next->channels & 0x1000) == 0)
+                next->localTranslation.z = prev->localTranslation.z + t * (keyFrame->localTranslation.z - prev->localTranslation.z);
+            if ((channels & 0x2000) != 0 && (next->channels & 0x2000) == 0)
+                next->localScale.x = prev->localScale.x + t * (keyFrame->localScale.x - prev->localScale.x);
+            if ((channels & 0x4000) != 0 && (next->channels & 0x4000) == 0)
+                next->localScale.y = prev->localScale.y + t * (keyFrame->localScale.y - prev->localScale.y);
+            if ((channels & 0x8000) != 0 && (next->channels & 0x8000) == 0)
+                next->localScale.z = prev->localScale.z + t * (keyFrame->localScale.z - prev->localScale.z);
+            next->channels |= channels;
+        }
+
+        // ...and copy them into the later keys that do not animate them yet.
+        for (uint j = index + 1; j < this->keyFrames.size(); j++) {
+            ulonglong channels = keyFrame->channels;
+            if ((channels & 0x40) != 0 && (this->keyFrames[j]->channels & 0x40) == 0)
+                this->keyFrames[j]->rotation.x = keyFrame->rotation.x;
+            if ((channels & 0x80) != 0 && (this->keyFrames[j]->channels & 0x80) == 0)
+                this->keyFrames[j]->rotation.y = keyFrame->rotation.y;
+            if ((channels & 0x100) != 0 && (this->keyFrames[j]->channels & 0x100) == 0)
+                this->keyFrames[j]->rotation.z = keyFrame->rotation.z;
+            if ((channels & 0x1) != 0 && (this->keyFrames[j]->channels & 0x1) == 0)
+                this->keyFrames[j]->translation.x = keyFrame->translation.x;
+            if ((channels & 0x2) != 0 && (this->keyFrames[j]->channels & 0x2) == 0)
+                this->keyFrames[j]->translation.y = keyFrame->translation.y;
+            if ((channels & 0x4) != 0 && (this->keyFrames[j]->channels & 0x4) == 0)
+                this->keyFrames[j]->translation.z = keyFrame->translation.z;
+            if ((channels & 0x8) != 0 && (this->keyFrames[j]->channels & 0x8) == 0)
+                this->keyFrames[j]->scale.x = keyFrame->scale.x;
+            if ((channels & 0x10) != 0 && (this->keyFrames[j]->channels & 0x10) == 0)
+                this->keyFrames[j]->scale.y = keyFrame->scale.y;
+            if ((channels & 0x20) != 0 && (this->keyFrames[j]->channels & 0x20) == 0)
+                this->keyFrames[j]->scale.z = keyFrame->scale.z;
+            if ((channels & 0x200) != 0 && (this->keyFrames[j]->channels & 0x200) == 0)
+                this->keyFrames[j]->alpha = keyFrame->alpha;
+            if ((channels & 0x10000) != 0 && (this->keyFrames[j]->channels & 0x10000) == 0)
+                this->keyFrames[j]->localRotation.x = keyFrame->localRotation.x;
+            if ((channels & 0x20000) != 0 && (this->keyFrames[j]->channels & 0x20000) == 0)
+                this->keyFrames[j]->localRotation.y = keyFrame->localRotation.y;
+            if ((channels & 0x40000) != 0 && (this->keyFrames[j]->channels & 0x40000) == 0)
+                this->keyFrames[j]->localRotation.z = keyFrame->localRotation.z;
+            if ((channels & 0x400) != 0 && (this->keyFrames[j]->channels & 0x400) == 0)
+                this->keyFrames[j]->localTranslation.x = keyFrame->localTranslation.x;
+            if ((channels & 0x800) != 0 && (this->keyFrames[j]->channels & 0x800) == 0)
+                this->keyFrames[j]->localTranslation.y = keyFrame->localTranslation.y;
+            if ((channels & 0x1000) != 0 && (this->keyFrames[j]->channels & 0x1000) == 0)
+                this->keyFrames[j]->localTranslation.z = keyFrame->localTranslation.z;
+            if ((channels & 0x2000) != 0 && (this->keyFrames[j]->channels & 0x2000) == 0)
+                this->keyFrames[j]->localScale.x = keyFrame->localScale.x;
+            if ((channels & 0x4000) != 0 && (this->keyFrames[j]->channels & 0x4000) == 0)
+                this->keyFrames[j]->localScale.y = keyFrame->localScale.y;
+            if ((channels & 0x8000) != 0 && (this->keyFrames[j]->channels & 0x8000) == 0)
+                this->keyFrames[j]->localScale.z = keyFrame->localScale.z;
         }
     }
 
@@ -755,7 +710,6 @@ namespace AbyssEngine {
         }
         UpdateKeyFrames(key, index);
     }
-
 
     void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time) {
         ++AbyssEngine::lauf;
@@ -1269,6 +1223,41 @@ namespace AbyssEngine {
         UpdateKeyFrames(key, i);
     }
 
+    void Transform::DebugOut(int value) {}
+
+    int Transform::IsRunning() {
+        longlong start = this->rangeStart;
+        longlong current = this->currentTime;
+        if (start < current &&
+            current < this->rangeEnd &&
+            this->animating) {
+            return 1;
+        }
+        return 0;
+    }
+
+    void Transform::SetCurrentAnimationTime(longlong value) {
+        this->currentTime = value;
+    }
+
+    void Transform::SetVFCFlag(bool value) {
+        for (uint i = 0; i < this->meshes.size(); ++i) {
+            Mesh *mesh = this->meshes[i];
+            if (mesh != 0) {
+                Transform *child = mesh->animation;
+                if (child != 0) {
+                    child->SetVFCFlag(value);
+                }
+            }
+        }
+        for (uint i = 0; i < this->children.size(); ++i) {
+            Transform *child = this->children[i];
+            if (child != 0) {
+                child->SetVFCFlag(value);
+            }
+        }
+        this->vfcEnabled = value;
+    }
 
     int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
         if (camera == 0 || this->vfcEnabled == false ||
@@ -1296,4 +1285,15 @@ namespace AbyssEngine {
 
         return CameraIsSphereinViewFrustum(center, this->boundingSphere.radius2 * m, 0, camera);
     }
+
+    Transform::~Transform() {
+        if (this->keyFramesShared == false) {
+            ArrayReleaseClasses(this->keyFrames);
+        }
+    }
+
+    void Transform::SetVisible(bool value) {
+        this->visible = value;
+    }
+
 }
