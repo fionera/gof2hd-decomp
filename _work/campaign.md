@@ -4277,3 +4277,6 @@ mtw anchor for any size change before MenuTouchWindow.
 - **`Status::getCampaignMission()` returns `Mission*`** (`w3262`): the original loads
   `[r0,#0x198] -> [r0,#4] -> [r0,#0]`, i.e. a `Mission*`, not an `int`. Declaration, definition
   and the redundant casts in `StarMap.cpp` fixed; byte-identical everywhere, gate unchanged.
+- **TU end-marker alignment: byte_exact 1527 -> 1533** (`w3285`): the per-TU `.text.tuend.*`
+  markers are now 4-byte aligned (KIPlayer/Explosion and every other app TU), which removes four
+  `-2` drift points. `.text`/`.ARM.exidx`/`.rodata` unchanged, lint CLEAN, drift 0.
