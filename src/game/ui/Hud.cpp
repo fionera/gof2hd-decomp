@@ -40,7 +40,7 @@ static int **g_Hud_initOutX = nullptr;
 
 static int **g_Hud_initOutY = nullptr;
 
-static const int g_Hud_raceBadge[4] = {1190, 1187, 1189, 1188};
+alignas(16) static const int g_Hud_raceBadge[4] = {1190, 1187, 1189, 1188};
 static const char g_Hud_initMsg[1] = {0};
 
 void Hud::init() {
