@@ -41,7 +41,12 @@
 // reconstructed loop below compiles 0x1c bytes shorter because -Oz keeps the cached enemy
 // pointer in a register instead of reloading it.  These volatile stores restore the body's
 // original size/register pressure (the values are never read).
-static volatile int s_processPad[4];
+// Layout anchor (see TargetFollowCamera.cpp).  Kept as a hidden global so the 0x10-byte
+// .bss chunk lands after StatusWindow's g_sw_charDef (original 0x21839c..0x2183a0) and
+// before Mission's 16-byte-aligned .bss; a file-static here would land before Radio.
+#pragma GCC visibility push(hidden)
+extern volatile int s_processPad[4];
+#pragma GCC visibility pop
 
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);

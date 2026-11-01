@@ -5,6 +5,13 @@
 #include "engine/math/AEMath.h"
 #include "engine/core/AERandom.h"
 
+// Layout anchor shared with LevelScript::process.  The original 0x2183a0..0x2183b0
+// .bss chunk sits between StatusWindow's g_sw_charDef and Mission's 16-byte-aligned
+// .bss; this TU is linked exactly there (o159).  Hidden so it adds no dynsym export.
+#pragma GCC visibility push(hidden)
+volatile int s_processPad[4];
+#pragma GCC visibility pop
+
 static inline float bitsToFloat(uint32_t u) {
     float f;
     memcpy(&f, &u, 4);

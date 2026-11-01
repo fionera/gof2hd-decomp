@@ -13,6 +13,21 @@
  */
 #include <jni.h>
 
+/* Purchase-in-flight flags raised by the NFC store buttons (declared extern in NdkHooks.h).
+ * Strong definitions (explicit `= 0`) so they land in this object's .bss, not COMMON: the
+ * original places them at .bss 0x2179b4..0x2179dc, immediately after main.c's zipDirectory
+ * and before FileInterfaceAndroid, which is exactly this object's link slot (o005). */
+int gi_iap_buy_credit_pack1_pressed = 0;
+int gi_iap_buy_credit_pack2_pressed = 0;
+int gi_iap_buy_credit_pack3_pressed = 0;
+int gi_iap_buy_credit_pack4_pressed = 0;
+int gi_iap_buy_credit_pack5_pressed = 0;
+int gi_iap_buy_dlc1_pressed = 0;
+int gi_iap_buy_dlc2_pressed = 0;
+int gi_iap_buy_dlc3_pressed = 0;
+int gi_iap_buy_dlc4_pressed = 0;
+int gi_iap_buy_dlc5_pressed = 0;
+
 int g_android_current_achievements[3];
 int g_android_leaderboard_scores[8];
 int g_android_link_game_gp;

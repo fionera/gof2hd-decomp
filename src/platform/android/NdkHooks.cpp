@@ -26,6 +26,20 @@
 
 using AbyssEngine::Engine;
 
+// .bss order is the original's (nm -D witnesses at 0x217b20..0x217b58): the fourteen 4-byte
+// globals first, then the two double[3] gravity tables.  The gi_iap_* flags live in
+// GOF2HD2012.c (original .bss 0x2179b4..0x2179dc, between main.c and FileInterfaceAndroid).
+int sound_off;
+
+AbyssEngine::Engine *gEngine = nullptr;
+
+int rotateAccelValues;
+
+struct zip *APKArchive = nullptr;
+struct zip *ZIPArchive = nullptr;
+
+unsigned int hrwhs_country_code;
+
 int gRealWidth;
 int gRealHeight;
 
@@ -34,34 +48,13 @@ char *ZIPDirectory;
 
 int forceExit;
 
-unsigned int hrwhs_country_code;
+int stateChanged;
+int currentstate;
 
 int gb_android_offerwallCreditAmount;
 
 const char *ndkEntrance = "0";
 
-int rotateAccelValues;
-
-int gi_iap_buy_dlc1_pressed;
-int gi_iap_buy_dlc2_pressed;
-int gi_iap_buy_dlc3_pressed;
-int gi_iap_buy_dlc4_pressed;
-int gi_iap_buy_dlc5_pressed;
-
-int gi_iap_buy_credit_pack1_pressed;
-int gi_iap_buy_credit_pack2_pressed;
-int gi_iap_buy_credit_pack3_pressed;
-int gi_iap_buy_credit_pack4_pressed;
-int gi_iap_buy_credit_pack5_pressed;
-
-int currentstate;
-int stateChanged;
-int sound_off;
-
-AbyssEngine::Engine *gEngine = nullptr;
-
-struct zip *APKArchive = nullptr;
-struct zip *ZIPArchive = nullptr;
 
 // Low-pass filtered gravity and its negation as handed to the engine.
 static double gGravity[3];

@@ -12,12 +12,12 @@ void SpriteGun::setEnemies(Array<Player *> *enemies) {
     this->gun->setEnemies(enemies);
 }
 
-void SpriteGun::setEnemy(Player *enemy) {
-    this->gun->setEnemy(enemy);
-}
-
 void SpriteGun::update(int elapsed) {
     this->gun->update(elapsed);
+}
+
+void SpriteGun::setEnemy(Player *enemy) {
+    this->gun->setEnemy(enemy);
 }
 
 void SpriteGun::render() {

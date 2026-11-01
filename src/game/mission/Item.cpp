@@ -231,12 +231,12 @@ bool Item::isInList(int index, int amount, ItemArray *items) {
     return false;
 }
 
-bool Item::isInList(Item *item, ItemArray *items) {
-    return isInList(item->index, items);
-}
-
 bool Item::isInList(int index, ItemArray *items) {
     return isInList(index, 1, items);
+}
+
+bool Item::isInList(Item *item, ItemArray *items) {
+    return isInList(item->index, items);
 }
 
 void Item::fabricate(Item *item, ItemArray *items, int amount) {

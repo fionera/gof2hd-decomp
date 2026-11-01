@@ -505,14 +505,14 @@ bool Ship::spaceAvailable(int n) {
     return n + this->currentLoad <= this->baseLoad + this->cargoPlus;
 }
 
-void Ship::addCargo(Array<Item *> *items) {
-    setCargo(Item::combineItems(this->cargo, items));
-}
-
 void Ship::addCargo(Item *item) {
     Array<Item *> *a = new Array<Item *>();
     ArrayAdd<Item *>(item, *a);
     addCargo(a);
+}
+
+void Ship::addCargo(Array<Item *> *items) {
+    setCargo(Item::combineItems(this->cargo, items));
 }
 
 void Ship::replaceEquipment(Array<Item *> *equipment) {

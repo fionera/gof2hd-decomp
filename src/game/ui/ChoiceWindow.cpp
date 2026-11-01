@@ -67,10 +67,6 @@ void ChoiceWindow::set(String const &text) {
     set(*title, text, false);
 }
 
-void ChoiceWindow::update(int dt) {
-    this->scrollWindow->update(dt);
-}
-
 void ChoiceWindow::removeButtons() {
     this->buttonsVisible = 0;
 }
@@ -262,6 +258,10 @@ void ChoiceWindow::setMiscButton(String const &text) {
     this->scrollWindow->setYPosition(Globals::h / 2 - this->height / 2 + Globals::layout->windowTopInset);
 }
 
+
+void ChoiceWindow::update(int dt) {
+    this->scrollWindow->update(dt);
+}
 
 // Medal tier colours and credit rewards (original .rodata @ 0x1fb8a8, 0x1fb8b8, 0x1fb848).
 static const unsigned int MEDAL_TIER_COLORS_DLC[4] = {0xfa792160, 0xfa7921ff, 0xffffffff, 0xce8258ff};
