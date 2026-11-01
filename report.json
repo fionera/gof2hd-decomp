@@ -16,14 +16,6 @@
  },
  "rows": [
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 45.2,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
-  },
-  {
    "name": "_ZN6LayoutC1Ev",
    "pct": 46.6,
    "byte": false,
@@ -40,16 +32,16 @@
    "usize": 7072
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 57.7,
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 53.0,
    "byte": false,
    "linked": false,
-   "osize": 1432,
-   "usize": 1432
+   "osize": 57232,
+   "usize": 57232
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 71.4,
+   "pct": 71.6,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -57,7 +49,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.2,
+   "pct": 73.6,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -72,20 +64,20 @@
    "usize": 1996
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 77.1,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 78.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN7GlobalsC1Ev",
@@ -113,11 +105,19 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 83.6,
+   "pct": 83.7,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 86.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN9RocketGun6updateEi",

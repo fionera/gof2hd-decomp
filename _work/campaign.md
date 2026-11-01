@@ -4662,3 +4662,12 @@ Build-flag verdicts (all measured, see `_work/reconstructions/`):
   all worse or neutral (`symbol_visibility_export_policy.md`).
 - Vendored archives: zlib 1.2.3, libzip 0.9.3, libcrypto GCC 4.9 / OpenSSL 1.1.0-line
   (`vendored_archive_provenance.md`).
+
+## Wave 94 (20 agents, `-p dsv41`)
+
+Baseline at wave start: byte 4495 / linked 4496, 29 functions not byte-exact.
+Landed so far: `#pragma clang section` removed (Blowfish TU became a C TU with COMMON
+`.bss`; `kCreatureTypeFactor` uses `[[gnu::used]]`), 3 visibility pragma blocks + 8 ad-hoc
+`extern`s removed, `LevelScript::process` 45.2 -> 53.0% with the process pads gone.
+`__builtin_assume`: all 3 sites are load-bearing (removing them regresses the gate).
+`s_processPad` must stay: it is a 0x10-byte `.bss` chunk that 10 functions depend on.
