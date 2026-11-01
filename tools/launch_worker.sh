@@ -28,9 +28,9 @@ Work method:
 3. Identify the real source shape (control flow, field offsets, constants, call order, temporaries) from Ghidra/Thumb, not from guesswork.
 4. Make a focused change, rebuild and measure. Keep only a real improvement.
 5. Before committing run: cmake --build cmake-build-match --target check -j8
-   Required: RATCHET PASS, byte_exact >= 1415, linked_exact >= 4491, .text 0x1343d0, lint CLEAN, drift 0. Do not update tools/verify_baseline.json. Do not commit report.json or docs unless the gate requires it.
-   If your change alters a function size in Level.cpp, Layout.cpp, Radar.cpp, MenuTouchWindow.cpp or another TU before MenuTouchWindow, retune the mtwTextLayoutAnchor pad in src/game/ui/MenuTouchWindow.cpp (a = NN; volatile int stores; each store is 8 B in this build) so .text is exactly 0x1343d0. Do not leave a stale anchor.
-6. Commit with message: "<Area> pass: <what> (<before> -> <after>%, <size>B; gate byte N linked N, .text 0x1343d0)". Leave the worktree clean.
+   Required: RATCHET PASS, byte_exact >= 1513, linked_exact >= 4491, lint CLEAN, drift 0. Do not update tools/verify_baseline.json. Do not commit report.json or docs unless the gate requires it.
+   Current layout: .text 0x1337b0 (orig 0x1337c8, -24), .ARM.exidx 0x6f88 (orig 0x6f70, +24), .rodata 0x1c9e10 EXACT size 0x41b67. The .text+.ARM.exidx sum is what anchors .rodata, so if your change alters a function size, report the new .text/.ARM.exidx and whether .rodata stayed at 0x1c9e10. Do not add padding anchors to compensate unless the result is gate-green and you say so.
+6. Commit with message: "<Area> pass: <what> (<before> -> <after>%, <size>B; gate byte N linked N, .text 0x1337b0)". Leave the worktree clean.
 7. If no real improvement is found, leave the worktree clean and report the best measured variant and why it did not win.
 
 Do not push. Do not harvest other workers. Focus only on the target function unless a shared struct/layout fix is the clear root cause. Report exact before/after counts.
