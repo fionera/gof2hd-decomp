@@ -425,7 +425,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->landmarks->data()[i]);
-            if (this->onScreen && this->screenX > this->centerX - this->field_0x128 &&
+            if (__builtin_expect(this->onScreen, 1) && // lint: arm_builtin
+                this->screenX > this->centerX - this->field_0x128 &&
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
