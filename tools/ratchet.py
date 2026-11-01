@@ -51,6 +51,25 @@ def newest_source_mtime():
     return max(p.stat().st_mtime for p in (ROOT / "src").rglob("*") if p.suffix in (".cpp", ".h"))
 
 
+def newest_build_input_mtime(bd):
+    """Inputs that are not under src/ but still change the linked .so.
+
+    A hand-edited section_order.txt (or a changed generator) must make the .so stale;
+    otherwise check can ratchet against a report for the previous link.
+    """
+    paths = [
+        bd / "section_order.txt",
+        bd / "link_order.rsp",
+        bd / "exidx_markers" / "stamp",
+        ROOT / "tools" / "gen_section_order.py",
+        ROOT / "tools" / "gen_link_order.py",
+        ROOT / "tools" / "gen_exidx_markers.py",
+        ROOT / "CMakeLists.txt",
+        ROOT / "cmake" / "toolchain.cmake",
+    ]
+    return max((p.stat().st_mtime for p in paths if p.exists()), default=0.0)
+
+
 def run(cmd, **kw):
     print(f"  $ {' '.join(str(c) for c in cmd)}")
     return subprocess.run([str(c) for c in cmd], **kw)
@@ -78,7 +97,7 @@ def main():
         print(f"FAIL: original .so not found (GOF2_ORIGINAL_SO={original})"); return 1
 
     # -- freshness ---------------------------------------------------------------------------
-    src_m = newest_source_mtime()
+    src_m = max(newest_source_mtime(), newest_build_input_mtime(bd))
     if not so.exists() or so.stat().st_mtime < src_m:
         if args.no_rebuild:
             print("FAIL: libgof2hdaa.so is stale vs src/ (run the link_so target)"); return 1
