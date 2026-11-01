@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4523,
   "avg_match": 99.9,
-  "byte_exact": 1458,
+  "byte_exact": 1495,
   "linked_exact": 4493,
   "fuzzy_perfect": 4495,
   "stub_zero_size": 0,
@@ -5322,7 +5322,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas13MeshSetNormalEjtRKNS_6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -5386,7 +5386,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14CameraSetLocalEjRKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -5458,7 +5458,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas14MeshSetTangentEjtRKNS_6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -5642,7 +5642,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas16MeshSetBiTangentEjtRKNS_6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 48,
    "usize": 48
@@ -5746,7 +5746,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas17TransformSetLocalEjRKNS_6AEMath6MatrixE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 34,
    "usize": 34
@@ -6290,7 +6290,7 @@
   {
    "name": "_ZN11AbyssEngine11PaintCanvas9MeshSetUvEjtff",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 68,
    "usize": 68
@@ -6538,7 +6538,7 @@
   {
    "name": "_ZN11AbyssEngine12CheatHandler6UpdateEt",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 66,
    "usize": 66
@@ -6546,7 +6546,7 @@
   {
    "name": "_ZN11AbyssEngine12CheatHandlerC1EPNS_7KeyCodeE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -6554,7 +6554,7 @@
   {
    "name": "_ZN11AbyssEngine12CheatHandlerC2EPNS_7KeyCodeE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -11186,7 +11186,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -11242,7 +11242,7 @@
   {
    "name": "_ZN11AbyssEngine6StringC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -11298,7 +11298,7 @@
   {
    "name": "_ZN11AbyssEngine6StringixEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32
@@ -11610,7 +11610,7 @@
   {
    "name": "_ZN11AbyssEngine9CheatCodeC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11618,7 +11618,7 @@
   {
    "name": "_ZN11AbyssEngine9CheatCodeC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 44,
    "usize": 44
@@ -11626,7 +11626,7 @@
   {
    "name": "_ZN11AbyssEngine9CheatCodeD1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -11634,7 +11634,7 @@
   {
    "name": "_ZN11AbyssEngine9CheatCodeD2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -11946,7 +11946,7 @@
   {
    "name": "_ZN11AbyssEngine9Transform28SetAnimationRangeInKeyFramesEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 80,
    "usize": 80
@@ -12114,7 +12114,7 @@
   {
    "name": "_ZN11AbyssEnginepsERKNS_6StringE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 12,
    "usize": 12
@@ -13690,7 +13690,7 @@
   {
    "name": "_ZN12AENormalFileC1EP13FileInterface",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -13698,7 +13698,7 @@
   {
    "name": "_ZN12AENormalFileC2EP13FileInterface",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 20,
    "usize": 20
@@ -20674,7 +20674,7 @@
   {
    "name": "_ZN4Item27canBeInstalledMultipleTimesEv",
    "pct": 100.0,
-   "byte": true,
+   "byte": false,
    "linked": true,
    "osize": 16,
    "usize": 16
@@ -23010,7 +23010,7 @@
   {
    "name": "_ZN5ArrayIiED2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 22,
    "usize": 22
@@ -24674,7 +24674,7 @@
   {
    "name": "_ZN6AEFile11GetFileSizeEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -24706,7 +24706,7 @@
   {
    "name": "_ZN6AEFile12ReadSwitchedERij",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 26,
    "usize": 26
@@ -24714,7 +24714,7 @@
   {
    "name": "_ZN6AEFile12ReadSwitchedERsj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -24722,7 +24722,7 @@
   {
    "name": "_ZN6AEFile12ReadSwitchedERtj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 28,
    "usize": 28
@@ -24738,7 +24738,7 @@
   {
    "name": "_ZN6AEFile13GetAppRootDirEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -24746,7 +24746,7 @@
   {
    "name": "_ZN6AEFile13SetAppRootDirEPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -24762,7 +24762,7 @@
   {
    "name": "_ZN6AEFile15SetZipDirectoryEPv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -24786,7 +24786,7 @@
   {
    "name": "_ZN6AEFile18GetDeviceFreeSpaceEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -24794,7 +24794,7 @@
   {
    "name": "_ZN6AEFile18ResetSaveDirectoryEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 24,
    "usize": 24
@@ -24802,7 +24802,7 @@
   {
    "name": "_ZN6AEFile20sortPakFileEntryListEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 96,
    "usize": 96
@@ -24914,7 +24914,7 @@
   {
    "name": "_ZN6AEFile4ReadEjPvj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -24922,7 +24922,7 @@
   {
    "name": "_ZN6AEFile4SkipEjj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -24930,7 +24930,7 @@
   {
    "name": "_ZN6AEFile5CloseEj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 72,
    "usize": 72
@@ -24994,7 +24994,7 @@
   {
    "name": "_ZN6AEFile5WriteEjPvj",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 56,
    "usize": 56
@@ -31098,7 +31098,7 @@
   {
    "name": "_ZN9AEPakFileC1EP13FileInterfaceii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -31106,7 +31106,7 @@
   {
    "name": "_ZN9AEPakFileC2EP13FileInterfaceii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 36,
    "usize": 36
@@ -33858,7 +33858,7 @@
   {
    "name": "_ZNK11AbyssEngine6StringixEi",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 32,
    "usize": 32

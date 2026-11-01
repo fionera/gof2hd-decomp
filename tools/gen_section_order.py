@@ -48,15 +48,15 @@ PLAIN_TEXT_LEAD = 0x180
 
 
 def elf_text_sections(data):
-    """(.text.* section names in section-header order, has_nonempty_plain_.text)."""
+    """(.text.* names in section-header order, has_nonempty_plain_.text, tuend markers)."""
     if data[:4] != b"\x7fELF" or data[4] != 1:
-        return [], False
+        return [], False, []
     shoff, = struct.unpack_from("<I", data, 0x20)
     shentsize, shnum, shstrndx = struct.unpack_from("<HHH", data, 0x2e)
     hdrs = [struct.unpack_from("<IIIIIIIIII", data, shoff + i * shentsize)
             for i in range(shnum)]
     stroff = hdrs[shstrndx][4]
-    names = []
+    names, markers = [], []
     has_plain_text = False
     for name, typ, flags, _addr, _off, size, _link, _info, _align, _entsize in hdrs:
         end = data.index(b"\0", stroff + name)
@@ -64,9 +64,11 @@ def elf_text_sections(data):
         if typ == 1 and flags & 0x4:                 # PROGBITS, SHF_EXECINSTR
             if n == ".text":
                 has_plain_text = has_plain_text or size > 0
+            elif n.startswith(".text.tuend."):
+                markers.append(n)                    # empty-TU sentinel (gen_exidx_markers.py)
             elif n.startswith(".text."):
                 names.append(n)
-    return names, has_plain_text
+    return names, has_plain_text, markers
 
 
 def elf_defined_symbols(data):
@@ -111,6 +113,14 @@ def members(path):
 
 def main() -> int:
     orig, nm, out, inputs = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4:]
+    # `@file` expands to one input path per line (the marker-copy response file).
+    expanded = []
+    for path in inputs:
+        if path.startswith("@"):
+            expanded.extend(ln.strip() for ln in open(path[1:]) if ln.strip())
+        else:
+            expanded.append(path)
+    inputs = expanded
     # -n: sort by address; -D: dynamic symbols (all the stripped original exposes).
     res = subprocess.run([nm, "-nD", "--defined-only", orig],
                          capture_output=True, text=True)
@@ -129,7 +139,7 @@ def main() -> int:
     plain_text_addr = None
     for path in inputs:
         for data in members(path):
-            _names, has_plain = elf_text_sections(data)
+            _names, has_plain, _markers = elf_text_sections(data)
             if not has_plain:
                 continue
             for sym in elf_defined_symbols(data):
@@ -145,9 +155,12 @@ def main() -> int:
         plain_text_addr -= PLAIN_TEXT_LEAD
 
     after, before, seen = {}, {}, set()
+    marker_members = []            # (marker names, member's .text.* names) for placement below
     for path in inputs:
         for data in members(path):
-            seq, _has_plain = elf_text_sections(data)
+            seq, _has_plain, markers = elf_text_sections(data)
+            if markers:
+                marker_members.append((markers, seq))
             pending = []           # locals seen before this object's first listed section
             anchor = None
             for s in seq:
@@ -183,6 +196,28 @@ def main() -> int:
     order.append(".data.__cxa_unexpected_handler")
     order.append(".data._ZL5cause")
     order.append("*")          # keep unlisted sections after the listed ones, not before
+
+    # Place each empty-TU marker after the LAST of its owner's sections in the finished order.
+    # (Attaching it to the owner's last *listed* section is not enough: a weak/local section can
+    # be emitted at an earlier member's position, and several markers then collapse onto one
+    # ordering index -- gold emits one CANT per run, so the sentinels would vanish again.)
+    pos = {}
+    for i, n in enumerate(order):
+        pos.setdefault(n, []).append(i)
+    inserts, tail = {}, []
+    for markers, seq in marker_members:
+        idxs = [i for t in seq for i in pos.get(t, [])]
+        if idxs:
+            inserts.setdefault(max(idxs), []).extend(markers)
+        else:
+            tail.extend(markers)   # member has no listed/local section: keep it before `*`
+    placed = []
+    for i, n in enumerate(order):
+        placed.append(n)
+        placed.extend(inserts.get(i, []))
+    if tail:
+        placed[-1:-1] = tail
+    order = placed
     with open(out, "w") as f:
         f.write("\n".join(order) + "\n")
     print(f"wrote {len(order)} section names ({len(order) - len(lines)} local) to {out}")

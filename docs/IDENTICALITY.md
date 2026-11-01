@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 1458, linked_exact 4493, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 1495, linked_exact 4493, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -17,7 +17,7 @@ placement of local functions in the section-ordering file. See docs/VALIDATION.m
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
-mode). Current: **compared 4523, byte_exact 1458, linked_exact 4493, avg 99.9%, stub_zero_size
+mode). Current: **compared 4523, byte_exact 1495, linked_exact 4493, avg 99.9%, stub_zero_size
 0, missing 0, sodiff extra 52 (all allowlisted), undefined imports 601**. Historical figures in the sections below
 (923/1636, 870/1569, 35/0/0, extra 9–35) are kept as a record of past states — do not quote them
 as current. The no-degradation gate is now machine-checked: `tools/ratchet.py` vs
@@ -34,7 +34,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,262,544 | **+3,080** | the remaining 38 non-linked exported functions plus the documented MenuTouchWindow layout anchor; local-code gaps are bracketed by the same neighbours. |
 | **.rodata** | 269,159 | 268,103 | **−1,056** | anonymous const/string data still differs; exported objects are exact; the shader GLSL cluster is now exact. |
-| .ARM.exidx | 28,528 | 26,312 | **−2,216** | 267 functions have an unwind entry in the original and none in ours (see `_work/reconstructions/layout_anchor_audit_v2.md`). |
+| .ARM.exidx | 28,528 | 28,584 | **+56** | the per-TU marker fix (`tools/gen_exidx_markers.py`) restores gold's per-object CANTUNWIND sentinels; 3568 vs 3566 entries (see `_work/reconstructions/exidx_link_fix.md`). |
 | .ARM.extab | 156,312 | 156,324 | **+12** | nine remaining non-exact functions have slightly different unwind-table lengths; the bulk of the old gap was missing `-funwind-tables`. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count; order is still converging. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
@@ -80,7 +80,7 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 1458 byte_exact,
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 1495 byte_exact,
 4493 linked_exact, 4522 size_match of 4523; pct buckets {100:4495, 90-99:8, 80-89:12, 70-79:5,
 <60:3}. 1 function row size-MISMATCH (Generator -4 B); 22 size-match >=80%
 not-linked (the highest-value near-misses).

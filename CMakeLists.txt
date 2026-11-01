@@ -87,23 +87,6 @@ else()
     set(_crtbegin "${_libdir}/crtbegin_so.o")
 endif()
 
-# Generate the section-ordering file from the original's function-symbol addresses, then feed it to
-# gold so our per-function sections are laid out in the original's exact order.
-set(_order "${CMAKE_BINARY_DIR}/section_order.txt")
-set(_order_flag "")
-if(GOF2_MATCH_LAYOUT)
-    add_custom_command(OUTPUT "${_order}"
-        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
-                "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
-                $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_zlib_out} ${_libzip_out} ${GOF2_NDK_LIBCXXABI_A}
-                ${GOF2_NDK_ANDROID_SUPPORT_A} ${GOF2_NDK_LIBGCC_A}
-        DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
-                gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_openssl_out} ${_libzip_out} ${_zlib_out}
-        COMMENT "Generating section-ordering file from the original .so + object source order"
-        COMMAND_EXPAND_LISTS VERBATIM)
-    set(_order_flag "--section-ordering-file=${_order}")
-endif()
-
 # Object link order recovered from the original's .dynsym (gold emits symbols in input order).
 set(_linkorder "${CMAKE_BINARY_DIR}/link_order.rsp")
 add_custom_command(OUTPUT "${_linkorder}"
@@ -112,6 +95,74 @@ add_custom_command(OUTPUT "${_linkorder}"
     DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_link_order.py gof2 $<TARGET_OBJECTS:gof2>
     COMMENT "Ordering link objects like the original"
     COMMAND_EXPAND_LISTS VERBATIM)
+
+# `.ARM.exidx` per-TU sentinels.  Gold's fix_exidx_coverage() emits one CANTUNWIND entry for every
+# text input section with no `.ARM.exidx` companion.  With -ffunction-sections every object still
+# carries an empty plain `.text`; the original (un-ordered) link kept one sentinel per TU, but our
+# ordering file lists `.text` once, so all 272 empty sections collapse to one index and only 6
+# survive.  Copy every object/archive member, rename its empty `.text` to a unique `.text.tuend.*`
+# marker (sh_addralign=1 so a 4-aligned zero-size section adds no padding), and have
+# gen_section_order.py place each marker after its owner's last section in the finished order.
+set(_marker_dir "${CMAKE_BINARY_DIR}/exidx_markers")
+set(_marker_stamp "${_marker_dir}/stamp")
+set(_marker_objs "${_marker_dir}/link_order.rsp")
+set(_marker_archives "${_marker_dir}/archives.rsp")
+set(_marker_zlib "${_marker_dir}/archives/libz_gof2.a")
+set(_marker_libzip "${_marker_dir}/archives/libzip_gof2.a")
+set(_marker_openssl "${_marker_dir}/archives/libcrypto_gof2.a")
+set(_marker_libcxxabi "${_marker_dir}/archives/libc++abi.a")
+set(_marker_aos "${_marker_dir}/archives/libandroid_support.a")
+set(_marker_libgcc "${_marker_dir}/archives/libgcc.a")
+
+# Generate the section-ordering file from the original's function-symbol addresses, then feed it to
+# gold so our per-function sections are laid out in the original's exact order.
+set(_order "${CMAKE_BINARY_DIR}/section_order.txt")
+set(_order_flag "")
+set(_tdata_flag "")
+if(GOF2_MATCH_LAYOUT)
+    add_custom_command(OUTPUT "${_marker_stamp}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${_marker_dir}"
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_exidx_markers.py
+                "${_marker_dir}" ${GOF2_NDK_GCC_BINDIR}/objcopy ${GOF2_NDK_GCC_BINDIR}/ar
+                "${_linkorder}" ${_openssl_out} ${_zlib_out} ${_libzip_out}
+                ${GOF2_NDK_LIBCXXABI_A} ${GOF2_NDK_ANDROID_SUPPORT_A} ${GOF2_NDK_LIBGCC_A}
+        COMMAND ${CMAKE_COMMAND} -E touch "${_marker_stamp}"
+        DEPENDS "${_linkorder}" ${CMAKE_SOURCE_DIR}/tools/gen_exidx_markers.py
+                ${_openssl_out} ${_zlib_out} ${_libzip_out} ${GOF2_NDK_LIBCXXABI_A}
+                ${GOF2_NDK_ANDROID_SUPPORT_A} ${GOF2_NDK_LIBGCC_A}
+        COMMENT "Renaming empty .text sections to unique .ARM.exidx markers"
+        VERBATIM)
+    add_custom_command(OUTPUT "${_order}"
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
+                "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_order}"
+                "@${_marker_objs}" "@${_marker_archives}"
+        DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_section_order.py
+                gof2 gof2_libs "${_marker_stamp}"
+        COMMENT "Generating section-ordering file from the original .so + object source order"
+        COMMAND_EXPAND_LISTS VERBATIM)
+    set(_order_flag "--section-ordering-file=${_order}")
+    # The extra exidx bytes push the read-only segment past the RW segment's file-offset window;
+    # without this anchor gold moves the whole RW segment by +0x1000.  The original's RW segment
+    # starts here, so pin it (neutral on the pre-marker baseline).
+    set(_tdata_flag -Tdata 0x20cb80)
+    set(_link_objs "@${_marker_objs}")
+    set(_link_zlib "${_marker_zlib}")
+    set(_link_libzip "${_marker_libzip}")
+    set(_link_openssl "${_marker_openssl}")
+    set(_link_libcxxabi "${_marker_libcxxabi}")
+    set(_link_aos "${_marker_aos}")
+    set(_link_libgcc "${_marker_libgcc}")
+    set(_marker_dep "${_marker_stamp}")
+else()
+    set(_link_objs "@${_linkorder}")
+    set(_link_zlib "${_zlib_out}")
+    set(_link_libzip "${_libzip_out}")
+    set(_link_openssl "${_openssl_out}")
+    set(_link_libcxxabi "${GOF2_NDK_LIBCXXABI_A}")
+    set(_link_aos "${GOF2_NDK_ANDROID_SUPPORT_A}")
+    set(_link_libgcc "${GOF2_NDK_LIBGCC_A}")
+    set(_marker_dep "")
+endif()
 
 add_custom_command(OUTPUT "${_so}"
     # --unresolved-symbols=ignore-all: undecompiled engine internals import as shims, as in the
@@ -127,17 +178,18 @@ add_custom_command(OUTPUT "${_so}"
             --unresolved-symbols=ignore-all
             --exclude-libs=libgcc.a
             ${_order_flag}
+            ${_tdata_flag}
             -o "${_so}"
             ${_crtbegin} -L ${_libdir}
-            @${_linkorder}
-            --whole-archive ${_zlib_out} ${_libzip_out} --no-whole-archive
-            ${_openssl_out}
+            ${_link_objs}
+            --whole-archive ${_link_zlib} ${_link_libzip} --no-whole-archive
+            ${_link_openssl}
             -l log -l GLESv2 -l GLESv1_CM -l EGL -l android
             ${GOF2_FMOD_LIBDIR}/libfmodex.so ${GOF2_FMOD_LIBDIR}/libfmodevent.so
-            ${GOF2_NDK_LIBCXXABI_A}
+            ${_link_libcxxabi}
             -l m
-            ${GOF2_NDK_ANDROID_SUPPORT_A}
-            ${GOF2_NDK_LIBGCC_A}
+            ${_link_aos}
+            ${_link_libgcc}
             -l dl -l c
             ${_libdir}/crtend_so.o
     # The original release .so is stripped (only .dynsym; no .symtab/.strtab/.debug_*). Strip ours the
@@ -148,7 +200,7 @@ add_custom_command(OUTPUT "${_so}"
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
     DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_linkorder} ${_crtbegin}
-            ${_openssl_out} ${_libzip_out} ${_zlib_out}
+            ${_marker_dep} ${_openssl_out} ${_libzip_out} ${_zlib_out}
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")

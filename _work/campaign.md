@@ -4221,3 +4221,12 @@ mtw anchor for any size change before MenuTouchWindow.
   `-fno-short-wchar`, `-fno-sized-deallocation`, `-fno-omit-frame-pointer`,
   `-fno-asynchronous-unwind-tables`) cannot be distinguished from the current set. The current
   global flag set is confirmed correct as far as the metric can tell.
+- **`.ARM.exidx` per-TU marker fix: byte_exact 1458 -> 1495 (+37)** (`w3266`): gold emits a
+  CANTUNWIND sentinel for every text input section without an `.ARM.exidx`; every
+  `-ffunction-sections` object has an empty plain `.text`, and the ordering file listed `.text`
+  once, collapsing 272 sentinels to 6. `tools/gen_exidx_markers.py` now makes per-object copies
+  with the empty `.text` renamed to a unique `.text.tuend.<n>` (align 1) and
+  `gen_section_order.py` places each after the object's last function. `.ARM.exidx` 0x66c8 ->
+  0x6fa8 (orig 0x6f70; 3568 vs 3566 entries), `.text` unchanged 0x1343d0, `.got`/`.data`/
+  `.dynamic` still at the original addresses. The `.rodata` shift (+0xc50) makes 37 more
+  literal-pool words match.

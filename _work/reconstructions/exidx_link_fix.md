@@ -407,3 +407,170 @@ The alternative (no `-Tdata`) is not usable: `byte 1414`.
   (`Item::canBeInstalledMultipleTimes`, an `R_ARM_REL32` to a local `.rodata` array). With
   `-Tdata 0x20cb80` the gate is **byte 1457 / linked 4493**, one short of the 1458 baseline, so
   the change is not committed.
+
+## 8. Build-system implementation and anchor-removal re-measurement (w3266)
+
+Follow-up pass that turns §2's `/tmp` experiment into a reproducible build-system change and
+re-measures the `MenuTouchWindow` anchor against the new `.rodata` address.
+
+- Worktree: `/home/debian/GalaxyOnFire2/wt/w3266`
+- Branch: `research-w3266`, based on master `0f2316f7`
+- Original: `../_work/bins/android_2.0.16_libgof2hdaa.so`
+  (sha256 `d4c17be61af96272e240de3d4ebf1340c581f9a8bc455b9defad72776bed9483`)
+
+**Baseline note.** The task brief quotes byte 1415, but the actual baseline at this HEAD is
+**byte 1458 / linked 4493 / size-exact 4522/4523 / `.text` 0x1343d0** (the 1415 figure is the
+older w3304 audit HEAD). All numbers below are measured against 1458.
+
+### 8.1 Implementation
+
+New `tools/gen_exidx_markers.py` (called from a CMake custom command) makes renamed copies of every
+link input:
+
+1. Reads the gold response file produced by `gen_link_order.py` (200 gof2 objects).
+2. Copies each object to `cmake-build-match/exidx_markers/objects/o<NNN>_<name>`.  If the copy's
+   plain `.text` is size 0, `objcopy --rename-section .text=.text.tuend.o<NNN>` renames it and the
+   script patches `sh_addralign` to 1 (a 4-aligned zero-size section between 2-aligned Thumb
+   functions adds padding; without the patch `.text` grows by 0x18).
+3. Unpacks every archive member (zlib, libzip, libcrypto, libc++abi, libandroid_support, libgcc),
+   does the same rename to `.text.tuend.a<AA>m<MMM>`, and re-packs the archive under
+   `cmake-build-match/exidx_markers/archives/`.
+4. Writes `link_order.rsp` / `archives.rsp` listing the copies; the gold link uses those instead
+   of the originals.
+
+`tools/gen_section_order.py` now accepts `@response-file` inputs and separates
+`.text.tuend.*` from the ordinary `.text.*` names.  After building the normal order it places each
+marker **after the last of its owner's sections in the finished order** (not merely after the
+owner's last dynsym-listed section: a weak/local section can be emitted at an earlier member's
+position, and several markers then collapse onto one ordering index; gold emits one CANT per run,
+so the sentinels would disappear again).  Markers of members with no listed section stay just
+before the trailing `*`.
+
+`CMakeLists.txt` adds the marker custom command, feeds the copies to `gen_section_order.py`,
+points the link at the copies, and adds `-Tdata 0x20cb80` (the extra exidx bytes push the RO
+segment past the RW file-offset window; without the anchor gold moves the whole RW segment by
++0x1000).
+
+### 8.2 Measured table
+
+`readelf -SW` plus an 8-byte exidx parser (`word2 == 1` is CANTUNWIND).  All addresses are real
+ELF addresses.  "anchor removal" deletes the `mtwTextLayoutAnchor` body and the
+`MenuTouchWindow_languageIds[11]` address element; "anchor stub" keeps the address element and
+replaces the body with `{}` (2 bytes) so the `.rel.dyn` R_ARM_ABS32 relocation survives.
+
+| link | `.text` | `.ARM.exidx` | entries | CANT | `.rodata` | `.rel.plt` | `.got` | `.data` | `.fini_array` | byte | linked | size-exact |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| original | `0x1337c8` | `0x6f70` | 3566 | 272 | `0x1c9e10` | `0x5751c` | `0x20fcf4` | `0x214000` | `0x20cba0` | — | — | — |
+| baseline (HEAD) | `0x1343d0` | `0x66c8` | 3289 | 6 | `0x1ca180` | `0x5751c` | `0x20fcf4` | `0x214000` | `0x20cb80` | **1458** | 4493 | 4522/4523 |
+| markers only | `0x1343d0` | `0x6fa8` | 3573 | 273 | `0x1caa60` | `0x5751c` | `0x210cf4` | `0x215000` | `0x20db80` | **1432** | 4493 | 4522/4523 |
+| markers + `-Tdata 0x20cb80` (committed) | `0x1343d0` | `0x6fa8` | 3573 | 273 | `0x1caa60` | `0x5751c` | `0x20fcf4` | `0x214000` | `0x20cb80` | **1495** | 4493 | 4522/4523 |
+| markers + anchor removal (full), no `-Tdata` | `0x133850` | `0x6fa0` | 3572 | 273 | `0x1c9ed0` | `0x57514` | `0x20fcf4` | `0x214000` | `0x20cba0` | **1400** | 4493 | 4522/4523 |
+| markers + anchor removal (full) + `-Tdata` | `0x133850` | `0x6fa0` | 3572 | 273 | `0x1c9ed0` | `0x57514` | `0x20fcf4` | `0x214000` | `0x20cba0` | **1400** | 4493 | 4522/4523 |
+| markers + anchor stub + `-Tdata` | `0x133850` | `0x6fa8` | 3573 | 273 | `0x1c9ed0` | `0x5751c` | `0x20fcf4` | `0x214000` | `0x20cb80` | **1473** | 4493 | 4522/4523 |
+
+`-Tdata` is neutral once the anchor is removed (the RO segment fits the old RW window), and the
+anchor-stub variant is identical with and without it (byte 1473 both ways).
+
+### 8.3 What the anchor does
+
+The anchor body is 0xb76 object bytes (0xb78 linked).  Removing it moves `.text` from
+`0x1343d0` to `0x133850`, i.e. from +0xc08 to +0x88 versus the original.  `.rodata` moves from
+`0x1caa60` to `0x1c9ed0` (+0xc0 versus the original `0x1c9e10`).  With the full removal the RW
+segment lands on the original addresses (`.fini_array` `0x20cba0`, `.data.rel.ro` `0x20cbb0`,
+`.got` `0x20fcf4`, `.data` `0x214000`); the stub keeps the pre-existing `-Tdata` anchor
+(`.fini_array` `0x20cb80`).  So the layout does converge; the remaining +0x88 is the small
+prologue anchors from `layout_anchor_audit_v2.md` §2.5, not the MenuTouchWindow anchor.
+
+The byte_exact cost depends on whether the anchor's relocation is kept:
+
+- **Full removal** also removes the `R_ARM_ABS32` in `.rel.dyn` that keeps the anchor alive.
+  `.rel.dyn` shrinks by 8 bytes, which shifts `.rel.plt`/`.plt` from `0x5751c`/`0x5e7ec` to
+  `0x57514`/`0x5e7e4`.  Every PLT call site then differs by 8, costing ~73 byte_exact
+  (1495 -> 1400).
+- **Anchor stub** (keep the array element, shrink the body to `{}`) preserves the relocation.
+  `.rel.plt` stays at `0x5751c`, and the gate is **byte 1473 / linked 4493** — still above the
+  1458 baseline, with `.text` 0x133850.
+
+The 1495 -> 1473 difference (anchor present vs stub) is the `.rodata` literal-pool trade-off:
+the anchor-present `.rodata` at `0x1caa60` nets 22 byte_exact (8 functions gained, 30 lost)
+versus `0x1c9ed0`, even though `0x1c9ed0` is arithmetically closer to the original.
+
+### 8.4 Gate
+
+Committed build-system-only configuration (anchor present, markers + `-Tdata`):
+
+```text
+verify: byte 1495  linked 4493  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+  GAIN  byte_exact 1458 -> 1495 (lock with --update-baseline)
+RATCHET PASS
+```
+
+`size-exact` stays 4522/4523; `drift` reports 0 fields across 0 classes; `lint` is clean.
+`--update-baseline` was **not** used (per the task), so the committed baseline remains 1458 and the
+ratchet reports the gain.
+
+Anchor-stub configuration (needs the `MenuTouchWindow.cpp` edit, not committed by this research
+pass):
+
+```text
+verify: byte 1473  linked 4493  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+  GAIN  byte_exact 1458 -> 1473 (lock with --update-baseline)
+RATCHET PASS
+```
+
+### 8.5 Reproduction
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w3266
+cmake --preset default
+cmake --build cmake-build-match --target check -j32
+# byte 1495  linked 4493  size-exact 4522/4523  .text 0x1343d0  .ARM.exidx 0x6fa8
+```
+
+The marker generation is automatic; its output is
+`cmake-build-match/exidx_markers/{link_order.rsp,archives.rsp}` and the generated order is
+`cmake-build-match/section_order.txt` (5885 lines: 4911 baseline + 974 markers).
+
+To reproduce the anchor variants, edit `src/game/ui/MenuTouchWindow.cpp`:
+
+- full removal: delete the forward declaration, the
+  `reinterpret_cast<int>(mtwTextLayoutAnchor)` array element (change `[11]` to `[10]`), and the
+  whole function body;
+- stub: keep the declaration and array element, replace the body with `{}`.
+
+Then `cmake --build cmake-build-match --target check -j32`.  For the "no `-Tdata`" rows, relink
+the generated marker copies directly (the build-system link line minus `-Tdata`):
+
+```sh
+W=$PWD; NDK=$W/.cache/ndk/android-ndk-r18b
+GOLD=$NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin/ld.gold
+MD=$W/cmake-build-match/exidx_markers
+$GOLD -shared -soname libgof2hdaa.so --build-id -z now \
+  --unresolved-symbols=ignore-all --exclude-libs=libgcc.a \
+  --section-ordering-file=$W/cmake-build-match/section_order.txt \
+  -o /tmp/relinked.so \
+  $W/cmake-build-match/crtbegin_so_renamed.o -L $NDK/platforms/android-16/arch-arm/usr/lib \
+  @$MD/link_order.rsp \
+  --whole-archive $MD/archives/libz_gof2.a $MD/archives/libzip_gof2.a --no-whole-archive \
+  $MD/archives/libcrypto_gof2.a \
+  -l log -l GLESv2 -l GLESv1_CM -l EGL -l android \
+  $W/../_work/bins/apk_libs/libfmodex.so $W/../_work/bins/apk_libs/libfmodevent.so \
+  $MD/archives/libc++abi.a -l m $MD/archives/libandroid_support.a $MD/archives/libgcc.a \
+  -l dl -l c $NDK/platforms/android-16/arch-arm/usr/lib/crtend_so.o
+```
+
+### 8.6 Recommendation
+
+Commit the build-system change (markers + `-Tdata`): it is gate-green at **byte 1495** (up 37 from
+1458), leaves `.text`/size-exact unchanged, and moves `.ARM.exidx` from 3289/6 to **3573/273**
+entries/CANT (original 3566/272).  The remaining exidx delta is +7 entries (6 real entries that
+gold does not merge plus 1 CANT), not a missing-sentinel problem.
+
+The anchor-stub variant is the layout-converging follow-up: **byte 1473**, `.text` 0x133850
+(+0x88 vs original), `.rodata` 0x1c9ed0 (+0xc0), RW segment on the original addresses.  It is
+gate-green but requires the `MenuTouchWindow.cpp` source edit, so it is left to the coordinator
+(this research pass was confined to the build system).
