@@ -4321,3 +4321,5 @@ mtw anchor for any size change before MenuTouchWindow.
   the PLT diff drops further (the JNI block was 78 dynsym slots early).
 - **PaintCanvas +16 gap** (`w3316`): closed by relocating the GameText Arabic anchor (the gap
   moves to `GameText::getRegionCode`, so this is neutral until the anchor is deleted).
+- **`gof2hd2012.c` TU split** (`w3315`): the GOF2HD2012 JNI block is split out of `main.c`
+  into its own TU (the second half of the JNI dynsym move). Gate unchanged at 1824.
