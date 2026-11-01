@@ -2739,7 +2739,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     }
                 }
                 if (button->id == 52) {
-                    if (button->OnTouchEnd(x, y)) {
+                    if (__builtin_expect(button->OnTouchEnd(x, y), 1)) { // lint: arm_builtin
                         switch (this->field_0x1e0) {
                             case 0:
                                 if (!options[53])
