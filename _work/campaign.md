@@ -4449,3 +4449,7 @@ original build flags.
   reproduced in plain C++, the empty `LevelCreateScene.cpp` TU is deleted and its scoped
   `-mllvm -sink-insts-to-avoid-spills` removed. **The build now uses only original flags — no
   per-TU `-mllvm` overrides remain.**
+- **extab pass 3: `.ARM.extab` now EXACT 0x26298** (`w3391`), byte-neutral. **Every section now
+  matches the original except the `.rodata` content size (+0x40)**: `.text` 0x1337c8 @0x69440,
+  `.ARM.exidx` 0x6f70 @0x19cc08, `.ARM.extab` 0x26298 @0x1a3b78, `.rodata` base 0x1c9e10,
+  `.bss` 0x69ac, `.data`/`.data.rel.ro`/`.got`/`.dynamic`/`.plt` — all exact.

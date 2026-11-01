@@ -64,20 +64,20 @@
    "usize": 1996
   },
   {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 78.2,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
    "pct": 78.4,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
-  },
-  {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.6,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
   },
   {
    "name": "_ZN7GlobalsC1Ev",
