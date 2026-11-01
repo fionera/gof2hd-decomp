@@ -433,6 +433,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         int *specialFontPtr = &Globals::fontLangSelect;
         int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
+        // Emission-order reference: the original TU emits languageIds before languageTextIds.
+        (void) MenuTouchWindow_languageIds;
         for (i = 0; i != 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +

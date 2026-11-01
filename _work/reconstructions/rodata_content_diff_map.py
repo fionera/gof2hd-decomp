@@ -47,6 +47,9 @@ def main():
         prev = i
     print("== raw diff ==")
     print(f"differing bytes {len(diff)} / {RS} ({100.0*len(diff)/RS:.2f}%)")
+    if not diff:
+        print("runs 0  (byte-identical)")
+        return
     print(f"runs {runs}  first VMA {RO+diff[0]:#x}  last VMA {RO+diff[-1]:#x}")
 
     start = diff[0] & ~3

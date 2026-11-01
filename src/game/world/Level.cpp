@@ -719,159 +719,6 @@ void Level::initParticleSystems() {
         this->field_94->init();
 }
 
-void Level::createAsteroids() {
-    using namespace AbyssEngine::AEMath;
-    static const int asteroidMeshes[4] = {16900, 16921, 16904, 18836};
-    static const int lodDistancesIPad[3] = {100000, 120000, 150000};
-    static const int lodDistancesNear[3] = {60000, 100000, 120000};
-    static const int lodDistancesFar[3] = {40000, 70000, 90000};
-
-    int systemVariant = Globals::status->inAlienOrbit() ? 0
-            : (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 22) << 1;
-    asteroids = new Array<KIPlayer *>();
-    int *probabilities = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation());
-
-    // the field layout is seeded by the station so it stays the same between visits
-    Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
-    ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
-    int x = Globals::rnd->nextInt(100000) - 50000;
-    int y = Globals::rnd->nextInt(100000) - 50000;
-    int z = Globals::rnd->nextInt(100000) + 20000;
-    bool alienOrbit = Globals::status->inAlienOrbit();
-    int mission = Globals::status->getCurrentCampaignMission();
-    if (alienOrbit) {
-        x = mission == 0x9a ? -70000 : -30000;
-        y = 0;
-        z = 30000;
-    } else if (mission == 0x72 && Globals::status->getStation()->getIndex() == 0x53) {
-        x = 30000;
-        y = 0;
-        z = 80000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x59 && Globals::status->inSupernovaOrbit()) {
-        x = -100000;
-        y = 0;
-        z = -50000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x5b && Globals::status->getStation()->getIndex() == 0x6e) {
-        x = 60000;
-        y = 0;
-        z = 50000;
-    } else if (Globals::status->getCurrentCampaignMission() == 0x91 && Globals::status->getStation()->getIndex() == 0x70) {
-        x = 50000;
-        y = 0;
-        z = 70000;
-    } else {
-        if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
-            x = 0;
-            y = 0;
-            z = 0;
-        }
-    }
-    Globals::rnd->reset();
-
-    reinterpret_cast<Vector &>(stationPosition.x) = Vector{(float) x, (float) y, (float) z};
-    asteroidWaypoint = new Waypoint(x, y, z, nullptr);
-    collisionVolume = new BoundingSphere((float) x, (float) y, (float) z, 0.0f, 0.0f, 0.0f, 100000.0f);
-
-    int denseCount = Globals::rnd->nextInt(8) + 2;
-    bool alienField = Globals::status->inAlienOrbit();
-    Vector position = {0.0f, 0.0f, 0.0f};
-    int kind = 0x9a;
-    int cursor = 0;
-    for (unsigned int i = 0; i < asteroids->size(); i++) {
-        if (alienField) {
-            kind = 0xa4;
-        } else {
-            bool found = false;
-            while (!found) {
-                int roll = Globals::rnd->nextInt(100);
-                int next = 0;
-                found = false;
-                if (roll < probabilities[cursor + 1]) {
-                    kind = probabilities[cursor];
-                    next = cursor > 8 ? 0 : cursor + 2;
-                    found = kind == 0xd9 || kind < 0xa4;
-                }
-                cursor = next;
-            }
-        }
-
-        bool dense = (int) i < denseCount;
-        int spread = dense ? 60000 : 100000;
-        float half = (float) (spread / 2);
-        int variant = systemVariant;
-        if (Globals::status->inAlienOrbit()) {
-            variant = 1;
-        }
-        if (kind == 0xd9) {
-            variant = 3;
-        }
-        bool checkSpacing = i != 0 && dense;
-        int mesh = asteroidMeshes[variant];
-        for (;;) {
-            position.x = stationPosition.x - half + (float) Globals::rnd->nextInt(spread);
-            position.y = stationPosition.y - half + (float) Globals::rnd->nextInt(spread);
-            position.z = stationPosition.z - half + (float) Globals::rnd->nextInt(spread);
-            if (!checkSpacing) {
-                break;
-            }
-            bool spaced = false;
-            for (unsigned int j = 0; j < i; j++) {
-                int distance = (int) VectorLength((*asteroids)[j]->getPosition() - position);
-                spaced = spaced || distance > 8000;
-                if (distance > 8000) {
-                    break;
-                }
-            }
-            if (spaced) {
-                break;
-            }
-        }
-
-        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
-        unsigned short lodMeshes[3] = {(unsigned short) (mesh + 1), (unsigned short) (mesh + 2),
-                                       (unsigned short) (mesh + 3)};
-        if (Globals::iPad) {
-            int distances[3] = {lodDistancesIPad[0], lodDistancesIPad[1], lodDistancesIPad[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        } else if ((int) i < denseCount) {
-            int distances[3] = {lodDistancesNear[0], lodDistancesNear[1], lodDistancesNear[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        } else {
-            int distances[3] = {lodDistancesFar[0], lodDistancesFar[1], lodDistancesFar[2]};
-            geometry->setLodMeshes(lodMeshes, distances, 3);
-            lodManager->addObject(geometry);
-        }
-        int scale;
-        if ((int) i < denseCount) {
-            scale = Globals::rnd->nextInt(100) + 120;
-        } else {
-            scale = Globals::rnd->nextInt(70) + 30;
-        }
-        float size = (float) scale;
-        size *= 0.01f;
-        int type;
-        if (size < 0.4) {
-            type = 4;
-        } else if (size < 0.7) {
-            type = 5;
-        } else if (size < 0.92) {
-            type = 6;
-        } else if (Globals::rnd->nextInt(2) != 0) {
-            type = Globals::rnd->nextInt(3) + 4;
-        } else {
-            type = 7;
-        }
-        (*asteroids)[i] = new PlayerAsteroid(mesh, geometry, variant, kind, position, size, type);
-        (*asteroids)[i]->setLevel(this);
-        ((PlayerAsteroid *) (*asteroids)[i])->setAsteroidCenter(reinterpret_cast<Vector &>(stationPosition.x));
-    }
-    if (probabilities != nullptr) {
-        delete[] probabilities;
-    }
-}
-
 void Level::createSpace() {
     using namespace AbyssEngine::AEMath;
     static const unsigned short jumpgateMeshes[8 * 2] = {
@@ -1083,6 +930,159 @@ void Level::createSpace() {
     i_r = r;
     i_g = g;
     i_b = b;
+}
+
+void Level::createAsteroids() {
+    using namespace AbyssEngine::AEMath;
+    static const int asteroidMeshes[4] = {16900, 16921, 16904, 18836};
+    static const int lodDistancesIPad[3] = {100000, 120000, 150000};
+    static const int lodDistancesNear[3] = {60000, 100000, 120000};
+    static const int lodDistancesFar[3] = {40000, 70000, 90000};
+
+    int systemVariant = Globals::status->inAlienOrbit() ? 0
+            : (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 22) << 1;
+    asteroids = new Array<KIPlayer *>();
+    int *probabilities = Globals::galaxy->getAsteroidProbabilities(Globals::status->getStation());
+
+    // the field layout is seeded by the station so it stays the same between visits
+    Globals::rnd->setSeed(Globals::status->getStation()->getIndex());
+    ArraySetLength(Globals::rnd->nextInt(40) + 40, *asteroids);
+    int x = Globals::rnd->nextInt(100000) - 50000;
+    int y = Globals::rnd->nextInt(100000) - 50000;
+    int z = Globals::rnd->nextInt(100000) + 20000;
+    bool alienOrbit = Globals::status->inAlienOrbit();
+    int mission = Globals::status->getCurrentCampaignMission();
+    if (alienOrbit) {
+        x = mission == 0x9a ? -70000 : -30000;
+        y = 0;
+        z = 30000;
+    } else if (mission == 0x72 && Globals::status->getStation()->getIndex() == 0x53) {
+        x = 30000;
+        y = 0;
+        z = 80000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x59 && Globals::status->inSupernovaOrbit()) {
+        x = -100000;
+        y = 0;
+        z = -50000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x5b && Globals::status->getStation()->getIndex() == 0x6e) {
+        x = 60000;
+        y = 0;
+        z = 50000;
+    } else if (Globals::status->getCurrentCampaignMission() == 0x91 && Globals::status->getStation()->getIndex() == 0x70) {
+        x = 50000;
+        y = 0;
+        z = 70000;
+    } else {
+        if (Globals::status->getCurrentCampaignMission() == 0 && missionPtr == 3) {
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+    }
+    Globals::rnd->reset();
+
+    reinterpret_cast<Vector &>(stationPosition.x) = Vector{(float) x, (float) y, (float) z};
+    asteroidWaypoint = new Waypoint(x, y, z, nullptr);
+    collisionVolume = new BoundingSphere((float) x, (float) y, (float) z, 0.0f, 0.0f, 0.0f, 100000.0f);
+
+    int denseCount = Globals::rnd->nextInt(8) + 2;
+    bool alienField = Globals::status->inAlienOrbit();
+    Vector position = {0.0f, 0.0f, 0.0f};
+    int kind = 0x9a;
+    int cursor = 0;
+    for (unsigned int i = 0; i < asteroids->size(); i++) {
+        if (alienField) {
+            kind = 0xa4;
+        } else {
+            bool found = false;
+            while (!found) {
+                int roll = Globals::rnd->nextInt(100);
+                int next = 0;
+                found = false;
+                if (roll < probabilities[cursor + 1]) {
+                    kind = probabilities[cursor];
+                    next = cursor > 8 ? 0 : cursor + 2;
+                    found = kind == 0xd9 || kind < 0xa4;
+                }
+                cursor = next;
+            }
+        }
+
+        bool dense = (int) i < denseCount;
+        int spread = dense ? 60000 : 100000;
+        float half = (float) (spread / 2);
+        int variant = systemVariant;
+        if (Globals::status->inAlienOrbit()) {
+            variant = 1;
+        }
+        if (kind == 0xd9) {
+            variant = 3;
+        }
+        bool checkSpacing = i != 0 && dense;
+        int mesh = asteroidMeshes[variant];
+        for (;;) {
+            position.x = stationPosition.x - half + (float) Globals::rnd->nextInt(spread);
+            position.y = stationPosition.y - half + (float) Globals::rnd->nextInt(spread);
+            position.z = stationPosition.z - half + (float) Globals::rnd->nextInt(spread);
+            if (!checkSpacing) {
+                break;
+            }
+            bool spaced = false;
+            for (unsigned int j = 0; j < i; j++) {
+                int distance = (int) VectorLength((*asteroids)[j]->getPosition() - position);
+                spaced = spaced || distance > 8000;
+                if (distance > 8000) {
+                    break;
+                }
+            }
+            if (spaced) {
+                break;
+            }
+        }
+
+        AEGeometry *geometry = new AEGeometry(mesh, Globals::Canvas, false);
+        unsigned short lodMeshes[3] = {(unsigned short) (mesh + 1), (unsigned short) (mesh + 2),
+                                       (unsigned short) (mesh + 3)};
+        if (Globals::iPad) {
+            int distances[3] = {lodDistancesIPad[0], lodDistancesIPad[1], lodDistancesIPad[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        } else if ((int) i < denseCount) {
+            int distances[3] = {lodDistancesNear[0], lodDistancesNear[1], lodDistancesNear[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        } else {
+            int distances[3] = {lodDistancesFar[0], lodDistancesFar[1], lodDistancesFar[2]};
+            geometry->setLodMeshes(lodMeshes, distances, 3);
+            lodManager->addObject(geometry);
+        }
+        int scale;
+        if ((int) i < denseCount) {
+            scale = Globals::rnd->nextInt(100) + 120;
+        } else {
+            scale = Globals::rnd->nextInt(70) + 30;
+        }
+        float size = (float) scale;
+        size *= 0.01f;
+        int type;
+        if (size < 0.4) {
+            type = 4;
+        } else if (size < 0.7) {
+            type = 5;
+        } else if (size < 0.92) {
+            type = 6;
+        } else if (Globals::rnd->nextInt(2) != 0) {
+            type = Globals::rnd->nextInt(3) + 4;
+        } else {
+            type = 7;
+        }
+        (*asteroids)[i] = new PlayerAsteroid(mesh, geometry, variant, kind, position, size, type);
+        (*asteroids)[i]->setLevel(this);
+        ((PlayerAsteroid *) (*asteroids)[i])->setAsteroidCenter(reinterpret_cast<Vector &>(stationPosition.x));
+    }
+    if (probabilities != nullptr) {
+        delete[] probabilities;
+    }
 }
 
 void Level::createPlayer() {
@@ -1670,6 +1670,470 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
     }
     object->setLevel(this);
     return object;
+}
+
+void Level::assignGuns() {
+    if (enemyGuns != nullptr) {
+        ArrayReleaseClasses(*enemyGuns);
+        delete enemyGuns;
+        enemyGuns = nullptr;
+    }
+    enemyGuns = nullptr;
+
+    float level = ((Globals::status->getLevel() - 2) * 0.9f > 20.0f ? 20.0f
+                                                                     : (Globals::status->getLevel() - 2) * 0.9f) < 0.0f
+                      ? 0.0f
+                      : ((Globals::status->getLevel() - 2) * 0.9f > 20.0f
+                             ? 20
+                             : (int) ((Globals::status->getLevel() - 2) * 0.9f));
+    level += level * (*(float *) &Globals::options[44] - 0.5f);
+    int campaignMission = Globals::status->getCurrentCampaignMission();
+    Wanted *wanted = Globals::status->getWantedInCurrentOrbit();
+    int power = (int) level;
+    if (power >= 22) {
+        power = 22;
+    }
+    if (enemies == nullptr) {
+        return;
+    }
+
+    unsigned int slots = 0;
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        if ((*enemies)[i] != nullptr && (*enemies)[i]->field_0x25) {
+            slots += (*enemies)[i]->isWingMan() ? 2 : 1;
+        }
+    }
+    enemyGuns = new Array<AbstractGun *>();
+    ArraySetLength(slots, *enemyGuns);
+
+    int boostedBase = power == 0 ? 3 : power + 2;
+    int baseDamage = campaignMission == 4 ? 1 : boostedBase;
+
+    unsigned int gunIndex = 0;
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        if ((*enemies)[i] == nullptr) {
+            continue;
+        }
+        if ((*enemies)[i]->field_0x25) {
+            if (missionPtr == 2) {
+                (*enemies)[i]->player->setPlayShootSound(false, 2);
+            }
+            float color;
+            int damage;
+            if ((Globals::status->getMission()->getType() == 6 && !(*enemies)[i]->player->isAlwaysFriend())
+                || (Globals::status->getMission()->getType() == 12 && (*enemies)[i]->player->isAlwaysFriend())) {
+                color = 28.0f;
+                damage = Globals::status->getLevel() + boostedBase;
+            } else {
+                color = 16.0f;
+                damage = baseDamage;
+            }
+            if (!(*enemies)[i]->isWingMan() && !(*enemies)[i]->player->isAlwaysFriend()
+                && (*enemies)[i]->shipGroup == 9) {
+                if (campaignMission == 16) {
+                    damage = (int) (damage * 2.0f);
+                } else {
+                    damage = (int) (damage * 0.8f);
+                }
+            }
+            if (campaignMission == 49 || campaignMission == 50 || campaignMission == 51 || campaignMission == 52
+                || campaignMission == 56) {
+                damage = 5;
+            }
+            if ((*enemies)[i]->field_0x3e && campaignMission == 80) {
+                damage = (int) (damage * 1.7f);
+            }
+            if (Globals::status->getCurrentCampaignMission() == 70 && !(*enemies)[i]->isWingMan()) {
+                damage = (int) (damage * 2.5f);
+            }
+            if (Globals::status->getMission() != nullptr && Globals::status->getMission()->getType() == 183) {
+                damage = 1;
+            }
+
+            Gun *gun = new Gun(0, damage, 4, -1, 3000,
+                               600 - 2 * (Globals::status->gameWon() ? 45
+                                                                     : Globals::status->getCurrentCampaignMission()),
+                               color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setFriendGun(true);
+            gun->setLevel(this);
+            gun->setIndex(0);
+            gun->weaponType = ITEM_SORT_LASER;
+
+            int mesh;
+            switch ((*enemies)[i]->shipGroup) {
+                case 0:
+                    gun->weaponType = ITEM_SORT_LASER;
+                    gun->setIndex(0);
+                    mesh = 6754;
+                    break;
+                case 1:
+                    gun->setIndex(3);
+                    mesh = 6760;
+                    break;
+                case 2:
+                    gun->weaponType = ITEM_SORT_LASER;
+                    gun->setIndex(7);
+                    mesh = 6764;
+                    break;
+                case 3:
+                    gun->setIndex(25);
+                    mesh = 6802;
+                    break;
+                case 9:
+                    gun->setIndex(5);
+                    mesh = 6762;
+                    break;
+                case 10:
+                    gun->setIndex(229);
+                    gun->damage = (int) (gun->damage * 0.7f);
+                    mesh = 19091;
+                    break;
+                default:
+                    gun->weaponType = ITEM_SORT_BLASTER;
+                    gun->setIndex(19);
+                    mesh = 6795;
+                    break;
+            }
+
+            int mission = Globals::status->getCurrentCampaignMission();
+            if ((*enemies)[i]->field_0x3e) {
+                KIPlayer *host = ((PlayerTurret *) (*enemies)[i])->getHost();
+                if (host != nullptr && host->shipGroupFlag == 51) {
+                    gun->weaponType = ITEM_SORT_AUTO_CANNON;
+                    gun->setIndex(22);
+                    gun->damage = (int) (gun->damage * 0.5);
+                    mesh = 6798;
+                } else if (host != nullptr && host->shipGroupFlag == 45) {
+                    gun->weaponType = ITEM_SORT_AUTO_CANNON;
+                    gun->setIndex(22);
+                    gun->damage = (int) (gun->damage * 0.5);
+                    mesh = 6798;
+                } else if ((*enemies)[i]->field_0x3f_b) {
+                    int type = (*enemies)[i]->getType();
+                    int item;
+                    switch (type) {
+                        case 18880:
+                            gun->weaponType = ITEM_SORT_LASER;
+                            gun->setIndex(2);
+                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
+                            item = 211;
+                            mesh = 6756;
+                            break;
+                        case 18881:
+                            gun->weaponType = ITEM_SORT_BLASTER;
+                            gun->setIndex(20);
+                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
+                            item = 212;
+                            mesh = 6797;
+                            break;
+                        default:
+                            gun->weaponType = ITEM_SORT_BLASTER;
+                            gun->setIndex(14);
+                            gun->offset = Vector{0.0f, 0.0f, 300.0f};
+                            item = 213;
+                            mesh = 6790;
+                            break;
+                    }
+                    gun->field_0xa8 = 1;
+                    gun->damage = (*Globals::items)[item]->getAttribute(9);
+                    gun->fireDelay = (*Globals::items)[item]->getAttribute(11);
+                    gun->initialLifetime = (*Globals::items)[item]->getAttribute(12);
+                    gun->pitchRate = (float) (*Globals::items)[item]->getAttribute(13);
+                    if (mission == 158 && type == 18882 && (*enemies)[i]->player->isAlwaysEnemy()) {
+                        gun->pitchRate *= 1.2f;
+                        gun->damage = (int) (gun->damage * 1.5f);
+                        Player *player = (*enemies)[i]->player;
+                        player->setMaxHitpoints((int) (player->getMaxHitpoints() * 5.0f));
+                    }
+                } else {
+                    if ((*enemies)[i]->shipGroup == 1) {
+                        gun->weaponType = ITEM_SORT_BLASTER;
+                        gun->setIndex(15);
+                        mesh = 6791;
+                    } else {
+                        gun->weaponType = ITEM_SORT_BLASTER;
+                        gun->setIndex(20);
+                        mesh = 6796;
+                    }
+                }
+            }
+            if (mission == 70) {
+                if (!(*enemies)[i]->isWingMan()) {
+                    gun->setIndex(183);
+                    mesh = 14297;
+                }
+            } else if (mission == 7 && (*enemies)[i]->shipGroup == 8) {
+                gun->damage = (int) (gun->damage * 0.5f);
+            }
+
+            if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()) {
+                if (Globals::lastCampaignMissionFailed == Globals::status->getCurrentCampaignMission()
+                    && Globals::lastCampaignMissionFailCount >= 3 && (*enemies)[i]->isEnemy()) {
+                    gun->damage = (int) (gun->damage * 0.7f);
+                }
+            } else {
+                int group = (*enemies)[i]->shipGroupFlag;
+                if (mission == 145 && group == 49) {
+                    gun->weaponType = ITEM_SORT_CLUSTER_MISSILE;
+                    gun->setIndex(214);
+                    gun->damage *= 2;
+                    mesh = 14240;
+                } else if ((mission == 157 || mission == 158) && group == 49) {
+                    gun->weaponType = ITEM_SORT_LASER;
+                    gun->setIndex(7);
+                    gun->damage *= 3;
+                    mesh = 6764;
+                } else if (wanted != nullptr && (*enemies)[i]->field_0x42) {
+                    int weapon = wanted->getWeapon();
+                    gun->setIndex(weapon);
+                    int sort = (*Globals::items)[weapon]->getAttribute(2);
+                    mesh = g_cg_meshTable[weapon];
+                    gun->weaponType = sort;
+                    gun->damage *= 4;
+                }
+            }
+
+            int sort = gun->weaponType;
+            if (sort == ITEM_SORT_CLUSTER_MISSILE || sort == ITEM_SORT_MISSILE) {
+                RocketGun *rocketGun = new RocketGun(gun->itemIndex, gun, mesh, 0, 0, sort,
+                                                     sort == ITEM_SORT_MISSILE, this);
+                (*enemyGuns)[gunIndex] = rocketGun;
+                gun->pitchRate = 8.0f;
+                gun->initialLifetime = 10000;
+                gun->fireDelay = 3000;
+                gun->damage *= 4;
+            } else {
+                (*enemyGuns)[gunIndex] = new ObjectGun(0, gun, mesh, 10001, this);
+            }
+            (*enemies)[i]->addGun(gun, 0);
+            Globals::globals->addSoundResourceToList((*enemies)[i]->shipGroup == 9 ? 62 : 61);
+
+            if ((*enemies)[i]->field_0x42 && wanted != nullptr
+                && (unsigned int) ((*enemies)[i]->shipGroupFlag - 45) <= 3) {
+                Gun *rocket = new Gun(0, damage * 4, 4, -1, 10000, 3000, 8.0f,
+                                      Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+                rocket->setFriendGun(true);
+                rocket->setLevel(this);
+                rocket->weaponType = ITEM_SORT_ROCKET;
+                rocket->setIndex(31);
+                ArrayAdd((AbstractGun *) new RocketGun(rocket->itemIndex, rocket, 14240, 0, 0, rocket->weaponType,
+                                                       false, this), *enemyGuns);
+                (*enemies)[i]->addGun(rocket, 1);
+                Globals::globals->addSoundResourceToList(84);
+            }
+
+            if ((*enemies)[i]->shipGroupFlag == 49 && (mission == 157 || mission == 158)) {
+                Gun *cluster = new Gun(0, damage, 4, -1, 3000,
+                                       600 - 2 * (Globals::status->gameWon()
+                                                      ? 45
+                                                      : Globals::status->getCurrentCampaignMission()),
+                                       color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+                cluster->setFriendGun(true);
+                cluster->setLevel(this);
+                cluster->weaponType = ITEM_SORT_CLUSTER_MISSILE;
+                cluster->setIndex(214);
+                ArrayAdd((AbstractGun *) new RocketGun(cluster->itemIndex, cluster, 14240, 0, 0, cluster->weaponType,
+                                                       cluster->weaponType == ITEM_SORT_MISSILE, this),
+                         *enemyGuns);
+                cluster->pitchRate = 8.0f;
+                cluster->initialLifetime = 10000;
+                cluster->fireDelay = 3000;
+                cluster->damage *= 4;
+                (*enemies)[i]->addGun(cluster, 1);
+                Globals::globals->addSoundResourceToList(84);
+            }
+            gunIndex++;
+        }
+
+        if ((*enemies)[i] == nullptr) {
+            continue;
+        }
+        if ((*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x25) {
+            Gun *gun = new Gun(18, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setFriendGun(true);
+            gun->setLevel(this);
+            gun->itemIndex = 18;
+            gun->weaponType = ITEM_SORT_BLASTER;
+            (*enemyGuns)[gunIndex] = new ObjectGun(18, gun, 6794, 10001, this);
+            gun->setIndex(18);
+            gun->empDamage = (*Globals::items)[18]->getAttribute(10);
+            (*enemies)[i]->addGun(gun, 1);
+            Globals::globals->addSoundResourceToList(74);
+            gunIndex++;
+        }
+    }
+}
+
+Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
+    Gun *gun = nullptr;
+    AbstractGun *weapon = nullptr;
+    switch (kind) {
+        case ITEM_SORT_LASER:
+        case ITEM_SORT_BLASTER:
+        case ITEM_SORT_THERMO: {
+            int mesh = g_cg_meshTable[idx];
+            if (mesh >= 0) {
+                int barrels = ((unsigned) (idx - 9) < 3 || idx == 228) ? 1 : 20;
+                if (kind == ITEM_SORT_THERMO) {
+                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 300.0f},
+                                  Vector{0.0f, 0.0f, 0.0f});
+                    gun->setIndex(idx);
+                    gun->weaponType = 3;
+                    gun->setPlayerGun(true);
+                    gun->setErrorMagnitudePercentage(20);
+                    weapon = new RocketGun(owner, gun, mesh, 0, 0, 0, true, this);
+                } else {
+                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
+                                  Vector{0.0f, 0.0f, 0.0f});
+                    gun->setIndex(idx);
+                    gun->weaponType = kind;
+                    gun->setPlayerGun(true);
+                    weapon = new ObjectGun(owner, gun, mesh, 1000, this);
+                }
+            } else {
+                gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
+                              Vector{0.0f, 0.0f, 0.0f});
+                gun->setIndex(idx);
+                gun->weaponType = kind;
+                gun->setPlayerGun(true);
+                weapon = new BeamGun(owner, gun, idx, this);
+            }
+            break;
+        }
+        case ITEM_SORT_TURRET: {
+            float z = 300.0f;
+            float x = 0.0f;
+            switch (idx) {
+                case 48:
+                    x = 80.0f;
+                    break;
+                case 181:
+                    z = -300.0f;
+                    break;
+                default:
+                    break;
+            }
+            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 8;
+            gun->setPlayerGun(true);
+            if (idx == 48 || idx == 224 || idx == 181) {
+                gun->field_0xa4_b0 = true;
+                if (idx == 224)
+                    gun->field_0xa5 = true;
+            }
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            break;
+        }
+        case ITEM_SORT_EMP_BOMB:
+        case ITEM_SORT_NUKE:
+        case ITEM_SORT_IONIZING_MISSILE: {
+            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+                          Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            int attribute = (*Globals::items)[idx]->getAttribute(15);
+            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, kind, attribute == 1, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        }
+        case ITEM_SORT_ROCKET:
+        case ITEM_SORT_MISSILE:
+        case ITEM_SORT_CLUSTER_MISSILE:
+            gun = new Gun(owner, dmg, kind == ITEM_SORT_CLUSTER_MISSILE ? idx - 211 : 5, hp, cool, rate, (float) color,
+                          Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
+                                   kind == ITEM_SORT_MISSILE || kind == ITEM_SORT_CLUSTER_MISSILE, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        case ITEM_SORT_AUTO_CANNON:
+        case ITEM_SORT_SCATTER_GUN:
+            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
+                          Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = kind;
+            gun->setPlayerGun(true);
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            gun->setErrorMagnitudePercentage(2);
+            break;
+        case ITEM_SORT_MINE:
+            gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 11;
+            gun->setPlayerGun(true);
+            weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        case ITEM_SORT_SENTRY_GUN:
+            gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 39;
+            gun->setPlayerGun(true);
+            weapon = new SentryGun(gun, g_cg_meshTable[idx], 1, 39, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+        case ITEM_SORT_PLASMA_COLLECTOR: {
+            float z = 300.0f;
+            float x = 0.0f;
+            switch (idx) {
+                case 48:
+                    x = 80.0f;
+                    break;
+                case 181:
+                    z = -300.0f;
+                    break;
+                default:
+                    break;
+            }
+            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 35;
+            gun->setPlayerGun(true);
+            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
+            break;
+        }
+        case ITEM_SORT_SHOCK_BLAST:
+            gun = new Gun(owner, dmg, 1, hp, 1, rate, (float) color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            gun->setIndex(idx);
+            gun->weaponType = 42;
+            gun->setPlayerGun(true);
+            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, 42, false, this);
+            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
+            break;
+    }
+    switch (idx) {
+        case 41:
+            Globals::globals->addSoundResourceToList(15);
+        case 42:
+            Globals::globals->addSoundResourceToList(16);
+        case 43:
+            Globals::globals->addSoundResourceToList(17);
+        case 44:
+            Globals::globals->addSoundResourceToList(14);
+        case 45:
+            Globals::globals->addSoundResourceToList(13);
+        case 46:
+            Globals::globals->addSoundResourceToList(12);
+    }
+    // Emission-order references: the original Level TU emits the station/blueprint
+    // tables here, before createMission's local coordinate tables.
+    (void) kStationTurrets;
+    (void) kAlienStationTurrets;
+    (void) kAlienOutpostTurrets;
+    (void) kBaseTurrets;
+    (void) kPirateStationCoords;
+    (void) kBlueprintRaces;
+    (void) kBlueprintPositions;
+    (void) kBlueprintSpacePoints;
+    gun->setLevel(this);
+    if (this->playerGuns == nullptr)
+        this->playerGuns = new Array<AbstractGun *>();
+    ArrayAdd(weapon, *this->playerGuns);
+    return gun;
 }
 
 void Level::createMission() {
@@ -4514,298 +4978,6 @@ void Level::createWingmen() {
     Globals::rnd->reset();
 }
 
-void Level::assignGuns() {
-    if (enemyGuns != nullptr) {
-        ArrayReleaseClasses(*enemyGuns);
-        delete enemyGuns;
-        enemyGuns = nullptr;
-    }
-    enemyGuns = nullptr;
-
-    float level = ((Globals::status->getLevel() - 2) * 0.9f > 20.0f ? 20.0f
-                                                                     : (Globals::status->getLevel() - 2) * 0.9f) < 0.0f
-                      ? 0.0f
-                      : ((Globals::status->getLevel() - 2) * 0.9f > 20.0f
-                             ? 20
-                             : (int) ((Globals::status->getLevel() - 2) * 0.9f));
-    level += level * (*(float *) &Globals::options[44] - 0.5f);
-    int campaignMission = Globals::status->getCurrentCampaignMission();
-    Wanted *wanted = Globals::status->getWantedInCurrentOrbit();
-    int power = (int) level;
-    if (power >= 22) {
-        power = 22;
-    }
-    if (enemies == nullptr) {
-        return;
-    }
-
-    unsigned int slots = 0;
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        if ((*enemies)[i] != nullptr && (*enemies)[i]->field_0x25) {
-            slots += (*enemies)[i]->isWingMan() ? 2 : 1;
-        }
-    }
-    enemyGuns = new Array<AbstractGun *>();
-    ArraySetLength(slots, *enemyGuns);
-
-    int boostedBase = power == 0 ? 3 : power + 2;
-    int baseDamage = campaignMission == 4 ? 1 : boostedBase;
-
-    unsigned int gunIndex = 0;
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        if ((*enemies)[i] == nullptr) {
-            continue;
-        }
-        if ((*enemies)[i]->field_0x25) {
-            if (missionPtr == 2) {
-                (*enemies)[i]->player->setPlayShootSound(false, 2);
-            }
-            float color;
-            int damage;
-            if ((Globals::status->getMission()->getType() == 6 && !(*enemies)[i]->player->isAlwaysFriend())
-                || (Globals::status->getMission()->getType() == 12 && (*enemies)[i]->player->isAlwaysFriend())) {
-                color = 28.0f;
-                damage = Globals::status->getLevel() + boostedBase;
-            } else {
-                color = 16.0f;
-                damage = baseDamage;
-            }
-            if (!(*enemies)[i]->isWingMan() && !(*enemies)[i]->player->isAlwaysFriend()
-                && (*enemies)[i]->shipGroup == 9) {
-                if (campaignMission == 16) {
-                    damage = (int) (damage * 2.0f);
-                } else {
-                    damage = (int) (damage * 0.8f);
-                }
-            }
-            if (campaignMission == 49 || campaignMission == 50 || campaignMission == 51 || campaignMission == 52
-                || campaignMission == 56) {
-                damage = 5;
-            }
-            if ((*enemies)[i]->field_0x3e && campaignMission == 80) {
-                damage = (int) (damage * 1.7f);
-            }
-            if (Globals::status->getCurrentCampaignMission() == 70 && !(*enemies)[i]->isWingMan()) {
-                damage = (int) (damage * 2.5f);
-            }
-            if (Globals::status->getMission() != nullptr && Globals::status->getMission()->getType() == 183) {
-                damage = 1;
-            }
-
-            Gun *gun = new Gun(0, damage, 4, -1, 3000,
-                               600 - 2 * (Globals::status->gameWon() ? 45
-                                                                     : Globals::status->getCurrentCampaignMission()),
-                               color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setFriendGun(true);
-            gun->setLevel(this);
-            gun->setIndex(0);
-            gun->weaponType = ITEM_SORT_LASER;
-
-            int mesh;
-            switch ((*enemies)[i]->shipGroup) {
-                case 0:
-                    gun->weaponType = ITEM_SORT_LASER;
-                    gun->setIndex(0);
-                    mesh = 6754;
-                    break;
-                case 1:
-                    gun->setIndex(3);
-                    mesh = 6760;
-                    break;
-                case 2:
-                    gun->weaponType = ITEM_SORT_LASER;
-                    gun->setIndex(7);
-                    mesh = 6764;
-                    break;
-                case 3:
-                    gun->setIndex(25);
-                    mesh = 6802;
-                    break;
-                case 9:
-                    gun->setIndex(5);
-                    mesh = 6762;
-                    break;
-                case 10:
-                    gun->setIndex(229);
-                    gun->damage = (int) (gun->damage * 0.7f);
-                    mesh = 19091;
-                    break;
-                default:
-                    gun->weaponType = ITEM_SORT_BLASTER;
-                    gun->setIndex(19);
-                    mesh = 6795;
-                    break;
-            }
-
-            int mission = Globals::status->getCurrentCampaignMission();
-            if ((*enemies)[i]->field_0x3e) {
-                KIPlayer *host = ((PlayerTurret *) (*enemies)[i])->getHost();
-                if (host != nullptr && host->shipGroupFlag == 51) {
-                    gun->weaponType = ITEM_SORT_AUTO_CANNON;
-                    gun->setIndex(22);
-                    gun->damage = (int) (gun->damage * 0.5);
-                    mesh = 6798;
-                } else if (host != nullptr && host->shipGroupFlag == 45) {
-                    gun->weaponType = ITEM_SORT_AUTO_CANNON;
-                    gun->setIndex(22);
-                    gun->damage = (int) (gun->damage * 0.5);
-                    mesh = 6798;
-                } else if ((*enemies)[i]->field_0x3f_b) {
-                    int type = (*enemies)[i]->getType();
-                    int item;
-                    switch (type) {
-                        case 18880:
-                            gun->weaponType = ITEM_SORT_LASER;
-                            gun->setIndex(2);
-                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
-                            item = 211;
-                            mesh = 6756;
-                            break;
-                        case 18881:
-                            gun->weaponType = ITEM_SORT_BLASTER;
-                            gun->setIndex(20);
-                            gun->offset = Vector{0.0f, 0.0f, 250.0f};
-                            item = 212;
-                            mesh = 6797;
-                            break;
-                        default:
-                            gun->weaponType = ITEM_SORT_BLASTER;
-                            gun->setIndex(14);
-                            gun->offset = Vector{0.0f, 0.0f, 300.0f};
-                            item = 213;
-                            mesh = 6790;
-                            break;
-                    }
-                    gun->field_0xa8 = 1;
-                    gun->damage = (*Globals::items)[item]->getAttribute(9);
-                    gun->fireDelay = (*Globals::items)[item]->getAttribute(11);
-                    gun->initialLifetime = (*Globals::items)[item]->getAttribute(12);
-                    gun->pitchRate = (float) (*Globals::items)[item]->getAttribute(13);
-                    if (mission == 158 && type == 18882 && (*enemies)[i]->player->isAlwaysEnemy()) {
-                        gun->pitchRate *= 1.2f;
-                        gun->damage = (int) (gun->damage * 1.5f);
-                        Player *player = (*enemies)[i]->player;
-                        player->setMaxHitpoints((int) (player->getMaxHitpoints() * 5.0f));
-                    }
-                } else {
-                    if ((*enemies)[i]->shipGroup == 1) {
-                        gun->weaponType = ITEM_SORT_BLASTER;
-                        gun->setIndex(15);
-                        mesh = 6791;
-                    } else {
-                        gun->weaponType = ITEM_SORT_BLASTER;
-                        gun->setIndex(20);
-                        mesh = 6796;
-                    }
-                }
-            }
-            if (mission == 70) {
-                if (!(*enemies)[i]->isWingMan()) {
-                    gun->setIndex(183);
-                    mesh = 14297;
-                }
-            } else if (mission == 7 && (*enemies)[i]->shipGroup == 8) {
-                gun->damage = (int) (gun->damage * 0.5f);
-            }
-
-            if (Globals::status->getMission() != nullptr && Globals::status->getMission()->isCampaignMission()) {
-                if (Globals::lastCampaignMissionFailed == Globals::status->getCurrentCampaignMission()
-                    && Globals::lastCampaignMissionFailCount >= 3 && (*enemies)[i]->isEnemy()) {
-                    gun->damage = (int) (gun->damage * 0.7f);
-                }
-            } else {
-                int group = (*enemies)[i]->shipGroupFlag;
-                if (mission == 145 && group == 49) {
-                    gun->weaponType = ITEM_SORT_CLUSTER_MISSILE;
-                    gun->setIndex(214);
-                    gun->damage *= 2;
-                    mesh = 14240;
-                } else if ((mission == 157 || mission == 158) && group == 49) {
-                    gun->weaponType = ITEM_SORT_LASER;
-                    gun->setIndex(7);
-                    gun->damage *= 3;
-                    mesh = 6764;
-                } else if (wanted != nullptr && (*enemies)[i]->field_0x42) {
-                    int weapon = wanted->getWeapon();
-                    gun->setIndex(weapon);
-                    int sort = (*Globals::items)[weapon]->getAttribute(2);
-                    mesh = g_cg_meshTable[weapon];
-                    gun->weaponType = sort;
-                    gun->damage *= 4;
-                }
-            }
-
-            int sort = gun->weaponType;
-            if (sort == ITEM_SORT_CLUSTER_MISSILE || sort == ITEM_SORT_MISSILE) {
-                RocketGun *rocketGun = new RocketGun(gun->itemIndex, gun, mesh, 0, 0, sort,
-                                                     sort == ITEM_SORT_MISSILE, this);
-                (*enemyGuns)[gunIndex] = rocketGun;
-                gun->pitchRate = 8.0f;
-                gun->initialLifetime = 10000;
-                gun->fireDelay = 3000;
-                gun->damage *= 4;
-            } else {
-                (*enemyGuns)[gunIndex] = new ObjectGun(0, gun, mesh, 10001, this);
-            }
-            (*enemies)[i]->addGun(gun, 0);
-            Globals::globals->addSoundResourceToList((*enemies)[i]->shipGroup == 9 ? 62 : 61);
-
-            if ((*enemies)[i]->field_0x42 && wanted != nullptr
-                && (unsigned int) ((*enemies)[i]->shipGroupFlag - 45) <= 3) {
-                Gun *rocket = new Gun(0, damage * 4, 4, -1, 10000, 3000, 8.0f,
-                                      Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-                rocket->setFriendGun(true);
-                rocket->setLevel(this);
-                rocket->weaponType = ITEM_SORT_ROCKET;
-                rocket->setIndex(31);
-                ArrayAdd((AbstractGun *) new RocketGun(rocket->itemIndex, rocket, 14240, 0, 0, rocket->weaponType,
-                                                       false, this), *enemyGuns);
-                (*enemies)[i]->addGun(rocket, 1);
-                Globals::globals->addSoundResourceToList(84);
-            }
-
-            if ((*enemies)[i]->shipGroupFlag == 49 && (mission == 157 || mission == 158)) {
-                Gun *cluster = new Gun(0, damage, 4, -1, 3000,
-                                       600 - 2 * (Globals::status->gameWon()
-                                                      ? 45
-                                                      : Globals::status->getCurrentCampaignMission()),
-                                       color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-                cluster->setFriendGun(true);
-                cluster->setLevel(this);
-                cluster->weaponType = ITEM_SORT_CLUSTER_MISSILE;
-                cluster->setIndex(214);
-                ArrayAdd((AbstractGun *) new RocketGun(cluster->itemIndex, cluster, 14240, 0, 0, cluster->weaponType,
-                                                       cluster->weaponType == ITEM_SORT_MISSILE, this),
-                         *enemyGuns);
-                cluster->pitchRate = 8.0f;
-                cluster->initialLifetime = 10000;
-                cluster->fireDelay = 3000;
-                cluster->damage *= 4;
-                (*enemies)[i]->addGun(cluster, 1);
-                Globals::globals->addSoundResourceToList(84);
-            }
-            gunIndex++;
-        }
-
-        if ((*enemies)[i] == nullptr) {
-            continue;
-        }
-        if ((*enemies)[i]->isWingMan() && (*enemies)[i]->field_0x25) {
-            Gun *gun = new Gun(18, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setFriendGun(true);
-            gun->setLevel(this);
-            gun->itemIndex = 18;
-            gun->weaponType = ITEM_SORT_BLASTER;
-            (*enemyGuns)[gunIndex] = new ObjectGun(18, gun, 6794, 10001, this);
-            gun->setIndex(18);
-            gun->empDamage = (*Globals::items)[18]->getAttribute(10);
-            (*enemies)[i]->addGun(gun, 1);
-            Globals::globals->addSoundResourceToList(74);
-            gunIndex++;
-        }
-    }
-}
-
 void Level::connectPlayers() {
     if ((int) (intptr_t) Globals::appManager->GetCurrentApplicationModule() == 5) {
         return;
@@ -4992,168 +5164,6 @@ Array<KIPlayer *> *Level::getGasClouds() {
     return gasClouds;
 }
 
-
-Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
-    Gun *gun = nullptr;
-    AbstractGun *weapon = nullptr;
-    switch (kind) {
-        case ITEM_SORT_LASER:
-        case ITEM_SORT_BLASTER:
-        case ITEM_SORT_THERMO: {
-            int mesh = g_cg_meshTable[idx];
-            if (mesh >= 0) {
-                int barrels = ((unsigned) (idx - 9) < 3 || idx == 228) ? 1 : 20;
-                if (kind == ITEM_SORT_THERMO) {
-                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 300.0f},
-                                  Vector{0.0f, 0.0f, 0.0f});
-                    gun->setIndex(idx);
-                    gun->weaponType = 3;
-                    gun->setPlayerGun(true);
-                    gun->setErrorMagnitudePercentage(20);
-                    weapon = new RocketGun(owner, gun, mesh, 0, 0, 0, true, this);
-                } else {
-                    gun = new Gun(owner, dmg, barrels, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
-                                  Vector{0.0f, 0.0f, 0.0f});
-                    gun->setIndex(idx);
-                    gun->weaponType = kind;
-                    gun->setPlayerGun(true);
-                    weapon = new ObjectGun(owner, gun, mesh, 1000, this);
-                }
-            } else {
-                gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 0.0f},
-                              Vector{0.0f, 0.0f, 0.0f});
-                gun->setIndex(idx);
-                gun->weaponType = kind;
-                gun->setPlayerGun(true);
-                weapon = new BeamGun(owner, gun, idx, this);
-            }
-            break;
-        }
-        case ITEM_SORT_TURRET: {
-            float z = 300.0f;
-            float x = 0.0f;
-            switch (idx) {
-                case 48:
-                    x = 80.0f;
-                    break;
-                case 181:
-                    z = -300.0f;
-                    break;
-                default:
-                    break;
-            }
-            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 8;
-            gun->setPlayerGun(true);
-            if (idx == 48 || idx == 224 || idx == 181) {
-                gun->field_0xa4_b0 = true;
-                if (idx == 224)
-                    gun->field_0xa5 = true;
-            }
-            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
-            break;
-        }
-        case ITEM_SORT_EMP_BOMB:
-        case ITEM_SORT_NUKE:
-        case ITEM_SORT_IONIZING_MISSILE: {
-            gun = new Gun(owner, dmg, 1, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
-                          Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = kind;
-            gun->setPlayerGun(true);
-            int attribute = (*Globals::items)[idx]->getAttribute(15);
-            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, kind, attribute == 1, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-        }
-        case ITEM_SORT_ROCKET:
-        case ITEM_SORT_MISSILE:
-        case ITEM_SORT_CLUSTER_MISSILE:
-            gun = new Gun(owner, dmg, kind == ITEM_SORT_CLUSTER_MISSILE ? idx - 211 : 5, hp, cool, rate, (float) color,
-                          Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = kind;
-            gun->setPlayerGun(true);
-            weapon = new RocketGun(owner, gun, g_cg_meshTable[idx], 0, 0, kind,
-                                   kind == ITEM_SORT_MISSILE || kind == ITEM_SORT_CLUSTER_MISSILE, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-        case ITEM_SORT_AUTO_CANNON:
-        case ITEM_SORT_SCATTER_GUN:
-            gun = new Gun(owner, dmg, 25, hp, cool, rate, (float) color, Vector{0.0f, 0.0f, 400.0f},
-                          Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = kind;
-            gun->setPlayerGun(true);
-            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
-            gun->setErrorMagnitudePercentage(2);
-            break;
-        case ITEM_SORT_MINE:
-            gun = new Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 11;
-            gun->setPlayerGun(true);
-            weapon = new MineGun(gun, g_cg_meshTable[idx], 1, 11, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-        case ITEM_SORT_SENTRY_GUN:
-            gun = new Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 39;
-            gun->setPlayerGun(true);
-            weapon = new SentryGun(gun, g_cg_meshTable[idx], 1, 39, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-        case ITEM_SORT_PLASMA_COLLECTOR: {
-            float z = 300.0f;
-            float x = 0.0f;
-            switch (idx) {
-                case 48:
-                    x = 80.0f;
-                    break;
-                case 181:
-                    z = -300.0f;
-                    break;
-                default:
-                    break;
-            }
-            gun = new Gun(owner, dmg, 15, hp, cool, rate, (float) color, Vector{x, 0.0f, z}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 35;
-            gun->setPlayerGun(true);
-            weapon = new ObjectGun(owner, gun, g_cg_meshTable[idx], 1000, this);
-            break;
-        }
-        case ITEM_SORT_SHOCK_BLAST:
-            gun = new Gun(owner, dmg, 1, hp, 1, rate, (float) color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
-            gun->setIndex(idx);
-            gun->weaponType = 42;
-            gun->setPlayerGun(true);
-            weapon = new BombGun(gun, g_cg_meshTable[idx], 1, 42, false, this);
-            Globals::globals->addSoundResourceToList(g_cg_soundTable[idx]);
-            break;
-    }
-    switch (idx) {
-        case 41:
-            Globals::globals->addSoundResourceToList(15);
-        case 42:
-            Globals::globals->addSoundResourceToList(16);
-        case 43:
-            Globals::globals->addSoundResourceToList(17);
-        case 44:
-            Globals::globals->addSoundResourceToList(14);
-        case 45:
-            Globals::globals->addSoundResourceToList(13);
-        case 46:
-            Globals::globals->addSoundResourceToList(12);
-    }
-    gun->setLevel(this);
-    if (this->playerGuns == nullptr)
-        this->playerGuns = new Array<AbstractGun *>();
-    ArrayAdd(weapon, *this->playerGuns);
-    return gun;
-}
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
@@ -6540,6 +6550,220 @@ void Level::alarmAllFriends(int race, bool message) {
     }
 }
 
+// createScene belongs to Level.cpp in the original TU.  Keeping it here (rather than in
+// LevelCreateScene.cpp) makes clang emit its PLT references between createMission's and
+// createCampaignMission's, which is the original .plt order.
+void Level::createScene() {
+    static const int kBarChildCounts[4] = {11, 0, 10, 12};
+    static const int kBarChildMeshes[4] = {14380, -1, 14403, 14391};
+    static const int kBarCounterMeshes[4] = {14281, 14282, 14283, 14284};
+    static const int kShipHangarHeights[64] = {
+        160, 150, 220, 310, 160, 180, 140, 170, 170, 110, 250, 205, 240, 250, 250, 250,
+        170, 170, 190, 460, 170, 210, 140, 170, 160, 190, 170, 240, 220, 280, 200, 200,
+        140, 160, 180, 150, 310, 390, 480, 200, 300, 300, 170, 200, 170, 370, 370, 300,
+        440, 340, 170, 470, 170, 170, 170, 170, 200, 170, 250, 150, 170, 250, 270, 170};
+    static const int kHangarMeshes[10][4] = {
+        {14376, 14302, 14301, -1}, {14377, 14304, -1, -1}, {14378, 14308, 14307, -1}, {14379, 14310, 14264, -1},
+        {-1, -1, -1, -1},          {-1, -1, -1, -1},       {-1, -1, -1, -1},          {14362, 14358, 14360, 14359},
+        {14354, 14355, 14357, 14356}, {-1, -1, -1, -1}};
+    static const int kHangarCapacity[10] = {2, 9, 2, 3, 0, 0, 0, 3, 0, 0};
+    // Hangar ship spots per scene race ({x, y, z}).
+    static const int kHangarSpotsTerran[2][3] = {{0, 0, 2891}, {0, 0, 5781}};
+    static const int kHangarSpotsVossk[9][3] = {{-3715, 0, 661},     {-6983, 36, 2548},   {-9408, 36, 5438},
+                                                {-9408, 36, 16301},  {-6983, 36, 19191},  {-3715, 36, 21078},
+                                                {-9408, 5359, 16301}, {-6983, 5359, 19191}, {-3715, 5359, 21078}};
+    static const int kHangarSpotsNivelian[3][3] = {{-4096, 0, 0}, {0, 0, 4096}, {-4096, 0, 4096}};
+    static const int kHangarSpotsVoid[1][3] = {{4096, 0, 0}};
+    static const int kHangarSpotsKhador[3][3] = {{-1961, 0, 8512}, {-1961, 0, 5562}, {-1961, 0, 2610}};
+    static const int kHangarSpotsDefault[2][3] = {{4096, 0, 0}, {4096, 0, 4096}};
+    static const int kBarSeats[4][7][3] = {
+        {{-2325, 0, -964}, {-1023, 212, 745}, {-1098, 212, 427}, {-1164, 212, -227}, {-1979, 0, -108},
+         {-2556, 0, 646}, {-1439, 212, -860}},
+        {{-694, 102, -271}, {914, 102, 453}, {-680, 102, 1734}, {-417, 102, 1454}, {462, 102, -101},
+         {285, 102, 913}, {-680, 102, 155}},
+        {{-1279, 0, 264}, {-1220, 0, -192}, {-1849, 0, -1214}, {-875, 0, -686}, {48, 0, -911},
+         {-457, 0, -2195}, {-794, 0, -1788}},
+        {{1542, -10, -642}, {1357, -10, -1986}, {1924, -10, -1377}, {-194, -10, -2542}, {979, -10, -202},
+         {1047, -10, 220}, {2319, -10, -498}}};
+    static const int kBarMeshes[10][3] = {{14025, 14026, 14027}, {14028, 14029, -1}, {14031, 14032, 14033},
+                                          {14034, 14035, 14036}, {-1, -1, -1},       {-1, -1, -1},
+                                          {-1, -1, -1},          {-1, -1, -1},       {-1, -1, -1},
+                                          {-1, -1, -1}};
+    static const int kAgentMeshes[8] = {14725, 14726, 14723, 14725, 14722, 14725, 14720, 14721};
+
+    if (this->enemies != nullptr) {
+        ArrayReleaseClasses(*this->enemies);
+        delete this->enemies;
+    }
+    this->enemies = nullptr;
+
+    if (this->missionPtr == 23) {
+        {
+            int sceneRace;
+            {
+                if (Globals::status->getStation()->getIndex() == 101)
+                    sceneRace = 8;
+                else if (Globals::status->getStation()->getIndex() == 100)
+                    sceneRace = 7;
+                else
+                    sceneRace = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            }
+            this->enemies = new Array<KIPlayer *>();
+            ArraySetLength(1, *this->enemies);
+            int shipIndex = Globals::status->getShip()->getIndex();
+            (*this->enemies)[0] = this->createShip(Globals::status->getShip()->getRace(), 0, shipIndex, nullptr,
+                                                   this->missionPtr != 23, false);
+            (*this->enemies)[0]->setPosition(0.0f, (float) kShipHangarHeights[shipIndex], 0.0f);
+            ((PlayerFighter *) (*this->enemies)[0])->removeTrail();
+            ((PlayerFighter *) (*this->enemies)[0])->setExhaustVisible(false);
+            (*this->enemies)[0]->setToSleep();
+            (*this->enemies)[0]->player->setAlwaysFriend(true);
+            bool plainHangar = sceneRace == 1 || sceneRace > 3;
+            for (int k = 0; k < 4; k++) {
+                int mesh = kHangarMeshes[sceneRace][k];
+                if (mesh < 0)
+                    continue;
+                AEGeometry *g = new AEGeometry(mesh, Globals::Canvas, false);
+                g->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
+                PlayerStatic *hangarPart = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
+                if (!plainHangar) {
+                    for (int j = 0; j < kBarChildCounts[sceneRace]; j++) {
+                        AEGeometry *child = new AEGeometry(kBarChildMeshes[sceneRace] + j, Globals::Canvas, false);
+                        g->addChild(child->transform);
+                        delete child;
+                    }
+                }
+                ArrayAdd((KIPlayer *) hangarPart, *this->enemies);
+            }
+            bool ownHangar = false;
+            if (Globals::status->getStation()->getIndex() == 108)
+                ownHangar = Globals::status->field_114 == 3;
+            int capacity = kHangarCapacity[sceneRace];
+            int shipCount = Globals::rnd->nextInt(capacity + 1);
+            if (ownHangar) {
+                Array<Ship *> *ships = Globals::status->voidStation->getShips();
+                shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
+            }
+            unsigned char *spotUsed = new unsigned char[capacity];
+            AbyssEngine::AERandom *rnd = Globals::rnd;
+            for (int i = 0; i < capacity; i++)
+                spotUsed[i] = 0;
+            const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
+            for (int i = 0; i < shipCount; i++) {
+                int race = sceneRace;
+                if (rnd->nextInt(100) <= 29) {
+                    race = Globals::rnd->nextInt(4);
+                    if (Globals::rnd->nextInt(100) < 30)
+                        race = 8;
+                }
+                int type = Globals::globals->getRandomEnemyFighter(race);
+                if (Globals::status->getStation()->getIndex() == 100) {
+                    int pick = Globals::rnd->nextInt(3);
+                    type = pick == 0 ? 37 : pick == 1 ? 38 : 40;
+                }
+                if (ownHangar)
+                    type = (*Globals::status->voidStation->getShips())[i]->getIndex();
+                KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
+                int spot = Globals::rnd->nextInt(capacity);
+                for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
+                    spot = rnd->nextInt(capacity);
+                spotUsed[spot] = 1;
+                const int *table;
+                switch (sceneRace) {
+                    case 0:
+                        table = kHangarSpotsTerran[0];
+                        break;
+                    case 1:
+                        table = kHangarSpotsVossk[0];
+                        break;
+                    case 3:
+                        table = kHangarSpotsNivelian[0];
+                        break;
+                    case 8:
+                        table = kHangarSpotsVoid[0];
+                        break;
+                    default:
+                        table = spots;
+                        break;
+                }
+                ship->setPosition((float) table[spot * 3], (float) (table[spot * 3 + 1] + kShipHangarHeights[type]),
+                                  (float) table[spot * 3 + 2]);
+                ship->player->setAlwaysFriend(true);
+                ship->setToSleep();
+                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
+                ((PlayerFighter *) ship)->setExhaustVisible(false);
+                ArrayAdd(ship, *this->enemies);
+            }
+            delete[] spotUsed;
+            return;
+        }
+
+    }
+
+    else if (this->missionPtr == 4) {
+        {
+            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
+            int staticCount = race == 1 ? 2 : 3;
+            Array<Agent *> *agents = Globals::status->getStation()->getAgents();
+            unsigned char *seatUsed = new unsigned char[7];
+            if (agents != nullptr) {
+                int agentCount = agents->size();
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(agentCount * 3 + staticCount, *this->enemies);
+                for (int i = 0; i < 7; i++)
+                    seatUsed[i] = 0;
+                for (int i = 0; i < agentCount; i++) {
+                    int look = (*agents)[i]->getRace();
+                    if (look == 3)
+                        look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
+                    int mesh = kAgentMeshes[look];
+                    if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
+                        mesh = 14724;
+                    int seat;
+                    do {
+                        seat = Globals::rnd->nextInt(7);
+                    } while (seatUsed[seat] != 0);
+                    float x = (float) kBarSeats[race][seat][0];
+                    float y = (float) kBarSeats[race][seat][1];
+                    float z = (float) kBarSeats[race][seat][2];
+                    seatUsed[seat] = 1;
+                    AEGeometry *agentGeometry = new AEGeometry(mesh, Globals::Canvas, false);
+                    (*this->enemies)[i] = new PlayerStatic(-1, agentGeometry, x, y, z);
+                    AEGeometry *counterGeometry = new AEGeometry(kBarCounterMeshes[race], Globals::Canvas, false);
+                    (*this->enemies)[agentCount + i] = new PlayerStatic(-1, counterGeometry, x, y, z);
+                    AEGeometry *markerGeometry = new AEGeometry(14348, Globals::Canvas, false);
+                    y += 20.0f;
+                    (*this->enemies)[agentCount * 2 + i] = new PlayerStatic(-1, markerGeometry, x, y, z);
+                }
+            } else {
+                this->enemies = new Array<KIPlayer *>();
+                ArraySetLength(3, *this->enemies);
+            }
+            for (int k = 0; k < staticCount; k++) {
+                AEGeometry *g = new AEGeometry(kBarMeshes[race][k], Globals::Canvas, false);
+                (*this->enemies)[this->enemies->size() - staticCount + k] = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
+            }
+            delete[] seatUsed;
+            return;
+        }
+
+    }
+
+    else if (this->missionPtr == 2) {
+            this->createPlayer();
+            Globals::status->setMission(Mission::empty);
+            this->createMission();
+            if (Globals::status->getCurrentCampaignMission() == 43) {
+                AEGeometry *shield = new AEGeometry(14288, Globals::Canvas, false);
+                ArrayAdd((KIPlayer *) new PlayerStatic(-1, shield, 0.0f, 0.0f, 0.0f), *this->enemies);
+                AEGeometry *beam = new AEGeometry(14289, Globals::Canvas, false);
+                ArrayAdd((KIPlayer *) new PlayerStatic(-1, beam, 0.0f, 0.0f, 0.0f), *this->enemies);
+            }
+            return;
+    }
+
+}
+
 void Level::createRadioMessage(int type, int sub) {
     if (this->player == nullptr || this->player->radioRef == nullptr)
         return;
@@ -7182,217 +7406,3 @@ float Level::i_r;
 int Level::b_min;
 int Level::g_min;
 int Level::r_min;
-
-// createScene belongs to Level.cpp in the original TU.  Keeping it here (rather than in
-// LevelCreateScene.cpp) makes clang emit its PLT references between createMission's and
-// createCampaignMission's, which is the original .plt order.
-// Hangar ship spots per scene race ({x, y, z}).
-static const int kHangarSpotsTerran[2][3] = {{0, 0, 2891}, {0, 0, 5781}};
-static const int kHangarSpotsVossk[9][3] = {{-3715, 0, 661},     {-6983, 36, 2548},   {-9408, 36, 5438},
-                                            {-9408, 36, 16301},  {-6983, 36, 19191},  {-3715, 36, 21078},
-                                            {-9408, 5359, 16301}, {-6983, 5359, 19191}, {-3715, 5359, 21078}};
-static const int kHangarSpotsNivelian[3][3] = {{-4096, 0, 0}, {0, 0, 4096}, {-4096, 0, 4096}};
-static const int kHangarSpotsVoid[1][3] = {{4096, 0, 0}};
-static const int kHangarSpotsKhador[3][3] = {{-1961, 0, 8512}, {-1961, 0, 5562}, {-1961, 0, 2610}};
-static const int kHangarSpotsDefault[2][3] = {{4096, 0, 0}, {4096, 0, 4096}};
-void Level::createScene() {
-    static const int kBarChildCounts[4] = {11, 0, 10, 12};
-    static const int kBarChildMeshes[4] = {14380, -1, 14403, 14391};
-    static const int kBarCounterMeshes[4] = {14281, 14282, 14283, 14284};
-    static const int kShipHangarHeights[64] = {
-        160, 150, 220, 310, 160, 180, 140, 170, 170, 110, 250, 205, 240, 250, 250, 250,
-        170, 170, 190, 460, 170, 210, 140, 170, 160, 190, 170, 240, 220, 280, 200, 200,
-        140, 160, 180, 150, 310, 390, 480, 200, 300, 300, 170, 200, 170, 370, 370, 300,
-        440, 340, 170, 470, 170, 170, 170, 170, 200, 170, 250, 150, 170, 250, 270, 170};
-    static const int kHangarMeshes[10][4] = {
-        {14376, 14302, 14301, -1}, {14377, 14304, -1, -1}, {14378, 14308, 14307, -1}, {14379, 14310, 14264, -1},
-        {-1, -1, -1, -1},          {-1, -1, -1, -1},       {-1, -1, -1, -1},          {14362, 14358, 14360, 14359},
-        {14354, 14355, 14357, 14356}, {-1, -1, -1, -1}};
-    static const int kHangarCapacity[10] = {2, 9, 2, 3, 0, 0, 0, 3, 0, 0};
-    static const int kBarSeats[4][7][3] = {
-        {{-2325, 0, -964}, {-1023, 212, 745}, {-1098, 212, 427}, {-1164, 212, -227}, {-1979, 0, -108},
-         {-2556, 0, 646}, {-1439, 212, -860}},
-        {{-694, 102, -271}, {914, 102, 453}, {-680, 102, 1734}, {-417, 102, 1454}, {462, 102, -101},
-         {285, 102, 913}, {-680, 102, 155}},
-        {{-1279, 0, 264}, {-1220, 0, -192}, {-1849, 0, -1214}, {-875, 0, -686}, {48, 0, -911},
-         {-457, 0, -2195}, {-794, 0, -1788}},
-        {{1542, -10, -642}, {1357, -10, -1986}, {1924, -10, -1377}, {-194, -10, -2542}, {979, -10, -202},
-         {1047, -10, 220}, {2319, -10, -498}}};
-    static const int kBarMeshes[10][3] = {{14025, 14026, 14027}, {14028, 14029, -1}, {14031, 14032, 14033},
-                                          {14034, 14035, 14036}, {-1, -1, -1},       {-1, -1, -1},
-                                          {-1, -1, -1},          {-1, -1, -1},       {-1, -1, -1},
-                                          {-1, -1, -1}};
-    static const int kAgentMeshes[8] = {14725, 14726, 14723, 14725, 14722, 14725, 14720, 14721};
-
-    if (this->enemies != nullptr) {
-        ArrayReleaseClasses(*this->enemies);
-        delete this->enemies;
-    }
-    this->enemies = nullptr;
-    
-    if (this->missionPtr == 23) {
-        {
-            int sceneRace;
-            {
-                if (Globals::status->getStation()->getIndex() == 101)
-                    sceneRace = 8;
-                else if (Globals::status->getStation()->getIndex() == 100)
-                    sceneRace = 7;
-                else
-                    sceneRace = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-            }
-            this->enemies = new Array<KIPlayer *>();
-            ArraySetLength(1, *this->enemies);
-            int shipIndex = Globals::status->getShip()->getIndex();
-            (*this->enemies)[0] = this->createShip(Globals::status->getShip()->getRace(), 0, shipIndex, nullptr,
-                                                   this->missionPtr != 23, false);
-            (*this->enemies)[0]->setPosition(0.0f, (float) kShipHangarHeights[shipIndex], 0.0f);
-            ((PlayerFighter *) (*this->enemies)[0])->removeTrail();
-            ((PlayerFighter *) (*this->enemies)[0])->setExhaustVisible(false);
-            (*this->enemies)[0]->setToSleep();
-            (*this->enemies)[0]->player->setAlwaysFriend(true);
-            bool plainHangar = sceneRace == 1 || sceneRace > 3;
-            for (int k = 0; k < 4; k++) {
-                int mesh = kHangarMeshes[sceneRace][k];
-                if (mesh < 0)
-                    continue;
-                AEGeometry *g = new AEGeometry(mesh, Globals::Canvas, false);
-                g->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
-                PlayerStatic *hangarPart = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
-                if (!plainHangar) {
-                    for (int j = 0; j < kBarChildCounts[sceneRace]; j++) {
-                        AEGeometry *child = new AEGeometry(kBarChildMeshes[sceneRace] + j, Globals::Canvas, false);
-                        g->addChild(child->transform);
-                        delete child;
-                    }
-                }
-                ArrayAdd((KIPlayer *) hangarPart, *this->enemies);
-            }
-            bool ownHangar = false;
-            if (Globals::status->getStation()->getIndex() == 108)
-                ownHangar = Globals::status->field_114 == 3;
-            int capacity = kHangarCapacity[sceneRace];
-            int shipCount = Globals::rnd->nextInt(capacity + 1);
-            if (ownHangar) {
-                Array<Ship *> *ships = Globals::status->voidStation->getShips();
-                shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
-            }
-            unsigned char *spotUsed = new unsigned char[capacity];
-            AbyssEngine::AERandom *rnd = Globals::rnd;
-            for (int i = 0; i < capacity; i++)
-                spotUsed[i] = 0;
-            const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
-            for (int i = 0; i < shipCount; i++) {
-                int race = sceneRace;
-                if (rnd->nextInt(100) <= 29) {
-                    race = Globals::rnd->nextInt(4);
-                    if (Globals::rnd->nextInt(100) < 30)
-                        race = 8;
-                }
-                int type = Globals::globals->getRandomEnemyFighter(race);
-                if (Globals::status->getStation()->getIndex() == 100) {
-                    int pick = Globals::rnd->nextInt(3);
-                    type = pick == 0 ? 37 : pick == 1 ? 38 : 40;
-                }
-                if (ownHangar)
-                    type = (*Globals::status->voidStation->getShips())[i]->getIndex();
-                KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
-                int spot = Globals::rnd->nextInt(capacity);
-                for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
-                    spot = rnd->nextInt(capacity);
-                spotUsed[spot] = 1;
-                const int *table;
-                switch (sceneRace) {
-                    case 0:
-                        table = kHangarSpotsTerran[0];
-                        break;
-                    case 1:
-                        table = kHangarSpotsVossk[0];
-                        break;
-                    case 3:
-                        table = kHangarSpotsNivelian[0];
-                        break;
-                    case 8:
-                        table = kHangarSpotsVoid[0];
-                        break;
-                    default:
-                        table = spots;
-                        break;
-                }
-                ship->setPosition((float) table[spot * 3], (float) (table[spot * 3 + 1] + kShipHangarHeights[type]),
-                                  (float) table[spot * 3 + 2]);
-                ship->player->setAlwaysFriend(true);
-                ship->setToSleep();
-                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
-                ((PlayerFighter *) ship)->setExhaustVisible(false);
-                ArrayAdd(ship, *this->enemies);
-            }
-            delete[] spotUsed;
-            return;
-        }
-
-    }
-
-    else if (this->missionPtr == 4) {
-        {
-            int race = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace();
-            int staticCount = race == 1 ? 2 : 3;
-            Array<Agent *> *agents = Globals::status->getStation()->getAgents();
-            unsigned char *seatUsed = new unsigned char[7];
-            if (agents != nullptr) {
-                int agentCount = agents->size();
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(agentCount * 3 + staticCount, *this->enemies);
-                for (int i = 0; i < 7; i++)
-                    seatUsed[i] = 0;
-                for (int i = 0; i < agentCount; i++) {
-                    int look = (*agents)[i]->getRace();
-                    if (look == 3)
-                        look = ((*agents)[i]->getImageParts() != nullptr && (*agents)[i]->getImageParts()[0] == 2) ? 2 : 3;
-                    int mesh = kAgentMeshes[look];
-                    if ((*agents)[i]->getRace() == 0 && !(*agents)[i]->isMale())
-                        mesh = 14724;
-                    int seat;
-                    do {
-                        seat = Globals::rnd->nextInt(7);
-                    } while (seatUsed[seat] != 0);
-                    float x = (float) kBarSeats[race][seat][0];
-                    float y = (float) kBarSeats[race][seat][1];
-                    float z = (float) kBarSeats[race][seat][2];
-                    seatUsed[seat] = 1;
-                    AEGeometry *agentGeometry = new AEGeometry(mesh, Globals::Canvas, false);
-                    (*this->enemies)[i] = new PlayerStatic(-1, agentGeometry, x, y, z);
-                    AEGeometry *counterGeometry = new AEGeometry(kBarCounterMeshes[race], Globals::Canvas, false);
-                    (*this->enemies)[agentCount + i] = new PlayerStatic(-1, counterGeometry, x, y, z);
-                    AEGeometry *markerGeometry = new AEGeometry(14348, Globals::Canvas, false);
-                    y += 20.0f;
-                    (*this->enemies)[agentCount * 2 + i] = new PlayerStatic(-1, markerGeometry, x, y, z);
-                }
-            } else {
-                this->enemies = new Array<KIPlayer *>();
-                ArraySetLength(3, *this->enemies);
-            }
-            for (int k = 0; k < staticCount; k++) {
-                AEGeometry *g = new AEGeometry(kBarMeshes[race][k], Globals::Canvas, false);
-                (*this->enemies)[this->enemies->size() - staticCount + k] = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
-            }
-            delete[] seatUsed;
-            return;
-        }
-
-    }
-
-    else if (this->missionPtr == 2) {
-            this->createPlayer();
-            Globals::status->setMission(Mission::empty);
-            this->createMission();
-            if (Globals::status->getCurrentCampaignMission() == 43) {
-                AEGeometry *shield = new AEGeometry(14288, Globals::Canvas, false);
-                ArrayAdd((KIPlayer *) new PlayerStatic(-1, shield, 0.0f, 0.0f, 0.0f), *this->enemies);
-                AEGeometry *beam = new AEGeometry(14289, Globals::Canvas, false);
-                ArrayAdd((KIPlayer *) new PlayerStatic(-1, beam, 0.0f, 0.0f, 0.0f), *this->enemies);
-            }
-            return;
-    }
-
-}

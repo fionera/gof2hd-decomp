@@ -306,6 +306,8 @@ void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) 
         this->momentumFactor = 0.9f;
     }
 
+    // Emission-order reference: the original StarMap TU emits planetTextures first.
+    (void) StarMap_planetTextures;
     this->keyBoxWidth = 0;
     for (int i = 0; i < 6; i++) {
         int w = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font,

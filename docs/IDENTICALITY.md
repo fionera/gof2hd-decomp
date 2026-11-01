@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4441, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4463, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -43,7 +43,7 @@ empty-`.text` sentinel a 4-byte alignment (the original's TU starts), removed th
 their owners: **`.data` is now byte-identical (3 -> 0 differing bytes)** and `.data.rel.ro` drops
 667 -> 21 bytes (18 B `Level::createScene` `.rodata` table + 3 B `.bss` pointer order), byte
 4265 -> 4408. The first
-`.rodata` *content* divergence is now at 0x1fb7f8 (VMA); 8,826 bytes still differ. See
+`.rodata` *content* divergence was at 0x1fb7f8 (VMA); 8,826 bytes differed. See
 `_work/reconstructions/data_content_round2_w3451.md`,
 `_work/reconstructions/rodata_content_map_round2.md`,
 `_work/reconstructions/rodata_group_order.md`, `_work/reconstructions/literal_pool_audit.md`
@@ -75,6 +75,17 @@ unchanged**, `.rodata` differing bytes 13,121 -> 8,826 (first still `0x1fb7f8`).
 the gate gain is from the corrected `.rodata` data, not from that function. See
 `_work/reconstructions/Status-missionCompleted-4bytes-w3472.md`.
 
+The w3477 `.rodata` content round-5 pass then closed the remaining 8,826-byte gap. The
+baseline gap was pure table emission order (word multiset 6,586/6,586 common, 0 unique):
+clang 7 emits local statics in function order and namespace-scope statics at first odr-use,
+so the Level station/blueprint tables, `createScene`'s hangar-spot tables and the StarMap /
+MenuTouchWindow tables were landing in the wrong order. Three `Level` function moves, one
+`#pragma clang section rodata=".rodata"` on `PlayerCreature`'s 16-byte table, and three
+`(void)` odr-use anchors reproduce the original order. **`.rodata` is now byte-identical
+(0 / 269,159 differing bytes)**; every ELF section stays size- and base-exact, and
+**byte_exact 4441 -> 4463 (+22), linked 4496 unchanged**. See
+`_work/reconstructions/rodata_content_round5_w3477.md`.
+
 ## Update 2026-07-26 — historical (superseded by the update above)
 
 The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal-pool words
@@ -97,7 +108,7 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
-| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10). Output-group order and per-object sizes match; 8,826 content bytes still differ (first: 0x1fb7f8), all per-object table/string emission order. |
+| **.rodata** | 269,159 | 269,159 | **0** | exact size and base (0x1c9e10); **content byte-identical (0 differing bytes)** since the w3477 emission-order pass. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,312 | **0** | exact size and base (0x1a3b78); seven per-function LSDA record lengths still differ but net to 0. Raw address operands still differ. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5330/5578 entries at the same index. Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), so this follows the symbol-insertion order — see `_work/reconstructions/dynsym_relcount.md`. |
@@ -116,10 +127,10 @@ the real AAPCS ABI) reports 0 drifted fields; the former 74-field backlog has be
    `HangarWindow::render` (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
-2. **`.rodata` content.** Size and base are exact; output-group order is fixed (plain `.rodata`
-   now interleaves with the merge groups in input order). The first differing byte is 0x1fb7f8
-   (VMA); 8,826 bytes still differ, all per-object content/table ordering. 314 functions are
-   instruction-identical and differ only by a literal-pool word.
+2. **`.rodata` content — resolved.** Size and base are exact and the content is now
+   byte-identical (0 differing bytes, w3477). The baseline 8,826-byte gap was pure table
+   emission order (word multiset 6,586/6,586 common, 0 unique). See
+   `_work/reconstructions/rodata_content_round5_w3477.md`.
 3. **EH tables.** `.ARM.exidx` and `.ARM.extab` are now size- and base-exact (3566 entries,
    CANTUNWIND 272, inline 856, extab 2438). The remaining content delta is one
    `Generator::createMission` CANT/INL offset (4-byte body shortfall) and seven extab
