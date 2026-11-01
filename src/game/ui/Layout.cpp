@@ -428,6 +428,12 @@ String Layout::formatNumber(int value) {
     return result;
 }
 
+String Layout::formatCredits(int n) {
+    String num = this->formatNumber(n);
+    String suffix("$");
+    return num + suffix;
+}
+
 void Layout::drawBG() {
     int p4 = Globals::w;
     int p5 = Globals::h;
@@ -491,10 +497,8 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     Globals::Canvas->SetColor(saved);
 }
 
-String Layout::formatCredits(int n) {
-    String num = this->formatNumber(n);
-    String suffix("$");
-    return num + suffix;
+void Layout::drawWindow(String title) {
+    this->drawWindow(title, false);
 }
 
 void Layout::drawWindow(String title, int x, int y, int w, int h) {
@@ -1011,6 +1015,3 @@ bool Layout::OnTouchEnd(int x, int y) {
     return this->secondaryButton->OnTouchEnd(x, y);
 }
 
-void Layout::drawWindow(String title) {
-    this->drawWindow(title, false);
-}
