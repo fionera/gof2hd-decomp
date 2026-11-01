@@ -90,13 +90,17 @@ MenuTouchWindow tables were landing in the wrong order. Three `Level` function m
 **byte_exact 4441 -> 4463 (+22), linked 4496 unchanged**. See
 `_work/reconstructions/rodata_content_round5_w3477.md`.
 
-The w3490 `kMissionCase` pass then removed the rank-table workaround that a later pass had
-reintroduced. The real `.rodata` at `0x1fb974` is `_SHIP_HANGAR_OFFSETS[16..63]` (the tail of the
-64-int CutScene copy at `0x1fb934`); the invented 192-byte `kMissionCase` table had overwritten
-it, leaving 191 differing `.rodata` bytes. Restoring `CUTSCENE_SHIP_HEIGHT[64]` and switching
-directly on `(short) m->getType()` removes the table and returns `.rodata` to **0 differing
-bytes** with byte_exact 4494 / linked_exact 4496 unchanged (`.text` `0x1337c8`, lint clean,
-drift 0). See `_work/reconstructions/kMissionCase_real_table_w3490.md`.
+The w3490 `kMissionCase` pass then restored `CUTSCENE_SHIP_HEIGHT[64]` and removed the
+rank-table workaround, returning `.rodata` to **0 differing bytes**. A later pass reintroduced the
+rank table in its own `.missioncase` section to force source-order switch-body layout (raising
+`Status::missionCompleted`'s fuzzy match from 57.7% to 86.7%). The w3570 pass removed it again:
+the direct `(short) m->getType()` switch keeps **byte_exact 4496 / linked_exact 4496**, `.text`
+`0x1337c8`, `.rodata` 0 differing bytes, lint clean, drift 0, and removes the `.missioncase`
+section (28 -> 27 sections, `.shstrtab` 0x124 -> 0x117); it also restores the original
+type -> body mapping for types 161/162/166/168/169. `missionCompleted` returns to 57.7% (the
+rank table was a codegen hack, not original data). See
+`_work/reconstructions/kMissionCase_real_table_w3490.md` and
+`_work/reconstructions/kMissionCase_removal_w3570.md`.
 
 ## Update 2026-07-26 — historical (superseded by the update above)
 
@@ -154,7 +158,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,331/5,577 entries at the same index (1,760 differing bytes). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The residual is within-TU first-mention and archive-member order, not link order — see `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
-| .missioncase | absent | 192 | **+192** | source artifact: `#pragma clang section rodata=".missioncase"` around the invented `kMissionCase[192]` rank table in `Status.cpp`. It sits in an existing gap (no address shifts) but adds an ELF section and 13 bytes of `.shstrtab`. Remove with the rank-table dispatch. |
+| .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |

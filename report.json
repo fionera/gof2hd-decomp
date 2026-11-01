@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.9,
+  "avg_match": 99.89,
   "byte_exact": 4496,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
@@ -38,6 +38,14 @@
    "linked": false,
    "osize": 57232,
    "usize": 57232
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 57.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -110,14 +118,6 @@
    "linked": false,
    "osize": 17172,
    "usize": 17172
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 86.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN9RocketGun6updateEi",
