@@ -4410,3 +4410,5 @@ before the fog/particle helpers so the PLT slots line up. The PLT symbol diff dr
   1739 functions are still "linked but not byte" because of literal-pool words.
 - **Level.cpp PLT order pass 2: byte_exact 2923 -> 2928 (+5), PLT diff 42 -> 30** (`w3365`):
   `initParticleSystems` before `createPlayer`, `createStaticObject` before `createMission`.
+- **Sparks/BluePrint + StatusWindow/Radar TU order: byte_exact 2928 -> 2936 (+8)** (`w3368`, `w3366`).
+  PLT symbol diff 32 -> ~20 lines.

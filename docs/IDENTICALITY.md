@@ -7,7 +7,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 ## Update 2026-10-26
 
 <<<<<<< HEAD
-Current: **byte_exact 2928, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 2936, linked_exact 4494, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
 =======
 Current: **byte_exact 2734, linked_exact 4494, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 >>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))
@@ -26,7 +26,7 @@ The verify metric was rebuilt (v2: symbol-aware call targets, PLT-aware, literal
 compared as data, size-checked linked_exact, autojunk off — see docs/VALIDATION.md) and the
 vendored zlib/libzip/SHA ISA modes fixed (131 functions were compared in the wrong ARM/Thumb
 <<<<<<< HEAD
-mode). Current: **compared 4524, byte_exact 2928, linked_exact 4494, avg 99.89%, stub_zero_size
+mode). Current: **compared 4524, byte_exact 2936, linked_exact 4494, avg 99.89%, stub_zero_size
 =======
 mode). Current: **compared 4524, byte_exact 2734, linked_exact 4494, avg 99.9%, stub_zero_size
 >>>>>>> 4dac65a9 (Data layout pass 1: drop 10 empty-.text CANTUNWIND sentinels (.rodata base 0x1c9e50 -> 0x1c9e10) + shader literal order (byte 2646 -> 2734, linked 4494, .text 0x1337ec, .exidx 0x6f58, .rodata 0x41b97 @0x1c9e10))

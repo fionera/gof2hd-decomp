@@ -4,7 +4,7 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.89,
-  "byte_exact": 2928,
+  "byte_exact": 2936,
   "linked_exact": 4494,
   "fuzzy_perfect": 4496,
   "stub_zero_size": 0,
@@ -14978,7 +14978,7 @@
   {
    "name": "_ZN12StatusWindow10OnTouchEndEii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 768,
    "usize": 768
@@ -15050,7 +15050,7 @@
   {
    "name": "_ZN12StatusWindowC1Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 708,
    "usize": 708
@@ -15058,7 +15058,7 @@
   {
    "name": "_ZN12StatusWindowC2Ev",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 708,
    "usize": 708
@@ -24226,7 +24226,7 @@
   {
    "name": "_ZN5Radar6updateEN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 232,
    "usize": 232
@@ -24234,7 +24234,7 @@
   {
    "name": "_ZN5Radar6updateEP8KIPlayer",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 52,
    "usize": 52
@@ -26538,7 +26538,7 @@
   {
    "name": "_ZN6Sparks6renderEv",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 160,
    "usize": 160
@@ -26562,7 +26562,7 @@
   {
    "name": "_ZN6Sparks7explodeEiii",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 264,
    "usize": 264
@@ -26578,7 +26578,7 @@
   {
    "name": "_ZN6Sparks9translateERKN11AbyssEngine6AEMath6VectorE",
    "pct": 100.0,
-   "byte": false,
+   "byte": true,
    "linked": true,
    "osize": 76,
    "usize": 76
