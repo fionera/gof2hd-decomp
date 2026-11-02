@@ -3000,7 +3000,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 if (__builtin_expect(this->choiceWindow->OnTouchEnd(x, y) == 0, 1)) { // lint: arm_builtin
                     if (this->choiceWindow->hasChoice() &&
-                        this->loadGame(this->selectedRow) == 0)
+                        __builtin_expect(this->loadGame(this->selectedRow) == 0, 0)) // lint: arm_builtin
                         return 0;
                 }
                 this->messageShowing = 0;
