@@ -5085,3 +5085,6 @@ functions at first use, template copies when first materialised. `-fno-delayed-t
 is neutral. Note: `_work/reconstructions/deferred_instantiation_flush_w3745.md`.
 Wave-97 function pass: `MGame::OnUpdate` 99.8705 -> 99.8835% (`w3719`) by caching
 `Globals::status` in the mission-122 radio branch. 11440 B, gate 4497/4497.
+Wave-97 section-order pass: `ArraySetLength<AbstractGun*>` placement (`w3745`) by moving
+`assignGuns` before `connectPlayers`; plain no-order 2986 -> 2989 byte-exact (prefix 2304 -> 2342).
+Normal gate 4497/4497. Note: `_work/reconstructions/arraysetlength_placement_w3745.md`.
