@@ -141,7 +141,7 @@ The original build is now pinned by evidence, not by A/B alone:
 * **`.dynsym` order is gold's hash-map iteration = first-mention order over the link inputs.**
   The model (name_key ^ version_key, SGI `hash_map` ascending buckets) reproduces our entire
   `.dynsym` 5,577/5,577; `.dynstr` and `.hash` follow from it with no independent order. The
-  app region is exactly first-mention over crtbegin + 195 objects (4,935/4,935). See
+  app region is exactly first-mention over crtbegin + 193 objects (4,935/4,935). See
   `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and
   `_work/reconstructions/tu_compile_link_order_w3560.md`.
 * **Shortcut removal (same wave).** The `s_processPad` anchor is replaced by the real 16-byte
@@ -150,13 +150,17 @@ The original build is now pinned by evidence, not by A/B alone:
   same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
-* **Current differing bytes (after the wave-95 and w3616 relocation-order passes).** `.text`
-  119,547; `.ARM.exidx` 2,735; `.ARM.extab` 119,196 (size -8); `.dynsym` 62; `.dynstr` 345;
-  `.hash` 42; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 15. `.rodata`, `.data`,
-  `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section table matches the
-  original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn` byte-identical and
-  cut `.rel.plt` to one moved symbol (`PlayerEgo::deleteHackingGame`); see
-  `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md`.
+* **Current differing bytes (after the wave-95, w3616 relocation-order and w3624 GameResource
+  TU-convergence passes).** `.text` 119,547; `.ARM.exidx` 2,733; `.ARM.extab` 119,196 (size -8);
+  `.dynsym` 50; `.dynstr` 211; `.hash` 33; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 12.
+  `.rodata`, `.data`, `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section
+  table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn`
+  byte-identical and cut `.rel.plt` to one moved symbol (`PlayerEgo::deleteHackingGame`); the
+  w3624 pass merged `BuildResourceList.cpp` + `LowResourceTable.cpp` + `ResourceMaterial.cpp`
+  back into the original `GameResource.cpp` TU (`.dynsym` 62 -> 50, `.dynstr` 345 -> 211,
+  `.hash` 42 -> 33, `.rel.plt` 15 -> 12, `.ARM.exidx` 2735 -> 2733). See
+  `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and
+  `_work/reconstructions/gameresource_tu_convergence_w3624.md`.
 * **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
   `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
   `abort_message.cpp` path, and the only app source-file witness is `main.c` in three log
@@ -171,7 +175,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The seven per-function LSDA records that differ belong to the seven mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
-| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,563/5,578 entries at the same index (62 differing bytes; 5,355/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The two remaining defined-symbol gaps are `ResourceTexture(String const&, float)` (GameResource TU emission) and `sha256_block_data_order_neon` (libcrypto archive-member order); all 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md`. |
+| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,566/5,578 entries at the same index (50 differing bytes; 5,358/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining defined-symbol gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
 | .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
@@ -204,9 +208,10 @@ The original build is now pinned by evidence, not by A/B alone:
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now
-   exact; the remaining `.dynsym` order delta (5,549/5,577 same index) is gold's hash-table
-   iteration order over the symbol-insertion sequence, not a tunable link knob. The GNU
-   build-id is a content hash that converges last.
+   exact; the remaining `.dynsym` order delta (5,566/5,578 entries at the same index;
+   5,358/5,370 defined symbols) is gold's hash-table iteration order over the
+   symbol-insertion sequence, not a tunable link knob. The GNU build-id is a content hash
+   that converges last.
 
 ## Done
 - **Pass 1: strip** the link output (`strip --strip-all`) -> section set matches the original

@@ -40,13 +40,11 @@ def main() -> int:
     keyed.sort()
     # The `.text` address heuristic above is not always the original's link order: the
     # original's .rodata.str1.1 chunks are the witness for the *link* order, and they can
-    # disagree when the original reordered `.text` separately.  All TUs agree with the
-    # address order except this pair: the low-resource strings sit at .rodata 0x1993e and
-    # the portrait strings at 0x1b255, yet `loadPortraits` (ResourceMaterial.cpp) has the
-    # lower .text address.  The original therefore linked LowResourceTable.cpp first (its
-    # GameResource.cpp TU also held BuildResourceList) and reordered .text independently.
-    # Keep `.text` exact via the section-ordering file; swap the link positions so the
-    # .rodata chunks land at the original offsets.
+    # disagree when the original reordered `.text` separately.  The w3624 GameResource
+    # merge removed the last such case: BuildResourceList, loadPortraits and
+    # loadLowTexturesAndMaterials are one TU again (Classes/Game/GameResource.cpp), whose
+    # lowest strong address is BuildResourceList; its internal .rodata order is Build,
+    # loadLow, loadPortraits, exactly the original's.
     # GameText.cpp is data-only (its sole symbol is GameText::currentLang).  The original
     # Android link order put it between PaintCanvas.cpp and Engine.cpp: currentLang sits at
     # .data+0x10c4, between PaintCanvas's i_fov (+0x10c0) and Engine's lodBiasDiffuse
@@ -54,7 +52,6 @@ def main() -> int:
     # it next to Engine.cpp.  No TU between PaintCanvas and Engine owns a .data section, so
     # "immediately before Engine" is exactly "immediately after PaintCanvas" for .data.
     for first, second in (
-        ("LowResourceTable.cpp.obj", "ResourceMaterial.cpp.obj"),
         ("GameText.cpp.obj", "Engine.cpp.obj"),
     ):
         names = [k[3] for k in keyed]

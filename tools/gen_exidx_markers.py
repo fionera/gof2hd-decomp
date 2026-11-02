@@ -46,8 +46,6 @@ import sys
 # original `.rodata` base 0x1c9e10.  See _work/reconstructions/exidx_extab_exact_w3462.md.
 DROP_EMPTY_TEXT = {
     "Vector.cpp.obj",
-    "BuildResourceList.cpp.obj",
-    "LowResourceTable.cpp.obj",
     "Array.cpp.obj",
     "ArrayInstantiations.cpp.obj",
 }

@@ -1,6 +1,6 @@
 # TU mapping: our src/ vs original GoF2 layout (primary witness gof2hd_1.1.19_ios; engine witness gof2sd_1.0.1 libAbyssEngineDevice.a; secondary mac fhd / MeeGo / windows)
 
-Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=195 (203 before w3613 removed eight empty TUs; those rows are marked `removed`)
+Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=193 (w3624 GameResource merge; category counts are pre-merge) (203 before w3613 removed eight empty TUs; those rows are marked `removed`)
 
 | our TU | category | original TU | note |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/math/Vector.cpp | partial | Svn_iPhone_AE2/Classes/Vector.cpp | shares Vector free fns with our AEMath.cpp |
 | engine/render/AEGeometry.cpp | exact(HD) | Classes/Game/AEGeometry.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/AMeshMerger.cpp | exact(HD) | Classes/Game/MeshMerger/AMeshMerger.cpp | folder drift: orig game-side, ours engine/ |
-| engine/render/BuildResourceList.cpp | rename+split | Classes/Game/GameResource.cpp | orig GameResource.cpp = BuildResourceList + loadPortraits + loadLowTexturesAndMaterials + ResourceTexture ctor |
+| engine/render/GameResource.cpp | exact(HD) | Classes/Game/GameResource.cpp | w3624 merged the former BuildResourceList.cpp + LowResourceTable.cpp + ResourceMaterial.cpp split back into the original TU: BuildResourceList + loadLowTexturesAndMaterials + loadPortraits + ResourceTexture ctor |
 | engine/render/Camera.cpp | partial | Svn_iPhone_AE2/Classes/Camera.cpp | orig TU = 2 free fns only; Camera class code lived in PaintCanvas.cpp |
 | engine/render/Engine.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/Engine.cpp |  |
 | engine/render/FBOContainer.cpp | witnessed(windows) | Classes\FBOContainer.cpp |  |
@@ -53,7 +53,6 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/render/LODManager.cpp | exact(HD) | Classes/Game/LODManager.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/LensFlare.cpp | exact(HD) | Classes/Game/LensFlare.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/LodMeshMerger.cpp | exact(HD) | Classes/Game/MeshMerger/LodMeshMerger.cpp | folder drift: orig game-side, ours engine/ |
-| engine/render/LowResourceTable.cpp | rename+split | Classes/Game/GameResource.cpp | loadLowTexturesAndMaterials |
 | engine/render/MarqueeImage.cpp | exact(HD) | Classes/Game/MarqueeImage.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/Material.cpp | partial | Svn_iPhone_AE2/Classes/Material.cpp | orig TU = MaterialDraw + Array helpers; Material class ctor in PaintCanvas.cpp |
 | engine/render/Mesh.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/Mesh.cpp |  |
@@ -65,7 +64,6 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/render/ParticleSystemManager.cpp | exact(HD) | Classes/Game/ParticleSystems/ParticleSystemManager.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/ParticleSystemMesh.cpp | exact(HD) | Classes/Game/ParticleSystems/ParticleSystemMesh.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/ParticleSystemSprite.cpp | exact(HD) | Classes/Game/ParticleSystems/ParticleSystemSprite.cpp | folder drift: orig game-side, ours engine/ |
-| engine/render/ResourceMaterial.cpp | split | Svn_iPhone_AE2/Classes/PaintCanvas.cpp (class) / Classes/Game/GameResource.cpp (loadPortraits) | no ResourceMaterial witness; holds loadPortraits from GameResource.cpp |
 | engine/render/ResourceMesh.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: Resource* classes are emitted by PaintCanvas.cpp; empty split TU removed |
 | engine/render/ResourceTexture.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed (ResourceTexture ctor is emitted by GameResource TU) |
 | engine/render/ResourceTransform.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed |
