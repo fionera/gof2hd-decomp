@@ -5008,3 +5008,6 @@ Wave-97 function pass: `Layout::Layout` 46.8 -> 47.2% (`w3698`) by reordering ad
 stores in the ctor to the original's emission order (field_0x1c/footerTextInset,
 buttonInsetX/field_0x24, field_0x44/0x48/0x4c, field_0x7c/0x84/0x80, marqueeWidth/0xcc/0xa4,
 field_0x284). 7072 B, gate 4496/4496.
+Wave-97 function pass: `Generator::createMission` 72.0 -> 72.2% (`w3631`) by hoisting the
+`level`/`bonus`/`rem`/`mission` declarations to function scope at their original position.
+1996 B, gate 4496/4496.
