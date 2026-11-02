@@ -5049,3 +5049,5 @@ Wave-97 function pass: `Level::createMission` 85.684 -> 87.275% (`w3738`) by cac
 and using the implicit `alienWave` test. 17172 B, gate 4497/4497.
 Wave-97 function pass: `Radar::draw` 73.87 -> 73.93% (`w3727`) by hoisting the asteroid
 dead test before the `hasCargo` guard. 9908 B, gate 4497/4497.
+Wave-97 function pass: `Hud::draw` (`w3730`) changed the `armorY` local to `unsigned short`,
+matching the original's `ldrh` (fidelity fix, 9332 B, fuzzy unchanged at 88.7%). Gate 4497/4497.
