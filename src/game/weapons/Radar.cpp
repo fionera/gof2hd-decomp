@@ -1093,7 +1093,8 @@ asteroids:
             bool asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
-                if ((asteroid->isDead() || asteroid->isDying()) && !asteroid->hasCargo) {
+                bool dead = asteroid->isDead() || asteroid->isDying();
+                if (dead && !asteroid->hasCargo) {
                     continue;
                 }
                 this->update(asteroid);
