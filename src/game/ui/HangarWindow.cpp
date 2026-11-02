@@ -571,11 +571,14 @@ void HangarWindow::render() {
                             if (item == this->selectedItem) {
                                 if (this->hangarList->getCurrentTab() == 1 ||
                                     (this->hangarList->getCurrentTab() == 4 && item->isItem())) {
-                                    int right = tab == 1 ? item->item->getStationAmount()
-                                                         : item->item->getAmount();
-                                    int left = tab == 1
-                                                   ? item->item->getAmount()
-                                                   : this->bluePrint->getCurrentAmount(item->item->getIndex());
+                                    int right, left;
+                                    if (tab == 1) {
+                                        right = item->item->getStationAmount();
+                                        left = item->item->getAmount();
+                                    } else {
+                                        right = item->item->getAmount();
+                                        left = this->bluePrint->getCurrentAmount(item->item->getIndex());
+                                    }
                                     if (left > 0) {
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
@@ -624,15 +627,12 @@ void HangarWindow::render() {
                             } else {
                                 buttonOffset = 0;
                             }
-                            int left, right;
-                            if (tab == 1) {
-                                left = item->item->getStationAmount();
-                                right = item->item->getAmount();
-                            } else {
-                                left = item->item->getAmount();
-                                right = this->bluePrint->getCurrentAmount(item->item->getIndex()) +
-                                        item->item->getBlueprintAmount();
-                            }
+                            int left = tab == 1 ? item->item->getStationAmount()
+                                                : item->item->getAmount();
+                            int right = tab == 1
+                                            ? item->item->getAmount()
+                                            : this->bluePrint->getCurrentAmount(item->item->getIndex()) +
+                                              item->item->getBlueprintAmount();
                             String leftText = String(left) + String("t");
                             String rightText = (tab == 1
                                                     ? String(right)
