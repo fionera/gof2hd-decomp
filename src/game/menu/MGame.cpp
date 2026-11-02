@@ -1387,10 +1387,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         while (ship->hasCargo(ore, fee)) {
                             ship->removeCargo(ore, fee);
                             ship->addCargo((*Globals::items)[refined]->makeItem(1));
-                            amount--;
+                            amount++;
                             refinedAny = true;
                         }
-                        if (amount <= 0) {
+                        amount = -amount;
+                        if (amount != 0) {
                             report += String("\n") + String(-amount) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
