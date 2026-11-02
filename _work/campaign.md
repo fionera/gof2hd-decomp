@@ -4832,3 +4832,19 @@ recipe at the current tree; `w3694` link-flag re-validation (`.rel.plt` 12 B, `.
 `-ffp-contract`, `-mno-global-merge`, math flags, unroll/sibling-call flags, ...).
 `w3600` was relaunched on `Generator::createMission` to remove the `0.5000001f` size anchor.
 Current `.text` differing bytes: **114,696**; report.json re-synced from the build-dir verify.
+
+Wave-97 first results (both research-only, gate unchanged 4496/4496):
+- `w3691` settled the `-fdata-sections` contradiction from the binary: the original's
+  `.rodata`/`.data`/`.data.rel.ro` are the **shared-section (`-fno-data-sections`) layout**.
+  Two byte-exact TUs (`AEFile.cpp` engine, `MTitle.cpp` game) show the original `.data.rel.ro`
+  order matches the shared-section compile, not per-symbol sections. `-fdata-sections` costs
+  **163 byte_exact** (4496 -> 4333) and changes 42.3% of `.rodata`. The ndk-build default is
+  overridden in the original build (`LOCAL_CFLAGS`/`NDK_APP_CFLAGS` are appended after
+  `GLOBAL_CFLAGS`), but the exact override is not recoverable. Effective flag: **off**.
+- `w3687` measured section-ordering-file removal: **byte_exact 4496 -> 1527** (linked stays
+  4496, `.text` size exact). The blocker is **intra-TU function emission order** (94 of 191
+  objects emit strong exported functions in a different order than the original's addresses;
+  3764 inverted pairs), not TU membership/interleaving (only 1 of 191 objects interleaves).
+  A `VirtualInput.cpp` source reorder extends the exact-address prefix 47 -> 134 but regresses
+  the ordering-file build by 5 byte_exact. Keep the ordering file for now; removal requires
+  per-TU source-order convergence under the full gate.
