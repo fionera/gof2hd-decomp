@@ -5101,3 +5101,6 @@ Wave-97 section-order pass: `RecordHandler::readRecord` placement (`w3745`); pla
 Wave-97 section-order pass: `RecordHandler` byte-array block (`w3745`); plain no-order
 3000 -> 3013 byte-exact (prefix 2414 -> 2639). Normal gate 4497/4497. Note:
 `_work/reconstructions/recordhandler_bytearray_block_w3745.md`.
+Wave-97 section-order pass: `Item::extractItems` placement (`w3745`) by moving `makeItem(int)`
+after `makeItem(int,int)`; plain no-order 3013 -> 3019 byte-exact (prefix 2639 -> 2657).
+Normal gate 4497/4497. Note: `_work/reconstructions/item_extractItems_placement_w3745.md`.
