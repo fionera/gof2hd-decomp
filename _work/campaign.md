@@ -4745,3 +4745,11 @@ Wave-95 function passes: `Layout::Layout` 46.62 -> 46.77% (`w3501`, branch/terna
 gate 4496 after rebase); `Level::createShip` jitter call order fixed to X,Y,Z and `x` signed
 (`w3542`, 73.6 -> 73.4% fuzzy but faithful); `Hud::drawChallengeModeScore` 89.1 -> 92.7%
 (`w3552`, digit x local at declaration).
+
+`Status::missionCompleted` without the rank table (`w3590`): the original's body order is
+167/174, 8, 11, 13, 14, 150, 151, 152, 153, 154, 155, 158, 162, 166, 170, 184, 189, 156, 157,
+160, 163, 164, 165, 168, 169, 171, 172, default (decoded from the two `tbh` tables at 0xabfe2 /
+0xac04e). clang 7's `SelectionDAGBuilder::sortAndRangeify()` sorts case clusters by value, so a
+direct switch always lays the bodies out in ascending value order; no tested source shape or flag
+reproduces the original order without a rank table. The table form scores 86.7% but can never be
+byte-exact (the table is absent from the original .rodata and adds a second lookup).
