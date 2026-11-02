@@ -5053,3 +5053,5 @@ Wave-97 function pass: `Hud::draw` (`w3730`) changed the `armorY` local to `unsi
 matching the original's `ldrh` (fidelity fix, 9332 B, fuzzy unchanged at 88.7%). Gate 4497/4497.
 Wave-97 function pass: `Level::createMission` 87.275 -> 88.011% (`w3730`) by fixing the
 `alienWave`/`pirateFortress` declaration order. 17172 B, gate 4497/4497.
+Wave-97 function pass: `Status::missionCompleted` 71.1 -> 71.8% (`w3740`) by biasing the
+late switch-case branch hints with `__builtin_expect(..., 1)`. 1432 B, gate 4497/4497.
