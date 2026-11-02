@@ -167,6 +167,10 @@ Array<GameRecord *> *RecordHandler::readAllRecords() {
     return records;
 }
 
+GameRecord *RecordHandler::readRecord(int slot) {
+    return this->recordStoreRead(slot);
+}
+
 float RecordHandler::loadResolutionValue(float resolution) {
     if (AEFile::FileExist(this->optionsPath) != 0) {
         unsigned int fd;
@@ -1060,10 +1064,6 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-
-GameRecord *RecordHandler::readRecord(int slot) {
-    return this->recordStoreRead(slot);
-}
 
 bool RecordHandler::checkHash(unsigned int fd) {
     int size = AEFile::GetFileSize(fd);
