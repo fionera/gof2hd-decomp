@@ -1393,12 +1393,12 @@ bool LevelScript::process(int delta) {
             m_pCamera->setFixed(true);
             ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
             (*enemies)[0]->player->setHitpoints(0);
-            m_nScriptTimerA = 0;
             m_nState = 5;
+            m_nScriptTimerA = 0;
         } else if (m_nState == 5) {
             m_nScriptTimerA += delta;
             if (m_nScriptTimerA >= 3001) {
-                m_nState = 6;
+                m_nState++;
             }
         }
         if (m_nState >= 2 && m_nState <= 4) {
@@ -3526,8 +3526,7 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                }
-                if (m_nState == 2) {
+                } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
@@ -3575,7 +3574,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 3) {
+                    break;
+                }
+                if (m_nState == 3) {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -3585,7 +3586,7 @@ bool LevelScript::process(int delta) {
                         for (int i = 2; i < 6; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                         }
-                        m_nState = 4;
+                        m_nState++;
                         player->setVisible(true);
                         player->setFreeze(false);
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
