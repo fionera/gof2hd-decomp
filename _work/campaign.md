@@ -4793,3 +4793,8 @@ byte-identical**. `.dynsym` 14 -> 0 via the `FileInterfaceAndroid`/`AEFile` `.bs
 (`w3638`) and the `PaintCanvas::DrawMesh` STB_WEAK binding (out-of-line `inline` definition,
 `w3638`). Only `.rel.plt` 12 bytes remain (one moved `PlayerEgo::deleteHackingGame` slot).
 `Level::createShip` 73.4 -> 73.8% (group flag to `setShipGroup`, `w3542`).
+
+`Layout::Layout` (`w3600`, held): an all-ternary store schedule compiles to 6800 B (46.8 -> 50.8%)
+but is 272 B short of the original 7072 B; the worker compensated with a 272-byte
+`layoutCtorPad` anchor (adds an EXIDX entry). Not landed — `w3647` is finding the real missing
+field stores instead.
