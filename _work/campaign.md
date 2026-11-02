@@ -5088,3 +5088,7 @@ Wave-97 function pass: `MGame::OnUpdate` 99.8705 -> 99.8835% (`w3719`) by cachin
 Wave-97 section-order pass: `ArraySetLength<AbstractGun*>` placement (`w3745`) by moving
 `assignGuns` before `connectPlayers`; plain no-order 2986 -> 2989 byte-exact (prefix 2304 -> 2342).
 Normal gate 4497/4497. Note: `_work/reconstructions/arraysetlength_placement_w3745.md`.
+Wave-97 section-order pass: `ArrayAdd<RadioMessage*>` placement (`w3745`) by reordering the
+`Level::updateAlienAttackers`/radio-message definitions; plain no-order 2989 -> 2992 byte-exact
+(prefix 2342 -> 2377). Normal gate 4497/4497. Note:
+`_work/reconstructions/arrayadd_radiomessage_placement_w3745.md`.
