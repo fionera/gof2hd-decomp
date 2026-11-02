@@ -4980,3 +4980,8 @@ Post-harvest section correction: after the `Generator`/`StarMap` anchor-removal 
 current differing bytes are `.text` 113,718, `.ARM.exidx` 1,961, `.ARM.extab` 131,132
 (size -8), `.dynsym` 324, `.dynstr` 1,268, `.hash` 133, `.rel.dyn` 74, `.rel.plt` 21,
 build-id 20; `.rodata`/`.data`/`.data.rel.ro`/`.plt`/`.got`/`.shstrtab` remain byte-identical.
+Section-order pass 2 (`w3696`): reordered the shader TUs, `ConfigReader`, `FModSound`, `CutScene`,
+`MTitle`, `PlayerEgo`, `PaintCanvas`, `Engine`, `FBOContainer`, `Quaternion`, `BoundingAAB` and
+`AEMath` to the original per-TU emission order. The plain no-order build rose **1955 -> 2657/4496
+byte-exact** (exact-address prefix **560 -> 1581**); the reordered no-order control remains
+4524/4524 address-exact and byte 4496. Gate-neutral 4496/4496, `.text` 0x1337c8.
