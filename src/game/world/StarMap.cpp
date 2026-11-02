@@ -135,6 +135,47 @@ static const int StarMap_stationScales[28] = {320, 192, 256, 256, 192, 256, 192,
 static const int StarMap_raceImages[10] = {1190, 1187, 1189, 1188, -1, -1, -1, -1, -1, -1};
 static const int StarMap_securityColors[4][3] = {{255, 42, 0}, {255, 108, 0}, {237, 237, 0}, {0, 237, 0}};
 
+StarMap::~StarMap() {
+    if (this->systemPositions != 0) {
+        ArrayReleaseClasses(*this->systemPositions);
+        delete this->systemPositions;
+    }
+    this->systemPositions = 0;
+
+    if (this->stationPositions != 0) {
+        ArrayReleaseClasses(*this->stationPositions);
+        delete this->stationPositions;
+    }
+    this->stationPositions = 0;
+
+    delete this->planetGeom;
+    this->planetGeom = (AEGeometry *) 0;
+
+    delete this->bgLayer0;
+    this->bgLayer0 = (AEGeometry *) 0;
+
+    delete this->bgLayer1;
+    this->bgLayer1 = (AEGeometry *) 0;
+
+    delete this->bgLayer2;
+    this->bgLayer2 = (AEGeometry *) 0;
+
+    delete this->easeX;
+    this->easeX = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->easeY;
+    this->easeY = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->easeZ;
+    this->easeZ = (AbyssEngine::EaseInOut *) 0;
+
+    delete this->markerGeom;
+    this->markerGeom = (AEGeometry *) 0;
+
+    delete this->pathFinder;
+    this->pathFinder = (SystemPathFinder *) 0;
+}
+
 void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     using namespace AbyssEngine::AEMath;
     Globals::Canvas->FogEnable(false, AbyssEngine::FogMode_1);
@@ -331,47 +372,6 @@ void StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) 
     this->bgLayer2 = new AEGeometry((uint16_t) 0x41d4, Globals::Canvas, false);
     this->bgLayer2->setRotation(0.0f, 3.14159274f, 0.0f);
     this->bgLayer2->setPosition(-3000.0f, -2500.0f, 0.0f);
-}
-
-StarMap::~StarMap() {
-    if (this->systemPositions != 0) {
-        ArrayReleaseClasses(*this->systemPositions);
-        delete this->systemPositions;
-    }
-    this->systemPositions = 0;
-
-    if (this->stationPositions != 0) {
-        ArrayReleaseClasses(*this->stationPositions);
-        delete this->stationPositions;
-    }
-    this->stationPositions = 0;
-
-    delete this->planetGeom;
-    this->planetGeom = (AEGeometry *) 0;
-
-    delete this->bgLayer0;
-    this->bgLayer0 = (AEGeometry *) 0;
-
-    delete this->bgLayer1;
-    this->bgLayer1 = (AEGeometry *) 0;
-
-    delete this->bgLayer2;
-    this->bgLayer2 = (AEGeometry *) 0;
-
-    delete this->easeX;
-    this->easeX = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->easeY;
-    this->easeY = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->easeZ;
-    this->easeZ = (AbyssEngine::EaseInOut *) 0;
-
-    delete this->markerGeom;
-    this->markerGeom = (AEGeometry *) 0;
-
-    delete this->pathFinder;
-    this->pathFinder = (SystemPathFinder *) 0;
 }
 
 void StarMap::initStarSystem() {
