@@ -4923,3 +4923,9 @@ linked 4496, `.text` 0x1337c8).
 `w3696` moved `ArrayReleaseClasses<ShaderBaseStruct*>` from `Array.cpp` to `Engine.cpp`:
 no-order reordered prefix 970 -> 1445, no-order byte 1861 -> 2484, gate-neutral 4496/4496.
 The no-order build is now 2484/4496 byte-exact (from 1527 at the start of the pass).
+`w3696` continued the weak-copy TU-membership convergence: JNI string helpers -> NdkAutosave.cpp
+(1445 -> 2532), ArrayReleaseClasses<TouchButton*> -> ModStation.cpp (2532 -> 2558),
+ArrayReleaseClasses<BoundingVolume*> -> PlayerFighter.cpp (2558 -> 2789),
+ArrayReleaseClasses<Waypoint*> -> Route.cpp (2789 -> 3828), SpaceLounge weak Array copies ->
+SpaceLounge.cpp (3828 -> 4349). No-order reordered byte_exact 2484 -> **4490** (prefix 4349);
+all gate-neutral 4496/4496.
