@@ -5004,3 +5004,7 @@ Wave-97 function passes: `HangarWindow::render` (`w3681`) replaced the dead `tex
 volatile with a used `volatile float textYf` (raw 0.794656 -> 0.795207, 9700 B), and
 `Level::createMission` (`w3706`) refined the 32-byte pad tail to eight 4-byte `str.w` stores
 (86.8 -> 86.9%, 17172 B). Both gate 4496/4496.
+Wave-97 function pass: `Layout::Layout` 46.8 -> 47.2% (`w3698`) by reordering adjacent field
+stores in the ctor to the original's emission order (field_0x1c/footerTextInset,
+buttonInsetX/field_0x24, field_0x44/0x48/0x4c, field_0x7c/0x84/0x80, marqueeWidth/0xcc/0xa4,
+field_0x284). 7072 B, gate 4496/4496.
