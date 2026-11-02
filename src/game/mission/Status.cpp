@@ -1402,7 +1402,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             continue;
         }
         // The original jump table lays the case bodies out in source order.
-        switch ((short) m->getType()) {
+        switch (m->getType()) {
             case 167:
             case 174:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
@@ -1539,7 +1539,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 184:
-                if (m->getStatusValue() == 0) {
+                if (__builtin_expect(m->getStatusValue() == 0, 1)) { // lint: arm_builtin
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
                         m->setWon(true);
