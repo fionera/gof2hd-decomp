@@ -5023,3 +5023,6 @@ Wave-97 function pass: `Layout::Layout` (`w3698`) further source-order refinemen
 Wave-97 function pass: `MenuTouchWindow` ctor 91.873 -> 91.945% (`w3708`) by replacing the
 `i != 1` anchor with the real loop body (`bool special = (i|1)==9`, `int width =
 this->buttonWidth` local) and reordering the controlIndex x expression. 9600 B, gate 4496/4496.
+Wave-97 function pass: `Radar::draw` 73.75 -> 73.87% (`w3716`) by storing `field_0x1c` before
+`dockNavPtr` in the three tractor blocks, matching the original store order. 9908 B, gate
+4496/4496.
