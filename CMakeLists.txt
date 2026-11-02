@@ -46,6 +46,9 @@ endif()
 # the downloaded NDK clang. Sets _openssl_out / _zlib_out / _libzip_out + target gof2_libs.
 include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
+
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI
 # runtime (libc++abi.a), and the zlib/libzip archives pulled whole (the original exports their full
