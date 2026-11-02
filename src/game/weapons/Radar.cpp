@@ -856,8 +856,8 @@ enemies:
             }
         tractor:
             if (this->tractorMode2 && this->field_0x1c == nullptr && wreck && enemy->isDead()) {
-                this->dockNavPtr = enemy;
                 this->field_0x1c = enemy;
+                this->dockNavPtr = enemy;
                 enemyHit = true;
             }
         }
@@ -1104,8 +1104,8 @@ asteroids:
                         asteroidHit = false;
                         if (asteroid->isMinable() && !this->field_0x1a8) {
                             if (wreck && this->field_0x1c == nullptr && this->tractorAuto) {
-                                this->dockNavPtr = asteroid;
                                 this->field_0x1c = asteroid;
+                                this->dockNavPtr = asteroid;
                                 asteroidHit = true;
                             } else {
                                 int size = this->field_0x124;
@@ -1159,8 +1159,8 @@ asteroids:
                     canvas->DrawImage2D(image, x, y, 17, 68);
                 }
                 if (this->tractorMode2 && this->field_0x1c == nullptr && wreck) {
-                    this->dockNavPtr = asteroid;
                     this->field_0x1c = asteroid;
+                    this->dockNavPtr = asteroid;
                     asteroidHit = true;
                 }
             }
