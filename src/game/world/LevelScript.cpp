@@ -4448,7 +4448,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setLookAtCam(true);
                         // PLT-order anchor: the first reference to StarSystem::switchSunForSupernovaIntro
                         // must precede PlayerEgo::setDockingState (never taken).
-                        if (delta == 0x7b) m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
+                        if (m_nState == 0x7b) m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
