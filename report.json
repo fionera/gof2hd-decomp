@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.9,
-  "byte_exact": 4496,
-  "linked_exact": 4496,
-  "fuzzy_perfect": 4496,
+  "byte_exact": 4497,
+  "linked_exact": 4497,
+  "fuzzy_perfect": 4497,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -158,14 +158,6 @@
    "linked": false,
    "osize": 2644,
    "usize": 2644
-  },
-  {
-   "name": "_ZN3Hud22drawChallengeModeScoreEi",
-   "pct": 92.7,
-   "byte": false,
-   "linked": false,
-   "osize": 944,
-   "usize": 944
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
@@ -20078,6 +20070,14 @@
    "linked": true,
    "osize": 6,
    "usize": 6
+  },
+  {
+   "name": "_ZN3Hud22drawChallengeModeScoreEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 944,
+   "usize": 944
   },
   {
    "name": "_ZN3Hud23checkIfQuickMenuIsEmptyEv",

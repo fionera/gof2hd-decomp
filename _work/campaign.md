@@ -5029,3 +5029,8 @@ Wave-97 function pass: `Radar::draw` 73.75 -> 73.87% (`w3716`) by storing `field
 Wave-97 function pass: `MenuTouchWindow` ctor 91.945 -> 93.813% (`w3725`) by restoring the
 `this->buttonWidth` argument, adding the `GameText *cinematicText = Globals::gameText` alias,
 and using `sliderTop2` for slider 6. 9600 B, gate 4496/4496.
+Wave-97 **byte-exact win**: `Hud::drawChallengeModeScore` 92.7 -> **100%** (`w3673`, 944 B) by
+dropping the `if (mx < 0) y = half;` origin anchor and reconstructing the multiplier loop as
+`mx = half + rowGap - halfStep - step;` with a pre-increment `mx += step` before `setPosition`.
+Gate **byte_exact 4496 -> 4497, linked_exact 4496 -> 4497**, `.text` 0x1337c8, lint CLEAN,
+drift 0. `.ARM.extab` is now -12 B (156,300 vs 156,312); `.text` differing bytes 112,878.

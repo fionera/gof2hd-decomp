@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4496, linked_exact 4496, avg 99.89%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4497, linked_exact 4497, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -159,8 +159,8 @@ The original build is now pinned by evidence, not by A/B alone:
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Current differing bytes (after the wave-95, w3616 relocation-order, w3624 GameResource
-  TU-convergence, w3695 strip-method and w3697 section-order passes).** `.text` 113,715;
-  `.ARM.exidx` 1,702; `.ARM.extab` 128,991 (size -8); `.rel.plt` 21; `.note.gnu.build-id` 20;
+  TU-convergence, w3695 strip-method and w3697 section-order passes).** `.text` 112,878;
+  `.ARM.exidx` 1,752; `.ARM.extab` 114,259 (size -12); `.rel.plt` 21; `.note.gnu.build-id` 20;
   `.dynsym` 324; `.dynstr` 1,268; `.hash` 133; `.gnu.version` 0; `.rel.dyn` 74; `.shstrtab` 0.
   `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`, `.fini_array`,
   `.comment`, `.note.*`, `.ARM.attributes` and `.shstrtab` are byte-identical, and the
@@ -189,7 +189,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
-| .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
+| .ARM.extab | 156,312 | 156,300 | **-12** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -12 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,522/5,578 entries at the same index (324 differing bytes; 5,370/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining order gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size (1,268 differing bytes from the symbol-order shift). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
@@ -201,9 +201,9 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **28 non-linked functions.** 4496 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (46.8%), `LevelScript::process` (54.4%), `Status::missionCompleted` (71.1%),
-   `Radar::draw` (73.4%), `Level::createShip` (73.4%), `Generator::createMission` (73.6%),
+1. **27 non-linked functions.** 4497 of 4524 compared functions are linked-exact. The worst are
+   `Layout::Layout` (47.3%), `LevelScript::process` (54.9%), `Status::missionCompleted` (71.1%),
+   `Generator::createMission` (72.2%), `Level::createShip` (73.4%), `Radar::draw` (73.9%),
    `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (79.5%) and `Globals::Globals` (80.5%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
@@ -235,7 +235,7 @@ The original build is now pinned by evidence, not by A/B alone:
   (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
-Same-hash == completing the decompile to byte-perfection: make the remaining 28 functions exact,
+Same-hash == completing the decompile to byte-perfection: make the remaining 27 functions exact,
 recover the residual anonymous const/initialised data, and match the exact link layout. Progress is
 tracked by: byte_exact/linked_exact function counts (verify) and the section-size deltas above.
 
