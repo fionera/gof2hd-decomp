@@ -4015,7 +4015,7 @@ bool LevelScript::process(int delta) {
                     }
                     (*enemies)[1]->field_0x70 = 1;
                     m_nScriptTimerA = 0;
-                    m_nState++;
+                    m_nState = 1;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                 } else if (m_nState == 1) {
                     player->setSpeed(0.0f);
@@ -4041,7 +4041,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
-                        m_nState++;
+                        m_nState = 2;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                     }
@@ -4074,7 +4074,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState++;
+                        m_nState = 3;
                     }
                 } else if (m_nState == 3) {
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
@@ -4088,7 +4088,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
-                        m_nState++;
+                        m_nState = 4;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                     }
@@ -4118,7 +4118,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
-                        m_nState++;
+                        m_nState = 5;
                     }
                 } else if (m_nState == 5) {
                     m_pCamera->translate((float) delta, 0.0f, (float) delta * 0.1f);
@@ -4132,7 +4132,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{150.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
-                        m_nState++;
+                        m_nState = 6;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
@@ -4172,12 +4172,12 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState++;
+                        m_nState = 7;
                     }
                 } else if (m_nState == 7) {
                     if ((*enemies)[0]->isDocked()) {
                         m_nScriptTimerA = 0;
-                        m_nState++;
+                        m_nState = 8;
                     }
                 } else if (m_nState == 8) {
                     m_nScriptTimerA += delta;
