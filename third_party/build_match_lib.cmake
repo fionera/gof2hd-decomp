@@ -136,8 +136,8 @@ elseif(GOF2_LIB STREQUAL "libzip")
         zip_memdup zip_add zip_filerange_crc zip_get_name zip_file_strerror
         zip_fopen_index zip_source_buffer zip_error_clear zip_get_archive_comment
         zip_source_file zip_set_name zip_file_error_get zip_file_get_offset
-        zip_unchange zip_new zip_close zip_add_dir zip_source_free zip_error_get_sys_type
-        zip_set_archive_comment zip_name_locate zip_unchange_archive zip_err_str
+        zip_unchange zip_new zip_close zip_add_dir zip_error_get_sys_type
+        zip_set_archive_comment zip_name_locate zip_unchange_archive zip_source_free zip_err_str
         zip_get_num_files zip_source_filep zip_error zip_strerror zip_entry_new
         zip_get_archive_flag zip_set_archive_flag zip_unchange_data zip_fread
         zip_rename zip_source_zip zip_stat_index zip_source_function zip_replace
