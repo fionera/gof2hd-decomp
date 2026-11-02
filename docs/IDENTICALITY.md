@@ -151,7 +151,7 @@ The original build is now pinned by evidence, not by A/B alone:
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Current differing bytes (after the wave-95, w3616 relocation-order and w3624 GameResource
-  TU-convergence passes).** `.text` 114,680; `.ARM.exidx` 2,707; `.ARM.extab` 121,218 (size -8);
+  TU-convergence passes).** `.text` 114,696; `.ARM.exidx` 2,707; `.ARM.extab` 121,218 (size -8);
   `.dynsym` 0; `.dynstr` 0; `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 12.
   `.rodata`, `.data`, `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section
   table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn`
@@ -187,9 +187,9 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **28 non-linked functions.** 4496 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (45.3%), `LevelScript::process` (54.6%), `Status::missionCompleted` (57.7%),
-   `Radar::draw` (73.3%), `Level::createShip` (73.2%), `Generator::createMission` (73.6%),
-   `HangarWindow::render` (78.2%), `MGame::OnTouchEnd` (78.4%) and `Globals::Globals` (80.5%).
+   `Layout::Layout` (46.8%), `LevelScript::process` (54.3%), `Status::missionCompleted` (71.1%),
+   `Radar::draw` (73.3%), `Level::createShip` (73.4%), `Generator::createMission` (73.6%),
+   `MGame::OnTouchEnd` (77.2%), `HangarWindow::render` (79.4%) and `Globals::Globals` (80.5%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now

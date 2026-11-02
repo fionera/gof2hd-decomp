@@ -4820,3 +4820,15 @@ Wave-96 continued: `Status::missionCompleted` 57.7 -> 71.1% (`w3642`) by droppin
 cast and expecting case 184 success — the best rank-table-free score so far (1432 B, no
 `.missioncase`). `Radar::draw` 72.0 -> 73.3% (per-iteration landmarks reload). `.text` differing
 bytes 116,959 -> 114,680.
+
+Wave-97 build-flag research (six parallel workers, launched from HEAD `88aaf59f`): the current
+flag set is being re-validated at the now-sensitive 4496/4524 state, because the original
+`build_flags_research.md` table was measured at ~1407 byte-exact. Workers: `w3690` full global
+compile-flag matrix re-run; `w3691` `-fdata-sections` contradiction (ndk-build r18b default, but
+currently costs 71 byte-exact and moves `.rodata` by -0x140); `w3692` per-TU `-mllvm` flags and
+the three `__builtin_assume` sites; `w3693` definitive ndk-build `Android.mk`/`Application.mk`
+recipe at the current tree; `w3694` link-flag re-validation (`.rel.plt` 12 B, `.ARM.exidx`
+2,707 B, build-id); `w3695` untested clang/ARM flags (`-fno-jump-tables`, `-mno-movt`,
+`-ffp-contract`, `-mno-global-merge`, math flags, unroll/sibling-call flags, ...).
+`w3600` was relaunched on `Generator::createMission` to remove the `0.5000001f` size anchor.
+Current `.text` differing bytes: **114,696**; report.json re-synced from the build-dir verify.

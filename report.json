@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.89,
+  "avg_match": 99.9,
   "byte_exact": 4496,
   "linked_exact": 4496,
   "fuzzy_perfect": 4496,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 57.7,
+   "pct": 71.1,
    "byte": false,
    "linked": false,
    "osize": 1432,
@@ -49,11 +49,19 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 72.0,
+   "pct": 73.3,
    "byte": false,
    "linked": false,
    "osize": 9908,
    "usize": 9908
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 73.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
@@ -64,16 +72,8 @@
    "usize": 1996
   },
   {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
-  },
-  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.4,
+   "pct": 77.2,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -81,7 +81,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 79.2,
+   "pct": 79.4,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -113,7 +113,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 85.1,
+   "pct": 86.8,
    "byte": false,
    "linked": false,
    "osize": 17172,
@@ -153,7 +153,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 91.8,
+   "pct": 91.9,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -161,7 +161,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 91.8,
+   "pct": 91.9,
    "byte": false,
    "linked": false,
    "osize": 9600,
