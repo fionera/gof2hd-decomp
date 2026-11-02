@@ -129,8 +129,11 @@ The original build is now pinned by evidence, not by A/B alone:
   rebuild without the flag produces only 52. The original was linked **without** a
   section-ordering file: its `.text` is grouped by original TU (2,231 mapped functions, 105 TUs,
   104 transitions, 0 interleaving). Our ordering file is needed only because 144 of 195 objects
-  currently have their functions interleaved with other objects; it disappears when TU
-  membership converges. See `_work/reconstructions/ffunction_sections_and_order_file.md`.
+  have *any* exported symbol interleaved with another object, but only 1 of 193 objects has a
+  strong (`T`) function interleaved (the `NdkHooks`/`NdkAutosave` pair); the 144 figure is
+  dominated by weak inline copies. It disappears when TU membership converges. See
+  `_work/reconstructions/ffunction_sections_and_order_file.md` and
+  `_work/reconstructions/tu_membership_interleaving_w3613.md`.
 * **`-g` is codegen-relevant at `-Oz`.** `-g`, `-g2`, `-g3` and all DWARF variants are identical
   (byte 4496); `-g0`, `-g1` and `-gline-tables-only` drop to byte 2069 because entry-block
   argument copies are no longer kept from PostRA sinking. The tree's `-g` is correct. See
@@ -138,7 +141,7 @@ The original build is now pinned by evidence, not by A/B alone:
 * **`.dynsym` order is gold's hash-map iteration = first-mention order over the link inputs.**
   The model (name_key ^ version_key, SGI `hash_map` ascending buckets) reproduces our entire
   `.dynsym` 5,577/5,577; `.dynstr` and `.hash` follow from it with no independent order. The
-  app region is exactly first-mention over crtbegin + 203 objects (4,935/4,935). See
+  app region is exactly first-mention over crtbegin + 195 objects (4,935/4,935). See
   `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and
   `_work/reconstructions/tu_compile_link_order_w3560.md`.
 * **Shortcut removal (same wave).** The `s_processPad` anchor is replaced by the real 16-byte

@@ -1,14 +1,14 @@
 # TU mapping: our src/ vs original GoF2 layout (primary witness gof2hd_1.1.19_ios; engine witness gof2sd_1.0.1 libAbyssEngineDevice.a; secondary mac fhd / MeeGo / windows)
 
-Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=203
+Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge': 1, 'partial': 4, 'witnessed_other': 4, 'platform_analog': 4, 'no_witness': 40, 'invented': 6}, total ours=195 (203 before w3613 removed eight empty TUs; those rows are marked `removed`)
 
 | our TU | category | original TU | note |
 |---|---|---|---|
-| engine/audio/AESound.cpp | witnessed(gof3d) | gof3d Classes/AESound.mm | no gof2 witness |
+| engine/audio/AESound.cpp | removed(empty) | gof3d Classes/AESound.mm | w3613: header-only in our tree; no symbols emitted |
 | engine/audio/AESoundRessource.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/AESoundRessource.cpp |  |
 | engine/audio/FModSound.cpp | rename(.mm) | Classes/Game/FModSound.mm | game-side TU originally |
 | engine/core/AERandom.cpp | rename | Svn_iPhone_AE2/Classes/Random.cpp | AERandom class == engine Random.cpp |
-| engine/core/AbyssEngine.cpp | invented-merge | Image.cpp+Image2D.cpp+ImageFont.cpp+SpriteSystem.cpp+Mesh.cpp+Camera.cpp+Material.cpp+... (engine free-function TUs) | 2958-line kitchen sink; holds ImageCreateFromFile/Image2DRelease/ImageFontDrawString/SpriteSystemDraw/MaterialDraw etc. that each had their own original TU |
+| engine/core/AbyssEngine.cpp | removed(empty) | Image.cpp+Image2D.cpp+ImageFont.cpp+SpriteSystem.cpp+Mesh.cpp+Camera.cpp+Material.cpp+... (engine free-function TUs) | w3613: the former 2958-line kitchen sink was dismantled; the file was empty and is removed |
 | engine/core/ApplicationManager.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/ApplicationManager.cpp |  |
 | engine/core/Array.cpp | invented | (Array.h header-only in all dumps) | template impl+instantiations |
 | engine/core/ArrayInstantiations.cpp | invented | (none) | explicit template instantiations; orig emitted per-TU weak copies |
@@ -17,8 +17,8 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/core/GameText.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/GameText.cpp |  |
 | engine/core/IApplicationModule.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/IApplicationModule.cpp |  |
 | engine/core/JNIEnvCalls.cpp | invented(android) | (none) |  |
-| engine/core/KeyCode.cpp | invented | (none) |  |
-| engine/core/KeyFrame.cpp | split | Svn_iPhone_AE2/Classes/Transform.cpp | KeyFrame defined in Transform.cpp |
+| engine/core/KeyCode.cpp | removed(empty) | (none) | w3613: no symbols emitted |
+| engine/core/KeyFrame.cpp | removed(empty) | Svn_iPhone_AE2/Classes/Transform.cpp | w3613: KeyFrame ctor is emitted by Transform.cpp; empty split TU removed |
 | engine/core/NFC.cpp | no-witness(2.0.x) | (none) | Android-era feature |
 | engine/core/Node.cpp | split+moved | Classes/Game/SystemPathFinder.cpp | Node was a local helper class of SystemPathFinder.cpp |
 | engine/file/AEFile.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/AEFile.cpp |  |
@@ -66,9 +66,9 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/render/ParticleSystemMesh.cpp | exact(HD) | Classes/Game/ParticleSystems/ParticleSystemMesh.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/ParticleSystemSprite.cpp | exact(HD) | Classes/Game/ParticleSystems/ParticleSystemSprite.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/ResourceMaterial.cpp | split | Svn_iPhone_AE2/Classes/PaintCanvas.cpp (class) / Classes/Game/GameResource.cpp (loadPortraits) | no ResourceMaterial witness; holds loadPortraits from GameResource.cpp |
-| engine/render/ResourceMesh.cpp | split | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | Resource* classes lived in PaintCanvas.cpp kitchen-sink TU |
-| engine/render/ResourceTexture.cpp | split | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | + HD GameResource.cpp emitted ResourceTexture ctor |
-| engine/render/ResourceTransform.cpp | split | Svn_iPhone_AE2/Classes/PaintCanvas.cpp |  |
+| engine/render/ResourceMesh.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: Resource* classes are emitted by PaintCanvas.cpp; empty split TU removed |
+| engine/render/ResourceTexture.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed (ResourceTexture ctor is emitted by GameResource TU) |
+| engine/render/ResourceTransform.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed |
 | engine/render/ShaderBaseStruct.cpp | split | Svn_iPhone_AE2/Classes/Engine.cpp | ShaderBaseStruct defined in Engine.cpp |
 | engine/render/SimpleMeshMerger.cpp | witnessed(MeeGo) | src/Classes/Game/MeshMerger/SimpleMeshMerger.cpp |  |
 | engine/render/Sparks.cpp | exact(HD) | Classes/Game/Sparks.cpp | folder drift: orig game-side, ours engine/ |
@@ -177,7 +177,7 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | game/ui/TouchButton.cpp | exact(HD) | Classes/Game/TouchButton.cpp |  |
 | game/ui/TouchSlider.cpp | exact(HD) | Classes/Game/TouchSlider.cpp |  |
 | game/ui/WantedWindow.cpp | exact(HD) | Classes/Game/WantedWindow.cpp |  |
-| game/weapons/AbstractGun.cpp | split | Classes/Game/BeamGun.cpp | AbstractGun.h header-only; code emitted in BeamGun.cpp (no original AbstractGun.cpp ever) |
+| game/weapons/AbstractGun.cpp | removed(empty) | Classes/Game/BeamGun.cpp | w3613: AbstractGun.h is header-only and its code is emitted by BeamGun.cpp; empty split TU removed |
 | game/weapons/BeamGun.cpp | exact(HD) | Classes/Game/BeamGun.cpp |  |
 | game/weapons/BombGun.cpp | exact(HD) | Classes/Game/BombGun.cpp |  |
 | game/weapons/Gun.cpp | exact(HD) | Classes/Game/Gun.cpp |  |
@@ -210,7 +210,7 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 
 ## Original TUs with NO our-side file (Android-relevant only)
 
-- Engine (SD .a witnesses; code exists in Android binary — exported Image2DRelease/ImageFontDrawString/SpriteSystemDraw confirm — but our tree folds it into engine/core/AbyssEngine.cpp or leaves it unimplemented):
+- Engine (SD .a witnesses; code exists in Android binary — exported Image2DRelease/ImageFontDrawString/SpriteSystemDraw confirm — but our tree formerly folded it into engine/core/AbyssEngine.cpp or leaves it unimplemented):
   - Svn_iPhone_AE2/Classes/Image.cpp (ImageCreate*/TextureCreateFromFile + Image/ImageFont/AELoadedTexture ctors)
   - Svn_iPhone_AE2/Classes/Image2D.cpp (Image2DRelease)
   - Svn_iPhone_AE2/Classes/ImageFont.cpp (ImageFontGetWidth/DrawString/...)
