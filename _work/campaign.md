@@ -5018,3 +5018,5 @@ instead of a local `candidate`. Both 9908/7072 B, gate 4496/4496.
 Wave-97 function pass: `Layout::Layout` 47.3 -> 47.4% (`w3698`) with a third greedy store
 reorder (field_0x24/buttonInsetX, progressBarYBase/field_0xb8/field_0xa4/oreTextYOffset/
 oreLabelYOffset). 7072 B, gate 4496/4496.
+Wave-97 function pass: `Layout::Layout` (`w3698`) further source-order refinement
+(field_0x94 before field_0x1f4), same 47.4% / 7072 B, gate 4496/4496.
