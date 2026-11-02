@@ -1063,10 +1063,8 @@ void HangarWindow::render() {
                 int height = button->getHeight();
                 int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
                 Globals::Canvas->SetColor(0xffffffffu);
-                int textY = (int) ((float) y + (float) height * 0.2f);
-                // Volatile sink: keeps the textY float math scheduled ahead of
-                // the getText call, as in the original body.
-                volatile int textYbarrier = textY;
+                volatile float textYf = (float) y + (float) height * 0.2f;
+                int textY = (int) textYf;
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
                 Globals::Canvas->SetColor(0x777777ffu);
