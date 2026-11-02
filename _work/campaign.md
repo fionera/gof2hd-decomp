@@ -5104,3 +5104,7 @@ Wave-97 section-order pass: `RecordHandler` byte-array block (`w3745`); plain no
 Wave-97 section-order pass: `Item::extractItems` placement (`w3745`) by moving `makeItem(int)`
 after `makeItem(int,int)`; plain no-order 3013 -> 3019 byte-exact (prefix 2639 -> 2657).
 Normal gate 4497/4497. Note: `_work/reconstructions/item_extractItems_placement_w3745.md`.
+Wave-97 function pass: `Level::createMission` 88.01 -> 88.08% (`w3740`) by using the
+`nameLeader` false-path return and hoisting the `rnd` local in the hunter loop. 17172 B, gate 4497/4497.
+Wave-97 section-order pass: `PlayerStatic::update` placement (`w3745`) by moving
+`update`/`getPosition` before `render`; plain no-order 3019 -> 3020. Gate 4497/4497.
