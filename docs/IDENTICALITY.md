@@ -151,7 +151,7 @@ The original build is now pinned by evidence, not by A/B alone:
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Current differing bytes (after the wave-95, w3616 relocation-order and w3624 GameResource
-  TU-convergence passes).** `.text` 119,547; `.ARM.exidx` 2,733; `.ARM.extab` 119,196 (size -8);
+  TU-convergence passes).** `.text` 118,027; `.ARM.exidx` 2,733; `.ARM.extab` 121,216 (size -8);
   `.dynsym` 50; `.dynstr` 211; `.hash` 33; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 12.
   `.rodata`, `.data`, `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section
   table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn`
