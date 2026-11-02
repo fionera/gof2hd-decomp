@@ -2120,8 +2120,8 @@ void Level::createMission() {
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation())
         convoy = 1;
     int bigAlienWave = 0;
-    int pirateFortress = 0;
     int alienWave = 0;
+    int pirateFortress = 0;
     if (*bigShipsCount != 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
