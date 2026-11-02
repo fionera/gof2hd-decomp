@@ -4911,3 +4911,7 @@ functions spanning 0x702e4..0x183d74). Moving one `ArrayReleaseClasses<AELowLeve
 instantiation to `AEFile.cpp` is gate-neutral and lifts it to 1861 (prefix 970). Three
 gate-neutral source-order fixes (`VirtualInput`, `GLES1Compat`, `FileInterfaceAndroid`) move the
 frontier 47 -> 222; they are documented but not yet landed.
+Wave-97 section-order convergence (landed): `w3696` reordered `VirtualInput.cpp` (no-order
+exact-address prefix 47 -> 134, no-order byte 1527 -> 1529) and `GLES1Compat.cpp` (prefix
+134 -> 182, byte 1529 -> 1529). Both are gate-neutral with the ordering file (byte 4496 /
+linked 4496, `.text` 0x1337c8).
