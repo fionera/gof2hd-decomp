@@ -4848,3 +4848,12 @@ Wave-97 first results (both research-only, gate unchanged 4496/4496):
   A `VirtualInput.cpp` source reorder extends the exact-address prefix 47 -> 134 but regresses
   the ordering-file build by 5 byte_exact. Keep the ordering file for now; removal requires
   per-TU source-order convergence under the full gate.
+- `w3693` produced the definitive r18b ndk-build recipe: clang 7.0.2 / gold 1.12,
+  armeabi-v7a softfp, API 16, `c++_static`, release `-Oz -DNDEBUG`, Thumb-2, NEON,
+  RTTI+exceptions. Effective compile flags are the r18b ndk-build defaults **except**
+  `-fdata-sections` (binary layout is the shared-section layout; `-ffunction-sections` is
+  effective, proven by the 193 empty-`.text` CANTUNWIND sentinels). The full ndk-build link
+  line (`-z now`, `--build-id`, `--no-undefined`, `-z relro`, `-z noexecstack`,
+  `--fix-cortex-a8`, `--exclude-libs`, `--warn-shared-textrel`, `--fatal-warnings`,
+  whole-archive zlib/libzip, `libc++_static`/`libc++abi`/`libandroid_support`/`libunwind`,
+  `-lgcc -latomic`) is byte-identical to the tree's current gold line.
