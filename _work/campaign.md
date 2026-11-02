@@ -5040,3 +5040,7 @@ slider-2 y expression to the original order (`(field_0x15c + field_0x1c) * 2` fi
 Wave-97 function pass: `HangarWindow::render` 79.521 -> 80.380% (`w3736`) by dropping the
 `if (rows < 0) rows = 0;` guard, adding the `Layout *hintLayout = Globals::layout` hint-loop
 alias, and regrouping the hint-image x expressions. 9700 B, gate 4497/4497.
+Wave-97 function pass: `Level::createMission` (`w3713`) removed the 32-byte volatile pad anchor
+by constructing `turretPos` after the direction rotation (reusing the same 12-byte stack slot),
+which keeps the body at 17172 B. Fuzzy 86.896 -> 85.684% but the body is now anchor-free; gate
+4497/4497.
