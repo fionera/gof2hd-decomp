@@ -3,6 +3,9 @@
 #include <new>
 #include "engine/file/AEPakFile.h"
 #include "engine/file/AENormalFile.h"
+#include "engine/core/ArrayReleaseClasses.h"
+
+template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
 
 Array<AELowLevelFile *> *AEFile::file;
 FileInterface *AEFile::fileInterface;

@@ -84,8 +84,6 @@ template void ArraySetLength<signed char>(unsigned int, Array<signed char> &);
 
 template void ArraySetLength<Array<ImagePart *> *>(unsigned int, Array<Array<ImagePart *> *> &);
 
-template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
-
 
 template void ArrayReleaseClasses<Array<ListItem *> *>(Array<Array<ListItem *> *> &);
 
