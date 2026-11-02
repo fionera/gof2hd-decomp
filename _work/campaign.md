@@ -4771,3 +4771,19 @@ byte-identical except the build-id. `BSphere.cpp` -> `Vector.cpp` merge regresse
 Landed: `LevelScript::process` 52.88 -> 53.13% (case 135/145 body order, `w3601`);
 `MenuTouchWindow` ctor 91.2 -> 91.6% (`w3610`). `Generator::createMission` `pick == 12` select
 folding is the 4-byte root cause (`w3591`, `w3592`); no source shape prevents the fold yet.
+
+Wave-96 structural wins (all gate byte 4496 / linked 4496):
+- `w3616`: `.rel.dyn` **byte-identical**, `.rel.plt` 56 -> 12, `.dynsym` 477 -> 62, `.dynstr`
+  2,591 -> 211, `.hash` 252 -> 33, `.gnu.version` 2 -> 0. Merged `ndk_autosave` into
+  `NdkHooks.cpp`, moved `pConstToNonConst`, reordered libzip members (`_zip_err_str` key V=7149)
+  and `freeMissionLock` before `switchSunForSupernovaIntro`.
+- `w3623`: `.dynstr` and `.hash` **byte-identical**; `.dynsym` 14 bytes (5,564/5,577 same index,
+  5,370/5,370 defined symbols); libcrypto built as `sha256.o, armv4cpuid.o, sha256-armv4.o`.
+- `w3624`: `BuildResourceList.cpp` + `LowResourceTable.cpp` + `ResourceMaterial.cpp` merged back
+  into the original `GameResource.cpp` (source order Build, loadLow, loadPortraits witnessed by
+  `.rodata`); `.text` differing bytes 119,547 -> 118,027.
+- `w3625`: `.ARM.exidx` kind sequence exact; raw-record audit script + extab-order experiment.
+- Function passes: `MenuTouchWindow::OnTouchEnd` 89.5 -> 93.6%, `HangarWindow::render` 78.7 ->
+  79.2% with pad2/pad3 gone, `Level::createMission` 83.8 -> 85.1%, `Radar::draw` 71.6 -> 72.0%,
+  `LevelScript::process` 52.9 -> 53.1%, `MenuTouchWindow` ctor 91.2 -> 91.6%,
+  `Level::createShip` jitter order X,Y,Z (faithful, 73.4%).
