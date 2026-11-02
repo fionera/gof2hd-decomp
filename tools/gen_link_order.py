@@ -62,6 +62,11 @@ def main() -> int:
         si = next((i for i, o in enumerate(names) if o.endswith(second)), None)
         if fi is not None and si is not None and fi > si:
             keyed.insert(si, keyed.pop(fi))
+    names = [k[3] for k in keyed]
+    hi = next((i for i, o in enumerate(names) if o.endswith("NdkHooks.cpp.obj")), None)
+    ai = next((i for i, o in enumerate(names) if o.endswith("NdkAutosave.cpp.obj")), None)
+    if hi is not None and ai is not None and ai != hi + 1:
+        keyed.insert(hi + 1, keyed.pop(ai))
     with open(out, "w") as f:
         f.write("\n".join(o for *_, o in keyed) + "\n")
     print(f"wrote link order for {len(objs)} objects to {out}")

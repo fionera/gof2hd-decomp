@@ -257,17 +257,6 @@ extern "C" void ndk23_newrender(long long now) { // lint: extern_c (native ABI b
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
-    if (Globals::status->getPlayingTime() >= 1) {
-        int amount = gb_android_offerwallCreditAmount;
-        if (amount > 0) {
-            Globals::status->changeCredits(amount);
-            ndk_autosave();
-            gb_android_offerwallCreditAmount = 0;
-        }
-    }
-}
-
 extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase, // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI) // lint: void_ptr (ndk* touch handle param, baked ABI)
                                           float x, float y) {
     // phase: 0 = down, 1 = up, 2 = move.
@@ -437,6 +426,28 @@ void checkFirstCreditPackBoughtWriteAction() {
     }
 }
 
+// The original NdkHooks TU owns both checkFirstCreditPackBoughtWriteAction and ndk_autosave:
+// its .dynsym first-mention order is saveOptions, recordStoreWrite, recordStoreWritePreview,
+// C1, D1.  ndk_checkPlaytime... is defined after ndk_autosave so clang emits ndk_autosave at
+// its definition (0x94770, after checkFirst), not at its first reference (0x942aa).
+void ndk_autosave() {
+    RecordHandler *handler = new RecordHandler;
+    handler->recordStoreWrite(0);
+    handler->recordStoreWritePreview(0);
+    delete handler;
+}
+
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
+    if (Globals::status->getPlayingTime() >= 1) {
+        int amount = gb_android_offerwallCreditAmount;
+        if (amount > 0) {
+            Globals::status->changeCredits(amount);
+            ndk_autosave();
+            gb_android_offerwallCreditAmount = 0;
+        }
+    }
+}
+
 int ndk_getCurrentApplicationModule() {
     if (gEngine == nullptr)
         return -1;
@@ -449,17 +460,6 @@ int ndk_getLogoShown() {
 
 int ndk_isInMainMenu() {
     return Globals::isInMainMenu;
-}
-
-char *pConstToNonConst(const char *s) {
-    if (s != nullptr) {
-        char *copy = static_cast<char *>(std::malloc(std::strlen(s) + 1));
-        if (copy != nullptr) {
-            std::strcpy(copy, s);
-            return copy;
-        }
-    }
-    return nullptr;
 }
 
 const char *getStringUTFChars(JNIEnv *env, jstring str, jboolean *isCopy) {

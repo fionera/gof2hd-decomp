@@ -5,11 +5,20 @@
 
 #include <cstdlib>
 
-// The original allocates a one-entry buffer at static-init time (its second .init_array entry:
-// touches = realloc(touches, 16)).
-Touch *touches = static_cast<Touch *>(realloc(touches, sizeof(Touch)));
-int maxTouchSize = 0;
-int curTouchSize = 0;
+// Defined in NdkAutosave.cpp: the original first mentions these globals before
+// Globals::Canvas, which is first referenced in this TU.  The initializer stays
+// here so the GOT first-reference order (curTouchSize, maxTouchSize, touches,
+// Canvas) is unchanged.
+extern Touch *touches;
+extern int maxTouchSize;
+extern int curTouchSize;
+
+namespace {
+struct TouchBufferInit {
+    TouchBufferInit() { touches = static_cast<Touch *>(realloc(touches, sizeof(Touch))); }
+};
+TouchBufferInit touchBufferInit;
+}
 
 extern "C" void ndk_resetNativeItemInformationList() { // lint: extern_c (native ABI boundary; original exports the symbol unmangled / GL+libc C ABI)
     if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&

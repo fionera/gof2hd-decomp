@@ -4446,9 +4446,11 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 0;
                         m_bCinematicBreak = 1;
                         m_pCamera->setLookAtCam(true);
-                        // PLT-order anchor: the first reference to StarSystem::switchSunForSupernovaIntro
-                        // must precede PlayerEgo::setDockingState (never taken).
-                        if (m_nState == 0x7b) m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
+                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
+                        // PLT-order anchors: freeMissionLock must precede switchSunForSupernovaIntro,
+                        // and switchSunForSupernovaIntro must precede PlayerEgo::setDockingState
+                        // (never taken).  Original PLT slots 2829/2830/2831.
+                        if (delta == 0x7b) m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
@@ -4456,7 +4458,6 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                         m_tempVec = 5000.0f * AbyssEngine::AEMath::VectorNormalize(player->getPosition());
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
-                        ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
 
                         m_bRenderParticles = 1;

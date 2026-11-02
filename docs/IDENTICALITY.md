@@ -150,10 +150,13 @@ The original build is now pinned by evidence, not by A/B alone:
   same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
-* **Current differing bytes (after the wave-95 passes).** `.text` 119,626; `.ARM.exidx` 2,710;
-  `.ARM.extab` 119,153 (size -8); `.dynsym` 477; `.dynstr` 2,591; `.hash` 252; `.gnu.version` 2;
-  `.rel.dyn` 52; `.rel.plt` 56. `.rodata`, `.data`, `.data.rel.ro`, `.plt` and `.got` are
-  byte-identical, and the section table matches the original's 27 sections except `.ARM.extab`.
+* **Current differing bytes (after the wave-95 and w3616 relocation-order passes).** `.text`
+  119,607; `.ARM.exidx` 2,735; `.ARM.extab` 119,149 (size -8); `.dynsym` 62; `.dynstr` 345;
+  `.hash` 42; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 15. `.rodata`, `.data`,
+  `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section table matches the
+  original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn` byte-identical and
+  cut `.rel.plt` to one moved symbol (`PlayerEgo::deleteHackingGame`); see
+  `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md`.
 * **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
   `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
   `abort_message.cpp` path, and the only app source-file witness is `main.c` in three log
@@ -168,7 +171,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
 | .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The seven per-function LSDA records that differ belong to the seven mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
-| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,455/5,577 entries at the same index (477 differing bytes). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The residual is within-TU first-mention and archive-member order, not link order — see `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`. |
+| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,563/5,578 entries at the same index (62 differing bytes; 5,355/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The two remaining defined-symbol gaps are `ResourceTexture(String const&, float)` (GameResource TU emission) and `sha256_block_data_order_neon` (libcrypto archive-member order); all 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md` and `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size. |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
 | .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
