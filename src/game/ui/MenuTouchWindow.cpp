@@ -474,7 +474,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     Globals::Canvas->Image2DCreate(3012, this->heapBufB[2]);
     Globals::Canvas->Image2DCreate(3014, this->heapBufB[3]);
     Globals::Canvas->Image2DCreate(3016, this->heapBufB[4]);
-    if (!Globals::iPadAssetsWithLowerRes && Globals::iPad)
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
         Globals::Canvas->Image2DCreate(3101, this->borderImage_0x14c);
     Globals::Canvas->Image2DCreate(3000, this->scrollImage_0x13c);
     Globals::Canvas->Image2DCreate(3001, this->scrollImage_0x140);
@@ -504,7 +504,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     int windowHeight = Globals::h - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top -
                        this->slotMarkerHeight - Globals::layout->field_0x2c_rowHeight -
                        Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24;
-    if (!Globals::iPadAssetsWithLowerRes && Globals::iPad)
+    if (Globals::iPad && !Globals::iPadAssetsWithLowerRes)
         windowHeight -= Globals::Canvas->GetImage2DHeight(this->borderImage_0x14c) * 2;
     this->scrollWindowB = new ScrollTouchWindow(
         Globals::w - Globals::layout->buttonInsetX - this->slotTextWidth,
@@ -804,7 +804,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollWindowA->setTextCentered(true);
 
     TouchButton *credits;
-    if (Globals::iPadAssetsWithLowerRes || !Globals::iPad) {
+    if (!Globals::iPad || Globals::iPadAssetsWithLowerRes) {
         credits = new TouchButton(*Globals::gameText->getText(98), 0, Globals::w - Globals::layout->field_0x2c_rowHeight,
                                   Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     } else {
