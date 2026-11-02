@@ -5,7 +5,6 @@
 #include <cstdint>
 
 namespace {
-#pragma pack(push, 1)
 
     struct alignas(4) GameSettingsRecord {
         float colorR;
@@ -23,7 +22,7 @@ namespace {
         //   flagAt10     int16  @0x10 -> byte-offset 0x10 cast
         //   flagAt11     uint8  @0x11 -> flagAt11
         uint8_t _region[3];
-        int16_t flagAt0f;
+        uint8_t flagAt0f[2];
         uint8_t flagAt11;
         uint8_t _pad12[2];
 
@@ -35,33 +34,33 @@ namespace {
         float brightness;
         float contrast;
         uint8_t enableFlag30;
-        int32_t intAt31;
-        int32_t intAt35;
+        uint8_t intAt31[4];
+        uint8_t intAt35[4];
         uint8_t flagAt39;
         uint8_t _pad3a;
-        int32_t intAt3b;
+        uint8_t intAt3b[4];
         uint8_t flagAt3f;
-        int16_t shortAt40;
+        uint8_t shortAt40[2];
         uint8_t _pad42[2];
         float qualityLevel;
         int32_t intAt48;
-        int16_t shortAt4c;
+        uint8_t shortAt4c[2];
         uint8_t flagAt4e;
         uint8_t _pad4f;
         int32_t intAt50;
         int32_t resWidth;
         int32_t resHeight;
         uint8_t _pad5c[4];
-        int16_t shortAt60;
+        uint8_t shortAt60[2];
     };
 
     struct InitZeroObject {
-        // Region 0x00..0x3a. Canonical storage is the aligned int32 slot array
-        // (slots[0..11] cover 0x00..0x2f); the misaligned tail ints overlap the
-        // tail of that region and the trailing bytes, accessed via byte-offset
-        // reinterpret_cast over slots:
+        // Region 0x00..0x3a. Byte storage keeps the struct's alignment at 1 so
+        // sizeof stays 0x3b (an int32_t[12] member would round it to 0x3c).
+        // The misaligned tail ints overlap the region, accessed via byte-offset
+        // reinterpret_cast:
         //   tailAt2b int32 @0x2b, tailAt2f @0x2f, tailAt33 @0x33, tailAt37 @0x37
-        int32_t slots[12];
+        uint8_t slots[0x30];
         uint8_t _tail_0x30[0x0b];
     };
 
@@ -77,8 +76,11 @@ namespace {
     };
 
     struct CtorSecondaryObject {
-        int32_t slot0;
-        int32_t slot1;
+        // Byte storage keeps the struct's alignment at 1: with a natural
+        // int32_t member clang merges the adjacent slot0/slot1 zero stores into
+        // one strd, while the original emits two separate str instructions.
+        uint8_t slot0[4];
+        uint8_t slot1[4];
         uint8_t _pad08[0x0b];
         uint8_t flagAt13;
     };
@@ -86,8 +88,6 @@ namespace {
     struct InitFlagByte {
         uint8_t flag;
     };
-
-#pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
@@ -332,18 +332,16 @@ unsigned char Globals::iap_hack_dlc3Bought;
 #include <new>
 
 
-#pragma pack(push, 1)
 struct Q16 {
-    int32x4_t v;
+    uint8_t v[16];
 };
 
 struct HintsBuffer {
-    // Region 0x00..0x3f. Canonical storage is the aligned NEON-quad array
+    // Region 0x00..0x3f. Canonical storage is the NEON-quad array
     // (quad[0..3] at 0x00/0x10/0x20/0x30); the misaligned quadAt2b (Q16 @0x2b)
     // overlaps quad[2]/quad[3] and is accessed via byte-offset reinterpret_cast.
     Q16 quad[4];
 };
-#pragma pack(pop)
 
 #if __SIZEOF_POINTER__ == 4
 #include <cstddef>
@@ -671,18 +669,18 @@ Globals::Globals() {
     settings->contrast = 0.5f;
     settings->_region[2] = 1;
     settings->enableFlag30 = 1;
-    settings->shortAt40 = 0;
+    reinterpret_cast<int16_t &>(settings->shortAt40) = 0;
     settings->intAt50 = 0;
     settings->flagAt39 = 0;
-    settings->intAt35 = 0;
-    settings->intAt31 = 0;
-    settings->intAt3b = 0;
+    reinterpret_cast<int32_t &>(settings->intAt35) = 0;
+    reinterpret_cast<int32_t &>(settings->intAt31) = 0;
+    reinterpret_cast<int32_t &>(settings->intAt3b) = 0;
     settings->flagAt4e = 0;
-    settings->shortAt4c = 0;
+    reinterpret_cast<int16_t &>(settings->shortAt4c) = 0;
     settings->intAt48 = 0;
-    secondary->slot1 = 0;
+    reinterpret_cast<int32_t &>(secondary->slot1) = 0;
     secondary->flagAt13 = 0;
-    secondary->slot0 = 0;
+    reinterpret_cast<int32_t &>(secondary->slot0) = 0;
     settings->flagAt3f = 0;
 
     Globals::lastSpaceMusicPlayed = -1;
@@ -712,7 +710,7 @@ Globals::Globals() {
     Globals::instantActionWave = 0;
     Globals::lastCampaignMissionFailed = -1;
     this->soundResources = 0;
-    settings->shortAt60 = 0x100;
+    reinterpret_cast<int16_t &>(settings->shortAt60) = 0x100;
     Globals::lastCampaignMissionFailCount = 0;
 }
 Globals::~Globals() {
@@ -782,7 +780,7 @@ void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *en
     char *zeroByte = (char *) &Globals::startLiteVersionWithMoreCredits;
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
 
-    settings->flagAt0f = 0x101;
+    reinterpret_cast<int16_t &>(settings->flagAt0f) = 0x101;
     settings->flagAt11 = 1;
     settings->glowR = 1.0f;
     settings->glowG = 1.0f;
@@ -866,10 +864,10 @@ void Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *en
 void Globals::resetHints() {
     HintsBuffer *hints = (HintsBuffer *) Globals::hints;
     const int32x4_t z = vdupq_n_s32(0);
-    hints->quad[0].v = z;
-    reinterpret_cast<Q16 &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]).v = z;
-    hints->quad[2].v = z;
-    hints->quad[1].v = z;
+    reinterpret_cast<int32x4_t &>(hints->quad[0].v) = z;
+    reinterpret_cast<int32x4_t &>(reinterpret_cast<uint8_t *>(hints->quad)[0x2b]) = z;
+    reinterpret_cast<int32x4_t &>(hints->quad[2].v) = z;
+    reinterpret_cast<int32x4_t &>(hints->quad[1].v) = z;
 }
 
 void Globals::longToTimeString(long long ms, String &out) {
