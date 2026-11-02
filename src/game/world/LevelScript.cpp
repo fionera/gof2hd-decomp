@@ -639,6 +639,8 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 enemy->geometry->setVisible(true);
             }
+            volatile int pad = delta;
+            (void) pad;
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
@@ -4281,9 +4283,8 @@ bool LevelScript::process(int delta) {
                     (*landmarks)[3]->setVisible(true);
                     ((PlayerWormHole *) (*landmarks)[3])->reset(false);
                     // PLT-order anchor: first reference to the auto-turret pair must follow
-                    // AEGeometry::isVisible and precede PlayerWormHole::open (never taken).
-                    if (delta == 0x7c)
-                        player->setAutoTurret(player->autoTurretIsEnabled());
+                    // AEGeometry::isVisible and precede PlayerWormHole::open.
+                    player->setAutoTurret(player->autoTurretIsEnabled());
                     ((PlayerWormHole *) (*landmarks)[3])->open();
                     Globals::sound->play(34, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
