@@ -4874,3 +4874,8 @@ Wave-97 first results (both research-only, gate unchanged 4496/4496):
 
 Wave-97 function pass: `Radar::draw` 73.30 -> 73.35% (`w3683`) by hoisting the landmark
 crosshair top test to a named bool; 9908 B, gate 4496/4496, `.text` 0x1337c8.
+
+Wave-97 function pass: `LevelScript::process` 54.333 -> 54.371% (`w3681`, the re-done
+mission-154 explicit-state commit) — 57232 B (size checked on merged master), gate 4496/4496,
+`.text` 0x1337c8. This is the change that was reverted as `9b810b02` when its base predated the
+case-125 move; it now lands cleanly.
