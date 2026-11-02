@@ -307,7 +307,9 @@ The scratch extab-order relink (reference; see §5):
 # 1. relink with a map, no strip (only -o/--Map differ from build.ninja)
 #    /tmp/relink_map2.sh <out.so> <out.map> <section_order.txt>
 # 2. generate the original extab order and the scratch ordering file
-python3 /tmp/gen_extab_order2.py          # writes /tmp/section_order_extab2.txt
+python3 _work/reconstructions/extab_order_experiment.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/ours.map \
+  cmake-build-match/section_order.txt /tmp/section_order_extab.txt
 # 3. rename the three startup extab sections in the marked object copies
 OBJCOPY=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objcopy
 $OBJCOPY --rename-section .ARM.extab.text.startup=.ARM.extab.text.startup.o032 \
@@ -317,7 +319,7 @@ $OBJCOPY --rename-section .ARM.extab.text.startup=.ARM.extab.text.startup.o083 \
 $OBJCOPY --rename-section .ARM.extab.text.startup=.ARM.extab.text.startup.o191 \
   cmake-build-match/exidx_markers/objects/o191_ParticleSettings.cpp.obj
 # 4. relink with the scratch ordering file and audit
-/tmp/relink_map2.sh /tmp/extab2.so /tmp/extab2.map /tmp/section_order_extab2.txt
+/tmp/relink_map2.sh /tmp/extab2.so /tmp/extab2.map /tmp/section_order_extab.txt
 python3 _work/reconstructions/exidx_raw_audit.py \
   ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/extab2.so /tmp/ours.map
 ```
@@ -327,5 +329,6 @@ python3 _work/reconstructions/exidx_raw_audit.py \
 ```
 tools/gen_section_order.py                              +1   (MARKER_AFTER witness)
 _work/reconstructions/exidx_raw_audit.py                new  (raw audit tool)
+_work/reconstructions/extab_order_experiment.py         new  (scratch order generator)
 _work/reconstructions/exidx_extab_raw_records_w3625.md  new  (this note)
 ```
