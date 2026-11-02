@@ -2326,9 +2326,10 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         for (unsigned int i = 0; i < this->scrollSlots->size(); i++)
             (*this->scrollSlots)[i]->OnTouchBegin(x, y);
         {
-            PaintCanvas *canvas = Globals::Canvas;
-            if (x > Globals::w - (Globals::layout->buttonInsetX + canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0])) &&
-                y < (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin) + canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]))
+            Layout &layout = *Globals::layout;
+            int top = Globals::layout->field_0x20_top;
+            if (x > Globals::w - layout.buttonInsetX - Globals::Canvas->GetImage2DWidth(this->heapBufB[this->field_0x1e0]) &&
+                y < Globals::Canvas->GetImage2DHeight(this->heapBufB[this->field_0x1e0]) + top + layout.field_0xc_leftMargin)
                 this->scrollbarHit = 1;
             else
                 this->scrollbarHit = 0;
