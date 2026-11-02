@@ -2101,8 +2101,11 @@ void Level::createMission() {
         delete fileRead;
         wreck->setSpacePoints(spacePoints);
     }
-    if (nameLeader)
+    if (nameLeader) {
         (*this->enemies)[0]->name = *Globals::gameText->getText(1663);
+    } else {
+        return;
+    }
     }
 case4Else:
     {
@@ -2116,10 +2119,11 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
+    AERandom *rnd = Globals::rnd;
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
+                this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
