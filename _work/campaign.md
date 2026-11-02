@@ -5073,3 +5073,5 @@ Wave-97 research: lazy `Array<AbstractGun*>` instantiation placement (`w3745`). 
 plain no-order link but inserts `ArraySetLength<AbstractGun*>` too early and regresses the gate
 4497 -> 4491, so it was not landed. The clang 7 deferred-instantiation flush rule remains open.
 Note: `_work/reconstructions/section_order_removal_w3745.md` §7.
+Wave-97 function pass: `LevelScript::process` 54.9 -> 55.0% (`w3742`) by de-switching the escort
+speed loop and using direct `getShip` cargo checks. 57232 B, gate 4497/4497.
