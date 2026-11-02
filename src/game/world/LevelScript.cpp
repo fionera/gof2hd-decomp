@@ -1992,7 +1992,6 @@ bool LevelScript::process(int delta) {
             }
             case 142: {
                 // Collect the plot cargo from a sparking gas cloud while the freighter waits.
-                Ship *ship = Globals::status->getShip();
                 if (m_nState < 2) {
                     if (AbyssEngine::AEMath::VectorLength(
                                 (*enemies)[0]->getPosition() - (*enemies)[0]->getRoute()->getWaypoint(0)->getPosition())
@@ -2018,8 +2017,11 @@ bool LevelScript::process(int delta) {
                     }
                 }
                 if (m_nState == 2) {
-                    if (ship->hasCargo(201, 1) || ship->hasCargo(202, 1) || ship->hasCargo(203, 1)
-                        || ship->hasCargo(204, 1) || Globals::status->getShip()->hasCargo(205, 1)) {
+                    if (Globals::status->getShip()->hasCargo(201, 1)
+                        || Globals::status->getShip()->hasCargo(202, 1)
+                        || Globals::status->getShip()->hasCargo(203, 1)
+                        || Globals::status->getShip()->hasCargo(204, 1)
+                        || Globals::status->getShip()->hasCargo(205, 1)) {
                         (*enemies)[0]->setSpeed(2.1f);
                         m_nState = 3;
                     }
@@ -4888,10 +4890,12 @@ bool LevelScript::process(int delta) {
                     for (unsigned int i = 2; i != 5; ++i) {
                         // disasm 0x1426c4: -Oz hoists all three (double)delta*{2.5,2.4,2.3}
                         // products and selects among the converted floats with a compare ladder.
-                        switch (i) {
-                            case 2: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.5)); break;
-                            case 3: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.4)); break;
-                            case 4: (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.3)); break;
+                        if (i == 2) {
+                            (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.5));
+                        } else if (i == 3) {
+                            (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.4));
+                        } else {
+                            (*enemies)[i]->geometry->moveForward((float) ((double) delta * 2.3));
                         }
                     }
                     {
