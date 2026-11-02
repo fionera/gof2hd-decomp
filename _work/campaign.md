@@ -4915,3 +4915,5 @@ Wave-97 section-order convergence (landed): `w3696` reordered `VirtualInput.cpp`
 exact-address prefix 47 -> 134, no-order byte 1527 -> 1529) and `GLES1Compat.cpp` (prefix
 134 -> 182, byte 1529 -> 1529). Both are gate-neutral with the ordering file (byte 4496 /
 linked 4496, `.text` 0x1337c8).
+`w3696` also reordered `FileInterfaceAndroid.cpp` (prefix 182 -> 222, no-order byte 1529 ->
+1557); gate-neutral 4496/4496.
