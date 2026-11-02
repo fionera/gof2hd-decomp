@@ -5047,3 +5047,5 @@ which keeps the body at 17172 B. Fuzzy 86.896 -> 85.684% but the body is now anc
 Wave-97 function pass: `Level::createMission` 85.684 -> 87.275% (`w3738`) by caching
 `int *bigShipsCount = &this->field_168`, fixing `kStationTurrets` indexing to `t[4..6]`/`t[1..3]`,
 and using the implicit `alienWave` test. 17172 B, gate 4497/4497.
+Wave-97 function pass: `Radar::draw` 73.87 -> 73.93% (`w3727`) by hoisting the asteroid
+dead test before the `hasCargo` guard. 9908 B, gate 4497/4497.
