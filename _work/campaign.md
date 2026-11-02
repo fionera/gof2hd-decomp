@@ -5015,3 +5015,6 @@ Wave-97 function passes: `Layout::Layout` 47.2 -> 47.3% (`w3698`) with a second 
 adjacent-pair store reorder (quickMenuIconGap/orbitInfoSystemY, field_0x210/0x1ec), and
 `Radar::draw` 73.35 -> 73.75% (`w3707`) by reading `field_0x10` directly for `candidateWreck`
 instead of a local `candidate`. Both 9908/7072 B, gate 4496/4496.
+Wave-97 function pass: `Layout::Layout` 47.3 -> 47.4% (`w3698`) with a third greedy store
+reorder (field_0x24/buttonInsetX, progressBarYBase/field_0xb8/field_0xa4/oreTextYOffset/
+oreLabelYOffset). 7072 B, gate 4496/4496.
