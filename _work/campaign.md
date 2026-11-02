@@ -5011,3 +5011,7 @@ field_0x284). 7072 B, gate 4496/4496.
 Wave-97 function pass: `Generator::createMission` 72.0 -> 72.2% (`w3631`) by hoisting the
 `level`/`bonus`/`rem`/`mission` declarations to function scope at their original position.
 1996 B, gate 4496/4496.
+Wave-97 function passes: `Layout::Layout` 47.2 -> 47.3% (`w3698`) with a second greedy
+adjacent-pair store reorder (quickMenuIconGap/orbitInfoSystemY, field_0x210/0x1ec), and
+`Radar::draw` 73.35 -> 73.75% (`w3707`) by reading `field_0x10` directly for `candidateWreck`
+instead of a local `candidate`. Both 9908/7072 B, gate 4496/4496.
