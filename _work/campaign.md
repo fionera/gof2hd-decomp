@@ -5077,3 +5077,9 @@ Wave-97 function pass: `LevelScript::process` 54.9 -> 55.0% (`w3742`) by de-swit
 speed loop and using direct `getShip` cargo checks. 57232 B, gate 4497/4497.
 Wave-97 function pass: `Layout::Layout` (`w3743`) field_0xac cmov chain + rewardBoxHeight branch
 (fidelity fix, 7072 B, fuzzy unchanged at 47.6%). Gate 4497/4497.
+Wave-97 section-order pass: deferred-instantiation flush (`w3745`). Moving `createGun()` before
+`createStaticObjects()` and `assignGuns()` after `createRoute`/`setPlayerRoute` is gate-neutral
+(4497/4497) and improves the plain no-order link 2981 -> 2986 byte-exact (prefix 2296 -> 2304,
+exact addresses 3173 -> 3179). The clang 7 object order is `Function::Create` order: strong
+functions at first use, template copies when first materialised. `-fno-delayed-template-parsing`
+is neutral. Note: `_work/reconstructions/deferred_instantiation_flush_w3745.md`.
