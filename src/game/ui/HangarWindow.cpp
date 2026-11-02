@@ -515,15 +515,13 @@ void HangarWindow::render() {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
                     int imgH = Globals::Canvas->GetImage2DHeight(this->hintImage);
                     int rows = Globals::h / imgH;
-                    // Non-negative guard: keeps the original 376-byte frame
-                    // (this@sp+136, &Canvas@sp+140) with int rows.
-                    if (rows < 0) rows = 0;
+                    Layout *hintLayout = Globals::layout;
                     for (int r = 0; r <= rows; r++) {
                         Globals::Canvas->DrawImage2D(this->hintImage,
-                                                     Globals::layout->buttonInsetX - imgW + this->hintOffsetX,
+                                                     this->hintOffsetX + (hintLayout->buttonInsetX - imgW),
                                                      r * imgH, 1);
                         Globals::Canvas->DrawImage2D(this->hintImage,
-                                                     this->hintOffsetX + Globals::layout->buttonInsetX + listWidth +
+                                                     hintLayout->buttonInsetX + this->hintOffsetX + listWidth +
                                                      (barHeight > 0
                                                           ? Globals::layout->field_0x2c_rowHeight +
                                                             Globals::layout->field_0x48
