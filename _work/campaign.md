@@ -4958,3 +4958,6 @@ The reordered no-order control remains **4524/4524 address-exact, byte 4496**. A
 gate-neutral (byte 4496 / linked 4496, `.text` 0x1337c8, lint clean, drift 0). Next frontier:
 `PaintCanvas::SetResourceList` (`0x77f40` original vs `0x78068` ours, +0x128 of inline
 copies between `ReleaseAllResources` and `SetResourceList`).
+Wave-97 function pass: `MenuTouchWindow::OnTouchEnd` 93.611 -> 94.231% (`w3677`) by marking the
+`loadGame` failure branch unlikely (`__builtin_expect(..., 0)`), which flips the case1/case15
+block order to the original; 8132 B, gate 4496/4496.
