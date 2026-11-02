@@ -5083,3 +5083,5 @@ Wave-97 section-order pass: deferred-instantiation flush (`w3745`). Moving `crea
 exact addresses 3173 -> 3179). The clang 7 object order is `Function::Create` order: strong
 functions at first use, template copies when first materialised. `-fno-delayed-template-parsing`
 is neutral. Note: `_work/reconstructions/deferred_instantiation_flush_w3745.md`.
+Wave-97 function pass: `MGame::OnUpdate` 99.8705 -> 99.8835% (`w3719`) by caching
+`Globals::status` in the mission-122 radio branch. 11440 B, gate 4497/4497.
