@@ -63,6 +63,7 @@ unsigned char AbyssEngine::ShaderSet;
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/AELoadedTexture.h"
 #include "engine/render/ShaderBaseStruct.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/render/shaders/TextureShader.h"
 #include "engine/render/shaders/SimpleShader.h"
 #include "engine/render/shaders/TextureVtxColorShader.h"
@@ -211,6 +212,8 @@ Engine::~Engine() {
     AbyssEngine::MeshRelease(this, &this->quadMesh);
     this->ReleaseGL();
 }
+template void ArrayReleaseClasses<AbyssEngine::ShaderBaseStruct *>(Array<AbyssEngine::ShaderBaseStruct *> &);
+
 void Engine::AfterGLInit() {
     this->ResetLightParam();
     AbyssEngine::MeshCreate(this, 4, 2, 0x13, &this->quadMesh);

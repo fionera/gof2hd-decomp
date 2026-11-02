@@ -122,8 +122,6 @@ template void ArrayReleaseClasses<Array<ae::AEMath::Vector *> *>(Array<Array<ae:
 
 template void ArrayReleaseClasses<Array<ae::String *> *>(Array<Array<ae::String *> *> &);
 
-template void ArrayReleaseClasses<ae::ShaderBaseStruct *>(Array<ae::ShaderBaseStruct *> &);
-
 template void ArrayReleaseClasses<ae::String *>(Array<ae::String *> &);
 
 template void ArrayReleaseClasses<ae::KeyFrame *>(Array<ae::KeyFrame *> &);
