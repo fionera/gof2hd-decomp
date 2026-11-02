@@ -571,20 +571,16 @@ void HangarWindow::render() {
                             if (item == this->selectedItem) {
                                 if (this->hangarList->getCurrentTab() == 1 ||
                                     (this->hangarList->getCurrentTab() == 4 && item->isItem())) {
-                                    int right, left;
-                                    if (tab == 1) {
-                                        right = item->item->getStationAmount();
-                                        left = item->item->getAmount();
-                                    } else {
-                                        right = item->item->getAmount();
-                                        left = this->bluePrint->getCurrentAmount(item->item->getIndex());
-                                    }
+                                    int right = tab == 1 ? item->item->getStationAmount()
+                                                         : item->item->getAmount();
+                                    int left = tab == 1
+                                                   ? item->item->getAmount()
+                                                   : this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     if (left > 0) {
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
                                         (*this->buttons)[8]->setVisible(true);
-                                        int pad3 = 0; (void) pad3;
                                         (*this->buttons)[8]->draw();
                                     }
                                     if (right > 0) {
@@ -733,7 +729,6 @@ void HangarWindow::render() {
                         buttonOffset = 0;
                     } else if (item->isSlot()) {
                         name = *Globals::gameText->getText(174);
-                        int pad2 = 0; (void) pad2;
                         if (tab == 4 && i == items->size() - 1) {
                             (*this->buttons)[23]->setPosition(
                                 Globals::layout->buttonInsetX + this->hintOffsetX + listWidth / 2,
@@ -841,13 +836,10 @@ void HangarWindow::render() {
                                 if (item->isItem()) {
                                     Item *equipped =
                                         Globals::status->getShip()->getFirstEquipmentOfSort(item->item->getSort());
-                                    bool replaceable = false;
-                                    bool sameWeapon = false;
-                                    if (equipped != nullptr) {
-                                        replaceable = !item->item->canBeInstalledMultipleTimes();
-                                        sameWeapon = equipped->getType() == 3 &&
-                                                     equipped->getIndex() == item->item->getIndex();
-                                    }
+                                    bool replaceable =
+                                        equipped != nullptr ? !item->item->canBeInstalledMultipleTimes() : false;
+                                    bool sameWeapon = equipped != nullptr && equipped->getType() == 3 &&
+                                                      equipped->getIndex() == item->item->getIndex();
                                     if (item->inTabIndex > -1 ||
                                         ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
                                           replaceable) &&

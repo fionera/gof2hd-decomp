@@ -302,3 +302,43 @@ for so in sys.argv[1:]:
 
 Record lengths come from `exidx_table.record_lengths()`; `render`'s record is
 the distance from its `.ARM.extab` target to the next target.
+
+## 9. Landed reconstruction (w3603)
+
+The `getStationAmount`/`getAmount` landing-pad isolation is a **conditional-operator**
+artifact, not a scope/statement artifact. Clang 7 emits a distinct landing pad per
+`?:` arm even when the generated code is byte-identical to the `if`/`else` form
+(the two arms live in different `cond.true`/`cond.false` blocks at CodeGen time, so
+`getInvokeDestImpl` caches a separate landing pad on each). Verified with a
+standalone repro: `if (c) { a=f(); b=g(); } else {...}` gives one call-site row,
+`int a = c ? f() : g();` gives two rows with identical cleanup code.
+
+The same pattern explains `canBeInstalledMultipleTimes`' isolated 4-byte row: the
+original initializes `replaceable` with a ternary
+(`bool replaceable = equipped != nullptr ? !...canBeInstalledMultipleTimes() : false;`)
+rather than assigning it inside an `if`. The `sameWeapon` `&&` chain then lands in
+the following row.
+
+Landed source shape (`src/game/ui/HangarWindow.cpp`):
+
+* selected-item amount block: two `tab == 1 ? ... : ...` initializers;
+* tab-0 equip block: `replaceable` ternary + `sameWeapon` `&&` chain;
+* removed the `pad3` and `pad2` dead locals.
+
+Result: `render` 78.7% -> **79.2%**, size 9700 B (exact), `.text 0x1337c8`,
+`.ARM.extab 0x26290`, `.rodata 0x1c9e10`; gate byte 4496 / linked 4496
+(unchanged), lint CLEAN, drift 0.
+
+LSDA rows now match the original's structure at the two reconstructed sites:
+
+```
+orig (1406,4,9418) (1416,4,9588) | ours (1406,4,9418) (1414,4,9584)
+orig (2912,4,9224) (2918,32,9328) | ours (2910,4,9228) (2916,32,9332)
+```
+
+`render`'s record is still 928 B / 153 rows (original 948 / 156). The remaining
+2-3 rows are in the ship-branch `buttons[1]` block (original splits
+`(2508,150)` / `(2696,140)`; ours is one `(2500,362)` row) and in the early
+list-item rows. The other six `.ARM.extab` records still sum +12, so making
+`render` exact would overshoot the section; `.ARM.extab 0x26298` needs those
+functions fixed too.
