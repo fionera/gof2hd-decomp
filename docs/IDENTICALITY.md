@@ -188,7 +188,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 1. **28 non-linked functions.** 4496 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (46.8%), `LevelScript::process` (54.3%), `Status::missionCompleted` (71.1%),
-   `Radar::draw` (73.3%), `Level::createShip` (73.4%), `Generator::createMission` (73.6%),
+   `Radar::draw` (73.4%), `Level::createShip` (73.4%), `Generator::createMission` (73.6%),
    `MGame::OnTouchEnd` (77.2%), `HangarWindow::render` (79.4%) and `Globals::Globals` (80.5%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.

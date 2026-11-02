@@ -4871,3 +4871,6 @@ Wave-97 first results (both research-only, gate unchanged 4496/4496):
   `__builtin_assume` sites are load-bearing (`String::Compare` 4495, `TouchButton::draw`
   2973, `StarMap::draw` 4496 but 94.8 -> 94.7%). A 206-flag sweep found no flag that
   restores the assume-free codegen.
+
+Wave-97 function pass: `Radar::draw` 73.30 -> 73.35% (`w3683`) by hoisting the landmark
+crosshair top test to a named bool; 9908 B, gate 4496/4496, `.text` 0x1337c8.
