@@ -313,3 +313,188 @@ for p in [l.strip() for l in open('cmake-build-match/exidx_markers/link_order.rs
         print(os.path.basename(p), len(a), hex(min(a)), hex(max(a)))
 PY
 ```
+
+## 8. Follow-up (2026-11-02): per-TU source-order convergence, plain no-order 1669 -> 1955
+
+Status: landed in this pass (branch `wave87-w3696`, HEAD before the pass `26b0adc0`).
+The section-ordering-file build stays at **byte 4496 / linked 4496**, `.text` `0x1337c8`,
+lint `CLEAN ✓`, drift `0`. The plain no-order build rises from **1669 / 4496** (prefix 222)
+to **1955 / 4496** (prefix 560, 930 / 4524 exported functions at their original address).
+
+### 8.1 What was measured
+
+Every row is a controlled rebuild of this tree. `gate` is `check` with the ordering file;
+`plain` is `relink_noorder.py` (the exact gold line minus `--section-ordering-file`) followed
+by `verify.py` and `addr_match.py`. The first mismatch is the lowest-address exported function
+whose address differs from the original.
+
+| edit | gate byte/linked | plain byte | funcs at orig addr | prefix | first mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| start of pass (previous uncommitted edits) | 4496 / 4496 | 1701 | 568 / 4524 | 336 | `EaseInOut::Increase` `0x71840` vs `0x71870` |
+| `EaseInOut.cpp` definitions -> target order | 4496 / 4496 | **1712** | 586 | **346** | `AERandom::setSeed` `0x71a04` vs `0x71a18` |
+| `AERandom.cpp`: `setSeed` before `AERandom(long long)` | 4496 / 4496 | 1712 | 589 | **358** | `ImageFontCheckString` `0x72130` vs `0x72198` |
+| `ImageFont.cpp`: `CheckString`, `GetWidth`, `GetHeight`, `GetYOffset`, `GetWidth(4)` before the 8-arg `DrawString` | 4496 / 4496 | 1712 | 593 | **374** | `String::String(char const*, bool)` `0x72488` vs `0x72554` |
+| `String.cpp`: `String(char const*, bool)` before `Set(wchar_t const*)`; `StrLen` calls in `Set` replaced by inline loop/lambda | 4496 / 4496 | **1732** | 619 | **469** | `CurveCreate` `0x7415c` vs `0x741b2` |
+| `Curve.cpp`: `Create`, `GetValue`, `Release` | 4496 / 4496 | **1735** | 622 | **486** | `CheatHandler::AddCheatCode` `0x74538` vs `0x7453c` |
+| `CheatCode.cpp`: `AddCheatCode` before `SetCheatFunc` | 4496 / 4496 | **1739** | 627 | **508** | `Transform::SetAnimationRangeInTime` `0x74e90` vs `0x756d0` |
+| `Transform.cpp`: move `Update` definition after `PauseAnimationWithKeyFrame` | 4496 / 4496 | **1955** | **930** | **560** | `PaintCanvas::SetResourceList` `0x77f40` vs `0x78068` |
+
+The start-of-pass row already includes the three edits left uncommitted by the previous
+worker (`EaseInOutMatrix.cpp`, `Image.cpp`, `AEFile.cpp`). Those took the plain no-order
+build from 1669 / prefix 222 to 1701 / prefix 336. The combined pass is therefore
+**1669 -> 1955 byte-exact, prefix 222 -> 560, addresses 568 -> 930**.
+
+### 8.2 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order build + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3696/noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3696/verify_noorder \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3696/noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3696/noorder.so
+
+# reorder-all control: permute every object's own .text.* into the ordering-file order,
+# then relink with the same gold line minus --section-ordering-file
+mkdir -p /tmp/w3696/reordered4
+python3 - <<'PY'
+import os, subprocess
+src = 'cmake-build-match/exidx_markers/link_order.rsp'
+lines = [l.strip() for l in open(src) if l.strip()]
+out = []
+for i, p in enumerate(lines):
+    dst = f'/tmp/w3696/reordered4/{i:03d}_{os.path.basename(p)}'
+    subprocess.run(['python3',
+                    '_work/reconstructions/w3696/reorder_elf_sections.py',
+                    p, dst, 'cmake-build-match/section_order.txt'], check=True)
+    out.append(dst)
+open('/tmp/w3696/reordered4/link_order.rsp', 'w').write('\n'.join(out) + '\n')
+PY
+python3 _work/reconstructions/w3696/relink_noorder.py \
+  /tmp/w3696/reordered4/noorder.so /tmp/w3696/reordered4/link_order.rsp
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3696/verify_reordered4 \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3696/reordered4/noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3696/reordered4/noorder.so
+```
+
+Re-measured with the current source:
+
+```
+verify: byte 4496  linked 4496  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓
+drift: 0 field(s) across 0 class(es)
+
+reordered no-order: compared 4524  byte_exact 4496  linked_exact 4496
+                    4524/4524 same; prefix 4524; first None
+plain no-order:     compared 4524  byte_exact 1955  linked_exact 4496
+                    930/4524 same; prefix 560;
+                    first (0x77f40, PaintCanvas::SetResourceList, 0x78068)
+```
+
+### 8.3 The mechanism: clang emits in first-textual-reference order
+
+A scratch experiment with the NDK r18b clang (`-mthumb -Oz -ffunction-sections`) shows the
+rule that every reorder above uses:
+
+```cpp
+int c(int); int e(int);
+int a() { return c(1); }   // a is defined first
+int b() { return 2; }
+int c(int x) { return e(x); }
+int d() { return 3; }
+int e(int x) { return x; }
+```
+
+emits `.text.a, .text.c, .text.b, .text.e, .text.d`. Functions are emitted in order of their
+**first textual reference** (a definition counts as a reference). A function pulled forward
+by a call is emitted at the call site, but its *body* is scanned at its own definition, so
+its callees are first-referenced there. This is why:
+
+* `EaseInOut::UpdateCurrentValue` is emitted second: `EaseInOut()` (first definition) calls
+  it.
+* `Transform::InternUpdate` was emitted immediately after `Transform::Update` while `Update`
+  was defined before the range setters. Moving the `Update` definition after
+  `PauseAnimationWithKeyFrame` moves the scan point of `Update`'s body past the setters;
+  `InternUpdate` then lands after `PauseAnimationWithKeyFrame`, exactly as in the original.
+  This single move lifted the plain no-order byte count 1739 -> 1955.
+* `ImageFontGetWidth/GetHeight/GetYOffset` were pulled before `ImageFontCheckString` because
+  the 8-arg `DrawString` (defined before them) calls them. Moving their definitions before
+  the 8-arg `DrawString` makes the first reference their definitions, so they stay in
+  original order. The `ImageFontGetYOffset(font)` call in `DrawString` was kept: replacing it
+  with `font->yOffset` changed the commutative `addge` operand order and cost 1 byte_exact.
+
+### 8.4 String.cpp: removing a reference without changing codegen
+
+`String::Set(char const*)` in the original contains the inlined `StrLen` loop
+(`ldrb; cmp; bne; mvns; adds`). Our source called `StrLen(s)`, which inlines to the same
+bytes but makes `StrLen` a first-reference of `Set`; clang then emits `StrLen` at position 6
+instead of its definition position 26. A hand-written loop in `Set` also removes the
+reference but lowers to `subs; subs.w` (184 bytes instead of the original 176).
+
+The landed form uses a local lambda with the exact `StrLen` body:
+
+```cpp
+int len = [](const char *str) {
+    const char *p = str;
+    while (*p++ != '\0') {
+    }
+    return (int) (p - str) - 1;
+}(s);
+```
+
+It inlines to the original `mvns; adds` sequence (176 bytes, byte-exact) and creates no
+TU-level reference to `StrLen`, so `StrLen` stays at its definition position. The
+`Set(wchar_t const*)` overload needs no lambda: its manual `while (*p++ != 0)` loop already
+lowers to the original 172-byte code.
+
+### 8.5 Remaining frontier
+
+The next plain no-order mismatch is `PaintCanvas::SetResourceList` (`0x77f40` original,
+`0x78068` ours, +0x128). `PaintCanvas::PaintCanvas`, `~PaintCanvas` and
+`ReleaseAllResources` are already at their original addresses; the 0x128 is extra inline
+copies emitted between `ReleaseAllResources` and `SetResourceList`. The `PaintCanvas.cpp`
+object is a 230-section TU, so this is the next large source-order/copy-placement target.
+The object-order diff for `PaintCanvas.cpp` is noisy at the front because shared weak/local
+section names (`ArrayAdd<Mesh*>`, `__clang_call_terminate`, `AEMath::Matrix::Matrix`) are
+placed once globally by `gen_section_order.py`; use the plain no-order address match, not the
+reordered object order, to judge progress there.
+
+### 8.6 Proven vs hypothesis
+
+**Proven by measurement:**
+
+* The reordered no-order build is **4524/4524 address-exact** and **byte 4496 / linked 4496**
+  with the current source (re-measured in §8.2).
+* The plain no-order build is **1955 / 4496**, 930/4524 addresses, prefix 560.
+* Every source reorder in §8.1 is gate-neutral: byte 4496 / linked 4496, `.text` `0x1337c8`,
+  lint `CLEAN ✓`, drift 0. No baseline update was made.
+* clang emits functions in first-textual-reference order, and a pulled-forward function's
+  body is scanned at its definition (scratch experiment in §8.3).
+* `Transform::Update`'s definition position controls where `InternUpdate` is emitted; moving
+  it after the range setters is the cause of the 1739 -> 1955 jump.
+* The local-lambda `StrLen` form reproduces the original 176-byte `Set(char const*)` code
+  without a TU reference to `StrLen`.
+
+**Hypothesis (not proven here):**
+
+* Converging every remaining TU's source order (and the weak-copy TU membership) will make
+  the plain no-order build 4524/4524 and allow the ordering file to be dropped.
+* `PaintCanvas.cpp` is the next blocker; the 0x128 gap is inline-copy placement, not a
+  missing function.

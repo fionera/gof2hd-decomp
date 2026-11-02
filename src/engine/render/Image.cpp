@@ -428,9 +428,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    int GenerateCompressedTexture(Image * /*image*/) {
-        return 1;
-    }
 
     int TextureCreateFromFileIntern(Engine *engine, const char *path, ImageCallback cb, void *user, // lint: void_ptr (exported TextureCreateFromFileIntern signature)
                                     unsigned int *outIds, float scale, AELoadedTexture *outTex,
@@ -685,6 +682,10 @@ namespace AbyssEngine {
         }
 
         ImageRelease(&image);
+        return 1;
+    }
+
+    int GenerateCompressedTexture(Image * /*image*/) {
         return 1;
     }
 }

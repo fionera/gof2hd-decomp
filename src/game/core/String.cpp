@@ -44,6 +44,11 @@ String::String(const uint16_t *wstr, bool reverse) : data(nullptr) {
     if (reverse) Reverse();
 }
 
+String::String(const char *cstr, bool reverse) : data(nullptr) {
+    Set(cstr);
+    if (reverse) Reverse();
+}
+
 void String::Set(const unsigned short *s) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
@@ -51,7 +56,10 @@ void String::Set(const unsigned short *s) {
         Set("");
         return;
     }
-    int len = StrLen(s);
+    const unsigned short *p = s;
+    while (*p++ != 0) {
+    }
+    int len = (int) (p - s) - 1;
     this->length = len;
     if (len == 0) {
         this->data = new unsigned short[1];
@@ -70,11 +78,6 @@ void String::Set(const unsigned short *s) {
     }
 }
 
-String::String(const char *cstr, bool reverse) : data(nullptr) {
-    Set(cstr);
-    if (reverse) Reverse();
-}
-
 void String::Set(const char *s) {
     if (this->data) delete[] this->data;
     this->data = nullptr;
@@ -82,7 +85,12 @@ void String::Set(const char *s) {
         Set("");
         return;
     }
-    int len = StrLen(s);
+    int len = [](const char *str) {
+        const char *p = str;
+        while (*p++ != '\0') {
+        }
+        return (int) (p - str) - 1;
+    }(s);
     this->length = len;
     if (len == 0) {
         this->data = new unsigned short[1];

@@ -55,12 +55,6 @@ namespace AbyssEngine {
         }
     }
 
-    void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx) { // lint: void_ptr (exported method signature)
-        // lint: void_ptr (exported method signature)
-        func = f;
-        context = ctx;
-    }
-
     void CheatHandler::AddCheatCode(const String &code, int value) {
         CheatCode *c = new CheatCode();
         c->value = value;
@@ -103,6 +97,12 @@ namespace AbyssEngine {
                     break;
             }
         }
+    }
+
+    void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx) { // lint: void_ptr (exported method signature)
+        // lint: void_ptr (exported method signature)
+        func = f;
+        context = ctx;
     }
 
     void CheatHandler::Update(uint16_t key) {

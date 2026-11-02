@@ -8,6 +8,15 @@ namespace AbyssEngine {
         UpdateCurrentValue();
     }
 
+    void EaseInOut::UpdateCurrentValue() {
+        if ((double) m_t == 2.5 * PI) {
+            m_current = m_min + m_range;
+        } else {
+            double s = (double) AEMath::Sinf(m_t) * 0.5 + 0.5;
+            m_current = (float) ((double) m_min + s * (double) m_range);
+        }
+    }
+
     EaseInOut::EaseInOut(float minValue, float maxValue) {
         SetRange(minValue, maxValue);
     }
@@ -17,20 +26,6 @@ namespace AbyssEngine {
         m_min = minValue;
         m_range = maxValue - minValue;
         UpdateCurrentValue();
-    }
-
-    void EaseInOut::SetToMinValue() {
-        m_t = 1.5f * PI;
-        UpdateCurrentValue();
-    }
-
-    void EaseInOut::SetToMaxValue() {
-        m_t = 2.5f * PI;
-        UpdateCurrentValue();
-    }
-
-    float EaseInOut::GetMaxValue() {
-        return m_min + m_range;
     }
 
     void EaseInOut::Increase(float dt) {
@@ -68,20 +63,25 @@ namespace AbyssEngine {
         UpdateCurrentValue();
     }
 
-    void EaseInOut::UpdateCurrentValue() {
-        if ((double) m_t == 2.5 * PI) {
-            m_current = m_min + m_range;
-        } else {
-            double s = (double) AEMath::Sinf(m_t) * 0.5 + 0.5;
-            m_current = (float) ((double) m_min + s * (double) m_range);
-        }
-    }
-
     float EaseInOut::GetValue() {
         return m_current;
     }
 
+    void EaseInOut::SetToMaxValue() {
+        m_t = 2.5f * PI;
+        UpdateCurrentValue();
+    }
+
+    void EaseInOut::SetToMinValue() {
+        m_t = 1.5f * PI;
+        UpdateCurrentValue();
+    }
+
     float EaseInOut::GetMinValue() {
         return m_min;
+    }
+
+    float EaseInOut::GetMaxValue() {
+        return m_min + m_range;
     }
 }

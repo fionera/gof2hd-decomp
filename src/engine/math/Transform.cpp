@@ -154,55 +154,6 @@ namespace AbyssEngine {
         Update(0, false);
     }
 
-    void Transform::Update(longlong time, bool updateBounds) {
-        if (this->animating && this->animationLength >= 1) {
-            longlong current = this->currentTime +
-                               (longlong) ((float) time * this->animationSpeed);
-            this->currentTime = current;
-
-            if (this->rangeEnd < current) {
-                if (this->flags == 2) {
-                    if (this->rangeEnd != 0) {
-                        current = this->rangeStart + current % this->rangeEnd;
-                    } else {
-                        current = this->rangeStart;
-                    }
-                } else {
-                    this->animating = false;
-                    current = this->rangeEnd;
-                }
-                this->currentTime = current;
-            }
-
-            InternUpdate(current, updateBounds);
-        }
-
-        if (updateBounds) {
-            this->boundingSphere = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
-
-            for (uint i = 0; i < this->meshes.size(); ++i) {
-                Mesh *mesh = this->meshes[i];
-                if (mesh != 0 && mesh->animation != 0) {
-                    mesh->animation->Update(time, false);
-                    AEMath::BSphere sphere = this->meshes[i]->bounds;
-                    sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
-                                                                  sphere.center);
-                    this->boundingSphere.Merge(sphere);
-                } else {
-                    AEMath::BSphere sphere = mesh->bounds;
-                    this->boundingSphere.Merge(sphere);
-                }
-            }
-
-            for (uint i = 0; i < this->children.size(); ++i) {
-                this->children[i]->Update(time, false);
-                AEMath::BSphere sphere = this->children[i]->boundingSphere;
-                sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
-                this->boundingSphere.Merge(sphere);
-            }
-        }
-    }
-
     void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
         longlong length = this->animationLength;
         if (length == 0) {
@@ -264,6 +215,55 @@ namespace AbyssEngine {
             InternUpdate(time, false);
         }
         this->animating = false;
+    }
+
+    void Transform::Update(longlong time, bool updateBounds) {
+        if (this->animating && this->animationLength >= 1) {
+            longlong current = this->currentTime +
+                               (longlong) ((float) time * this->animationSpeed);
+            this->currentTime = current;
+
+            if (this->rangeEnd < current) {
+                if (this->flags == 2) {
+                    if (this->rangeEnd != 0) {
+                        current = this->rangeStart + current % this->rangeEnd;
+                    } else {
+                        current = this->rangeStart;
+                    }
+                } else {
+                    this->animating = false;
+                    current = this->rangeEnd;
+                }
+                this->currentTime = current;
+            }
+
+            InternUpdate(current, updateBounds);
+        }
+
+        if (updateBounds) {
+            this->boundingSphere = AEMath::BSphere{{0.0f, 0.0f, 0.0f}, 0.0f, 1.0f};
+
+            for (uint i = 0; i < this->meshes.size(); ++i) {
+                Mesh *mesh = this->meshes[i];
+                if (mesh != 0 && mesh->animation != 0) {
+                    mesh->animation->Update(time, false);
+                    AEMath::BSphere sphere = this->meshes[i]->bounds;
+                    sphere.center = AEMath::MatrixTransformVector(this->meshes[i]->animation->rotationMatrix,
+                                                                  sphere.center);
+                    this->boundingSphere.Merge(sphere);
+                } else {
+                    AEMath::BSphere sphere = mesh->bounds;
+                    this->boundingSphere.Merge(sphere);
+                }
+            }
+
+            for (uint i = 0; i < this->children.size(); ++i) {
+                this->children[i]->Update(time, false);
+                AEMath::BSphere sphere = this->children[i]->boundingSphere;
+                sphere.center = AEMath::MatrixTransformVector(this->children[i]->rotationMatrix, sphere.center);
+                this->boundingSphere.Merge(sphere);
+            }
+        }
     }
 
     void Transform::InternUpdate(longlong time, bool updateBounds) {

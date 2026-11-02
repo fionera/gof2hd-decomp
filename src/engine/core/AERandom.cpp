@@ -12,15 +12,15 @@ namespace AbyssEngine {
         seed = (time(0) ^ kMultiplier) & kMask;
     }
 
+    void AERandom::setSeed(long long seed) {
+        this->seed = (seed ^ kMultiplier) & kMask;
+    }
+
     AERandom::AERandom(long long seed) {
         setSeed(seed);
     }
 
     AERandom::~AERandom() {
-    }
-
-    void AERandom::setSeed(long long seed) {
-        this->seed = (seed ^ kMultiplier) & kMask;
     }
 
     void AERandom::reset() {

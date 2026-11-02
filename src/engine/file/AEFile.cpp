@@ -5,7 +5,6 @@
 #include "engine/file/AENormalFile.h"
 #include "engine/core/ArrayReleaseClasses.h"
 
-template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
 
 Array<AELowLevelFile *> *AEFile::file;
 FileInterface *AEFile::fileInterface;
@@ -132,6 +131,8 @@ void AEFile::Release() {
         AEFile::pakFileEntryList = nullptr;
     }
 }
+template void ArrayReleaseClasses<AELowLevelFile *>(Array<AELowLevelFile *> &);
+
 void AEFile::sortPakFileEntryList() {
     uint32_t count = AEFile::pakFileEntryList->size();
     if (count == 0)

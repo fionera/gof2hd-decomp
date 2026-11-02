@@ -8,6 +8,16 @@ namespace AbyssEngine {
         m_duration = 0.0f;
     }
 
+    void EaseInOutMatrix::SetDuration(int duration) {
+        m_duration = (float) duration;
+    }
+
+    EaseInOutMatrix::EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration)
+        : m_minPos(), m_posDelta() {
+        SetRange(mn, mx);
+        m_duration = (float) duration;
+    }
+
     void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx) {
         m_min = mn;
         m_max = mx;
@@ -24,27 +34,6 @@ namespace AbyssEngine {
 
         m_t = 0.75f;
         UpdateCurrentValue();
-    }
-
-    void EaseInOutMatrix::SetDuration(int duration) {
-        m_duration = (float) duration;
-    }
-
-    EaseInOutMatrix::EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration)
-        : m_minPos(), m_posDelta() {
-        SetRange(mn, mx);
-        m_duration = (float) duration;
-    }
-
-    void EaseInOutMatrix::UpdateCurrentValue() {
-        if (m_t == 1.25f) {
-            m_current = m_max;
-            return;
-        }
-
-        float w = (float) (AEMath::Sinf(m_t * 6.2831855f) * 0.5 + 0.5);
-        (m_q1 * w + m_q0).Convert(m_current);
-        AEMath::MatrixSetTranslation(m_current, m_posDelta * w + m_minPos);
     }
 
     void EaseInOutMatrix::Increase(float dt) {
@@ -98,5 +87,16 @@ namespace AbyssEngine {
 
     AEMath::Matrix EaseInOutMatrix::GetMaxValue() {
         return this->m_max;
+    }
+
+    void EaseInOutMatrix::UpdateCurrentValue() {
+        if (m_t == 1.25f) {
+            m_current = m_max;
+            return;
+        }
+
+        float w = (float) (AEMath::Sinf(m_t * 6.2831855f) * 0.5 + 0.5);
+        (m_q1 * w + m_q0).Convert(m_current);
+        AEMath::MatrixSetTranslation(m_current, m_posDelta * w + m_minPos);
     }
 }

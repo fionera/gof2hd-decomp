@@ -4940,7 +4940,21 @@ section-ordering file is no longer needed for function placement once each objec
 its next mismatch is the `EaseInOutMatrix` inline-copy interleave. The remaining work is to
 reorder the source definitions of the other TUs to the original address order (mechanical,
 using `_work/reconstructions/w3696/`). The ordering file stays until that is done.
-
 Wave-97 function pass: `MGame::OnTouchEnd` 77.239 -> 78.357% (`w3677`) by counting refined ore
 downward and guarding the report on the positive count (`int count = -amount; if (count > 0)`),
 which emits the original's `cmp.w r9,#-1; bgt.n` shape; 8080 B, gate 4496/4496.
+
+`w3696` source-order follow-up (landed): reordered `EaseInOutMatrix.cpp`, `Image.cpp`,
+`AEFile.cpp`, `EaseInOut.cpp`, `AERandom.cpp`, `ImageFont.cpp`, `String.cpp`, `Curve.cpp`,
+`CheatCode.cpp` and `Transform.cpp` to the original per-TU emission order. The key mechanism
+is clang's first-textual-reference emission order: a function pulled forward by a call has
+its body scanned at its own definition, so moving `Transform::Update` after
+`PauseAnimationWithKeyFrame` moved `InternUpdate` after the setters and lifted the plain
+no-order build 1739 -> 1955. `String::Set(char const*)` uses a local lambda with the
+`StrLen` body to keep the original 176-byte code without a TU reference to `StrLen`.
+Combined with the previous worker's uncommitted edits, the **plain no-order build is now
+1955/4496 byte-exact (930/4524 addresses, prefix 560)**, up from 1669/4496 (prefix 222).
+The reordered no-order control remains **4524/4524 address-exact, byte 4496**. All edits are
+gate-neutral (byte 4496 / linked 4496, `.text` 0x1337c8, lint clean, drift 0). Next frontier:
+`PaintCanvas::SetResourceList` (`0x77f40` original vs `0x78068` ours, +0x128 of inline
+copies between `ReleaseAllResources` and `SetResourceList`).

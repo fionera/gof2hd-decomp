@@ -31,7 +31,77 @@ namespace AbyssEngine {
         }
     }
 }
+namespace AbyssEngine {
+    void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
+        for (unsigned short i = 0; i < count; ++i) {
+        }
+    }
+}
+namespace AbyssEngine {
+    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count) {
+        if (font == 0 || str == 0)
+            return 0;
 
+        int total = 0;
+        for (unsigned short i = 0; i < count; ++i) {
+            for (unsigned short g = 0; g < font->glyphCount; ++g) {
+                if (font->codes[g] == str[i]) {
+                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int adv = font->spacing + w;
+                    // A narrow (11 px) space glyph is drawn two pixels tighter.
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
+                    break;
+                }
+            }
+        }
+        return total;
+    }
+}
+namespace AbyssEngine {
+    int ImageFontGetHeight(ImageFont *font) {
+        if (font != 0) {
+            Mesh **p = font->glyphMeshes;
+            Mesh *q = p[0];
+            float *r = (float *) q->positions;
+            int v = (int) r[7];
+            if (v == 0x18)
+                v -= 5; // ASM: original subtracts 5 (subeq) rather than moving 19 (moveq); v==0x18 here
+            return v;
+        }
+        return 0;
+    }
+}
+namespace AbyssEngine {
+    short ImageFontGetYOffset(ImageFont *font) {
+        if (font == 0)
+            return 0;
+        return font->yOffset;
+    }
+}
+namespace AbyssEngine {
+    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start,
+                          unsigned int len) {
+        if (font == 0 || str == 0)
+            return 0;
+
+        int total = 0;
+        for (unsigned short i = start; i < start + len; ++i) {
+            for (unsigned short g = 0; g < font->glyphCount; ++g) {
+                if (font->codes[g] == str[i]) {
+                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int adv = font->spacing + w;
+                    if (w == 11 && font->codes[g] == ' ')
+                        adv -= 2;
+                    total += adv;
+                    break;
+                }
+            }
+        }
+        return total;
+    }
+}
 namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *text, unsigned int len);
 
@@ -197,104 +267,24 @@ namespace AbyssEngine {
         }
     }
 }
-
-namespace AbyssEngine {
-    void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
-        for (unsigned short i = 0; i < count; ++i) {
-        }
-    }
-}
-
-namespace AbyssEngine {
-    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count) {
-        if (font == 0 || str == 0)
-            return 0;
-
-        int total = 0;
-        for (unsigned short i = 0; i < count; ++i) {
-            for (unsigned short g = 0; g < font->glyphCount; ++g) {
-                if (font->codes[g] == str[i]) {
-                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
-                    int adv = font->spacing + w;
-                    // A narrow (11 px) space glyph is drawn two pixels tighter.
-                    if (w == 11 && font->codes[g] == ' ')
-                        adv -= 2;
-                    total += adv;
-                    break;
-                }
-            }
-        }
-        return total;
-    }
-}
-
-namespace AbyssEngine {
-    int ImageFontGetHeight(ImageFont *font) {
-        if (font != 0) {
-            Mesh **p = font->glyphMeshes;
-            Mesh *q = p[0];
-            float *r = (float *) q->positions;
-            int v = (int) r[7];
-            if (v == 0x18)
-                v -= 5; // ASM: original subtracts 5 (subeq) rather than moving 19 (moveq); v==0x18 here
-            return v;
-        }
-        return 0;
-    }
-}
-
-namespace AbyssEngine {
-    short ImageFontGetYOffset(ImageFont *font) {
-        if (font == 0)
-            return 0;
-        return font->yOffset;
-    }
-}
-
-namespace AbyssEngine {
-    int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start,
-                          unsigned int len) {
-        if (font == 0 || str == 0)
-            return 0;
-
-        int total = 0;
-        for (unsigned short i = start; i < start + len; ++i) {
-            for (unsigned short g = 0; g < font->glyphCount; ++g) {
-                if (font->codes[g] == str[i]) {
-                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
-                    int adv = font->spacing + w;
-                    if (w == 11 && font->codes[g] == ' ')
-                        adv -= 2;
-                    total += adv;
-                    break;
-                }
-            }
-        }
-        return total;
-    }
-}
-
 namespace AbyssEngine {
     void ImageFontSetSpacing(ImageFont *font, short spacing) {
         if (font != 0)
             font->spacing = spacing;
     }
 }
-
 namespace AbyssEngine {
     short ImageFontGetSpacing(ImageFont *font) {
         short v = (font == 0) ? (short) 0 : font->spacing;
         return (int) v;
     }
 }
-
 namespace AbyssEngine {
     void ImageFontSetYOffset(ImageFont *font, short yOffset) {
         if (font != 0)
             font->yOffset = yOffset;
     }
 }
-
 namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
 

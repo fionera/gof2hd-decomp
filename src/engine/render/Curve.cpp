@@ -25,36 +25,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    void CurveRelease(Curve **slot) {
-        if (*slot == 0)
-            return;
-
-        for (unsigned short i = 0; i < (*slot)->count; i++) {
-            CurveKeyframe *entry = (*slot)->entries[i];
-            switch (entry->tag) {
-                case 1:
-                    operator delete(entry);
-                    break;
-                case 2:
-                    operator delete(entry);
-                    break;
-                case 3:
-                    operator delete(entry);
-                    break;
-            }
-        }
-
-        if ((*slot)->entries != 0)
-            delete[] (*slot)->entries;
-        (*slot)->entries = 0;
-
-        if (*slot != 0)
-            operator delete(*slot);
-        *slot = 0;
-    }
-}
-
-namespace AbyssEngine {
     int CurveCreate(void **src, unsigned short count, Curve **out) { // lint: void_ptr (exported CurveCreate signature; void** baked into mangled name)
         // lint: void_ptr (exported CurveCreate signature; void** baked into mangled name)
         Curve *curve = (Curve *) operator new(8);
@@ -108,5 +78,34 @@ namespace AbyssEngine {
             }
         }
         return 0;
+    }
+}
+namespace AbyssEngine {
+    void CurveRelease(Curve **slot) {
+        if (*slot == 0)
+            return;
+
+        for (unsigned short i = 0; i < (*slot)->count; i++) {
+            CurveKeyframe *entry = (*slot)->entries[i];
+            switch (entry->tag) {
+                case 1:
+                    operator delete(entry);
+                    break;
+                case 2:
+                    operator delete(entry);
+                    break;
+                case 3:
+                    operator delete(entry);
+                    break;
+            }
+        }
+
+        if ((*slot)->entries != 0)
+            delete[] (*slot)->entries;
+        (*slot)->entries = 0;
+
+        if (*slot != 0)
+            operator delete(*slot);
+        *slot = 0;
     }
 }
