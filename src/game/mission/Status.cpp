@@ -1448,7 +1448,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 166:
-                if (atStation && station->getIndex() == m->getTargetStation()) {
+                if (__builtin_expect(atStation && station->getIndex() == m->getTargetStation(), 1)) { // lint: arm_builtin
                     int index = m->getProductionGoodIndex();
                     Ship *s = ship;
                     int amount = m->getProductionGoodAmount();
@@ -1486,21 +1486,21 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 156:
-                if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
+                if (__builtin_expect(!atStation && station->getIndex() == m->getTargetStation() && extra > 10000, 1)) { // lint: arm_builtin
                     return m;
                 }
                 break;
             case 157: {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
-                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue()) {
+                    if (__builtin_expect((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue(), 1)) { // lint: arm_builtin
                         return m;
                     }
                 }
                 break;
             }
             case 160:
-                if (atStation) {
+                if (__builtin_expect(atStation, 1)) { // lint: arm_builtin
                     return m;
                 }
                 if (station->getIndex() != m->getTargetStation() && extra > 10000) {
@@ -1510,7 +1510,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             case 163: {
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
-                    if ((*field_90)[j] >= 0) {
+                    if (__builtin_expect((*field_90)[j] >= 0, 1)) { // lint: arm_builtin
                         none = false;
                         break;
                     }
@@ -1521,7 +1521,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             }
             case 164:
-                if (longMission) {
+                if (__builtin_expect(longMission, 1)) { // lint: arm_builtin
                     return m;
                 }
                 break;
