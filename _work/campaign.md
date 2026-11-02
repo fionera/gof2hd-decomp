@@ -5092,3 +5092,6 @@ Wave-97 section-order pass: `ArrayAdd<RadioMessage*>` placement (`w3745`) by reo
 `Level::updateAlienAttackers`/radio-message definitions; plain no-order 2989 -> 2992 byte-exact
 (prefix 2342 -> 2377). Normal gate 4497/4497. Note:
 `_work/reconstructions/arrayadd_radiomessage_placement_w3745.md`.
+Wave-97 section-order pass: `StarMap` object order (`w3745`) by moving `~StarMap` before `init`;
+plain no-order 2992 -> 2995 byte-exact (prefix 2377 -> 2408). Normal gate 4497/4497.
+Note: `_work/reconstructions/starmap_object_order_w3745.md`.
