@@ -485,7 +485,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->slotImageWidth = Globals::Canvas->GetImage2DWidth(this->heapBufA[0]);
     this->slotX = Globals::layout->buttonInsetX + Globals::layout->field_0x2c_rowHeight;
     this->slotY = Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top;
-    this->slotBorderWidth = !Globals::iPadAssetsWithLowerRes && Globals::iPad
+    this->slotBorderWidth = Globals::iPad && !Globals::iPadAssetsWithLowerRes
                                 ? 0
                                 : Globals::Canvas->GetImage2DWidth(this->scrollImage_0x13c);
     this->slotMarkerWidth = Globals::Canvas->GetImage2DWidth(this->heapBufB[0]);
