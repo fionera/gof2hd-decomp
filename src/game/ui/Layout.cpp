@@ -69,19 +69,7 @@ Layout::Layout() {
         this->field_0x9c = 100.0f;
     else
         this->field_0x9c = 50.0f;
-    if (Globals::iPadHD) {
-        this->field_0xac = 61 * 1.40625f;
-    } else if (Globals::iPadLarge) {
-        this->field_0xac = 122;
-    } else if (Globals::n9) {
-        this->field_0xac = 61;
-    } else if (Globals::iPad) {
-        this->field_0xac = 61;
-    } else if (Globals::retinaDisplay) {
-        this->field_0xac = 82;
-    } else {
-        this->field_0xac = 41;
-    }
+    this->field_0xac = Globals::iPadHD ? 61 * 1.40625f : (Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41))));
     this->field_0x98 = Globals::iPadHD ? 420 * 1.40625f : (Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420));
     this->field_0xa8 = Globals::iPadHD ? 61 * 1.40625f : (Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41))));
     this->field_0xb0 = Globals::iPadHD ? 3 * 1.40625f : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3));
@@ -286,7 +274,13 @@ Layout::Layout() {
     this->scrollBarHandle = Globals::iPadHD ? 0.0f : (Globals::n9 ? 1 : Globals::retinaDisplay);
     this->rewardBoxWidth = Globals::iPadHD ? 100 * 1.40625f : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
     this->rewardBoxX = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
-    this->rewardBoxHeight = Globals::n9 ? 352 : (Globals::retinaDisplay ? 392 : 196);
+    if (Globals::n9) {
+        this->rewardBoxHeight = 352;
+    } else if (Globals::retinaDisplay) {
+        this->rewardBoxHeight = 392;
+    } else {
+        this->rewardBoxHeight = 196;
+    }
     this->field_0x94 = Globals::iPadHD ? 14 : (Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10));
     this->field_0x1f4 = Globals::iPadHD ? 16 * 1.40625f : (Globals::retinaDisplay ? (Globals::iPad ? 32 : 4) : (Globals::iPad ? 16 : 2));
     this->rewardBoxY = Globals::iPadHD ? 55 * 1.40625f : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
