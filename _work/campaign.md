@@ -4888,3 +4888,11 @@ case-125 move; it now lands cleanly.
   Conclusion: the remaining gap is source/TU/PLT/literal-pool/data order, not a missing
   global compile flag. Also corrected the stale `.ARM.extab` differing-byte count
   (121,218 -> 121,226).
+
+Wave-97 function pass: `HangarWindow::render` 79.4 -> 79.5% (`w3673`) via right-amount
+truthiness in the selected-item button guard; 9700 B, gate 4496/4496, `.text` 0x1337c8.
+Wave-97 flag closeout: `w3695` measured 59 further previously-untested compile flags
+(FP-contract, jump tables, movt/ldrd, global-merge, math, unroll, stack, alignment, CPU/FPU
+variants): no variant beats 4496/4496/4524; 38 are gate-neutral, 5 fail to build/link. The
+original codegen is consistent with clang 7.0.2's default `-Oz` pipeline; the remaining 28
+functions are source/TU shape, not a missing compile flag.
