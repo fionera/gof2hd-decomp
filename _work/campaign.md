@@ -5095,3 +5095,6 @@ Wave-97 section-order pass: `ArrayAdd<RadioMessage*>` placement (`w3745`) by reo
 Wave-97 section-order pass: `StarMap` object order (`w3745`) by moving `~StarMap` before `init`;
 plain no-order 2992 -> 2995 byte-exact (prefix 2377 -> 2408). Normal gate 4497/4497.
 Note: `_work/reconstructions/starmap_object_order_w3745.md`.
+Wave-97 section-order pass: `RecordHandler::readRecord` placement (`w3745`); plain no-order
+2995 -> 3000 byte-exact (prefix 2408 -> 2414). Normal gate 4497/4497. Note:
+`_work/reconstructions/recordhandler_readrecord_placement_w3745.md`.
