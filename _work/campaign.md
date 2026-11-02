@@ -4740,3 +4740,8 @@ Wave-95/94 confirmed plateaus (worktrees removed, no commit):
 - `MGame::OnTouchEnd` (`w3544`): campaign-chain compare order is 15,22,43,42,65,81,74,95,96,100,
   110,120,126,127,134,144,155,161,162 with 127 a separate `else if` after 126 jumping to the
   shared 96 body; `hudTouchFlags` bit-chain order matches; app-module values match as a multiset.
+
+Wave-95 function passes: `Layout::Layout` 46.62 -> 46.77% (`w3501`, branch/ternary shapes;
+gate 4496 after rebase); `Level::createShip` jitter call order fixed to X,Y,Z and `x` signed
+(`w3542`, 73.6 -> 73.4% fuzzy but faithful); `Hud::drawChallengeModeScore` 89.1 -> 92.7%
+(`w3552`, digit x local at declaration).
