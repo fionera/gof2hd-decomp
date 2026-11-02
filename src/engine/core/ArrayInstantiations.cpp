@@ -54,8 +54,6 @@ template void ArrayReleaseClasses<ParticleSystemSprite*>(Array<ParticleSystemSpr
 
 template void ArrayReleaseClasses<Ship*>(Array<Ship*> &);
 
-template void ArrayReleaseClasses<TouchButton*>(Array<TouchButton*> &);
-
 template void ArrayReleaseClasses<TouchSlider*>(Array<TouchSlider*> &);
 
 template void ArrayReleaseClasses<Waypoint*>(Array<Waypoint*> &);

@@ -2,6 +2,7 @@
 #include "platform/android/GOF2HD2012.h"
 #include <cstddef>
 #include "game/core/Globals.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/core/AERandom.h"
 #include "game/core/RadioMessage.h"
 #include "game/world/Galaxy.h"
