@@ -4,6 +4,7 @@
 #include "game/core/RadioMessage.h"
 #include "game/weapons/AbstractGun.h"
 #include "engine/core/Array.h"
+#include "engine/core/ArrayReleaseClasses.h"
 
 Route::Route(int *coords, int count) {
     this->currentIndex = 0;

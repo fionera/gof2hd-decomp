@@ -54,8 +54,6 @@ template void ArrayReleaseClasses<Ship*>(Array<Ship*> &);
 
 template void ArrayReleaseClasses<TouchSlider*>(Array<TouchSlider*> &);
 
-template void ArrayReleaseClasses<Waypoint*>(Array<Waypoint*> &);
-
 
 template void ArrayReleaseArrays<signed char *>(Array<signed char *> &);
 
