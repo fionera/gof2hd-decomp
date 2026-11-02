@@ -151,7 +151,7 @@ The original build is now pinned by evidence, not by A/B alone:
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Current differing bytes (after the wave-95 and w3616 relocation-order passes).** `.text`
-  119,607; `.ARM.exidx` 2,735; `.ARM.extab` 119,149 (size -8); `.dynsym` 62; `.dynstr` 345;
+  119,547; `.ARM.exidx` 2,735; `.ARM.extab` 119,196 (size -8); `.dynsym` 62; `.dynstr` 345;
   `.hash` 42; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 15. `.rodata`, `.data`,
   `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section table matches the
   original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn` byte-identical and
@@ -204,7 +204,7 @@ The original build is now pinned by evidence, not by A/B alone:
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
    `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now
-   exact; the remaining `.dynsym` order delta (5,455/5,577 same index) is gold's hash-table
+   exact; the remaining `.dynsym` order delta (5,549/5,577 same index) is gold's hash-table
    iteration order over the symbol-insertion sequence, not a tunable link knob. The GNU
    build-id is a content hash that converges last.
 
