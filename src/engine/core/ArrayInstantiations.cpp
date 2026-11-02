@@ -81,8 +81,6 @@ template void ArraySetLength<Array<ImagePart *> *>(unsigned int, Array<Array<Ima
 
 template void ArrayReleaseClasses<Array<ListItem *> *>(Array<Array<ListItem *> *> &);
 
-template void ArrayReleaseClasses<Array<ImagePart *> *>(Array<Array<ImagePart *> *> &);
-
 template void ArrayAdd<TouchButton *>(TouchButton *, Array<TouchButton *> &);
 
 template void ArrayAdd<TouchSlider *>(TouchSlider *, Array<TouchSlider *> &);

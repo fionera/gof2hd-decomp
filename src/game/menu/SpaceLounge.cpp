@@ -15,6 +15,7 @@
 #include "game/world/StarMap.h"
 #include "game/ship/Agent.h"
 #include "game/core/Globals.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/core/GameText.h"
 #include "engine/render/ImageFactory.h"
 #include "game/ui/Layout.h"
