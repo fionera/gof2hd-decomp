@@ -41,10 +41,6 @@ char *loge(char *message) {
     return message;
 }
 
-FileInterface *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
-    return nullptr;
-}
-
 FileInterfaceAndroid::FileInterfaceAndroid() {
     this->enabled = 1;
     this->appRootDir = 0;
@@ -339,6 +335,10 @@ void FileInterfaceAndroid::SetZipDirectory(void *p) { // lint: void_ptr virtual 
 
 char *FileInterfaceAndroid::Output(char *) {
     return reinterpret_cast<char *>(this);
+}
+
+FileInterface *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
+    return nullptr;
 }
 
 void FileInterfaceAndroid::SetSaveDirectory(String) {
