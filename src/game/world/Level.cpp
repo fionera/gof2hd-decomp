@@ -6756,6 +6756,181 @@ void Level::createScene() {
 
 }
 
+void Level::updateAlienAttackers(int dt) {
+    alienAttackTimer += dt;
+    Mission *mission = Globals::status->getMission();
+    if (mission != nullptr && mission->isCampaignMission() && (Globals::status->getCurrentCampaignMission() == 0x28 || Globals::status->getCurrentCampaignMission() == 0x93
+            || Globals::status->getCurrentCampaignMission() == 0x9a)) {
+        return;
+    }
+    if (alienAttackTimer <= (Globals::status->getCurrentCampaignMission() == 0x29 ? 10000 : 45000)) {
+        return;
+    }
+    alienAttackTimer = 0;
+    if (enemies == nullptr) {
+        return;
+    }
+
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        KIPlayer *alien = (*enemies)[i];
+        if (alien->shipGroup != 9 || !alien->isDead() || alien->player->isActive()) {
+            continue;
+        }
+        alien->revive();
+        if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->isAttackedByAliens()) {
+            // the station is under attack: respawn around it
+            alien->setPosition((*landmarks)[3]->getPosition().x - 10000.0f + (float) Globals::rnd->nextInt(20000),
+                               (*landmarks)[3]->getPosition().y - 10000.0f + (float) Globals::rnd->nextInt(20000),
+                               (*landmarks)[3]->getPosition().z - 10000.0f + (float) Globals::rnd->nextInt(20000));
+        } else {
+            alien->setPosition(player->getPosition().x - 40000.0f + (float) Globals::rnd->nextInt(80000),
+                               player->getPosition().y - 30000.0f + (float) Globals::rnd->nextInt(60000),
+                               player->getPosition().z + (float) Globals::rnd->nextInt(2) == 0.0f ? 40000.0f : -40000.0f);
+        }
+    }
+}
+
+void Level::updateAsteroidCluster() {
+}
+
+void Level::update(long long dt, bool skipLod) {
+    if (flashActive) {
+        flashDurationA -= (int) dt;
+        if (flashDurationA < 0) {
+            flashActive = 0;
+        }
+        float fade = (float) flashDurationA / (float) flashDurationB;
+        float red = flashColor[0] * fade;
+        float green = flashColor[1] * fade;
+        float blue = flashColor[2] * fade;
+        float alpha = flashAlpha * fade;
+        flashColor[0] = i_r > red ? i_r : red;
+        flashColor[1] = i_g > green ? i_g : green;
+        flashColor[2] = i_b > blue ? i_b : blue;
+        flashAlpha = i_a > alpha ? i_a : alpha;
+    }
+
+    if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty()) {
+        updateOrbit((int) dt);
+    } else {
+        updateMissionOrbit((int) dt);
+    }
+    if (Globals::status->getStation()->isAttackedByAliens() || Globals::status->inAlienOrbit()) {
+        updateAlienAttackers((int) dt);
+    }
+
+    if (playerGuns != nullptr) {
+        for (unsigned int i = 0; i < playerGuns->size(); i++) {
+            (*playerGuns)[i]->update((int) dt);
+        }
+    }
+    if (enemyGuns != nullptr) {
+        for (unsigned int i = 0; i < enemyGuns->size(); i++) {
+            (*enemyGuns)[i]->update((int) dt);
+        }
+    }
+
+    float gammaDamage = Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                                    Globals::status->getCurrentCampaignMission());
+    if (player != nullptr && gammaDamage > 0.0f) {
+        Item *shield = Globals::status->getShip()->getFirstEquipmentOfSort(0x26);
+        if (shield != nullptr) {
+            int protection = shield->getAttribute(0x34);
+            if (protection > 0) {
+                gammaDamage *= (100.0f - (float) protection) / 100.0f;
+            }
+        }
+        gammaDamage = gammaDamage * (float) dt / 1000.0f;
+        int gammaBefore = player->player->getGammaHP();
+        player->player->damageGamma(gammaDamage);
+        if (gammaBefore >= 15 && player->player->getGammaHP() <= 14) {
+            ((Hud *) player->getHUD())->hudEvent(0x2c, player, 0);
+        }
+    }
+
+    if (player != nullptr) {
+        if (field_80 != nullptr) {
+            playerPosition = player->getPosition();
+            field_80->update(dt);
+        }
+        if (field_74 != nullptr) {
+            field_74->update(dt);
+        }
+        if (particleEmitBoolPtr != nullptr) {
+            particleEmitBoolPtr->update(dt);
+        }
+        if (skybox2Mesh != nullptr) {
+            playerPosition = player->getPosition();
+            skybox2Mesh->update(dt);
+        }
+        if (particleSystemMgr != nullptr) {
+            particleSystemMgr->update(dt);
+        }
+        if (particleRenderBoolPtr != nullptr) {
+            particleRenderBoolPtr->update(dt);
+        }
+        if (field_8c != nullptr) {
+            field_8c->update(dt);
+        }
+        if (field_98 != nullptr) {
+            field_98->update(dt);
+        }
+        if (field_94 != nullptr) {
+            field_94->update(dt);
+        }
+        if (field_9c != nullptr) {
+            field_9c->update(dt);
+        }
+    }
+    if (!skipLod) {
+        lodManager->update((int) dt);
+    }
+}
+
+bool Level::checkObjective(int param) {
+    Objective *objective = objectivesA;
+    if (objective != nullptr) {
+        return objective->achieved(param);
+    }
+    return false;
+}
+
+void Level::stealFriendCargo() {
+    friendCargoStolen = 1;
+}
+
+bool Level::friendCargoWasStolen() {
+    return friendCargoStolen;
+}
+
+void Level::removeObjectives() {
+    objectivesA = nullptr;
+    objectivesB = nullptr;
+}
+
+Array<AbstractGun *> *Level::getPlayerGuns() {
+    return playerGuns;
+}
+
+Array<AbstractGun *> *Level::getEnemyGuns() {
+    return enemyGuns;
+}
+
+bool Level::checkGameOver(int param) {
+    Objective *objective = objectivesB;
+    if (objective == nullptr) {
+        return false;
+    }
+
+    return objective->achieved(param);
+}
+
+// Defined after checkGameOver on purpose: clang materialises the implicit
+// ArrayAdd<RadioMessage*> copy when this body is parsed, and the original
+// Level.o places it after checkGameOver (0xc628a).  The strong function's own
+// position is fixed by its first call in createScene, so this move only
+// relocates the template copy.  See
+// _work/reconstructions/arrayadd_radiomessage_placement_w3745.md.
 void Level::createRadioMessage(int type, int sub) {
     if (this->player == nullptr || this->player->radioRef == nullptr)
         return;
@@ -6982,174 +7157,6 @@ void Level::createRadioMessage(int type, int sub) {
     this->player->radioRef->setMessages(this->messages);
 }
 
-void Level::updateAlienAttackers(int dt) {
-    alienAttackTimer += dt;
-    Mission *mission = Globals::status->getMission();
-    if (mission != nullptr && mission->isCampaignMission() && (Globals::status->getCurrentCampaignMission() == 0x28 || Globals::status->getCurrentCampaignMission() == 0x93
-            || Globals::status->getCurrentCampaignMission() == 0x9a)) {
-        return;
-    }
-    if (alienAttackTimer <= (Globals::status->getCurrentCampaignMission() == 0x29 ? 10000 : 45000)) {
-        return;
-    }
-    alienAttackTimer = 0;
-    if (enemies == nullptr) {
-        return;
-    }
-
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        KIPlayer *alien = (*enemies)[i];
-        if (alien->shipGroup != 9 || !alien->isDead() || alien->player->isActive()) {
-            continue;
-        }
-        alien->revive();
-        if (!Globals::status->inAlienOrbit() && Globals::status->getStation()->isAttackedByAliens()) {
-            // the station is under attack: respawn around it
-            alien->setPosition((*landmarks)[3]->getPosition().x - 10000.0f + (float) Globals::rnd->nextInt(20000),
-                               (*landmarks)[3]->getPosition().y - 10000.0f + (float) Globals::rnd->nextInt(20000),
-                               (*landmarks)[3]->getPosition().z - 10000.0f + (float) Globals::rnd->nextInt(20000));
-        } else {
-            alien->setPosition(player->getPosition().x - 40000.0f + (float) Globals::rnd->nextInt(80000),
-                               player->getPosition().y - 30000.0f + (float) Globals::rnd->nextInt(60000),
-                               player->getPosition().z + (float) Globals::rnd->nextInt(2) == 0.0f ? 40000.0f : -40000.0f);
-        }
-    }
-}
-
-void Level::updateAsteroidCluster() {
-}
-
-void Level::update(long long dt, bool skipLod) {
-    if (flashActive) {
-        flashDurationA -= (int) dt;
-        if (flashDurationA < 0) {
-            flashActive = 0;
-        }
-        float fade = (float) flashDurationA / (float) flashDurationB;
-        float red = flashColor[0] * fade;
-        float green = flashColor[1] * fade;
-        float blue = flashColor[2] * fade;
-        float alpha = flashAlpha * fade;
-        flashColor[0] = i_r > red ? i_r : red;
-        flashColor[1] = i_g > green ? i_g : green;
-        flashColor[2] = i_b > blue ? i_b : blue;
-        flashAlpha = i_a > alpha ? i_a : alpha;
-    }
-
-    if (Globals::status->getMission() == nullptr || Globals::status->getMission()->isEmpty()) {
-        updateOrbit((int) dt);
-    } else {
-        updateMissionOrbit((int) dt);
-    }
-    if (Globals::status->getStation()->isAttackedByAliens() || Globals::status->inAlienOrbit()) {
-        updateAlienAttackers((int) dt);
-    }
-
-    if (playerGuns != nullptr) {
-        for (unsigned int i = 0; i < playerGuns->size(); i++) {
-            (*playerGuns)[i]->update((int) dt);
-        }
-    }
-    if (enemyGuns != nullptr) {
-        for (unsigned int i = 0; i < enemyGuns->size(); i++) {
-            (*enemyGuns)[i]->update((int) dt);
-        }
-    }
-
-    float gammaDamage = Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
-                                                                    Globals::status->getCurrentCampaignMission());
-    if (player != nullptr && gammaDamage > 0.0f) {
-        Item *shield = Globals::status->getShip()->getFirstEquipmentOfSort(0x26);
-        if (shield != nullptr) {
-            int protection = shield->getAttribute(0x34);
-            if (protection > 0) {
-                gammaDamage *= (100.0f - (float) protection) / 100.0f;
-            }
-        }
-        gammaDamage = gammaDamage * (float) dt / 1000.0f;
-        int gammaBefore = player->player->getGammaHP();
-        player->player->damageGamma(gammaDamage);
-        if (gammaBefore >= 15 && player->player->getGammaHP() <= 14) {
-            ((Hud *) player->getHUD())->hudEvent(0x2c, player, 0);
-        }
-    }
-
-    if (player != nullptr) {
-        if (field_80 != nullptr) {
-            playerPosition = player->getPosition();
-            field_80->update(dt);
-        }
-        if (field_74 != nullptr) {
-            field_74->update(dt);
-        }
-        if (particleEmitBoolPtr != nullptr) {
-            particleEmitBoolPtr->update(dt);
-        }
-        if (skybox2Mesh != nullptr) {
-            playerPosition = player->getPosition();
-            skybox2Mesh->update(dt);
-        }
-        if (particleSystemMgr != nullptr) {
-            particleSystemMgr->update(dt);
-        }
-        if (particleRenderBoolPtr != nullptr) {
-            particleRenderBoolPtr->update(dt);
-        }
-        if (field_8c != nullptr) {
-            field_8c->update(dt);
-        }
-        if (field_98 != nullptr) {
-            field_98->update(dt);
-        }
-        if (field_94 != nullptr) {
-            field_94->update(dt);
-        }
-        if (field_9c != nullptr) {
-            field_9c->update(dt);
-        }
-    }
-    if (!skipLod) {
-        lodManager->update((int) dt);
-    }
-}
-
-bool Level::checkObjective(int param) {
-    Objective *objective = objectivesA;
-    if (objective != nullptr) {
-        return objective->achieved(param);
-    }
-    return false;
-}
-
-void Level::stealFriendCargo() {
-    friendCargoStolen = 1;
-}
-
-bool Level::friendCargoWasStolen() {
-    return friendCargoStolen;
-}
-
-void Level::removeObjectives() {
-    objectivesA = nullptr;
-    objectivesB = nullptr;
-}
-
-Array<AbstractGun *> *Level::getPlayerGuns() {
-    return playerGuns;
-}
-
-Array<AbstractGun *> *Level::getEnemyGuns() {
-    return enemyGuns;
-}
-
-bool Level::checkGameOver(int param) {
-    Objective *objective = objectivesB;
-    if (objective == nullptr) {
-        return false;
-    }
-
-    return objective->achieved(param);
-}
 
 void Level::pirateStationAction(bool param) {
     if (param) {
