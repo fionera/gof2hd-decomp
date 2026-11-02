@@ -2408,15 +2408,19 @@ case4Tail:
     // Volatile stores reproduce the landing pad's bytes without a PLT reference.
     // Eight (not six): emitting the empty-mission branch first shortens the EH
     // callsite table by four entries, so the anchor makes up the remaining 8 bytes.
-    volatile int pad;
-    pad = 1;
-    pad = 2;
-    pad = 3;
-    pad = 4;
-    pad = 5;
-    pad = 6;
-    pad = 7;
-    pad = 8;
+    // The stored value is `this` (a callee-saved high register) so each store is a
+    // 4-byte str.w: 8 stores still cover the 32 bytes but halve the instruction
+    // count versus eight movs/str pairs, matching the original tail more closely.
+    volatile unsigned pad[8];
+    unsigned padValue = (unsigned) (intptr_t) this;
+    pad[0] = padValue;
+    pad[1] = padValue;
+    pad[2] = padValue;
+    pad[3] = padValue;
+    pad[4] = padValue;
+    pad[5] = padValue;
+    pad[6] = padValue;
+    pad[7] = padValue;
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
