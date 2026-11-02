@@ -681,3 +681,74 @@ plain no-order: compared 4524  byte_exact 2657  linked_exact 4496
   not just the plain no-order prefix.
 * The weak-copy TU membership problem from §4 is still the harder blocker for a full
   ordering-file removal; this pass only converged per-TU source order.
+
+## 10. Follow-up (2026-11-02, w3705): PlayerEgo/Status/Level source order — plain no-order 2657 -> 2723
+
+Status: landed on `wave87-w3705` (two commits, `df9e33a4` and `2cc42747`). Gate stays
+**byte 4496 / linked 4496**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`, drift `0`.
+Plain no-order rises from **2657 / 4496** (prefix 1581, 2973/4524 at their original address)
+to **2723 / 4496**, **3170 / 4524** at their original address, exact-address prefix **2292**.
+The first remaining mismatch is the weak copy `Array<KIPlayer*>::Array()` at `0xbde4e`
+(original order `getStarSystem`, `ArraySetLength<KIPlayer*>`, `getGasClouds`; ours emits
+both `Array<KIPlayer*>` weak copies and the `Array<Gun*>`/`Array<Array<Gun*>*>` weak copies
+before `createGun`, and `getGasClouds` after `createRadioMessages`).
+
+### 10.1 What was measured
+
+| edit | gate byte/linked | plain byte | funcs at orig addr | prefix | first mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| start (committed master) | 4496 / 4496 | 2657 | 2973 / 4524 | 1581 | `PlayerEgo::isMining` `0x9add8` vs `0x9ae1a` |
+| `PlayerEgo.cpp`: `isMining`/`isInRocketControl` before `setTurretMode`, `setDockingCamera` references `setTurretMode` | 4496 / 4496 | 2657 | 2976 | 1635 | `PlayerEgo::isAutoPilot` `0x9b8a4` vs `0x9b8b0` |
+| `Status.cpp`: `setStation`/accessor order + `departStation` reference | 4496 / 4496 | 2675 | 3060 | 2172 | `Status::changeCredits` `0xabbb8` vs `0xabbdc` |
+| `Status.cpp`: `changeCredits(40000)` instead of the hand-inlined clamp | 4496 / 4496 | 2716 | 3134 | 2191 | `Status::missionCompleted` `0xabf38` vs `0xabf9c` |
+| `Status.cpp`: `checkForLevelUp` after `setCredits` | 4496 / 4496 | 2718 | 3161 | 2237 | `Status::replaceHash(String,String)` `0xac83c` vs `0xac89c` |
+| `Status.cpp`: 2-arg `replaceHash` before the 3-arg overload | 4496 / 4496 | 2719 | 3163 | 2288 | `Level::enableParticleEffects` `0xbd68c` vs `0xc3fec` |
+| `Level.cpp`: `enableParticleEffects`/`setPlayerEngineColor` before `initParticleSystems`, `getStarSystem` before `createSpace` | 4496 / 4496 | 2721 | 3166 | 2291 | `Level::getStarSystem` `0xbde48` vs `0xc40b4` |
+| `Level.cpp`: `getGasClouds` before `createGun` | 4496 / 4496 | **2723** | **3170** | **2292** | `Array<KIPlayer*>::Array()` `0xbde4e` vs `0xc40ba` |
+
+### 10.2 The mechanisms
+
+**`Status::nextCampaignMission` calls `changeCredits(40000)`.** The hand-written
+`credits += 40000; if (credits < 0) credits = 0;` inlines to the same instructions, but it
+leaves no reference to `changeCredits`. The real source call is inlined at `-Oz` yet still
+marks `changeCredits` as used, so it is emitted immediately after `nextCampaignMission`
+(before `setShip`, which `nextCampaignMission` also references). This is a pure source-shape
+fix: `nextCampaignMission` stays byte-exact.
+
+**`checkForLevelUp` is defined after `setCredits`.** Nothing in the `Status` TU calls it, so
+it is emitted at its definition point. The original order is `setCredits`,
+`checkForLevelUp`, `getRating`; moving the definition reproduces it.
+
+**The 2-argument `replaceHash` is defined before the 3-argument overload.** The 2-argument
+body calls the 3-argument one, so the forward reference pulls the 3-argument copy in after
+the 2-argument one. The original order is 2-arg then 3-arg.
+
+**`Level::enableParticleEffects`/`setPlayerEngineColor` are defined before
+`initParticleSystems`.** `init()`'s callees are emitted in call order (`createSpace` ...
+`connectPlayers`); after that clang emits the next source definitions. Putting
+`enableParticleEffects`, `setPlayerEngineColor`, `getStarSystem`, `getGasClouds` before
+`initParticleSystems` in the source makes the emission order
+`connectPlayers, enableParticleEffects, setPlayerEngineColor, initParticleSystems,
+getStarSystem, getGasClouds, createGun`, matching the original. `getGasClouds` is emitted
+later than its source position because `createGun` is pulled forward; it is still placed
+before `createGun` in the object order.
+
+**PLT order is input-section order, not output order.** Moving `initParticleSystems` after
+`setPlayerEngineColor` alone regressed the gate **4496 -> 4474**: gold assigns PLT entries
+while scanning input sections, so the first references to `AEGeometry::updateReferenceMatrix`
+and `ParticleSystemManager::init` (both inside `initParticleSystems`) moved after
+`Gun::setPlayerGun`. The ordering file still put the function at its original output
+address, but every later `blx` shifted. Moving the *other* functions instead keeps
+`initParticleSystems` before `createGun` in input order and the gate at 4496.
+
+### 10.3 Remaining frontier
+
+The next mismatch is the weak-copy ordering around `getStarSystem`/`getGasClouds`. The
+original `Level.cpp` object order (from `_work/original_layout/original_layout.json`) is
+`initParticleSystems, getStarSystem, ArraySetLength<KIPlayer*>, getGasClouds,
+ArraySetLength<Array<Gun*>*>, ArraySetLength<Gun*>, createGun`. Our object emits the
+`Array<KIPlayer*>` and `Array<Gun*>` weak copies back-to-back before `createGun`, and
+`getGasClouds` after `createRadioMessages`. This is the same weak-copy TU-membership/flush
+problem described in §4; it needs a source shape that makes clang flush the
+`Array<KIPlayer*>` instantiation before `getGasClouds` and the `Array<Gun*>` instantiations
+after it.
