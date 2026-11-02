@@ -3495,9 +3495,9 @@ bool PaintCanvas::WarmUpTexture() {
     return true;
 }
 
-void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix &worldMatrix,
-                           AbyssEngine::AEMath::Matrix &viewMatrix, unsigned int color,
-                           AbyssEngine::AEMath::Matrix &uvMatrix) {
+inline void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix &worldMatrix,
+                                  AbyssEngine::AEMath::Matrix &viewMatrix, unsigned int color,
+                                  AbyssEngine::AEMath::Matrix &uvMatrix) {
     AbyssEngine::AEMath::Matrix world = worldMatrix;
     AbyssEngine::AEMath::Matrix uv = uvMatrix;
     unsigned int meshColor = color;
