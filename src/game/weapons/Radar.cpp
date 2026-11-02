@@ -415,8 +415,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
     bool landmarkHit = false;
     if (this->landmarks != nullptr &&
-        (Globals::status->getStation()->getIndex() != 111 || Globals::status->getCurrentCampaignMission() <= 93) &&
-        Globals::status->getStation()->getIndex() != 110 && Globals::status->getStation()->getIndex() != 109) {
+        !(Globals::status->getStation()->getIndex() == 109 ||
+          Globals::status->getStation()->getIndex() == 110 ||
+          (Globals::status->getStation()->getIndex() == 111 &&
+           Globals::status->getCurrentCampaignMission() > 93))) {
         Array<KIPlayer *> *landmarks = this->landmarks;
         int notOtherLock = !otherLock;
         int notTurretMode = !turretMode;
