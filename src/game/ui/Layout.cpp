@@ -268,8 +268,8 @@ Layout::Layout() {
     this->rewardBoxWidth = Globals::iPadHD ? 100 * 1.40625f : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
     this->rewardBoxX = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
     this->rewardBoxHeight = Globals::n9 ? 352 : (Globals::retinaDisplay ? 392 : 196);
-    this->field_0x1f4 = Globals::iPadHD ? 16 * 1.40625f : (Globals::retinaDisplay ? (Globals::iPad ? 32 : 4) : (Globals::iPad ? 16 : 2));
     this->field_0x94 = Globals::iPadHD ? 14 : (Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10));
+    this->field_0x1f4 = Globals::iPadHD ? 16 * 1.40625f : (Globals::retinaDisplay ? (Globals::iPad ? 32 : 4) : (Globals::iPad ? 16 : 2));
     this->rewardBoxY = Globals::iPadHD ? 55 * 1.40625f : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
     this->field_0x1f0 = Globals::iPadHD ? 19 * 1.40625f : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
     this->field_0x144 = Globals::iPadHD ? 13 * 1.40625f : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13));
