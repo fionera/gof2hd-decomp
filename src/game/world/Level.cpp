@@ -2375,13 +2375,6 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    for (unsigned i = 0; i < this->enemies->size(); i++) {
-        (*this->enemies)[i] = this->createShip(
-                8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
-        (*this->enemies)[i]->setToSleep();
-    }
-    this->objectivesA = new Objective(18, 0, hunterCount, this);
     // Size anchor: the original createMission is 0x4314 bytes.  The try/catch this
     // replaces kept the size but referenced __cxa_end_catch from Level.cpp, which
     // created its PLT slot before zlib and shifted the whole zlib/libzip PLT block.
@@ -2397,6 +2390,13 @@ case4Tail:
     pad = 6;
     pad = 7;
     pad = 8;
+    for (unsigned i = 0; i < this->enemies->size(); i++) {
+        (*this->enemies)[i] = this->createShip(
+                8, 0, Globals::globals->getRandomEnemyFighter(8),
+                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
+        (*this->enemies)[i]->setToSleep();
+    }
+    this->objectivesA = new Objective(18, 0, hunterCount, this);
     }
     return;
     } else {
