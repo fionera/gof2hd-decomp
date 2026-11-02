@@ -755,6 +755,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
+    int level;
+    int bonus;
+    float rem;
+    Mission *mission;
     bool selected = false;
     int32_t type = 0;
     int guard = 999;
@@ -925,10 +929,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         reward *= 2.0f;
     }
 
-    int level = Globals::status->getLevel();
+    level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
-    int bonus;
     if ((type | 4) == 12) {
         bonus = 0;
     } else {
@@ -941,14 +944,14 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         }
     }
 
-    float rem = (float) ((int) reward % 50);
+    rem = (float) ((int) reward % 50);
     if ((int) (reward + rem) % 50 == 0) {
         reward = reward + rem;
     } else {
         reward = reward - rem;
     }
 
-    Mission *mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
+    mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
                                    difficulty);
 
     int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
