@@ -5075,3 +5075,5 @@ plain no-order link but inserts `ArraySetLength<AbstractGun*>` too early and reg
 Note: `_work/reconstructions/section_order_removal_w3745.md` §7.
 Wave-97 function pass: `LevelScript::process` 54.9 -> 55.0% (`w3742`) by de-switching the escort
 speed loop and using direct `getShip` cargo checks. 57232 B, gate 4497/4497.
+Wave-97 function pass: `Layout::Layout` (`w3743`) field_0xac cmov chain + rewardBoxHeight branch
+(fidelity fix, 7072 B, fuzzy unchanged at 47.6%). Gate 4497/4497.
