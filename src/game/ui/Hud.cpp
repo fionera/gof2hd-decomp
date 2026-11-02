@@ -971,6 +971,7 @@ void Hud::drawChallengeModeScore(int unused) {
     String score(scoreValue);
     step = digitW - overlap;
     half = screenW / 2;
+    left = half - step * 7 / 2;
     halfStep = step * 7 / 2;
     if (score.size() < 7) {
         int pad = 7 - score.size();
@@ -978,7 +979,6 @@ void Hud::drawChallengeModeScore(int unused) {
             score = String("0") + score;
     }
     Globals::Canvas->SetColor(0x77ccffff);
-    left = half - halfStep;
     x = left;
     for (unsigned int i = 0; i < score.size(); i++) {
         int frame = score.SubString(i, i + 1).ValueOf();
@@ -990,6 +990,7 @@ void Hud::drawChallengeModeScore(int unused) {
     if (Globals::status->field_0x180 > 0 && Globals::status->field_0x18c >= 2) {
         Globals::Canvas->SetColor(0xffffffff);
         int rowGap = Globals::layout->field_0x2c_rowHeight;
+        int iconX = rowGap + left;
         y = y + digitH + rowGap;
         if (Globals::status->field_0x180 <= 3000) {
             if (Globals::status->field_0x180 % 100 < 50)
@@ -1007,19 +1008,17 @@ void Hud::drawChallengeModeScore(int unused) {
                 this->digitSprite->draw(1.0f, 1.0f);
             }
         }
-        Globals::Canvas->DrawImage2D(this->multiplierIconImage, rowGap + left, y);
+        // The loop advances mx before using it, so start one step back.
+        int mx = half + rowGap - halfStep - step;
+        Globals::Canvas->DrawImage2D(this->multiplierIconImage, iconX, y);
         float pulse = (float) (Globals::status->field_0x180 - 7000) * 0.01f;
         float scale = pulse < 0.0f ? 1.0f : pulse + 1.0f;
         String multiplier(Globals::status->field_0x18c);
-        int mx = half + rowGap - halfStep;
-        // Keep the multiplier digits on-screen if the computed origin is off the left edge.
-        if (mx < 0)
-            y = half;
-        for (unsigned int i = 1; i - 1 < multiplier.size(); i++) {
-            int frame = multiplier.SubString(i - 1, i).ValueOf();
+        for (unsigned int i = 0; i < multiplier.size(); i++) {
+            int frame = multiplier.SubString(i, i + 1).ValueOf();
             this->digitSprite->setFrame(frame);
-            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
             mx += step;
+            this->digitSprite->setPosition(mx + Globals::Canvas->GetImage2DWidth(this->multiplierIconImage), y);
             this->digitSprite->draw(scale, scale);
         }
     }
