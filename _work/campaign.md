@@ -4815,3 +4815,8 @@ gone (byte-array storage + `reinterpret_cast` at the use sites, layout still pro
 static_asserts; gate 4496/4496, `.rodata`/`.data` byte-identical). `MenuTouchWindow` ctor 91.8 ->
 91.9% (`w3640`). Remaining shortcuts: `0.5000001f` in Generator (size anchor), 3
 `__builtin_assume`, the section-ordering file, and the held `layoutCtorPad`.
+
+Wave-96 continued: `Status::missionCompleted` 57.7 -> 71.1% (`w3642`) by dropping the `(short)`
+cast and expecting case 184 success — the best rank-table-free score so far (1432 B, no
+`.missioncase`). `Radar::draw` 72.0 -> 73.3% (per-iteration landmarks reload). `.text` differing
+bytes 116,959 -> 114,680.
