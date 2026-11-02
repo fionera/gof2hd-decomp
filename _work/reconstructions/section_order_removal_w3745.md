@@ -257,3 +257,153 @@ are the `Array<...>` instantiation blocks.
 - No claim is made that the ordering file can be deleted today. It cannot:
   the plain link is still `2981`, and 192/193 objects have out-of-order
   sections.
+
+## 7. Lazy-instantiation placement: `Array<AbstractGun*>` (2026-11-02)
+
+This section isolates the next plain no-order blocker from §6: the lazy template
+instantiation `Array<AbstractGun*>::Array()` and `ArrayAdd<AbstractGun*>`.
+All numbers are from this worktree at the §1 baseline (`byte 4497 / linked 4497`,
+`.text 0x1337c8 @ 0x69440`; lint `CLEAN ✓`, drift `0`).
+
+### 7.1 Target order vs the current `Level.o` order
+
+`cmake-build-match/section_order.txt` is the original-address witness.  The
+relevant `Level` subsequence is:
+
+```text
+createGun
+Array<AbstractGun*>::Array()
+ArrayAdd<AbstractGun*>
+createStaticObject
+ArrayAdd<KIPlayer*>
+createShip
+createRoute
+setPlayerRoute
+createRadioMessages
+ArraySetLength<AbstractGun*>
+ArraySetLength<Player*>
+getBoundingVolume
+Array<RadioMessage*>::Array()
+ArraySetLength<RadioMessage*>
+getPlayer
+```
+
+The current `Level.cpp.obj` section-header order is different:
+
+```text
+createGun
+ArrayReleaseClasses<AEMath::Vector*>
+Array<AEMath::Vector*>::~Array()
+ArrayReleaseClasses<Array<AEMath::Vector*>*>
+Array<Array<AEMath::Vector*>*>::~Array()
+createStaticObject
+ArrayAdd<KIPlayer*>
+Array<AbstractGun*>::Array()
+ArraySetLength<AbstractGun*>
+ArrayAdd<AbstractGun*>
+createShip
+...
+```
+
+Reproduce the object order:
+
+```sh
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/world/Level.cpp.obj \
+  | awk '$2 ~ /^\.text\./ {print $2}' | sed 's/^\.text\.//'
+sed -n '2400,2420p' cmake-build-match/section_order.txt
+```
+
+So the first plain no-order mismatch is exactly the first displaced lazy copy:
+`Array<AbstractGun*>::Array()` at original `0xbe680`, ours `0xc01d4`
+(plain no-order `byte 2981`, `linked 4497`, prefix `2296`).
+
+### 7.2 Controlled source experiments
+
+Each row is a full rebuild of this tree followed by the same plain no-order
+relink.  `gate` is `cmake --build cmake-build-match --target check -j8`
+(the ordering-file build); `plain` is `relink_noorder.py` + `verify.py` +
+`addr_match.py`.
+
+| experiment | gate byte/linked | plain byte | prefix | first plain mismatch |
+|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **2981** | **2296** | `Array<AbstractGun*>::Array()` `0xbe680` vs `0xc01d4` |
+| A: move `createStaticObjects()` definition after `createGun()` | 4491 / 4497 | 2977 | 2297 | `ArrayAdd<AbstractGun*>` `0xbe69c` vs `0xbe6d0` |
+| B: A + move `createStaticObject()` before `createGun()` + suppress the `Level.o` `ArraySetLength<AbstractGun*>` copy with `extern template` (definition in `ArrayInstantiations.cpp`) + move `createShip()` after `createRadioMessages()` | 4491 / 4497 | 2542 | 2299 | `ArrayAdd<KIPlayer*>` `0xc01f0` vs `0xc0fbc` |
+
+Commands (same for every row):
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target link_so -j8
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/lazy/noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/lazy/verify \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/lazy/noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/lazy/noorder.so
+```
+
+The source moves were scratch edits only; the tree was restored to the baseline
+before committing this note.  Experiment A is gate-regressive by 6
+(`4497 -> 4491`), so it is not landed.  Experiment B uses an `extern template`
+declaration in `Level.cpp` plus an explicit instantiation in
+`ArrayInstantiations.cpp`; that is a TU-membership experiment, not a proposed
+landing.
+
+### 7.3 What the object order shows
+
+The baseline `Level.o` order is not "emit each template at its first textual
+use".  `createGun()` calls `Array<AbstractGun*>::Array()` and
+`ArrayAdd<AbstractGun*>`, yet both land *after* `createStaticObject()` and
+`ArrayAdd<KIPlayer*>`.  The latter two are first referenced by
+`createStaticObjects()`, which is defined before `createGun()`.
+
+Moving `createStaticObjects()` after `createGun()` (experiment A) removes
+`createStaticObject`/`ArrayAdd<KIPlayer*>` from the queue that is flushed after
+`createGun()`.  The ctor and `ArrayAdd<AbstractGun*>` then land immediately
+after `createGun()` at their original addresses.  But the same move also emits
+`ArraySetLength<AbstractGun*>` too early (between the ctor and `ArrayAdd`) and
+pushes `createStaticObject` after `createShip`, so the plain no-order byte count
+falls.
+
+Suppressing the `Level.o` `ArraySetLength<AbstractGun*>` copy (experiment B)
+removes the insertion and makes both `Array<AbstractGun*>::Array()` and
+`ArrayAdd<AbstractGun*>` address-exact.  The next mismatch is
+`ArrayAdd<KIPlayer*>`, which is still emitted after `createShip` instead of
+before it.  Moving `createShip()` later in the source did not change that
+placement.
+
+### 7.4 Proven vs hypothesis
+
+**Proven by measurement**
+
+- The baseline plain no-order build is `byte 2981 / linked 4497`, prefix `2296`,
+  first mismatch `Array<AbstractGun*>::Array()` at `0xbe680` vs `0xc01d4`.
+- The target `Level` order places the ctor and `ArrayAdd<AbstractGun*>`
+  immediately after `createGun()`, and places `ArraySetLength<AbstractGun*>`
+  after `createRadioMessages()`.
+- The current `Level.o` places the ctor/setlength/`ArrayAdd<AbstractGun*>`
+  after `createStaticObject()` and `ArrayAdd<KIPlayer*>`.
+- Moving `createStaticObjects()` after `createGun()` makes the ctor and
+  `ArrayAdd<AbstractGun*>` address-exact in the plain link, but is
+  gate-regressive (`4497 -> 4491`) and lowers plain `byte_exact` (`2981 ->
+  2977`).
+- Suppressing the `Level.o` setlength copy makes the ctor and
+  `ArrayAdd<AbstractGun*>` exact, but `ArrayAdd<KIPlayer*>` remains after
+  `createShip`; the plain link is `2542` and the gate is still `4491`.
+
+**Hypothesis / open**
+
+- The ctor/`ArrayAdd<AbstractGun*>` placement is controlled by clang's deferred
+  instantiation queue: a strong function first referenced before `createGun`
+  (`createStaticObject`) is emitted before the queued template copies.  The
+  exact rule that decides when the queue is flushed is not fully characterized;
+  moving `createShip()` did not move `ArrayAdd<KIPlayer*>`.
+- If `ArrayAdd<KIPlayer*>` can be made to emit before `createShip` while
+  `ArraySetLength<AbstractGun*>` stays out of the early queue (or is emitted at
+  its original `0xc3dde` position), the plain no-order frontier should move past
+  `0xc01f0`.  That has not been demonstrated.
