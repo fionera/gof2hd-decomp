@@ -202,9 +202,9 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **27 non-linked functions.** 4497 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.3%), `LevelScript::process` (54.9%), `Status::missionCompleted` (71.1%),
+   `Layout::Layout` (47.4%), `LevelScript::process` (54.9%), `Status::missionCompleted` (71.1%),
    `Generator::createMission` (72.2%), `Level::createShip` (73.4%), `Radar::draw` (73.9%),
-   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (79.5%) and `Globals::Globals` (80.5%).
+   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (80.4%) and `Globals::Globals` (80.5%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now

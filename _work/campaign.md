@@ -5044,3 +5044,6 @@ Wave-97 function pass: `Level::createMission` (`w3713`) removed the 32-byte vola
 by constructing `turretPos` after the direction rotation (reusing the same 12-byte stack slot),
 which keeps the body at 17172 B. Fuzzy 86.896 -> 85.684% but the body is now anchor-free; gate
 4497/4497.
+Wave-97 function pass: `Level::createMission` 85.684 -> 87.275% (`w3738`) by caching
+`int *bigShipsCount = &this->field_168`, fixing `kStationTurrets` indexing to `t[4..6]`/`t[1..3]`,
+and using the implicit `alienWave` test. 17172 B, gate 4497/4497.
