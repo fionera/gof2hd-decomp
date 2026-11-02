@@ -1517,9 +1517,9 @@ bool LevelScript::process(int delta) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
         // shared exit-wormhole body below (the size/isOver/state gate lives there, once).
         goto wormholeExitBody;
-    } else if (messages != nullptr && Globals::status->getCurrentCampaignMission() == 51) {
-        // NB: the null test comes first here (but not for mission 50 above) because the
-        // original evaluates `cmp messages,#0` before `cmp mission,#51` at 0x138772/0x13877c.
+    } else if (Globals::status->getCurrentCampaignMission() == 51 && messages != nullptr) {
+        // NB: the mission id is read first here (0x13876e), then the message array is null-tested
+        // (0x138776) -- the reverse of the mission-50 branch above.
     wormholeExitBody:
         // disasm 0x139ac2 (missions 50 @0x1383e4 and 51 @0x13876c share this body): the exit-wormhole
         // cutscene turns every non-wingman ship permanently hostile and floors the player's standing.
