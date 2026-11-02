@@ -4940,3 +4940,7 @@ section-ordering file is no longer needed for function placement once each objec
 its next mismatch is the `EaseInOutMatrix` inline-copy interleave. The remaining work is to
 reorder the source definitions of the other TUs to the original address order (mechanical,
 using `_work/reconstructions/w3696/`). The ordering file stays until that is done.
+
+Wave-97 function pass: `MGame::OnTouchEnd` 77.239 -> 78.357% (`w3677`) by counting refined ore
+downward and guarding the report on the positive count (`int count = -amount; if (count > 0)`),
+which emits the original's `cmp.w r9,#-1; bgt.n` shape; 8080 B, gate 4496/4496.
