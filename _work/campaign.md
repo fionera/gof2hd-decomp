@@ -5037,3 +5037,6 @@ drift 0. `.ARM.extab` is now -12 B (156,300 vs 156,312); `.text` differing bytes
 Wave-97 function pass: `MenuTouchWindow` ctor 93.813 -> 93.873% (`w3731`) by regrouping the
 slider-2 y expression to the original order (`(field_0x15c + field_0x1c) * 2` first).
 9600 B, gate 4497/4497.
+Wave-97 function pass: `HangarWindow::render` 79.521 -> 80.380% (`w3736`) by dropping the
+`if (rows < 0) rows = 0;` guard, adding the `Layout *hintLayout = Globals::layout` hint-loop
+alias, and regrouping the hint-image x expressions. 9700 B, gate 4497/4497.
