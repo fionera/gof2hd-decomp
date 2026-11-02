@@ -4929,3 +4929,14 @@ ArrayReleaseClasses<BoundingVolume*> -> PlayerFighter.cpp (2558 -> 2789),
 ArrayReleaseClasses<Waypoint*> -> Route.cpp (2789 -> 3828), SpaceLounge weak Array copies ->
 SpaceLounge.cpp (3828 -> 4349). No-order reordered byte_exact 2484 -> **4490** (prefix 4349);
 all gate-neutral 4496/4496.
+`w3696` final section-order result: after 11 gate-neutral commits (VirtualInput, GLES1Compat,
+FileInterfaceAndroid source order; `ArrayReleaseClasses<AELowLevelFile*>` -> AEFile.cpp;
+`<ShaderBaseStruct*>` -> Engine.cpp; JNI string helpers -> NdkAutosave.cpp;
+`<TouchButton*>` -> ModStation.cpp; `<BoundingVolume*>` -> PlayerFighter.cpp; `<Waypoint*>` ->
+Route.cpp; SpaceLounge weak Array copies -> SpaceLounge.cpp; libzip `zip_source_free` order),
+the **reordered no-order build is 4524/4524 address-exact and byte_exact 4496** — the
+section-ordering file is no longer needed for function placement once each object's own
+`.text.*` order is the original order. The **plain no-order build** is 1669/4496, prefix 222;
+its next mismatch is the `EaseInOutMatrix` inline-copy interleave. The remaining work is to
+reorder the source definitions of the other TUs to the original address order (mechanical,
+using `_work/reconstructions/w3696/`). The ordering file stays until that is done.
