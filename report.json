@@ -152,22 +152,6 @@
    "usize": 9332
   },
   {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
    "name": "_ZN7StarMap4drawEv",
    "pct": 92.6,
    "byte": false,
@@ -182,6 +166,22 @@
    "linked": false,
    "osize": 944,
    "usize": 944
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 93.8,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",

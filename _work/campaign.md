@@ -5026,3 +5026,6 @@ this->buttonWidth` local) and reordering the controlIndex x expression. 9600 B, 
 Wave-97 function pass: `Radar::draw` 73.75 -> 73.87% (`w3716`) by storing `field_0x1c` before
 `dockNavPtr` in the three tractor blocks, matching the original store order. 9908 B, gate
 4496/4496.
+Wave-97 function pass: `MenuTouchWindow` ctor 91.945 -> 93.813% (`w3725`) by restoring the
+`this->buttonWidth` argument, adding the `GameText *cinematicText = Globals::gameText` alias,
+and using `sliderTop2` for slider 6. 9600 B, gate 4496/4496.
