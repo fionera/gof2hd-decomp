@@ -5020,3 +5020,6 @@ reorder (field_0x24/buttonInsetX, progressBarYBase/field_0xb8/field_0xa4/oreText
 oreLabelYOffset). 7072 B, gate 4496/4496.
 Wave-97 function pass: `Layout::Layout` (`w3698`) further source-order refinement
 (field_0x94 before field_0x1f4), same 47.4% / 7072 B, gate 4496/4496.
+Wave-97 function pass: `MenuTouchWindow` ctor 91.873 -> 91.945% (`w3708`) by replacing the
+`i != 1` anchor with the real loop body (`bool special = (i|1)==9`, `int width =
+this->buttonWidth` local) and reordering the controlIndex x expression. 9600 B, gate 4496/4496.
