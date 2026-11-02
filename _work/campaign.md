@@ -5055,3 +5055,11 @@ Wave-97 function pass: `Level::createMission` 87.275 -> 88.011% (`w3730`) by fix
 `alienWave`/`pirateFortress` declaration order. 17172 B, gate 4497/4497.
 Wave-97 function pass: `Status::missionCompleted` 71.1 -> 71.8% (`w3740`) by biasing the
 late switch-case branch hints with `__builtin_expect(..., 1)`. 1432 B, gate 4497/4497.
+Wave-97 function pass: `MenuTouchWindow::OnTouchBegin` 97.2 -> 97.7% (`w3734`) by using a
+`Layout &` reference plus a `top` local and making the second test height-first. 1896 B, gate 4497/4497.
+Wave-97 research: independent build-config re-derivation (`w3745`) re-confirmed NDK r18b clang
+7.0.2 + gold 1.12, API 16, Thumb-2/NEON/softfp, ndk-build defaults minus `-fdata-sections`.
+Correction: `-funwind-tables` is load-bearing (removal 4497 -> 2878; the old "neutral" result was
+a flag-order artifact). No flag is a strict improvement. New residual: `.rel.plt` section header
+`sh_flags=AI/sh_info=20` vs our `A/0` (content/size/address exact), likely a different gold 1.12
+snapshot. Note: `_work/reconstructions/build_config_rederivation_w3745.md`.
