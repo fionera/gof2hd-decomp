@@ -5000,3 +5000,7 @@ and `.ARM.extab` 131,132 -> 128,991. Gate 4496/4496.
 Section-order pass 4 (`w3705`): `Level` source order for `enableParticleEffects`,
 `setPlayerEngineColor`, `getStarSystem`, `getGasClouds`. Plain no-order build **2719 -> 2723/4496
 byte-exact**, exact-address prefix **2288 -> 2292**. Gate-neutral 4496/4496.
+Wave-97 function passes: `HangarWindow::render` (`w3681`) replaced the dead `textYbarrier`
+volatile with a used `volatile float textYf` (raw 0.794656 -> 0.795207, 9700 B), and
+`Level::createMission` (`w3706`) refined the 32-byte pad tail to eight 4-byte `str.w` stores
+(86.8 -> 86.9%, 17172 B). Both gate 4496/4496.
