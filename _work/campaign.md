@@ -4857,3 +4857,10 @@ Wave-97 first results (both research-only, gate unchanged 4496/4496):
   `--fix-cortex-a8`, `--exclude-libs`, `--warn-shared-textrel`, `--fatal-warnings`,
   whole-archive zlib/libzip, `libc++_static`/`libc++abi`/`libandroid_support`/`libunwind`,
   `-lgcc -latomic`) is byte-identical to the tree's current gold line.
+- `w3694` re-validated 70+ link-flag variants at 4496: the current gold line is optimal. Every
+  ndk-build default (`-z relro`, `-z now`, `-z noexecstack`, `--hash-style=sysv`,
+  `--build-id=sha1`, `--fix-cortex-a8`, `--no-undefined`, `--warn-shared-textrel`,
+  `--fatal-warnings`, `--exclude-libs=libgcc.a`, `--no-as-needed`, `-z combreloc`) is neutral
+  or already implied; `--gc-sections`, `--icf`, `--sort-section=name`, `--rosegment`,
+  `--as-needed`, `-z nocombreloc`, `-z max-page-size=65536` are regressions. Remaining
+  `.rel.plt` 12 B and `.shstrtab` 259 B are source/TU/body residuals, not link-flag-caused.
