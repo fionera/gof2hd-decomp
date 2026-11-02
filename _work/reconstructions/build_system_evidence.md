@@ -13,6 +13,13 @@ explicitly is an ndk-build r18b *default*. The one material link flag the tree i
 `-Wl,-z,relro -Wl,-z,now`; adding it raises `byte_exact` from 1415 to 1458 (+43) and makes the
 RW segment layout match the original almost exactly.
 
+> **Update (w3697, 2026-11-02):** the original's `.rodata`/`.data`/`.data.rel.ro` are
+> byte-identical to the tree's **no-`-fdata-sections`** build and differ by
+> 113,935 / 3,273 / 405 bytes with `-fdata-sections`; the original therefore did not use
+> `-fdata-sections`. The link order is also not vanilla ndk-build `c++_static` (FMOD precedes
+> `libc++abi.a`; `_Unwind_*` stay UND). See
+> `_work/reconstructions/definitive_build_recipe_w3697.md`.
+
 ---
 
 ## 0. Confidence table
@@ -883,10 +890,15 @@ byte_exact 1454, linked_exact 4493, fuzzy 4494, size 4522/4523
 ```
 
 i.e. **-4** versus the `-z now` build without `-fdata-sections` (1458). `.rodata` shrinks by
-0x100 (0x41747 → 0x41647) and `.data` grows by 4 (0x296c → 0x2970). The original `.rodata`
-is 0x41b67, so the tree's data/TU layout is still too far off for `-fdata-sections` to pay
-off today. **Conclusion:** the original definitely had `-fdata-sections`; add it when the
-data/TU layout is faithful, not before. It is not evidence against ndk-build.
+0x100 (0x41747 → 0x41647) and `.data` grows by 4 (0x296c → 0x2970).
+
+**Corrected conclusion (w3697):** the original did **not** use `-fdata-sections`. At the
+current 4496 baseline the canonical build's `.rodata`, `.data` and `.data.rel.ro` are
+byte-identical to the original (0 differing bytes), while the `-fdata-sections` build gives
+`.rodata` 0x41a07 (113,935 differing bytes), `.data` 0x2970 (3,273 differing bytes) and
+`.data.rel.ro` 405 differing bytes. The original's data layout is the no-`-fdata-sections`
+layout. This is a real deviation from vanilla ndk-build, not a tree-layout artifact. See
+`_work/reconstructions/definitive_build_recipe_w3697.md` §4.
 
 ### 6.6 `-gcc-toolchain`, `-fno-exceptions -fno-rtti -frtti -fexceptions`
 
@@ -1202,9 +1214,10 @@ objdump -p ../_work/bins/win_GOF2.exe | grep -iE 'Time/Date|MajorLinkerVersion|p
 - **`APP_OPTIM` explicit vs default cannot be distinguished.** Both give release `-Oz`.
 - **FMOD in `LOCAL_LDLIBS` vs `LOCAL_SHARED_LIBRARIES` cannot be distinguished.** The NEEDED
   order constrains the link-line order, not the make variable.
-- **`-fdata-sections` is authentic but currently costs 4 byte_exact** because the tree's
-  data/TU layout is not yet faithful. This is a null/negative result, not a reason to doubt
-  ndk-build.
+- **`-fdata-sections` is not in the original build.** The original's data sections match the
+  no-`-fdata-sections` layout byte-for-byte; with `-fdata-sections` the current tree costs
+  -163 byte_exact (4496 -> 4333). This is a real deviation from vanilla ndk-build, not a
+  null result.
 - **`-g` cannot be observed in the stripped final `.so`.** Its codegen effect is supported by
   the existing A/B table, not by ELF metadata.
 - **The 7z "Original_Price" APK is a 2024 clang-3.8 mod**, not the r18b release. Do not use
