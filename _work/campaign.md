@@ -4809,3 +4809,9 @@ current HEAD stays size-exact 7072 B (46.8%).
 Note: `w3637`'s mission-154 explicit-state commit (55c55eb2) was cherry-picked but shrank
 `LevelScript::process` to 57224 B on the merged tree (its base predated the case-125 move), so it
 was reverted; the change must be redone on current master.
+
+Wave-96 shortcut removal: both `#pragma pack(push,1)` blocks in `src/game/core/Globals.cpp` are
+gone (byte-array storage + `reinterpret_cast` at the use sites, layout still proven by the
+static_asserts; gate 4496/4496, `.rodata`/`.data` byte-identical). `MenuTouchWindow` ctor 91.8 ->
+91.9% (`w3640`). Remaining shortcuts: `0.5000001f` in Generator (size anchor), 3
+`__builtin_assume`, the section-ordering file, and the held `layoutCtorPad`.
