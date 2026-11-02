@@ -4760,3 +4760,14 @@ word and is a coincidental size substitute. The real 4 bytes are in the `pick ==
 original emits the non-folded ternary `movs r2,#12; cmp r0,#25; it ne; movne r2,r6` (36 B), our
 clang folds it to `movs r6,#12` (32 B) because `pick` is provably 12 there. Follow-up `w3592` is
 reconstructing that block so true `0.5f` can land at 1996 B.
+
+## Wave 96 (20 agents, 2026-11-02)
+
+Baseline: byte 4496 / linked 4496, 28 functions not byte-exact. TU convergence (`w3613`): the
+"144/195 interleaved" figure is an all-symbol metric (weak inline copies); strong-only
+interleaving is **1/193** (`NdkHooks` owns `NdkAutosave`'s `ndk_autosave`). Eight empty invented
+TUs removed (203 -> 195 objects, 977 -> 969 markers, 5885 -> 5877 order names); every ELF section
+byte-identical except the build-id. `BSphere.cpp` -> `Vector.cpp` merge regresses 4496 -> 4040.
+Landed: `LevelScript::process` 52.88 -> 53.13% (case 135/145 body order, `w3601`);
+`MenuTouchWindow` ctor 91.2 -> 91.6% (`w3610`). `Generator::createMission` `pick == 12` select
+folding is the 4-byte root cause (`w3591`, `w3592`); no source shape prevents the fold yet.
