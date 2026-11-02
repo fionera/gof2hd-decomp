@@ -4805,3 +4805,7 @@ type-14 volumes (`w3641`, 73.8 -> 73.4% but semantically correct); `Layout::Layo
 is codegen width/schedule, not missing stores — all 32 device-flag combinations store the same
 807 bytes/202 words as the original (`w3647`). The held all-ternary schedule is 6800 B (50.8%);
 current HEAD stays size-exact 7072 B (46.8%).
+
+Note: `w3637`'s mission-154 explicit-state commit (55c55eb2) was cherry-picked but shrank
+`LevelScript::process` to 57224 B on the merged tree (its base predated the case-125 move), so it
+was reverted; the change must be redone on current master.
