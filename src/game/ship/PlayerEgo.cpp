@@ -626,7 +626,20 @@ void PlayerEgo::setDockingCamera() {
     this->dockCameraLeaf->setPosition(this->dockOffsetVec);
     this->dockCameraLeaf->setMatrix(this->geometry->getMatrix());
     Globals::Canvas->CameraSetCurrent(this->turretCamera);
+    (void) &PlayerEgo::setTurretMode;
 }
+
+
+bool PlayerEgo::isMining() {
+    PlayerEgo *self = this;
+    return this->miningGame != 0;
+}
+
+bool PlayerEgo::isInRocketControl() {
+    PlayerEgo *self = this;
+    return this->rocketControlGun != 0;
+}
+
 
 bool PlayerEgo::setTurretMode(bool enable) {
     if (this->turretMode == 0 || this->miningGame != 0 || this->autoTurretEquipped != 0) {
@@ -674,17 +687,6 @@ bool PlayerEgo::setTurretMode(bool enable) {
     }
     return true;
 }
-
-bool PlayerEgo::isMining() {
-    PlayerEgo *self = this;
-    return this->miningGame != 0;
-}
-
-bool PlayerEgo::isInRocketControl() {
-    PlayerEgo *self = this;
-    return this->rocketControlGun != 0;
-}
-
 
 void PlayerEgo::stopBoost() {
     this->speed = 2.0f;
@@ -1149,7 +1151,7 @@ int PlayerEgo::getAutoPilotTarget() {
 }
 
 bool PlayerEgo::goingToPlanet() {
-    if (this->autoPilot != 0 && ((PlayerEgo *) (this))->goingToStream() == 0 && ((PlayerEgo *) (this))->goingToStation()
+    if (this->isAutoPilot() && ((PlayerEgo *) (this))->goingToStream() == 0 && ((PlayerEgo *) (this))->goingToStation()
         == 0)
         return this->goingToWaypointFlag == 0;
     return false;
@@ -1935,7 +1937,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         this->player->flShake = shake;
         this->field_0x274 = this->yawAccumD;
         this->field_0x26c = this->rollAccum;
-        if (shake >= 1.0f && !this->dockingToPlanet && !this->dockedToStream) {
+        if (shake >= 1.0f && !this->isDockingToPlanet() && !this->dockedToStream) {
             this->player->setHitpoints(0);
             if (this->explosion2 == nullptr) {
                 this->explosion2 = new Explosion(12);
@@ -1951,7 +1953,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         this->player->flShake = 0;
     }
 
-    if (this->player->getGammaHP() <= 0 && !this->dockingToPlanet && !this->dockingToStream)
+    if (this->player->getGammaHP() <= 0 && !this->isDockingToPlanet() && !this->isDockingToStream())
         this->player->setHitpoints(0);
 
     if (this->dockingState) {

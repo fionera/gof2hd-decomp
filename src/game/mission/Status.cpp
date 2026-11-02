@@ -148,6 +148,7 @@ int Status::addStationToStack(Station *s) {
     Station *found = isOnStack(s);
     if (found != 0) {
         setStation(found);
+        (void) &Status::departStation;
         return 0;
     }
     if ((*stationStack)[0] == 0) {
@@ -187,66 +188,30 @@ Station *Status::isOnStack(Station *s) {
     return (*stationStack)[i];
 }
 
-void Status::setStation(Station *s) {
-    if (this->station == s) {
-        return;
-    }
-    this->station = s;
-    this->system = Globals::galaxy->getSystem(s->getSystem());
-    if (this->system == 0) {
-        return;
-    }
-    (*this->field_b4)[this->station->getSystem()] = true;
 
-    FileRead *fileRead = new FileRead();
-    Array<Station *> *stationList = fileRead->loadStationsBinary(asSystem(this->system));
-    delete fileRead;
 
-    Array<String *> *names = (Array<String *> *) (intptr_t) this->planetNames;
-    if (names != 0) {
-        ArrayReleaseClasses(*names);
-        if ((Array<String *> *) (intptr_t) this->planetNames != 0) {
-            delete (Array<String *> *) (intptr_t) this->planetNames;
-        }
-    }
-    this->planetNames = 0;
-    names = new Array<String *>();
-    this->planetNames = (int32_t) (intptr_t) names;
-    ArraySetLength(stationList->size(), *names);
 
-    if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
-        ArrayRelease(*(Array<int> *) (intptr_t) this->planetTextures);
-        if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
-            delete (Array<int> *) (intptr_t) this->planetTextures;
-        }
-    }
-    this->planetTextures = 0;
-    Array<int> *textures = new Array<int>();
-    this->planetTextures = (int32_t) (intptr_t) textures;
-    ArraySetLength(stationList->size(), *textures);
-
-    Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
-    for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
-        for (unsigned j = 0; j < stationList->size(); j++) {
-            Station *candidate = (*stationList)[j];
-            if ((*stationIndices)[i] == candidate->getIndex()) {
-                String *name;
-                if (this->currentCampaignMission != 0) {
-                    name = new String(candidate->getName());
-                } else {
-                    name = new String();
-                }
-                (*(Array<String *> *) (intptr_t) this->planetNames)[i] = name;
-                (*(Array<int> *) (intptr_t) this->planetTextures)[i] = candidate->getTextureIndex();
-                break;
-            }
-        }
-    }
-    ArrayReleaseClasses(*stationList);
-    delete stationList;
+bool Status::inAlienOrbit() {
+    return station->equals(playerStation);
 }
 
+Station *Status::getStation() { return station; }
+
+int64_t Status::getPlayingTime() { return playingTime; }
+
+void Status::setMission(Mission *m) { mission = m; }
+
+Ship *Status::getShip() { return ship; }
+
+bool Status::gameWon() { return 0x2c < currentCampaignMission; }
+
+int Status::getCurrentCampaignMission() { return currentCampaignMission; }
+
+Mission *Status::getCampaignMission() {
+    return (*missions)[0];
+}
+
+Mission *Status::getMission() { return mission; }
 
 void Status::departStation(Station *dest) {
     if (!inAlienOrbit() && station->getIndex() == 108 && field_114 == 3) {
@@ -377,28 +342,6 @@ campaignDone:
     ship->refreshValue();
 }
 
-bool Status::inAlienOrbit() {
-    return station->equals(playerStation);
-}
-
-Station *Status::getStation() { return station; }
-
-int64_t Status::getPlayingTime() { return playingTime; }
-
-void Status::setMission(Mission *m) { mission = m; }
-
-Ship *Status::getShip() { return ship; }
-
-bool Status::gameWon() { return 0x2c < currentCampaignMission; }
-
-int Status::getCurrentCampaignMission() { return currentCampaignMission; }
-
-Mission *Status::getCampaignMission() {
-    return (*missions)[0];
-}
-
-Mission *Status::getMission() { return mission; }
-
 int Status::getPassengers() { return reinterpret_cast<int32_t &>(_byte_0x34); }
 
 void Status::setPassengers(int p) { reinterpret_cast<int32_t &>(_byte_0x34) = p; }
@@ -471,11 +414,7 @@ void Status::nextCampaignMission(bool advance) {
             this->field_80 = -10;
             setCampaignMission(new Mission());
             (*this->missions)[0]->setVisible(false);
-            int credits = this->credits + 40000;
-            if (credits < 0) {
-                credits = 0;
-            }
-            this->credits = credits;
+            changeCredits(40000);
             break;
         }
         case 21:
@@ -1372,17 +1311,6 @@ int Status::missionFailed(bool docked, int64_t time) {
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
-void Status::checkForLevelUp() {
-    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
-              currentCampaignMission + stationsVisited;
-    for (int i = 0; i != 0x15; i = i + 1) {
-        if (sum >= g_levelXPTable[i]) {
-            level = i;
-        }
-    }
-}
-
-
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
     bool shortMission = notAtStation && extra > 2000;
@@ -1670,7 +1598,69 @@ void Status::removeMission(Mission *mission) {
     }
 }
 
-void Status::visitStation() { stationsVisited = stationsVisited + 1; }int Status::getPlanetNames() { return planetNames; }
+void Status::visitStation() { stationsVisited = stationsVisited + 1; }
+
+void Status::setStation(Station *s) {
+    if (this->station == s) {
+        return;
+    }
+    this->station = s;
+    this->system = Globals::galaxy->getSystem(s->getSystem());
+    if (this->system == 0) {
+        return;
+    }
+    (*this->field_b4)[this->station->getSystem()] = true;
+
+    FileRead *fileRead = new FileRead();
+    Array<Station *> *stationList = fileRead->loadStationsBinary(asSystem(this->system));
+    delete fileRead;
+
+    Array<String *> *names = (Array<String *> *) (intptr_t) this->planetNames;
+    if (names != 0) {
+        ArrayReleaseClasses(*names);
+        if ((Array<String *> *) (intptr_t) this->planetNames != 0) {
+            delete (Array<String *> *) (intptr_t) this->planetNames;
+        }
+    }
+    this->planetNames = 0;
+    names = new Array<String *>();
+    this->planetNames = (int32_t) (intptr_t) names;
+    ArraySetLength(stationList->size(), *names);
+
+    if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+        ArrayRelease(*(Array<int> *) (intptr_t) this->planetTextures);
+        if ((Array<int> *) (intptr_t) this->planetTextures != 0) {
+            delete (Array<int> *) (intptr_t) this->planetTextures;
+        }
+    }
+    this->planetTextures = 0;
+    Array<int> *textures = new Array<int>();
+    this->planetTextures = (int32_t) (intptr_t) textures;
+    ArraySetLength(stationList->size(), *textures);
+
+    Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
+        for (unsigned j = 0; j < stationList->size(); j++) {
+            Station *candidate = (*stationList)[j];
+            if ((*stationIndices)[i] == candidate->getIndex()) {
+                String *name;
+                if (this->currentCampaignMission != 0) {
+                    name = new String(candidate->getName());
+                } else {
+                    name = new String();
+                }
+                (*(Array<String *> *) (intptr_t) this->planetNames)[i] = name;
+                (*(Array<int> *) (intptr_t) this->planetTextures)[i] = candidate->getTextureIndex();
+                break;
+            }
+        }
+    }
+    ArrayReleaseClasses(*stationList);
+    delete stationList;
+}
+
+int Status::getPlanetNames() { return planetNames; }
 
 int Status::getPlanetTextures() { return planetTextures; }
 
@@ -1695,6 +1685,18 @@ int Status::getGoodsProduced() { return goodsProduced; }
 void Status::incGoodsProduced(int delta) { goodsProduced = delta + goodsProduced; }
 
 void Status::setCredits(int v) { credits = v; }
+
+void Status::checkForLevelUp() {
+    int sum = kills + field_d4 / 3 + field_a0 / 50 + field_a4 + missionCount * 2 +
+              currentCampaignMission + stationsVisited;
+    for (int i = 0; i != 0x15; i = i + 1) {
+        if (sum >= g_levelXPTable[i]) {
+            level = i;
+        }
+    }
+}
+
+
 
 int Status::getRating() { return rating; }
 
@@ -1781,6 +1783,10 @@ void Status::setWingmen(Array<String *> *list) {
 }
 
 
+String Status::replaceHash(String text, String replacement) {
+    return replaceHash(text, replacement, String("#"));
+}
+
 String Status::replaceHash(String text, String replacement, String hash) {
     int index = (int) text.IndexOf(hash);
     if (index >= 0) {
@@ -1791,10 +1797,6 @@ String Status::replaceHash(String text, String replacement, String hash) {
         return String(replacement) + text.SubString(hash.length + index, text.length);
     }
     return text;
-}
-
-String Status::replaceHash(String text, String replacement) {
-    return replaceHash(text, replacement, String("#"));
 }
 
 bool Status::stringHasToken(String haystack, String needle) {
@@ -2170,6 +2172,8 @@ void Status::moveWanted() {
         delete pathFinder;
     }
 }
+
+
 
 void Status::resetGame() {
     GameSettings *settings = reinterpret_cast<GameSettings *>(Globals::options);
