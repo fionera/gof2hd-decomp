@@ -361,8 +361,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(19, *Globals::gameText->getText(59), row + 1, this->buttons, 0);
         int mission = Globals::status->getCurrentCampaignMission();
         if (mission == 154 || mission == 157 || mission == 158) {
-            int nextRow = row + 2;
-            this->addButton(18, *Globals::gameText->getText(395), nextRow, this->buttons, 0);
+            this->addButton(18, *Globals::gameText->getText(395), row + 2, this->buttons, 0);
         }
         TouchButton *quit = new TouchButton(*Globals::gameText->getText(61), 0,
                                             Globals::w - Globals::layout->field_0x2c_rowHeight,
