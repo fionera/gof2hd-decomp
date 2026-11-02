@@ -10,7 +10,6 @@ namespace AbyssEngine {
         float Cosf(float value) { return ::cosf(value); }
         float ACosf(float value) { return ::acosf(value); }
         float ATanf(float value) { return ::atanf(value); }
-        float Pow(float lhs, float rhs) { return ::powf(lhs, rhs); }
 
         float Absf(float value) {
             if (value >= 0.0f)
@@ -25,6 +24,8 @@ namespace AbyssEngine {
         float Min(float lhs, float rhs) {
             return lhs < rhs ? lhs : rhs;
         }
+
+        float Pow(float lhs, float rhs) { return ::powf(lhs, rhs); }
 
         float InvSqrt(float value) {
             float f = value;

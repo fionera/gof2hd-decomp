@@ -160,6 +160,25 @@ namespace AbyssEngine {
         glUniform1i(this->uTextureCubemap, 7);
     }
 
+    void BumpRimCubeShader::SetInActive() {
+        int loc;
+        loc = this->aPosition;
+        if (loc >= 0)
+            glDisableVertexAttribArray(loc);
+        loc = this->aTexCoord;
+        if (loc >= 0)
+            glDisableVertexAttribArray(loc);
+        loc = this->aNormal;
+        if (loc >= 0)
+            glDisableVertexAttribArray(loc);
+        loc = this->aTangent;
+        if (loc >= 0)
+            glDisableVertexAttribArray(loc);
+        loc = this->aBitangent;
+        if (loc >= 0)
+            glDisableVertexAttribArray(loc);
+    }
+
     void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->uModelViewProjectionMatrix >= 0)
             glUniformMatrix4fv(this->uModelViewProjectionMatrix, 1, 0, engine->worldViewProjMatrix);
@@ -251,22 +270,6 @@ namespace AbyssEngine {
         }
     }
 
-    void BumpRimCubeShader::SetInActive() {
-        int loc;
-        loc = this->aPosition;
-        if (loc >= 0)
-            glDisableVertexAttribArray(loc);
-        loc = this->aTexCoord;
-        if (loc >= 0)
-            glDisableVertexAttribArray(loc);
-        loc = this->aNormal;
-        if (loc >= 0)
-            glDisableVertexAttribArray(loc);
-        loc = this->aTangent;
-        if (loc >= 0)
-            glDisableVertexAttribArray(loc);
-        loc = this->aBitangent;
-        if (loc >= 0)
-            glDisableVertexAttribArray(loc);
-    }
+
+
 }

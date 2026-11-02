@@ -99,6 +99,14 @@ namespace AbyssEngine {
         glUniform1i(this->uTextureCubemapLoc, 2);
     }
 
+    void CubeNormalMapping::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+        glDisableVertexAttribArray(this->aTangentLoc);
+        glDisableVertexAttribArray(this->aBitangentLoc);
+    }
+
     void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine) {
         Mesh *mesh = meshArg;
         if (this->dirty != 0) {
@@ -148,11 +156,6 @@ namespace AbyssEngine {
         }
     }
 
-    void CubeNormalMapping::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aNormalLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-        glDisableVertexAttribArray(this->aTangentLoc);
-        glDisableVertexAttribArray(this->aBitangentLoc);
-    }
+
+
 }

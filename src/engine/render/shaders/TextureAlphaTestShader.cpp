@@ -72,6 +72,33 @@ namespace AbyssEngine {
         this->name = String("TextureAlphaTestShader", false);
     }
 
+    void TextureAlphaTestShader::UseShader(bool) {
+        if (AbyssEngine::Engine::fogEnabled != 0) {
+            int program = this->fogProgram;
+            if (program != 0) {
+                glUseProgram(program);
+                return;
+            }
+        }
+        glUseProgram(this->program);
+    }
+
+    void TextureAlphaTestShader::ConnectShaderComponents(unsigned int program, int index) {
+        this->sTextureLoc[index] = glGetUniformLocation(program, "s_texture");
+        this->aPositionLoc[index] = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc[index] = glGetAttribLocation(program, "a_texCoord");
+        this->uWorldMatrixLoc[index] = glGetUniformLocation(program, "u_WorldMatrix");
+        this->uGlColorLoc[index] = glGetUniformLocation(program, "glColor");
+        this->uFogColorLoc[index] = glGetUniformLocation(program, "u_fogColor");
+        this->uFogMaxDistLoc[index] = glGetUniformLocation(program, "u_fogMaxDist");
+        this->uFogMinDistLoc[index] = glGetUniformLocation(program, "u_fogMinDist");
+        this->uEnableFogLoc[index] = glGetUniformLocation(program, "u_EnableFog");
+        this->uEyePosModelLoc[index] = glGetUniformLocation(program, "u_eyeposmodel");
+
+        glUseProgram(program);
+        glUniform1i(this->sTextureLoc[index], 0);
+    }
+
     void TextureAlphaTestShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kTextureAlphaTestShaderVertexSource,
                                              kTextureAlphaTestShaderFragmentSource);
@@ -147,30 +174,8 @@ namespace AbyssEngine {
         }
     }
 
-    void TextureAlphaTestShader::ConnectShaderComponents(unsigned int program, int index) {
-        this->sTextureLoc[index] = glGetUniformLocation(program, "s_texture");
-        this->aPositionLoc[index] = glGetAttribLocation(program, "a_position");
-        this->aTexCoordLoc[index] = glGetAttribLocation(program, "a_texCoord");
-        this->uWorldMatrixLoc[index] = glGetUniformLocation(program, "u_WorldMatrix");
-        this->uGlColorLoc[index] = glGetUniformLocation(program, "glColor");
-        this->uFogColorLoc[index] = glGetUniformLocation(program, "u_fogColor");
-        this->uFogMaxDistLoc[index] = glGetUniformLocation(program, "u_fogMaxDist");
-        this->uFogMinDistLoc[index] = glGetUniformLocation(program, "u_fogMinDist");
-        this->uEnableFogLoc[index] = glGetUniformLocation(program, "u_EnableFog");
-        this->uEyePosModelLoc[index] = glGetUniformLocation(program, "u_eyeposmodel");
 
-        glUseProgram(program);
-        glUniform1i(this->sTextureLoc[index], 0);
-    }
 
-    void TextureAlphaTestShader::UseShader(bool) {
-        if (AbyssEngine::Engine::fogEnabled != 0) {
-            int program = this->fogProgram;
-            if (program != 0) {
-                glUseProgram(program);
-                return;
-            }
-        }
-        glUseProgram(this->program);
-    }
+
+
 }

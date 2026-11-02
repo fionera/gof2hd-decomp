@@ -12,10 +12,6 @@ namespace AbyssEngine {
         Set(angles);
     }
 
-    void Quaternion::Set(AEMath::Vector angles) {
-        Set(angles.x, angles.y, angles.z);
-    }
-
     Quaternion::Quaternion(Quaternion *other) {
         (void) other;
     }
@@ -92,6 +88,10 @@ namespace AbyssEngine {
         z = cosZsinY * sinX - cosX * cosYsinZ;
     }
 
+    void Quaternion::Set(AEMath::Vector angles) {
+        Set(angles.x, angles.y, angles.z);
+    }
+
     Quaternion Quaternion::Inverse() const {
         float inv = 1.0f / (x * x + y * y + z * z + w * w);
         Quaternion result;
@@ -108,15 +108,6 @@ namespace AbyssEngine {
 
     Quaternion Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
         return (a + (b - a) * t).Normalized();
-    }
-
-    Quaternion Quaternion::Normalized() {
-        float length = Length();
-        x /= length;
-        y /= length;
-        z /= length;
-        w /= length;
-        return *this;
     }
 
     Quaternion Quaternion::Lerp(const float *a, const float *b, float t) {
@@ -138,6 +129,15 @@ namespace AbyssEngine {
 
     float Quaternion::Length() const {
         return sqrtf(x * x + y * y + z * z + w * w);
+    }
+
+    Quaternion Quaternion::Normalized() {
+        float length = Length();
+        x /= length;
+        y /= length;
+        z /= length;
+        w /= length;
+        return *this;
     }
 
     void Quaternion::Convert(AEMath::Matrix &matrix) {

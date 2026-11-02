@@ -253,82 +253,6 @@ PaintCanvas::~PaintCanvas() {
     }
 }
 
-void PaintCanvas::ReleaseAllResources() {
-    AbyssEngine::CubeMapSetIndex = 0;
-
-    for (unsigned int i = 0; i < this->resources.count; i++) {
-        this->resources.data_[i]->index = -1;
-    }
-
-    for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
-        AbyssEngine::AELoadedTexture *tex = this->cubeTextures.data_[i];
-        if (tex->glId != 0xffffffff) {
-            unsigned int id = tex->glId;
-            glDeleteTextures(1, &id);
-            Engine::ImageCount -= 1;
-            this->engine->textureByteCounter -= this->cubeTextures.data_[i]->byteSize;
-        }
-        delete this->cubeTextures.data_[i];
-        this->cubeTextures.data_[i] = 0;
-    }
-    this->cubeTextures.count = 0;
-
-    for (unsigned int i = 0; i < this->fonts.count; i++) {
-        if (this->fonts.data_[i] != 0) {
-            AbyssEngine::ImageFontRelease(this->engine, &this->fonts.data_[i]);
-        }
-    }
-    ArrayRemoveAll(this->fonts);
-
-    for (unsigned int i = 0; i < this->images.count; i++) {
-        if (this->images.data_[i] != 0) {
-            AbyssEngine::Image2DRelease(this->engine, &this->images.data_[i]);
-        }
-    }
-    ArrayRemoveAll(this->images);
-
-    for (unsigned int i = 0; i < this->meshes.count; i++) {
-        if (this->meshes.data_[i] != 0) {
-            Engine::vboSize -= this->meshes.data_[i]->vboByteSize;
-            AbyssEngine::MeshRelease(this->engine, &this->meshes.data_[i]);
-        }
-    }
-    ArrayRemoveAll(this->meshes);
-
-    for (unsigned int i = 0; i < this->transforms.count; i++) {
-        if (this->transforms.data_[i] != 0) {
-            delete this->transforms.data_[i];
-            this->transforms.data_[i] = 0;
-        }
-    }
-    ArrayRemoveAll(this->transforms);
-
-    for (unsigned int i = 0; i < this->cameras.count; i++) {
-        if (this->cameras.data_[i] != 0) {
-            delete this->cameras.data_[i];
-            this->cameras.data_[i] = 0;
-        }
-    }
-    ArrayRemoveAll(this->cameras);
-    this->currentCamera = -1;
-
-    for (unsigned int i = 0; i < this->materials.count; i++) {
-        if (this->materials.data_[i] != 0) {
-            delete this->materials.data_[i];
-            this->materials.data_[i] = 0;
-        }
-    }
-    ArrayRemoveAll(this->materials);
-
-    for (unsigned int i = 0; i < this->spriteSystems.count; i++) {
-        if (this->spriteSystems.data_[i] != 0) {
-            AbyssEngine::SpriteSystemRelease(this->engine, &this->spriteSystems.data_[i]);
-        }
-    }
-    ArrayRemoveAll(this->spriteSystems);
-    this->field_0x1cc = 0;
-}
-
 void PaintCanvas::SetResourceList(AbyssEngine::Resource * const * list, unsigned int count) {
     return ArrayAdd(list, count, this->resources);
 }
@@ -1257,38 +1181,6 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
     out = idx;
 }
 
-void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
-    Resource *res = this->FindResource(resId);
-    if (res == 0) {
-        return;
-    }
-    if (res->index == -1) {
-        PCMaterialInfoView *info = (PCMaterialInfoView *) res->data;
-        AbyssEngine::Material *mat = new AbyssEngine::Material();
-        for (unsigned int i = 0; i < 8; i++) {
-            if (info->textureIds[i] == 0xffff) {
-                continue;
-            }
-            Resource *tres = this->FindResource(info->textureIds[i]);
-            if (tres == 0) {
-                break;
-            }
-            if (tres->index == -1) {
-                unsigned int texture = 0;
-                this->TextureCreate(info->textureIds[i], texture, true);
-            }
-            mat->textures[i] = tres->index;
-        }
-        mat->blendMode = info->blendMode;
-        mat->addData = info->addData;
-        mat->addDataSize = info->addDataSize;
-        mat->ambientColor = info->ambientColor;
-        ArrayAdd<AbyssEngine::Material *>(mat, this->materials);
-        res->index = (int) this->materials.count - 1;
-    }
-    out = (unsigned int) res->index;
-}
-
 void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangleCount,
                              signed char meshType, unsigned short matResId, unsigned int &out) {
     unsigned int mat = 0xffffffff;
@@ -1960,14 +1852,6 @@ void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, unsigned shor
     }
 }
 
-void PaintCanvas::TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex) {
-    if (transformIndex < this->transforms.count &&
-        meshIndex < this->meshes.count) {
-        return ArrayRemove<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex],
-                                                this->transforms.data_[transformIndex]->meshes);
-    }
-}
-
 void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int meshIndex) {
     if (transformIndex >= this->transforms.count || meshIndex >= this->meshes.count) {
         return;
@@ -1988,6 +1872,14 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
         this->transforms.data_[transformIndex]->SetAnimationState((AbyssEngine::AnimationMode) 2, nullptr);
     }
     this->transforms.data_[transformIndex]->CollectAnimationData();
+}
+
+void PaintCanvas::TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex) {
+    if (transformIndex < this->transforms.count &&
+        meshIndex < this->meshes.count) {
+        return ArrayRemove<AbyssEngine::Mesh *>(this->meshes.data_[meshIndex],
+                                                this->transforms.data_[transformIndex]->meshes);
+    }
 }
 
 void PaintCanvas::TransformSetLocal(unsigned int index, const Matrix &matrix) {
@@ -2361,6 +2253,39 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     out = this->materials.count - 1;
 }
 
+void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
+    Resource *res = this->FindResource(resId);
+    if (res == 0) {
+        return;
+    }
+    if (res->index == -1) {
+        PCMaterialInfoView *info = (PCMaterialInfoView *) res->data;
+        AbyssEngine::Material *mat = new AbyssEngine::Material();
+        for (unsigned int i = 0; i < 8; i++) {
+            if (info->textureIds[i] == 0xffff) {
+                continue;
+            }
+            Resource *tres = this->FindResource(info->textureIds[i]);
+            if (tres == 0) {
+                break;
+            }
+            if (tres->index == -1) {
+                unsigned int texture = 0;
+                this->TextureCreate(info->textureIds[i], texture, true);
+            }
+            mat->textures[i] = tres->index;
+        }
+        mat->blendMode = info->blendMode;
+        mat->addData = info->addData;
+        mat->addDataSize = info->addDataSize;
+        mat->ambientColor = info->ambientColor;
+        ArrayAdd<AbyssEngine::Material *>(mat, this->materials);
+        res->index = (int) this->materials.count - 1;
+    }
+    out = (unsigned int) res->index;
+}
+
+
 void PaintCanvas::MaterialChange(unsigned int index,
                                  AbyssEngine::BlendMode param3, unsigned int param4) {
     if (index < this->materials.count) {
@@ -2566,6 +2491,82 @@ void PaintCanvas::ReleaseSpriteSystemResource(unsigned int index) {
         char **arr = (char **) this->spriteSystems.data_;
         return AbyssEngine::SpriteSystemRelease(ctx, (AbyssEngine::SpriteSystem **) (arr + index));
     }
+}
+
+void PaintCanvas::ReleaseAllResources() {
+    AbyssEngine::CubeMapSetIndex = 0;
+
+    for (unsigned int i = 0; i < this->resources.count; i++) {
+        this->resources.data_[i]->index = -1;
+    }
+
+    for (unsigned int i = 0; i < this->cubeTextures.count; i++) {
+        AbyssEngine::AELoadedTexture *tex = this->cubeTextures.data_[i];
+        if (tex->glId != 0xffffffff) {
+            unsigned int id = tex->glId;
+            glDeleteTextures(1, &id);
+            Engine::ImageCount -= 1;
+            this->engine->textureByteCounter -= this->cubeTextures.data_[i]->byteSize;
+        }
+        delete this->cubeTextures.data_[i];
+        this->cubeTextures.data_[i] = 0;
+    }
+    this->cubeTextures.count = 0;
+
+    for (unsigned int i = 0; i < this->fonts.count; i++) {
+        if (this->fonts.data_[i] != 0) {
+            AbyssEngine::ImageFontRelease(this->engine, &this->fonts.data_[i]);
+        }
+    }
+    ArrayRemoveAll(this->fonts);
+
+    for (unsigned int i = 0; i < this->images.count; i++) {
+        if (this->images.data_[i] != 0) {
+            AbyssEngine::Image2DRelease(this->engine, &this->images.data_[i]);
+        }
+    }
+    ArrayRemoveAll(this->images);
+
+    for (unsigned int i = 0; i < this->meshes.count; i++) {
+        if (this->meshes.data_[i] != 0) {
+            Engine::vboSize -= this->meshes.data_[i]->vboByteSize;
+            AbyssEngine::MeshRelease(this->engine, &this->meshes.data_[i]);
+        }
+    }
+    ArrayRemoveAll(this->meshes);
+
+    for (unsigned int i = 0; i < this->transforms.count; i++) {
+        if (this->transforms.data_[i] != 0) {
+            delete this->transforms.data_[i];
+            this->transforms.data_[i] = 0;
+        }
+    }
+    ArrayRemoveAll(this->transforms);
+
+    for (unsigned int i = 0; i < this->cameras.count; i++) {
+        if (this->cameras.data_[i] != 0) {
+            delete this->cameras.data_[i];
+            this->cameras.data_[i] = 0;
+        }
+    }
+    ArrayRemoveAll(this->cameras);
+    this->currentCamera = -1;
+
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        if (this->materials.data_[i] != 0) {
+            delete this->materials.data_[i];
+            this->materials.data_[i] = 0;
+        }
+    }
+    ArrayRemoveAll(this->materials);
+
+    for (unsigned int i = 0; i < this->spriteSystems.count; i++) {
+        if (this->spriteSystems.data_[i] != 0) {
+            AbyssEngine::SpriteSystemRelease(this->engine, &this->spriteSystems.data_[i]);
+        }
+    }
+    ArrayRemoveAll(this->spriteSystems);
+    this->field_0x1cc = 0;
 }
 
 void PaintCanvas::SetColor(unsigned char r, unsigned char g,

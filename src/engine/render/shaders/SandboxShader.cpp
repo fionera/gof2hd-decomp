@@ -58,6 +58,43 @@ static const char kSandboxShaderFragmentSource[] =
 namespace AbyssEngine {
     int SandboxShader::ShaderIndex = -1;
 
+
+    SandboxShader::SandboxShader() {
+        SandboxShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        *SandboxShader_registerDst = SandboxShader_registerSrc;
+        this->name = String("SandboxShader", false);
+    }
+
+    void SandboxShader::Init(Engine *) {
+        this->program = this->ES2LoadProgram(kSandboxShaderVertexSource, kSandboxShaderFragmentSource);
+
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
+
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uLightDirLoc = glGetUniformLocation(this->program, "u_light_dir");
+        this->uEyePosLoc = glGetUniformLocation(this->program, "u_eye_pos");
+        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
+        this->sTextureNormLoc = glGetUniformLocation(this->program, "s_texture_norm");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        this->uAmbientColorLoc = glGetUniformLocation(this->program, "u_AmbientColor");
+
+        glUseProgram(this->program);
+        glUniform1i(this->sTextureBaseLoc, 0);
+        glUniform1i(this->sTextureNormLoc, 1);
+    }
+
+    void SandboxShader::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+        glDisableVertexAttribArray(this->aTangentLoc);
+        glDisableVertexAttribArray(this->aBitangentLoc);
+    }
+
     void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine) {
         AbyssEngine::Mesh *mesh = meshArg;
 
@@ -99,40 +136,6 @@ namespace AbyssEngine {
         glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
     }
 
-    SandboxShader::SandboxShader() {
-        SandboxShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        *SandboxShader_registerDst = SandboxShader_registerSrc;
-        this->name = String("SandboxShader", false);
-    }
 
-    void SandboxShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram(kSandboxShaderVertexSource, kSandboxShaderFragmentSource);
-
-        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
-        this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
-        this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
-        this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
-        this->aBitangentLoc = glGetAttribLocation(this->program, "a_bitangent");
-
-        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->uLightDirLoc = glGetUniformLocation(this->program, "u_light_dir");
-        this->uEyePosLoc = glGetUniformLocation(this->program, "u_eye_pos");
-        this->sTextureBaseLoc = glGetUniformLocation(this->program, "s_texture_base");
-        this->sTextureNormLoc = glGetUniformLocation(this->program, "s_texture_norm");
-        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
-        this->uAmbientColorLoc = glGetUniformLocation(this->program, "u_AmbientColor");
-
-        glUseProgram(this->program);
-        glUniform1i(this->sTextureBaseLoc, 0);
-        glUniform1i(this->sTextureNormLoc, 1);
-    }
-
-    void SandboxShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-        glDisableVertexAttribArray(this->aNormalLoc);
-        glDisableVertexAttribArray(this->aTangentLoc);
-        glDisableVertexAttribArray(this->aBitangentLoc);
-    }
 
 }

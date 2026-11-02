@@ -90,6 +90,19 @@ namespace AbyssEngine {
         }
     }
 
+    void BumpShaderV2::SetInActive() {
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0)
+            glDisableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0)
+            glDisableVertexAttribArray(this->aBitangentLoc);
+    }
+
     void BumpShaderV2::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->uModelViewProjectionMatrixLoc >= 0)
             glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, 0, engine->worldViewProjMatrix);
@@ -150,16 +163,6 @@ namespace AbyssEngine {
         }
     }
 
-    void BumpShaderV2::SetInActive() {
-        if (this->aPositionLoc >= 0)
-            glDisableVertexAttribArray(this->aPositionLoc);
-        if (this->aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        if (this->aNormalLoc >= 0)
-            glDisableVertexAttribArray(this->aNormalLoc);
-        if (this->aTangentLoc >= 0)
-            glDisableVertexAttribArray(this->aTangentLoc);
-        if (this->aBitangentLoc >= 0)
-            glDisableVertexAttribArray(this->aBitangentLoc);
-    }
+
+
 }

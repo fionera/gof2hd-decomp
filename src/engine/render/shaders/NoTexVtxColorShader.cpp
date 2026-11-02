@@ -26,9 +26,11 @@ static const char kNoTexVtxColorShaderFragmentSource[] =
 namespace AbyssEngine {
     int NoTexVtxColorShader::ShaderIndex = -1;
 
-    void NoTexVtxColorShader::SetInActive() {
-        glDisableVertexAttribArray(aPositionLoc);
-        glDisableVertexAttribArray(aVertexColorLoc);
+
+
+    NoTexVtxColorShader::NoTexVtxColorShader() {
+        NoTexVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("NoTexVtxColorShader", false);
     }
 
     void NoTexVtxColorShader::Init(Engine *) {
@@ -43,9 +45,9 @@ namespace AbyssEngine {
         glUseProgram(this->program);
     }
 
-    NoTexVtxColorShader::NoTexVtxColorShader() {
-        NoTexVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("NoTexVtxColorShader", false);
+    void NoTexVtxColorShader::SetInActive() {
+        glDisableVertexAttribArray(aPositionLoc);
+        glDisableVertexAttribArray(aVertexColorLoc);
     }
 
     void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
@@ -64,4 +66,5 @@ namespace AbyssEngine {
             glVertexAttribPointer(aPositionLoc, 2, 0x1406, 0, 0, *(unsigned char **) &engine->lineVertexBase);
         }
     }
+
 }

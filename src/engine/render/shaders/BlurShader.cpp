@@ -80,6 +80,11 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->texCoordAttrib);
     }
 
+    void BlurShader::RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector) {
+        FBOContainer *target = nullptr;
+        this->RenderEffect(fbo, target, engine, amount, vector);
+    }
+
     void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
                                   float amount, Vector vector) {
         memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
@@ -158,11 +163,6 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
     }
 
-    void BlurShader::RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector) {
-        FBOContainer *target = nullptr;
-        this->RenderEffect(fbo, target, engine, amount, vector);
-    }
-
     void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         int matrixLocation = this->uMvpMatrix;
         if (matrixLocation >= 0) {
@@ -212,4 +212,10 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, 0);
         }
     }
+
+
+
+
+
+
 }

@@ -107,6 +107,12 @@ namespace AbyssEngine {
         glUniform1i(this->uTextureCubemapLoc, 1);
     }
 
+    void SpecCubeMapping::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+    }
+
     void SpecCubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0) {
             glUniform4fv(this->uGlColorLoc, 1, engine->glColor);
@@ -150,9 +156,6 @@ namespace AbyssEngine {
         }
     }
 
-    void SpecCubeMapping::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aNormalLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-    }
+
+
 }

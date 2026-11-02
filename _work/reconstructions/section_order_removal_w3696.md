@@ -498,3 +498,186 @@ reordered object order, to judge progress there.
   the plain no-order build 4524/4524 and allow the ordering file to be dropped.
 * `PaintCanvas.cpp` is the next blocker; the 0x128 gap is inline-copy placement, not a
   missing function.
+
+## 9. Follow-up (2026-11-02, second pass): shader TUs, ConfigReader, FModSound, CutScene — plain no-order 1955 -> 2657
+
+Status: landed in this pass (branch `wave87-w3696`). The section-ordering-file build stays at
+**byte 4496 / linked 4496**, `.text` `0x1337c8 @ 0x69440`, `.ARM.exidx` `0x6f70 @ 0x19cc08`,
+`.rodata` `0x41b67 @ 0x1c9e10`, lint `CLEAN ✓`, drift `0`. The plain no-order build rises from
+**1955 / 4496** (prefix 560) to **2657 / 4496**, **2973 / 4524** exported functions at their
+original address, exact-address prefix **1581**. The first remaining mismatch is
+`PlayerEgo::isMining` (`0x9add8` original, `0x9ae1a` ours).
+
+### 9.1 What was measured
+
+Every row is a controlled rebuild of this tree. `gate` is `check` with the ordering file;
+`plain` is `relink_noorder.py` (the exact gold line minus `--section-ordering-file`) followed
+by `verify.py` and `addr_match.py`. The first mismatch is the lowest-address exported function
+whose address differs from the original.
+
+| edit | gate byte/linked | plain byte | funcs at orig addr | prefix | first mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| start of pass (previous worker's uncommitted edits) | 4496 / 4496 | 2572 | 2734 / 4524 | 1021 | `Engine::ShaderSetInActive` `0x86334` vs `0x86378` |
+| `Engine.cpp`: `RenderMesh` calls `this->ShaderSetInActive()` instead of the virtual call directly | 4496 / 4496 | **2577** | 2748 | **1044** | `AEMath::Abs(float)` `0x86a54` vs `0x86a58` |
+| `AEMath.cpp`: move `Pow` after `Min` | 4496 / 4496 | 2577 | 2752 | **1062** | `ConfigReader::~ConfigReader()` `0x87672` vs `0x87696` |
+| `ConfigReader.cpp`: source order `ctor, ~ConfigReader, ParseFile, GetNewLine, RegisterTokenReadFunction, readers` | 4496 / 4496 | **2578** | 2757 | **1099** | `DrawFBOShader::SetInActive` `0x88548` vs `0x88808` |
+| `DrawFBOShader.cpp`: `ctor, dtor, Init, SetInActive, RenderEffect, UpdateMeshData` | 4496 / 4496 | **2580** | 2760 | **1105** | `BumpRimCubeShader_new::SetInActive` `0x88b18` vs `0x88f00` |
+| `BumpRimCubeShader_new.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | **2581** | 2763 | **1116** | `TextureAlphaTestShader::UseShader` `0x8914c` vs `0x893ac` |
+| `TextureAlphaTestShader.cpp`: `ctor, UseShader, ConnectShaderComponents, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | **2583** | 2768 | **1129** | `BloomShader::SetInActive` `0x897f4` vs `0x89d58` |
+| `BloomShader.cpp`: `ctor, dtor, InternalInit, Init, SetInActive, RenderEffect(2), RenderEffect(3), UpdateMeshData` | 4496 / 4496 | 2337 | 1502 | **1146** | `BlurShader::RenderEffect(4)` `0x8a760` vs `0x8aa70` |
+| `BlurShader.cpp`: `RenderEffect(4)` before `RenderEffect(5)` | 4496 / 4496 | 2339 | 1504 | **1169** | `BumpShader::Init` `0x8b880` vs `0x8b8ac` |
+| `BumpShader.cpp`: `SetInActive` after `Init` | 4496 / 4496 | 2340 | 1506 | **1175** | `TextureVtxColorShader::UseShader` `0x8bda8` vs `0x8bef8` |
+| `TextureVtxColorShader.cpp`: `ctor, UseShader, ConnectShaderComponents, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | 2341 | 1509 | **1196** | `TextureConference::SetInActive` `0x8cc34` vs `0x8ccf4` |
+| `TextureConference.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2343 | 1511 | **1201** | `GlowPPShader::~GlowPPShader` `0x8cda8` vs `0x8d69c` |
+| `GlowPPShader.cpp`: `ctor, dtor, InternalInit, Init, SetInActive, RenderEffect(2), RenderEffect(3), UpdateMeshData` | 4496 / 4496 | **2602** | **2849** | **1213** | `BumpShaderV2::SetInActive` `0x8d888` vs `0x8da8c` |
+| `BumpShaderV2.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2603 | 2852 | **1219** | `TextureLightShader::SetInActive` `0x8dcf0` vs `0x8def8` |
+| `TextureLightShader.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2605 | 2854 | **1222** | `NoTexVtxColorShader::NoTexVtxColorShader` `0x8df2c` vs `0x8dfb0` |
+| `NoTexVtxColorShader.cpp`: `ctor, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | 2606 | 2860 | **1253** | `GenericShader1::SetInActive` `0x8ed4c` vs `0x8eea4` |
+| `GenericShader1.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2607 | 2862 | **1263** | `PostBWShader::RenderEffect` `0x8f030` vs `0x8f0c8` |
+| `PostBWShader.cpp`: `RenderEffect` before `UpdateMeshData` | 4496 / 4496 | 2609 | 2864 | **1271** | `BumpShaderRefract::BumpShaderRefract` `0x8f760` vs `0x8f78c` |
+| `BumpShaderRefract.cpp`: `ctor, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | 2610 | 2870 | **1280** | `BumpRimCubeShader::SetInActive` `0x8fdcc` vs `0x90120` |
+| `BumpRimCubeShader.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2611 | 2873 | **1286** | `VertexColorShader::SetInActive` `0x9032c` vs `0x90570` |
+| `VertexColorShader.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2612 | 2875 | **1304** | `CubeNormalMapping::SetInActive` `0x90cc4` vs `0x90eac` |
+| `CubeNormalMapping.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2614 | 2877 | **1309** | `TextureShader::UseShader` `0x90f74` vs `0x910ac` |
+| `TextureShader.cpp`: `ctor, UseShader, ConnectShaderComponents, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | 2614 | 2880 | **1318** | `BumpMapping::SetInActive` `0x913cc` vs `0x914a4` |
+| `BumpMapping.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2616 | 2882 | **1327** | `SandboxShader::SandboxShader` `0x9178c` vs `0x91910` |
+| `SandboxShader.cpp`: `ctor, Init, SetInActive, UpdateMeshData` | 4496 / 4496 | 2618 | 2887 | **1336** | `VertexColorAlphaTextureShader::SetInActive` `0x91c9c` vs `0x91ee0` |
+| `VertexColorAlphaTextureShader.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2621 | 2889 | **1348** | `ColorMixAdd::SetInActive` `0x92284` vs `0x9236a` |
+| `ColorMixAdd.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2621 | 2891 | **1353** | `PulseShader::Init` `0x92424` vs `0x92464` |
+| `PulseShader.cpp`: `Init` before `SetInActive` | 4496 / 4496 | 2621 | 2893 | **1360** | `SpecCubeMapping::SetInActive` `0x929c0` vs `0x92b3c` |
+| `SpecCubeMapping.cpp`: `SetInActive` before `UpdateMeshData` | 4496 / 4496 | 2623 | 2895 | **1369** | `FModSound::ERRCHECK` `0x92d7c` vs `0x92da0` |
+| `FModSound.cpp`: add inlined `ERRCHECK(FMOD_OK)` before `setAudioLanguage` in `init` | 4496 / 4496 | **2652** | **2949** | **1494** | `MTitle::OnTouchBegin` `0x97a20` vs `0x97a7e` |
+| `MTitle.cpp`: `OnInitialize, OnTouchBegin, OnTouchMove, OnTouchEnd, OnRelease, OnKeyPress, OnUpdate, OnRender2D, OnRender3D` | 4496 / 4496 | 2652 | 2957 | **1527** | `BoundingAAB::~BoundingAAB` `0x98198` vs `0x9839c` |
+| `BoundingAAB.cpp`: `ctor, dtor, collide, outerCollide, getCollisionNormal, update, projectCollisionOnSurface` | 4496 / 4496 | **2653** | 2964 | **1542** | `CutScene::isInitialized` `0x98e80` vs `0x98f44` |
+| `CutScene.cpp`: move `checkForTurret` after `replacePlayerShip` | 4496 / 4496 | **2657** | **2973** | **1581** | `PlayerEgo::isMining` `0x9add8` vs `0x9ae1a` |
+
+The `BloomShader` row is the only one where the plain byte count drops (2583 -> 2337). That is
+not a code regression: moving `UpdateMeshData` after the `RenderEffect` overloads changes the
+addresses of the following functions, and `byte_exact` compares literal-pool words that encode
+those addresses. The exact-address prefix (1129 -> 1146) and the exported-address count
+(2768 -> 1502, also address-dependent) move as expected. The `GlowPPShader` row recovers the
+byte count (2337 -> 2602) because its reorder restores the original address of most of the
+following block.
+
+### 9.2 The mechanisms
+
+**`Engine::RenderMesh` must call `this->ShaderSetInActive()`.** The original order is
+`RenderMesh` `0x85f24`, `ShaderSetInActive` `0x86334`, `AEClientState` `0x86350`. Under clang's
+first-textual-reference emission rule, `RenderMesh`'s body would pull `AEClientState` before
+`ShaderSetInActive` if it called the virtual `shaders[...]->SetInActive()` directly (our old
+code). The original's `RenderMesh` calls the 28-byte `Engine::ShaderSetInActive()` helper, which
+`-Oz` inlines back to the same virtual call; the call site is the first reference to
+`ShaderSetInActive`, so it is emitted before `AEClientState`. `RenderMesh` stays 1040 bytes and
+byte-exact; `ShaderSetInActive` stays 28 bytes. This is a pure AST-reference change, not a
+codegen change.
+
+**`FModSound::ERRCHECK` is referenced by `init`.** `ERRCHECK` is empty (`bx lr`) and inlined, so
+it leaves no trace in the disassembly, but the original emits it immediately after `init` and
+before `setAudioLanguage`. Adding `ERRCHECK(FMOD_OK);` before `setAudioLanguage(...)` in `init`
+reproduces that order without changing `init`'s 332-byte body. This is evidence that the
+original source used `ERRCHECK(...)` call sites around the FMOD calls even though the function
+is empty.
+
+**`CutScene::checkForTurret` is defined after `replacePlayerShip`.** `initialize()` calls
+`checkForTurret()`, so `checkForTurret` is emitted right after `initialize` (pulled forward).
+Its body is scanned at its definition, so the `ArrayReleaseClasses<AEMath::Vector*>`,
+`Array<Vector*>`, `ArrayReleaseClasses<Array<Vector>*>` and `Array<Array<Vector>*>` weak copies
+are emitted at the definition point. The original places them after `replacePlayerShip`; moving
+the definition there reproduces the original order exactly.
+
+**Shader TUs have a consistent shape.** The original order for the ordinary shader classes is
+`ctor, Init, SetInActive, UpdateMeshData` (with `D0` after the dtor). The `Texture*Shader`
+classes additionally put `UseShader` and `ConnectShaderComponents` before `Init`. The
+`BloomShader`/`GlowPPShader` classes put the dtor (and `D0`) and `InternalInit` before `Init`,
+and both `RenderEffect` overloads before `UpdateMeshData`. The `BlurShader` 4-argument
+`RenderEffect` comes before the 5-argument one (the 4-argument one forwards to it).
+
+**`ConfigReader` source order is `ctor, ~ConfigReader, ParseFile, GetNewLine,
+RegisterTokenReadFunction, readers`.** `RegisterTokenReadFunction` is pulled forward by the
+constructor, but its body is scanned at its definition. Putting its definition after
+`GetNewLine` makes the `ArrayAdd<TokenStruct>` instantiation land after `GetNewLine`, exactly
+where the original emits it (`0x878e8`). The readers are also pulled forward by the constructor
+(as function-pointer arguments) but their bodies are scanned at their definitions, so they must
+be defined after `RegisterTokenReadFunction` for the `Array<KeyCode>`/`ArrayAdd<KeyCode>` weak
+copies to land after `ArrayAdd<TokenStruct>`.
+
+### 9.3 PlayerEgo: a gate regression from PLT order (not landed)
+
+Moving `PlayerEgo::stopShooting` after `isInRocketControl` (the original order: `isMining`,
+`isInRocketControl`, `stopShooting`, `stopBoost`, ...) improves the plain no-order frontier but
+**regresses the gate**: `byte_exact` 4496 -> **4485**. The 11 regressed functions are all
+disassembly-identical (`pct 100.0`, `linked` true) but their raw bytes differ in one `blx`
+offset. Example (`verify.py --show _ZN9PlayerEgo6isDeadEv`):
+
+```
+orig 20B @0x9b17c  |  ours 20B @0x9b17c
+  blx 0xfffc7368   ~  blx 0xfffc7350
+```
+
+The `blx` target is a PLT stub; moving `stopShooting` changes the order of relocations in
+`PlayerEgo.cpp`, which changes the order gold assigns PLT entries, which shifts the stub
+addresses. `linked_exact` stays 4496 because the verifier resolves PLT targets by symbol name.
+This is a real `byte_exact` regression under the no-degradation gate, so the edit was reverted.
+`PlayerEgo::isMining` is therefore the current frontier (prefix 1581). Landing it requires
+either a PlayerEgo source order that preserves the external-symbol first-reference order, or a
+separate PLT-order pass.
+
+### 9.4 Exact commands
+
+```sh
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3696/noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3696/verify_noorder \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3696/noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3696/noorder.so
+```
+
+Final re-measurement with the landed source:
+
+```
+verify: byte 4496  linked 4496  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓
+drift: 0 field(s) across 0 class(es)
+
+plain no-order: compared 4524  byte_exact 2657  linked_exact 4496
+                2973/4524 same; prefix 1581;
+                first (0x9add8, PlayerEgo::isMining, 0x9ae1a)
+```
+
+### 9.5 Proven vs hypothesis
+
+**Proven by measurement:**
+
+* The landed source order is gate-neutral: **byte 4496 / linked 4496**, `.text` `0x1337c8`,
+  lint `CLEAN ✓`, drift 0. No baseline update was made.
+* The plain no-order build is **2657 / 4496**, **2973 / 4524** exported functions at their
+  original address, exact-address prefix **1581** (up from 1955 / 930 / 560 at the last
+  committed state, and 2572 / 2734 / 1021 at the start of this pass).
+* `Engine::RenderMesh`'s call to `this->ShaderSetInActive()` is the cause of the
+  `ShaderSetInActive`/`AEClientState` order; the inlined body is unchanged (1040-byte
+  `RenderMesh`, 28-byte `ShaderSetInActive`).
+* `FModSound::init` references `ERRCHECK`, which is why the empty `ERRCHECK` is emitted between
+  `init` and `setAudioLanguage`.
+* `CutScene::checkForTurret`'s definition position controls where the `AEMath::Vector` weak
+  copies are emitted.
+* `PlayerEgo::stopShooting` is the next source-order fix, but it regresses `byte_exact`
+  4496 -> 4485 through PLT-entry reordering.
+
+**Hypothesis (not proven here):**
+
+* The remaining frontier (`PlayerEgo` and beyond) is reachable with the same source-order
+  technique, but the PLT-order coupling means each move must be checked against `byte_exact`,
+  not just the plain no-order prefix.
+* The weak-copy TU membership problem from §4 is still the harder blocker for a full
+  ordering-file removal; this pass only converged per-TU source order.

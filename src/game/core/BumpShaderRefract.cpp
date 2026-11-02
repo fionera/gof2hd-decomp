@@ -47,14 +47,6 @@ static const char kBumpShaderRefractFragmentSource[] =
 namespace AbyssEngine {
     int BumpShaderRefract::ShaderIndex = -1;
 
-    void BumpShaderRefract::SetInActive() {
-        if (aPositionLoc >= 0)
-            glDisableVertexAttribArray(aPositionLoc);
-        if (aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(aTexCoordLoc);
-        if (aVertexColorLoc >= 0)
-            glDisableVertexAttribArray(aVertexColorLoc);
-    }
 
     BumpShaderRefract::BumpShaderRefract() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -90,6 +82,15 @@ namespace AbyssEngine {
                 glUniform1i(loc, i);
         }
         glUniform1i(sTextureBaseLoc, 7);
+    }
+
+    void BumpShaderRefract::SetInActive() {
+        if (aPositionLoc >= 0)
+            glDisableVertexAttribArray(aPositionLoc);
+        if (aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(aTexCoordLoc);
+        if (aVertexColorLoc >= 0)
+            glDisableVertexAttribArray(aVertexColorLoc);
     }
 
     void BumpShaderRefract::UpdateMeshData(Mesh *mesh, ::Engine *engine) {
@@ -142,4 +143,6 @@ namespace AbyssEngine {
                 glVertexAttribPointer(aVertexColorLoc, 4, 0x1406, 0, 0, mesh->colors);
         }
     }
+
+
 }

@@ -198,24 +198,11 @@ namespace AbyssEngine {
         glUniform1i(this->finalUniformTextureBloom, 1);
     }
 
-    void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, engine->worldViewProjMatrix);
-        if (this->dirty != 0) {
-            this->dirty = 0;
-        }
-
-        glEnableVertexAttribArray(this->lumaAttribPosition);
-        glEnableVertexAttribArray(this->lumaAttribTexCoord);
-
-        if (mesh->uploaded != 0) {
-            glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, 0);
-        } else {
-            glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-        }
+    void BloomShader::SetInActive() {
+        glDisableVertexAttribArray(this->lumaAttribPosition);
+        glDisableVertexAttribArray(this->lumaAttribTexCoord);
+        glDisableVertexAttribArray(this->downSampleAttribTexCoord);
+        glDisableVertexAttribArray(this->downSampleAttribPosition);
     }
 
     void BloomShader::RenderEffect(FBOContainer *source, Engine *engine) {
@@ -348,13 +335,6 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
     }
 
-    void BloomShader::SetInActive() {
-        glDisableVertexAttribArray(this->lumaAttribPosition);
-        glDisableVertexAttribArray(this->lumaAttribTexCoord);
-        glDisableVertexAttribArray(this->downSampleAttribTexCoord);
-        glDisableVertexAttribArray(this->downSampleAttribPosition);
-    }
-
     void BloomShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
         if (AbyssEngine::firstRender != 0) {
             AbyssEngine::firstRender = 0;
@@ -482,4 +462,31 @@ namespace AbyssEngine {
             target->EndCapture();
         }
     }
+
+    void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
+        glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, engine->worldViewProjMatrix);
+        if (this->dirty != 0) {
+            this->dirty = 0;
+        }
+
+        glEnableVertexAttribArray(this->lumaAttribPosition);
+        glEnableVertexAttribArray(this->lumaAttribTexCoord);
+
+        if (mesh->uploaded != 0) {
+            glBindBuffer(0x8892, mesh->positionVBO);
+            glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, 0);
+            glBindBuffer(0x8892, mesh->texCoordVBO);
+            glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, 0);
+        } else {
+            glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+        }
+    }
+
+
+
+
+
+
+
 }

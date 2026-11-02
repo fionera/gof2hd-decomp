@@ -50,6 +50,27 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureLoc, 0);
     }
 
+    void VertexColorShader::SetInActive() {
+        if (this->aPositionLoc >= 0) {
+            glDisableVertexAttribArray(this->aPositionLoc);
+        }
+        if (this->aTexCoordLoc >= 0) {
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        }
+        if (this->aNormalLoc >= 0) {
+            glDisableVertexAttribArray(this->aNormalLoc);
+        }
+        if (this->aTangentLoc >= 0) {
+            glDisableVertexAttribArray(this->aTangentLoc);
+        }
+        if (this->aBitangentLoc >= 0) {
+            glDisableVertexAttribArray(this->aBitangentLoc);
+        }
+        if (this->aVertexColorLoc >= 0) {
+            glDisableVertexAttribArray(this->aVertexColorLoc);
+        }
+    }
+
     void VertexColorShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->uModelViewProjectionMatrixLoc >= 0) {
             glUniformMatrix4fv(this->uModelViewProjectionMatrixLoc, 1, false, engine->worldViewProjMatrix);
@@ -135,24 +156,6 @@ namespace AbyssEngine {
         }
     }
 
-    void VertexColorShader::SetInActive() {
-        if (this->aPositionLoc >= 0) {
-            glDisableVertexAttribArray(this->aPositionLoc);
-        }
-        if (this->aTexCoordLoc >= 0) {
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        }
-        if (this->aNormalLoc >= 0) {
-            glDisableVertexAttribArray(this->aNormalLoc);
-        }
-        if (this->aTangentLoc >= 0) {
-            glDisableVertexAttribArray(this->aTangentLoc);
-        }
-        if (this->aBitangentLoc >= 0) {
-            glDisableVertexAttribArray(this->aBitangentLoc);
-        }
-        if (this->aVertexColorLoc >= 0) {
-            glDisableVertexAttribArray(this->aVertexColorLoc);
-        }
-    }
+
+
 }

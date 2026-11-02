@@ -38,14 +38,6 @@ namespace AbyssEngine {
         this->name = String("PulseShader", false);
     }
 
-    void PulseShader::SetInActive() {
-        if (this->aPositionLoc >= 0) glDisableVertexAttribArray(this->aPositionLoc);
-        if (this->aTexCoordLoc >= 0) glDisableVertexAttribArray(this->aTexCoordLoc);
-        if (this->aNormalLoc >= 0) glDisableVertexAttribArray(this->aNormalLoc);
-        if (this->aTangentLoc >= 0) glDisableVertexAttribArray(this->aTangentLoc);
-        if (this->aBitangentLoc >= 0) glDisableVertexAttribArray(this->aBitangentLoc);
-    }
-
     void PulseShader::Init(Engine *) {
         int program = this->ES2LoadProgram(kPulseShaderVertexSource, kPulseShaderFragmentSource);
         this->program = program;
@@ -69,6 +61,14 @@ namespace AbyssEngine {
 
         glUseProgram(this->program);
         glUniform1i(this->sTextureLoc, 0);
+    }
+
+    void PulseShader::SetInActive() {
+        if (this->aPositionLoc >= 0) glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0) glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0) glDisableVertexAttribArray(this->aNormalLoc);
+        if (this->aTangentLoc >= 0) glDisableVertexAttribArray(this->aTangentLoc);
+        if (this->aBitangentLoc >= 0) glDisableVertexAttribArray(this->aBitangentLoc);
     }
 
     void PulseShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
@@ -128,4 +128,7 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, 0);
         }
     }
+
+
+
 }

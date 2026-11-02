@@ -18,7 +18,54 @@ namespace AbyssEngine {
         RegisterTokenReadFunction(String("KEYMAP"), (ConfigTokenReadFunction) ReadKeyMap, engine);
         RegisterTokenReadFunction(String("VIBRATION"), (ConfigTokenReadFunction) ReadVibration, engine);
     }
-
+    ConfigReader::~ConfigReader() {
+        for (uint32_t i = 0; i < tokens.size(); i++) {
+            TokenStruct *token = tokens[i];
+            if (token != nullptr) {
+                delete token;
+            }
+            tokens[i] = nullptr;
+        }
+    }
+    void ConfigReader::ParseFile(String name) {
+        if (AEFile::OpenRead(name, &this->file_handle) == 0)
+            return;
+        String line = GetNewLine();
+        while (line.Compare("EOF") != 0) {
+            // "[NAME]" starts a section handled by the registered token reader.
+            if (*line[0] == '[' && *line[line.length - 1] == ']') {
+                for (uint32_t i = 0; i < tokens.size(); i++) {
+                    if (tokens[i]->name.Compare(line.SubString(1, (unsigned short) line.length - 1)) == 0) {
+                        tokens[i]->read(this, tokens[i]->context);
+                        break;
+                    }
+                }
+            }
+            line = GetNewLine();
+        }
+        AEFile::Close(this->file_handle);
+    }
+    // Next non-empty line without trailing "//" comment; "EOF" at end of file.
+    String ConfigReader::GetNewLine() {
+        String line;
+        char c = 0;
+        while (line.length == 0) {
+            bool read;
+            while ((read = AEFile::Read(c, this->file_handle)) && c != '\n') {
+                if (c != '\r')
+                    line += c;
+            }
+            line.Trim();
+            unsigned int comment = line.IndexOf(String("//"));
+            if (comment != 0xffffffffu) {
+                line = line.SubString(0, comment);
+                line.Trim();
+            }
+            if (line.length == 0 && !read)
+                line.Set("EOF");
+        }
+        return line;
+    }
     void ConfigReader::RegisterTokenReadFunction(
         String name, ConfigTokenReadFunction read, void *context) { // lint: void_ptr (param baked into RegisterTokenReadFunction mangled symbol)
         TokenStruct *token = new TokenStruct();
@@ -88,56 +135,5 @@ namespace AbyssEngine {
                     engine->vibrationSupported = true;
             }
         }
-    }
-
-    ConfigReader::~ConfigReader() {
-        for (uint32_t i = 0; i < tokens.size(); i++) {
-            TokenStruct *token = tokens[i];
-            if (token != nullptr) {
-                delete token;
-            }
-            tokens[i] = nullptr;
-        }
-    }
-
-    void ConfigReader::ParseFile(String name) {
-        if (AEFile::OpenRead(name, &this->file_handle) == 0)
-            return;
-        String line = GetNewLine();
-        while (line.Compare("EOF") != 0) {
-            // "[NAME]" starts a section handled by the registered token reader.
-            if (*line[0] == '[' && *line[line.length - 1] == ']') {
-                for (uint32_t i = 0; i < tokens.size(); i++) {
-                    if (tokens[i]->name.Compare(line.SubString(1, (unsigned short) line.length - 1)) == 0) {
-                        tokens[i]->read(this, tokens[i]->context);
-                        break;
-                    }
-                }
-            }
-            line = GetNewLine();
-        }
-        AEFile::Close(this->file_handle);
-    }
-
-    // Next non-empty line without trailing "//" comment; "EOF" at end of file.
-    String ConfigReader::GetNewLine() {
-        String line;
-        char c = 0;
-        while (line.length == 0) {
-            bool read;
-            while ((read = AEFile::Read(c, this->file_handle)) && c != '\n') {
-                if (c != '\r')
-                    line += c;
-            }
-            line.Trim();
-            unsigned int comment = line.IndexOf(String("//"));
-            if (comment != 0xffffffffu) {
-                line = line.SubString(0, comment);
-                line.Trim();
-            }
-            if (line.length == 0 && !read)
-                line.Set("EOF");
-        }
-        return line;
     }
 }

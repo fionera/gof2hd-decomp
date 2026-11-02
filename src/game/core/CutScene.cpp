@@ -179,144 +179,6 @@ void CutScene::initialize() {
     this->lastTime = this->currentTime;
 }
 
-void CutScene::checkForTurret() {
-    if (this->turretGeom != nullptr)
-        Globals::Canvas->TransformRemoveChild((*this->level->getEnemies())[0]->geometry->transform,
-                                              this->turretGeom->transform);
-
-    Array<Item *> *turrets = Globals::status->getShip()->getEquipment(2);
-    if (turrets == nullptr || turrets->size() == 0 || (*turrets)[0] == nullptr)
-        return;
-
-    // Per-turret meshes: base, barrel and up to three child parts, plus the offset of the
-    // turret on its mounting point.
-    int index = (*turrets)[0]->getIndex();
-    int baseMesh = 0xffff;
-    int barrelMesh = 0xffff;
-    float offsetX = 0.0f;
-    int barrelChild2 = -1;
-    int baseChild = -1;
-    float offsetY = 0.0f;
-    int barrelChild = -1;
-    float offsetZ = 0.0f;
-    switch (index) {
-        case 47:
-            baseMesh = 6770;
-            barrelMesh = 6771;
-            offsetY = 60.0f;
-            break;
-        case 48:
-            baseMesh = 6772;
-            barrelMesh = 6773;
-            offsetY = 55.0f;
-            break;
-        case 49:
-            baseMesh = 6774;
-            barrelMesh = 6775;
-            offsetY = 60.0f;
-            break;
-        case 180:
-            baseMesh = 6805;
-            barrelMesh = 6806;
-            offsetY = 84.0f;
-            break;
-        case 181:
-            baseMesh = 6807;
-            barrelMesh = 6808;
-            offsetY = 88.0f;
-            offsetZ = -11.0f;
-            break;
-        case 182:
-            baseMesh = 6809;
-            barrelMesh = 6810;
-            offsetX = 34.0f;
-            offsetY = 88.0f;
-            offsetZ = 1.6f;
-            break;
-        case 198:
-            baseMesh = 18787;
-            barrelMesh = 18791;
-            baseChild = 18788;
-            barrelChild = 18790;
-            offsetY = 80.0f;
-            break;
-        case 199:
-            baseMesh = 18792;
-            barrelMesh = 18795;
-            baseChild = 18793;
-            barrelChild = 18794;
-            offsetY = 38.0f;
-            break;
-        case 200:
-            barrelChild2 = 18800;
-            barrelChild = 18798;
-            baseChild = 18797;
-            barrelMesh = 18799;
-            baseMesh = 18796;
-            offsetY = 75.0f;
-            break;
-        case 224:
-            barrelChild = 18845;
-            baseMesh = 18842;
-            barrelMesh = 18843;
-            baseChild = 18844;
-            offsetY = 82.0f;
-            break;
-        default:
-            break;
-    }
-
-    AEGeometry *base = new AEGeometry((uint16_t) baseMesh, Globals::Canvas, false);
-    AEGeometry *barrel = new AEGeometry((uint16_t) barrelMesh, Globals::Canvas, false);
-    barrel->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
-    if (baseChild != -1) {
-        AEGeometry *part = new AEGeometry((uint16_t) baseChild, Globals::Canvas, false);
-        base->addChild(part->transform);
-        delete part;
-    }
-    if (barrelChild != -1) {
-        AEGeometry *part = new AEGeometry((uint16_t) barrelChild, Globals::Canvas, false);
-        barrel->addChild(part->transform);
-        delete part;
-    }
-    if (barrelChild2 != -1) {
-        AEGeometry *part = new AEGeometry((uint16_t) barrelChild2, Globals::Canvas, false);
-        barrel->addChild(part->transform);
-        delete part;
-    }
-
-    delete this->turretGeom;
-    this->turretGeom = nullptr;
-    this->turretGeom = new AEGeometry(Globals::Canvas);
-
-    FileRead *fileRead = new FileRead();
-    Array<Array<Vector *> *> *positions = fileRead->loadWeaponPositions(Globals::status->getShip()->getIndex());
-    delete fileRead;
-
-    base->setPosition(*(*(*positions)[2])[0]);
-    barrel->setPosition(*(*(*positions)[2])[0]);
-    barrel->translate(offsetX, offsetY, offsetZ);
-    if ((*turrets)[0]->getIndex() < 198 || (*turrets)[0]->getIndex() > 200) {
-        base->rotate(0.0f, 3.1415927f, 0.0f);
-        barrel->rotate(0.0f, 3.1415927f, 0.0f);
-    }
-
-    this->turretGeom->addChild(base->transform);
-    this->turretGeom->addChild(barrel->transform);
-    (*this->level->getEnemies())[0]->geometry->addChild(this->turretGeom->transform);
-
-    if (positions != nullptr) {
-        for (unsigned int i = 0; i < positions->size(); ++i) {
-            if ((*positions)[i] != nullptr) {
-                ArrayReleaseClasses(*(*positions)[i]);
-                delete (*positions)[i];
-                (*positions)[i] = nullptr;
-            }
-        }
-        ArrayReleaseClasses(*positions);
-        delete positions;
-    }
-}
 uint8_t CutScene::isInitialized() {
     return this->initialized;
 }
@@ -503,6 +365,145 @@ void CutScene::replacePlayerShip(int shipIndex, int race) {
     this->checkForTurret();
 }
 
+void CutScene::checkForTurret() {
+    if (this->turretGeom != nullptr)
+        Globals::Canvas->TransformRemoveChild((*this->level->getEnemies())[0]->geometry->transform,
+                                              this->turretGeom->transform);
+
+    Array<Item *> *turrets = Globals::status->getShip()->getEquipment(2);
+    if (turrets == nullptr || turrets->size() == 0 || (*turrets)[0] == nullptr)
+        return;
+
+    // Per-turret meshes: base, barrel and up to three child parts, plus the offset of the
+    // turret on its mounting point.
+    int index = (*turrets)[0]->getIndex();
+    int baseMesh = 0xffff;
+    int barrelMesh = 0xffff;
+    float offsetX = 0.0f;
+    int barrelChild2 = -1;
+    int baseChild = -1;
+    float offsetY = 0.0f;
+    int barrelChild = -1;
+    float offsetZ = 0.0f;
+    switch (index) {
+        case 47:
+            baseMesh = 6770;
+            barrelMesh = 6771;
+            offsetY = 60.0f;
+            break;
+        case 48:
+            baseMesh = 6772;
+            barrelMesh = 6773;
+            offsetY = 55.0f;
+            break;
+        case 49:
+            baseMesh = 6774;
+            barrelMesh = 6775;
+            offsetY = 60.0f;
+            break;
+        case 180:
+            baseMesh = 6805;
+            barrelMesh = 6806;
+            offsetY = 84.0f;
+            break;
+        case 181:
+            baseMesh = 6807;
+            barrelMesh = 6808;
+            offsetY = 88.0f;
+            offsetZ = -11.0f;
+            break;
+        case 182:
+            baseMesh = 6809;
+            barrelMesh = 6810;
+            offsetX = 34.0f;
+            offsetY = 88.0f;
+            offsetZ = 1.6f;
+            break;
+        case 198:
+            baseMesh = 18787;
+            barrelMesh = 18791;
+            baseChild = 18788;
+            barrelChild = 18790;
+            offsetY = 80.0f;
+            break;
+        case 199:
+            baseMesh = 18792;
+            barrelMesh = 18795;
+            baseChild = 18793;
+            barrelChild = 18794;
+            offsetY = 38.0f;
+            break;
+        case 200:
+            barrelChild2 = 18800;
+            barrelChild = 18798;
+            baseChild = 18797;
+            barrelMesh = 18799;
+            baseMesh = 18796;
+            offsetY = 75.0f;
+            break;
+        case 224:
+            barrelChild = 18845;
+            baseMesh = 18842;
+            barrelMesh = 18843;
+            baseChild = 18844;
+            offsetY = 82.0f;
+            break;
+        default:
+            break;
+    }
+
+    AEGeometry *base = new AEGeometry((uint16_t) baseMesh, Globals::Canvas, false);
+    AEGeometry *barrel = new AEGeometry((uint16_t) barrelMesh, Globals::Canvas, false);
+    barrel->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
+    if (baseChild != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) baseChild, Globals::Canvas, false);
+        base->addChild(part->transform);
+        delete part;
+    }
+    if (barrelChild != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) barrelChild, Globals::Canvas, false);
+        barrel->addChild(part->transform);
+        delete part;
+    }
+    if (barrelChild2 != -1) {
+        AEGeometry *part = new AEGeometry((uint16_t) barrelChild2, Globals::Canvas, false);
+        barrel->addChild(part->transform);
+        delete part;
+    }
+
+    delete this->turretGeom;
+    this->turretGeom = nullptr;
+    this->turretGeom = new AEGeometry(Globals::Canvas);
+
+    FileRead *fileRead = new FileRead();
+    Array<Array<Vector *> *> *positions = fileRead->loadWeaponPositions(Globals::status->getShip()->getIndex());
+    delete fileRead;
+
+    base->setPosition(*(*(*positions)[2])[0]);
+    barrel->setPosition(*(*(*positions)[2])[0]);
+    barrel->translate(offsetX, offsetY, offsetZ);
+    if ((*turrets)[0]->getIndex() < 198 || (*turrets)[0]->getIndex() > 200) {
+        base->rotate(0.0f, 3.1415927f, 0.0f);
+        barrel->rotate(0.0f, 3.1415927f, 0.0f);
+    }
+
+    this->turretGeom->addChild(base->transform);
+    this->turretGeom->addChild(barrel->transform);
+    (*this->level->getEnemies())[0]->geometry->addChild(this->turretGeom->transform);
+
+    if (positions != nullptr) {
+        for (unsigned int i = 0; i < positions->size(); ++i) {
+            if ((*positions)[i] != nullptr) {
+                ArrayReleaseClasses(*(*positions)[i]);
+                delete (*positions)[i];
+                (*positions)[i] = nullptr;
+            }
+        }
+        ArrayReleaseClasses(*positions);
+        delete positions;
+    }
+}
+
 void CutScene::render2D() {
     this->level->render2D();
 }
@@ -528,5 +529,16 @@ void CutScene::render3D() {
             (*this->geometries)[i]->render();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

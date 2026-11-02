@@ -56,6 +56,11 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureLoc, 0);
     }
 
+    void TextureConference::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+    }
+
     void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine) {
         glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
@@ -77,8 +82,6 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
     }
 
-    void TextureConference::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-    }
+
+
 }

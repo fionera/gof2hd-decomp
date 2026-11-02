@@ -64,10 +64,6 @@ namespace AbyssEngine {
         glDeleteFramebuffers(1, &this->extraRenderbuffer0);
     }
 
-    void FBOContainer::Activate() {
-        glBindTexture(0xde1, this->texture);
-    }
-
     void FBOContainer::BeginCapture() {
         glBindFramebuffer(0x8d40, this->framebuffer);
         glViewport(0, 0, this->width, this->height);
@@ -75,5 +71,9 @@ namespace AbyssEngine {
 
     void FBOContainer::EndCapture() {
         glBindFramebuffer(0x8d40, this->engine->viewFramebuffer);
+    }
+
+    void FBOContainer::Activate() {
+        glBindTexture(0xde1, this->texture);
     }
 }

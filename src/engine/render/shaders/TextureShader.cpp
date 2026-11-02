@@ -75,6 +75,33 @@ namespace AbyssEngine {
         this->name = String("TextureShader", false);
     }
 
+    void TextureShader::UseShader(bool) {
+        if (AbyssEngine::Engine::fogEnabled != 0 && this->programExt != 0) {
+            glUseProgram(this->programExt);
+            return;
+        }
+        glUseProgram(this->program);
+    }
+
+    void TextureShader::ConnectShaderComponents(uint32_t program, int slot) {
+        this->sTextureLoc[slot] = glGetUniformLocation(program, "s_texture");
+        this->aPositionLoc[slot] = glGetAttribLocation(program, "a_position");
+        this->aTexCoordLoc[slot] = glGetAttribLocation(program, "a_texCoord");
+        this->uWorldMatrixLoc[slot] = glGetUniformLocation(program, "u_WorldMatrix");
+        this->uGlColorLoc[slot] = glGetUniformLocation(program, "glColor");
+        this->uFogColorLoc[slot] = glGetUniformLocation(program, "u_fogColor");
+        this->uFogMaxDistLoc[slot] = glGetUniformLocation(program, "u_fogMaxDist");
+        this->uFogMinDistLoc[slot] = glGetUniformLocation(program, "u_fogMinDist");
+        this->uEnableFogLoc[slot] = glGetUniformLocation(program, "u_EnableFog");
+        this->uEyePosModelLoc[slot] = glGetUniformLocation(program, "u_eyeposmodel");
+        this->uDarkenValueLoc[slot] = glGetUniformLocation(program, "u_DarkenValue");
+        this->uUVAnimationLoc[slot] = glGetUniformLocation(program, "u_UVAnimation");
+        this->uUvMatrixLoc[slot] = glGetUniformLocation(program, "u_UvMatrix");
+
+        glUseProgram(program);
+        glUniform1i(this->sTextureLoc[slot], 0);
+    }
+
     void TextureShader::Init(Engine *) {
         const char *vertexShader = kTextureShaderVertexSource;
 
@@ -83,14 +110,6 @@ namespace AbyssEngine {
 
         this->programExt = this->ES2LoadProgram(vertexShader, kTextureShaderFogFragmentSource);
         ConnectShaderComponents(this->programExt, 1);
-    }
-
-    void TextureShader::UseShader(bool) {
-        if (AbyssEngine::Engine::fogEnabled != 0 && this->programExt != 0) {
-            glUseProgram(this->programExt);
-            return;
-        }
-        glUseProgram(this->program);
     }
 
     void TextureShader::SetInActive() {
@@ -167,22 +186,8 @@ namespace AbyssEngine {
         }
     }
 
-    void TextureShader::ConnectShaderComponents(uint32_t program, int slot) {
-        this->sTextureLoc[slot] = glGetUniformLocation(program, "s_texture");
-        this->aPositionLoc[slot] = glGetAttribLocation(program, "a_position");
-        this->aTexCoordLoc[slot] = glGetAttribLocation(program, "a_texCoord");
-        this->uWorldMatrixLoc[slot] = glGetUniformLocation(program, "u_WorldMatrix");
-        this->uGlColorLoc[slot] = glGetUniformLocation(program, "glColor");
-        this->uFogColorLoc[slot] = glGetUniformLocation(program, "u_fogColor");
-        this->uFogMaxDistLoc[slot] = glGetUniformLocation(program, "u_fogMaxDist");
-        this->uFogMinDistLoc[slot] = glGetUniformLocation(program, "u_fogMinDist");
-        this->uEnableFogLoc[slot] = glGetUniformLocation(program, "u_EnableFog");
-        this->uEyePosModelLoc[slot] = glGetUniformLocation(program, "u_eyeposmodel");
-        this->uDarkenValueLoc[slot] = glGetUniformLocation(program, "u_DarkenValue");
-        this->uUVAnimationLoc[slot] = glGetUniformLocation(program, "u_UVAnimation");
-        this->uUvMatrixLoc[slot] = glGetUniformLocation(program, "u_UvMatrix");
 
-        glUseProgram(program);
-        glUniform1i(this->sTextureLoc[slot], 0);
-    }
+
+
+
 }

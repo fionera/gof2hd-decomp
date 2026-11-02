@@ -22,6 +22,20 @@ static const char kNoTexShaderFragmentSource[] =
 namespace AbyssEngine {
     int NoTexShader::ShaderIndex = -1;
 
+
+    NoTexShader::NoTexShader() {
+        NoTexShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("NoTexShader", false);
+    }
+
+    void NoTexShader::Init(Engine *) {
+        this->program = this->ES2LoadProgram(kNoTexShaderVertexSource, kNoTexShaderFragmentSource);
+        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
+        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
+        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
+        glUseProgram(this->program);
+    }
+
     void NoTexShader::SetInActive() {
         glDisableVertexAttribArray(this->aPositionLoc);
     }
@@ -46,16 +60,4 @@ namespace AbyssEngine {
         }
     }
 
-    void NoTexShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram(kNoTexShaderVertexSource, kNoTexShaderFragmentSource);
-        this->aPositionLoc = glGetAttribLocation(this->program, "a_position");
-        this->uWorldMatrixLoc = glGetUniformLocation(this->program, "u_WorldMatrix");
-        this->uGlColorLoc = glGetUniformLocation(this->program, "glColor");
-        glUseProgram(this->program);
-    }
-
-    NoTexShader::NoTexShader() {
-        NoTexShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("NoTexShader", false);
-    }
 }

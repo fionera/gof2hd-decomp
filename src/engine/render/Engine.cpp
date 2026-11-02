@@ -427,15 +427,6 @@ uint32_t Engine::ShaderInit() {
     glGetError();
     return 1;
 }
-void Engine::ShaderRegister(ShaderBaseStruct *shader) {
-    if (shader != 0) {
-        char *name = shader->GetShaderName().GetAEChar();
-        shader->Init(this);
-        ArrayAdd(shader, this->shaders);
-        ArrayAdd(0, this->triangleCounts);
-        delete[] name;
-    }
-}
 void Engine::SetFrameBufferTexture(int slot0, int slot1) {
     if (this->frameBufferTextures[slot0] != -1) {
         glActiveTexture(0x84c0);
@@ -1414,7 +1405,7 @@ void Engine::RenderMesh(Mesh *mesh) {
                     glDrawElements(4, count, 0x1403, mesh->indices);
                 }
             }
-            this->shaders[currentUsedShaderIndex]->SetInActive();
+            this->ShaderSetInActive();
         }
         return;
     }
@@ -1587,6 +1578,15 @@ void Engine::SetAccelValue(double x, double y, double z) {
     this->accelRaw[0] = x;
     this->accelRaw[1] = y;
     this->accelRaw[2] = z;
+}
+void Engine::ShaderRegister(ShaderBaseStruct *shader) {
+    if (shader != 0) {
+        char *name = shader->GetShaderName().GetAEChar();
+        shader->Init(this);
+        ArrayAdd(shader, this->shaders);
+        ArrayAdd(0, this->triangleCounts);
+        delete[] name;
+    }
 }
 void Engine::ReloadShaders() {
     uint32_t index = 0;

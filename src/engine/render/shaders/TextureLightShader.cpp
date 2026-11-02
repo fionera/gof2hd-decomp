@@ -125,6 +125,12 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureLoc, 0);
     }
 
+    void TextureLightShader::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+    }
+
     void TextureLightShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
         glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->uUvMatrixLoc >= 0)
@@ -184,9 +190,6 @@ namespace AbyssEngine {
         glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, mesh->normals);
     }
 
-    void TextureLightShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-        glDisableVertexAttribArray(this->aNormalLoc);
-    }
+
+
 }

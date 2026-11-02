@@ -31,6 +31,16 @@ int MTitle::OnInitialize() {
     return 0;
 }
 
+void MTitle::OnTouchBegin(int x, int y) {
+}
+
+void MTitle::OnTouchMove(int x, int y) {
+}
+
+void MTitle::OnTouchEnd(int x, int y) {
+    this->timer = 5000;
+}
+
 void MTitle::OnRelease() {
     Globals::Canvas->ReleaseAllResources();
 
@@ -44,12 +54,6 @@ void MTitle::OnRelease() {
 }
 
 void MTitle::OnKeyPress(long long key, long long mod) {
-}
-
-void MTitle::OnTouchBegin(int x, int y) {
-}
-
-void MTitle::OnTouchMove(int x, int y) {
 }
 
 void MTitle::OnUpdate() {
@@ -96,7 +100,11 @@ void MTitle::OnRender3D() {
     this->paintCanvas->End3d();
 }
 
-void MTitle::OnTouchEnd(int x, int y) {
-    this->timer = 5000;
-}
+
+
+
+
+
+
+
 

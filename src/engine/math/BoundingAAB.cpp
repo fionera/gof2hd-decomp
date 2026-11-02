@@ -29,6 +29,16 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
     this->halfExtents.z = extentZ;
 }
 
+BoundingAAB::~BoundingAAB() {
+}
+
+int BoundingAAB::collide(float x, float y, float z) {
+    if (this->outerCollide(x, y, z) == 0) {
+        return 0;
+    }
+    return BoundingVolume::collide(x, y, z);
+}
+
 int BoundingAAB::outerCollide(float x, float y, float z) {
     float centerX = this->position.x + this->offset.x;
     float extentX = this->halfExtents.x;
@@ -59,7 +69,18 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-// Moves the point onto the nearest of the six faces.
+Vector BoundingAAB::getCollisionNormal(const Vector &) {
+    Vector out;
+    out.x = 0.0f;
+    out.y = 0.0f;
+    out.z = 0.0f;
+    return out;
+}
+
+void BoundingAAB::update(float x, float y, float z) {
+    BoundingVolume::update(x, y, z);
+}
+
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
     Vector faceOffsets[6] = {
             {point.x - (this->position.x + this->offset.x + this->halfExtents.x), 0.0f, 0.0f},
@@ -88,24 +109,9 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
     return point - faceOffsets[closestIndex];
 }
 
-BoundingAAB::~BoundingAAB() {
-}
 
-Vector BoundingAAB::getCollisionNormal(const Vector &) {
-    Vector out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    return out;
-}
+// Moves the point onto the nearest of the six faces.
 
-int BoundingAAB::collide(float x, float y, float z) {
-    if (this->outerCollide(x, y, z) == 0) {
-        return 0;
-    }
-    return BoundingVolume::collide(x, y, z);
-}
 
-void BoundingAAB::update(float x, float y, float z) {
-    BoundingVolume::update(x, y, z);
-}
+
+

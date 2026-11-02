@@ -12,17 +12,9 @@ static const char kGenericShader2FragmentSource[] =
 namespace AbyssEngine {
     int GenericShader2::ShaderIndex = -1;
 
-    void GenericShader2::SetInActive() {
-        if (aPositionLoc >= 0)
-            glDisableVertexAttribArray(aPositionLoc);
-        if (aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(aTexCoordLoc);
-        if (aNormalLoc >= 0)
-            glDisableVertexAttribArray(aNormalLoc);
-        if (aTangentLoc >= 0)
-            glDisableVertexAttribArray(aTangentLoc);
-        if (aBitangentLoc >= 0)
-            glDisableVertexAttribArray(aBitangentLoc);
+    GenericShader2::GenericShader2() {
+        ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("GenericShader2", false);
     }
 
     void GenericShader2::Init(Engine *) {
@@ -46,6 +38,19 @@ namespace AbyssEngine {
 
         glUseProgram(this->program);
         glUniform1i(sTextureLoc, 0);
+    }
+
+    void GenericShader2::SetInActive() {
+        if (aPositionLoc >= 0)
+            glDisableVertexAttribArray(aPositionLoc);
+        if (aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(aTexCoordLoc);
+        if (aNormalLoc >= 0)
+            glDisableVertexAttribArray(aNormalLoc);
+        if (aTangentLoc >= 0)
+            glDisableVertexAttribArray(aTangentLoc);
+        if (aBitangentLoc >= 0)
+            glDisableVertexAttribArray(aBitangentLoc);
     }
 
     void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine) {
@@ -93,8 +98,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
     }
 
-    GenericShader2::GenericShader2() {
-        ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("GenericShader2", false);
-    }
 }

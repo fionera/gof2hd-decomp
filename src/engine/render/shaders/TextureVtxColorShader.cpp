@@ -85,14 +85,12 @@ namespace AbyssEngine {
         this->name = String("TextureVtxColorShader", false);
     }
 
-    void TextureVtxColorShader::Init(Engine *) {
-        this->program = this->ES2LoadProgram(kTextureVtxColorShaderVertexSource,
-                                             kTextureVtxColorShaderFragmentSource);
-        ConnectShaderComponents(this->program, 0);
-
-        this->fogProgram = this->ES2LoadProgram(kTextureVtxColorShaderVertexSource,
-                                                kTextureVtxColorShaderFogFragmentSource);
-        ConnectShaderComponents(this->fogProgram, 1);
+    void TextureVtxColorShader::UseShader(bool) {
+        if (EngineFogEnabled() && this->fogProgram != 0) {
+            glUseProgram(this->fogProgram);
+            return;
+        }
+        glUseProgram(this->program);
     }
 
     void TextureVtxColorShader::ConnectShaderComponents(uint32_t program, int index) {
@@ -115,12 +113,14 @@ namespace AbyssEngine {
         glUniform1i(loc_s_texture[index], 0);
     }
 
-    void TextureVtxColorShader::UseShader(bool) {
-        if (EngineFogEnabled() && this->fogProgram != 0) {
-            glUseProgram(this->fogProgram);
-            return;
-        }
-        glUseProgram(this->program);
+    void TextureVtxColorShader::Init(Engine *) {
+        this->program = this->ES2LoadProgram(kTextureVtxColorShaderVertexSource,
+                                             kTextureVtxColorShaderFragmentSource);
+        ConnectShaderComponents(this->program, 0);
+
+        this->fogProgram = this->ES2LoadProgram(kTextureVtxColorShaderVertexSource,
+                                                kTextureVtxColorShaderFogFragmentSource);
+        ConnectShaderComponents(this->fogProgram, 1);
     }
 
     void TextureVtxColorShader::SetInActive() {
@@ -206,4 +206,9 @@ namespace AbyssEngine {
         glVertexAttribPointer((uint32_t) loc_a_VertexColor[index], 4, 0x1406, 0, 0,
                               mesh->colors);
     }
+
+
+
+
+
 }

@@ -63,6 +63,11 @@ static const char kGenericShaderFragmentSource[] =
 namespace AbyssEngine {
     int GenericShader::ShaderIndex = -1;
 
+    GenericShader::GenericShader() {
+        GenericShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        this->name = String("GenericShader", false);
+    }
+
     void GenericShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kGenericShaderVertexSource, kGenericShaderFragmentSource);
 
@@ -168,8 +173,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aBitangentLoc, 3, 0x1406, 0, 0, mesh->binormals);
     }
 
-    GenericShader::GenericShader() {
-        GenericShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-        this->name = String("GenericShader", false);
-    }
 }

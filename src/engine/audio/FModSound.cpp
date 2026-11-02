@@ -98,6 +98,7 @@ void FModSound::init() {
         this->fxSlots[i] = -1;
     FMOD::EventSystem_Create(&this->system);
     this->system->init(0x20, static_cast<FMOD_INITFLAGS>(0x82), nullptr, FMOD_EVENT_INIT_NORMAL);
+    ERRCHECK(FMOD_OK);
     setAudioLanguage(GameText::getLanguage());
 
     char path[0x400];

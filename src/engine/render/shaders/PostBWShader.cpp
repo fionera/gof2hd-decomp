@@ -62,25 +62,6 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 
-    void PostBWShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
-        if (this->dirty != 0)
-            this->dirty = 0;
-
-        glEnableVertexAttribArray(this->aPositionLoc);
-        glEnableVertexAttribArray(this->aTexCoordLoc);
-
-        if (mesh->uploaded != 0) {
-            glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
-        } else {
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
-        }
-    }
-
     void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
         engine->currentProgram = this->program;
         memset(engine->projMatrix, 0, sizeof(engine->projMatrix));
@@ -142,4 +123,28 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
         engine->boundTextures[0] = 0xffffffff;
     }
+
+    void PostBWShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->dirty != 0)
+            this->dirty = 0;
+
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
+
+        if (mesh->uploaded != 0) {
+            glBindBuffer(0x8892, mesh->positionVBO);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
+            glBindBuffer(0x8892, mesh->texCoordVBO);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
+        } else {
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+        }
+    }
+
+
+
+
+
 }

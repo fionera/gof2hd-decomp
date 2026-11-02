@@ -58,6 +58,13 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureLoc, 0);
     }
 
+    void ColorMixAdd::SetInActive() {
+        for (int i = 0; i != 2; i++) {
+            glDisableVertexAttribArray(this->aPositionLoc);
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        }
+    }
+
     void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine) {
         glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
         if (this->uUvMatrixLoc >= 0)
@@ -87,10 +94,6 @@ namespace AbyssEngine {
         }
     }
 
-    void ColorMixAdd::SetInActive() {
-        for (int i = 0; i != 2; i++) {
-            glDisableVertexAttribArray(this->aPositionLoc);
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        }
-    }
+
+
 }

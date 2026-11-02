@@ -50,24 +50,9 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureBaseLoc, 0);
     }
 
-    void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
-        if (this->dirty != 0) {
-            this->dirty = 0;
-        }
-
-        glEnableVertexAttribArray(this->aPositionLoc);
-        glEnableVertexAttribArray(this->aTexCoordLoc);
-
-        if (mesh->uploaded == 0) {
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
-        } else {
-            glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
-        }
+    void DrawFBOShader::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
     }
 
     void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
@@ -158,8 +143,28 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
     }
 
-    void DrawFBOShader::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
+    void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
+        glUniformMatrix4fv(this->uWorldMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+        if (this->dirty != 0) {
+            this->dirty = 0;
+        }
+
+        glEnableVertexAttribArray(this->aPositionLoc);
+        glEnableVertexAttribArray(this->aTexCoordLoc);
+
+        if (mesh->uploaded == 0) {
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
+        } else {
+            glBindBuffer(0x8892, mesh->positionVBO);
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
+            glBindBuffer(0x8892, mesh->texCoordVBO);
+            glVertexAttribPointer(this->aTexCoordLoc, 2, 0x1406, 0, 0, 0);
+        }
     }
+
+
+
+
+
 }

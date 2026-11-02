@@ -99,28 +99,78 @@ namespace AbyssEngine {
         this->name = String("GlowPPShader");
     }
 
+    GlowPPShader::~GlowPPShader() {
+    }
+
+    void GlowPPShader::InternalInit(Engine *engine) {
+        this->copyTarget = new FBOContainer(engine, String("GlowPPShader fboMasked"));
+        this->copyTarget->Create(0x200, 0x200, true, false);
+
+        this->blurXTarget = new FBOContainer(engine, String("GlowPPShader fboBlurH"));
+        this->blurXTarget->Create(0x200, 0x200, true, false);
+
+        this->blurYTarget = new FBOContainer(engine, String("GlowPPShader fboBlurV"));
+        this->blurYTarget->Create(0x200, 0x200, true, false);
+
+        this->backgroundTarget = new FBOContainer(engine, String("GlowPPShader fboBlack"));
+        this->backgroundTarget->Create(0x200, 0x200, true, false);
+    }
+
+    void GlowPPShader::Init(Engine *) {
+        const char *vertex = kGlowPPVertexSource;
+        this->copyProgram = this->ES2LoadProgram(vertex, kGlowPPCopyFragmentSource);
+        this->blurXProgram = this->ES2LoadProgram(vertex, kGlowPPBlurHFragmentSource);
+        this->blurYProgram = this->ES2LoadProgram(vertex, kGlowPPBlurVFragmentSource);
+        this->combineProgram = this->ES2LoadProgram(vertex, kGlowPPCombineFragmentSource);
+
+        const char *position = "a_position";
+        const char *texcoord = "a_texCoord";
+        const char *worldView = "u_WorldMatrix";
+        const char *texture = "s_texture_base";
+        const char *sampleSize = "texSize";
+        const char *texture2 = "s_texture_glow";
+
+        this->copyAttribPosition = glGetAttribLocation(this->copyProgram, position);
+        this->copyAttribTexCoord = glGetAttribLocation(this->copyProgram, texcoord);
+        this->copyUniformWorldView = glGetUniformLocation(this->copyProgram, worldView);
+        this->copyUniformTexture = glGetUniformLocation(this->copyProgram, texture);
+        glUseProgram(this->copyProgram);
+        glUniform1i(this->copyUniformTexture, 0);
+
+        this->blurXAttribPosition = glGetAttribLocation(this->blurXProgram, position);
+        this->blurXAttribTexCoord = glGetAttribLocation(this->blurXProgram, texcoord);
+        this->blurXUniformWorldView = glGetUniformLocation(this->blurXProgram, worldView);
+        this->blurXUniformTexture = glGetUniformLocation(this->blurXProgram, texture);
+        this->blurXUniformSampleSize = glGetUniformLocation(this->blurXProgram, sampleSize);
+        glUseProgram(this->blurXProgram);
+        glUniform1i(this->blurXUniformTexture, 0);
+
+        this->blurYAttribPosition = glGetAttribLocation(this->blurYProgram, position);
+        this->blurYAttribTexCoord = glGetAttribLocation(this->blurYProgram, texcoord);
+        this->blurYUniformWorldView = glGetUniformLocation(this->blurYProgram, worldView);
+        this->blurYUniformTexture = glGetUniformLocation(this->blurYProgram, texture);
+        this->blurYUniformSampleSize = glGetUniformLocation(this->blurYProgram, sampleSize);
+        glUseProgram(this->blurYProgram);
+        glUniform1i(this->blurYUniformTexture, 0);
+
+        this->combineAttribPosition = glGetAttribLocation(this->combineProgram, position);
+        this->combineAttribTexCoord = glGetAttribLocation(this->combineProgram, texcoord);
+        this->combineUniformWorldView = glGetUniformLocation(this->combineProgram, worldView);
+        this->combineUniformTexture = glGetUniformLocation(this->combineProgram, texture);
+        this->combineUniformTexture2 = glGetUniformLocation(this->combineProgram, texture2);
+        glUseProgram(this->combineProgram);
+        glUniform1i(this->combineUniformTexture, 0);
+        glUniform1i(this->combineUniformTexture2, 1);
+    }
+
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);
         glDisableVertexAttribArray(this->meshAttribTexCoord);
     }
 
-    void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        if (this->dirty != 0) {
-            this->dirty = 0;
-        }
-
-        glEnableVertexAttribArray(this->meshAttribPosition);
-        glEnableVertexAttribArray(this->meshAttribTexCoord);
-        if (mesh->uploaded != 0) {
-            glBindBuffer(0x8892, mesh->positionVBO);
-            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, mesh->texCoordVBO);
-            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, 0);
-        } else {
-            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
-            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
-        }
+    void GlowPPShader::RenderEffect(FBOContainer *source, Engine *engine) {
+        FBOContainer *target = 0;
+        this->RenderEffect(source, target, engine);
     }
 
     void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
@@ -254,73 +304,30 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
     }
 
-    void GlowPPShader::RenderEffect(FBOContainer *source, Engine *engine) {
-        FBOContainer *target = 0;
-        this->RenderEffect(source, target, engine);
-    }
+    void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
+        glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
+        if (this->dirty != 0) {
+            this->dirty = 0;
+        }
 
-    void GlowPPShader::InternalInit(Engine *engine) {
-        this->copyTarget = new FBOContainer(engine, String("GlowPPShader fboMasked"));
-        this->copyTarget->Create(0x200, 0x200, true, false);
-
-        this->blurXTarget = new FBOContainer(engine, String("GlowPPShader fboBlurH"));
-        this->blurXTarget->Create(0x200, 0x200, true, false);
-
-        this->blurYTarget = new FBOContainer(engine, String("GlowPPShader fboBlurV"));
-        this->blurYTarget->Create(0x200, 0x200, true, false);
-
-        this->backgroundTarget = new FBOContainer(engine, String("GlowPPShader fboBlack"));
-        this->backgroundTarget->Create(0x200, 0x200, true, false);
-    }
-
-    void GlowPPShader::Init(Engine *) {
-        const char *vertex = kGlowPPVertexSource;
-        this->copyProgram = this->ES2LoadProgram(vertex, kGlowPPCopyFragmentSource);
-        this->blurXProgram = this->ES2LoadProgram(vertex, kGlowPPBlurHFragmentSource);
-        this->blurYProgram = this->ES2LoadProgram(vertex, kGlowPPBlurVFragmentSource);
-        this->combineProgram = this->ES2LoadProgram(vertex, kGlowPPCombineFragmentSource);
-
-        const char *position = "a_position";
-        const char *texcoord = "a_texCoord";
-        const char *worldView = "u_WorldMatrix";
-        const char *texture = "s_texture_base";
-        const char *sampleSize = "texSize";
-        const char *texture2 = "s_texture_glow";
-
-        this->copyAttribPosition = glGetAttribLocation(this->copyProgram, position);
-        this->copyAttribTexCoord = glGetAttribLocation(this->copyProgram, texcoord);
-        this->copyUniformWorldView = glGetUniformLocation(this->copyProgram, worldView);
-        this->copyUniformTexture = glGetUniformLocation(this->copyProgram, texture);
-        glUseProgram(this->copyProgram);
-        glUniform1i(this->copyUniformTexture, 0);
-
-        this->blurXAttribPosition = glGetAttribLocation(this->blurXProgram, position);
-        this->blurXAttribTexCoord = glGetAttribLocation(this->blurXProgram, texcoord);
-        this->blurXUniformWorldView = glGetUniformLocation(this->blurXProgram, worldView);
-        this->blurXUniformTexture = glGetUniformLocation(this->blurXProgram, texture);
-        this->blurXUniformSampleSize = glGetUniformLocation(this->blurXProgram, sampleSize);
-        glUseProgram(this->blurXProgram);
-        glUniform1i(this->blurXUniformTexture, 0);
-
-        this->blurYAttribPosition = glGetAttribLocation(this->blurYProgram, position);
-        this->blurYAttribTexCoord = glGetAttribLocation(this->blurYProgram, texcoord);
-        this->blurYUniformWorldView = glGetUniformLocation(this->blurYProgram, worldView);
-        this->blurYUniformTexture = glGetUniformLocation(this->blurYProgram, texture);
-        this->blurYUniformSampleSize = glGetUniformLocation(this->blurYProgram, sampleSize);
-        glUseProgram(this->blurYProgram);
-        glUniform1i(this->blurYUniformTexture, 0);
-
-        this->combineAttribPosition = glGetAttribLocation(this->combineProgram, position);
-        this->combineAttribTexCoord = glGetAttribLocation(this->combineProgram, texcoord);
-        this->combineUniformWorldView = glGetUniformLocation(this->combineProgram, worldView);
-        this->combineUniformTexture = glGetUniformLocation(this->combineProgram, texture);
-        this->combineUniformTexture2 = glGetUniformLocation(this->combineProgram, texture2);
-        glUseProgram(this->combineProgram);
-        glUniform1i(this->combineUniformTexture, 0);
-        glUniform1i(this->combineUniformTexture2, 1);
+        glEnableVertexAttribArray(this->meshAttribPosition);
+        glEnableVertexAttribArray(this->meshAttribTexCoord);
+        if (mesh->uploaded != 0) {
+            glBindBuffer(0x8892, mesh->positionVBO);
+            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, 0);
+            glBindBuffer(0x8892, mesh->texCoordVBO);
+            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, 0);
+        } else {
+            glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+        }
     }
 
 
-    GlowPPShader::~GlowPPShader() {
-    }
+
+
+
+
+
+
 }

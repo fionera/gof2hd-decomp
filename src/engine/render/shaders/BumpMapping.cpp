@@ -71,6 +71,14 @@ namespace AbyssEngine {
         glUniform1i(this->sTextureNormalLoc, 1);
     }
 
+    void BumpMapping::SetInActive() {
+        glDisableVertexAttribArray(this->aPositionLoc);
+        glDisableVertexAttribArray(this->aNormalLoc);
+        glDisableVertexAttribArray(this->aTangentLoc);
+        glDisableVertexAttribArray(this->aBitangentLoc);
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+    }
+
     void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine) {
         if (this->dirty != 0)
             this->dirty = 0;
@@ -95,11 +103,6 @@ namespace AbyssEngine {
         }
     }
 
-    void BumpMapping::SetInActive() {
-        glDisableVertexAttribArray(this->aPositionLoc);
-        glDisableVertexAttribArray(this->aNormalLoc);
-        glDisableVertexAttribArray(this->aTangentLoc);
-        glDisableVertexAttribArray(this->aBitangentLoc);
-        glDisableVertexAttribArray(this->aTexCoordLoc);
-    }
+
+
 }

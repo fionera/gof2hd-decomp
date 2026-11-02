@@ -112,15 +112,6 @@ namespace AbyssEngine {
         this->name = String("BumpShader", false);
     }
 
-    void BumpShader::SetInActive() {
-        if (this->aPositionLoc >= 0)
-            glDisableVertexAttribArray(this->aPositionLoc);
-        if (this->aTexCoordLoc >= 0)
-            glDisableVertexAttribArray(this->aTexCoordLoc);
-        if (this->aNormalLoc >= 0)
-            glDisableVertexAttribArray(this->aNormalLoc);
-    }
-
     void BumpShader::Init(Engine *) {
         this->program = this->ES2LoadProgram(kBumpShaderVertexSource, kBumpShaderFragmentSource);
 
@@ -154,6 +145,15 @@ namespace AbyssEngine {
         glUseProgram(this->program);
         glUniform1i(this->sTextureLoc, 0);
         glUniform1i(this->uTextureCubemapLoc, 7);
+    }
+
+    void BumpShader::SetInActive() {
+        if (this->aPositionLoc >= 0)
+            glDisableVertexAttribArray(this->aPositionLoc);
+        if (this->aTexCoordLoc >= 0)
+            glDisableVertexAttribArray(this->aTexCoordLoc);
+        if (this->aNormalLoc >= 0)
+            glDisableVertexAttribArray(this->aNormalLoc);
     }
 
     void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx) {
@@ -230,4 +230,7 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aNormalLoc, 3, 0x1406, 0, 0, 0);
         }
     }
+
+
+
 }
