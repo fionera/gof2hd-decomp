@@ -2094,7 +2094,7 @@ void Level::createMission() {
     int bigAlienWave = 0;
     int pirateFortress = 0;
     int alienWave = 0;
-    if (this->field_168 > 0 && localRace == 0) {
+    if (this->field_168 != 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
@@ -2160,8 +2160,8 @@ void Level::createMission() {
     }
     int stationRace = localRace == 2 ? 0 : localRace;
     for (int i = this->friendCount + this->field_164; i < this->friendCount + this->field_164 + this->field_168; i++) {
-        if (i == this->friendCount + this->field_164 && alienWave) {
-            if (bigAlienWave) {
+        if (i == this->friendCount + this->field_164 && alienWave == 1) {
+            if (bigAlienWave == 1) {
                 Vector pos = {(float) (Globals::rnd->nextInt(80000) - 40000), (float) (Globals::rnd->nextInt(40000) - 20000),
                               (float) (Globals::rnd->nextInt(80000) + 100000)};
                 (*this->enemies)[i] =
