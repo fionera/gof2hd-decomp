@@ -66,6 +66,7 @@ LOCAL_ONLY_AFTER = {
 MARKER_AFTER = {
     ".text.ndk23_Init": ".text.ndk_resetNativeItemInformationList",   # NdkHooks.cpp
     ".text.ndk_autosave": ".text._Z8GetTouchi",                       # NdkAutosave.cpp
+    ".text.pConstToNonConst": ".text._Z8GetTouchi",                   # NdkAutosave.cpp
 }
 
 
