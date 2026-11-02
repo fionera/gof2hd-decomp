@@ -444,9 +444,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             bool special = (i | 1) == 9;
             int spacing = Globals::Canvas->FontGetSpacing(
                 special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
-            int width = this->buttonWidth;
             TouchButton *language = new TouchButton(
-                *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, width, 17, 4,
+                *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
                 special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font, spacing);
             language->id = MenuTouchWindow_languageIds[i];
             if (special)
@@ -552,8 +551,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::Canvas->Image2DCreate(1702, this->fireImage_0x54);
         Globals::Canvas->Image2DCreate(1703, this->fireImage_0x58);
         Globals::Canvas->Image2DCreate(1704, this->fireImage_0x5c);
+        GameText *cinematicText = Globals::gameText;
         this->cinematicBtnB = new TouchButton(
-            *Globals::gameText->getText(497), 0, Globals::w >> 1,
+            *cinematicText->getText(497), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 * 2 -
                 Globals::layout->field_0x30_rowHeight * 2,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
@@ -689,7 +689,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                              *(float *) &Globals::options[44]),
              *this->sliders);
     (*this->sliders)[6]->setPosition(Globals::w / 2 - (*this->sliders)[6]->getWidth() / 2,
-                                     Globals::layout->field_0xc_leftMargin + sliderTop +
+                                     Globals::layout->field_0xc_leftMargin + sliderTop2 +
                                          Globals::layout->field_0x20_top + Globals::layout->field_0x1c +
                                          Globals::layout->field_0x2c_rowHeight);
     this->optBtnD4 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
