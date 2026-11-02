@@ -4997,3 +4997,6 @@ Wave-97 function pass: `LevelScript::process` 54.371 -> 54.856% (`w3703`) by mak
 state-2/state-3 blocks separate `if`s (faithful to the binary) and recovering the 8-byte tail
 difference so the body stays 57232 B. This also cuts `.ARM.exidx` differing bytes 1,961 -> 1,702
 and `.ARM.extab` 131,132 -> 128,991. Gate 4496/4496.
+Section-order pass 4 (`w3705`): `Level` source order for `enableParticleEffects`,
+`setPlayerEngineColor`, `getStarSystem`, `getGasClouds`. Plain no-order build **2719 -> 2723/4496
+byte-exact**, exact-address prefix **2288 -> 2292**. Gate-neutral 4496/4496.
