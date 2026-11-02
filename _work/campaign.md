@@ -5065,3 +5065,6 @@ a flag-order artifact). No flag is a strict improvement. New residual: `.rel.plt
 snapshot. Note: `_work/reconstructions/build_config_rederivation_w3745.md`.
 Wave-97 function pass: `Layout::Layout` 47.4 -> 47.6% (`w3743`) by ternary/if form fixes and
 the field_0x120/0x130 store order. 7072 B, gate 4497/4497.
+Wave-97 section-order pass: `Level::getGasClouds` moved before `createAsteroids` (`w3745`),
+plain no-order build 2723 -> 2981 byte-exact (prefix 2292 -> 2296). Normal gate 4497/4497.
+Note: `_work/reconstructions/section_order_removal_w3745.md`.
