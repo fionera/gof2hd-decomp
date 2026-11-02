@@ -4920,3 +4920,6 @@ linked 4496, `.text` 0x1337c8).
 `w3696` then moved `ArrayReleaseClasses<AELowLevelFile*>` from `ArrayInstantiations.cpp` to
 `AEFile.cpp` (weak-copy TU membership): no-order reordered prefix 268 -> 970, no-order byte
 1728 -> 1861, gate-neutral 4496/4496. This is the first weak-copy TU-membership convergence.
+`w3696` moved `ArrayReleaseClasses<ShaderBaseStruct*>` from `Array.cpp` to `Engine.cpp`:
+no-order reordered prefix 970 -> 1445, no-order byte 1861 -> 2484, gate-neutral 4496/4496.
+The no-order build is now 2484/4496 byte-exact (from 1527 at the start of the pass).
