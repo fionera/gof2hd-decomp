@@ -5098,3 +5098,6 @@ Note: `_work/reconstructions/starmap_object_order_w3745.md`.
 Wave-97 section-order pass: `RecordHandler::readRecord` placement (`w3745`); plain no-order
 2995 -> 3000 byte-exact (prefix 2408 -> 2414). Normal gate 4497/4497. Note:
 `_work/reconstructions/recordhandler_readrecord_placement_w3745.md`.
+Wave-97 section-order pass: `RecordHandler` byte-array block (`w3745`); plain no-order
+3000 -> 3013 byte-exact (prefix 2414 -> 2639). Normal gate 4497/4497. Note:
+`_work/reconstructions/recordhandler_bytearray_block_w3745.md`.
