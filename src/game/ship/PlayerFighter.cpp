@@ -1,5 +1,6 @@
 #include "game/ship/PlayerFighter.h"
 #include "game/core/Globals.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "engine/core/AERandom.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Mesh.h"

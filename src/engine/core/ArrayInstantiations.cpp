@@ -38,8 +38,6 @@
 
 template void ArrayReleaseClasses<AbstractGun*>(Array<AbstractGun*> &);
 
-template void ArrayReleaseClasses<BoundingVolume*>(Array<BoundingVolume*> &);
-
 template void ArrayReleaseClasses<ImagePart*>(Array<ImagePart*> &);
 
 template void ArrayReleaseClasses<Item*>(Array<Item*> &);
