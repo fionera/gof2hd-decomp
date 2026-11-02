@@ -4896,3 +4896,18 @@ Wave-97 flag closeout: `w3695` measured 59 further previously-untested compile f
 variants): no variant beats 4496/4496/4524; 38 are gate-neutral, 5 fail to build/link. The
 original codegen is consistent with clang 7.0.2's default `-Oz` pipeline; the remaining 28
 functions are source/TU shape, not a missing compile flag.
+
+Wave-97 section-identity win: `w3695` replaced the post-link GNU `strip --strip-all` with gold
+`-s`. The original's `.shstrtab` is in gold's Stringpool (raw link) order; GNU strip rewrote it
+into section-header order. With `-s` the `.shstrtab` is **byte-identical (259 -> 0 differing
+bytes)** at unchanged gate 4496/4496. Current non-.text deltas: `.rel.plt` 12 B (a 6-entry
+rotation caused by `LevelScript::process`'s body layout, `deleteHackingGame` call at object
+offset 0x543e vs 0x61bc), `.ARM.exidx` 2,707 B, `.ARM.extab` 121,218 B (-8 size),
+`.note.gnu.build-id` 20 B. `.text` differing bytes now **114,529**.
+`w3696` showed per-TU function order alone cannot remove the section-ordering file: sorting each
+object's own `.text.*` lifts the no-order build 1527 -> 1728 (prefix 47 -> 268), but the remaining
+blocker is **weak-copy TU membership** (`ArrayInstantiations.cpp`/`Array.cpp` define weak
+functions spanning 0x702e4..0x183d74). Moving one `ArrayReleaseClasses<AELowLevelFile*>`
+instantiation to `AEFile.cpp` is gate-neutral and lifts it to 1861 (prefix 970). Three
+gate-neutral source-order fixes (`VirtualInput`, `GLES1Compat`, `FileInterfaceAndroid`) move the
+frontier 47 -> 222; they are documented but not yet landed.

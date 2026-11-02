@@ -223,7 +223,7 @@ The original build is now pinned by evidence, not by A/B alone:
   (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
-Same-hash == completing the decompile to byte-perfection: make the remaining 55 functions exact,
+Same-hash == completing the decompile to byte-perfection: make the remaining 28 functions exact,
 recover the residual anonymous const/initialised data, and match the exact link layout. Progress is
 tracked by: byte_exact/linked_exact function counts (verify) and the section-size deltas above.
 
