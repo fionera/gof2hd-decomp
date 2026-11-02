@@ -704,7 +704,7 @@ before `createGun`, and `getGasClouds` after `createRadioMessages`).
 | `Status.cpp`: `checkForLevelUp` after `setCredits` | 4496 / 4496 | 2718 | 3161 | 2237 | `Status::replaceHash(String,String)` `0xac83c` vs `0xac89c` |
 | `Status.cpp`: 2-arg `replaceHash` before the 3-arg overload | 4496 / 4496 | 2719 | 3163 | 2288 | `Level::enableParticleEffects` `0xbd68c` vs `0xc3fec` |
 | `Level.cpp`: `enableParticleEffects`/`setPlayerEngineColor` before `initParticleSystems`, `getStarSystem` before `createSpace` | 4496 / 4496 | 2721 | 3166 | 2291 | `Level::getStarSystem` `0xbde48` vs `0xc40b4` |
-| `Level.cpp`: `getGasClouds` before `createGun` | 4496 / 4496 | **2723** | **3170** | **2292** | `Array<KIPlayer*>::Array()` `0xbde4e` vs `0xc40ba` |
+| `Level.cpp`: `getGasClouds` before `createSpace` | 4496 / 4496 | **2723** | **3170** | **2292** | `Array<KIPlayer*>::Array()` `0xbde4e` vs `0xbde54` |
 
 ### 10.2 The mechanisms
 
@@ -729,9 +729,10 @@ the 2-argument one. The original order is 2-arg then 3-arg.
 `enableParticleEffects`, `setPlayerEngineColor`, `getStarSystem`, `getGasClouds` before
 `initParticleSystems` in the source makes the emission order
 `connectPlayers, enableParticleEffects, setPlayerEngineColor, initParticleSystems,
-getStarSystem, getGasClouds, createGun`, matching the original. `getGasClouds` is emitted
-later than its source position because `createGun` is pulled forward; it is still placed
-before `createGun` in the object order.
+getStarSystem, getGasClouds, createGun`, matching the original up to `getGasClouds`.
+`getGasClouds` is emitted at its source position; the remaining difference is that clang
+flushes the `Array<KIPlayer*>` weak copy after `getGasClouds`, while the original flushes it
+before.
 
 **PLT order is input-section order, not output order.** Moving `initParticleSystems` after
 `setPlayerEngineColor` alone regressed the gate **4496 -> 4474**: gold assigns PLT entries
@@ -746,9 +747,12 @@ address, but every later `blx` shifted. Moving the *other* functions instead kee
 The next mismatch is the weak-copy ordering around `getStarSystem`/`getGasClouds`. The
 original `Level.cpp` object order (from `_work/original_layout/original_layout.json`) is
 `initParticleSystems, getStarSystem, ArraySetLength<KIPlayer*>, getGasClouds,
-ArraySetLength<Array<Gun*>*>, ArraySetLength<Gun*>, createGun`. Our object emits the
-`Array<KIPlayer*>` and `Array<Gun*>` weak copies back-to-back before `createGun`, and
-`getGasClouds` after `createRadioMessages`. This is the same weak-copy TU-membership/flush
-problem described in §4; it needs a source shape that makes clang flush the
-`Array<KIPlayer*>` instantiation before `getGasClouds` and the `Array<Gun*>` instantiations
-after it.
+ArraySetLength<Array<Gun*>*>, ArraySetLength<Gun*>, createGun`. Our object order is
+`initParticleSystems, getStarSystem, getGasClouds, Array<KIPlayer*>::Array(),
+ArraySetLength<KIPlayer*>, ArraySetLength<Array<Gun*>*>, ArraySetLength<Gun*>, createGun`.
+This is the same weak-copy TU-membership/flush problem described in §4; it needs a source
+shape that makes clang flush the `Array<KIPlayer*>` instantiation before `getGasClouds`.
+Moving `getGasClouds` after `createGun` flushes the weak copy before it but moves
+`getGasClouds` itself to `0xc0245`, dropping plain byte_exact to 2594; moving it before
+`createSpace` keeps `getGasClouds` at its original address and is the better trade
+(2723 / prefix 2292).
