@@ -5063,3 +5063,5 @@ Correction: `-funwind-tables` is load-bearing (removal 4497 -> 2878; the old "ne
 a flag-order artifact). No flag is a strict improvement. New residual: `.rel.plt` section header
 `sh_flags=AI/sh_info=20` vs our `A/0` (content/size/address exact), likely a different gold 1.12
 snapshot. Note: `_work/reconstructions/build_config_rederivation_w3745.md`.
+Wave-97 function pass: `Layout::Layout` 47.4 -> 47.6% (`w3743`) by ternary/if form fixes and
+the field_0x120/0x130 store order. 7072 B, gate 4497/4497.
