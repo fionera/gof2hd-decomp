@@ -4985,5 +4985,7 @@ Section-order pass 2 (`w3696`): reordered the shader TUs, `ConfigReader`, `FModS
 `AEMath` to the original per-TU emission order. The plain no-order build rose **1955 -> 2657/4496
 byte-exact** (exact-address prefix **560 -> 1581**); the reordered no-order control remains
 4524/4524 address-exact and byte 4496. Gate-neutral 4496/4496, `.text` 0x1337c8.
-Wave-97 function pass: `Level::createShip` 73.4 -> 73.5% (`w3666`) by emitting the three jitter
-`nextInt(40000)` calls in the original Y,Z,X order; 2764 B, gate 4496/4496.
+Wave-97 function pass: `Level::createShip` (`w3666`) measured all 36 jitter call/declaration
+permutations. The original binary calls `nextInt` in X,Y,Z order, so the faithful X,Y,Z source is
+kept; the metric-only Y,Z,X variant scored 73.5484 vs 73.4491 but is not semantically faithful.
+2764 B, gate 4496/4496.
