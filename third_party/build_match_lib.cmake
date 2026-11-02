@@ -240,7 +240,7 @@ elseif(GOF2_LIB STREQUAL "openssl")
         -Wall -O3 -pthread -mandroid -fPIC -Wa,--noexecstack
         -I. -Icrypto/include -Iinclude -Icrypto -w)
     set(objs "")
-    foreach(_s "${OBJDIR}/armv4cpuid.S" "${SRC}/crypto/sha/sha256.c" "${OBJDIR}/sha256-armv4.S")
+    foreach(_s "${SRC}/crypto/sha/sha256.c" "${OBJDIR}/armv4cpuid.S" "${OBJDIR}/sha256-armv4.S")
         get_filename_component(_n "${_s}" NAME_WE)
         execute_process(COMMAND ${GCC} ${OSSL_FLAGS} -c ${_s} -o ${OBJDIR}/${_n}.o
                         WORKING_DIRECTORY "${SRC}" RESULT_VARIABLE _rc)
