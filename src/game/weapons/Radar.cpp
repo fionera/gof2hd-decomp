@@ -1198,11 +1198,10 @@ asteroids:
                     }
                     this->lockedAsteroid = nullptr;
                 }
-                KIPlayer *candidate = this->field_0x10;
-                bool candidateWreck = candidate != nullptr && candidate->hasCargo &&
-                                      (candidate->isDead() || candidate->isDying());
+                bool candidateWreck = this->field_0x10 != nullptr && this->field_0x10->hasCargo &&
+                                      (this->field_0x10->isDead() || this->field_0x10->isDying());
                 if (!asteroidHit || this->level->getPlayer()->isDockingToAsteroid()) {
-                    if (*(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid) == nullptr) {
+                    if ((candidateWreck ? this->field_0x1c : this->lockedAsteroid) == nullptr) {
                         this->asteroidLockTimer = 0;
                         this->field_0x10 = 0;
                     } else {
@@ -1230,7 +1229,7 @@ asteroids:
                     }
                     if (this->asteroidLockTimer > 500) {
                         if (this->field_0x10 != nullptr &&
-                            this->field_0x10 != *(candidateWreck ? &this->field_0x1c : &this->lockedAsteroid)) {
+                            this->field_0x10 != (candidateWreck ? this->field_0x1c : this->lockedAsteroid)) {
                             int frame = (int) ((float) (this->blipSprite->getRawFrameCount() - 1) *
                                                ((float) (this->asteroidLockTimer - 500) /
                                                 (float) (this->field_0x1b8 - 500)));
