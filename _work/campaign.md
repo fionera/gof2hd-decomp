@@ -4798,3 +4798,10 @@ byte-identical**. `.dynsym` 14 -> 0 via the `FileInterfaceAndroid`/`AEFile` `.bs
 but is 272 B short of the original 7072 B; the worker compensated with a 272-byte
 `layoutCtorPad` anchor (adds an EXIDX entry). Not landed — `w3647` is finding the real missing
 field stores instead.
+
+Wave-96 continued: `Level::createMission` 85.09 -> 86.71% (`w3627`, `!=0`/`==1` branch forms for
+alien-wave and big-ship counts); `Level::createShip` hull-box y/z swap fixed for odd race-0
+type-14 volumes (`w3641`, 73.8 -> 73.4% but semantically correct); `Layout::Layout` 272-byte gap
+is codegen width/schedule, not missing stores — all 32 device-flag combinations store the same
+807 bytes/202 words as the original (`w3647`). The held all-ternary schedule is 6800 B (50.8%);
+current HEAD stays size-exact 7072 B (46.8%).
