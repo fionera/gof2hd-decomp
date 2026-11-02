@@ -23,7 +23,15 @@ static_assert(offsetof(JNINativeInterface, ExceptionClear) == 0x44, "JNI layout"
 static_assert(offsetof(JNINativeInterface, DeleteLocalRef) == 0x5c, "JNI layout");
 #endif
 
-
+JNIEnv *FileInterfaceAndroid::env;
+jclass FileInterfaceAndroid::clazz;
+jobject FileInterfaceAndroid::context;
+int FileInterfaceAndroid::fileCounter;
+jmethodID FileInterfaceAndroid::methodFileExist;
+jmethodID FileInterfaceAndroid::methodRead;
+jmethodID FileInterfaceAndroid::methodWrite;
+jmethodID FileInterfaceAndroid::methodCloseRead;
+jmethodID FileInterfaceAndroid::methodCloseWrite;
 
 char *logi(char *message) {
     return message;
@@ -339,12 +347,3 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 void FileInterfaceAndroid::ResetSaveDirectory() {
 }
 
-JNIEnv *FileInterfaceAndroid::env;
-jclass FileInterfaceAndroid::clazz;
-jobject FileInterfaceAndroid::context;
-int FileInterfaceAndroid::fileCounter;
-jmethodID FileInterfaceAndroid::methodFileExist;
-jmethodID FileInterfaceAndroid::methodRead;
-jmethodID FileInterfaceAndroid::methodWrite;
-jmethodID FileInterfaceAndroid::methodCloseRead;
-jmethodID FileInterfaceAndroid::methodCloseWrite;

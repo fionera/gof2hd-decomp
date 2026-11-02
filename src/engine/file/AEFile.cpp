@@ -4,6 +4,11 @@
 #include "engine/file/AEPakFile.h"
 #include "engine/file/AENormalFile.h"
 
+Array<AELowLevelFile *> *AEFile::file;
+FileInterface *AEFile::fileInterface;
+Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
+char *AEFile::appRoot;
+
 AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
     : fileInterface(fileInterface),
       sizeLimit(static_cast<uint32_t>(sizeLimit)),
@@ -639,8 +644,3 @@ void AEFile::ResetSaveDirectory() {
         AEFile::fileInterface->ResetSaveDirectory();
     }
 }
-Array<AELowLevelFile *> *AEFile::file;
-FileInterface *AEFile::fileInterface;
-Array<AEPakFileEntry *> *AEFile::pakFileEntryList;
-char *AEFile::appRoot;
-
