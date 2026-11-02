@@ -5068,3 +5068,8 @@ the field_0x120/0x130 store order. 7072 B, gate 4497/4497.
 Wave-97 section-order pass: `Level::getGasClouds` moved before `createAsteroids` (`w3745`),
 plain no-order build 2723 -> 2981 byte-exact (prefix 2292 -> 2296). Normal gate 4497/4497.
 Note: `_work/reconstructions/section_order_removal_w3745.md`.
+Wave-97 research: lazy `Array<AbstractGun*>` instantiation placement (`w3745`). Moving
+`createStaticObjects()` after `createGun()` makes the ctor/`ArrayAdd<AbstractGun*>` exact in the
+plain no-order link but inserts `ArraySetLength<AbstractGun*>` too early and regresses the gate
+4497 -> 4491, so it was not landed. The clang 7 deferred-instantiation flush rule remains open.
+Note: `_work/reconstructions/section_order_removal_w3745.md` §7.
