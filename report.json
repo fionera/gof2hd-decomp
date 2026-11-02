@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 46.6,
+   "pct": 46.8,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 46.6,
+   "pct": 46.8,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 52.8,
+   "pct": 52.9,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -57,7 +57,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.6,
+   "pct": 73.4,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -152,14 +152,6 @@
    "usize": 9332
   },
   {
-   "name": "_ZN3Hud22drawChallengeModeScoreEi",
-   "pct": 89.1,
-   "byte": false,
-   "linked": false,
-   "osize": 944,
-   "usize": 944
-  },
-  {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
    "pct": 89.5,
    "byte": false,
@@ -182,6 +174,14 @@
    "linked": false,
    "osize": 9600,
    "usize": 9600
+  },
+  {
+   "name": "_ZN3Hud22drawChallengeModeScoreEi",
+   "pct": 92.7,
+   "byte": false,
+   "linked": false,
+   "osize": 944,
+   "usize": 944
   },
   {
    "name": "_ZN7StarMap4drawEv",
