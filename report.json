@@ -168,6 +168,14 @@
    "usize": 9600
   },
   {
+   "name": "_ZN7StarMap4drawEv",
+   "pct": 92.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2644,
+   "usize": 2644
+  },
+  {
    "name": "_ZN3Hud22drawChallengeModeScoreEi",
    "pct": 92.7,
    "byte": false,
@@ -182,14 +190,6 @@
    "linked": false,
    "osize": 8132,
    "usize": 8132
-  },
-  {
-   "name": "_ZN7StarMap4drawEv",
-   "pct": 94.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2644,
-   "usize": 2644
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",

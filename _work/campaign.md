@@ -4961,3 +4961,7 @@ copies between `ReleaseAllResources` and `SetResourceList`).
 Wave-97 function pass: `MenuTouchWindow::OnTouchEnd` 93.611 -> 94.231% (`w3677`) by marking the
 `loadGame` failure branch unlikely (`__builtin_expect(..., 0)`), which flips the case1/case15
 block order to the original; 8132 B, gate 4496/4496.
+Wave-97 function pass: `StarMap::draw` (`w3675`) replaced the `int step` copy with `int &step =
+this->field_0xe8`, restoring the original double store, and removed the artificial
+`field_0x190` placement anchor. Fuzzy 94.8 -> 92.6% (2644 B, size-exact) but the body is now
+anchor-free and the no-anchor shape is 91.6%/2640 -> 92.6%/2644; gate 4496/4496.
