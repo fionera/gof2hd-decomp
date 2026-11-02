@@ -13,8 +13,7 @@ PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y,
 PlayerStatic::~PlayerStatic() {
 }
 
-void PlayerStatic::render() {
-    geometry->render();
+void PlayerStatic::update(int dt) {
 }
 
 Vector PlayerStatic::getPosition() {
@@ -29,7 +28,8 @@ Vector PlayerStatic::getPosition() {
     return result;
 }
 
-void PlayerStatic::update(int dt) {
+void PlayerStatic::render() {
+    geometry->render();
 }
 
 void PlayerStatic::translate(const Vector &v) {

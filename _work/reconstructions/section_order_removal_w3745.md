@@ -407,3 +407,231 @@ placement.
   `ArraySetLength<AbstractGun*>` stays out of the early queue (or is emitted at
   its original `0xc3dde` position), the plain no-order frontier should move past
   `0xc01f0`.  That has not been demonstrated.
+
+## 8. `PlayerStatic::update` placement (2026-11-02)
+
+Status: landed in this pass. This is the next frontier recorded in
+`_work/reconstructions/item_extractItems_placement_w3745.md` §6. The section-ordering-file
+gate stays at **byte 4497 / linked 4497** and the gate `.so` is **byte-identical** before and
+after; the plain no-order link improves from **3019 / 4497** to **3020 / 4497**.
+
+### 8.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`, `drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `PlayerStatic` block, from the binary's own `.dynsym`:
+
+```text
+0xe08cc  PlayerStatic::PlayerStatic(int, AEGeometry*, float, float, float)
+0xe096c  PlayerStatic::~PlayerStatic()
+0xe0970  PlayerStatic::~PlayerStatic()          # deleting destructor
+0xe0980  PlayerStatic::update(int)              # 2 bytes: bx lr
+0xe0982  PlayerStatic::getPosition()            # 54 bytes
+0xe09b8  PlayerStatic::render()                 # 6 bytes
+0xe09be  PlayerStatic::translate(Vector const&)
+0xe09c0  PlayerStatic::collide(float, float, float)
+0xe09c4  PlayerStatic::outerCollide(float, float, float)
+```
+
+This is independently witnessed by the HD source-layout dump
+(`_work/original_layout/original_layout.json`: `Classes/Game/PlayerStatic.cpp` lists
+`PlayerStatic`, `~PlayerStatic`, `update`, `getPosition`, `render`, `translate`, `collide`,
+`outerCollide` in that order). The disassembly confirms `update` is the empty `bx lr` body:
+
+```sh
+OD=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump
+$OD -d --start-address=0xe096c --stop-address=0xe09cc \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so
+```
+
+The baseline `PlayerStatic.cpp.obj` section-header order was:
+
+```text
+PlayerStatic::PlayerStatic
+PlayerStatic::~PlayerStatic()   # D2
+PlayerStatic::~PlayerStatic()   # D0
+PlayerStatic::render
+PlayerStatic::getPosition
+PlayerStatic::update
+PlayerStatic::translate
+PlayerStatic::collide
+PlayerStatic::outerCollide
+```
+
+So the plain no-order link put `render` at `0xe0980` and `update` at `0xe09bc`. The first
+plain no-order mismatch was exactly:
+
+```text
+original 0xe0980 PlayerStatic::update(int)
+ours     0xe09bc PlayerStatic::update(int)
+```
+
+### 8.2 Compile-only placement variants
+
+The exact `compile_commands.json` command for `PlayerStatic.cpp` was used with only the input
+and output paths replaced. The top-level definitions were extracted by brace matching and
+re-emitted in the requested order. `readelf -SW` then gives the object's `.text.*` order.
+
+| source order | `PlayerStatic` object order around the block |
+|---|---|
+| baseline: `render, getPosition, update` | `render, getPosition, update` |
+| A: `update, render, getPosition` | `update, render, getPosition` |
+| B: `update, getPosition, render` | `update, getPosition, render` |
+| C: `render, update, getPosition` | `render, update, getPosition` |
+
+`PlayerStatic.cpp` has no lazy template instantiations or cross-references between these
+methods, so the object's section order follows the source definition order directly. Variant B
+is the original address order.
+
+### 8.3 Landed source change
+
+Move `update()` before `getPosition()` and move `render()` after `getPosition()`:
+
+```diff
+@@ after ~PlayerStatic()
+-void PlayerStatic::render() {
+-    geometry->render();
++void PlayerStatic::update(int dt) {
+ }
+
+ Vector PlayerStatic::getPosition() {
+@@
+-void PlayerStatic::update(int dt) {
++void PlayerStatic::render() {
++    geometry->render();
+ }
+```
+
+The resulting object order is the target:
+
+```text
+PlayerStatic::PlayerStatic
+PlayerStatic::~PlayerStatic()   # D2
+PlayerStatic::~PlayerStatic()   # D0
+PlayerStatic::update
+PlayerStatic::getPosition
+PlayerStatic::render
+PlayerStatic::translate
+PlayerStatic::collide
+PlayerStatic::outerCollide
+```
+
+### 8.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`) followed by
+`verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3019** | 3223 / 4524 | 2657 | `PlayerStatic::update` `0xe0980` vs `0xe09bc` |
+| A: move `update` before `render` only | not separately gated | 3019 | 3224 | 2658 | `PlayerStatic::getPosition` `0xe0982` vs `0xe0988` |
+| B: landed (`update, getPosition, render`) | **4497 / 4497** | **3020** | **3226 / 4524** | **2778** | `SystemPathFinder::constructPath` `0x11ba96` vs `0x11bada` |
+
+Variant A proves the move is causal but incomplete: it fixes `update` and immediately exposes
+`getPosition`. Variant B fixes the whole `PlayerStatic` block. The landed delta is
+**+1 plain byte_exact, +3 functions at their original address, +121 exact-address prefix**,
+with the gate unchanged.
+
+The gate `.so` is byte-identical before and after:
+
+```sh
+cmp -s /tmp/w3745/playerstatic/gate_baseline.so \
+       /tmp/w3745/playerstatic/gate_after.so
+echo $?   # 0
+```
+
+Section fingerprint after the change (all unchanged):
+
+```text
+.text        0x1337c8 @ 0x69440
+.ARM.exidx   0x006f70 @ 0x19cc08
+.ARM.extab   0x02628c @ 0x1a3b78   (original 0x26298; known -12)
+.rodata      0x041b67 @ 0x1c9e10
+.data.rel.ro 0x002fe8 @ 0x20cbb0
+.data        0x00296c @ 0x214000
+.bss         0x0069ac @ 0x216970
+```
+
+Because the ordering file already places every `PlayerStatic` section at its original address,
+the source reorder changes only the object's internal section order, not the linked gate
+output. This is the ideal removal-campaign move: gate-neutral, plain-link-positive.
+
+### 8.5 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x11ba96 SystemPathFinder::constructPath(Node*)
+ours     0x11bada SystemPathFinder::constructPath(Node*)
+```
+
+This is a different TU and was not changed here. (`PlayerStaticFar` is also visibly out of
+order later: the plain link emits its destructors before its constructor, while the original
+starts with the constructor at `0x11c254`.)
+
+### 8.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/playerstatic/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/playerstatic/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/playerstatic/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/playerstatic/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ship/PlayerStatic.cpp.obj \
+  | awk '$3 ~ /^\.text\._ZN12PlayerStatic/ {print $3}' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep PlayerStatic
+```
+
+The compile-only variants in §8.2 used the exact command from
+`cmake-build-match/compile_commands.json` for `PlayerStatic.cpp`, replacing only `-o` and the
+input path. The full A/B in §8.4 used the normal build and the committed relink helper.
+
+### 8.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* The original `PlayerStatic` order is `ctor, dtor, update, getPosition, render, translate,
+  collide, outerCollide`; both the original `.dynsym` addresses and the HD source-layout dump
+  agree. `update` is the 2-byte empty `bx lr` body at `0xe0980`.
+* The baseline object emits `render, getPosition, update`; the plain no-order link therefore
+  puts `update` at `0xe09bc` instead of `0xe0980`.
+* Moving only `update` before `render` (variant A) fixes `update` but leaves `getPosition`
+  displaced (`0xe0988` vs `0xe0982`); plain byte_exact stays 3019.
+* Moving `update` and `getPosition` before `render` (variant B) reproduces the whole original
+  block in the plain link. Plain byte_exact rises 3019 -> 3020, exact addresses 3223 -> 3226,
+  prefix 2657 -> 2778.
+* Variant B is gate-neutral: byte 4497 / linked 4497, lint `CLEAN ✓`, drift 0, `.text`
+  `0x1337c8`, and the gate `.so` is byte-identical to the baseline (`cmp` status 0).
+
+**Hypothesis / open**
+
+* The next plain no-order frontier is `SystemPathFinder::constructPath` (`0x11ba96` original,
+  `0x11bada` ours). Its object order was not investigated in this pass.
+* The ordering file still cannot be removed: the plain no-order build is `3020`, not `4497`.
