@@ -120,20 +120,20 @@
    "usize": 1908
   },
   {
-   "name": "_ZN5Level13createMissionEv",
-   "pct": 87.3,
-   "byte": false,
-   "linked": false,
-   "osize": 17172,
-   "usize": 17172
-  },
-  {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
    "pct": 87.3,
    "byte": false,
    "linked": false,
    "osize": 968,
    "usize": 968
+  },
+  {
+   "name": "_ZN5Level13createMissionEv",
+   "pct": 88.0,
+   "byte": false,
+   "linked": false,
+   "osize": 17172,
+   "usize": 17172
   },
   {
    "name": "_ZN5Level11createSceneEv",
