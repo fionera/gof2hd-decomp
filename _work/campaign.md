@@ -4989,3 +4989,7 @@ Wave-97 function pass: `Level::createShip` (`w3666`) measured all 36 jitter call
 permutations. The original binary calls `nextInt` in X,Y,Z order, so the faithful X,Y,Z source is
 kept; the metric-only Y,Z,X variant scored 73.5484 vs 73.4491 but is not semantically faithful.
 2764 B, gate 4496/4496.
+Section-order pass 3 (`w3705`): `PlayerEgo`/`Status` source order (real `changeCredits` call,
+`checkForLevelUp`/`replaceHash` order, accessor-based `isAutoPilot`/`isDockingToPlanet`/
+`isDockingToStream` uses). Plain no-order build **2657 -> 2719/4496 byte-exact**, exact-address
+prefix **1581 -> 2288**. Gate-neutral 4496/4496, `.text` 0x1337c8.
