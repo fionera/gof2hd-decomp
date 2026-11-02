@@ -4993,3 +4993,7 @@ Section-order pass 3 (`w3705`): `PlayerEgo`/`Status` source order (real `changeC
 `checkForLevelUp`/`replaceHash` order, accessor-based `isAutoPilot`/`isDockingToPlanet`/
 `isDockingToStream` uses). Plain no-order build **2657 -> 2719/4496 byte-exact**, exact-address
 prefix **1581 -> 2288**. Gate-neutral 4496/4496, `.text` 0x1337c8.
+Wave-97 function pass: `LevelScript::process` 54.371 -> 54.856% (`w3703`) by making the case-125
+state-2/state-3 blocks separate `if`s (faithful to the binary) and recovering the 8-byte tail
+difference so the body stays 57232 B. This also cuts `.ARM.exidx` differing bytes 1,961 -> 1,702
+and `.ARM.extab` 131,132 -> 128,991. Gate 4496/4496.
