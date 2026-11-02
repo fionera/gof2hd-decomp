@@ -4864,3 +4864,10 @@ Wave-97 first results (both research-only, gate unchanged 4496/4496):
   or already implied; `--gc-sections`, `--icf`, `--sort-section=name`, `--rosegment`,
   `--as-needed`, `-z nocombreloc`, `-z max-page-size=65536` are regressions. Remaining
   `.rel.plt` 12 B and `.shstrtab` 259 B are source/TU/body residuals, not link-flag-caused.
+- `w3692` audited the four per-TU `-mllvm` flags (206 flag-set rows x 17 TUs = 3502 object
+  compiles) and the three `__builtin_assume` sites. No per-TU flag is a strict gate
+  improvement; the flags are compensations for source/TU shape, not original flags. The
+  `Radar.cpp` branch-weight flag is load-bearing (removal: 3632/4496). All three
+  `__builtin_assume` sites are load-bearing (`String::Compare` 4495, `TouchButton::draw`
+  2973, `StarMap::draw` 4496 but 94.8 -> 94.7%). A 206-flag sweep found no flag that
+  restores the assume-free codegen.
