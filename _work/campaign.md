@@ -4753,3 +4753,10 @@ gate 4496 after rebase); `Level::createShip` jitter call order fixed to X,Y,Z an
 direct switch always lays the bodies out in ascending value order; no tested source shape or flag
 reproduces the original order without a rank table. The table form scores 86.7% but can never be
 byte-exact (the table is absent from the original .rodata and adds a second lookup).
+
+`Generator::createMission` 4-byte mystery solved (`w3591`): the original's cost adjustment is a
+true `vmov.f32 s2, #96` (`0.5f`); the `0.5000001f` hack compiles to `vldr` + a 4-byte literal-pool
+word and is a coincidental size substitute. The real 4 bytes are in the `pick == 12` block:
+original emits the non-folded ternary `movs r2,#12; cmp r0,#25; it ne; movne r2,r6` (36 B), our
+clang folds it to `movs r6,#12` (32 B) because `pick` is provably 12 there. Follow-up `w3592` is
+reconstructing that block so true `0.5f` can land at 1996 B.
