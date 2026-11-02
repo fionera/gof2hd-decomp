@@ -687,14 +687,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool wreck;
-            if (enemy->hasCargo == 0) {
-                wreck = false;
-            } else if (enemy->isDead()) {
-                wreck = true;
-            } else {
-                wreck = enemy->isDying();
-            }
+            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -1102,14 +1095,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck;
-                if (asteroid->hasCargo == 0) {
-                    wreck = false;
-                } else if (asteroid->isDead()) {
-                    wreck = true;
-                } else {
-                    wreck = asteroid->isDying();
-                }
+                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
