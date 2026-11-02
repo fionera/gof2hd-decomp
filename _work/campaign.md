@@ -4879,3 +4879,12 @@ Wave-97 function pass: `LevelScript::process` 54.333 -> 54.371% (`w3681`, the re
 mission-154 explicit-state commit) — 57232 B (size checked on merged master), gate 4496/4496,
 `.text` 0x1337c8. This is the change that was reverted as `9b810b02` when its base predated the
 case-125 move; it now lands cleanly.
+- `w3690` re-ran the **global compile-flag matrix at the current 4496 state**: 74 variants,
+  **0 strict improvements**. `-Oz` is uniquely best (every other -O level loses ≥3,200
+  byte_exact); `-fdata-sections` is -163; 19 variants are byte-identical to the canonical
+  build (modulo the 20-byte build-id), 2 differ only in the build-id, 9 fail to build/link.
+  The Radar-scoped `-mllvm -likely-branch-weight=80 -unlikely-branch-weight=1` is load-bearing
+  (removal: 4496 -> 3632); global 80:1 is gate-neutral but produces a different `.so`.
+  Conclusion: the remaining gap is source/TU/PLT/literal-pool/data order, not a missing
+  global compile flag. Also corrected the stale `.ARM.extab` differing-byte count
+  (121,218 -> 121,226).
