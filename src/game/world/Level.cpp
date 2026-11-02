@@ -522,6 +522,24 @@ int Level::init() {
     return 1;
 }
 
+void Level::enableParticleEffects(bool emit, bool render) {
+    particleSystemMgr->enableSystemEmit(field_284, render);
+
+    particleSystemMgr->enableSystemRender(field_284, render);
+    *(unsigned char *) particleRenderBoolPtr = render;
+    *(unsigned char *) particleEmitBoolPtr = render;
+}
+
+void Level::setPlayerEngineColor(short color) {
+    if (player != nullptr && field_a4 != nullptr) {
+        // engine-trail particle sets start at set 29; 0x34 is the set's second colour word
+        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(&ParticleSettingsRef::cur);
+        for (unsigned int i = 0; i < field_a4->size(); i++) {
+            table->entries[i].color = color << 0x18 | color << 0x10 | color << 8 | 0xff;
+        }
+    }
+}
+
 void Level::initParticleSystems() {
     static const uint32_t g_ips_shipTypeMap[64] = {
         3, 0, 8, 3, 2, 0, 3, 0, 9, 1, 0, 8, 2, 0, 0, 0,
@@ -713,6 +731,10 @@ void Level::initParticleSystems() {
     this->particleRenderBoolPtr->init();
     if (this->field_94 != 0)
         this->field_94->init();
+}
+
+StarSystem *Level::getStarSystem() {
+    return starSystem;
 }
 
 void Level::createSpace() {
@@ -1576,6 +1598,11 @@ void Level::assignGuns() {
         }
     }
 }
+
+Array<KIPlayer *> *Level::getGasClouds() {
+    return gasClouds;
+}
+
 
 Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
     Gun *gun = nullptr;
@@ -5135,33 +5162,6 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
     object->setLevel(this);
     return object;
 }
-
-void Level::enableParticleEffects(bool emit, bool render) {
-    particleSystemMgr->enableSystemEmit(field_284, render);
-
-    particleSystemMgr->enableSystemRender(field_284, render);
-    *(unsigned char *) particleRenderBoolPtr = render;
-    *(unsigned char *) particleEmitBoolPtr = render;
-}
-
-void Level::setPlayerEngineColor(short color) {
-    if (player != nullptr && field_a4 != nullptr) {
-        // engine-trail particle sets start at set 29; 0x34 is the set's second colour word
-        EngineColorTable *table = reinterpret_cast<EngineColorTable *>(&ParticleSettingsRef::cur);
-        for (unsigned int i = 0; i < field_a4->size(); i++) {
-            table->entries[i].color = color << 0x18 | color << 0x10 | color << 8 | 0xff;
-        }
-    }
-}
-
-StarSystem *Level::getStarSystem() {
-    return starSystem;
-}
-
-Array<KIPlayer *> *Level::getGasClouds() {
-    return gasClouds;
-}
-
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
