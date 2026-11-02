@@ -5034,3 +5034,6 @@ dropping the `if (mx < 0) y = half;` origin anchor and reconstructing the multip
 `mx = half + rowGap - halfStep - step;` with a pre-increment `mx += step` before `setPosition`.
 Gate **byte_exact 4496 -> 4497, linked_exact 4496 -> 4497**, `.text` 0x1337c8, lint CLEAN,
 drift 0. `.ARM.extab` is now -12 B (156,300 vs 156,312); `.text` differing bytes 112,878.
+Wave-97 function pass: `MenuTouchWindow` ctor 93.813 -> 93.873% (`w3731`) by regrouping the
+slider-2 y expression to the original order (`(field_0x15c + field_0x1c) * 2` first).
+9600 B, gate 4497/4497.
