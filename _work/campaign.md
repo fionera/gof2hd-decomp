@@ -4917,3 +4917,6 @@ exact-address prefix 47 -> 134, no-order byte 1527 -> 1529) and `GLES1Compat.cpp
 linked 4496, `.text` 0x1337c8).
 `w3696` also reordered `FileInterfaceAndroid.cpp` (prefix 182 -> 222, no-order byte 1529 ->
 1557); gate-neutral 4496/4496.
+`w3696` then moved `ArrayReleaseClasses<AELowLevelFile*>` from `ArrayInstantiations.cpp` to
+`AEFile.cpp` (weak-copy TU membership): no-order reordered prefix 268 -> 970, no-order byte
+1728 -> 1861, gate-neutral 4496/4496. This is the first weak-copy TU-membership convergence.
