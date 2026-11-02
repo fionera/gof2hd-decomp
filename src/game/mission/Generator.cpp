@@ -755,7 +755,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
-    int level;
     bool selected = false;
     int32_t type = 0;
     int guard = 999;
@@ -926,7 +925,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         reward *= 2.0f;
     }
 
-    level = Globals::status->getLevel();
+    int level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
     int bonus;
@@ -955,7 +954,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
         // 0.5f + 1 ulp: same result after truncation, keeps the original code size.
-        costs = (int) ((float) costs * 0.5000001f);
+        costs = (int) ((float) costs * 0.5f);
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
