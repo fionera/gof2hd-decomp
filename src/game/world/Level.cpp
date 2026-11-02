@@ -2244,12 +2244,14 @@ void Level::createMission() {
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
             const float *t = (bigAlienWave ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
-            // turretPos is declared (and its components loaded) before turretDir: the original
-            // hoists t[2]/t[1] into registers and only materialises turretDir in memory.
-            Vector turretPos = {t[0], t[1], t[2]};
+            // turretPos is constructed after the direction rotation: the original keeps
+            // t[0..2] live across the first MatrixRotateVector and reuses the same
+            // 12-byte stack slot for both vectors.
+            Vector turretPos;
             Vector turretDir = {t[3], t[4], t[5]};
             v = MatrixRotateVector(rotation, turretDir);
             gun->geometry->setRotation(v);
+            turretPos = Vector{t[0], t[1], t[2]};
             v = MatrixRotateVector(rotation, turretPos);
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
@@ -2402,25 +2404,6 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    // Size anchor: the original createMission is 0x4314 bytes.  The try/catch this
-    // replaces kept the size but referenced __cxa_end_catch from Level.cpp, which
-    // created its PLT slot before zlib and shifted the whole zlib/libzip PLT block.
-    // Volatile stores reproduce the landing pad's bytes without a PLT reference.
-    // Eight (not six): emitting the empty-mission branch first shortens the EH
-    // callsite table by four entries, so the anchor makes up the remaining 8 bytes.
-    // The stored value is `this` (a callee-saved high register) so each store is a
-    // 4-byte str.w: 8 stores still cover the 32 bytes but halve the instruction
-    // count versus eight movs/str pairs, matching the original tail more closely.
-    volatile unsigned pad[8];
-    unsigned padValue = (unsigned) (intptr_t) this;
-    pad[0] = padValue;
-    pad[1] = padValue;
-    pad[2] = padValue;
-    pad[3] = padValue;
-    pad[4] = padValue;
-    pad[5] = padValue;
-    pad[6] = padValue;
-    pad[7] = padValue;
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
