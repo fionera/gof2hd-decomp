@@ -2744,7 +2744,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     options[12] = old ^ 1;
                     this->optBtnD8->setAlwaysPressed(!old);
                     (*this->sliders)[2]->setHalfTransparent(!options[12]);
-                    Globals::sound->enableCategory(2, options[12]);
+                    Globals::sound->enableCategory(2, optionFlag(12));
                     Globals::sound->play(126, 0, 0, 0.0f);
                 }
                 if (this->optBtnDC->OnTouchEnd(x, y)) {
@@ -3225,14 +3225,16 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         goto clearMessage;
                     } else if (r == 1) {
                         this->returnToMenuSubFlag = 0;
-                        this->quitConfirmShowing = 0;
                         this->messageShowing = 0;
+                        this->quitConfirmShowing = 0;
                     }
                     return 0;
                 }
                 if (this->leaderboardDialogShowing) {
                     int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 1 || r == 0)
+                    if (r == 1)
+                        Globals::globals->reportLeaderboards();
+                    else if (r == 0)
                         Globals::globals->reportLeaderboards();
                     this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
