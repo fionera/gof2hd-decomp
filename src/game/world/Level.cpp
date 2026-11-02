@@ -1893,6 +1893,7 @@ void Level::createMission() {
         this->field_168 = Globals::rnd->nextInt(5);
         extraFriend = Globals::rnd->nextInt(2);
     }
+    int *bigShipsCount = &this->field_168;
     this->friendCount = (introSystem ? Globals::rnd->nextInt(2) : security) + extraFriend + this->field_168 / 4;
     if (raid && Globals::status->getCurrentCampaignMission() >= 32 && Globals::rnd->nextInt(100) <= 7) {
         this->hostileCount = 9;
@@ -2100,9 +2101,9 @@ void Level::createMission() {
             KIPlayer *gun = (*this->enemies)[6 + k];
             gun->player->setMaxHitpoints(1000);
             const float *t = kStationTurrets[localRace][k];
-            v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
+            v = MatrixRotateVector(rotation, Vector{t[4], t[5], t[6]});
             gun->geometry->setRotation(v);
-            v = MatrixRotateVector(rotation, Vector{t[0], t[1], t[2]});
+            v = MatrixRotateVector(rotation, Vector{t[1], t[2], t[3]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(0.3f);
             gun->shipGroup = localRace;
@@ -2121,13 +2122,13 @@ void Level::createMission() {
     int bigAlienWave = 0;
     int pirateFortress = 0;
     int alienWave = 0;
-    if (this->field_168 != 0 && localRace == 0) {
+    if (*bigShipsCount != 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
             alienWave = 1;
         }
-    } else if (localRace == 1 && this->field_168 >= 1 && Globals::rnd->nextInt(100) <= 29) {
+    } else if (localRace == 1 && *bigShipsCount >= 1 && Globals::rnd->nextInt(100) <= 29) {
         pirateFortress = Globals::status->getCurrentCampaignMission() > 140;
     }
     if (Globals::status->inSupernovaSystem()) {
@@ -2187,7 +2188,7 @@ void Level::createMission() {
     }
     int stationRace = localRace == 2 ? 0 : localRace;
     for (int i = this->friendCount + this->field_164; i < this->friendCount + this->field_164 + this->field_168; i++) {
-        if (i == this->friendCount + this->field_164 && alienWave == 1) {
+        if (i == this->friendCount + this->field_164 && alienWave) {
             if (bigAlienWave == 1) {
                 Vector pos = {(float) (Globals::rnd->nextInt(80000) - 40000), (float) (Globals::rnd->nextInt(40000) - 20000),
                               (float) (Globals::rnd->nextInt(80000) + 100000)};
