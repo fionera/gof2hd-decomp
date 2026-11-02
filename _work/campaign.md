@@ -4787,3 +4787,9 @@ Wave-96 structural wins (all gate byte 4496 / linked 4496):
   79.2% with pad2/pad3 gone, `Level::createMission` 83.8 -> 85.1%, `Radar::draw` 71.6 -> 72.0%,
   `LevelScript::process` 52.9 -> 53.1%, `MenuTouchWindow` ctor 91.2 -> 91.6%,
   `Level::createShip` jitter order X,Y,Z (faithful, 73.4%).
+
+Wave-96 metadata closeout: **`.dynsym`, `.dynstr`, `.hash`, `.gnu.version`, `.rel.dyn` are now
+byte-identical**. `.dynsym` 14 -> 0 via the `FileInterfaceAndroid`/`AEFile` `.bss` emission order
+(`w3638`) and the `PaintCanvas::DrawMesh` STB_WEAK binding (out-of-line `inline` definition,
+`w3638`). Only `.rel.plt` 12 bytes remain (one moved `PlayerEgo::deleteHackingGame` slot).
+`Level::createShip` 73.4 -> 73.8% (group flag to `setShipGroup`, `w3542`).
