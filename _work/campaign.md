@@ -4965,3 +4965,18 @@ Wave-97 function pass: `StarMap::draw` (`w3675`) replaced the `int step` copy wi
 this->field_0xe8`, restoring the original double store, and removed the artificial
 `field_0x190` placement anchor. Fuzzy 94.8 -> 92.6% (2644 B, size-exact) but the body is now
 anchor-free and the no-anchor shape is 91.6%/2640 -> 92.6%/2644; gate 4496/4496.
+Wave-97 function pass: `Generator::createMission` (`w3631`) removed the `0.5000001f` size
+anchor (now `0.5f`) and deferred the `level` declaration to its real first use. Fuzzy
+73.6 -> 72.0% (1996 B, size-exact), but the body is anchor-free; gate 4496/4496.
+
+Build-recipe research (`w3697`): the original is ndk-build r18b defaults **minus
+`-fdata-sections`**, with FMOD before the STL archives in the link order. Every other r18b
+default compile flag is byte-identical to the tree's canonical set; the full ndk-build link
+flag set is byte-identical to the shorter gold line; only `-z now` is load-bearing. The
+original is not vanilla `c++_static` link order (`_Unwind_*` stay UND,
+`__gnu_Unwind_Find_exidx` absent). See `_work/reconstructions/definitive_build_recipe_w3697.md`.
+
+Post-harvest section correction: after the `Generator`/`StarMap` anchor-removal passes the
+current differing bytes are `.text` 113,718, `.ARM.exidx` 1,961, `.ARM.extab` 131,132
+(size -8), `.dynsym` 324, `.dynstr` 1,268, `.hash` 133, `.rel.dyn` 74, `.rel.plt` 21,
+build-id 20; `.rodata`/`.data`/`.data.rel.ro`/`.plt`/`.got`/`.shstrtab` remain byte-identical.
