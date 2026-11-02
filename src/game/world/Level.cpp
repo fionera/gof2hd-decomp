@@ -737,11 +737,6 @@ StarSystem *Level::getStarSystem() {
     return starSystem;
 }
 
-Array<KIPlayer *> *Level::getGasClouds() {
-    return gasClouds;
-}
-
-
 void Level::createSpace() {
     using namespace AbyssEngine::AEMath;
     static const unsigned short jumpgateMeshes[8 * 2] = {
@@ -954,6 +949,11 @@ void Level::createSpace() {
     i_g = g;
     i_b = b;
 }
+
+Array<KIPlayer *> *Level::getGasClouds() {
+    return gasClouds;
+}
+
 
 void Level::createAsteroids() {
     using namespace AbyssEngine::AEMath;
