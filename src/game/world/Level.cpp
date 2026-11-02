@@ -2092,8 +2092,8 @@ void Level::createMission() {
                 ((Mission *) (intptr_t) Globals::status->getCampaignMission())->getTargetStation())
         convoy = 1;
     int bigAlienWave = 0;
-    int alienWave = 0;
     int pirateFortress = 0;
+    int alienWave = 0;
     if (this->field_168 > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
@@ -2217,12 +2217,12 @@ void Level::createMission() {
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
             const float *t = (bigAlienWave ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
-            // Named locals, not braced temporaries: the original materialises each Vector with
-            // three scalar loads/stores; a temporary lets -Oz fold the pair into ldrd/stmia.
+            // turretPos is declared (and its components loaded) before turretDir: the original
+            // hoists t[2]/t[1] into registers and only materialises turretDir in memory.
+            Vector turretPos = {t[0], t[1], t[2]};
             Vector turretDir = {t[3], t[4], t[5]};
             v = MatrixRotateVector(rotation, turretDir);
             gun->geometry->setRotation(v);
-            Vector turretPos = {t[0], t[1], t[2]};
             v = MatrixRotateVector(rotation, turretPos);
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
