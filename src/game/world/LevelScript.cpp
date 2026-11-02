@@ -2827,134 +2827,6 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 125: {
-                // Pirate hideout: fly the route in, label the three docking ports, then ambush.
-                if (m_nState == 0) {
-                    if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
-                        m_nState++;
-                        int routePoints[3] = {-70000, 0, -130000};
-                        Route *route = new Route(routePoints, 3);
-                        m_pLevel->setPlayerRoute(route);
-                        player->setRoute(route);
-                        m_nScriptTimerA = 0;
-                    }
-                } else if (m_nState == 1) {
-                    if (player->getRoute() != 0) {
-                        if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
-                            m_nState = 2;
-                            for (int i = 8; i <= 10; i++) {
-                                PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
-                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
-                                (*enemies)[i]->setActive(true);
-                                (*enemies)[i]->field_0x74 = 0;
-                            }
-                        }
-                    }
-                }
-                if (m_nState == 2) {
-                    if (((RadioMessage *) ((*messages)[2]))->isOver()) {
-                        int spread = 0;
-                        for (int i = 2; i < 6; i++) {
-                            (*enemies)[i]->awake();
-                            KIPlayer *pirate = (*enemies)[i];
-                            Vector playerPos = player->getPosition();
-                            int sideX = Globals::rnd->nextInt(100);
-                            int offsetY = Globals::rnd->nextInt(1000);
-                            int offsetZ = Globals::rnd->nextInt(2000);
-                            int sideZ = Globals::rnd->nextInt(100);
-                            Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
-                                          (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
-                            pirate->setPosition(playerPos + offset);
-                            (*enemies)[i]->geometry->setDirection(
-                                    AbyssEngine::AEMath::VectorNormalize(player->getPosition() - (*enemies)[i]->getPosition()),
-                                    Vector{0.0f, 1.0f, 0.0f});
-                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
-                            (*enemies)[i]->player->setEnemy(player->player);
-                            spread += 2000;
-                        }
-                        player->setTurretMode(false);
-                        resetCamera(m_pLevel);
-                        if (player->isInRocketControl()) {
-                            player->setRocketControl(nullptr, nullptr);
-                            player->killLiberator();
-                            m_pCamera->setRumblePercentage(0.0f, 0);
-                        }
-                        player->setFreeLookMode(false);
-                        m_pCamera->enableFirstPersonCam(false);
-                        player->hideShipForFirstPersonCameraView(false);
-                        player->stopShooting(0);
-                        m_bCinematicBreak = 1;
-                        m_pHud->visible = 0;
-                        m_pRadar->enabled = 0;
-                        m_pCamera->setLookAtCam(true);
-                        player->setVisible(false);
-                        player->setFreeze(true);
-                        AEGeometry *leader = (*enemies)[4]->geometry;
-                        m_pCamera->setTarget(leader);
-                        m_tempVec = leader->getPosition();
-                        m_tempVec += leader->getDirection() * 4000.0f;
-                        m_tempVec += leader->getUpVector() * -500.0f;
-                        m_tempVec += leader->getRightVector() * -500.0f;
-                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
-                        m_nScriptTimerA = 0;
-                        m_nState++;
-                    }
-                } else if (m_nState == 3) {
-                    float step = (float) (2 * delta);
-                    for (int i = 2; i < 6; i++) {
-                        (*enemies)[i]->geometry->moveForward(step);
-                    }
-                    m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 7001) {
-                        for (int i = 2; i < 6; i++) {
-                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                        }
-                        m_nState = 4;
-                        player->setVisible(true);
-                        player->setFreeze(false);
-                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
-                        if (!m_pLevel->getPlayer()->isDockedToDockingPoint()) {
-                            m_pRadar->lockedEnemy = nullptr;
-                            m_pRadar->dockNavPtr = nullptr;
-                        }
-                        m_pLevel->getPlayer()->resetGunDelay();
-                        m_pLevel->getPlayer()->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
-                        player->geometry->setDirection(
-                                AbyssEngine::AEMath::VectorNormalize((*enemies)[4]->getPosition() - player->getPosition()),
-                                Vector{0.0f, 1.0f, 0.0f});
-                        m_pCamera->setLookAtCam(false);
-                        m_pCamera->setTarget(player->geometry);
-                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
-                        player->setComputerControlled(false);
-                        m_pHud->visible = 1;
-                        m_pRadar->enabled = 1;
-                        resetCamera(m_pLevel);
-                        m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0;
-                    }
-                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
-                           && player->getHackingGameDockIndex() >= 0) {
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
-                            ->setName(String("", false));
-                    ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
-                    player->deleteHackingGame();
-                    m_nState++;
-                    if (m_nState == 6) {
-                        int xOff = 25000;
-                        int yOff = 2300;
-                        for (int i = 6; i < 8; i++) {
-                            (*enemies)[i]->awake();
-                            KIPlayer *guard = (*enemies)[i];
-                            guard->setPosition(player->getPosition()
-                                               + Vector{(float) xOff, (float) yOff, 25000.0f});
-                            xOff += 1000;
-                            yOff += 50;
-                        }
-                    }
-                }
-                break;
-            }
             case 92: {
                 // The cloaked pirate trio attacks the station while the player is docked.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[2]))->isTriggered()) {
@@ -4510,6 +4382,134 @@ bool LevelScript::process(int delta) {
                             Globals::appManager->SetCurrentApplicationModule(2);
                             field_0x12 = 0x101;
                             return m_bCinematicBreak != 0;
+                        }
+                    }
+                }
+                break;
+            }
+            case 125: {
+                // Pirate hideout: fly the route in, label the three docking ports, then ambush.
+                if (m_nState == 0) {
+                    if (((RadioMessage *) ((*messages)[1]))->isTriggered()) {
+                        m_nState++;
+                        int routePoints[3] = {-70000, 0, -130000};
+                        Route *route = new Route(routePoints, 3);
+                        m_pLevel->setPlayerRoute(route);
+                        player->setRoute(route);
+                        m_nScriptTimerA = 0;
+                    }
+                } else if (m_nState == 1) {
+                    if (player->getRoute() != 0) {
+                        if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
+                            m_nState = 2;
+                            for (int i = 8; i <= 10; i++) {
+                                PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
+                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
+                                (*enemies)[i]->setActive(true);
+                                (*enemies)[i]->field_0x74 = 0;
+                            }
+                        }
+                    }
+                }
+                if (m_nState == 2) {
+                    if (((RadioMessage *) ((*messages)[2]))->isOver()) {
+                        int spread = 0;
+                        for (int i = 2; i < 6; i++) {
+                            (*enemies)[i]->awake();
+                            KIPlayer *pirate = (*enemies)[i];
+                            Vector playerPos = player->getPosition();
+                            int sideX = Globals::rnd->nextInt(100);
+                            int offsetY = Globals::rnd->nextInt(1000);
+                            int offsetZ = Globals::rnd->nextInt(2000);
+                            int sideZ = Globals::rnd->nextInt(100);
+                            Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
+                                          (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
+                            pirate->setPosition(playerPos + offset);
+                            (*enemies)[i]->geometry->setDirection(
+                                    AbyssEngine::AEMath::VectorNormalize(player->getPosition() - (*enemies)[i]->getPosition()),
+                                    Vector{0.0f, 1.0f, 0.0f});
+                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(true);
+                            (*enemies)[i]->player->setEnemy(player->player);
+                            spread += 2000;
+                        }
+                        player->setTurretMode(false);
+                        resetCamera(m_pLevel);
+                        if (player->isInRocketControl()) {
+                            player->setRocketControl(nullptr, nullptr);
+                            player->killLiberator();
+                            m_pCamera->setRumblePercentage(0.0f, 0);
+                        }
+                        player->setFreeLookMode(false);
+                        m_pCamera->enableFirstPersonCam(false);
+                        player->hideShipForFirstPersonCameraView(false);
+                        player->stopShooting(0);
+                        m_bCinematicBreak = 1;
+                        m_pHud->visible = 0;
+                        m_pRadar->enabled = 0;
+                        m_pCamera->setLookAtCam(true);
+                        player->setVisible(false);
+                        player->setFreeze(true);
+                        AEGeometry *leader = (*enemies)[4]->geometry;
+                        m_pCamera->setTarget(leader);
+                        m_tempVec = leader->getPosition();
+                        m_tempVec += leader->getDirection() * 4000.0f;
+                        m_tempVec += leader->getUpVector() * -500.0f;
+                        m_tempVec += leader->getRightVector() * -500.0f;
+                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_nScriptTimerA = 0;
+                        m_nState++;
+                    }
+                } else if (m_nState == 3) {
+                    float step = (float) (2 * delta);
+                    for (int i = 2; i < 6; i++) {
+                        (*enemies)[i]->geometry->moveForward(step);
+                    }
+                    m_nScriptTimerA += delta;
+                    if (m_nScriptTimerA >= 7001) {
+                        for (int i = 2; i < 6; i++) {
+                            ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
+                        }
+                        m_nState = 4;
+                        player->setVisible(true);
+                        player->setFreeze(false);
+                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
+                        if (!m_pLevel->getPlayer()->isDockedToDockingPoint()) {
+                            m_pRadar->lockedEnemy = nullptr;
+                            m_pRadar->dockNavPtr = nullptr;
+                        }
+                        m_pLevel->getPlayer()->resetGunDelay();
+                        m_pLevel->getPlayer()->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
+                        player->geometry->setDirection(
+                                AbyssEngine::AEMath::VectorNormalize((*enemies)[4]->getPosition() - player->getPosition()),
+                                Vector{0.0f, 1.0f, 0.0f});
+                        m_pCamera->setLookAtCam(false);
+                        m_pCamera->setTarget(player->geometry);
+                        m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
+                        player->setComputerControlled(false);
+                        m_pHud->visible = 1;
+                        m_pRadar->enabled = 1;
+                        resetCamera(m_pLevel);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
+                    }
+                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                           && player->getHackingGameDockIndex() >= 0) {
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                            ->setName(String("", false));
+                    ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
+                    player->deleteHackingGame();
+                    m_nState++;
+                    if (m_nState == 6) {
+                        int xOff = 25000;
+                        int yOff = 2300;
+                        for (int i = 6; i < 8; i++) {
+                            (*enemies)[i]->awake();
+                            KIPlayer *guard = (*enemies)[i];
+                            guard->setPosition(player->getPosition()
+                                               + Vector{(float) xOff, (float) yOff, 25000.0f});
+                            xOff += 1000;
+                            yOff += 50;
                         }
                     }
                 }
