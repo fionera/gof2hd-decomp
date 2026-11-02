@@ -158,6 +158,11 @@ add_custom_command(OUTPUT "${_so}"
     # must be a link error, not a silent first-wins pick.
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
+            # Gold's own strip, not a post-link GNU strip: the original's .shstrtab is in gold's
+            # Stringpool order (the raw link order, debug names removed), while GNU strip rewrites
+            # it in section-header order. `-s` reproduces the original .shstrtab byte-for-byte and
+            # emits the same 27-section set (no .symtab/.strtab/.debug_*).
+            -s
             # The original is fully RELRO-bound: DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, and its .got
             # sits before .data inside PT_GNU_RELRO (gold only emits that order with -z now).
             # Evidence: readelf -d/-lW on the original; without -z now gold puts .got after .data.
@@ -177,10 +182,6 @@ add_custom_command(OUTPUT "${_so}"
             ${_link_libgcc}
             -l dl -l c
             ${_libdir}/crtend_so.o
-    # The original release .so is stripped (only .dynsym; no .symtab/.strtab/.debug_*). Strip ours the
-    # same way so the section set matches -- a prerequisite for byte/hash identicality. Keeps .dynsym
-    # (required for a shared object), so sodiff/verify (which read .dynsym + .text) are unaffected.
-    COMMAND ${GOF2_NDK_STRIP} --strip-all "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.

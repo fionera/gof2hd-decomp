@@ -14,7 +14,9 @@ fetched once — the original's `.comment` names `GCC: (GNU) 4.9.x 20150123`) at
 zlib/libzip built with the app's ndk-build flags — `-Oz -g
 -fstack-protector-strong -ffunction-sections -funwind-tables -mthumb` and the SHA/CRYPTO_memcmp C files
 `-marm`, matching the original's per-function ISA modes) into `libgof2hdaa.so` with the NDK
-**gold** linker: `-shared -soname libgof2hdaa.so --build-id`, libc++abi.a, zlib+libzip pulled
+**gold** linker: `-shared -soname libgof2hdaa.so --build-id -s` (gold's own strip; the original's
+`.shstrtab` is in gold's Stringpool order, which a post-link GNU `strip --strip-all` rewrites into
+section-header order), libc++abi.a, zlib+libzip pulled
 `--whole-archive`, app-provided imports (FMOD, GLES, …) left unresolved as in the original.
 
 The link inputs mirror ndk-build's: the app's prebuilt `libfmodex.so`/`libfmodevent.so` from the

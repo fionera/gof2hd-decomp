@@ -150,17 +150,20 @@ The original build is now pinned by evidence, not by A/B alone:
   same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
-* **Current differing bytes (after the wave-95, w3616 relocation-order and w3624 GameResource
-  TU-convergence passes).** `.text` 114,696; `.ARM.exidx` 2,707; `.ARM.extab` 121,226 (size -8);
-  `.dynsym` 0; `.dynstr` 0; `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.rel.plt` 12.
-  `.rodata`, `.data`, `.data.rel.ro`, `.plt` and `.got` are byte-identical, and the section
-  table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made `.rel.dyn`
-  byte-identical and cut `.rel.plt` to one moved symbol (`PlayerEgo::deleteHackingGame`); the
-  w3624 pass merged `BuildResourceList.cpp` + `LowResourceTable.cpp` + `ResourceMaterial.cpp`
-  back into the original `GameResource.cpp` TU (`.dynsym` 62 -> 50, `.dynstr` 345 -> 211,
-  `.hash` 42 -> 33, `.rel.plt` 15 -> 12, `.ARM.exidx` 2735 -> 2733). See
-  `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and
-  `_work/reconstructions/gameresource_tu_convergence_w3624.md`.
+* **Current differing bytes (after the wave-95, w3616 relocation-order, w3624 GameResource
+  TU-convergence and w3695 strip-method passes).** `.text` 114,529; `.ARM.exidx` 2,707;
+  `.ARM.extab` 121,218 (size -8); `.rel.plt` 12; `.note.gnu.build-id` 20; `.dynsym` 0;
+  `.dynstr` 0; `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 0.
+  `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got` and `.shstrtab` are byte-identical, and the
+  section table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made
+  `.rel.dyn` byte-identical and cut `.rel.plt` to one moved symbol
+  (`PlayerEgo::deleteHackingGame`); the w3624 pass merged `BuildResourceList.cpp` +
+  `LowResourceTable.cpp` + `ResourceMaterial.cpp` back into the original `GameResource.cpp` TU
+  (`.dynsym` 62 -> 50, `.dynstr` 345 -> 211, `.hash` 42 -> 33, `.rel.plt` 15 -> 12,
+  `.ARM.exidx` 2735 -> 2733). The w3695 pass replaced the post-link GNU
+  `strip --strip-all` with gold `-s`, reproducing the original `.shstrtab` byte-for-byte
+  (259 -> 0 differing bytes; see
+  `_work/reconstructions/nontext_relplt_shstrtab_w3695.md`).
 * **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
   `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
   `abort_message.cpp` path, and the only app source-file witness is `main.c` in three log
@@ -214,8 +217,10 @@ The original build is now pinned by evidence, not by A/B alone:
    that converges last.
 
 ## Done
-- **Pass 1: strip** the link output (`strip --strip-all`) -> section set matches the original
-  (no .symtab/.strtab/.debug_*). Parity unaffected (35/0/0); verify/sodiff read .dynsym+.text.
+- **Pass 1: strip** the link output (gold `-s`; previously a post-link `strip --strip-all`) ->
+  section set matches the original (no .symtab/.strtab/.debug_*). Gold `-s` also reproduces the
+  original's gold-Stringpool `.shstrtab` order; GNU strip rewrote it. Parity unaffected
+  (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
 Same-hash == completing the decompile to byte-perfection: make the remaining 55 functions exact,
