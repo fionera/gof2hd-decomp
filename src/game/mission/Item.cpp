@@ -257,14 +257,6 @@ void Item::fabricate(Item *item, ItemArray *items, int amount) {
     combineItems(items, made);
 }
 
-Item *Item::makeItem(int amount) {
-    int savedPrice = price;
-    Item *item = clone();
-    item->price = savedPrice;
-    item->amount = amount;
-    return item;
-}
-
 ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
     if (items == nullptr) {
         return stationItems;
@@ -451,6 +443,14 @@ bool Item::isWeapon() {
 Item *Item::makeItem(int amount, int price) {
     Item *item = clone();
     item->price = price;
+    item->amount = amount;
+    return item;
+}
+
+Item *Item::makeItem(int amount) {
+    int savedPrice = price;
+    Item *item = clone();
+    item->price = savedPrice;
     item->amount = amount;
     return item;
 }
