@@ -10,17 +10,11 @@ BoundingSphere::BoundingSphere(
 BoundingSphere::~BoundingSphere() {
 }
 
-void BoundingSphere::update(float x, float y, float z) {
-    BoundingVolume::update(x, y, z);
-}
-
-Vector BoundingSphere::projectCollisionOnSurface(const Vector &point) {
-    Vector delta = (position + offset) - point;
-    float length = VectorLength(delta);
-    float radius = this->radius;
-    if (length >= radius)
-        return Vector{0.0f, 0.0f, 0.0f};
-    return (position + offset) - (radius / length) * delta;
+int BoundingSphere::collide(float x, float y, float z) {
+    if (outerCollide(x, y, z)) {
+        return 1;
+    }
+    return BoundingVolume::collide(x, y, z);
 }
 
 int BoundingSphere::outerCollide(float x, float y, float z) {
@@ -34,9 +28,15 @@ Vector BoundingSphere::getCollisionNormal(const Vector &point) {
     return normal;
 }
 
-int BoundingSphere::collide(float x, float y, float z) {
-    if (outerCollide(x, y, z)) {
-        return 1;
-    }
-    return BoundingVolume::collide(x, y, z);
+void BoundingSphere::update(float x, float y, float z) {
+    BoundingVolume::update(x, y, z);
+}
+
+Vector BoundingSphere::projectCollisionOnSurface(const Vector &point) {
+    Vector delta = (position + offset) - point;
+    float length = VectorLength(delta);
+    float radius = this->radius;
+    if (length >= radius)
+        return Vector{0.0f, 0.0f, 0.0f};
+    return (position + offset) - (radius / length) * delta;
 }
