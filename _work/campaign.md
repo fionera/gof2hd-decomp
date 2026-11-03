@@ -5185,3 +5185,6 @@ Wave-97 function pass: `Level::createMission` 90.6392 -> 90.6887% (`w3740`) by u
 Wave-97 section-order pass: `SolarSystem` emission order (`w3745`) — original
 ctor/dtor/accessor order. Plain no-order 2857 -> 2860 (exact addrs 3470 -> 3495). Gate 4497/4497.
 Note: `_work/reconstructions/solarsystem_emission_order_w3745.md`.
+Wave-97 section-order pass: `GameRecord` emission order (`w3745`) — constructor before
+destructor. Plain no-order 2860 -> 2864 (exact addrs 3495 -> 3499). Gate 4497/4497.
+Note: `_work/reconstructions/gamerecord_ctor_placement_w3745.md`.
