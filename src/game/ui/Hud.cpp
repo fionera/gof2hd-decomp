@@ -34,6 +34,27 @@ Hud::Hud() {
     init();
 }
 
+Hud::~Hud() {
+    if (this->equipmentArray != 0)
+        delete this->equipmentArray;
+    this->equipmentArray = 0;
+    if (this->eventQueue != 0)
+        delete this->eventQueue;
+    this->eventQueue = 0;
+    if (this->menuButtons != 0) {
+        ArrayReleaseClasses(*this->menuButtons);
+        delete this->menuButtons;
+    }
+    this->menuButtons = 0;
+    if (this->uintArray != 0)
+        delete this->uintArray;
+    this->uintArray = 0;
+}
+
+void Hud::setAutofireEnabled(bool value) {
+    this->autofireEnabled = value;
+}
+
 
 
 static int **g_Hud_initOutX = nullptr;
@@ -310,6 +331,39 @@ void Hud::closeHudMenu() {
     this->quickMenuOpen = 0;
 }
 
+void Hud::releaseAllKeys() {
+    this->touchFlags = 0;
+    for (int i = 0; i != 0x19; i++) {
+        Array<void *> *p = this->keyArray; // lint: void_ptr (mirrors keyArray's opaque touch-handle element type)
+        if (p != 0) {
+            if ((*p)[i] != 0)
+                (*p)[i] = 0;
+        }
+        int *q = this->elementBits;
+        q[i] = 0;
+    }
+    this->field_0x288 = 0;
+}
+
+void Hud::setVisible(bool value) {
+    this->visible = value;
+}
+
+
+
+
+static const char g_Hud_swSep[1] = {0};
+static const char g_Hud_swEnd[1] = {0};
+
+void Hud::updateSecondaryWeaponString() {
+    if (this->currentSecondaryWeapon == 0)
+        return;
+    this->field_0x3b4 = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 0x4fa) + String(" (") +
+                        String(this->currentSecondaryWeapon->getAmount()) + String(")");
+    this->secondaryLabelX = (Globals::w >> 1) -
+                            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x3b4) >> 1);
+}
+
 void Hud::checkIfQuickMenuIsEmpty() {
     Array<Item *> *equip = Globals::status->getShip()->getEquipment(1);
     this->equipmentArray = equip;
@@ -328,35 +382,6 @@ void Hud::checkIfQuickMenuIsEmpty() {
     else
         this->quickMenuEmpty = 0;
     updateSecondaryWeaponString();
-}
-
-void Hud::releaseAllKeys() {
-    this->touchFlags = 0;
-    for (int i = 0; i != 0x19; i++) {
-        Array<void *> *p = this->keyArray; // lint: void_ptr (mirrors keyArray's opaque touch-handle element type)
-        if (p != 0) {
-            if ((*p)[i] != 0)
-                (*p)[i] = 0;
-        }
-        int *q = this->elementBits;
-        q[i] = 0;
-    }
-    this->field_0x288 = 0;
-}
-
-
-
-
-static const char g_Hud_swSep[1] = {0};
-static const char g_Hud_swEnd[1] = {0};
-
-void Hud::updateSecondaryWeaponString() {
-    if (this->currentSecondaryWeapon == 0)
-        return;
-    this->field_0x3b4 = *Globals::gameText->getText(this->currentSecondaryWeapon->getIndex() + 0x4fa) + String(" (") +
-                        String(this->currentSecondaryWeapon->getAmount()) + String(")");
-    this->secondaryLabelX = (Globals::w >> 1) -
-                            (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, this->field_0x3b4) >> 1);
 }
 
 
@@ -615,6 +640,16 @@ void Hud::drawEventQueue() {
                                     textOffset + y, false);
     }
     Globals::Canvas->SetColor(0xffffffff);
+}
+
+void Hud::addToEventQueue(ListItem *item) {
+    for (unsigned int i = 1; i < this->eventQueue->size(); i++) {
+        if ((*this->eventQueue)[i] == 0) {
+            (*this->eventQueue)[i] = item;
+            this->eventQueueDirty = 1;
+            return;
+        }
+    }
 }
 
 void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
@@ -942,8 +977,34 @@ void Hud::setHackingGameActive(bool value) {
     this->hackingGameActive = value;
 }
 
+bool Hud::isHackingGameActive() {
+    return this->hackingGameActive;
+}
+
 unsigned int Hud::firePressed() {
     return (reinterpret_cast<const unsigned char &>(this->touchFlags) >> 4) & 1;
+}
+
+void Hud::drawEventString(String text, bool rightAlign) {
+    PaintCanvas *canvas = Globals::Canvas;
+    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
+    if (this->letterbox != 0) {
+        int x;
+        if (rightAlign)
+            x = this->field_0x4f0 + 1;
+        else
+            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
+    } else {
+        int baseX = this->field_0x160;
+        int margin = this->field_0x4e8;
+        int x;
+        if (rightAlign)
+            x = -3 - margin;
+        else
+            x = margin + 3 - canvas->GetTextWidth(font, text);
+        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
+    }
 }
 
 void Hud::drawPauseButton() {
@@ -1665,26 +1726,18 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     Globals::Canvas->SetColor(savedColor);
 }
 
-void Hud::drawEventString(String text, bool rightAlign) {
-    PaintCanvas *canvas = Globals::Canvas;
-    unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-    if (this->letterbox != 0) {
-        int x;
-        if (rightAlign)
-            x = this->field_0x4f0 + 1;
-        else
-            x = Globals::w - 1 - this->field_0x4f0 - canvas->GetTextWidth(font, text);
-        canvas->DrawString(font, text, x, this->field_0x164 - 1, false);
-    } else {
-        int baseX = this->field_0x160;
-        int margin = this->field_0x4e8;
-        int x;
-        if (rightAlign)
-            x = -3 - margin;
-        else
-            x = margin + 3 - canvas->GetTextWidth(font, text);
-        canvas->DrawString(font, text, x + baseX, this->field_0x164 - 1, false);
-    }
+void Hud::resetAnalogStick() {
+    this->lockBracketX = this->reticleX;
+    this->lockBracketY = this->reticleY;
+}
+void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
+                           unsigned int x, unsigned int y) {
+    (void) t0;
+    (void) t1;
+    (void) ego;
+    (void) letterbox;
+    (void) x;
+    (void) y;
 }
 
 void Hud::drawBigNumber(int x, int y, int value, bool flag) {
@@ -1694,12 +1747,10 @@ void Hud::drawBigNumber(int x, int y, int value, bool flag) {
     (void) flag;
 }
 
-void Hud::resetAnalogStick() {
-    this->lockBracketX = this->reticleX;
-    this->lockBracketY = this->reticleY;
-}
-
 void Hud::drawTitleImage(bool visible) {}
+
+void Hud::drawCredits() {
+}
 
 
 
@@ -1785,12 +1836,23 @@ void Hud::drawMenu(int unused) {
     }
 }
 
-void Hud::enableFireForTutorial(bool value) {
-    this->fireForTutorial = value;
+int Hud::hudAction(int action, Level *lvl, Radar *radar) {
+    (void) action;
+    (void) lvl;
+    (void) radar;
+    return 0;
 }
 
-void Hud::setVisible(bool value) {
-    this->visible = value;
+bool Hud::jumpMapSelected() {
+    return this->jumpMapSelectedFlag;
+}
+
+void Hud::setJumpMapSelected(bool value) {
+    this->jumpMapSelectedFlag = value;
+}
+
+void Hud::enableFireForTutorial(bool value) {
+    this->fireForTutorial = value;
 }
 
 float Hud::getAnalogX() {
@@ -1803,32 +1865,6 @@ float Hud::getAnalogY() {
     float num = (float) ((int) this->lockBracketY - (int) this->reticleY);
     float den = (float) this->analogStickRadius;
     return num / den;
-}
-
-void Hud::setAutofireEnabled(bool value) {
-    this->autofireEnabled = value;
-}
-
-bool Hud::isHackingGameActive() {
-    return this->hackingGameActive;
-}
-
-void Hud::setJumpMapSelected(bool value) {
-    this->jumpMapSelectedFlag = value;
-}
-
-bool Hud::jumpMapSelected() {
-    return this->jumpMapSelectedFlag;
-}
-
-void Hud::addToEventQueue(ListItem *item) {
-    for (unsigned int i = 1; i < this->eventQueue->size(); i++) {
-        if ((*this->eventQueue)[i] == 0) {
-            (*this->eventQueue)[i] = item;
-            this->eventQueueDirty = 1;
-            return;
-        }
-    }
 }
 
 
@@ -2028,42 +2064,6 @@ unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) { // lint:
         }
     }
     return ret;
-}
-
-int Hud::hudAction(int action, Level *lvl, Radar *radar) {
-    (void) action;
-    (void) lvl;
-    (void) radar;
-    return 0;
-}
-
-void Hud::drawCredits() {
-}
-void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
-                           unsigned int x, unsigned int y) {
-    (void) t0;
-    (void) t1;
-    (void) ego;
-    (void) letterbox;
-    (void) x;
-    (void) y;
-}
-
-Hud::~Hud() {
-    if (this->equipmentArray != 0)
-        delete this->equipmentArray;
-    this->equipmentArray = 0;
-    if (this->eventQueue != 0)
-        delete this->eventQueue;
-    this->eventQueue = 0;
-    if (this->menuButtons != 0) {
-        ArrayReleaseClasses(*this->menuButtons);
-        delete this->menuButtons;
-    }
-    this->menuButtons = 0;
-    if (this->uintArray != 0)
-        delete this->uintArray;
-    this->uintArray = 0;
 }
 
 int Hud::RADAR_WIDTH;

@@ -5349,3 +5349,464 @@ cmp -l /tmp/w3745_sp/gate_base.so /tmp/w3745_sp/gate_after.so | wc -l   # 0
 * The `Hud` TU is the next per-TU source-order experiment, but it is a
   full-TU reorder plus a weak-instantiation placement issue, not a single
   function move; it was not tested or landed in this pass.
+
+## 26. `Hud` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4498 / linked 4498**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `.text` and `.rodata` are byte-identical before and after;
+only `.ARM.exidx` (29 B) and `.ARM.extab` (2018 B) differ (record order), and
+both move *toward* the original (exidx differing bytes 1746 -> 1743, extab
+128226 -> 128049). The plain no-order link improves from **byte 2963 /
+3739 of 4524 exact addresses / prefix 3694** to **byte 2975 / 3784 of 4524 /
+prefix 3742**; the first plain no-order mismatch moves past the whole Hud
+block to `DialogueWindow::DialogueWindow(Mission*, Level*, int)`.
+
+This is the next frontier recorded in §25.6.
+
+### 26.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `a3b0b820`:
+
+```text
+verify: byte 4498  linked 4498  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+.bss             0x0069ac @ 0x216970
+```
+
+The original's `Hud` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x1603fc  0x0e6  Hud::Hud()                       # C1/C2 alias
+0x1604e4  0xd88  Hud::init()
+0x16126c  0x0e8  Hud::~Hud()                      # D1/D2 alias
+0x161354  0x006  Hud::setAutofireEnabled(bool)
+0x16135a  0x01c  Array<void*>::Array()            # W
+0x161376  0x034  void ArraySetLength<void*>(...)  # W
+0x1613aa  0x026  Hud::closeHudMenu()
+0x1613d0  0x070  Hud::checkIfQuickMenuIsEmpty()
+0x161440  0x034  Hud::releaseAllKeys()
+0x161474  0x004  Hud::setVisible(bool)
+0x161478  0x14c  Hud::updateSecondaryWeaponString()
+0x1615c8  0xd24  Hud::initHudMenu(int, Level*)
+0x1622ec  0x008  Hud::setCurrentSecondaryWeapon(Item*)
+0x1622f4  0x194  Hud::drawEventQueue()
+0x162488  0x030  Hud::addToEventQueue(ListItem*)
+0x1624b8  0x024  Hud::setTimeExtender(bool, bool, bool, bool)
+0x1624dc  0x074  Hud::updateQueue(int)
+0x162550  0x04e  Hud::clearQueue()
+0x1625a0  0x1c0  Hud::hudEventMedal(int, int)
+0x162760  0x03e  Hud::sameHudEventAsBefore(String)
+0x1627a0  0xa60  Hud::hudEvent(int, PlayerEgo*, int)
+0x163200  0x03e  Hud::sameHudEventAsBeforeAggregate(String)
+0x16323e  0x00e  Hud::playerHit()
+0x16324c  0x48c  Hud::catchCargo(int, int, bool, bool, bool, bool, bool)
+0x1636d8  0x006  Hud::cargoFull()
+0x1636de  0x006  Hud::setHackingGameActive(bool)
+0x1636e4  0x006  Hud::isHackingGameActive()
+0x1636ea  0x00a  Hud::firePressed()
+0x1636f4  0x0b0  Hud::drawEventString(String, bool)
+0x1637a4  0x03c  Hud::drawPauseButton()
+0x1637e0  0x3b0  Hud::drawChallengeModeScore(int)
+0x163b90  0x2474 Hud::draw(long long, long long, PlayerEgo*, bool, unsigned int, unsigned int)
+0x166004  0x00a  Hud::resetAnalogStick()
+0x16600e  0x002  drawControlsInterface(long long, long long, PlayerEgo*, bool, unsigned int, unsigned int)
+0x166010  0x002  Hud::drawBigNumber(int, int, int, bool)
+0x166012  0x002  Hud::drawTitleImage(bool)
+0x166014  0x002  Hud::drawCredits()
+0x166018  0x260  Hud::drawOrbitInformation()
+0x166278  0x294  Hud::drawMenu(int)
+0x16650c  0x004  Hud::hudAction(int, Level*, Radar*)
+0x166510  0x006  Hud::jumpMapSelected()
+0x166516  0x006  Hud::setJumpMapSelected(bool)
+0x16651c  0x006  Hud::enableFireForTutorial(bool)
+0x166522  0x028  Hud::getAnalogX()
+0x16654a  0x028  Hud::getAnalogY()
+0x166574  0x488  Hud::touchedElement(unsigned int, unsigned int)
+0x1669fc  0x0ba  Hud::touchBegin(unsigned int, unsigned int, void*)
+0x166ab8  0x0cc  Hud::touchMove(unsigned int, unsigned int, void*)
+0x166b84  0x076  Hud::touchEnd(unsigned int, unsigned int, void*)
+```
+
+The `gof2hd_1.1.19_ios` source-layout dump independently witnesses the TU
+membership (`Classes/Game/Hud.cpp`) and the relative order of the functions
+that exist in that build (`ctor, init, dtor, ArraySetLength<void*>,
+closeHudMenu, checkIfQuickMenuIsEmpty, releaseAllKeys,
+updateSecondaryWeaponString, initHudMenu, ...`). It does not witness the
+Android-2.0.x additions (`setVisible`, `setAutofireEnabled`, `addToEventQueue`,
+`isHackingGameActive`, `setJumpMapSelected`, `jumpMapSelected`,
+`drawBigNumber`, `drawCredits`, `hudAction`, `drawControlsInterface`), so the
+Android `.dynsym` address order is the authority for those.
+
+The baseline plain no-order link put `Hud::~Hud` last and the
+`Array<void*>` instantiations immediately after `Hud::init`; the first plain
+no-order mismatch was exactly:
+
+```text
+original 0x16126c Hud::~Hud()
+ours     0x166b18 Hud::~Hud()
+```
+
+### 26.2 The object order is first-reference order, not definition order
+
+`-ffunction-sections` section-header order is the order in which clang
+*creates* each function's section, which is the order of first reference, not
+the order of out-of-line definitions. This matters twice in `Hud.cpp`:
+
+* `Hud::init()` is **defined after** `Hud::~Hud()` and
+  `Hud::setAutofireEnabled()`, but `Hud::Hud()` calls `init()`, so `init`'s
+  section is created right after the ctor. Because `init`'s *body* is emitted
+  at its definition (after `setAutofireEnabled`), the `Array<void*>::Array()`
+  and `ArraySetLength<void*>` sections it first references are created after
+  `setAutofireEnabled` — exactly the original order.
+* `Hud::checkIfQuickMenuIsEmpty()` is **defined after**
+  `Hud::updateSecondaryWeaponString()`, but `Hud::init()` calls it, so its
+  section is created after `closeHudMenu` (the call order in `init` is
+  `closeHudMenu, checkIfQuickMenuIsEmpty, releaseAllKeys`). Its body is
+  emitted at its definition (after `setVisible` and
+  `updateSecondaryWeaponString`), so the call to
+  `updateSecondaryWeaponString()` does not pull that section ahead of
+  `setVisible`.
+
+This was verified with two synthetic clang-7.0.2 tests compiled with the
+build's exact flags (`/tmp/clangtest/t11.cpp`, `t16.cpp`):
+
+```text
+source: ctor, dtor, setter, init(uses Array<void*>), close
+object: ctor, init, dtor, ~Array, setter, Array<void*>::Array, ArraySetLength, close
+
+source: ctor, dtor, setter, init(calls close/check/release), close, release,
+        setVisible, update, check(calls update), later
+object: ctor, init, dtor, setter, close, check, release, setVisible, update, later
+```
+
+The second row is the exact `Hud` shape: `check` is created early (by
+`init`) but its body is emitted late (after `setVisible`/`update`).
+
+### 26.3 Landed source change
+
+Only change: reorder the 47 top-level definitions in
+`src/game/ui/Hud.cpp` (no body edited; `sort` of the old and new file is
+identical). The landed definition order is:
+
+```text
+Hud::Hud
+Hud::~Hud
+Hud::setAutofireEnabled
+Hud::init
+Hud::closeHudMenu
+Hud::releaseAllKeys
+Hud::setVisible
+Hud::updateSecondaryWeaponString
+Hud::checkIfQuickMenuIsEmpty
+Hud::initHudMenu
+Hud::setCurrentSecondaryWeapon
+Hud::drawEventQueue
+Hud::addToEventQueue
+Hud::setTimeExtender
+Hud::updateQueue
+Hud::clearQueue
+Hud::hudEventMedal
+Hud::sameHudEventAsBefore
+Hud::hudEvent
+Hud::sameHudEventAsBeforeAggregate
+Hud::playerHit
+Hud::catchCargo
+Hud::cargoFull
+Hud::setHackingGameActive
+Hud::isHackingGameActive
+Hud::firePressed
+Hud::drawEventString
+Hud::drawPauseButton
+Hud::drawChallengeModeScore
+Hud::draw
+Hud::resetAnalogStick
+drawControlsInterface
+Hud::drawBigNumber
+Hud::drawTitleImage
+Hud::drawCredits
+Hud::drawOrbitInformation
+Hud::drawMenu
+Hud::hudAction
+Hud::jumpMapSelected
+Hud::setJumpMapSelected
+Hud::enableFireForTutorial
+Hud::getAnalogX
+Hud::getAnalogY
+Hud::touchedElement
+Hud::touchBegin
+Hud::touchMove
+Hud::touchEnd
+```
+
+The namespace-scope statics stay attached to their current user
+(`g_Hud_raceBadge`/`g_Hud_initMsg` before `init`,
+`g_Hud_swSep`/`g_Hud_swEnd` before `updateSecondaryWeaponString`,
+`g_Hud_imCargoA/B` before `initHudMenu`, `g_Hud_ccHash*` before `catchCargo`,
+`g_Hud_level` before `draw`, `g_Hud_securityColors` before
+`drawOrbitInformation`), so the object's `.rodata` content order is unchanged.
+
+The resulting `Hud.cpp.obj` section order (weak copies included) is:
+
+```text
+Hud::Hud()
+Hud::init()
+Hud::~Hud()
+Array<Item*>::~Array()
+Array<ListItem*>::~Array()
+Array<TouchButton*>::~Array()
+Array<unsigned int>::~Array()
+__clang_call_terminate
+Hud::setAutofireEnabled(bool)
+Array<ListItem*>::Array()
+void ArraySetLength<ListItem*>(...)
+Array<void*>::Array()
+void ArraySetLength<void*>(...)
+Hud::closeHudMenu()
+Hud::checkIfQuickMenuIsEmpty()
+Hud::releaseAllKeys()
+Hud::setVisible(bool)
+Hud::updateSecondaryWeaponString()
+AbyssEngine::String::String(int)
+Hud::initHudMenu(int, Level*)
+Array<TouchButton*>::Array()
+void ArrayAdd<TouchButton*>(...)
+Hud::setCurrentSecondaryWeapon(Item*)
+Hud::drawEventQueue()
+Hud::addToEventQueue(ListItem*)
+Hud::setTimeExtender(bool, bool, bool, bool)
+Hud::updateQueue(int)
+Hud::clearQueue()
+Hud::hudEventMedal(int, int)
+Hud::sameHudEventAsBefore(String)
+Hud::hudEvent(int, PlayerEgo*, int)
+Hud::sameHudEventAsBeforeAggregate(String)
+Hud::playerHit()
+Hud::catchCargo(...)
+Hud::cargoFull()
+Hud::setHackingGameActive(bool)
+Hud::isHackingGameActive()
+Hud::firePressed()
+Hud::drawEventString(String, bool)
+Hud::drawPauseButton()
+Hud::drawChallengeModeScore(int)
+Hud::draw(...)
+Hud::resetAnalogStick()
+drawControlsInterface(...)
+Hud::drawBigNumber(int, int, int, bool)
+Hud::drawTitleImage(bool)
+Hud::drawCredits()
+Hud::drawOrbitInformation()
+Hud::drawMenu(int)
+Hud::hudAction(int, Level*, Radar*)
+Hud::jumpMapSelected()
+Hud::setJumpMapSelected(bool)
+Hud::enableFireForTutorial(bool)
+Hud::getAnalogX()
+Hud::getAnalogY()
+Hud::touchedElement(unsigned int, unsigned int)
+Hud::touchBegin(unsigned int, unsigned int, void*)
+Hud::touchMove(unsigned int, unsigned int, void*)
+Hud::touchEnd(unsigned int, unsigned int, void*)
+```
+
+The weak `Array<ListItem*>`, `Array<TouchButton*>`, `String::String(int)` and
+`ArrayAdd<TouchButton*>` copies are deduplicated by the linker in favour of
+earlier TUs, exactly as in the original; the two `Array<void*>` copies are the
+ones the original keeps in the Hud block.
+
+### 26.4 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.text`/`.rodata` diff vs orig | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---:|---|
+| baseline | **4498 / 4498** | 107798 / 0 | `9f0614ac…` | **2963** | 3739 / 4524 | 3694 | `Hud::~Hud` `0x16126c` vs `0x166b18` |
+| landed | **4498 / 4498** | 107798 / 0 | `784d3285…` | **2975** | **3784 / 4524** | **3742** | `DialogueWindow::DialogueWindow(Mission*, Level*, int)` `0x166bfc` vs `0x166ecc` |
+
+The landed delta is **+12 plain byte-exact, +45 functions at their original
+address, +48 exact-address prefix**, with the gate counts unchanged.
+
+The plain `report.json` changes 14 rows: 13 become byte-exact and one
+(`SpriteGun::SpriteGun(Gun*, int)`) becomes byte-False. The 13 gains are
+`ArraySetLength<void*>`, `Array<void*>::Array`, `Hud::D1`, `Hud::D2`,
+`Hud::closeHudMenu`, `Hud::updateQueue`, `Hud::clearQueue`,
+`Hud::sameHudEventAsBefore`, `Hud::sameHudEventAsBeforeAggregate`,
+`Hud::drawEventString`, `Hud::touchedElement`, `Hud::touchBegin`,
+`Hud::touchEnd`. The `SpriteGun` row is a plain-link alignment artifact: the
+`TouchButton` block shifts `-4` (`0x169848 -> 0x169844`), moving
+`SpriteGun::SpriteGun` from its exact `0x169aa4` to `0x169aa0`; it is
+byte-exact in the gate and its `linked` flag stays True.
+
+The whole `Hud` block is now address-exact in the plain no-order link — all 47
+strong definitions plus both `Array<void*>` weak copies:
+
+```text
+$NM -nSD --defined-only /tmp/w3745_hud/after2_noorder.so | grep '_ZN3Hud'
+001603fc T _ZN3HudC1Ev / C2
+001604e4 T _ZN3Hud4initEv
+0016126c T _ZN3HudD1Ev / D2
+00161354 T _ZN3Hud18setAutofireEnabledEb
+0016135a W _ZN5ArrayIPvEC2Ev
+00161376 W _Z14ArraySetLengthIPvEvjR5ArrayIT_E
+001613aa T _ZN3Hud12closeHudMenuEv
+001613d0 T _ZN3Hud23checkIfQuickMenuIsEmptyEv
+00161440 T _ZN3Hud14releaseAllKeysEv
+00161474 T _ZN3Hud10setVisibleEb
+00161478 T _ZN3Hud27updateSecondaryWeaponStringEv
+001615c8 T _ZN3Hud11initHudMenuEiP5Level
+...
+00166b84 T _ZN3Hud8touchEndEjjPv
+```
+
+Gate `.so` A/B (`cmp -l` = 2067 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| build-id | 20 | `.note.gnu.build-id` |
+| `.ARM.exidx` | 29 | extab-pointer words for the reordered functions |
+| `.ARM.extab` | 2018 | extab record order for the reordered functions |
+
+`.text` (1259464 B) and `.rodata` (269159 B) are byte-identical between the
+baseline and landed gate `.so`, so the gate `report.json` is unchanged. The
+`.ARM.exidx` differing-byte count against the original improves
+1746 -> 1743; `.ARM.extab` improves 128226 -> 128049.
+
+Plain no-order section layout is unchanged by the pass
+(`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.rodata 0x41b67 @ 0x1c9e30`).
+
+### 26.5 Next frontier: `DialogueWindow`
+
+The first plain no-order mismatch is now the first function of the next TU:
+
+```text
+original 0x166bfc DialogueWindow::DialogueWindow(Mission*, Level*, int)  (0x5a bytes)
+ours     0x166ecc DialogueWindow::DialogueWindow(Mission*, Level*, int)
+```
+
+The original `DialogueWindow` block starts with the parameterized ctor, then
+`init`, `set`, the default ctor, the `String*` ctor, the dtor, etc.; our plain
+order starts with `init`, then the parameterized ctor, `set`, and
+`loadContent`. This is a separate TU (`src/game/ui/DialogueWindow.cpp`) and
+was not changed in this pass.
+
+### 26.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_hud/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_hud/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_hud/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_hud/base_noorder.so
+
+# source reorder (47 definitions; see §26.3)
+python3 /tmp/w3745_hud/reorder_hud.py     # scratch script, not committed
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_hud/after2_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_hud/verify_after2 \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_hud/after2_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_hud/after2_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ui/Hud.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN3Hud'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_hud/gate_after.so
+git stash push -- src/game/ui/Hud.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_hud/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745_hud/gate_base.so /tmp/w3745_hud/gate_after.so
+cmp -l /tmp/w3745_hud/gate_base.so /tmp/w3745_hud/gate_after.so | wc -l   # 2067
+```
+
+### 26.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4498 / linked 4498`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2963 / 4498`, prefix 3694,
+  3739 / 4524, first mismatch `Hud::~Hud` `0x16126c` vs `0x166b18`.
+* The original emits `Hud` in the `.dynsym` address order listed in §26.1;
+  the `gof2hd_1.1.19_ios` dump independently witnesses the TU membership and
+  the order of the functions it contains.
+* `-ffunction-sections` section order is first-reference order, not
+  definition order. This was demonstrated with synthetic clang-7.0.2 tests
+  compiled with the build's exact flags: a function defined after another but
+  called by the ctor is placed before it; a template instantiation is placed
+  at the body-emission point of its first user.
+* The original `Hud::init` is defined after `Hud::~Hud` and
+  `Hud::setAutofireEnabled` (its section still lands right after the ctor
+  because the ctor calls it), and `Hud::checkIfQuickMenuIsEmpty` is defined
+  after `Hud::updateSecondaryWeaponString` (its section still lands after
+  `closeHudMenu` because `init` calls it). This is what places the
+  `Array<void*>` copies after `setAutofireEnabled` and `setVisible` before
+  `updateSecondaryWeaponString`.
+* The landed reorder is gate-neutral (`4498 / 4498`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `.text` and `.rodata`
+  are byte-identical (`cmp` = 0 for both sections); only build-id, 29
+  `.ARM.exidx` bytes and 2018 `.ARM.extab` bytes differ, and both improve
+  against the original.
+* The plain no-order build now has the whole `Hud` block at its original
+  addresses: exact addresses 3739 -> 3784, exact-address prefix 3694 -> 3742,
+  plain `byte_exact` 2963 -> 2975. The next plain no-order frontier is
+  `DialogueWindow::DialogueWindow(Mission*, Level*, int)` (`0x166bfc` original,
+  `0x166ecc` ours).
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2975`, not `4498`.
+* The `SpriteGun::SpriteGun(Gun*, int)` plain byte-exact row regresses only
+  because the plain link's `TouchButton` block shifts `-4`
+  (`0x169848 -> 0x169844`); the gate is byte-exact. The alignment/padding
+  rule that produces the `-4` is not characterized here.
+* The `DialogueWindow` TU is the next per-TU source-order experiment; it is a
+  separate TU and was not tested or landed in this pass.
