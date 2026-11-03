@@ -5214,3 +5214,8 @@ Wave-97 section-order pass: `NewsTicker` update order (`w3745`) — update befor
 Plain no-order 2954 -> 2955 (addresses 3715 -> 3717, prefix 3625 -> 3634). Gate 4497/4497.
 Wave-97 section-order pass: `Sparks` destructor order (`w3745`) — `~Sparks` after `isRocket`.
 Plain no-order 2955 -> 2961 (addresses 3717 -> 3724, prefix 3634 -> 3647). Gate 4497/4497.
+Wave-97 **byte-exact win**: `StarMap::drawOnScreenInfo` 99.917 -> **100%** (`w3728`, 3488 B) by
+weighting the 120-arm station-enum hint 7:1 so `campaign` stays in r6. Gate **byte_exact
+4497 -> 4498, linked_exact 4497 -> 4498**, .text 0x1337c8, lint CLEAN, drift 0.
+Wave-97 section-order pass: `PlayerJunk` emission order (`w3745`) — update before render before
+collide. Plain no-order 2961 -> 2962 (addresses 3724 -> 3728, prefix 3647 -> 3666). Gate 4498/4498.

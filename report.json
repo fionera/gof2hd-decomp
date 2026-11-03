@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.91,
-  "byte_exact": 4497,
-  "linked_exact": 4497,
-  "fuzzy_perfect": 4497,
+  "byte_exact": 4498,
+  "linked_exact": 4498,
+  "fuzzy_perfect": 4498,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -222,14 +222,6 @@
    "linked": false,
    "osize": 11440,
    "usize": 11440
-  },
-  {
-   "name": "_ZN7StarMap16drawOnScreenInfoEib",
-   "pct": 99.9,
-   "byte": false,
-   "linked": false,
-   "osize": 3488,
-   "usize": 3488
   },
   {
    "name": "Blowfish_decipher",
@@ -28966,6 +28958,14 @@
    "linked": true,
    "osize": 10,
    "usize": 10
+  },
+  {
+   "name": "_ZN7StarMap16drawOnScreenInfoEib",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 3488,
+   "usize": 3488
   },
   {
    "name": "_ZN7StarMap24askForJumpIntoAlienWorldEv",

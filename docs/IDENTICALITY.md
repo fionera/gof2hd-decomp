@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4497, linked_exact 4497, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4498, linked_exact 4498, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -201,7 +201,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **27 non-linked functions.** 4497 of 4524 compared functions are linked-exact. The worst are
+1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (55.0%), `Status::missionCompleted` (86.7%),
    `Generator::createMission` (72.9%), `Level::createShip` (74.1%), `Radar::draw` (73.9%),
    `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (80.4%) and `Globals::Globals` (80.5%).
