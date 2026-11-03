@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.9,
+  "avg_match": 99.91,
   "byte_exact": 4497,
   "linked_exact": 4497,
   "fuzzy_perfect": 4497,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 72.2,
+   "pct": 72.9,
    "byte": false,
    "linked": false,
    "osize": 1996,
@@ -129,7 +129,7 @@
   },
   {
    "name": "_ZN5Level11createSceneEv",
-   "pct": 88.2,
+   "pct": 88.3,
    "byte": false,
    "linked": false,
    "osize": 2252,

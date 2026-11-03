@@ -5188,3 +5188,10 @@ Note: `_work/reconstructions/solarsystem_emission_order_w3745.md`.
 Wave-97 section-order pass: `GameRecord` emission order (`w3745`) — constructor before
 destructor. Plain no-order 2860 -> 2864 (exact addrs 3495 -> 3499). Gate 4497/4497.
 Note: `_work/reconstructions/gamerecord_ctor_placement_w3745.md`.
+Wave-97 function pass: `Generator::createMission` 72.2 -> 72.9% (`w3715`) by declaring
+`toSystem` before `fromSystemPtr`. 1996 B, gate 4497/4497.
+Wave-97 function pass: `Level::createScene` 88.2 -> 88.3% (`w3718`) by moving the `rnd` local
+after the zero-fill, using `rnd` for the station pick and `Globals::rnd` for rotation. 2252 B, gate 4497/4497.
+Wave-97 section-order pass: `Waypoint` emission order (`w3745`) — constructor first, then
+destructors/accessors. Plain no-order 2864 -> 2866 (exact addrs 3499 -> 3508). Gate 4497/4497.
+Note: `_work/reconstructions/waypoint_ctor_placement_w3745.md`.
