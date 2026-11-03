@@ -873,16 +873,14 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
 // Security level colours (RGB) for the system info line.
 
 void StarMap::draw() {
-    __builtin_assume(!(this->transitionIn && this->transitionOut)); // lint: arm_builtin
-    bool in = this->transitionIn;
     this->alpha = this->mode == 0 ? 255 : 0;
-    if (in != this->transitionOut) {
+    if (this->transitionIn || this->transitionOut) {
         float t = (this->easeZ->GetValue() - this->easeZ->GetMinValue()) /
                   (this->easeZ->GetMaxValue() - this->easeZ->GetMinValue());
         this->alpha = (int) ((this->transitionIn ? 1.0f - t : t) * 255.0f);
     }
 
-    if (this->mode != 3 || in || this->transitionOut) {
+    if (this->mode != 3 || this->transitionIn || this->transitionOut) {
         // Galaxy: faint route network.
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha < 34 ? this->alpha : 34));
         for (uint32_t i = 0; i < this->systemGeoms->size(); i++) {
@@ -913,7 +911,8 @@ void StarMap::draw() {
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) this->alpha);
         this->scratchVector2 = Vector(*(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()]);
         Array<int> *routes = (Array<int> *) ((SolarSystem *) Globals::status->getSystem())->getRoutes();
-        for (uint32_t i = 0; i < this->systems->size(); i++) {
+        Array<SolarSystem *> *systems = this->systems;
+        for (uint32_t i = 0; i < systems->size(); i++) {
             Array<bool> *visible = Globals::status->getSystemVisibilities();
             if (visible == 0 || i >= this->systemPositions->size() || visible->size() <= i || !(*visible)[i])
                 continue;
@@ -974,7 +973,7 @@ void StarMap::draw() {
         this->drawOnScreenInfo(this->selectedSystem, false);
     }
 
-    if (this->starSystemRoot != 0 && this->stations != 0) {
+    if (__builtin_expect(this->starSystemRoot != 0 && this->stations != 0, 1)) { // lint: arm_builtin
         SolarSystem *system = (*this->systems)[this->selectedSystem];
         if (!system->hasNoOwner()) {
             Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));
@@ -1028,12 +1027,11 @@ void StarMap::draw() {
         }
         Layout *layout = Globals::layout;
         int left = layout->windowX;
-        int width = layout->windowWidth;
         unsigned int font = (unsigned int) (uintptr_t) Globals::font;
         int textWidth = Globals::Canvas->GetTextWidth(font, line);
         PaintCanvas *canvas = Globals::Canvas;
         canvas->DrawString(font, line,
-                           left + width / 2 - textWidth / 2,
+                           left + layout->windowWidth / 2 - textWidth / 2,
                            Globals::layout->windowY + Globals::layout->windowHeight -
                            Globals::layout->footerTextInset,
                            false);
