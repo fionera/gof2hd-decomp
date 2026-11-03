@@ -262,3 +262,109 @@ PY
 
 Scratch (not committed): `/dev/shm/w3906/` — `Status.cpp.base`,
 `Status_2sw.cpp`, `Status_rank.cpp`, `layout.py`, `decode2.py`, `vfn_rank.txt`.
+
+## 6. Follow-up (same worker, w3906): the operand is `int`, and the group split is weight-driven
+
+Four additional facts were established after the first commit; none yields a
+landable change (the gate stayed at byte 4498 / linked 4498 / data 843 /
+imports 207 throughout).
+
+### 6.1 The original switch operand is `int`, not `(short)`
+
+The original dispatch has **no `sxth`**:
+
+```
+abfd4: mov r0, sl
+abfd6: blx Mission::getType()
+abfda: sub.w r1, r0, #150      ; operates directly on the i32 return
+abfde: cmp   r1, #39
+abfe0: bhi.n ac046
+abfe2: tbh   [pc, r1, lsl #1]
+```
+
+The committed `(short)` form inserts `sxth r0, r0` at `abfda` (2 bytes) and
+is 1432 B by coincidence.  `switch (m->getType())` (plain `int`) removes the
+`sxth`, matches the prologue and dispatch **byte-for-byte**, and scores
+**60.2 % / 1428 B** (official verifier) — but the 4-byte size mismatch shifts
+the TU literal pools, so `byte_exact` drops 4498 → 3043.  Not landable under
+the "byte_exact must rise" rule; it is the best plain-switch starting point
+if the missing 4 bytes can be recovered.
+
+### 6.2 The body order is a *frequency* effect, not a source-order effect
+
+Randomising the case order of the flat `int` switch (8 random permutations
+plus ascending / current / group-B-first / reversed) **always** gives the
+same value-order body layout:
+
+```
+167/174 150 151 152 153 154 155 156 157 158 160 162 163 164 165 166
+168 169 170 171 172 184 189 default
+```
+
+The jump-table successor list is value order (`buildJumpTable` walks the
+value-sorted `Table`), and every case body has the same probability, so MBP
+ties break by successor order.  Source order cannot change this.
+
+### 6.3 A weight-biased nested switch reproduces the exact group order
+
+Wrapping the inner (group-B) switch in the `default:` of an outer switch and
+applying `__builtin_expect` to the outer condition produces the original
+body order:
+
+```cpp
+switch (__builtin_expect(type, 167)) {   // or 150, 155, 174, ...
+    case 167: case 174: ...; break;
+    ... group A ...
+    default: {
+        switch (type) { case 156: ...; ... case 172: ...; }
+    }
+}
+```
+
+The merged switch carries `!prof` weights of the form
+`{default=1, 167=22000, 174=11, group A=11, group B=1}` (for expected value
+167).  Group A (11) is placed before group B (1); the 167/174 body (22000)
+is peeled first; the default (1) ties with group B and loses on successor
+order, so it lands last.  The resulting high-TBH body order is exactly
+
+```
+167/174, <low switch>, 8 11 13 14, 150 151 152 153 154 155 158 162 166
+170 184 189, 156 157 160 163 164 165 168 169 171 172, default
+```
+
+i.e. the original order.  Measured (official verifier):
+
+| variant | size | pct | byte_exact |
+|---|---:|---:|---:|
+| `__builtin_expect(type,167)` nested | 1388 | 36.8 | 2326 |
+| `__builtin_expect(type,150)` nested | 1396 | 31.8 | 2326 |
+| plain `int` flat switch | 1428 | 60.2 | 3043 |
+| committed `(short)` flat switch | 1432 | 57.7 | **4498** |
+
+The `__builtin_expect` intrinsic changes the pre-RA register allocation:
+`atStation` moves from `r8` (original / plain `int`) to `sl` (or `r3` in the
+`ev=150` form), and the loop latch is placed early instead of after case 172.
+The body *order* is right but every body differs by register names, so the
+fuzzy score is lower than the plain `int` form.
+
+### 6.4 Why the original has the group order with the plain-int register allocation
+
+Register allocation runs *before* MBP, so the original's `r8 = atStation`,
+`fp = i` prologue proves its live ranges are those of the plain flat `int`
+switch (no live `type`, no `__builtin_expect`-style extra values).  Yet its
+post-MBP layout is group order.  Since the jump-table successor list is
+value order, the only way MBP can produce group order with equal weights is
+the `getFirstUnplacedBlock` fallback (MBB order = source order), which is
+taken only when `BlockWorkList` is empty.  The original's high bodies must
+therefore not be pushed to the worklist (or be pre-merged into the jump
+table's chain) in a way the current flat switch does not reproduce.  This is
+the remaining unknown; it is not reachable by case reordering, `default`
+placement, or the MBP/switch flags tried in w3590/w3632 and this pass.
+
+### 6.5 Reproduction
+
+Scratch under `/dev/shm/w3906`: `Status_int.cpp` (plain int flat switch),
+`Status_ne_150.cpp` / `Status_ne_167.cpp` (nested + `__builtin_expect`),
+`Status_2sw.cpp` (sequential two-switch), `layout.py` (TBH body-order
+decoder), `cc.sh` (exact-flag compile), `mir_ne150.txt` / `mir_int.txt`
+(`-print-after-all` MIR for the two shapes).
