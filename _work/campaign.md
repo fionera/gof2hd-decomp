@@ -5141,3 +5141,8 @@ Wave-97 function pass: `StarMap::draw` 92.6 -> 95.6% (`w3732`) with a direct tra
 a `systems` local, and restoring the r3 canary/predication via `__builtin_expect`. 2644 B, gate 4497/4497.
 Wave-97 section-order pass: `Radar::getPlanetDockIndex` placement (`w3745`) before
 `drawCurrentLock`; plain no-order 3097 -> 3099 (prefix 3081 -> 3096). Gate 4497/4497.
+Wave-97 function pass: `Level::createMission` 88.3 -> 90.4% (`w3740`) by caching the
+`jumperCount` pointer and using a single `enemies` local in the convoy loop. 17172 B, gate 4497/4497.
+Wave-97 section-order pass: `AutoPilotList::fire` placement (`w3745`) by defining
+`fire`/`getTargetString` before `up` and `touch` after `draw`; plain no-order 3099 -> 3102.
+Gate 4497/4497.
