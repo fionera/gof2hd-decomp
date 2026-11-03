@@ -56,20 +56,20 @@
    "usize": 9908
   },
   {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 74.1,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
-  },
-  {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
    "pct": 74.3,
    "byte": false,
    "linked": false,
    "osize": 1996,
    "usize": 1996
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 74.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
