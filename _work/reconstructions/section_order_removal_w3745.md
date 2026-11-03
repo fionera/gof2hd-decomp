@@ -1325,3 +1325,283 @@ changed.
   `3076`, not `4497`.
 * The `Standing` TU reorder is the obvious next per-TU source-order
   experiment, but it was not tested or landed in this pass.
+
+## 12. `Standing::setStanding` reorder (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **3076 / 4497** (prefix 2870,
+3312 / 4524 exported functions at their original address) to **3085 / 4497**
+(prefix 2994, 3342 / 4524). The first plain no-order mismatch moves from
+`Standing::setStanding` to `Wanted::Wanted`.
+
+This is the next frontier recorded in §11.5.
+
+### 12.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `Standing` block from the binary's own `.dynsym`:
+
+```text
+0x11d6a8  Standing::Standing()
+0x11d6c8  Standing::~Standing()
+0x11d6de  Standing::setStanding(int, int)
+0x11d6e6  Standing::setStandings(int*)
+0x11d6ea  Standing::getStandings()
+0x11d6ee  Standing::getStanding(int)
+0x11d728  Standing::getStandingRate(int)
+0x11d74c  Standing::setPlayerSignatureRace(int)
+0x11d750  Standing::rehabilitate(int)
+0x11d780  Standing::isEnemyWithAnyone()
+0x11d7a2  Standing::isEnemy(int)
+0x11d808  Standing::isFriend(int)
+0x11d86e  Standing::isNeutral(int)
+0x11d890  Standing::getEnemyRace(int)
+0x11d8a8  Standing::applyPoints(int, int)
+0x11d8d0  Standing::applyKill(int)
+0x11d93c  Standing::applyDelict(int, int)
+0x11d98c  Standing::applyStealCargo(int)
+0x11d992  Standing::applyMissionCompleted(int)
+0x11d99a  Standing::applyDisable(int)
+0x11d9a0  Standing::getMissionBonus(int)
+```
+
+The HD source-layout dump (`_work/original_layout/original_layout.json`,
+`Classes/Game/Standing.cpp`) independently lists the same order for the
+functions it contains; `isNeutral` and `applyPoints` are Android-2.0.x
+additions and are witnessed only by the Android `.dynsym`. The Android
+`.dynsym` is the authority used here.
+
+The baseline `Standing.cpp.obj` order was:
+
+```text
+ctor, dtor, getStandings, setStandings, applyPoints, getStandingRate,
+getStanding, isEnemyWithAnyone, getEnemyRace, isNeutral, isEnemy, isFriend,
+applyMissionCompleted, applyDelict, setStanding, setPlayerSignatureRace,
+applyStealCargo, applyKill, getMissionBonus, applyDisable, rehabilitate
+```
+
+so the plain no-order link put `setStanding` at `0x11d8e8` instead of
+`0x11d6de`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x11d6de Standing::setStanding(int, int)
+ours     0x11d8e8 Standing::setStanding(int, int)
+```
+
+### 12.2 Landed source change
+
+The `Standing.cpp` definitions were re-emitted in the original `.dynsym`
+order. The two namespace-scope tables (`Standing_enemyRaceTable` and
+`g_apk_raceTable`) were kept immediately before their first users, so their
+`.rodata` emission order is unchanged. No body was edited.
+
+The reordered object order now matches the original address order exactly:
+
+```text
+Standing::Standing()
+Standing::~Standing()
+Standing::setStanding(int, int)
+Standing::setStandings(int*)
+Standing::getStandings()
+Standing::getStanding(int)
+Standing::getStandingRate(int)
+Standing::setPlayerSignatureRace(int)
+Standing::rehabilitate(int)
+Standing::isEnemyWithAnyone()
+Standing::isEnemy(int)
+Standing::isFriend(int)
+Standing::isNeutral(int)
+Standing::getEnemyRace(int)
+Standing::applyPoints(int, int)
+Standing::applyKill(int)
+Standing::applyDelict(int, int)
+Standing::applyStealCargo(int)
+Standing::applyMissionCompleted(int)
+Standing::applyDisable(int)
+Standing::getMissionBonus(int)
+```
+
+The gate build (with the ordering file) is unchanged in `.text`,
+`.ARM.exidx` and `.ARM.extab` content for the `Standing` range; the only
+gate `.so` change is the 20-byte build-id plus 2 bytes of `.ARM.exidx`
+extab-offset data (the `.ARM.extab` record order follows object section
+order, which the ordering file does not reorder).
+
+### 12.3 The `.ARM.exidx` confound and the enabling `BoundingVolume` reorder
+
+The `Standing` reorder alone is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`,
+drift 0) and moves the plain-link exact-address prefix 2870 -> 2934
+(3312 -> 3331 functions at their original address). But the raw plain
+`byte_exact` **drops** 3076 -> 2800. The cause is measured, not guessed:
+
+* the plain link's `.ARM.exidx` shrinks from `0x6f50` to `0x6f48` (one
+  fewer merged `CANTUNWIND` entry);
+* that shifts `.ARM.extab` and `.rodata` from `0x1c9e10` to `0x1c9e00`;
+* every PC-relative literal-pool word that points into `.rodata` changes,
+  so 278 functions that were `linked_exact` but literal-pool-exact lose
+  `byte_exact` (the instruction streams are unchanged: `linked_exact`
+  stays 4497).
+
+The `Standing` block itself is now *more* correct: the original has 11
+`.ARM.exidx` entries in the `Standing` range (the `setPlayerSignatureRace`
+`CANTUNWIND` entry covers `rehabilitate`/`isEnemyWithAnyone`/`isEnemy`/
+`isFriend` up to `isNeutral`), and the reordered object reproduces exactly
+that 11-entry pattern. The baseline's 12-entry pattern had been
+accidentally compensating for a missing entry elsewhere in the plain link.
+
+To keep the plain-link `.ARM.exidx` size at the baseline `0x6f50` and make
+the pass a strict improvement, the next frontier TU was reordered in the
+same pass: `BoundingVolume.cpp`. Its original `.dynsym` order is
+
+```text
+0x11f6dc  BoundingVolume::BoundingVolume(float, float, float, float, float, float)
+0x11f718  BoundingVolume::~BoundingVolume()
+0x11f74c  BoundingVolume::setVolumes(Array<BoundingVolume*>*)
+0x11f750  BoundingVolume::setVolume(BoundingVolume*)
+0x11f788  BoundingVolume::getProjectionVector(AEMath::Vector const&)
+0x11f7d8  BoundingVolume::getCollisionNormal(AEMath::Vector const&)
+0x11f7e4  BoundingVolume::update(float, float, float)
+0x11f870  BoundingVolume::collide(float, float, float)
+0x11f8ac  BoundingVolume::outerCollide(float, float, float)
+0x11f8b0  BoundingVolume::staticProjectCollisionOnSurface(AEMath::Vector const&, Array<BoundingVolume*>*)
+```
+
+and the reordered object reproduces that order. This adds back the one
+`.ARM.exidx` entry (plain `.ARM.exidx` back to `0x6f50`, `.rodata` back to
+`0x1c9e10`) and makes the whole `BoundingVolume` block address-exact in the
+plain link. It also reduces the gate `.ARM.extab` differing-byte count
+against the original from 113,809 to 113,807; `.text` (112,124 differing
+bytes) and `.ARM.exidx` (1,744) are unchanged.
+
+The `BoundingVolume` HD source-layout dump lists the same ctor/dtor/
+`getProjectionVector`/`getCollisionNormal`/`update`/`collide`/
+`outerCollide`/`staticProjectCollisionOnSurface` order; `setVolumes` and
+`setVolume` are witnessed only by the Android `.dynsym`.
+
+### 12.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3076** | 3312 / 4524 | 2870 | `Standing::setStanding` `0x11d6de` vs `0x11d8e8` |
+| `Standing` only, full reorder | 4497 / 4497 | 2800 | 3331 / 4524 | 2934 | `BoundingVolume::BoundingVolume` `0x11f6dc` vs `0x11f798` |
+| `Standing` + `BoundingVolume` (landed) | **4497 / 4497** | **3085** | **3342 / 4524** | **2994** | `Wanted::Wanted` `0x122890` vs `0x12290c` |
+
+The landed delta is **+9 plain byte_exact, +30 functions at their original
+address, +124 exact-address prefix**, with the gate unchanged. The gate
+`.so` is not byte-identical to the baseline (build-id plus `.ARM.exidx`/
+`.ARM.extab` record order), but the gate counts are unchanged and the
+`.ARM.extab` differing-byte count against the original improves by 2.
+
+Section fingerprint after the change (unchanged):
+
+```text
+.text        0x1337c8 @ 0x69440
+.ARM.exidx   0x006f70 @ 0x19cc08
+.ARM.extab   0x02628c @ 0x1a3b78   (original 0x26298; known -12)
+.rodata      0x041b67 @ 0x1c9e10
+```
+
+### 12.5 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x122890 Wanted::Wanted(int, AEMath::String, int, int, bool, int, int, int, int, int, int, int, int, int)
+ours     0x12290c Wanted::Wanted(...)
+```
+
+`Wanted.cpp.obj` emits the accessors (`getIndex`, `getBoard`, `getRace`,
+`isMale`, `getShip`, ...) before the constructor; the original `.dynsym`
+puts the constructor and destructor first. This is a separate TU and was
+not changed in this pass.
+
+### 12.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/st/final_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/st/verify_final \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/st/final_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/st/final_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/world/Standing.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/math/BoundingVolume.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep -E 'Standing|BoundingVolume'
+```
+
+### 12.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3076 / 4497`, prefix 2870,
+  3312 / 4524, first mismatch `Standing::setStanding` `0x11d6de` vs
+  `0x11d8e8`.
+* The original emits `Standing` in the `.dynsym` order listed in §12.1;
+  the reordered object reproduces that order exactly.
+* The `Standing` reorder alone is gate-neutral but drops raw plain
+  `byte_exact` to 2800 because the plain `.ARM.exidx` shrinks by one
+  `CANTUNWIND` entry and shifts `.rodata` by `-0x10`; `linked_exact`
+  stays 4497, so no instruction stream changed.
+* The reordered `Standing` block reproduces the original's 11-entry
+  `.ARM.exidx` pattern exactly.
+* `BoundingVolume.cpp` reordered to its original `.dynsym` order adds back
+  the missing `.ARM.exidx` entry (plain `.ARM.exidx` `0x6f50`, `.rodata`
+  `0x1c9e10`) and makes the whole `BoundingVolume` block address-exact in
+  the plain link.
+* The landed combined change is gate-neutral (`4497 / 4497`, lint
+  `CLEAN ✓`, drift 0) and improves the plain no-order build to
+  `3085 / 4497`, prefix 2994, 3342 / 4524. The gate `.ARM.extab`
+  differing-byte count against the original improves 113,809 -> 113,807.
+* The next plain no-order frontier is `Wanted::Wanted` (`0x122890`
+  original, `0x12290c` ours); `Wanted.cpp.obj` emits its accessors before
+  the constructor, while the original `.dynsym` puts the constructor and
+  destructor first.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3085`, not `4497`.
+* The plain no-order raw `byte_exact` is sensitive to the global
+  `.ARM.exidx` entry count (each entry is 8 bytes and the `.rodata`
+  alignment turns an 8-byte change into a 16-byte base shift). Until the
+  whole layout converges, a locally correct reorder can lower raw
+  `byte_exact` while raising the exact-address prefix; the prefix and
+  `linked_exact` are the more stable convergence measures.
+* The `Wanted` reorder is the obvious next per-TU source-order experiment,
+  but it was not tested or landed in this pass.
