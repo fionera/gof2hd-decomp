@@ -5152,3 +5152,7 @@ Wave-97 section-order pass: `ListItemWindow` definitions reordered to the origin
 order (`w3745`). Gate 4497/4497.
 Wave-97 section-order pass: `MovingStars` emission order (`w3745`) — ctor before dtor,
 render before translate. Gate 4497/4497.
+Wave-97 section-order pass: `ChoiceWindow` emission-order pass (`w3745`) — original
+ctor/dtor/set/touch order. Gate 4497/4497.
+Wave-97 revert: `Level::createMission` 90.6% (`48c0f54d`) was reverted because it shortened
+the body to 17168 B (original 17172 B). Keep the function size-exact.
