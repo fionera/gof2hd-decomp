@@ -5245,3 +5245,10 @@ Wave-97 function pass: `Generator::createMission` 72.9 -> 73.6% (`w3715`) by res
 Wave-97 section-order pass: `TouchButton` emission order (`w3745`) — ctor, init, ctors, dtor,
 setText, ... Plain no-order 2989 -> 3001 (addresses 3811 -> 3858, prefix 3769 -> 3817). Gate 4498/4498.
 Note: `_work/reconstructions/touchbutton_emission_order_w3745.md`.
+Wave-97 function pass: `MGame::OnUpdate` 99.8835 -> 99.9353% (`w3719`) by caching
+`Globals::status` for the mission-23 idle check and making the radio branch direct. 11440 B, gate 4498/4498.
+Wave-97 function pass: `SpaceLounge::drawLounge` 95.5 -> 95.6% (`w3733`) with per-TU branch
+weights restoring the original EH landing-pad order. 1948 B, gate 4498/4498.
+Wave-97 section-order pass: `SpriteGun` emission order (`w3745`) — ctor, dtor, render, update,
+setEnemies, setEnemy. Plain no-order addresses 3858 -> 3862 (prefix 3817 -> 3830). Gate 4498/4498.
+Note: `_work/reconstructions/spritegun_emission_order_w3745.md`.
