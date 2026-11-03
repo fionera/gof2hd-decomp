@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.9,
-  "byte_exact": 4499,
-  "linked_exact": 4499,
-  "fuzzy_perfect": 4499,
+  "byte_exact": 4500,
+  "linked_exact": 4500,
+  "fuzzy_perfect": 4500,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -198,14 +198,6 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
-  },
-  {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 99.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8132
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
@@ -17598,6 +17590,14 @@
    "linked": true,
    "osize": 44,
    "usize": 44
+  },
+  {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 8132,
+   "usize": 8132
   },
   {
    "name": "_ZN15MenuTouchWindow11OnTouchMoveEiiPv",
