@@ -256,13 +256,8 @@ The original build is now pinned by evidence, not by A/B alone:
 1. **25 non-linked functions.** 4499 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (52.0%), `Status::missionCompleted` (57.7%),
    `Radar::draw` (73.9%), `Level::createShip` (74.1%), `Generator::createMission` (74.3%),
-<<<<<<< HEAD
-   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (80.6%), `Globals::Globals` (80.5%) and
-   `Hud::draw` (86.2%).
-=======
-   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (78.8%), `Globals::Globals` (80.5%) and
+   `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
    `Hud::draw` (89.1%).
->>>>>>> cd9b90ae (Build provenance pass 1: per-TU opt-level/std sweep; single -Oz + c++11 confirmed (byte 4499 -> 4499, linked 4499 -> 4499; size 4524/4524, data 843/843, imports 207, lint CLEAN, drift 0))
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now
