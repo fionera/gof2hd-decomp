@@ -582,6 +582,7 @@ void HangarWindow::render() {
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
                                         (*this->buttons)[8]->setVisible(true);
+                                        int pad3 = 0; (void) pad3;
                                         (*this->buttons)[8]->draw();
                                     }
                                     if (right) {

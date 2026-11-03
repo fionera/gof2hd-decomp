@@ -911,8 +911,8 @@ void StarMap::draw() {
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) this->alpha);
         this->scratchVector2 = Vector(*(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()]);
         Array<int> *routes = (Array<int> *) ((SolarSystem *) Globals::status->getSystem())->getRoutes();
-        Array<SolarSystem *> *systems = this->systems;
-        for (uint32_t i = 0; i < systems->size(); i++) {
+        Array<SolarSystem *> &systems = *this->systems;
+        for (uint32_t i = 0; i < systems.size(); i++) {
             Array<bool> *visible = Globals::status->getSystemVisibilities();
             if (visible == 0 || i >= this->systemPositions->size() || visible->size() <= i || !(*visible)[i])
                 continue;
@@ -1020,22 +1020,22 @@ void StarMap::draw() {
     if ((Globals::status->getShip()->hasJumpDriveIntegrated() || this->jumpMapModeB != 0) && this->jumpCost >= 1 &&
         this->selectedSystem >= 0 && this->selectedSystem != ((SolarSystem *) Globals::status->getSystem())->getIndex()) {
         // Energy cells needed / carried.
-        String line = *Globals::gameText->getText(578) + String(" ") +
-                      String(String(this->jumpCost) + String(" / ") + String(this->cargoAmount), false);
         if (this->jumpCost > this->cargoAmount) {
             Globals::Canvas->SetColor(0xff2a00ffu);
         }
+        String line = *Globals::gameText->getText(578) + String(" ") +
+                      String(String(this->jumpCost) + String(" / ") + String(this->cargoAmount), false);
         Layout *layout = Globals::layout;
         int left = layout->windowX;
+        int width = layout->windowWidth;
         unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-        int textWidth = Globals::Canvas->GetTextWidth(font, line);
         PaintCanvas *canvas = Globals::Canvas;
-        canvas->DrawString(font, line,
-                           left + layout->windowWidth / 2 - textWidth / 2,
+        int textWidth = canvas->GetTextWidth(font, line);
+        canvas->DrawString(font, line, left + width / 2 - textWidth / 2,
                            Globals::layout->windowY + Globals::layout->windowHeight -
                            Globals::layout->footerTextInset,
                            false);
-        canvas->SetColor(0xffffffffu);
+        Globals::Canvas->SetColor(0xffffffffu);
     }
     this->backButton->draw();
     if (this->choiceVisible != 0) {
