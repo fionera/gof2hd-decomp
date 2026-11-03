@@ -5264,3 +5264,9 @@ Wave-97 function pass: `Level::createMission` 90.7052 -> 90.7216% (`w3740`) with
 Wave-97 section-order pass: `SpaceLounge` weak-copy order (`w3745`) by calling
 `setHangarUpdate` from `init`; plain no-order 3001 -> 3003 (addresses 3862 -> 3865, prefix 3830 -> 3834).
 Gate 4498/4498. Note: `_work/reconstructions/spacelounge_weak_copy_order_w3745.md`.
+Wave-97 section-order pass: `SpaceLounge` `startChat` pull (`w3745`) — move the `startChat`
+definition after `getSpecificSoundForRace` so its body is emitted after its three callees; the
+section is still created by `init`, so the gate stays 4498/4498 and `.text`/`.rodata` are
+byte-identical. Plain no-order 3003 -> 3007 (addresses 3865 -> 3880, prefix 3834 -> 3856); the
+whole `SpaceLounge` block is address-exact and the frontier moves to `MeshMerger::setMesh`.
+Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md`.

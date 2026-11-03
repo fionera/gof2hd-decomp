@@ -464,420 +464,6 @@ void SpaceLounge::setHangarUpdate(bool value) {
     this->hangarUpdate = value;
 }
 
-void SpaceLounge::startChat() {
-    Agent *agent = (*this->agents)[this->selectedAgent];
-    if (Globals::iPad) {
-        // iPad: move the chat panel next to the agent.
-        int margin = (int) (Globals::iPadHD ? 14.0625f : (Globals::iPadLarge ? 20.0f : 10.0f));
-        float x;
-        if ((*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68 <
-            (float) Globals::layout->buttonInsetX) {
-            // Right of the agent, limited to the screen edge (the limit is evaluated first).
-            x = (float) (Globals::w - Globals::layout->buttonInsetX) >
-                        (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
-                    ? (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
-                    : (float) (Globals::w - Globals::layout->buttonInsetX);
-        } else {
-            x = (*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68;
-        }
-        this->panelX = (int) x;
-        float bottom = (float) (Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
-                                Globals::layout->field_0x6c);
-        float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
-        float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
-        float chosen = top < bottom ? top : bottom;
-        float result = bottom;
-        float tmp = top;
-        if (chosen < minTop)
-            tmp = minTop;
-        if (chosen < minTop || top < bottom)
-            result = tmp;
-        this->panelY = (int) result;
-        delete this->scrollWindow;
-        this->scrollWindow = 0;
-        this->scrollWindow = new ScrollTouchWindow(
-            this->panelX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4, this->panelY,
-            this->panelWidth, Globals::layout->field_0x6c, false);
-        this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
-        this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
-        int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
-        const float gap = (float) Globals::layout->field_0x34;
-        float extra = Globals::iPadHD ? 0.0f : (Globals::iPadLarge ? 0.0f : 11.0f);
-        int spacing = (int) (gap + extra);
-        this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
-        this->buttonY0 = y0;
-        int y1 = y0 + Globals::layout->field_0x30_rowHeight + spacing;
-        (*this->buttons)[2]->setPosition(this->buttonX, y1);
-        (*this->buttons)[3]->setPosition(this->buttonX, y1);
-        (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
-        {
-            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
-            float x = rect->x;
-            float y = rect->y;
-            float z = rect->z;
-            Vector corner = {x, y, z};
-            this->agentTopLeft = corner;
-        }
-        {
-            Vector *rect = (*this->agentRects)[this->selectedAgent * 2 + 1];
-            float x = rect->x;
-            float y = rect->y;
-            float z = rect->z;
-            Vector corner = {x, y, z};
-            this->agentBottomRight = corner;
-        }
-    }
-
-    int offer = agent->getOffer();
-    if (agent->isGenericAgent()) {
-        if (agent->isKnown() && agent->getOffer() != 7) {
-            if (agent->hasAcceptedOffer()) {
-                String message = *Globals::gameText->getText(
-                    agent->getOffer() == 5
-                        ? 857
-                        : (agent->getOffer() != 6 && (agent->getMission() == 0 || agent->getMission()->getType() != 12) ? 858
-                                                                                                                       : 859));
-                this->scrollWindow->setText(agent->getName(), message);
-                this->chatScroll = 0;
-                this->mode = 3;
-                int sound = this->getSoundId(agent);
-                if (sound >= 0)
-                    Globals::sound->play(sound, 0, 0, 0.0f);
-                return;
-            }
-            if (agent->getOffer() == 0 && agent->getMission() != 0 && agent->getMission()->getType() != 8 &&
-                agent->getMission()->getType() != 12) {
-                // Standing bonus on the reward.
-                float bonus = ((Standing *) (intptr_t) Globals::status->getStanding())->getMissionBonus(agent->getRace());
-                int bonusCredits = (int) (bonus * (float) agent->getMission()->getReward());
-                int rest = bonusCredits % 50;
-                int rounded = rest + bonusCredits;
-                if (rounded % 50 != 0)
-                    rounded = bonusCredits - rest;
-                agent->getMission()->setBonus(rounded);
-                this->title = bonus > 0.0f ? String(" ") +
-                                                 Globals::status->replaceHash(*Globals::gameText->getText(767),
-                                                                              String(String((int) (bonus * 100.0f)), false),
-                                                                              String("#P")) +
-                                                 String(" ")
-                                           : String("");
-                String message = Globals::globals->getAgentMissionText(agent);
-                message = Globals::status->replaceHash(
-                    message,
-                    String(Globals::layout->formatCredits(agent->getMission()->getReward() + agent->getMission()->getBonus()),
-                           false) +
-                        this->title,
-                    String("#C"));
-                this->scrollWindow->setText(agent->getName(), message);
-            } else {
-                String message = Globals::globals->getAgentMissionText(agent);
-                this->scrollWindow->setText(agent->getName(), message);
-            }
-        } else {
-            // First talk with a generic agent.
-            Globals::status->field_d0++;
-            bool smallTalk = offer != 1 && offer != 7;
-            bool missionTalk = offer == 0 || offer == 5;
-            String intro = smallTalk ? *Globals::gameText->getText(750 + Globals::rnd->nextInt(6)) : String("");
-            String greeting = smallTalk ? *Globals::gameText->getText(756 + Globals::rnd->nextInt(2)) : String("");
-            String hint = missionTalk ? *Globals::gameText->getText(758 + Globals::rnd->nextInt(6)) : String("");
-            String body("");
-            greeting = Globals::status->replaceHash(greeting, String(agent->getName(), false), String("#N"));
-            Generator *generator = new Generator();
-            switch (agent->getOffer()) {
-            case 7: {
-                // Standing rehabilitation.
-                int race = agent->getRace();
-                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
-                                   ->getStanding(race != 2 && race != 3 ? 0 : 1);
-                if (((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
-                    int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
-                    int textId = race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882;
-                    body = *Globals::gameText->getText(textId);
-                    body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
-                    agent->setCosts(costs);
-                    break;
-                }
-                body = *Globals::gameText->getText(883);
-                this->scrollWindow->setText(agent->getName(), body);
-                this->chatScroll = 0;
-                this->mode = 3;
-                return;
-            }
-            case 5: {
-                // Freelance job.
-                Mission *mission = generator->createMission(agent, Globals::galaxy->getSystems());
-                agent->setMission(mission);
-                agent->field_0x28 = 777 + Globals::rnd->nextInt(2);
-                body += *Globals::gameText->getText(agent->field_0x28);
-                body = Globals::status->replaceHash(
-                    body, String(String(agent->getMission()->getProductionGoodAmount()), false), String("#Q"));
-                body = Globals::status->replaceHash(
-                    body, *Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), String("#P"));
-                body = Globals::status->replaceHash(
-                    body, String(Globals::layout->formatCredits(agent->getMission()->getReward()), false), String("#C"));
-                break;
-            }
-            case 1: {
-                // Ore rumours.
-                int ore;
-                do {
-                    ore = Globals::rnd->nextInt(21);
-                } while (this->agentVisited[ore]);
-                this->agentVisited[ore] = 1;
-                if (agent->getRace() != 0 && ore == 16)
-                    ore = 4;
-                agent->field_0x28 = !agent->isMale() && ore == 13 ? 824 : 820 + ore;
-                body = *Globals::gameText->getText(agent->field_0x28);
-                body = Globals::status->replaceHash(body, String(Globals::globals->getRandomPlanetName(), false), String("#S"));
-                body = Globals::status->replaceHash(body, String(agent->getName(), false), String("#N"));
-                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)),
-                                                    String("#ORE"));
-                break;
-            }
-            case 0: {
-                Mission *mission = agent->getMission();
-                body += *Globals::gameText->getText(786 + mission->getType());
-                if (mission->getType() == 5 || mission->getType() == 3)
-                    body += String(" ") + *Globals::gameText->getText(802);
-                if (mission->getType() == 15)
-                    body = Globals::status->replaceHash(
-                        body, *Globals::gameText->getText(1274 + mission->getProductionGoodIndex()), String("#P"));
-                else
-                    body = Globals::status->replaceHash(
-                        body, *Globals::gameText->getText(813 + mission->getProductionGoodIndex()), String("#P"));
-                body = Globals::status->replaceHash(body, String(String(mission->getProductionGoodAmount()), false),
-                                                    String("#Q"));
-                if (mission->getType() == 14)
-                    body = Globals::status->replaceHash(body, String(mission->getTargetSystemName(), false), String("#S"));
-                else
-                    body = Globals::status->replaceHash(body, String(mission->getTargetStationName(), false), String("#S"));
-                body = Globals::status->replaceHash(body, String(mission->getTargetName(), false), String("#N"));
-                agent->field_0x28 = 764 + Globals::rnd->nextInt(3);
-                body += String("\n") + *Globals::gameText->getText(agent->field_0x28);
-                float bonus = ((Standing *) (intptr_t) Globals::status->getStanding())->getMissionBonus(agent->getRace());
-                this->title = bonus > 0.0f ? String(" ") +
-                                                 Globals::status->replaceHash(*Globals::gameText->getText(767),
-                                                                              String(String((int) (bonus * 100.0f)), false),
-                                                                              String("#P")) +
-                                                 String(" ")
-                                           : String("");
-                agent->setMissionString(body);
-                int bonusCredits = (int) (bonus * (float) agent->getMission()->getReward());
-                int rest = bonusCredits % 50;
-                agent->getMission()->setBonus((bonusCredits + rest) % 50 != 0 ? bonusCredits - rest : bonusCredits + rest);
-                body = Globals::status->replaceHash(
-                    body, String(Globals::layout->formatCredits(mission->getReward() + mission->getBonus()), false) + this->title,
-                    String("#C"));
-                break;
-            }
-            case 2:
-                // Goods.
-                agent->field_0x28 = 768 + Globals::rnd->nextInt(5);
-                agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
-                if (Globals::status->getCurrentCampaignMission() == 24 && Globals::status->getStation()->getIndex() == 10 &&
-                    agent->getSellItemIndex() == 68) {
-                    agent->field_0x28 = 193;
-                    agent->field_0x2c = 194;
-                }
-                body += *Globals::gameText->getText(agent->field_0x28);
-                body += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
-                body = Globals::status->replaceHash(body, String(String(agent->getSellItemQuantity()), false), String("#Q"));
-                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1274 + agent->getSellItemIndex()),
-                                                    String("#P"));
-                body = Globals::status->replaceHash(
-                    body, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
-                if (agent->getSellItemQuantity() > 1) {
-                    body += String(" ") + *Globals::gameText->getText(775);
-                    body = Globals::status->replaceHash(
-                        body,
-                        String(Globals::layout->formatCredits(agent->getSellItemPrice() / agent->getSellItemQuantity()), false),
-                        String("#C"));
-                }
-                break;
-            case 6:
-                // Wingmen.
-                body += *Globals::gameText->getText((Globals::achievements->gotAllMedals() ? 782 : 779) +
-                                                    agent->getWingmanFriendsCount());
-                body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(agent->getCosts()), false),
-                                                    String("#C"));
-                if (agent->getWingmanFriendsCount() > 0)
-                    body = Globals::status->replaceHash(body, String(agent->getWingmanName(1), false), String("#W"));
-                break;
-            }
-            delete generator;
-            if (agent->getOffer() != 0 || agent->getMission()->getType() == 8)
-                agent->setMissionString(body);
-            if (agent->getOffer() == 1) {
-                this->scrollWindow->setText(agent->getName(), body);
-                agent->setEvent(1);
-            } else if (agent->getOffer() == 7) {
-                this->scrollWindow->setText(agent->getName(), body);
-            } else if (agent->getMission() != 0 && agent->getMission()->getType() == 12) {
-                body = *Globals::gameText->getText(798);
-                body = Globals::status->replaceHash(
-                    body,
-                    String(Globals::layout->formatCredits(agent->getMission()->getReward() + agent->getMission()->getBonus()),
-                           false),
-                    String("#C"));
-                agent->setMissionString(body);
-                String closing = String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
-                this->scrollWindow->setText(agent->getName(), body + closing);
-            } else {
-                body = String("\n") + body;
-                String closing = String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
-                this->scrollWindow->setText(agent->getName(),
-                                            intro + String(" ") + greeting + String(" ") + hint + body + closing);
-            }
-        }
-    } else {
-        // Story agents.
-        String message;
-        if (agent->getEvent() > 0) {
-            message = *Globals::gameText->getText(858);
-        } else if (agent->hasAcceptedOffer()) {
-            message = *Globals::gameText->getText(858);
-            int sound = this->getSoundId(agent);
-            if (sound >= 0)
-                Globals::sound->play(sound, 0, 0, 0.0f);
-        } else {
-            Globals::status->field_d0++;
-            if (agent->getOffer() == 8) {
-                // Ship mod.
-                float factor = Globals::options[56] ? 1.0f : 2.0f;
-                if (Globals::status->getShip()->hasModInstalled(agent->getSellModIndex())) {
-                    message = *Globals::gameText->getText(858);
-                    Globals::sound->play(this->getSpecificSoundForRace(781 + Globals::rnd->nextInt(2), agent->getRace(),
-                                                                       agent->isMale()),
-                                         0, 0, 0.0f);
-                    Globals::status->field_d0--;
-                    this->scrollWindow->setText(agent->getName(), message);
-                    this->chatScroll = 0;
-                    this->mode = 3;
-                    return;
-                }
-                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                agent->setSellItemPrice(Globals::status->getShip()->getPrice() * agent->getModPricePercentage() / 100);
-                message = *Globals::gameText->getText(agent->field_0x28);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                message += String(" ") + *Globals::gameText->getText(879);
-                message = Globals::status->replaceHash(
-                    message, *Globals::gameText->getText(913 + Globals::status->getShip()->getIndex()),
-                    String("#SHIP_NAME"));
-                message = Globals::status->replaceHash(
-                    message, String(String(SpaceLounge_modBonuses[agent->getSellModIndex()][1]), false), String("#N"));
-                message = Globals::status->replaceHash(
-                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
-                    String("#C"));
-            } else if (agent->getOffer() == 9) {
-                // Premium item.
-                float factor = Globals::options[56] ? 1.0f : 2.0f;
-                int textId = agent->field_0x28;
-                if (textId == -1)
-                    textId = 874 + Globals::rnd->nextInt(2);
-                agent->field_0x28 = textId;
-                message = *Globals::gameText->getText(textId);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                int detailText = agent->field_0x2c;
-                if (detailText == -1)
-                    detailText = 773 + Globals::rnd->nextInt(2);
-                agent->field_0x2c = detailText;
-                message += String("\n") + *Globals::gameText->getText(detailText);
-                message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
-                                                       String("#Q"));
-                message = Globals::status->replaceHash(
-                    message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
-                message = Globals::status->replaceHash(
-                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
-                    String("#C"));
-                if (agent->getSellItemQuantity() > 1) {
-                    message += String(" ") + *Globals::gameText->getText(775);
-                    message = Globals::status->replaceHash(
-                        message,
-                        String(Globals::layout->formatCredits(
-                                   (int) (factor * (float) (agent->getSellItemPrice() / agent->getSellItemQuantity()))),
-                               false),
-                        String("#C"));
-                }
-            } else if (agent->getOffer() == 10) {
-                // Ship.
-                if (Globals::status->field_114 < 3) {
-                    message = *Globals::gameText->getText(750 + Globals::rnd->nextInt(6));
-                    Globals::sound->play(this->getSpecificSoundForRace(781 + Globals::rnd->nextInt(2), agent->getRace(),
-                                                                       agent->isMale()),
-                                         0, 0, 0.0f);
-                    Globals::status->field_d0--;
-                    this->scrollWindow->setText(agent->getName(), message);
-                    this->chatScroll = 0;
-                    this->mode = 3;
-                    return;
-                }
-                float factor = Globals::options[56] ? 1.0f : 2.0f;
-                int textId = agent->field_0x28;
-                if (textId == -1)
-                    textId = 874 + Globals::rnd->nextInt(2);
-                agent->field_0x28 = textId;
-                message = *Globals::gameText->getText(textId);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                int detailText = agent->field_0x2c;
-                if (detailText == -1)
-                    detailText = 773 + Globals::rnd->nextInt(2);
-                agent->field_0x2c = detailText;
-                message += String("\n") + *Globals::gameText->getText(detailText);
-                message = Globals::status->replaceHash(message, String(String(1), false), String("#Q"));
-                message = Globals::status->replaceHash(
-                    message, *Globals::gameText->getText(913 + agent->getSellItemIndex()), String("#P"));
-                message = Globals::status->replaceHash(
-                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
-                    String("#C"));
-            } else if (agent->getOffer() == 4) {
-                // System coordinates.
-                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                message = *Globals::gameText->getText(agent->field_0x28);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                message += String(" ") + *Globals::gameText->getText(877);
-                SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
-                message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
-                message = Globals::status->replaceHash(
-                    message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
-            } else {
-                // Blueprint.
-                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
-                message = *Globals::gameText->getText(agent->field_0x28);
-                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
-                message += String(" ") + *Globals::gameText->getText(876);
-                message = Globals::status->replaceHash(
-                    message, *Globals::gameText->getText(1274 + (*Globals::items)[agent->getSellBlueprintIndex()]->getIndex()),
-                    String("#N"));
-                message = Globals::status->replaceHash(
-                    message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
-            }
-            message += String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
-            this->scrollWindow->setText(agent->getName(), message);
-            (*this->agents)[this->selectedAgent]->setMissionString(message);
-            this->chatScroll = 0;
-            this->mode = 2;
-            int sound = this->getSoundId(agent);
-            if (sound >= 0)
-                Globals::sound->play(sound, 0, 0, 0.0f);
-            return;
-        }
-        this->scrollWindow->setText(agent->getName(), message);
-        this->chatScroll = 0;
-        this->mode = 3;
-        return;
-    }
-
-    agent->setStationName(Globals::status->getStation()->getName());
-    agent->setSystemName(((SolarSystem *) Globals::status->getSystem())->getName());
-    this->mode = 1;
-    this->chatScroll = 0;
-    this->onKeyPress(0x10000);
-    int sound = this->getSoundId(agent);
-    if (sound >= 0)
-        Globals::sound->play(sound, 0, 0, 0.0f);
-}
-
 void SpaceLounge::refresh() {
 }
 
@@ -1875,6 +1461,420 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
     result = -1;
 done:
     return __builtin_annotation(result, "sound"); // lint: arm_builtin
+}
+
+void SpaceLounge::startChat() {
+    Agent *agent = (*this->agents)[this->selectedAgent];
+    if (Globals::iPad) {
+        // iPad: move the chat panel next to the agent.
+        int margin = (int) (Globals::iPadHD ? 14.0625f : (Globals::iPadLarge ? 20.0f : 10.0f));
+        float x;
+        if ((*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68 <
+            (float) Globals::layout->buttonInsetX) {
+            // Right of the agent, limited to the screen edge (the limit is evaluated first).
+            x = (float) (Globals::w - Globals::layout->buttonInsetX) >
+                        (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
+                    ? (*this->agentRects)[this->selectedAgent * 2 + 1]->x + (float) margin
+                    : (float) (Globals::w - Globals::layout->buttonInsetX);
+        } else {
+            x = (*this->agentRects)[this->selectedAgent * 2]->x - (float) margin - (float) Globals::layout->field_0x68;
+        }
+        this->panelX = (int) x;
+        float bottom = (float) (Globals::h - Globals::layout->field_0x10_rightMargin - Globals::layout->field_0x24 -
+                                Globals::layout->field_0x6c);
+        float top = (*this->agentRects)[this->selectedAgent * 2 + 1]->y - (float) (Globals::layout->field_0x6c / 3);
+        float minTop = (float) (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top);
+        float chosen = top < bottom ? top : bottom;
+        float result = bottom;
+        float tmp = top;
+        if (chosen < minTop)
+            tmp = minTop;
+        if (chosen < minTop || top < bottom)
+            result = tmp;
+        this->panelY = (int) result;
+        delete this->scrollWindow;
+        this->scrollWindow = 0;
+        this->scrollWindow = new ScrollTouchWindow(
+            this->panelX + Globals::layout->field_0x4c * 2 + Globals::layout->field_0x2d4, this->panelY,
+            this->panelWidth, Globals::layout->field_0x6c, false);
+        this->buttonPanelY = this->panelY + Globals::layout->field_0x6c + Globals::layout->field_0x2c_rowHeight;
+        this->buttonX = this->panelX + Globals::layout->field_0x68 - Globals::layout->field_0x4c - this->panelWidth;
+        int y0 = Globals::layout->field_0x4c + this->buttonPanelY;
+        const float gap = (float) Globals::layout->field_0x34;
+        float extra = Globals::iPadHD ? 0.0f : (Globals::iPadLarge ? 0.0f : 11.0f);
+        int spacing = (int) (gap + extra);
+        this->buttonY1 = y0 - Globals::layout->field_0x30_rowHeight / 2 + Globals::layout->field_0x2d8 / 2;
+        this->buttonY0 = y0;
+        int y1 = y0 + Globals::layout->field_0x30_rowHeight + spacing;
+        (*this->buttons)[2]->setPosition(this->buttonX, y1);
+        (*this->buttons)[3]->setPosition(this->buttonX, y1);
+        (*this->buttons)[4]->setPosition(this->buttonX, y1 + spacing + Globals::layout->field_0x30_rowHeight);
+        {
+            Vector *rect = (*this->agentRects)[this->selectedAgent * 2];
+            float x = rect->x;
+            float y = rect->y;
+            float z = rect->z;
+            Vector corner = {x, y, z};
+            this->agentTopLeft = corner;
+        }
+        {
+            Vector *rect = (*this->agentRects)[this->selectedAgent * 2 + 1];
+            float x = rect->x;
+            float y = rect->y;
+            float z = rect->z;
+            Vector corner = {x, y, z};
+            this->agentBottomRight = corner;
+        }
+    }
+
+    int offer = agent->getOffer();
+    if (agent->isGenericAgent()) {
+        if (agent->isKnown() && agent->getOffer() != 7) {
+            if (agent->hasAcceptedOffer()) {
+                String message = *Globals::gameText->getText(
+                    agent->getOffer() == 5
+                        ? 857
+                        : (agent->getOffer() != 6 && (agent->getMission() == 0 || agent->getMission()->getType() != 12) ? 858
+                                                                                                                       : 859));
+                this->scrollWindow->setText(agent->getName(), message);
+                this->chatScroll = 0;
+                this->mode = 3;
+                int sound = this->getSoundId(agent);
+                if (sound >= 0)
+                    Globals::sound->play(sound, 0, 0, 0.0f);
+                return;
+            }
+            if (agent->getOffer() == 0 && agent->getMission() != 0 && agent->getMission()->getType() != 8 &&
+                agent->getMission()->getType() != 12) {
+                // Standing bonus on the reward.
+                float bonus = ((Standing *) (intptr_t) Globals::status->getStanding())->getMissionBonus(agent->getRace());
+                int bonusCredits = (int) (bonus * (float) agent->getMission()->getReward());
+                int rest = bonusCredits % 50;
+                int rounded = rest + bonusCredits;
+                if (rounded % 50 != 0)
+                    rounded = bonusCredits - rest;
+                agent->getMission()->setBonus(rounded);
+                this->title = bonus > 0.0f ? String(" ") +
+                                                 Globals::status->replaceHash(*Globals::gameText->getText(767),
+                                                                              String(String((int) (bonus * 100.0f)), false),
+                                                                              String("#P")) +
+                                                 String(" ")
+                                           : String("");
+                String message = Globals::globals->getAgentMissionText(agent);
+                message = Globals::status->replaceHash(
+                    message,
+                    String(Globals::layout->formatCredits(agent->getMission()->getReward() + agent->getMission()->getBonus()),
+                           false) +
+                        this->title,
+                    String("#C"));
+                this->scrollWindow->setText(agent->getName(), message);
+            } else {
+                String message = Globals::globals->getAgentMissionText(agent);
+                this->scrollWindow->setText(agent->getName(), message);
+            }
+        } else {
+            // First talk with a generic agent.
+            Globals::status->field_d0++;
+            bool smallTalk = offer != 1 && offer != 7;
+            bool missionTalk = offer == 0 || offer == 5;
+            String intro = smallTalk ? *Globals::gameText->getText(750 + Globals::rnd->nextInt(6)) : String("");
+            String greeting = smallTalk ? *Globals::gameText->getText(756 + Globals::rnd->nextInt(2)) : String("");
+            String hint = missionTalk ? *Globals::gameText->getText(758 + Globals::rnd->nextInt(6)) : String("");
+            String body("");
+            greeting = Globals::status->replaceHash(greeting, String(agent->getName(), false), String("#N"));
+            Generator *generator = new Generator();
+            switch (agent->getOffer()) {
+            case 7: {
+                // Standing rehabilitation.
+                int race = agent->getRace();
+                int standing = ((Standing *) (intptr_t) Globals::status->getStanding())
+                                   ->getStanding(race != 2 && race != 3 ? 0 : 1);
+                if (((Standing *) (intptr_t) Globals::status->getStanding())->isEnemy(race)) {
+                    int costs = (int) ((float) (standing < 0 ? -standing : standing) / 100.0f * 16000.0f);
+                    int textId = race == 2 ? 878 : race == 3 ? 880 : race == 0 ? 881 : 882;
+                    body = *Globals::gameText->getText(textId);
+                    body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(costs), false), String("#C"));
+                    agent->setCosts(costs);
+                    break;
+                }
+                body = *Globals::gameText->getText(883);
+                this->scrollWindow->setText(agent->getName(), body);
+                this->chatScroll = 0;
+                this->mode = 3;
+                return;
+            }
+            case 5: {
+                // Freelance job.
+                Mission *mission = generator->createMission(agent, Globals::galaxy->getSystems());
+                agent->setMission(mission);
+                agent->field_0x28 = 777 + Globals::rnd->nextInt(2);
+                body += *Globals::gameText->getText(agent->field_0x28);
+                body = Globals::status->replaceHash(
+                    body, String(String(agent->getMission()->getProductionGoodAmount()), false), String("#Q"));
+                body = Globals::status->replaceHash(
+                    body, *Globals::gameText->getText(1274 + agent->getMission()->getProductionGoodIndex()), String("#P"));
+                body = Globals::status->replaceHash(
+                    body, String(Globals::layout->formatCredits(agent->getMission()->getReward()), false), String("#C"));
+                break;
+            }
+            case 1: {
+                // Ore rumours.
+                int ore;
+                do {
+                    ore = Globals::rnd->nextInt(21);
+                } while (this->agentVisited[ore]);
+                this->agentVisited[ore] = 1;
+                if (agent->getRace() != 0 && ore == 16)
+                    ore = 4;
+                agent->field_0x28 = !agent->isMale() && ore == 13 ? 824 : 820 + ore;
+                body = *Globals::gameText->getText(agent->field_0x28);
+                body = Globals::status->replaceHash(body, String(Globals::globals->getRandomPlanetName(), false), String("#S"));
+                body = Globals::status->replaceHash(body, String(agent->getName(), false), String("#N"));
+                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1428 + Globals::rnd->nextInt(10)),
+                                                    String("#ORE"));
+                break;
+            }
+            case 0: {
+                Mission *mission = agent->getMission();
+                body += *Globals::gameText->getText(786 + mission->getType());
+                if (mission->getType() == 5 || mission->getType() == 3)
+                    body += String(" ") + *Globals::gameText->getText(802);
+                if (mission->getType() == 15)
+                    body = Globals::status->replaceHash(
+                        body, *Globals::gameText->getText(1274 + mission->getProductionGoodIndex()), String("#P"));
+                else
+                    body = Globals::status->replaceHash(
+                        body, *Globals::gameText->getText(813 + mission->getProductionGoodIndex()), String("#P"));
+                body = Globals::status->replaceHash(body, String(String(mission->getProductionGoodAmount()), false),
+                                                    String("#Q"));
+                if (mission->getType() == 14)
+                    body = Globals::status->replaceHash(body, String(mission->getTargetSystemName(), false), String("#S"));
+                else
+                    body = Globals::status->replaceHash(body, String(mission->getTargetStationName(), false), String("#S"));
+                body = Globals::status->replaceHash(body, String(mission->getTargetName(), false), String("#N"));
+                agent->field_0x28 = 764 + Globals::rnd->nextInt(3);
+                body += String("\n") + *Globals::gameText->getText(agent->field_0x28);
+                float bonus = ((Standing *) (intptr_t) Globals::status->getStanding())->getMissionBonus(agent->getRace());
+                this->title = bonus > 0.0f ? String(" ") +
+                                                 Globals::status->replaceHash(*Globals::gameText->getText(767),
+                                                                              String(String((int) (bonus * 100.0f)), false),
+                                                                              String("#P")) +
+                                                 String(" ")
+                                           : String("");
+                agent->setMissionString(body);
+                int bonusCredits = (int) (bonus * (float) agent->getMission()->getReward());
+                int rest = bonusCredits % 50;
+                agent->getMission()->setBonus((bonusCredits + rest) % 50 != 0 ? bonusCredits - rest : bonusCredits + rest);
+                body = Globals::status->replaceHash(
+                    body, String(Globals::layout->formatCredits(mission->getReward() + mission->getBonus()), false) + this->title,
+                    String("#C"));
+                break;
+            }
+            case 2:
+                // Goods.
+                agent->field_0x28 = 768 + Globals::rnd->nextInt(5);
+                agent->field_0x2c = 773 + Globals::rnd->nextInt(2);
+                if (Globals::status->getCurrentCampaignMission() == 24 && Globals::status->getStation()->getIndex() == 10 &&
+                    agent->getSellItemIndex() == 68) {
+                    agent->field_0x28 = 193;
+                    agent->field_0x2c = 194;
+                }
+                body += *Globals::gameText->getText(agent->field_0x28);
+                body += String("\n") + *Globals::gameText->getText(agent->field_0x2c);
+                body = Globals::status->replaceHash(body, String(String(agent->getSellItemQuantity()), false), String("#Q"));
+                body = Globals::status->replaceHash(body, *Globals::gameText->getText(1274 + agent->getSellItemIndex()),
+                                                    String("#P"));
+                body = Globals::status->replaceHash(
+                    body, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
+                if (agent->getSellItemQuantity() > 1) {
+                    body += String(" ") + *Globals::gameText->getText(775);
+                    body = Globals::status->replaceHash(
+                        body,
+                        String(Globals::layout->formatCredits(agent->getSellItemPrice() / agent->getSellItemQuantity()), false),
+                        String("#C"));
+                }
+                break;
+            case 6:
+                // Wingmen.
+                body += *Globals::gameText->getText((Globals::achievements->gotAllMedals() ? 782 : 779) +
+                                                    agent->getWingmanFriendsCount());
+                body = Globals::status->replaceHash(body, String(Globals::layout->formatCredits(agent->getCosts()), false),
+                                                    String("#C"));
+                if (agent->getWingmanFriendsCount() > 0)
+                    body = Globals::status->replaceHash(body, String(agent->getWingmanName(1), false), String("#W"));
+                break;
+            }
+            delete generator;
+            if (agent->getOffer() != 0 || agent->getMission()->getType() == 8)
+                agent->setMissionString(body);
+            if (agent->getOffer() == 1) {
+                this->scrollWindow->setText(agent->getName(), body);
+                agent->setEvent(1);
+            } else if (agent->getOffer() == 7) {
+                this->scrollWindow->setText(agent->getName(), body);
+            } else if (agent->getMission() != 0 && agent->getMission()->getType() == 12) {
+                body = *Globals::gameText->getText(798);
+                body = Globals::status->replaceHash(
+                    body,
+                    String(Globals::layout->formatCredits(agent->getMission()->getReward() + agent->getMission()->getBonus()),
+                           false),
+                    String("#C"));
+                agent->setMissionString(body);
+                String closing = String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
+                this->scrollWindow->setText(agent->getName(), body + closing);
+            } else {
+                body = String("\n") + body;
+                String closing = String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
+                this->scrollWindow->setText(agent->getName(),
+                                            intro + String(" ") + greeting + String(" ") + hint + body + closing);
+            }
+        }
+    } else {
+        // Story agents.
+        String message;
+        if (agent->getEvent() > 0) {
+            message = *Globals::gameText->getText(858);
+        } else if (agent->hasAcceptedOffer()) {
+            message = *Globals::gameText->getText(858);
+            int sound = this->getSoundId(agent);
+            if (sound >= 0)
+                Globals::sound->play(sound, 0, 0, 0.0f);
+        } else {
+            Globals::status->field_d0++;
+            if (agent->getOffer() == 8) {
+                // Ship mod.
+                float factor = Globals::options[56] ? 1.0f : 2.0f;
+                if (Globals::status->getShip()->hasModInstalled(agent->getSellModIndex())) {
+                    message = *Globals::gameText->getText(858);
+                    Globals::sound->play(this->getSpecificSoundForRace(781 + Globals::rnd->nextInt(2), agent->getRace(),
+                                                                       agent->isMale()),
+                                         0, 0, 0.0f);
+                    Globals::status->field_d0--;
+                    this->scrollWindow->setText(agent->getName(), message);
+                    this->chatScroll = 0;
+                    this->mode = 3;
+                    return;
+                }
+                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
+                agent->setSellItemPrice(Globals::status->getShip()->getPrice() * agent->getModPricePercentage() / 100);
+                message = *Globals::gameText->getText(agent->field_0x28);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                message += String(" ") + *Globals::gameText->getText(879);
+                message = Globals::status->replaceHash(
+                    message, *Globals::gameText->getText(913 + Globals::status->getShip()->getIndex()),
+                    String("#SHIP_NAME"));
+                message = Globals::status->replaceHash(
+                    message, String(String(SpaceLounge_modBonuses[agent->getSellModIndex()][1]), false), String("#N"));
+                message = Globals::status->replaceHash(
+                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
+                    String("#C"));
+            } else if (agent->getOffer() == 9) {
+                // Premium item.
+                float factor = Globals::options[56] ? 1.0f : 2.0f;
+                int textId = agent->field_0x28;
+                if (textId == -1)
+                    textId = 874 + Globals::rnd->nextInt(2);
+                agent->field_0x28 = textId;
+                message = *Globals::gameText->getText(textId);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                int detailText = agent->field_0x2c;
+                if (detailText == -1)
+                    detailText = 773 + Globals::rnd->nextInt(2);
+                agent->field_0x2c = detailText;
+                message += String("\n") + *Globals::gameText->getText(detailText);
+                message = Globals::status->replaceHash(message, String(String(agent->getSellItemQuantity()), false),
+                                                       String("#Q"));
+                message = Globals::status->replaceHash(
+                    message, *Globals::gameText->getText(1274 + agent->getSellItemIndex()), String("#P"));
+                message = Globals::status->replaceHash(
+                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
+                    String("#C"));
+                if (agent->getSellItemQuantity() > 1) {
+                    message += String(" ") + *Globals::gameText->getText(775);
+                    message = Globals::status->replaceHash(
+                        message,
+                        String(Globals::layout->formatCredits(
+                                   (int) (factor * (float) (agent->getSellItemPrice() / agent->getSellItemQuantity()))),
+                               false),
+                        String("#C"));
+                }
+            } else if (agent->getOffer() == 10) {
+                // Ship.
+                if (Globals::status->field_114 < 3) {
+                    message = *Globals::gameText->getText(750 + Globals::rnd->nextInt(6));
+                    Globals::sound->play(this->getSpecificSoundForRace(781 + Globals::rnd->nextInt(2), agent->getRace(),
+                                                                       agent->isMale()),
+                                         0, 0, 0.0f);
+                    Globals::status->field_d0--;
+                    this->scrollWindow->setText(agent->getName(), message);
+                    this->chatScroll = 0;
+                    this->mode = 3;
+                    return;
+                }
+                float factor = Globals::options[56] ? 1.0f : 2.0f;
+                int textId = agent->field_0x28;
+                if (textId == -1)
+                    textId = 874 + Globals::rnd->nextInt(2);
+                agent->field_0x28 = textId;
+                message = *Globals::gameText->getText(textId);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                int detailText = agent->field_0x2c;
+                if (detailText == -1)
+                    detailText = 773 + Globals::rnd->nextInt(2);
+                agent->field_0x2c = detailText;
+                message += String("\n") + *Globals::gameText->getText(detailText);
+                message = Globals::status->replaceHash(message, String(String(1), false), String("#Q"));
+                message = Globals::status->replaceHash(
+                    message, *Globals::gameText->getText(913 + agent->getSellItemIndex()), String("#P"));
+                message = Globals::status->replaceHash(
+                    message, String(Globals::layout->formatCredits((int) (factor * (float) agent->getSellItemPrice())), false),
+                    String("#C"));
+            } else if (agent->getOffer() == 4) {
+                // System coordinates.
+                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
+                message = *Globals::gameText->getText(agent->field_0x28);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                message += String(" ") + *Globals::gameText->getText(877);
+                SolarSystem *system = (SolarSystem *) Globals::galaxy->getSystem(agent->getSellSystemIndex());
+                message = Globals::status->replaceHash(message, String(system->getName(), false), String("#S"));
+                message = Globals::status->replaceHash(
+                    message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
+            } else {
+                // Blueprint.
+                agent->field_0x28 = 874 + Globals::rnd->nextInt(2);
+                message = *Globals::gameText->getText(agent->field_0x28);
+                message += String(" ") + *Globals::gameText->getText(886 + agent->getIndex());
+                message += String(" ") + *Globals::gameText->getText(876);
+                message = Globals::status->replaceHash(
+                    message, *Globals::gameText->getText(1274 + (*Globals::items)[agent->getSellBlueprintIndex()]->getIndex()),
+                    String("#N"));
+                message = Globals::status->replaceHash(
+                    message, String(Globals::layout->formatCredits(agent->getSellItemPrice()), false), String("#C"));
+            }
+            message += String("\n") + *Globals::gameText->getText(841 + Globals::rnd->nextInt(3));
+            this->scrollWindow->setText(agent->getName(), message);
+            (*this->agents)[this->selectedAgent]->setMissionString(message);
+            this->chatScroll = 0;
+            this->mode = 2;
+            int sound = this->getSoundId(agent);
+            if (sound >= 0)
+                Globals::sound->play(sound, 0, 0, 0.0f);
+            return;
+        }
+        this->scrollWindow->setText(agent->getName(), message);
+        this->chatScroll = 0;
+        this->mode = 3;
+        return;
+    }
+
+    agent->setStationName(Globals::status->getStation()->getName());
+    agent->setSystemName(((SolarSystem *) Globals::status->getSystem())->getName());
+    this->mode = 1;
+    this->chatScroll = 0;
+    this->onKeyPress(0x10000);
+    int sound = this->getSoundId(agent);
+    if (sound >= 0)
+        Globals::sound->play(sound, 0, 0, 0.0f);
 }
 
 bool SpaceLounge::hangarNeedsUpdate() {
