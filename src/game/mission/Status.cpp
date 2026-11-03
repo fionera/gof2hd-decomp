@@ -1452,8 +1452,9 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             case 166:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
-                    Ship *s = ship;
                     int amount = m->getProductionGoodAmount();
+                    Ship *s = ship;
+                    if (s == 0) return m;
                     if (Item::isInList(index, amount, s->getCargo())) {
                         return m;
                     }
