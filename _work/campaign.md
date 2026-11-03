@@ -5231,3 +5231,6 @@ Wave-97 section-order pass: `SpacePoint` emission order (`w3745`) — isFree, ta
 getIndex, dtor. Plain no-order addresses 3733 -> 3739 (prefix 3685 -> 3694). Gate 4498/4498.
 Wave-97 function pass: `HangarWindow::render` 80.4 -> 80.6% (`w3741`) with scoped credit-row
 cleanup and a volatile amount anchor. 9700 B, gate 4498/4498.
+Wave-97 section-order pass: `Hud` emission order (`w3745`) — ctor, dtor, setAutofireEnabled,
+init, closeHudMenu, ... Plain no-order 2963 -> 2975 (addresses 3739 -> 3784, prefix 3694 -> 3742).
+Gate 4498/4498.
