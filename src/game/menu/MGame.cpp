@@ -1513,7 +1513,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->pauseOpen = 0;
                 resumeSounds();
                 this->cutsceneActive = 0;
-                if (Globals::status->getMission()->hasFailed()) {
+                bool failed = Globals::status->getMission()->hasFailed();
+                if (failed) {
                     if (Globals::status->getMission()->isCampaignMission() ||
                         Globals::status->getCurrentCampaignMission() == 42) {
                         Globals::globals->playMusicAndFadeOutCurrent(2);
@@ -1551,23 +1552,20 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->level->setPlayerRoute(nullptr);
                 } else if (Globals::status->getMission()->hasWon() ||
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
-                    bool keepObjectives = false;
-                    if (((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
-                        keepObjectives = !Globals::status->getMission()->isCampaignMission();
-                    }
-                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission()
-                                                                              : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    if (mission->isInstantActionMission()) {
-                        Globals::switch_to_target_setting = 2;
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(1);
-                        return;
-                    }
+                    Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
+                    bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
                     if (mission->isCampaignMission()) {
                         Globals::status->nextCampaignMission(true);
                     } else {
                         Globals::status->setFreelanceMission(Mission::empty);
                         Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                    }
+                    if (mission->isInstantActionMission()) {
+                        Globals::switch_to_target_setting = 2;
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(1);
+                        return;
                     }
                     Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                     this->levelScript->m_nTimeLimit = 0;
