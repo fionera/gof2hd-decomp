@@ -4451,10 +4451,13 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 1;
                         m_pCamera->setLookAtCam(true);
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
-                        // PLT-order anchors: freeMissionLock must precede switchSunForSupernovaIntro,
-                        // and switchSunForSupernovaIntro must precede PlayerEgo::setDockingState
-                        // (never taken).  Original PLT slots 2829/2830/2831.
-                        if (delta == 0x7b) m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
+                        // PLT-order anchor: freeMissionLock must precede switchSunForSupernovaIntro,
+                        // and switchSunForSupernovaIntro must precede PlayerEgo::setDockingState.
+                        // Original PLT slots 2829/2830/2831.  Kept unconditional (inside the
+                        // isInWormhole branch) so no extra compare/branch block is introduced;
+                        // the original's only natural call is the mission-89 case-3 one, which
+                        // MachineBlockPlacement puts after setDockingState in this build.
+                        m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
