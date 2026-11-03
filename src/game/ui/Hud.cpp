@@ -1338,7 +1338,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         } else {
             String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
                           String(Globals::status->getShip()->getMaxLoad()) + String("t");
-            short shift = 0;
+            int shift = 0;
             if (Globals::status->getShip()->getCurrentLoad() >= 101)
                 shift = -2 * Globals::layout->field_0x2c_rowHeight;
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, load,
@@ -1385,7 +1385,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     } else {
         String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
                       String(Globals::status->getShip()->getMaxLoad()) + String("t");
-        int shift = 0;
+        short shift = 0;
         if (Globals::status->getShip()->getCurrentLoad() >= 101)
             shift = -2 * Globals::layout->field_0x2c_rowHeight;
         Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
@@ -1638,12 +1638,12 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             if (this->field_0x279)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             if (fadeIn < 1.0f)
                 fade = fadeIn;
             unsigned short top = this->field_0x3e2;
