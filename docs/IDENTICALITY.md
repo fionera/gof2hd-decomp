@@ -251,8 +251,10 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 4498 byte_exact,
-4498 linked_exact, 4524 size_match of 4524; pct buckets {100:4498, 90-99:10, 80-89:8, 70-79:5,
-<60:3}. 0 function rows size-MISMATCH; 18 size-match >=80% not-linked (the highest-value near-misses).
+4498 linked_exact, 4522 size_match of 4524; pct buckets {100:4498, 90-99:10, 80-89:9, 70-79:4,
+<60:3}. 2 function rows size-MISMATCH (Layout::Layout C1/C2, 6800 B vs 7072 B; the 272-byte
+`layoutCtorPad` anchor keeps `.text` exact); 19 size-match >=80% not-linked (the highest-value
+near-misses).
 
 Systematic clusters (one cause fixes many):
 1. **Shader `UpdateMeshData` cluster** (~15 fns at 86-94%, GenericShader/VertexColorShader/BumpShaderV2/4/
