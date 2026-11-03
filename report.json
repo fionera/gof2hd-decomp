@@ -128,14 +128,6 @@
    "usize": 2252
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 89.1,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
-  },
-  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 90.0,
    "byte": false,
@@ -150,6 +142,14 @@
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 91.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
