@@ -67,130 +67,6 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
     refreshValue();
 }
 
-void Ship::refreshValue() {
-    this->repairType = -1;
-    this->hasJumpDriveFlag = 0;
-    this->hasCloakFlag = 0;
-    this->hasEmergency = 0;
-    this->fireRateFactor = 1.0f;
-    this->damageFactor = 1.0f;
-    this->maxShieldHP = 0;
-    this->maxArmorHP = 0;
-    this->shieldRegen = 0;
-    this->cargoPlus = 0;
-    this->boostTime = 0;
-    this->agility = 0;
-    this->maxPassengers = 0;
-    this->firePower = 0;
-    this->radarType = 0;
-    this->boostSpeed = 0;
-    this->boostDelay = 0;
-    this->boostTime = 0;
-    this->signatureRace = -1;
-    if (Globals::status != nullptr && Globals::status->getStanding() != 0)
-        ((Standing *) (intptr_t) Globals::status->getStanding())->setPlayerSignatureRace(-1);
-    this->value = this->price;
-
-    for (unsigned int i = 0; i < this->equipment->size(); i++) {
-        if ((*this->equipment)[i] == nullptr)
-            continue;
-        switch ((*this->equipment)[i]->getSort()) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 8:
-            case 25:
-                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) /
-                                   (float) (*this->equipment)[i]->getAttribute(11) * 1000.0f;
-                break;
-            case 9:
-                this->maxShieldHP = (*this->equipment)[i]->getAttribute(18);
-                this->shieldRegen = (*this->equipment)[i]->getAttribute(19);
-                break;
-            case 10:
-                this->maxArmorHP = (*this->equipment)[i]->getAttribute(20);
-                break;
-            case 12:
-                this->cargoPlus += (*this->equipment)[i]->getAttribute(22);
-                break;
-            case 14:
-                this->boostSpeed = (*this->equipment)[i]->getAttribute(25);
-                this->boostTime = (*this->equipment)[i]->getAttribute(27);
-                this->boostDelay = (*this->equipment)[i]->getAttribute(26);
-                break;
-            case 15:
-                this->repairType = (*this->equipment)[i]->getIndex() != 75;
-                break;
-            case 16:
-                this->agility = (*this->equipment)[i]->getAttribute(28);
-                break;
-            case 17:
-                this->radarType = (*this->equipment)[i]->getAttribute(31);
-                break;
-            case 18:
-                this->hasJumpDriveFlag = 1;
-                break;
-            case 20:
-                this->maxPassengers += (*this->equipment)[i]->getAttribute(34);
-                break;
-            case 21:
-                this->hasCloakFlag = 1;
-                break;
-            case 27:
-                this->hasEmergency = 1;
-                break;
-            case 28: {
-                this->fireRateFactor = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
-                if (this->fireRateFactor == -979797952.0f)
-                    this->fireRateFactor = 1.0f;
-                this->damageFactor = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
-                if (this->damageFactor == -979797952.0f)
-                    this->damageFactor = 1.0f;
-                break;
-            }
-            case 29:
-                this->signatureRace = (*this->equipment)[i]->getIndex() - 189;
-                if (Globals::status != nullptr && Globals::status->getStanding() != 0)
-                    ((Standing *) (intptr_t) Globals::status->getStanding())
-                            ->setPlayerSignatureRace(this->signatureRace);
-                break;
-        }
-        this->value += (*this->equipment)[i]->getTotalPrice();
-    }
-
-    // Weapon fire power, now scaled by the damage and fire-rate modifiers found above.
-    this->firePower = 0;
-    for (unsigned int i = 0; i < this->equipment->size(); i++) {
-        if ((*this->equipment)[i] == nullptr)
-            continue;
-        switch ((*this->equipment)[i]->getSort()) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 8:
-            case 25:
-                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) * this->damageFactor /
-                                   ((float) (*this->equipment)[i]->getAttribute(11) * this->fireRateFactor) *
-                                   1000.0f;
-                break;
-        }
-    }
-
-    int modBonus = 0;
-    if (this->mods != nullptr) {
-        for (unsigned int i = 0; i < this->mods->size(); i++) {
-            if ((*this->mods)[i] == 1)
-                modBonus += 30;
-        }
-    }
-    int cargoPlus = this->cargoPlus;
-    this->cargoPlus = modBonus + (int) ((float) cargoPlus * (float) (this->baseLoad + modBonus) / 100.0f);
-    this->compression = cargoPlus;
-    this->value += getCargoValue();
-}
-
 Ship::~Ship() {
     if (this->equipment != 0) {
         if (this->equipment->size() != 0) {
@@ -232,22 +108,18 @@ int Ship::getCargoPlus() { return this->cargoPlus; }
 int Ship::getCompression() { return this->compression; }
 int Ship::getValue() { return this->value; }
 int Ship::getPrice() { return this->price; }
-void Ship::setPrice(int price) { this->price = price; }
-float Ship::getUnmoddedHandling() { return this->handling; }
 float Ship::getFireRateFactor() { return this->fireRateFactor; }
 float Ship::getDamageFactor() { return this->damageFactor; }
 float Ship::getFirePower() { return this->firePower; }
 int Ship::getAgility() { return this->agility; }
 int Ship::getRadarType() { return this->radarType; }
 int Ship::getRepairType() { return this->repairType; }
-int Ship::getMaxPassengers() { return this->maxPassengers; }
 int Ship::getBoostSpeed() { return this->boostSpeed; }
 int Ship::getBoostDelay() { return this->boostDelay; }
 int Ship::getBoostTime() { return this->boostTime; }
 bool Ship::hasBooster() { return this->boostSpeed > 0; }
 int Ship::getCurrentWeaponSlot() { return this->currentWeaponSlot; }
 void Ship::setCurrentWeaponSlot(int slot) { this->currentWeaponSlot = slot; }
-int Ship::getNumAddedDeviceSlots() { return this->numAddedDeviceSlots; }
 unsigned char Ship::hasEmergencySystem() { return this->hasEmergency; }
 
 int Ship::getMaxHP() {
@@ -645,6 +517,130 @@ int Ship::getCargoValue() {
     return total;
 }
 
+void Ship::refreshValue() {
+    this->repairType = -1;
+    this->hasJumpDriveFlag = 0;
+    this->hasCloakFlag = 0;
+    this->hasEmergency = 0;
+    this->fireRateFactor = 1.0f;
+    this->damageFactor = 1.0f;
+    this->maxShieldHP = 0;
+    this->maxArmorHP = 0;
+    this->shieldRegen = 0;
+    this->cargoPlus = 0;
+    this->boostTime = 0;
+    this->agility = 0;
+    this->maxPassengers = 0;
+    this->firePower = 0;
+    this->radarType = 0;
+    this->boostSpeed = 0;
+    this->boostDelay = 0;
+    this->boostTime = 0;
+    this->signatureRace = -1;
+    if (Globals::status != nullptr && Globals::status->getStanding() != 0)
+        ((Standing *) (intptr_t) Globals::status->getStanding())->setPlayerSignatureRace(-1);
+    this->value = this->price;
+
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] == nullptr)
+            continue;
+        switch ((*this->equipment)[i]->getSort()) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 8:
+            case 25:
+                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) /
+                                   (float) (*this->equipment)[i]->getAttribute(11) * 1000.0f;
+                break;
+            case 9:
+                this->maxShieldHP = (*this->equipment)[i]->getAttribute(18);
+                this->shieldRegen = (*this->equipment)[i]->getAttribute(19);
+                break;
+            case 10:
+                this->maxArmorHP = (*this->equipment)[i]->getAttribute(20);
+                break;
+            case 12:
+                this->cargoPlus += (*this->equipment)[i]->getAttribute(22);
+                break;
+            case 14:
+                this->boostSpeed = (*this->equipment)[i]->getAttribute(25);
+                this->boostTime = (*this->equipment)[i]->getAttribute(27);
+                this->boostDelay = (*this->equipment)[i]->getAttribute(26);
+                break;
+            case 15:
+                this->repairType = (*this->equipment)[i]->getIndex() != 75;
+                break;
+            case 16:
+                this->agility = (*this->equipment)[i]->getAttribute(28);
+                break;
+            case 17:
+                this->radarType = (*this->equipment)[i]->getAttribute(31);
+                break;
+            case 18:
+                this->hasJumpDriveFlag = 1;
+                break;
+            case 20:
+                this->maxPassengers += (*this->equipment)[i]->getAttribute(34);
+                break;
+            case 21:
+                this->hasCloakFlag = 1;
+                break;
+            case 27:
+                this->hasEmergency = 1;
+                break;
+            case 28: {
+                this->fireRateFactor = 1.0f - (float) (*this->equipment)[i]->getAttribute(39) / 100.0f;
+                if (this->fireRateFactor == -979797952.0f)
+                    this->fireRateFactor = 1.0f;
+                this->damageFactor = (float) (*this->equipment)[i]->getAttribute(40) / 100.0f + 1.0f;
+                if (this->damageFactor == -979797952.0f)
+                    this->damageFactor = 1.0f;
+                break;
+            }
+            case 29:
+                this->signatureRace = (*this->equipment)[i]->getIndex() - 189;
+                if (Globals::status != nullptr && Globals::status->getStanding() != 0)
+                    ((Standing *) (intptr_t) Globals::status->getStanding())
+                            ->setPlayerSignatureRace(this->signatureRace);
+                break;
+        }
+        this->value += (*this->equipment)[i]->getTotalPrice();
+    }
+
+    // Weapon fire power, now scaled by the damage and fire-rate modifiers found above.
+    this->firePower = 0;
+    for (unsigned int i = 0; i < this->equipment->size(); i++) {
+        if ((*this->equipment)[i] == nullptr)
+            continue;
+        switch ((*this->equipment)[i]->getSort()) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 8:
+            case 25:
+                this->firePower += (float) (*this->equipment)[i]->getAttribute(9) * this->damageFactor /
+                                   ((float) (*this->equipment)[i]->getAttribute(11) * this->fireRateFactor) *
+                                   1000.0f;
+                break;
+        }
+    }
+
+    int modBonus = 0;
+    if (this->mods != nullptr) {
+        for (unsigned int i = 0; i < this->mods->size(); i++) {
+            if ((*this->mods)[i] == 1)
+                modBonus += 30;
+        }
+    }
+    int cargoPlus = this->cargoPlus;
+    this->cargoPlus = modBonus + (int) ((float) cargoPlus * (float) (this->baseLoad + modBonus) / 100.0f);
+    this->compression = cargoPlus;
+    this->value += getCargoValue();
+}
+
 int Ship::getEquipmentValue() {
     int total = 0;
     for (unsigned int i = 0; i < this->equipment->size(); i++) {
@@ -654,6 +650,7 @@ int Ship::getEquipmentValue() {
     return total;
 }
 
+int Ship::getMaxPassengers() { return this->maxPassengers; }
 void Ship::freeAllSlots() {
     for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
         Item **data = this->equipment->data();
@@ -777,6 +774,7 @@ void Ship::adjustPrice() {
     }
 }
 
+void Ship::setPrice(int price) { this->price = price; }
 void Ship::addMod(int mod) {
     if (this->mods == nullptr)
         this->mods = new Array<int>();
@@ -803,6 +801,8 @@ bool Ship::equals(Ship *other) {
     return this->index == other->index;
 }
 
+int Ship::getNumAddedDeviceSlots() { return this->numAddedDeviceSlots; }
+float Ship::getUnmoddedHandling() { return this->handling; }
 int Ship::getModdedLoad() {
     int load = this->baseLoad;
     Array<int> *m = this->mods;
