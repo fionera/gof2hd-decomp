@@ -639,9 +639,9 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 enemy->geometry->setVisible(true);
             }
+            m_pLevel->lodManager->forceUpdate(30, false);
             volatile int pad = delta;
             (void) pad;
-            m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
             // Per-frame pulse wobble of the three ships while the intro plays (disasm 0x1383fe).
