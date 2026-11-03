@@ -5206,3 +5206,5 @@ local, canvas local, and Globals final. 2644 B, gate 4497/4497.
 Wave-97 section-order pass: `Mission` emission order (`w3745`) — setFailed/hasFailed and
 setWon/hasWon in original dynsym order. Plain no-order addresses 3709 -> 3713 (prefix 3557 -> 3615).
 Gate 4497/4497.
+Wave-97 section-order pass: `SentryGun` render order (`w3745`) — render before update.
+Plain no-order addresses 3713 -> 3715 (prefix 3615 -> 3625). Gate 4497/4497.
