@@ -95,3 +95,132 @@ python3 tools/verify/verify.py \
 
 Gate at this commit: `byte_exact 4498 / linked_exact 4498 / size-exact 4524`,
 `.text 0x1337c8`, lint `CLEAN ✓`, drift 0.
+
+## Second pass (2026-11-03, w3812): MBP chain evidence and variant sweep
+
+Still no code change: base (size check, no final guard) remains the best at
+**87.3 % / 968 B**. This section records the mechanism and the negative results
+so the next pass does not repeat them.
+
+### Fresh `[ROT]` evidence (patched LLVM 7.0.1, `-debug-only=block-placement`)
+
+Base (artificial `objects->size() <= i` check):
+
+```
+[ROT] top=%bb.4 ('for.cond') bottom=%bb.21 ('if.end55') exit=%bb.4 ('for.cond')
+[ROT] bottomsucc=%bb.38 ('cleanup149') inloop=1 chainbegin=%bb.4 ('for.cond')
+[ROT] next=%bb.5 ('for.body') exitIsSuccNext=1 bottomIsSuccTop=0
+[ROT] bail fallthrough-trade
+```
+
+`rg` (real final guard, no size check):
+
+```
+[ROT] top=%bb.4 ('for.cond') bottom=%bb.40 ('cleanup147') exit=%bb.4 ('for.cond')
+[ROT] bottomsucc=%bb.4 ('for.cond') inloop=1 chainbegin=%bb.4 ('for.cond')
+[ROT] next=%bb.5 ('for.body') exitIsSuccNext=1 bottomIsSuccTop=1
+Rotating loop to put exit %bb.4 ('for.cond') at bottom
+```
+
+So the whole difference is `Bottom->isSuccessor(Top)`:
+* base: the chain ends at `if.end55` (the `pull = VectorNormalize(pull)` merge),
+  whose successor is the latch `cleanup149`, not the header -> bail;
+* rg: the chain ends at the latch `cleanup147`, whose successor *is* the header
+  -> rotate.
+
+### Why the chain ends in different places
+
+The chain is built by `selectBestSuccessor`; when the latch's only successor
+(the header) is already in the chain, `buildChain` falls back to
+`selectBestCandidateBlock` and appends an arbitrary unplaced block. The
+divergence is one CFG-conflict test:
+
+Base — `if.end148 -> cleanup149` is accepted:
+
+```
+[CFG] BB=%bb.37 ('if.end148') Succ=%bb.38 ('cleanup149') Pred=%bb.22 ('if.else74') cand=115 prededge=4
+[CFG] BB=%bb.37 ('if.end148') Succ=%bb.38 ('cleanup149') Pred=%bb.23 ('if.then76') cand=115 prededge=8
+[CFG] BB=%bb.37 ('if.end148') Succ=%bb.38 ('cleanup149') Pred=%bb.21 ('if.end55') cand=115 prededge=21
+Candidate: %bb.38 ('cleanup149'), probability: 100.00% (CFG break)
+```
+
+rg — the same edge is rejected because the impact `lifetime.end` block is a
+not-yet-placed predecessor of the latch:
+
+```
+[CFG] BB=%bb.39 ('if.end146') Succ=%bb.40 ('cleanup147') Pred=%bb.21 ('if.else70') cand=93 prededge=4
+[CFG] BB=%bb.39 ('if.end146') Succ=%bb.40 ('cleanup147') Pred=%bb.22 ('if.then72') cand=93 prededge=8
+[CFG] BB=%bb.39 ('if.end146') Succ=%bb.40 ('cleanup147') Pred=%bb.33 ('cleanup113') cand=93 prededge=63
+[CONFLICT] ... Pred=%bb.33 ('cleanup113') cand=93 prededge=63 (non-cold CFG conflict)
+```
+
+`cleanup113` is the `continue` target of the `Vector impact` scope
+(`llvm.lifetime.end` of the impact temp); in the base IR the corresponding
+block (`<label>:212` / MIR `bb.36.cleanup117`) has already been merged into the
+chain when `if.end148 -> cleanup149` is evaluated, so it is skipped by
+`hasBetterLayoutPredecessor`. That single ordering difference is the whole
+rotation.
+
+### Source-shape sweep (fast proxy, then official verify for the best)
+
+`size`/`frame`/RA from the fast harness; pct from `tools/verify/verify.py`.
+
+| variant | size | frame | rot | this | surf | obj | dock | i | pct |
+|---|---:|---:|:-:|---|---|---|---|---:|---:|
+| base (size check, no guard) | 968 | 112 | 0 | r5 | r6 | r8 | fp | r9 | **87.3** |
+| `rg` (real guard, no size check) | 996 | 112 | 1 | sl | r5 | r8 | r9 | fp | 59.8 |
+| `rg` + unscoped `Vector surface` ("S") | 968 | 120 | 0 | r5 | r6 | r9 | sl | fp | 64.1 |
+| `rg` + fully nested `if`/`else if` (no `continue`) | 968 | 120 | 0 | r5 | r6 | r9 | sl | fp | 64.1 |
+| base + real guard (both) | 976 | 112 | 0 | r5 | r6 | r8 | fp | r9 | 79.4 |
+| `size == i` (4-byte no-op check) | 960 | 112 | 0 | r5 | r6 | r8 | fp | r9 | 79.5 |
+| `rg` + top guard `... && field_0x71 && i == 0` | 960 | 112 | 0 | r5 | fp | r8 | r9 | sl | 70.3 |
+| `rg` + top guard `i, alien, flag, len` | 988 | 112 | 0 | sl | r5 | r8 | r0 | fp | 59.4 |
+| `rg` + top guard `i, len, alien, flag` | 984 | 112 | 0 | sl | r5 | r8 | fp | r9 | 55.7 |
+
+Scoping variants that were tried and all collapse to one of the two shapes
+above: `surface` scoped/plain/`Vector s; s = ...`, `collision` scoped/plain,
+`impact`/`velocity`/`position` scoped/plain or hoisted to the loop-body top,
+`pull`/`drift` hoisted to the body top or to the preheader, `collision`/
+`surface`/`impact` declared before the loop, explicit trailing `continue`,
+`hitCamera` inside/outside the collision `if`, `for (i != size)`, `int i`,
+`i` declared outside the loop, braces around `continue`, positive/negative
+`outerCollide`/`isVisible` forms, and every nesting of the top guard.
+
+### Register-allocation order (NDK clang 7.0.2, `-debug-only=regalloc`)
+
+Base assignment order (priority order, with evictions):
+
+```
+%10 objects   -> r4
+%9  this      -> r5
+%2  &moveDirection -> r8 (after evicting from r6)
+%1  &moveTarget    -> r9 (after evicting from r6)
+%0  &dockOffsetVec -> r10 (fp)
+%34 &surface       -> r6
+%75 position temp  -> r11
+%175 i             -> r9 (evicts the stack-canary pointer)
+```
+
+The original wants `i -> fp` and `&dockOffsetVec -> r9`, i.e. exactly the
+opposite of the base. `i` has the highest weight (8.39e-03) but is popped late
+because the loop-carried `rGPR` interval is processed after the `GPRnopc`
+address intervals; with the real guard the same order yields `i -> fp`,
+`&dockOffsetVec -> r9` (rg), so the RA swap is a *consequence* of the rotation
+(and of the extra guard use), not an independent lever.
+
+### Conclusion
+
+The base is a genuine local optimum of the fuzzy metric: its byte layout is the
+only one that reproduces the original's block order (header at top, latch, then
+the wormhole `else`/`play`/`normalize` blocks), so every intra-function branch
+target matches. Adding the real guard costs 6 bytes at the end and shifts the
+epilogue, which alone drops the score to 79.4 % even though the guard
+instructions themselves match.
+
+To beat 87.3 % one needs a source construct that (a) keeps the chain ending at a
+non-latch block *without* adding a block that changes the frame/RA, and (b)
+adds no instructions. No such construct was found among ~150 variants. The
+remaining gap is MachineBlockPlacement chain order, not source semantics.
+
+Gate at this commit: `byte_exact 4498 / linked_exact 4498 / size-exact 4524`,
+`.text 0x1337c8`, lint `CLEAN ✓`, drift 0 (`RATCHET PASS`).
