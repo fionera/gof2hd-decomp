@@ -1853,7 +1853,7 @@ void Level::createMission() {
     }
     if (hasWanted)
         this->friendCount += wanted->getNumWingmen() + 1;
-    int alienGuns = alienWave ? (bigAlienWave ? 8 : 7) : 0;
+    int alienGuns = alienWave ? (bigAlienWave == 1 ? 8 : 7) : 0;
     int fortressGuns = pirateFortress ? 5 : 0;
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(pirateEscorts + stationPirates + blueprint + extraAliens + pirates + convoy + fortressGuns + alienGuns +
