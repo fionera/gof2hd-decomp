@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.91,
+  "avg_match": 99.9,
   "byte_exact": 4498,
   "linked_exact": 4498,
   "fuzzy_perfect": 4498,
@@ -56,6 +56,14 @@
    "usize": 9908
   },
   {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 74.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1984
+  },
+  {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
    "pct": 74.1,
    "byte": false,
@@ -94,14 +102,6 @@
    "linked": false,
    "osize": 9700,
    "usize": 9700
-  },
-  {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 82.7,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1984
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",

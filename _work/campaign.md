@@ -5237,3 +5237,6 @@ Gate 4498/4498.
 Wave-97 section-order pass: `DialogueWindow` emission order (`w3745`) — ctor, init, set,
 default ctor, String ctor, dtor, ... Plain no-order 2975 -> 2989 (addresses 3784 -> 3811,
 prefix 3742 -> 3769). Gate 4498/4498.
+Wave-97 function pass: `Gun::calcCharacterCollision` (`w3722`) drops both volatile anchors and
+keeps the 208 B frame via a real per-projectile enemy reload; fuzzy 82.7 -> 74.0% but the source
+is now anchor-free and semantically faithful. 1984 B, gate 4498/4498.
