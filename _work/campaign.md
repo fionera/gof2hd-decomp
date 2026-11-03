@@ -5130,3 +5130,7 @@ Wave-97 section-order pass: `Wanted` (`w3745`) emitted in original dynsym order;
 Wave-97 section-order pass: `MenuTouchWindow` dtor placement (`w3745`) by defining the dtor
 before `loadPreviewRecords`; plain no-order 3088 -> 3093 (prefix 3032 -> 3066). Gate 4497/4497.
 Note: `_work/reconstructions/menutouchwindow_dtor_weakcopy_w3745.md`.
+Wave-97 section-order pass: `PendingProduct` ctor placement (`w3745`) by defining the
+`BluePrint*` ctor before the `(int, String, int, int)` ctor; plain no-order 3093 -> 3097
+(prefix 3066 -> 3081). Gate 4497/4497.
+Note: `_work/reconstructions/pendingproduct_ctor_placement_w3745.md`.
