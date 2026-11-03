@@ -5166,3 +5166,10 @@ Wave-97 section-order pass: `BoundingSphere` emission order (`w3745`) — collid
 getCollisionNormal before update/projectCollisionOnSurface. Plain no-order 2852 -> 2855
 (exact addrs 3456 -> 3461). Gate 4497/4497.
 Note: `_work/reconstructions/boundingsphere_collide_placement_w3745.md`.
+Wave-97 function pass: `Status::missionCompleted` 71.8 -> **86.7%** (`w3734`) by correcting the
+source-order rank dispatch (54 insertions / 32 deletions). 1432 B, gate 4497/4497.
+Wave-97 function pass: `Level::createMission` 90.4 -> 90.6% (`w3740`) by caching
+`Globals::globals` in the hunter loop and computing the blueprint slot before the index.
+17172 B (size kept), gate 4497/4497.
+Wave-97 section-order pass: `Gun::setOffset` overload order (`w3745`) — `Vector*` before
+`int,int`. Plain no-order 2855 -> 2856 (exact addrs 3461 -> 3463). Gate 4497/4497.
