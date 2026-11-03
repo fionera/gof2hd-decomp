@@ -3526,7 +3526,8 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                } else if (m_nState == 2) {
+                }
+                if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
@@ -3574,7 +3575,8 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 3) {
+                }
+                if (m_nState == 3) {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -3607,7 +3609,8 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
-                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                }
+                if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
                            && player->getHackingGameDockIndex() >= 0) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
@@ -5266,114 +5269,6 @@ bool LevelScript::process(int delta) {
         }
     }
 
-    // Size anchor: the original `LevelScript::process` is 57232 B.  Joining the
-    // case-125 state-2 chain to the state-3 chain (see the `else if` above) is
-    // what puts the `deleteHackingGame` call after the mission-0 state blocks and
-    // fixes the .rel.plt first-reference order, but it tail-merges 420 B away.
-    // These never-taken volatile stores restore the exact function size (and thus
-    // the .text total 0x1337c8 and every later function address).
-    if (m_nState == 0x7e) {
-        volatile int *pad = &Globals::switch_to_target_setting;
-        *pad = 0;
-        *pad = 1;
-        *pad = 2;
-        *pad = 3;
-        *pad = 4;
-        *pad = 5;
-        *pad = 6;
-        *pad = 7;
-        *pad = 8;
-        *pad = 9;
-        *pad = 10;
-        *pad = 11;
-        *pad = 12;
-        *pad = 13;
-        *pad = 14;
-        *pad = 15;
-        *pad = 16;
-        *pad = 17;
-        *pad = 18;
-        *pad = 19;
-        *pad = 20;
-        *pad = 21;
-        *pad = 22;
-        *pad = 23;
-        *pad = 24;
-        *pad = 25;
-        *pad = 26;
-        *pad = 27;
-        *pad = 28;
-        *pad = 29;
-        *pad = 30;
-        *pad = 31;
-        *pad = 32;
-        *pad = 33;
-        *pad = 34;
-        *pad = 35;
-        *pad = 36;
-        *pad = 37;
-        *pad = 38;
-        *pad = 39;
-        *pad = 40;
-        *pad = 41;
-        *pad = 42;
-        *pad = 43;
-        *pad = 44;
-        *pad = 45;
-        *pad = 46;
-        *pad = 47;
-        *pad = 48;
-        *pad = 49;
-        *pad = 50;
-        *pad = 51;
-        *pad = 52;
-        *pad = 53;
-        *pad = 54;
-        *pad = 55;
-        *pad = 56;
-        *pad = 57;
-        *pad = 58;
-        *pad = 59;
-        *pad = 60;
-        *pad = 61;
-        *pad = 62;
-        *pad = 63;
-        *pad = 64;
-        *pad = 65;
-        *pad = 66;
-        *pad = 67;
-        *pad = 68;
-        *pad = 69;
-        *pad = 70;
-        *pad = 71;
-        *pad = 72;
-        *pad = 73;
-        *pad = 74;
-        *pad = 75;
-        *pad = 76;
-        *pad = 77;
-        *pad = 78;
-        *pad = 79;
-        *pad = 80;
-        *pad = 81;
-        *pad = 82;
-        *pad = 83;
-        *pad = 84;
-        *pad = 85;
-        *pad = 86;
-        *pad = 87;
-        *pad = 88;
-        *pad = 89;
-        *pad = 90;
-        *pad = 91;
-        *pad = 92;
-        *pad = 93;
-        *pad = 94;
-        *pad = 95;
-        *pad = 96;
-        *pad = 97;
-        *pad = 98;
-    }
     // epilogue (0x144f56): the function returns the cinematicBreak flag -- the high byte of
     // m_nFlags @0x11 -- normalised to 0/1.
     return m_bCinematicBreak != 0;
