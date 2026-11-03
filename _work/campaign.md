@@ -5137,3 +5137,7 @@ Note: `_work/reconstructions/pendingproduct_ctor_placement_w3745.md`.
 Wave-97 section-order pass: `PendingProduct` ctor placement (`w3745`) by defining the
 `BluePrint*` ctor first; plain no-order 3093 -> 3097 (prefix 3066 -> 3081). Gate 4497/4497.
 Note: `_work/reconstructions/pendingproduct_ctor_placement_w3745.md`.
+Wave-97 function pass: `StarMap::draw` 92.6 -> 95.6% (`w3732`) with a direct transition guard,
+a `systems` local, and restoring the r3 canary/predication via `__builtin_expect`. 2644 B, gate 4497/4497.
+Wave-97 section-order pass: `Radar::getPlanetDockIndex` placement (`w3745`) before
+`drawCurrentLock`; plain no-order 3097 -> 3099 (prefix 3081 -> 3096). Gate 4497/4497.

@@ -152,14 +152,6 @@
    "usize": 9332
   },
   {
-   "name": "_ZN7StarMap4drawEv",
-   "pct": 92.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2644,
-   "usize": 2644
-  },
-  {
    "name": "_ZN15MenuTouchWindowC1Ei",
    "pct": 93.9,
    "byte": false,
@@ -190,6 +182,14 @@
    "linked": false,
    "osize": 1948,
    "usize": 1948
+  },
+  {
+   "name": "_ZN7StarMap4drawEv",
+   "pct": 95.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2644,
+   "usize": 2644
   },
   {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
