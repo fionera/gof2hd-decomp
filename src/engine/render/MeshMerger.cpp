@@ -126,40 +126,11 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
     this->initialized = 0;
 }
 
-MeshMerger::~MeshMerger() {
-    if (this->sourceMeshes != nullptr)
-        delete[] this->sourceMeshes;
-    this->sourceMeshes = nullptr;
-
-    for (int i = 0; i < this->rows * this->cols; i++) {
-        if (this->transformedMeshes[i]->positions != nullptr)
-            delete[] this->transformedMeshes[i]->positions;
-        this->transformedMeshes[i]->positions = nullptr;
-        if (this->transformedMeshes[i]->normals != nullptr)
-            delete[] this->transformedMeshes[i]->normals;
-        this->transformedMeshes[i]->normals = nullptr;
-        if (this->transformedMeshes[i] != nullptr)
-            delete this->transformedMeshes[i];
-        this->transformedMeshes[i] = nullptr;
-    }
-    if (this->transformedMeshes != nullptr)
-        delete[] this->transformedMeshes;
-    this->transformedMeshes = nullptr;
-
-    delete[] this->lods;
-    this->lods = nullptr;
-    delete[] this->enabledFlags;
-    this->enabledFlags = nullptr;
-    delete[] this->visibleFlags;
-    this->visibleFlags = nullptr;
-
-    if (this->matrices != nullptr)
-        delete[] this->matrices;
-    this->matrices = nullptr;
-}
-
-void MeshMerger::setMatrix(int index, const Matrix &m) {
-    this->matrices[index] = m;
+void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
+    uint32_t id;
+    this->canvas->MeshCreate(meshId, id, false);
+    Mesh *ptr = this->canvas->MeshGetPointer(id);
+    this->sourceMeshes[this->rows * lod + index] = ptr;
 }
 
 void MeshMerger::setLod(int index, signed char lod) {
@@ -172,11 +143,8 @@ void MeshMerger::setLod(int index, signed char lod) {
     }
 }
 
-void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId) {
-    uint32_t id;
-    this->canvas->MeshCreate(meshId, id, false);
-    Mesh *ptr = this->canvas->MeshGetPointer(id);
-    this->sourceMeshes[this->rows * lod + index] = ptr;
+void MeshMerger::setMatrix(int index, const Matrix &m) {
+    this->matrices[index] = m;
 }
 
 void MeshMerger::setEnabled(int index, bool enabled) {
@@ -187,56 +155,6 @@ void MeshMerger::setEnabled(int index, bool enabled) {
         }
         this->dirty = 1;
     }
-}
-
-void MeshMerger::render() {
-    this->canvas->DrawTransform(this->transformId, nullptr);
-}
-
-void MeshMerger::update() {
-    for (int i = 0; i < this->rows; i++) {
-        Mesh *mesh = this->transformedMeshes[i];
-        bool visible = this->canvas->CameraIsSphereinViewFrustum(mesh->bounds.center,
-                                                                 mesh->bounds.radius);
-        if (visible != this->visibleFlags[i]) {
-            this->visibleFlags[i] = visible;
-            if (this->enabledFlags[i] != 0)
-                this->dirty = 1;
-        }
-    }
-    if (this->dirty == 0)
-        return;
-
-    int vertexBase = 0;
-    int indexBase = 0;
-    for (int i = 0; i < this->rows; i++) {
-        if (this->enabledFlags[i] == 0 || this->visibleFlags[i] == 0)
-            continue;
-        Mesh *src = this->transformedMeshes[this->rows * this->lods[i] + i];
-        if (this->mergedMesh->vertexFormat & 1)
-            memcpy((Vector *) this->mergedMesh->positions + vertexBase, (const Vector *) src->positions,
-                   src->vertexCount * 12);
-        if (this->mergedMesh->vertexFormat & 4)
-            memcpy((Vector *) this->mergedMesh->normals + vertexBase, (const Vector *) src->normals,
-                   src->vertexCount * 12);
-        if (this->mergedMesh->vertexFormat & 8)
-            memcpy((uint32_t *) this->mergedMesh->colors + vertexBase * 4, (const uint32_t *) src->colors,
-                   src->vertexCount * 16);
-        if (this->mergedMesh->vertexFormat & 2)
-            memcpy((float *) this->mergedMesh->texCoords + vertexBase * 2, (const float *) src->texCoords,
-                   src->vertexCount * 8);
-        if (this->mergedMesh->vertexFormat & 0x10) {
-            uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
-            const uint16_t *idx = (const uint16_t *) src->indices;
-            for (int k = src->indexCount; k != 0; k--)
-                *dst++ = (uint16_t) (*idx++ + vertexBase);
-        }
-        vertexBase += src->vertexCount;
-        indexBase += src->indexCount;
-    }
-    this->mergedMesh->vertexCount = (uint16_t) vertexBase;
-    this->mergedMesh->indexCount = (uint16_t) indexBase;
-    this->dirty = 0;
 }
 
 void MeshMerger::init() {
@@ -307,4 +225,86 @@ MeshMerger::Mesh *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
     AbyssEngine::AEMath::BSphere bounds = {center, mesh->bounds.radius, 1.0f};
     out->bounds = bounds;
     return out;
+}
+
+void MeshMerger::update() {
+    for (int i = 0; i < this->rows; i++) {
+        Mesh *mesh = this->transformedMeshes[i];
+        bool visible = this->canvas->CameraIsSphereinViewFrustum(mesh->bounds.center,
+                                                                 mesh->bounds.radius);
+        if (visible != this->visibleFlags[i]) {
+            this->visibleFlags[i] = visible;
+            if (this->enabledFlags[i] != 0)
+                this->dirty = 1;
+        }
+    }
+    if (this->dirty == 0)
+        return;
+
+    int vertexBase = 0;
+    int indexBase = 0;
+    for (int i = 0; i < this->rows; i++) {
+        if (this->enabledFlags[i] == 0 || this->visibleFlags[i] == 0)
+            continue;
+        Mesh *src = this->transformedMeshes[this->rows * this->lods[i] + i];
+        if (this->mergedMesh->vertexFormat & 1)
+            memcpy((Vector *) this->mergedMesh->positions + vertexBase, (const Vector *) src->positions,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 4)
+            memcpy((Vector *) this->mergedMesh->normals + vertexBase, (const Vector *) src->normals,
+                   src->vertexCount * 12);
+        if (this->mergedMesh->vertexFormat & 8)
+            memcpy((uint32_t *) this->mergedMesh->colors + vertexBase * 4, (const uint32_t *) src->colors,
+                   src->vertexCount * 16);
+        if (this->mergedMesh->vertexFormat & 2)
+            memcpy((float *) this->mergedMesh->texCoords + vertexBase * 2, (const float *) src->texCoords,
+                   src->vertexCount * 8);
+        if (this->mergedMesh->vertexFormat & 0x10) {
+            uint16_t *dst = (uint16_t *) this->mergedMesh->indices + indexBase;
+            const uint16_t *idx = (const uint16_t *) src->indices;
+            for (int k = src->indexCount; k != 0; k--)
+                *dst++ = (uint16_t) (*idx++ + vertexBase);
+        }
+        vertexBase += src->vertexCount;
+        indexBase += src->indexCount;
+    }
+    this->mergedMesh->vertexCount = (uint16_t) vertexBase;
+    this->mergedMesh->indexCount = (uint16_t) indexBase;
+    this->dirty = 0;
+}
+
+void MeshMerger::render() {
+    this->canvas->DrawTransform(this->transformId, nullptr);
+}
+
+MeshMerger::~MeshMerger() {
+    if (this->sourceMeshes != nullptr)
+        delete[] this->sourceMeshes;
+    this->sourceMeshes = nullptr;
+
+    for (int i = 0; i < this->rows * this->cols; i++) {
+        if (this->transformedMeshes[i]->positions != nullptr)
+            delete[] this->transformedMeshes[i]->positions;
+        this->transformedMeshes[i]->positions = nullptr;
+        if (this->transformedMeshes[i]->normals != nullptr)
+            delete[] this->transformedMeshes[i]->normals;
+        this->transformedMeshes[i]->normals = nullptr;
+        if (this->transformedMeshes[i] != nullptr)
+            delete this->transformedMeshes[i];
+        this->transformedMeshes[i] = nullptr;
+    }
+    if (this->transformedMeshes != nullptr)
+        delete[] this->transformedMeshes;
+    this->transformedMeshes = nullptr;
+
+    delete[] this->lods;
+    this->lods = nullptr;
+    delete[] this->enabledFlags;
+    this->enabledFlags = nullptr;
+    delete[] this->visibleFlags;
+    this->visibleFlags = nullptr;
+
+    if (this->matrices != nullptr)
+        delete[] this->matrices;
+    this->matrices = nullptr;
 }
