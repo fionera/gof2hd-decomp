@@ -5239,7 +5239,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
         PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject));
-        new (fixed) PlayerFixedObject(race, type, player, nullptr, x, y, z);
+        new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
