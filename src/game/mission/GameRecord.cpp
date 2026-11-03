@@ -11,9 +11,6 @@
 #include "game/world/SolarSystem.h"
 #include "game/ship/Ship.h"
 
-GameRecord::~GameRecord() {
-}
-
 GameRecord::GameRecord() {
     this->data = new uint8_t[0x87];
     this->rank = 0;
@@ -158,6 +155,9 @@ GameRecord::GameRecord() {
         this->collectedBounties[i] = 0;
 
     this->field_0x1b4 = 0;
+}
+
+GameRecord::~GameRecord() {
 }
 
 typedef uint32_t uint;
