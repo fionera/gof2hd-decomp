@@ -3425,16 +3425,15 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             for (unsigned int i = 0; i < this->buttonsB4->size(); i++) {
                 if (!(*this->buttonsB4)[i]->OnTouchEnd(x, y))
                     continue;
-                float difficulty = i == 0 ? 0.5f : 1.5f;
-                this->fadeValue = difficulty;
-                optionFloat(44) = difficulty;
+                this->fadeValue = i == 0 ? 0.5f : 1.5f;
+                optionFloat(44) = this->fadeValue;
                 if (i != 0) {
                     this->choiceWindow->set(*Globals::gameText->getText(26), true);
                     this->messageShowing = 1;
                     this->returnToMenuSubFlag = 1;
                     return 0;
                 }
-                if (Globals::status->getPlayingTime() < 1) {
+                if (Globals::status->getPlayingTime() > 0) {
                     this->choiceWindow->set(*Globals::gameText->getText(52), true);
                     this->messageShowing = 1;
                     this->returnToMenuSubFlag = 1;
