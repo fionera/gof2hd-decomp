@@ -1605,6 +1605,7 @@ void Level::createMission() {
         extraFriend = Globals::rnd->nextInt(2);
     }
     int *bigShipsCount = &this->field_168;
+    int *jumperCount = &this->field_164;
     this->friendCount = (introSystem ? Globals::rnd->nextInt(2) : security) + extraFriend + this->field_168 / 4;
     if (raid && Globals::status->getCurrentCampaignMission() >= 32 && Globals::rnd->nextInt(100) <= 7) {
         this->hostileCount = 9;
@@ -1707,8 +1708,8 @@ void Level::createMission() {
             int hc = this->hostileCount;
             this->hostileCount = Globals::rnd->nextInt(3) + hc * 2;
         }
-        this->field_168 = 0;
-        this->field_164 = 0;
+        *bigShipsCount = 0;
+        *jumperCount = 0;
         raid = true;
         raidRace = 8;
     }
@@ -1720,8 +1721,8 @@ void Level::createMission() {
             int hc = this->hostileCount;
             this->hostileCount = Globals::rnd->nextInt(3) + hc * 2;
         }
-        this->field_168 = 0;
-        this->field_164 = 0;
+        *bigShipsCount = 0;
+        *jumperCount = 0;
         raid = true;
         raidRace = 8;
     }
@@ -1833,7 +1834,7 @@ void Level::createMission() {
     int bigAlienWave = 0;
     int alienWave = 0;
     int pirateFortress = 0;
-    if (*bigShipsCount != 0 && localRace == 0) {
+    if (*bigShipsCount > 0 && localRace == 0) {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
@@ -1888,7 +1889,7 @@ void Level::createMission() {
                                                    wingRoute->getWaypoint(), true, false);
         }
     }
-    for (int i = this->friendCount; i < this->friendCount + this->field_164; i++) {
+    for (int i = this->friendCount; i < this->friendCount + *jumperCount; i++) {
         (*this->enemies)[i] = this->createShip(localRace, 0, Globals::globals->getRandomEnemyFighter(localRace), nullptr,
                                                true, false);
         (*this->enemies)[i]->setDead();
@@ -2288,12 +2289,13 @@ case4Tail:
                         (*this->enemies)[convoyEnd + j]->player->setAlwaysFriend(true);
                         asteroidPos = (*this->asteroids)[j + this->asteroids->size() / 2]->getPosition();
                         (*this->enemies)[convoyEnd + j]->setPosition(asteroidPos.x, asteroidPos.y + 2000.0f, asteroidPos.z);
-                        KIPlayer *convoyShip = (*this->enemies)[convoyEnd + j];
+                        Array<KIPlayer *> *enemies = this->enemies;
+                        KIPlayer *convoyShip = (*enemies)[convoyEnd + j];
                         convoyShip->cargo = nullptr;
                         ((PlayerFighter *) convoyShip)->crateCaptured() = 0;
-                        (*this->enemies)[convoyEnd + j]->setSpeed(0.0f);
-                        (*this->enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
-                        Player *p = (*this->enemies)[convoyEnd + j]->player;
+                        (*enemies)[convoyEnd + j]->setSpeed(0.0f);
+                        (*enemies)[convoyEnd + j]->setRotationSpeed(0.0f);
+                        Player *p = (*enemies)[convoyEnd + j]->player;
                         p->setHitpoints(p->getMaxHitpoints() * 3);
                     }
                     this->objectivesA = new Objective(18, 0, convoyEnd, this);
