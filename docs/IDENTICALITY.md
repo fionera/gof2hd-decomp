@@ -7,9 +7,9 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 ## Update 2026-11-03 (wave 92)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
-byte_exact **4499/4524**, linked_exact **4499/4524**, size-exact **4524/4524**, data_exact
+byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
-parity **5370/5370** (0 extra / 0 missing). 25 functions remain non-byte-exact.
+parity **5370/5370** (0 extra / 0 missing). 24 functions remain non-byte-exact.
 
 The build is **CMake + NDK r18b** (not ndk-build): clang 7.0.2 with
 `-Oz -g -std=c++11 -fPIC -frtti -fstack-protector-strong -ffunction-sections -funwind-tables
@@ -32,14 +32,14 @@ else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_arr
 `.comment`, `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`, `.shstrtab`) is
 byte-identical.
 
-The 25 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
+The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
 `LevelScript::process` 52.0, `Status::missionCompleted` 57.7, `Radar::draw` 73.9,
 `Level::createShip` 74.1, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
 `Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.6, `Hud::draw` 89.1,
 `RocketGun::update` 86.9, `PlayerEgo::calcCollision` 87.3, `Level::createScene` 88.3,
 `Gun::calcCharacterCollision` 90.0, `Level::createMission` 90.7, `MenuTouchWindow::MenuTouchWindow`
 C1/C2 94.2, `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
-`MenuTouchWindow::OnTouchEnd` 99.9, `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
+`ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
 See `_work/reconstructions/docs-wave92-w4269.md`.
 
 ## Update 2026-10-26 — historical (superseded by the update above)
@@ -253,7 +253,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **25 non-linked functions.** 4499 of 4524 compared functions are linked-exact. The worst are
+1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (52.0%), `Status::missionCompleted` (57.7%),
    `Radar::draw` (73.9%), `Level::createShip` (74.1%), `Generator::createMission` (74.3%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
@@ -310,8 +310,8 @@ section-size deltas above.
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 4499 byte_exact,
-4499 linked_exact, 4524 size_match of 4524; pct buckets {100:4499, 90-99:10, 80-89:6, 70-79:5,
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 4500 byte_exact,
+4500 linked_exact, 4524 size_match of 4524; pct buckets {100:4500, 90-99:10, 80-89:6, 70-79:5,
 <60:4}. 0 function rows size-MISMATCH (the `Layout::Layout` body is size-exact 7072 B without a
 pad); 16 size-match >=80% not-linked (the highest-value near-misses).
 

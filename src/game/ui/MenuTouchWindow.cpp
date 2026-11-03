@@ -3016,8 +3016,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 if (this->field_0x1da)
                     return 0;
                 if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
-                    if (this->choiceWindow->hasChoice() &&
-                        __builtin_expect(this->loadGame(this->selectedRow) == 0, 0)) // lint: arm_builtin anchor: MenuTouchWindow::OnTouchEnd; plain form lowers raw match 97.9 -> 97.2
+                    if (__builtin_expect(this->choiceWindow->hasChoice(), 1) && // lint: arm_builtin anchor: MenuTouchWindow::OnTouchEnd; plain form grows body 8132 -> 8148
+                        this->loadGame(this->selectedRow) == 0)
                         return 0;
                 }
                 this->messageShowing = 0;
@@ -3388,24 +3388,24 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 int id = (int) button->id;
                 if (id == 23) {
                     if (button->OnTouchEnd(x, y)) {
-                        if (g_android_gp_is_linked) {
-                            g_android_show_leaderboards = 1;
-                        } else {
+                        if (!g_android_gp_is_linked) {
                             this->choiceWindow->set(String("No link with Google+"),
                                                     *Globals::gameText->getText(3398), true);
                             this->messageShowing = 1;
                             this->genericConfirmB = 1;
+                        } else {
+                            g_android_show_leaderboards = 1;
                         }
                     }
                 } else if (id == 24) {
                     if (button->OnTouchEnd(x, y)) {
-                        if (g_android_gp_is_linked) {
-                            g_android_show_achievements = 1;
-                        } else {
+                        if (!g_android_gp_is_linked) {
                             this->choiceWindow->set(String("No link with Google+"),
                                                     *Globals::gameText->getText(3398), true);
                             this->messageShowing = 1;
                             this->genericConfirmB = 1;
+                        } else {
+                            g_android_show_achievements = 1;
                         }
                     }
                 }
