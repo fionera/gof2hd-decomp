@@ -694,7 +694,7 @@ bool LevelScript::process(int delta) {
                 m_pCamera->enableFirstPersonCam(false);
                 player->hideShipForFirstPersonCameraView(false);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                player->setCollide(false);
+                m_pLevel->getPlayer()->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 player->player->removeAllGuns();
@@ -718,7 +718,7 @@ bool LevelScript::process(int delta) {
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                player->setCollide(true);
+                m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -947,7 +947,7 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
-        player->rotate(0.0f, angle, angle);
+        m_pLevel->getPlayer()->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
@@ -1387,7 +1387,8 @@ bool LevelScript::process(int delta) {
             Globals::switch_to_target_setting = 1;
             Level::initStreamOutPosition = 1;
             Globals::appManager->SetCurrentApplicationModule(2);
-        } else if (m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()) {
+        }
+        if (m_nState == 4 && ((RadioMessage *) ((*messages)[4]))->isOver()) {
             m_pCamera->setFixed(true);
             ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
             (*enemies)[0]->player->setHitpoints(0);
@@ -1529,12 +1530,12 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->player->turnEnemy();
                 }
             }
-            // Size anchor: this never-taken call (m_nState never reaches 0x7f) is no
-            // longer needed for .plt order (removing it keeps .plt and .rel.plt
-            // byte-identical), but it keeps LevelScript::process at its original
-            // 57232-byte body; without it the body is 57208 B and the shifted
-            // layout drops byte_exact.
-            if (m_nState == 0x7f) player->setRocketControl(nullptr, nullptr);
+            // The former `if (m_nState == 0x7f) player->setRocketControl(...)` size anchor
+            // lived here; it was removed in this pass (it kept .plt/.rel.plt byte-identical,
+            // so no PLT-order dependency). The body stays at its original 57232 B because the
+            // faithful mission-0 state-3/state-4 Level::getPlayer() re-fetches and the
+            // mission-1 rotate re-fetch (which reproduces the original prologue register map)
+            // replace the anchor's bytes.
             ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
             m_nState = 1; // 0x1381aa -> switch guard 0x13879e
         }
@@ -1690,7 +1691,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[0]))->isOver()) {
                         player->player->setVulnerable(true);
-                        player->setCollide(true);
+                        m_pLevel->getPlayer()->setCollide(true);
                         player->setComputerControlled(false);
                         player->setTurretMode(false);
                         player->setFreeLookMode(false);
@@ -2287,7 +2288,8 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 6;
                     m_bCinematicBreak = 0;
-                } else if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
+                }
+                if (((RadioMessage *) ((*messages)[7]))->isTriggered() && m_nState == 4) {
                     Vector origin = (*enemies)[0]->getPosition();
                     (*enemies)[10]->setPosition(origin.x, origin.y, origin.z + 12000.0f);
                     (*enemies)[10]->geometry->setDirection(Vector{0.0f, 0.0f, 1.0f}, Vector{0.0f, 1.0f, 0.0f});
@@ -2391,7 +2393,8 @@ bool LevelScript::process(int delta) {
                         m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
-                } else if (m_nState == 2) {
+                }
+                if (m_nState == 2) {
                     // State-2 conclude (0x13ec3c): keep the LODs warm; once radio message #2 is over
                     // hand control back to the player, restore the HUD/radar, reframe the camera on the
                     // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
@@ -4429,7 +4432,8 @@ bool LevelScript::process(int delta) {
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     m_nScriptTimerA = 0;
                     m_nState = 6;
-                } else if (m_nState == 0 && !Globals::status->inAlienOrbit()) {
+                }
+                if (m_nState == 0 && !Globals::status->inAlienOrbit()) {
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
                     m_nState = 1;
                 } else if (m_nState == 6) {
