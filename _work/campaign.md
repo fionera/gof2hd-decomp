@@ -5257,3 +5257,10 @@ after `init` and call it from `init` (inlined to the same store) so the `Array<A
 ctor/`ArraySetLength` weak copies precede it. Plain no-order 3001 -> 3003 (addresses 3862 -> 3865,
 prefix 3830 -> 3834). Gate 4498/4498, gate `.so` byte-identical.
 Note: `_work/reconstructions/spacelounge_weak_copy_order_w3745.md`.
+Wave-97 function pass: `Hud::draw` 88.7 -> 88.8% (`w3730`) by computing the jump/cloak bar
+top/y/barYOffset before `field_0x464 += dt`. 9332 B, gate 4498/4498.
+Wave-97 function pass: `Level::createMission` 90.7052 -> 90.7216% (`w3740`) with the
+`siegedStation` store order. 17172 B, gate 4498/4498.
+Wave-97 section-order pass: `SpaceLounge` weak-copy order (`w3745`) by calling
+`setHangarUpdate` from `init`; plain no-order 3001 -> 3003 (addresses 3862 -> 3865, prefix 3830 -> 3834).
+Gate 4498/4498. Note: `_work/reconstructions/spacelounge_weak_copy_order_w3745.md`.
