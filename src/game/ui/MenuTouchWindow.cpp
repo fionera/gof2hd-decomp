@@ -608,9 +608,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
              this->sliderRowHeight) * 2,
         66);
-    this->optBtnD0->setHalfTransparent(optionByte(17));
-    this->optBtnCC->setAlwaysPressed(optionByte(16));
-    this->scrollExtraButton->setAlwaysPressed(optionByte(64));
+    this->optBtnD0->setHalfTransparent(Globals::options[17]);
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
+    this->optBtnCC->setAlwaysPressed(Globals::options[16]);
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
+    this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     if (Globals::iPad) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
@@ -706,7 +709,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       this->sliderSpacing + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
-    this->optBtnD8->setAlwaysPressed(optionByte(12));
+    this->optBtnD8->setAlwaysPressed(Globals::options[12]);
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
+    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
