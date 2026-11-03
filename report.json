@@ -16,6 +16,14 @@
  },
  "rows": [
   {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 42.8,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 57232
+  },
+  {
    "name": "_ZN6LayoutC1Ev",
    "pct": 47.7,
    "byte": false,
@@ -32,14 +40,6 @@
    "usize": 7072
   },
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 55.1,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
-  },
-  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 57.7,
    "byte": false,
@@ -49,19 +49,11 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 72.5,
+   "pct": 73.9,
    "byte": false,
    "linked": false,
    "osize": 9908,
    "usize": 9908
-  },
-  {
-   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 73.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1996,
-   "usize": 1996
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
@@ -70,6 +62,14 @@
    "linked": false,
    "osize": 2764,
    "usize": 2764
+  },
+  {
+   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
+   "pct": 74.3,
+   "byte": false,
+   "linked": false,
+   "osize": 1996,
+   "usize": 1996
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -104,6 +104,14 @@
    "usize": 612
   },
   {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 86.2,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
+  },
+  {
    "name": "_ZN9RocketGun6updateEi",
    "pct": 86.9,
    "byte": false,
@@ -126,14 +134,6 @@
    "linked": false,
    "osize": 2252,
    "usize": 2252
-  },
-  {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 88.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
