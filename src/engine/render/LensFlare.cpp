@@ -21,6 +21,10 @@ LensFlare::~LensFlare() {
     this->images = nullptr;
 }
 
+void LensFlare::update(int) {
+    this->intensity = 0.0f;
+}
+
 void LensFlare::render2D(float x, float y, float depth, int colorIndex) {
     int r;
     int g;
@@ -108,6 +112,3 @@ void LensFlare::render2D(float x, float y, float depth, int colorIndex) {
     }
 }
 
-void LensFlare::update(int) {
-    this->intensity = 0.0f;
-}

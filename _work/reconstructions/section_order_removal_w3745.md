@@ -1101,3 +1101,227 @@ changed.
   `3024`, not `4497`.
 * The `LensFlare` move is the obvious next per-TU source-order experiment, but
   it was not tested or landed in this pass.
+
+## 11. `LensFlare::update` placement (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0, and the gate `.so` is **byte-identical** to the baseline. The plain
+no-order link rises from **3024 / 4497** (prefix 2864, 3233 / 4524 exported
+functions at their original address) to **3076 / 4497** (prefix 2870,
+3312 / 4524). The first plain no-order mismatch moves from
+`LensFlare::update` to `Standing::setStanding`.
+
+This is the next frontier recorded in §10.5.
+
+### 11.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `LensFlare` block from the binary's own `.dynsym`:
+
+```text
+0x11d00c  LensFlare::LensFlare(AbyssEngine::PaintCanvas*)   # C1/C2
+0x11d06c  LensFlare::~LensFlare()                           # D1/D2
+0x11d082  LensFlare::update(int)                            # 6 bytes
+0x11d088  LensFlare::render2D(float, float, float, int)     # 1568 bytes
+```
+
+The HD source-layout dump independently lists the same order
+(`_work/original_layout/original_layout.json`, `Classes/Game/LensFlare.cpp`):
+`LensFlare`, `~LensFlare`, `update`, `render2D`.
+
+The baseline `LensFlare.cpp.obj` emitted `render2D` before `update`:
+
+```text
+LensFlare::LensFlare(AbyssEngine::PaintCanvas*)
+LensFlare::~LensFlare()
+LensFlare::render2D(float, float, float, int)
+LensFlare::update(int)
+```
+
+That made the plain no-order link place `update` at `0x11d6a4` instead of
+`0x11d082`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x11d082 LensFlare::update(int)
+ours     0x11d6a4 LensFlare::update(int)
+```
+
+### 11.2 Compile-only placement variants
+
+The exact `compile_commands.json` command for `LensFlare.cpp` was used with only
+the input and output paths replaced. The only source edit was moving the
+`update` definition before `render2D`.
+
+| source order | object `.text.*` order around the block |
+|---|---|
+| baseline: `render2D, update` | `ctor, dtor, render2D, update` |
+| **landed: `update, render2D`** | **`ctor, dtor, update, render2D`** |
+
+The two objects have the same four `.text.*` section names, and every section
+has the same size and SHA-256 by name; only their order changed:
+
+```text
+same section name set: True
+same (size,sha) by name: True
+n sections 4
+```
+
+This is a pure emission-order fix, not a body change.
+
+### 11.3 Landed source change
+
+```diff
+@@ after LensFlare::~LensFlare()
++void LensFlare::update(int) {
++    this->intensity = 0.0f;
++}
++
+ void LensFlare::render2D(float x, float y, float depth, int colorIndex) {
+@@
+-void LensFlare::update(int) {
+-    this->intensity = 0.0f;
+-}
+```
+
+### 11.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3024** | 3233 / 4524 | 2864 | `LensFlare::update` `0x11d082` vs `0x11d6a4` |
+| landed | **4497 / 4497** | **3076** | **3312 / 4524** | **2870** | `Standing::setStanding` `0x11d6de` vs `0x11d8e8` |
+
+The entire `LensFlare` block is now at its original address in the plain
+no-order link:
+
+```text
+0011d00c T _ZN9LensFlareC1EPN11AbyssEngine11PaintCanvasE
+0011d00c T _ZN9LensFlareC2EPN11AbyssEngine11PaintCanvasE
+0011d06c T _ZN9LensFlareD1Ev
+0011d06c T _ZN9LensFlareD2Ev
+0011d082 T _ZN9LensFlare6updateEi
+0011d088 T _ZN9LensFlare8render2DEfffi
+```
+
+`update` is byte-identical at `0x11d082` (`00 21 01 60 70 47`, the empty
+`bx lr` body). `render2D` is disassembly-identical (`pct 100.0`, `linked
+True`) but not byte-exact in the plain no-order link (`byte False`), because
+its 1568-byte body contains literal-pool words that encode addresses of data
+that moved in the no-order layout; in the gate build it is byte-exact.
+
+The landed delta is **+52 plain byte_exact, +79 functions at their original
+address, +6 exact-address prefix**, with the gate unchanged. The gate `.so` is
+byte-identical to the baseline:
+
+```sh
+cmp -s /tmp/w3745/lf/gate_base.so /tmp/w3745/lf/gate_after.so
+echo $?   # 0
+sha256sum /tmp/w3745/lf/gate_base.so /tmp/w3745/lf/gate_after.so
+# 995e151c06f84cf343689d2464796000e39b561a06d7623a516d9729df766c01  (both)
+```
+
+Section fingerprint after the change (all unchanged):
+
+```text
+.text        0x1337c8 @ 0x69440
+.ARM.exidx   0x006f70 @ 0x19cc08
+.rodata      0x041b67 @ 0x1c9e10
+```
+
+### 11.5 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x11d6de Standing::setStanding(int, int)
+ours     0x11d8e8 Standing::setStanding(int, int)
+```
+
+`Standing.cpp.obj` emits `getStandings, setStandings, applyPoints,
+getStandingRate, getStanding, isEnemyWithAnyone, getEnemyRace, isNeutral,
+isEnemy, isFriend, applyMissionCompleted, applyDelict, setStanding, ...`,
+while the original `.dynsym` (and the HD source-layout dump) put
+`setStanding` immediately after the destructor, followed by `setStandings`,
+`getStandings`, `getStanding`, `getStandingRate`, `setPlayerSignatureRace`,
+`rehabilitate`, `isEnemyWithAnyone`, `isEnemy`, `isFriend`, `isNeutral`,
+`getEnemyRace`, `applyPoints`, `applyKill`, `applyDelict`, `applyStealCargo`,
+`applyMissionCompleted`, `applyDisable`, `getMissionBonus`. This is a broad
+`Standing` TU reorder and was not changed here.
+
+### 11.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/lf/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/lf/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/lf/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/lf/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/render/LensFlare.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep LensFlare
+```
+
+The compile-only variants used the exact `compile_commands.json` command for
+`LensFlare.cpp` with only `-o` and the input path replaced; no flag was
+changed.
+
+### 11.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3024 / 4497`, prefix 2864,
+  3233 / 4524, first mismatch `LensFlare::update` `0x11d082` vs `0x11d6a4`.
+* The original emits `update` before `render2D`: the original `.dynsym` gives
+  `0x11d082` for `update` and `0x11d088` for `render2D`, and the HD
+  source-layout dump lists `update` first.
+* Moving the `update` definition before `render2D` makes the object order
+  `ctor, dtor, update, render2D`; all four `.text.*` section bytes are
+  unchanged by name.
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0) and
+  the gate `.so` is byte-identical to the baseline (same SHA-256).
+* The plain no-order build improves to `3076 / 4497`, prefix 2870,
+  3312 / 4524. Every `LensFlare` symbol is at its original address there, and
+  `update` is byte-exact at `0x11d082`.
+* The next plain no-order frontier is `Standing::setStanding`
+  (`0x11d6de` original, `0x11d8e8` ours); the original `.dynsym` and HD dump
+  put `setStanding` immediately after the destructor.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3076`, not `4497`.
+* The `Standing` TU reorder is the obvious next per-TU source-order
+  experiment, but it was not tested or landed in this pass.
