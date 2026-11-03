@@ -910,8 +910,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
-    SolarSystem *fromSystemPtr = systems->data()[fromSystem];
     SolarSystem *toSystem = systems->data()[galaxy->getStation(targetStation)->getSystem()];
+    SolarSystem *fromSystemPtr = systems->data()[fromSystem];
     float reward = (galaxy->distance(fromSystemPtr, toSystem) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
