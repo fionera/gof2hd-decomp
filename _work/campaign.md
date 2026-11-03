@@ -5119,3 +5119,9 @@ and deriving `rewardBoxY2` from `rewardBoxY` (the 0x168 form alone is not safe: 
 `.text` by 0x20). 7072 B, gate 4497/4497.
 Wave-97 section-order pass: `LensFlare::update` placement (`w3745`) by defining `update`
 before `render2D`; plain no-order 3024 -> 3076 (prefix 2864 -> 2870). Gate 4497/4497.
+Wave-97 function pass: `MenuTouchWindow::OnTouchEnd` 94.23 -> 95.19% (`w3727`) with the true
+`optionFlag(14)` call, an explicit quality text local, and the leaderboard OR form. 8132 B, gate 4497/4497.
+Wave-97 function pass: `Level::createMission` 88.08 -> 88.32% (`w3740`) by hoisting the jumper
+`Route` to a local so the argument is constructed before the receiver. 17172 B, gate 4497/4497.
+Wave-97 section-order pass: `Standing::setStanding` reorder (`w3745`) to emit `Standing` in
+original dynsym order. Gate 4497/4497.

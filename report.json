@@ -128,20 +128,20 @@
    "usize": 968
   },
   {
-   "name": "_ZN5Level13createMissionEv",
-   "pct": 88.1,
-   "byte": false,
-   "linked": false,
-   "osize": 17172,
-   "usize": 17172
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 88.2,
    "byte": false,
    "linked": false,
    "osize": 2252,
    "usize": 2252
+  },
+  {
+   "name": "_ZN5Level13createMissionEv",
+   "pct": 88.3,
+   "byte": false,
+   "linked": false,
+   "osize": 17172,
+   "usize": 17172
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
@@ -177,7 +177,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 94.2,
+   "pct": 95.2,
    "byte": false,
    "linked": false,
    "osize": 8132,
