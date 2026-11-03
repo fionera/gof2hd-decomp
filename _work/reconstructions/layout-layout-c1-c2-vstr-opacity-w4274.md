@@ -2,8 +2,9 @@
 
 Worker **w4274** (wave 92), branch `wave92-w4274`, base `b379d00d`.
 Target: `_ZN6LayoutC1Ev` / `_ZN6LayoutC2Ev` at `0xd1028`, original size **7072 B**.
-Baseline match: **47.655 %** (verifier `score` rounds to 47.7), `usize` 7072.
-No code change landed (see §7); this note is the deliverable.
+Baseline match at the start of this pass: **47.655 %** (verifier `score` rounds to 47.7), `usize` 7072.
+Pass 1 landed no code change (see §7). **Pass 2 lands a 7072 B source-order swap**
+(`0x120` before `0x130`) for **47.664 %**; see §11.
 
 All addresses are **original-image VMAs** (image base `0x10000`). The function is
 `0xd1028 .. 0xd2bc8`; its literal pools live inside that span (`.text` is
@@ -437,3 +438,64 @@ Before and after this pass (no code change): `RATCHET PASS` —
 `stub_zero_size 0`, `missing 0`, `wrong_type 0`, `extra 0`, `data_exact 843/843`,
 `imports 207`, `lint CLEAN`, `drift 0`.
 Target function: `osize 7072`, `usize 7072`, `pct 47.655` (verifier prints 47.7).
+
+---
+
+## 11. Pass 2: a landable 7072 B order improvement (`0x120` before `0x130`)
+
+Pass 1 concluded the body was a local optimum because every *field-expression*
+edit changed the function size. That search was not exhaustive over the
+**source order of the 204 top-level constructor units**. An exact adjacent-swap
+hill-climb (build `link_so`, score with `pscore.py`, accept only
+`usize == 7072` and a strictly larger unrounded ratio) found exactly one
+landable move:
+
+| source order | `usize` | exact ratio |
+|---|---|---|
+| baseline (`0x130` then `0x120`) | 7072 | 47.6550079491256 % |
+| **`0x120` then `0x130`** | **7072** | **47.66448022261976 %** |
+
+The edit is one line pair in `src/game/ui/Layout.cpp`:
+
+```cpp
+    this->field_0x120 = Globals::iPadHD ? 21 : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 28 : 15));
+    this->field_0x130 = Globals::iPadHD ? 78 : (Globals::n9 ? 60 : (Globals::iPadLarge ? 112 : (Globals::retinaDisplay ? 80 : (Globals::iPad ? 56 : 40))));
+```
+
+This restores ascending offset order for this pair (`0x120 < 0x130`), matching
+the original's ascending store order. The verifier still prints `47.7`, but the
+unrounded ratio rises by 0.00947 percentage points and the body stays exactly
+7072 B, so the downstream `byte_exact` count is untouched.
+
+### 11.1 Search method
+
+* `units.json` = the 204 top-level statements/blocks of `Layout::Layout()`.
+* For each adjacent pair, swap the two units, rebuild `link_so`, run
+  `pscore.py`; accept iff `usize == 7072` and `pct > best`.
+* Two full passes over all 203 adjacent pairs: only `(0x130, 0x120)` improved.
+* 300 random two-unit swaps from the improved order (same size constraint)
+  found no further improvement.
+
+### 11.2 A non-landable lead: `0x98` before `0xac`
+
+The same unconstrained adjacent search (accept any size) found a much larger
+ratio gain by moving `0x98` before `0xac`:
+
+| variant | `usize` | exact ratio |
+|---|---|---|
+| `0x98` before `0xac` | **6976** | **48.063872255489024 %** |
+
+This is 96 B short of the original, so it cannot be landed without destroying
+downstream `byte_exact` (the w4221 measurement: 7024 B -> `byte_exact` 2454).
+All 55 pairs and 165 triples of the existing single-field candidates on top of
+this swap were swept; none reached `usize == 7072`. It remains the best lead:
+recover the missing 96 B (the six missing `vstr` round-trips of §2 are the
+obvious candidates) and this order may become landable.
+
+### 11.3 Gate after pass 2
+
+`RATCHET PASS`: `byte_exact 4499/4524`, `linked_exact 4499/4524`,
+`size-exact 4524/4524`, `stub_zero_size 0`, `missing 0`, `wrong_type 0`,
+`extra 0`, `data_exact 843/843`, `imports 207`, `lint CLEAN`, `drift 0`.
+Target: `osize 7072`, `usize 7072`, exact ratio **47.66448022261976 %**
+(verifier prints `47.7`).
