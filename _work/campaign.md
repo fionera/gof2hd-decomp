@@ -5173,3 +5173,6 @@ Wave-97 function pass: `Level::createMission` 90.4 -> 90.6% (`w3740`) by caching
 17172 B (size kept), gate 4497/4497.
 Wave-97 section-order pass: `Gun::setOffset` overload order (`w3745`) — `Vector*` before
 `int,int`. Plain no-order 2855 -> 2856 (exact addrs 3461 -> 3463). Gate 4497/4497.
+Wave-97 section-order pass: `Radio` emission order (`w3745`) — original setMessages/accessor
+order. Plain no-order 2856 -> 2857 (exact addrs 3463 -> 3470). Gate 4497/4497.
+Note: `_work/reconstructions/radio_setmessages_placement_w3745.md`.
