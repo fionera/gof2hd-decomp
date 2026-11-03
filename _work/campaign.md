@@ -5270,3 +5270,6 @@ section is still created by `init`, so the gate stays 4498/4498 and `.text`/`.ro
 byte-identical. Plain no-order 3003 -> 3007 (addresses 3865 -> 3880, prefix 3834 -> 3856); the
 whole `SpaceLounge` block is address-exact and the frontier moves to `MeshMerger::setMesh`.
 Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md`.
+Wave-97 section-order pass: `SpaceLounge::startChat` pull (`w3745`) by moving `startChat` after
+`getSpecificSoundForRace`; plain no-order 3003 -> 3007 (addresses 3865 -> 3880, prefix 3834 -> 3856).
+Gate 4498/4498. Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md`.
