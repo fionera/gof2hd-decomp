@@ -242,3 +242,81 @@ It is not a real copy in the final MIR (`%46:gprnopc = t2SUBrr %378, %2`), so it
 is inherited from the pre-isel `%46 = COPY %468` chain; a source shape that
 makes `top - pad` a non-copy (or that changes which virtual register resolves
 the hint) would drop the `1u<<30` priority bit and flip the ordering.
+
+## 8. Follow-up experiments (this session)
+
+All measurements below are the object-level oracle (`oracle.py`, official
+`pct`); the tree was left unchanged, so the gate stayed at
+`byte 4498 linked 4498, 95.6`.
+
+### 8.1 The downstream `agent`/`top` colouring is *also* part of the diff
+
+The earlier note said "everything downstream already matches"; the raw
+normalized diff shows that is not quite true.  The original has a two-
+instruction pair that our build lacks:
+
+```text
+original 0x17132e:  mov     fp, r8          ; top (r8) -> fp
+original 0x171330:  ldr.w   r8, [sp, #12]   ; agent  -> r8
+ours      0x624:    ldr     r5, [sp, #12]   ; agent  -> r5 (top stays in r8)
+```
+
+and consequently `top + field_0x2c0` is `add r0, fp` in the original but
+`add r0, r8` in ours, and `agent->isKnown()` is `mov r0, r8` vs `mov r0, r5`.
+So the target colouring is global: `agent` must stay in `r8` after the
+`drawBox` spill and `top` must move to `fp` (`r11`), not just `x`/`pad`.
+
+### 8.2 `Globals::layout->field_0x94` in the `DrawRectangle` args flips `x`/`pad`
+
+Replacing all three `pad` uses in the `DrawRectangle` call with a direct
+`Globals::layout->field_0x94` access (faithful clamp, `drawBox` still uses the
+local `pad`) gives the *target* `x`/`pad` colouring:
+
+```text
+faith_rect_all: pct 89.3  size 1944  x=r5  pad=r9  faithful arm  no pad copy
+```
+
+The reason is that the direct access forces a reload of `field_0x94` after the
+`drawBox` call (the callee may mutate the `Layout`), which shortens the local
+`pad` interval and changes the global pressure enough for greedy RA to give
+`pad = r9`.  The price is the reload plus a different join: `top` goes to
+`fp`, `lineHeight` to `r8`, `x - pad`/`top - pad`/`width` are materialised
+directly in `r2`/`r3`/`r1` for the call, and the conversation block's
+`sl`/`fp` colouring also changes (size 1944, score 89.3).  This is the first
+source-level shape found that produces `x=r5, pad=r9` with the faithful
+two-instruction clamp arm; it is a useful starting point but the reload is
+not present in the original.
+
+### 8.3 Extra live values flip the colouring but cost spills
+
+`int boxW = pad * 2 + width;` placed before `drawBox` and used in the call
+(faithful clamp) also gives `x=r5, pad=r9`, but the extra live value raises
+the frame and adds spills: `pct 71.6, size 1968`.  Placing `boxW` before the
+clamp and using it only in the right arm gives `pct 89.4, size 1940` and does
+*not* flip `x`/`pad`.  This confirms the target is a pressure-sensitive
+greedy-RA colouring, not a different expression tree.
+
+### 8.4 More shapes that do not move it
+
+Measured this session (all keep `x=r9, pad=r11`, flat 95.5 / faithful 93.8,
+size 1948 unless noted):
+
+* `top` as `(float)(pad * 2)`, `(float)pad * 2.0f`, `(int)bottomRight.y - pad - pad`,
+  `(float)(2 * pad)` — only the last two change codegen (1968/1956, 81%);
+* `pad * 2 + width` as `width + pad * 2`, `2 * pad + width`, `pad + pad + width`;
+* `x - pad`/`top - pad` as `-pad + x`/`-pad + top`, `x + (-pad)`/`top + (-pad)`;
+* the second clamp condition operand order (`x+pad+width`, `width+x+pad`, …);
+* `int drawX = x;` / `int x2 = x;` inserted after the clamp, after
+  `lineHeight`, or before `drawBox`, used for the `DrawString` x / `drawBox`
+  x / all uses (coalesced away; 95.5 / 93.8);
+* a `drawX` copy inserted after `drawBox` or before `DrawRectangle`
+  (78.7/78.4 and 74.2/78.0; extra spills).
+
+### 8.5 Remaining lead
+
+The `$r3` copy hint on `%46` (top-pad) is still the only identified mechanism
+that makes `top-pad` dequeue before `pad`.  A source shape that keeps the
+original instruction stream (local `pad`, faithful arm, cached derived values
+for `DrawRectangle`) but makes the top-pad interval local/unhinted — or that
+otherwise raises the pressure in `bb.44` the way the `field_0x94` reload does,
+without adding the reload — is the remaining route to 100 %.
