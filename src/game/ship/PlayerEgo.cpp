@@ -2429,12 +2429,16 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             if (!object->outerCollide(surface))
                 continue;
         }
-        // Redundant bounds check: keeps the loop from being rotated so the
-        // register allocation matches the original.
-        if (objects->size() <= i)
+        // Redundant bounds checks: together they reproduce the original's
+        // register file (dock=r9, i=fp, canary spilled to [sp,#24]) at the
+        // original 968 bytes.  Inside the loop i < objects->size(), so both
+        // tests are always false.
+        if (i > objects->size() - 1)
             continue;
         if (object->getType() == 16994 && object->isVisible()) {
             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
+                continue;
+            if (objects->size() == i)
                 continue;
             Vector &pull = this->moveTarget;
             pull = object->getPosition();
