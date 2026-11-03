@@ -4,6 +4,14 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/AERandom.h"
 
+// The definition order below is the order clang 7 creates the LLVM functions in
+// (first definition or first call).  It reproduces the original object's
+// .text.* emission order, and therefore the plain link without a
+// --section-ordering-file:
+//   ctor, reInit, dtor, getRewardItem, getRewardAmount, rotateRightCW(bool),
+//   rotateLeftCW(bool), solvableInNSteps, gameWon(int*), rotateLeftCW(int*),
+//   rotateRightCW(int*), getDockingIndex, gameWon(), update, isRotating, render2D.
+// Do not reorder these definitions without re-checking the plain no-order link.
 HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmount, int dockingIndex) {
     this->type = type;
     // Each hacking-game type has its own set of six tiles plus their highlighted versions.
@@ -25,11 +33,16 @@ HackingGame::HackingGame(int type, int difficulty, int rewardItem, int rewardAmo
     reInit();
 }
 
+HackingGame::~HackingGame() {
+}
 
+int HackingGame::getRewardItem() {
+    return this->rewardItem;
+}
 
-
-
-
+int HackingGame::getRewardAmount() {
+    return this->rewardAmount;
+}
 
 void HackingGame::reInit() {
     int local[6];
@@ -94,33 +107,6 @@ void HackingGame::reInit() {
     this->rotatingRight = false;
 }
 
-HackingGame::~HackingGame() {
-}
-
-int HackingGame::getRewardItem() {
-    return this->rewardItem;
-}
-
-int HackingGame::getRewardAmount() {
-    return this->rewardAmount;
-}
-
-void HackingGame::rotateRightCW(bool sound) {
-    if (this->wonTimer != 0)
-        return;
-    if (sound)
-        (Globals::sound)->play(0x8e2, 0, 0, 0.0f);
-    return rotateRightCW(this->working);
-}
-
-void HackingGame::rotateLeftCW(bool sound) {
-    if (this->wonTimer != 0)
-        return;
-    if (sound)
-        (Globals::sound)->play(0x8e2, 0, 0, 0.0f);
-    return rotateLeftCW(this->working);
-}
-
 bool HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state) {
     int leftState[6];
     int rightState[6];
@@ -181,7 +167,6 @@ bool HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int righ
     return false;
 }
 
-
 int HackingGame::gameWon(int *state) {
     unsigned i = 0;
     do {
@@ -192,6 +177,22 @@ int HackingGame::gameWon(int *state) {
         if (state[idx] != this->target[idx])
             return 0;
     } while (true);
+}
+
+void HackingGame::rotateLeftCW(bool sound) {
+    if (this->wonTimer != 0)
+        return;
+    if (sound)
+        (Globals::sound)->play(0x8e2, 0, 0, 0.0f);
+    return rotateLeftCW(this->working);
+}
+
+void HackingGame::rotateRightCW(bool sound) {
+    if (this->wonTimer != 0)
+        return;
+    if (sound)
+        (Globals::sound)->play(0x8e2, 0, 0, 0.0f);
+    return rotateRightCW(this->working);
 }
 
 void HackingGame::rotateLeftCW(int *state) {
@@ -224,7 +225,6 @@ int HackingGame::getDockingIndex() {
     return this->dockingIndex;
 }
 
-
 int HackingGame::gameWon() {
     if (this->wonTimer < 0x5dd)
         return 0;
@@ -239,7 +239,6 @@ int HackingGame::gameWon() {
             return 0;
     } while (true);
 }
-
 
 int HackingGame::update(int dt) {
     if (this->rotatingLeft || this->rotatingRight) {
@@ -274,6 +273,7 @@ int HackingGame::update(int dt) {
 running:
     return 1;
 }
+
 bool HackingGame::isRotating() {
     return this->rotatingLeft || this->rotatingRight;
 }
@@ -390,4 +390,3 @@ void HackingGame::render2D() {
                                  Globals::w / 2 + tileWidth / 2 - Globals::Canvas->GetImage2DWidth(this->markImage) / 2,
                                  tileHeight + Globals::h / 2 + (Globals::Canvas->GetImage2DHeight(this->mainImage) / 2 - Globals::Canvas->GetImage2DHeight(this->markImage) / 2) + Globals::layout->field_0x318);
 }
-
