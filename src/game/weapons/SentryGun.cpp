@@ -13,6 +13,9 @@ SentryGun::SentryGun(Gun *gun, int mesh, int unused, int p4, Level *level)
 SentryGun::~SentryGun() {
 }
 
+void SentryGun::render() {
+}
+
 void SentryGun::update(int dt) {
     this->gun->update(dt);
     if (this->gun->hitSmall == 0)
@@ -31,7 +34,4 @@ void SentryGun::update(int dt) {
             return;
         }
     }
-}
-
-void SentryGun::render() {
 }
