@@ -5162,3 +5162,7 @@ Wave-97 section-order pass: `RadioMessage` emission order (`w3745`) — original
 ctor/reset/accessor order. Gate 4497/4497. Plain no-order metric drops 3132 -> 2852 because
 the reorder shifts `.rodata` by +0x10 (a base shift, not a body regression); this is a
 faithful stepping stone. Note: `_work/reconstructions/radiomessage_ctor_placement_w3745.md`.
+Wave-97 section-order pass: `BoundingSphere` emission order (`w3745`) — collide/outerCollide/
+getCollisionNormal before update/projectCollisionOnSurface. Plain no-order 2852 -> 2855
+(exact addrs 3456 -> 3461). Gate 4497/4497.
+Note: `_work/reconstructions/boundingsphere_collide_placement_w3745.md`.
