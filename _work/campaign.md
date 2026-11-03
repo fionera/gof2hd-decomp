@@ -5156,3 +5156,5 @@ Wave-97 section-order pass: `ChoiceWindow` emission-order pass (`w3745`) — ori
 ctor/dtor/set/touch order. Gate 4497/4497.
 Wave-97 revert: `Level::createMission` 90.6% (`48c0f54d`) was reverted because it shortened
 the body to 17168 B (original 17172 B). Keep the function size-exact.
+Wave-97 section-order pass: `HackingGame` emission order (`w3745`) — reproduce the original
+object order. Gate 4497/4497. Note: `_work/reconstructions/hackinggame_dtor_placement_w3745.md`.
