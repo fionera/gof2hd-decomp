@@ -5134,3 +5134,6 @@ Wave-97 section-order pass: `PendingProduct` ctor placement (`w3745`) by definin
 `BluePrint*` ctor before the `(int, String, int, int)` ctor; plain no-order 3093 -> 3097
 (prefix 3066 -> 3081). Gate 4497/4497.
 Note: `_work/reconstructions/pendingproduct_ctor_placement_w3745.md`.
+Wave-97 section-order pass: `PendingProduct` ctor placement (`w3745`) by defining the
+`BluePrint*` ctor first; plain no-order 3093 -> 3097 (prefix 3066 -> 3081). Gate 4497/4497.
+Note: `_work/reconstructions/pendingproduct_ctor_placement_w3745.md`.
