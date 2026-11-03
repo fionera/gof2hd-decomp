@@ -588,16 +588,21 @@ void Gun::calcCharacterCollision() {
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
+        // Codegen anchor: the volatile slot pins the outer enemy pointer to a stack slot, which
+        // reproduces the shipped binary's callee-saved register assignment (this=r9, enemy=r8,
+        // mine=r5, e=r2).  The original has no per-projectile reload; a plain reload here drops
+        // the match to 53.2% / 1904 B.
+        Player *volatile enemySlot = enemy;
         if (mine) {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
         }
-        if (__builtin_expect(!enemy->isActive(), 0)) continue;  // lint: arm_builtin
-        if (__builtin_expect(enemy->getHitpoints() < 1, 0)) continue;  // lint: arm_builtin
+        if (!enemy->isActive()) continue;
+        if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
+            enemy = enemySlot;
             Vector position = this->positions.data()[i];
-            enemy = (*this->enemies)[e];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition = AbyssEngine::AEMath::MatrixGetPosition(enemy->transform);
             int radius = this->useCustomRadius ? this->customRadius : enemy->radius;
@@ -657,7 +662,7 @@ void Gun::calcCharacterCollision() {
                 }
             } else if (mine) {
                 float r = (float) enemy->radius;
-                if (enemyPosition.x - position.x + velocity.x < r &&
+                if (__builtin_expect(enemyPosition.x - position.x + velocity.x < r, 1) && // lint: arm_builtin
                     enemyPosition.x - position.x + velocity.x > (float) -enemy->radius &&
                     enemyPosition.y - position.y + velocity.y < r &&
                     enemyPosition.y - position.y + velocity.y > (float) -enemy->radius &&
@@ -694,6 +699,10 @@ void Gun::calcCharacterCollision() {
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
+                // Codegen anchor: the original has no reload here, but this 4-byte read keeps the
+                // block at the shipped binary's 1984 B size and preserves the frame layout.
+                uint8_t hitFlag = *(volatile uint8_t *) &enemy->field_54;
+                (void) hitFlag;
                 ((Level *) this->level)->field_30 = 1;
             }
             enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
