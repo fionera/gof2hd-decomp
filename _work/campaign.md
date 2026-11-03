@@ -5127,3 +5127,6 @@ Wave-97 section-order pass: `Standing::setStanding` reorder (`w3745`) to emit `S
 original dynsym order. Gate 4497/4497.
 Wave-97 section-order pass: `Wanted` (`w3745`) emitted in original dynsym order; plain no-order
 3085 -> 3088. Gate 4497/4497.
+Wave-97 section-order pass: `MenuTouchWindow` dtor placement (`w3745`) by defining the dtor
+before `loadPreviewRecords`; plain no-order 3088 -> 3093 (prefix 3032 -> 3066). Gate 4497/4497.
+Note: `_work/reconstructions/menutouchwindow_dtor_weakcopy_w3745.md`.
