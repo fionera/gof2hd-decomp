@@ -97,17 +97,17 @@ bool Mission::isVisible() {
     return this->visible;
 }
 
-unsigned char Mission::hasFailed() { return this->failed; }
-
 void Mission::setFailed(bool failed) {
     this->failed = failed ? 1 : 0;
 }
 
-unsigned char Mission::hasWon() { return this->won; }
+unsigned char Mission::hasFailed() { return this->failed; }
 
 void Mission::setWon(bool won) {
     this->won = won ? 1 : 0;
 }
+
+unsigned char Mission::hasWon() { return this->won; }
 
 void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsA = a;

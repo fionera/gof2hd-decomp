@@ -3352,3 +3352,268 @@ cmp -l /tmp/w3745/tfc/gate_base.so cmake-build-match/libgof2hdaa.so | wc -l   # 
 * The remaining six non-byte `TargetFollowCamera` rows are PLT/literal-pool
   differences, not emission-order differences; they are expected to clear
   only when the PLT/GOT first-reference order converges.
+
+## 19. `Mission::setFailed` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0, and the gate `.so` is **byte-identical** to the baseline
+(sha256 `9f5e224a…`, `cmp` status 0). The plain no-order link keeps
+`byte_exact 2954 / linked_exact 4497`, but its exact-address count rises from
+**3709 / 4524** to **3713 / 4524** and its exact-address prefix from **3557**
+to **3615**. The first plain no-order mismatch moves from
+`Mission::setFailed(bool)` to `SentryGun::render()`.
+
+This is the next frontier recorded in §18.5 (the `TargetFollowCamera` pass).
+
+### 19.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data.rel.ro     0x002fe8 @ 0x20cbb0
+.data            0x00296c @ 0x214000
+.bss             0x0069ac @ 0x216970
+```
+
+The original's `Mission` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15bac0  0x04  Mission::setFailed(bool)
+0x15bac4  0x04  Mission::hasFailed()
+0x15bac8  0x04  Mission::setWon(bool)
+0x15bacc  0x04  Mission::hasWon()
+```
+
+The HD source-layout dump independently witnesses the same order
+(`_work/original_layout/original_layout.json`,
+`gof2hd_1.1.19_ios` -> `Classes/Game/Mission.cpp`; the `gof2sd_1.0.1_ios`
+dump agrees):
+
+```text
+_Mission::setFailed(bool)
+_Mission::hasFailed()
+_Mission::setWon(bool)
+_Mission::hasWon()
+```
+
+The baseline `Mission.cpp.obj` emitted the getter before the setter in both
+pairs:
+
+```text
+Mission::hasFailed()
+Mission::setFailed(bool)
+Mission::hasWon()
+Mission::setWon(bool)
+```
+
+That made the plain no-order link put `setFailed` at `0x15bac4` instead of
+`0x15bac0`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x15bac0 Mission::setFailed(bool)   (4 bytes)
+ours     0x15bac4 Mission::setFailed(bool)
+```
+
+### 19.2 Landed source change
+
+Only change: reorder the four definitions in `src/game/mission/Mission.cpp`
+to the original address order. No body was edited.
+
+```diff
+@@ after Mission::isVisible()
+-unsigned char Mission::hasFailed() { return this->failed; }
+-
+ void Mission::setFailed(bool failed) {
+     this->failed = failed ? 1 : 0;
+ }
+ 
+-unsigned char Mission::hasWon() { return this->won; }
++unsigned char Mission::hasFailed() { return this->failed; }
+ 
+ void Mission::setWon(bool won) {
+     this->won = won ? 1 : 0;
+ }
+ 
++unsigned char Mission::hasWon() { return this->won; }
++
+ void Mission::setProductionGoods(int a, int b) {
+```
+
+The resulting object order is exactly the original address order:
+
+```text
+Mission::setFailed(bool)
+Mission::hasFailed()
+Mission::setWon(bool)
+Mission::hasWon()
+```
+
+The four `.text.*` section bodies are unchanged (same 4-byte sizes); only
+their order changed.
+
+### 19.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `9f5e224a…` | **2954** | 3709 / 4524 | 3557 | `Mission::setFailed` `0x15bac0` vs `0x15bac4` |
+| landed | **4497 / 4497** | `9f5e224a…` | **2954** | **3713 / 4524** | **3615** | `SentryGun::render` `0x15c3d0` vs `0x15c464` |
+
+The landed delta is **+4 functions at their original address, +58
+exact-address prefix**, with the gate counts unchanged and the gate `.so`
+byte-identical.
+
+The plain `byte_exact` count is unchanged because all four functions were
+already byte-exact at their old addresses: each is a 4-byte body with no
+PC-relative literal or branch, so its bytes do not depend on its address.
+The improvement is placement-only, which is exactly what the ordering-file
+removal campaign measures. The plain link now has the whole `Mission` block
+at its original address:
+
+```text
+$NM -nD --defined-only /tmp/w3745/mission/after_noorder.so | grep -E '_ZN7Mission(9setFailed|9hasFailed|6setWon|6hasWon)'
+0015bac0 T _ZN7Mission9setFailedEb
+0015bac4 T _ZN7Mission9hasFailedEv
+0015bac8 T _ZN7Mission6setWonEb
+0015bacc T _ZN7Mission6hasWonEv
+```
+
+All four rows are `byte=True`, `linked=True`, `pct 100.0` in both the
+baseline and landed plain verify reports; no other row changed its
+`byte`/`linked`/`pct` status (checked by diffing the two `report.json`
+files).
+
+The gate `.so` is byte-identical before and after:
+
+```sh
+sha256sum /tmp/w3745/mission/gate_base.so /tmp/w3745/mission/gate_after.so
+# 9f5e224a149be0c841c4c004ab9b929b45ecbbe64e0a95e7211e5b2a67acefd4  (both)
+cmp -l /tmp/w3745/mission/gate_base.so /tmp/w3745/mission/gate_after.so | wc -l
+# 0
+```
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b98`, `.rodata 0x41b67 @ 0x1c9e30`.
+
+### 19.4 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x15c3d0 SentryGun::render()   (2 bytes)
+ours     0x15c464 SentryGun::render()
+```
+
+The original `SentryGun` order is `ctor`, `D1/D2`, `D0`, `render`, `update`
+(`0x15c380`, `0x15c3bc`, `0x15c3c0`, `0x15c3d0`, `0x15c3d2`). Our
+`SentryGun.cpp.obj` emits `update` before `render`, so the plain link puts
+`render` after `update`'s 0x94-byte body. This is a separate TU
+(`src/game/weapons/SentryGun.cpp`) and was not changed in this pass.
+
+### 19.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements (before and after the source reorder)
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/mission/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/mission/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/mission/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/mission/base_noorder.so
+
+cmake --build cmake-build-match --target check -j8
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/mission/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/mission/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/mission/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/mission/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/mission/Mission.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN7Mission'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/mission/gate_after.so
+git stash push -- src/game/mission/Mission.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/mission/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/mission/gate_base.so /tmp/w3745/mission/gate_after.so
+cmp -l /tmp/w3745/mission/gate_base.so /tmp/w3745/mission/gate_after.so | wc -l   # 0
+```
+
+### 19.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2954 / 4497`, prefix 3557,
+  3709 / 4524, first mismatch `Mission::setFailed` `0x15bac0` vs `0x15bac4`.
+* The original emits `Mission` in the `.dynsym` address order
+  `setFailed, hasFailed, setWon, hasWon`; the `gof2hd_1.1.19_ios` and
+  `gof2sd_1.0.1_ios` source-layout dumps independently witness the same
+  order.
+* The baseline object emitted `hasFailed, setFailed, hasWon, setWon`; moving
+  the four definitions to the original order makes the object's `.text.*`
+  order match the original address order. The four section bodies are
+  unchanged (4 bytes each).
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `.so` is byte-identical
+  to the baseline (same SHA-256, `cmp` status 0).
+* The plain no-order build now has all four `Mission` functions at their
+  original addresses: exact addresses 3709 -> 3713, exact-address prefix
+  3557 -> 3615. Plain `byte_exact` is unchanged at 2954 because the four
+  functions were already byte-exact at the wrong addresses (their 4-byte
+  bodies contain no address-dependent words).
+* The next plain no-order frontier is `SentryGun::render`
+  (`0x15c3d0` original, `0x15c464` ours); the original `SentryGun` order is
+  `ctor, D1/D2, D0, render, update`, while our object emits `update` before
+  `render`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2954`, not `4497`.
+* The `SentryGun` reorder is the obvious next per-TU source-order experiment,
+  but it is a separate TU and was not tested or landed in this pass.
