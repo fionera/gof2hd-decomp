@@ -5,6 +5,13 @@ either changes `createMission`'s size (which shifts `.text`/`.got` and collapses
 `byte_exact` count) or scores below the current 73.590096. Worktree clean; `check` passes at
 `byte 4498 / linked 4498`, `.text 0x1337c8`, lint CLEAN.
 
+**Wave-90 second pass (§8):** found two new local optima that bracket the original.  Shape V8
+(1996 B, 68.7 %) reproduces the original's *entire register allocation* (`systems->r8`,
+`agent->r9`, `used->sl`, `selected->fp`, `type->r2`, exit `mov r4,r2`, `status->r6`) but has a
+104-byte frame and a top-of-loop condition; shape V6 (1992 B, 69.6 %) reproduces the original's
+96-byte frame and bottom-of-loop condition but swaps `systems`/`selected` and folds the
+`pick == 8` incoming to the constant 8.  No 1996-byte variant is byte-exact, so no code landed.
+
 Target row: `_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE`
 `osize 1996  usize 1996  pct 73.590096`.
 
@@ -325,3 +332,258 @@ Keep the shared-latch select (variant B) **and** make the tail allocate `systems
 `used -> sl`, `type -> r4` at the loop exit, so the function is 1996 B.  The greedy allocator
 currently prefers `used -> r8` whenever the select survives; `used`'s loop uses dominate its
 spill weight.  Finding the source shape that reverses that one assignment is the remaining task.
+
+## 8. Wave-90 second pass: the register-allocation / loop-layout trade-off
+
+This section records a second, independent sweep run after §1–§7.  It found two new local optima
+that bracket the original: one reproduces the original's **register allocation exactly** but has
+the wrong frame size and loop layout (1996 B, 68.7 %), the other reproduces the original's
+**frame size and loop layout** but permutes three callee-saved registers (1992 B, 69.6 %).  No
+variant is byte-exact and none scores above 73.590096, so no code change landed.
+
+### 8.1 Shape V8 — exact original register allocation, wrong frame/loop layout
+
+Source (the only changes vs variant B in §3 are the `pick == 10` test and `continue` in the
+`used`/`pick == 12` exits):
+
+```c++
+    while (!selected) {
+        selected = guard < 1;
+        int pick = Globals::rnd->nextInt(15);
+        --guard;
+        type = pick;
+        if (pick == 8) goto assignType;
+        if (pick == 10 && race > 3) {
+            type = 10;
+            continue;
+        }
+        if (pick == 10) type = 10;
+        if (used != nullptr) {
+            if (used->data()[pick]) {
+                int sum = 0;
+                for (uint32_t i = 0; i < used->size(); ++i) {
+                    sum += used->data()[i];
+                }
+                if (sum == 14) {
+                    for (uint32_t i = 0; i < used->size(); ++i) {
+                        used->data()[i] = false;
+                    }
+                    goto assignType;
+                }
+                type = pick;
+                continue;
+            }
+            used->data()[pick] = true;
+        }
+        if (pick == 12) {
+            selected = true;
+            if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
+                type = 12;
+            } else {
+                goto assignType;
+            }
+            continue;
+        }
+        selected = true;
+    assignType:
+        type = pick;
+    }
+```
+
+Measured: `usize 1996`, official pct **68.700000**, `byte=False linked=False`.
+
+The **register allocation is the original's**:
+
+| value | original | V8 |
+|---|---|---|
+| `systems` | r8 | **r8** |
+| `agent` | r9 (spilled) | **r9 (spilled)** |
+| `used` | sl | **sl** |
+| `selected` | fp | **fp** |
+| `type` (in loop) | r2 | **r2** |
+| `type` (at exit) | r4 (`mov r4,r2`) | **r4 (`mov r4,r2`)** |
+| `status` (at exit) | r6 (`ldr r6,[sp,#32]`) | **r6 (`ldr r6,[sp,#40]`)** |
+| `pick` | r6 | r6 |
+| `guard` | r9 | r9 |
+| `targetStation` | r5 | r5 |
+
+Prologue (V8, object offsets):
+
+```
+   c: b09a        sub  sp, #104          ; original: #96
+  10: 4690        mov  r8, r2            ; systems -> r8   (original identical)
+  12: 4689        mov  r9, r1            ; agent   -> r9   (original identical)
+  68: f8cd 9024   str.w r9, [sp, #36]    ; original: [sp,#24]
+  82: f8d0 a050   ldr.w sl, [r0, #80]    ; used -> sl      (original identical)
+```
+
+Loop exit (V8):
+
+```
+ 124: 9e08        ldr  r6, [sp, #40]     ; original: [sp,#32]
+ 126: 4614        mov  r4, r2            ; original identical
+ 128: 6830        ldr  r0, [r6, #0]
+ 12a: f7ff fffe   bl   Status::getCurrentCampaignMission
+```
+
+So the only remaining differences are (a) the frame is **104 vs 96** (all spill offsets +8) and
+(b) the loop condition block is laid out **before** the body (`movs.w r0,fp,lsl#31; bne.n 124`
+at `0x8e`) instead of after it (`beq.n 90` at `0x11e` in the original).
+
+The loop body itself:
+
+```
+  b2: 2808        cmp  r0, #8
+  b4: d101        bne.n ba
+  b6: 4632        mov  r2, r6            ; pick==8 -> shared latch (original identical)
+  b8: e7e9        b.n  8e                ; ... but jumps to the *top* condition
+  ba: 980b        ldr  r0, [sp, #44]     ; race
+  bc: 2804        cmp  r0, #4
+  be: d302        bcc.n c0
+  c0: 220a        movs r2, #10           ; type = 10
+  c2: 2e0a        cmp  r6, #10
+  c4: d0e3        beq.n 8e
+```
+
+The original checks `pick` first (`cmp r6,#10; bne; ldr race; movs r2,#10; cmp race,#3; bhi`),
+V8 checks `race` first (the `&&` is re-ordered around the `type = 10` store).
+
+### 8.2 Shape V6 — exact frame + loop layout, permuted registers
+
+Take V8 and change only `if (pick == 8) goto assignType;` to `if (pick == 8) continue;`.
+Measured: `usize 1992`, official pct **69.6**, `byte=False linked=False`.
+
+This flips the allocator into the original's frame/layout:
+
+```
+   c: b098        sub  sp, #96           ; original identical
+  10: 4693        mov  fp, r2            ; systems -> fp   (original: r8)
+  12: 4688        mov  r8, r1            ; agent   -> r8   (original: r9)
+  7e: f04f 0800   mov.w r8, #0           ; selected -> r8  (original: fp)
+  82: f8d0 a050   ldr.w sl, [r0, #80]    ; used -> sl      (original identical)
+ ...
+  ac: 4606        mov  r6, r0
+  ae: 2208        movs r2, #8            ; pick==8 incoming folded to 8 (original: mov r2,r6)
+  b0: 2808        cmp  r0, #8
+  b2: d034        beq.n 11e              ; -> bottom condition
+ ...
+ 11c: 4632        mov  r2, r6            ; shared latch (sum==14 / else)
+ 11e: ea5f 70c8   movs.w r0, r8, lsl #31
+ 122: d0b5        beq.n 90               ; back edge
+ 124: 9e08        ldr  r6, [sp, #32]     ; original identical
+ 126: 4614        mov  r4, r2            ; original identical
+```
+
+So the loop layout and the tail now match the original, but `systems`/`selected` are swapped
+(fp/r8) and the `pick == 8` phi incoming is the constant 8 (`movs r2,#8`) instead of `pick`
+(`mov r2,r6`).
+
+V6 is 1992 B: its code is 1948 B (8 B shorter than the original's 1956 B) and its pool is 44 B
+(4 B longer, because the `0.5000001f` anchor is still present).  The 8-byte code deficit is
+entirely in the tail (the register permutation changes scheduling: e.g. V6 emits an extra
+`mov.w sl,#0` at `0x438`, `vcvt.f32.s32 s2,s2` at `0x490`, `vldr s4,[pc,#768]` at `0x4a0`,
+`str.w r8,[sp,#16]` at `0x4ee`, `ldr r0,[sp,#16]` at `0x5ba` and `vldr s2,[pc,#424]` at `0x60e`,
+and drops `vldr s4`, `vmov s2,r5`, `vcvt.f32.s32 s2,s2`, `strd r4,r5,[sp,#8]` and `mov r0,r9`).
+
+**Gate consequence:** a 4-byte size change is fatal.  Running the full `check` on V6 gives
+`byte_exact 4498 -> 2615` (measured), so V6 cannot land even though its fuzzy score is higher
+than V8's.
+
+### 8.3 Why V8's frame is 8 bytes larger (stack-slot colouring)
+
+The extra 8 bytes are one 4-byte spill plus 4 bytes of alignment padding.  V8's slots:
+
+```
+[20] difficulty (r5) spill      <- extra vs original
+[24] bonus
+[28] GOT base
+[32] targetStation
+[36] agent
+[40] status
+[44] race
+[48] rnd
+```
+
+The original's slots:
+
+```
+[16] bonus / difficulty / r5 spill (shared)
+[20] GOT base
+[24] agent / difficulty (shared)
+[28] targetStation
+[32] status
+[36] race
+[40] rnd
+```
+
+In the original, `agent` is restored to r9 at `0x97306` (`ldrd r9,r4,[sp,#24]`), which kills the
+`[sp,#24]` slot, so the later `difficulty` spill at `0x9752a` (`str r6,[sp,#24]`) reuses it.  In
+V8 the agent slot `[sp,#36]` is reloaded again at `0x482` and `0x5a8`, so it is still live when
+`difficulty` is spilled at `0x37c` (`str r5,[sp,#20]`); the colourer cannot merge them.
+
+The `[16]` slot in the original is shared by the `type == 15` loop's r5 spill (`0x97614`),
+`bonus` (`0x976d8`/`0x97720`) and the `distance` argument (`0x97644`/`0x9783a`) because those
+live ranges are disjoint in execution order (the `type == 15` case is laid out at the end of the
+function but executes before the common path).
+
+### 8.4 Full sweep of loop shapes (fit score)
+
+A 7-feature fit was used to screen shapes quickly (one-file compile, ~0.24 s each):
+
+* `sys_r8`   — prologue has `mov r8, r2`
+* `agent_r9` — prologue has `mov r9, r1`
+* `used_sl`  — prologue has `ldr.w sl, [r0, #80]`
+* `frame96`  — `sub sp, #96`
+* `type_r4_exit` — a `mov r4, r2` exists
+* `sel`      — `movs r2,#12` + `cmp r0,#25` + `movne r2,r6` in the loop
+* `pick8_beq`— `cmp r0,#8` immediately followed by `beq.n`
+
+| shape | sys_r8 | agent_r9 | used_sl | frame96 | type_r4_exit | sel | pick8_beq | score |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| HEAD (`short pick`, folded select) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 3 |
+| variant B (§3, `pick==8 goto`, nested `pick==10`) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 3 |
+| V8 (`pick==8 goto`, `pick==10 &&`, `continue`) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | **5** |
+| V6 (`pick==8 continue`, `pick==10 &&`, `continue`) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | **6** |
+
+A sweep of `{while,for,do,for(;;)} × {pick==8: goto/continue} × {pick==10: nested/nested_cont/and/and_cont} ×
+{pick==12: goto/inline} × {latch: shared/shared_next}` (128 shapes) produced exactly four
+score-6 shapes, all of them `pick==8 continue` + `pick==10 && ... continue` (V6 and its
+`for`/`shared_next` variants).  No shape scored 7.
+
+Changing `bool selected` to `int`/`char`, `int32_t type` to `int`, `uint32_t race` to `int`,
+`int guard` to `uint32_t`, moving `level`/`used`/`difficulty` declarations, and moving
+`difficulty` to function scope all leave the fit unchanged for V8 and V6.
+
+### 8.5 Conclusion of the second pass
+
+The two requirements are mutually exclusive under every source spelling tried:
+
+* to keep the original's `pick == 8` phi incoming (`pick`, shared latch) the branch must be
+  `goto assignType`, which makes the allocator choose `systems -> r8` (good) but also
+  `frame 104` and a top-of-loop condition (bad);
+* to get `frame 96` and the bottom-of-loop condition the branch must be `continue`, which folds
+  the `pick == 8` incoming to the constant 8 and swaps `systems`/`selected` (bad).
+
+A byte-exact reconstruction needs a spelling that keeps `goto assignType` for the `pick == 8`
+path **and** gets the original's 96-byte frame, i.e. one where the agent spill slot dies before
+the `difficulty` spill (so the colourer merges them).  That is the remaining task.
+
+### 8.6 Reproduction (second pass)
+
+```sh
+# V8
+python3 /dev/shm/w4004/v8.py and_cont goto shared   # writes /dev/shm/w4004/var8.cpp
+cp /dev/shm/w4004/var8.cpp src/game/mission/Generator.cpp
+cmake --build cmake-build-match --target link_so -j8
+python3 /dev/shm/w4004/scorefn.py                   # osize=1996 usize=1996 pct=68.7
+
+# V6
+python3 /dev/shm/w4004/gen2.py while top cont and_cont goto shared
+cp /dev/shm/w4004/var2.cpp src/game/mission/Generator.cpp
+cmake --build cmake-build-match --target link_so -j8
+python3 /dev/shm/w4004/scorefn.py                   # osize=1996 usize=1992 pct=69.6
+cmake --build cmake-build-match --target check -j8  # byte_exact 4498 -> 2615 (FAIL)
+```
+
+(The scratch helpers live in `/dev/shm/w4004`; `gen2.py`/`v8.py`/`gen3.py` are the generators,
+`fit.py` the 7-feature screen, `scorefn.py` the official per-function verifier.)
