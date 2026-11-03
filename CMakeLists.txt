@@ -48,6 +48,8 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/SpaceLounge.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=20;-mllvm;-unlikely-branch-weight=12")
 
 # StarMap::drawOnScreenInfo's campaign-target arm (getStationEnumIndex(93) >= 0) is reached from
 # both the station and system paths; the original's register allocation keeps `campaign` in r6
