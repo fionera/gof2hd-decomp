@@ -67,24 +67,21 @@ target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 # the downloaded NDK clang. Sets _openssl_out / _zlib_out / _libzip_out + target gof2_libs.
 include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/SpaceLounge.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=20;-mllvm;-unlikely-branch-weight=12")
 
-# StarMap::drawOnScreenInfo's campaign-target arm (getStationEnumIndex(93) >= 0) is reached from
-# both the station and system paths; the original's register allocation keeps `campaign` in r6
-# only when that edge's block frequency crosses the allocator's spill-cost threshold.  The natural
-# zero-compare heuristic (20:12) lands just below it, so weight the hint 7:1.
+# The only remaining per-file branch-weight override.  StarMap::drawOnScreenInfo's campaign-target
+# arm (getStationEnumIndex(93) >= 0) is reached from both the station and system paths.  The branch
+# is `icmp sgt i32 %x, -1`; the natural zero-compare heuristic is 20:12, and the default
+# __builtin_expect weight is 2000:1 -- both lay the block out differently (0xd98 / 0xdac instead
+# of the original 0xda0).  Only the 7:1 ratio reproduces the original's block frequencies and the
+# campaign-in-r6 allocation.  Clang 7.0.2 has no __builtin_expect_with_probability, and no
+# source-level comparison form yields 7:1 (see _work/reconstructions/branch-weight-overrides_w4218.md).
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 
-# MenuTouchWindow::OnTouchEnd's button-dispatch loop carries four __builtin_expect hints.  The
-# original's block layout is reproduced by the 3:1..19:1 (and 20:12) likely/unlikely plateau;
-# 5:1 raises the function's fuzzy match 97.2 -> 97.3 with byte_exact/linked_exact unchanged.
-# 25:1 and above fall back to the default 2000:1 layout.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/ui/MenuTouchWindow.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=5;-mllvm;-unlikely-branch-weight=1")
+# Radar.cpp (80:1), SpaceLounge.cpp (20:12) and MenuTouchWindow.cpp (5:1) used to carry per-file
+# overrides too.  They were matching knobs, not original build flags: with the default 2000:1
+# __builtin_expect weight the linked .so is byte-identical (byte_exact/linked_exact unchanged and
+# the official per-function percentages unchanged), so those overrides were removed.
 
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI
