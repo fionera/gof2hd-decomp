@@ -1159,7 +1159,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     int armorBarY;
     if (this->hasShieldBar) {
         PaintCanvas *canvas = Globals::Canvas;
-        canvas->SetColor(savedColor);
         unsigned int shieldImage;
         if (ego->player->getShieldHP() >= 2 && this->shieldHitFlash)
             shieldImage = this->shieldFrameHitImage;
@@ -1189,9 +1188,11 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
                                       this->field_0x440, armorBarY);
     }
-    int pad_ = this->field_0x470;
-    if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
-                                                    Globals::status->getCurrentCampaignMission()) > 0.0f) {
+    // Local `Status *` is load-bearing for codegen: it forces the branch-local spill of
+    // `this` in the shield block, matching the original (see hud-draw-status-slot-w4253.md).
+    Status *st = Globals::status;
+    if (st->getGammaRayDamagePerSecond(st->getStation()->getIndex(),
+                                       st->getCurrentCampaignMission()) > 0.0f) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
         int gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
@@ -1260,7 +1261,9 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                      0x11, 0x14);
         this->field_0x4b4 -= dt;
     }
-    if (this->field_0x4b8 >= 1) {
+    // The null guard is also load-bearing: it makes the allocator reload &Globals::status
+    // in the damage block, which colours the status spill to the original's #108 slot.
+    if (Globals::status == 0 || this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
@@ -1431,8 +1434,6 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         }
     }
 
-    if (pad_ != 0)
-        Globals::Canvas->SetColor(savedColor);
     // Autopilot button.
     if (!ego->radioRef->isShowingMessage()) {
         if ((!ego->isAutoPilot() && !ego->isDockingToAsteroid() &&
