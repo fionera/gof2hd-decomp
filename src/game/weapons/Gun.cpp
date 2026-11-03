@@ -237,6 +237,14 @@ int Gun::getMagnitude() {
 void Gun::setLevelCollision(bool v) {
     this->levelCollision = v;
 }
+void Gun::setOffset(Vector *v) {
+    float z = v->z;
+    Vector local;
+    local.x = v->x;
+    local.y = v->y;
+    local.z = z + kZOffset;
+    this->offset = local;
+}
 void Gun::setOffset(int a, int b) {
     const short *row = gSO_table[b - 1][a];
     float fx = (float) row[0];
@@ -249,14 +257,6 @@ void Gun::setOffset(int a, int b) {
     local.x = sx;
     local.y = sy;
     local.z = sz;
-    this->offset = local;
-}
-void Gun::setOffset(Vector *v) {
-    float z = v->z;
-    Vector local;
-    local.x = v->x;
-    local.y = v->y;
-    local.z = z + kZOffset;
     this->offset = local;
 }
 void Gun::setImpact(Sparks *impact) {
