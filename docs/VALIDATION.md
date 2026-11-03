@@ -95,7 +95,7 @@ All 27 section headers are byte-identical. `.text`, `.rodata`, `.data`, `.bss`, 
 `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
 `.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but `0x26294` (4 bytes short of
 the original's `0x26298`, the known w4270/w4415 EH residual). The only differing section
-bytes are `.text` (103,080), `.ARM.exidx` (1,637) and `.note.gnu.build-id` (20).
+bytes are `.text` (101,915), `.ARM.exidx` (1,637), `.rel.plt` (12) and `.note.gnu.build-id` (20).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

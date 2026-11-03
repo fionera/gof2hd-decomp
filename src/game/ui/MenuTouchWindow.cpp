@@ -368,7 +368,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(6, *Globals::gameText->getText(522), row, this->buttons, 0);
         this->addButton(19, *Globals::gameText->getText(59), row + 1, this->buttons, 0);
         int mission = Globals::status->getCurrentCampaignMission();
-        __builtin_prefetch(this); // lint: arm_builtin
         if (mission == 154 || mission == 157 || mission == 158) {
             this->addButton(18, *Globals::gameText->getText(395), row + 2, this->buttons, 0);
         }
@@ -455,15 +454,14 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             int langValue = Globals::fontLangSelect;
             int spacing = Globals::Canvas->FontGetSpacing(
                 special ? (unsigned int) langValue : fontValue);
+            int bw = this->buttonWidth;
             TouchButton *language = new TouchButton(
-                *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
+                *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, bw, 17, 4,
                 (i == 9 || i == 8) ? fontValue : (unsigned int) langValue, spacing);
             language->id = MenuTouchWindow_languageIds[i];
             if (special)
                 language->fontId = *specialFontPtr;
             ArrayAdd(language, *langList);
-            __builtin_prefetch(this); // lint: arm_builtin
-            __builtin_prefetch(this); // lint: arm_builtin
         }
     }
 
@@ -571,7 +569,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 Globals::layout->field_0x30_rowHeight * 2,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
         this->cinematicBtnA = new TouchButton(
-            *Globals::gameText->getText(496), 0, Globals::w >> 1,
+            *cinematicText->getText(496), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 -
                 Globals::layout->field_0x30_rowHeight,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
