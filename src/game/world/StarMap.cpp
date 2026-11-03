@@ -1018,18 +1018,17 @@ void StarMap::draw() {
 
     if ((Globals::status->getShip()->hasJumpDriveIntegrated() || this->jumpMapModeB != 0) && this->jumpCost >= 1 &&
         this->selectedSystem >= 0 && this->selectedSystem != ((SolarSystem *) Globals::status->getSystem())->getIndex()) {
-        // Energy cells needed / carried.
-        if (this->jumpCost > this->cargoAmount) {
-            Globals::Canvas->SetColor(0xff2a00ffu);
-        }
+        Layout *layout;
+        int left;
+        int width;
+        PaintCanvas *canvas;
+        unsigned int font;
         String line = *Globals::gameText->getText(578) + String(" ") +
                       String(String(this->jumpCost) + String(" / ") + String(this->cargoAmount), false);
-        Layout *layout = Globals::layout;
-        int left = layout->windowX;
-        int width = layout->windowWidth;
-        unsigned int font = (unsigned int) (uintptr_t) Globals::font;
-        PaintCanvas *canvas = Globals::Canvas;
-        int textWidth = canvas->GetTextWidth(font, line);
+        int textWidth = (this->jumpCost > this->cargoAmount ? (Globals::Canvas->SetColor(0xff2a00ffu), 0) : 0,
+                         (layout = Globals::layout, left = layout->windowX, width = layout->windowWidth,
+                          canvas = Globals::Canvas, font = (unsigned int) (uintptr_t) Globals::font,
+                          canvas->GetTextWidth(font, line)));
         canvas->DrawString(font, line, left + width / 2 - textWidth / 2,
                            Globals::layout->windowY + Globals::layout->windowHeight -
                            Globals::layout->footerTextInset,
