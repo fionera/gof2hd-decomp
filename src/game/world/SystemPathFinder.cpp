@@ -66,21 +66,6 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems, int f
     return path;
 }
 
-Array<Node *> *SystemPathFinder::constructPath(Node *node) {
-    Array<Node *> *backwards = new Array<Node *>;
-    for (; node->parent != nullptr; node = node->parent)
-        ArrayAdd(node, *backwards);
-
-    Array<Node *> *path = new Array<Node *>;
-    ArraySetLength(backwards->size(), *path);
-    int out = 0;
-    for (int i = backwards->size() - 1; i >= 0; i--)
-        (*path)[out++] = (*backwards)[i];
-
-    ArrayRelease(*backwards);
-    return path;
-}
-
 Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     Array<Node *> *closed = new Array<Node *>;
     Array<Node *> *open = new Array<Node *>;
@@ -103,6 +88,21 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
         }
     }
     return nullptr;
+}
+
+Array<Node *> *SystemPathFinder::constructPath(Node *node) {
+    Array<Node *> *backwards = new Array<Node *>;
+    for (; node->parent != nullptr; node = node->parent)
+        ArrayAdd(node, *backwards);
+
+    Array<Node *> *path = new Array<Node *>;
+    ArraySetLength(backwards->size(), *path);
+    int out = 0;
+    for (int i = backwards->size() - 1; i >= 0; i--)
+        (*path)[out++] = (*backwards)[i];
+
+    ArrayRelease(*backwards);
+    return path;
 }
 
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
