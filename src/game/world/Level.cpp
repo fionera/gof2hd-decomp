@@ -5246,15 +5246,15 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 if (type == 14) {
                     ArraySetLength(11, *volumes);
                     (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -2240.0f, 21608.0f, 760.0f, 640.0f, 2890.0f);
-                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -2342.0f, 18392.0f, 1260.0f, 3560.0f, 3670.0f);
+                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 18392.0f, -2342.0f, 1260.0f, 3560.0f, 3670.0f);
                     (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, -786.0f, 8926.0f, 7410.0f, 7740.0f, 15540.0f);
-                    (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, -4950.0f, 9656.0f, 820.0f, 1040.0f, 7150.0f);
+                    (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 9656.0f, -4950.0f, 820.0f, 1040.0f, 7150.0f);
                     (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 3420.0f, -452.0f, 1310.0f, 940.0f, 4880.0f);
-                    (*volumes)[5] = new BoundingAAB(x, y, z, 0.0f, -270.0f, -9018.0f, 7520.0f, 6870.0f, 20470.0f);
+                    (*volumes)[5] = new BoundingAAB(x, y, z, 0.0f, -9018.0f, -270.0f, 7520.0f, 6870.0f, 20470.0f);
                     (*volumes)[6] = new BoundingAAB(x, y, z, 0.0f, -5088.0f, -7962.0f, 1300.0f, 2900.0f, 13210.0f);
-                    (*volumes)[7] = new BoundingAAB(x, y, z, 0.0f, 3526.0f, -11604.0f, 3260.0f, 880.0f, 10640.0f);
+                    (*volumes)[7] = new BoundingAAB(x, y, z, 0.0f, -11604.0f, 3526.0f, 3260.0f, 880.0f, 10640.0f);
                     (*volumes)[8] = new BoundingAAB(x, y, z, 0.0f, 5212.0f, -12332.0f, 3260.0f, 2640.0f, 8410.0f);
-                    (*volumes)[9] = new BoundingAAB(x, y, z, 0.0f, 2004.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
+                    (*volumes)[9] = new BoundingAAB(x, y, z, 0.0f, -15852.0f, 2004.0f, 15860.0f, 2510.0f, 10910.0f);
                     (*volumes)[10] = new BoundingAAB(x, y, z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
                     fixed->setWreckedMeshId(0x4780);
                 } else {
