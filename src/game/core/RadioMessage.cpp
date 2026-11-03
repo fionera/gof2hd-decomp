@@ -11,6 +11,30 @@
 #include "game/world/LevelScript.h"
 #include "game/world/Route.h"
 
+RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int conditionValue) {
+    this->targetIndices = nullptr;
+    this->radio = nullptr;
+    this->objective = nullptr;
+    this->textID = textID;
+    this->imageID = imageID;
+    this->conditionType = conditionType;
+    this->conditionValue = conditionValue;
+
+    this->targetIndices = new int[1];
+    this->targetIndices[0] = conditionValue;
+    this->targetCount = 1;
+
+    this->triggeredFlag = 0;
+    this->over = 0;
+    this->lastRouteIndex = 0;
+}
+
+void RadioMessage::reset() {
+    this->lastRouteIndex = 0;
+    this->triggeredFlag = 0;
+    this->over = 0;
+}
+
 RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int conditionValue,
                            int targetCount) {
     this->targetIndices = nullptr;
@@ -33,24 +57,6 @@ RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int condi
     this->lastRouteIndex = 0;
 }
 
-RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int conditionValue) {
-    this->targetIndices = nullptr;
-    this->radio = nullptr;
-    this->objective = nullptr;
-    this->textID = textID;
-    this->imageID = imageID;
-    this->conditionType = conditionType;
-    this->conditionValue = conditionValue;
-
-    this->targetIndices = new int[1];
-    this->targetIndices[0] = conditionValue;
-    this->targetCount = 1;
-
-    this->triggeredFlag = 0;
-    this->over = 0;
-    this->lastRouteIndex = 0;
-}
-
 RadioMessage::RadioMessage(int textID, int imageID, Objective *objective) {
     this->targetIndices = nullptr;
     this->radio = nullptr;
@@ -68,30 +74,8 @@ RadioMessage::~RadioMessage() {
     this->targetIndices = nullptr;
 }
 
-void RadioMessage::finish() {
-    this->over = 1;
-}
-
-bool RadioMessage::isOver() {
-    return this->over;
-}
-
-void RadioMessage::reset() {
-    this->lastRouteIndex = 0;
-    this->triggeredFlag = 0;
-    this->over = 0;
-}
-
-void RadioMessage::trigger() {
-    this->triggeredFlag = 1;
-}
-
-uint8_t RadioMessage::isTriggered() {
-    return this->triggeredFlag;
-}
-
-void RadioMessage::setRadio(Radio *radio) {
-    this->radio = radio;
+int RadioMessage::getSoundID() {
+    return 0;
 }
 
 int RadioMessage::getTextID() {
@@ -102,8 +86,24 @@ int RadioMessage::getImageID() {
     return this->imageID;
 }
 
-int RadioMessage::getSoundID() {
-    return 0;
+void RadioMessage::setRadio(Radio *radio) {
+    this->radio = radio;
+}
+
+uint8_t RadioMessage::isTriggered() {
+    return this->triggeredFlag;
+}
+
+bool RadioMessage::isOver() {
+    return this->over;
+}
+
+void RadioMessage::finish() {
+    this->over = 1;
+}
+
+void RadioMessage::trigger() {
+    this->triggeredFlag = 1;
 }
 
 int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script) {
