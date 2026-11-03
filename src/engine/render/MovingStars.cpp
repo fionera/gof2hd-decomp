@@ -3,19 +3,6 @@
 #include "engine/core/AERandom.h"
 #include "game/core/Globals.h"
 
-
-MovingStars::~MovingStars() {
-    if (this->billboardIds) delete[] this->billboardIds;
-    this->billboardIds = 0;
-    if (this->transformHandles) delete[] this->transformHandles;
-    this->transformHandles = 0;
-    if (this->lifeArray) delete[] this->lifeArray;
-    this->lifeArray = 0;
-    if (this->velocityArray) delete[] this->velocityArray;
-    this->velocityArray = 0;
-}
-
-
 MovingStars::MovingStars() {
     this->billboardIds = 0;
     this->transformHandles = 0;
@@ -57,6 +44,17 @@ namespace AbyssEngine {
     namespace AEMath {
         Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
     }
+}
+
+MovingStars::~MovingStars() {
+    if (this->billboardIds) delete[] this->billboardIds;
+    this->billboardIds = 0;
+    if (this->transformHandles) delete[] this->transformHandles;
+    this->transformHandles = 0;
+    if (this->lifeArray) delete[] this->lifeArray;
+    this->lifeArray = 0;
+    if (this->velocityArray) delete[] this->velocityArray;
+    this->velocityArray = 0;
 }
 
 void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
@@ -155,6 +153,15 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
     }
 }
 
+void MovingStars::render() {
+    PaintCanvas **canvas = &Globals::Canvas;
+    (*canvas)->SetTexture(this->textureHandle, 0xffffffff);
+    (*canvas)->SetBlendMode(AbyssEngine::BlendMode_1);
+    for (int i = 0; i != 0x32; i = i + 1) {
+        (*canvas)->DrawTransform(this->transformHandles[i], nullptr);
+    }
+}
+
 void MovingStars::translate(const Vector &v) {
     PaintCanvas **canvas = &Globals::Canvas;
     for (int i = 0; i != 0x32; i = i + 1) {
@@ -164,15 +171,5 @@ void MovingStars::translate(const Vector &v) {
         pos += v;
         AbyssEngine::AEMath::MatrixSetTranslation(
                 *(Matrix *) (*canvas)->TransformGetLocal(this->transformHandles[i]), pos.x, pos.y, pos.z);
-    }
-}
-
-
-void MovingStars::render() {
-    PaintCanvas **canvas = &Globals::Canvas;
-    (*canvas)->SetTexture(this->textureHandle, 0xffffffff);
-    (*canvas)->SetBlendMode(AbyssEngine::BlendMode_1);
-    for (int i = 0; i != 0x32; i = i + 1) {
-        (*canvas)->DrawTransform(this->transformHandles[i], nullptr);
     }
 }

@@ -2735,3 +2735,266 @@ cmp -l /tmp/w3745/liw/gate_base.so /tmp/w3745/liw/gate_after.so | wc -l   # 993
   (`0x146050` original, `0x146088` ours); `MovingStars.cpp` needs its own
   emission-order pass. Its plain order currently starts with the destructor,
   so the ctor is not simply last as in `ListItemWindow`.
+
+## 17. `MovingStars` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **3112 / 4497** (prefix 3172,
+3401 / 4524) to **3118 / 4497** (prefix 3179, 3407 / 4524). The first plain
+no-order mismatch moves from `MovingStars::MovingStars()` to
+`ChoiceWindow::ChoiceWindow()`.
+
+This is the next frontier recorded in §16.6 (the `ListItemWindow` pass).
+
+### 17.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `MovingStars` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x146050  0x140  MovingStars::MovingStars()   (C1 == C2)
+0x146190  0x036  MovingStars::~MovingStars()  (D1 == D2)
+0x1461c8  0x54c  MovingStars::update(int, AbyssEngine::AEMath::Matrix, bool, float)
+0x146714  0x048  MovingStars::render()
+0x14675c  0x090  MovingStars::translate(AbyssEngine::AEMath::Vector const&)
+```
+
+The HD source-layout dump witnesses the TU
+(`_work/original_layout/tu_mapping.md` line 60:
+`engine/render/MovingStars.cpp` -> `Classes/Game/MovingStars.cpp`), but not the
+function order. The Android `.dynsym` is the authority for the emitted order.
+
+The baseline plain no-order link put the destructor first:
+
+```text
+original 0x146050 MovingStars::MovingStars()   (0x140 bytes)
+ours     0x146088 MovingStars::MovingStars()
+```
+
+### 17.2 Baseline object order
+
+`readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/render/MovingStars.cpp.obj`
+(section-header order = emission order; this TU has no weak template copies):
+
+```text
+MovingStars::~MovingStars()
+MovingStars::MovingStars()
+MovingStars::update(int, AbyssEngine::AEMath::Matrix, bool, float)
+MovingStars::translate(AbyssEngine::AEMath::Vector const&)
+MovingStars::render()
+```
+
+The source file `src/engine/render/MovingStars.cpp` defined the destructor
+before the constructor, and `translate` before `render`. The original's
+address order is the reverse in both pairs.
+
+### 17.3 Controlled experiments
+
+Each row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| experiment | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3112** | 3401 / 4524 | 3172 | `MovingStars::MovingStars()` `0x146050` vs `0x146088` |
+| A: move only the ctor before the dtor | **4497 / 4497** | **3116** | 3405 | 3177 | `MovingStars::render()` `0x146714` vs `0x146764` |
+| B: move ctor before dtor **and** render before translate (landed) | **4497 / 4497** | **3118** | **3407** | **3179** | `ChoiceWindow::ChoiceWindow()` `0x1467ec` vs `0x14719c` |
+
+Row A flips exactly the four ctor/dtor rows (`C1`, `C2`, `D1`, `D2`) to
+byte-exact. Row B additionally flips `render` and `translate`; the six-row
+gain is the whole plain `byte_exact` delta (`3112 -> 3118`) and there are no
+losses. `MovingStars::update` was already byte-exact in the baseline because
+the ctor and dtor sizes are unchanged by their swap (`0x140 + 0x36`), so its
+address (`0x1461c8`) did not move.
+
+### 17.4 Landed source change
+
+Only change: reorder the top-level definitions in
+`src/engine/render/MovingStars.cpp` so the emitted order is the original's.
+No body was edited; the `namespace AbyssEngine { ... }` forward declaration
+block stays between the ctor and the dtor, where it was relative to the ctor.
+
+```text
+before (source / object order):
+  dtor, ctor, update, translate, render
+
+after:
+  ctor, dtor, update, render, translate
+```
+
+The object order becomes exactly the original address order:
+
+```text
+MovingStars::MovingStars()
+MovingStars::~MovingStars()
+MovingStars::update(int, AbyssEngine::AEMath::Matrix, bool, float)
+MovingStars::render()
+MovingStars::translate(AbyssEngine::AEMath::Vector const&)
+```
+
+### 17.5 Measured before/after
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `ebf35659…` | **3112** | 3401 / 4524 | 3172 | `MovingStars::MovingStars()` `0x146050` vs `0x146088` |
+| full reorder (landed) | **4497 / 4497** | `a6e134f6…` | **3118** | **3407 / 4524** | **3179** | `ChoiceWindow::ChoiceWindow()` `0x1467ec` vs `0x14719c` |
+
+The landed delta is **+6 plain byte_exact, +6 functions at their original
+address, +7 exact-address prefix**, with the gate counts unchanged.
+
+The whole `MovingStars` block is now address-exact in the plain no-order link
+(all 8 exported rows including `Level::enableMovingStars` are at the original
+address). Every `MovingStars` row is `byte=True` in the plain verify report
+except `Level::enableMovingStars` (its call target is unchanged; its byte
+difference is the PLT slot, not this TU's order).
+
+Gate `.so` A/B (`cmp -l` = 36 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| `0x1dc..0x1ef` | 20 | `.note.gnu.build-id` |
+| `.ARM.exidx` | 4 | extab-pointer words for `MovingStars` |
+| `.ARM.extab` | 12 | extab record order for `MovingStars` |
+
+`.text`, `.rodata`, `.data.rel.ro`, `.data`, `.plt`, `.got`, `.dynamic` and
+`.rel.plt` are byte-identical between the baseline and landed gate `.so`.
+The differing-byte counts against the original are unchanged by the pass
+(`.text` 107941, `.ARM.exidx` 1737, `.ARM.extab` 113818, `.rodata` 0,
+`.rel.plt` 21, `.plt`/`.got`/`.dynamic` 0), because the reordered records
+already differed by their absolute offsets.
+
+Parsing the `.ARM.exidx` extab pointers for the `MovingStars` range shows the
+landed gate now has the original's ascending relative record order with a
+constant `-4` absolute offset (the known `.ARM.extab` size delta):
+
+```text
+orig  0x146050 -> 0x1c2c98, 0x146190 -> 0x1c2ca4, 0x1461c8 -> 0x1c2cb0,
+      0x146714 -> 0x1c2cc0, 0x14675c -> 0x1c2ccc
+base  0x146050 -> 0x1c2ca0, 0x146190 -> 0x1c2c94, 0x1461c8 -> 0x1c2cac,
+      0x146714 -> 0x1c2cc8, 0x14675c -> 0x1c2cbc   # ctor/dtor and render/translate reversed
+after 0x146050 -> 0x1c2c94, 0x146190 -> 0x1c2ca0, 0x1461c8 -> 0x1c2cac,
+      0x146714 -> 0x1c2cbc, 0x14675c -> 0x1c2cc8
+```
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f58 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b80`, `.rodata 0x41b67 @ 0x1c9e10`.
+
+### 17.6 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x1467ec ChoiceWindow::ChoiceWindow()   (C1/C2, 0x84 bytes)
+ours     0x14719c ChoiceWindow::ChoiceWindow()
+```
+
+Our plain `ChoiceWindow` order is
+`OnTouchMove, hasChoice, setWidth, set(String,String), set(6-arg), set(String,bool),
+set(String,String,bool), OnTouchEnd, set(String), removeButtons, OnTouchBegin,
+dtor, setHeight, setMedal, ctor, setMiscButton, update, draw`; the original is
+`ctor, dtor, set(String), set(String,String,bool), set(String,String),
+set(6-arg), set(String,bool), removeButtons, hasChoice, setWidth, setHeight,
+setMedal, setMiscButton, update, draw, OnTouchBegin, OnTouchMove, OnTouchEnd`.
+This is a separate TU (`src/game/ui/ChoiceWindow.cpp`) and was not changed in
+this pass.
+
+### 17.7 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/ms/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/ms/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/ms/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/ms/base_noorder.so
+
+# after the source move
+cmake --build cmake-build-match --target check -j8
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/ms/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/ms/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/ms/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/ms/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/render/MovingStars.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN11MovingStars'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/ms/gate_after.so
+git stash push -- src/engine/render/MovingStars.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/ms/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/ms/gate_base.so /tmp/w3745/ms/gate_after.so
+cmp -l /tmp/w3745/ms/gate_base.so /tmp/w3745/ms/gate_after.so | wc -l   # 36
+```
+
+### 17.8 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3112 / 4497`, prefix 3172,
+  3401 / 4524, first mismatch `MovingStars::MovingStars()` `0x146050` vs
+  `0x146088`.
+* The original emits `MovingStars` in the `.dynsym` address order listed in
+  §17.1; the HD dump independently witnesses the TU membership.
+* The baseline object emits the dtor before the ctor and `translate` before
+  `render`, the reverse of the original address order.
+* Moving only the ctor before the dtor is gate-neutral and flips exactly the
+  four ctor/dtor rows to byte-exact (`plain 3112 -> 3116`), proving the ctor
+  move itself is causal; the next mismatch is `render`.
+* Moving ctor+dtor and render+translate to the original address order is
+  gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0) and makes the whole
+  `MovingStars` block address-exact in the plain no-order link.
+* The gate `.so` differs only in the build-id, 4 `.ARM.exidx` bytes and 12
+  `.ARM.extab` bytes; `.text` and `.rodata` are byte-identical. The
+  `.ARM.exidx` extab records for `MovingStars` are now in the original's
+  ascending relative order (constant `-4` absolute offset).
+* The plain no-order build improves to `3118 / 4497`, prefix 3179,
+  3407 / 4524. All `MovingStars` rows are byte-exact there except
+  `Level::enableMovingStars` (PLT-slot difference, not this TU's order).
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3118`, not `4497`.
+* The next plain no-order frontier is `ChoiceWindow::ChoiceWindow()`
+  (`0x1467ec` original, `0x14719c` ours); `ChoiceWindow.cpp` needs its own
+  emission-order pass.
