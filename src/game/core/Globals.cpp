@@ -208,7 +208,7 @@ AbyssEngine::ApplicationManager *Globals::appManager;
 Generator *Globals::generator;
 RecordHandler *Globals::recordHandler;
 unsigned char Globals::gameLoaded;
-alignas(4) unsigned char Globals::options[100] = {};
+alignas(4) bool Globals::options[100] = {};
 unsigned char Globals::hints[59];
 unsigned char Globals::gameSaving;
 unsigned char Globals::initMemoryWarning;

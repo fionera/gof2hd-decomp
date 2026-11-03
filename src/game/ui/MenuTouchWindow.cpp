@@ -234,6 +234,8 @@ static inline void _mtw_Array_TB_ctor(void *a) { new(a) Array<TouchButton*>(); }
 // Globals::options is the raw OptionsRecord image; the menus access its fields by offset.
 static inline bool &optionFlag(int offset) { return *reinterpret_cast<bool *>(&Globals::options[offset]); }
 
+static inline unsigned char optionByte(int offset) { return *reinterpret_cast<unsigned char *>(&Globals::options[offset]); }
+
 static inline float &optionFloat(int offset) { return *reinterpret_cast<float *>(&Globals::options[offset]); }
 
 static inline int &optionInt(int offset) { return *reinterpret_cast<int *>(&Globals::options[offset]); }
@@ -606,9 +608,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
              this->sliderRowHeight) * 2,
         66);
-    this->optBtnD0->setHalfTransparent(Globals::options[17]);
-    this->optBtnCC->setAlwaysPressed(Globals::options[16]);
-    this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
+    this->optBtnD0->setHalfTransparent(optionByte(17));
+    this->optBtnCC->setAlwaysPressed(optionByte(16));
+    this->scrollExtraButton->setAlwaysPressed(optionByte(64));
     if (Globals::iPad) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
@@ -697,21 +699,21 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight,
                                      18);
-    this->optBtnD4->setAlwaysPressed(Globals::options[13]);
+    this->optBtnD4->setAlwaysPressed(optionByte(13));
     (*this->sliders)[1]->setHalfTransparent(!Globals::options[13]);
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                       this->sliderSpacing + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
-    this->optBtnD8->setAlwaysPressed(Globals::options[12]);
+    this->optBtnD8->setAlwaysPressed(optionByte(12));
     (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
                                       this->sliderSpacing * 2 + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 5,
                                      18);
-    this->optBtnDC->setAlwaysPressed(Globals::options[14]);
+    this->optBtnDC->setAlwaysPressed(optionByte(14));
     (*this->sliders)[3]->setHalfTransparent(!Globals::options[14]);
     (*this->sliders)[5]->setFixedScale(1);
     (*this->sliders)[6]->setFixedScale(1);
@@ -2672,7 +2674,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             // Options.
             if (Globals::iPad) {
                 // The iPad layout shows the control and the sound options on one page.
-                unsigned char *options = Globals::options;
+                bool *options = Globals::options;
                 if (this->scrollUpButton->OnTouchEnd(x, y))
                     this->menuState = 11;
 
@@ -2864,7 +2866,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 return 0;
             }
             this->scrollWindowB->OnTouchEnd(x, y);
-            unsigned char *options = Globals::options;
+            bool *options = Globals::options;
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
                 if (button->id == 52) {

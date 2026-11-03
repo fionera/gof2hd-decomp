@@ -666,7 +666,7 @@ int ModStation::OnInitialize() {
                 Globals::hints[43] = 1;
             }
             unsigned char *hints = Globals::hints;
-            unsigned char *options = Globals::options;
+            bool *options = Globals::options;
             if (Globals::status->gameWon()) {
                 if (!(options[53] || hints[56])) {
                     this->choiceWindow->set(*Globals::gameText->getText(110));

@@ -1055,8 +1055,8 @@ void HangarWindow::render() {
         for (int i = 0; i < 5; i++) {
             TouchButton *button = (*this->buttons)[18 + i];
             bool visible;
-            if (i == 0 || (i == 1 && Globals::options[73]) || (i == 2 && Globals::options[74]) ||
-                (i == 3 && Globals::options[75])) {
+            if (i == 0 || (Globals::options[73] && i == 1) || (Globals::options[74] && i == 2) ||
+                (Globals::options[75] && i == 3)) {
                 visible = false;
             } else {
                 visible = i != 4 || !Globals::options[76];

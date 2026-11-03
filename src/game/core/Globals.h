@@ -159,7 +159,7 @@ public:
     static int switch_to_target_setting;
 
     static Status *status;
-    alignas(4) static unsigned char options[100];
+    alignas(4) static bool options[100];
     static FModSound *sound;
     static int logoIsShown;
     static int isInMainMenu;
