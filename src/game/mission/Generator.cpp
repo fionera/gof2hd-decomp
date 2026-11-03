@@ -764,11 +764,10 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         selected = guard < 1;
         short pick = Globals::rnd->nextInt(15);
         type = pick;
-        if (pick == 8) {
-            continue;
-        }
-        if (pick == 10 && race > 3) {
-            continue;
+        if (pick == 8) goto assignType;
+        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin
+            type = 10;
+            if (race > 3) continue;
         }
         if (used != nullptr) {
             if (used->data()[pick]) {
@@ -781,17 +780,25 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                     for (uint32_t i = 0; i < used->size(); ++i) {
                         used->data()[i] = false;
                     }
+                    goto assignType;
                 }
+                type = pick;
                 continue;
             }
             used->data()[pick] = true;
         }
         if (pick == 12) {
             selected = true;
-            type = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() != 25 ? pick : 12;
-        } else {
-            selected = true;
+            if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
+                type = 12;
+            } else {
+                goto assignType;
+            }
+            continue;
         }
+        selected = true;
+    assignType:
+        type = pick;
     }
 
     if (Globals::status->getCurrentCampaignMission() < 16 || (type == 15 && !Globals::options[0x37])) {
