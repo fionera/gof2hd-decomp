@@ -5234,3 +5234,6 @@ cleanup and a volatile amount anchor. 9700 B, gate 4498/4498.
 Wave-97 section-order pass: `Hud` emission order (`w3745`) — ctor, dtor, setAutofireEnabled,
 init, closeHudMenu, ... Plain no-order 2963 -> 2975 (addresses 3739 -> 3784, prefix 3694 -> 3742).
 Gate 4498/4498.
+Wave-97 section-order pass: `DialogueWindow` emission order (`w3745`) — ctor, init, set,
+default ctor, String ctor, dtor, ... Plain no-order 2975 -> 2989 (addresses 3784 -> 3811,
+prefix 3742 -> 3769). Gate 4498/4498.
