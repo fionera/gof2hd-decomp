@@ -5810,3 +5810,418 @@ cmp -l /tmp/w3745_hud/gate_base.so /tmp/w3745_hud/gate_after.so | wc -l   # 2067
   rule that produces the `-4` is not characterized here.
 * The `DialogueWindow` TU is the next per-TU source-order experiment; it is a
   separate TU and was not tested or landed in this pass.
+
+## 27. `DialogueWindow` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4498 / linked 4498**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `.text` and `.rodata` are byte-identical before and after;
+only `.note.gnu.build-id` (20 B), `.ARM.exidx` (17 B) and `.ARM.extab`
+(580 B) differ. The plain no-order link improves from **byte 2975 /
+3784 of 4524 exact addresses / prefix 3742** to **byte 2989 / 3811 of 4524 /
+prefix 3769**; the first plain no-order mismatch moves past the whole
+`DialogueWindow` block to `TouchButton::TouchButton(String const&, int, int,
+int, unsigned char)`.
+
+This is the next frontier recorded in §26.5.
+
+### 27.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `cae57319`:
+
+```text
+verify: byte 4498  linked 4498  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+```
+
+The original's `DialogueWindow` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x166bfc  DialogueWindow::DialogueWindow(Mission*, Level*, int)
+0x166c58  DialogueWindow::init()
+0x166ee4  DialogueWindow::set(Mission*, int, int)
+0x166f5c  DialogueWindow::DialogueWindow()
+0x166fa0  DialogueWindow::DialogueWindow(String*, String*, int*)
+0x167118  DialogueWindow::~DialogueWindow()
+0x1671b4  DialogueWindow::hasBriefingDialogue(int)
+0x1671d4  DialogueWindow::hasSuccessDialogue(int)
+0x1671f4  DialogueWindow::loadContent()
+0x167f90  DialogueWindow::getMode()
+0x167f94  DialogueWindow::update(int)
+0x168008  DialogueWindow::isLastPage()
+0x16801e  DialogueWindow::nextPage()
+0x168044  DialogueWindow::length()
+0x1680ac  DialogueWindow::isFirstPage()
+0x1680b6  DialogueWindow::hasLevel()
+0x1680c0  DialogueWindow::setLevel(Level*)
+0x1680c4  DialogueWindow::previousPage()
+0x1680e0  DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int, Agent*)
+0x168198  DialogueWindow::draw()
+0x168318  DialogueWindow::OnTouchBegin(int, int)
+0x168370  DialogueWindow::OnTouchMove(int, int)
+0x1683c8  DialogueWindow::OnTouchEnd(int, int)
+```
+
+The baseline plain no-order link put the parameterized ctor third (after the
+default ctor and `init`) and `loadContent` fifth (immediately after `set`);
+the first plain no-order mismatch was exactly:
+
+```text
+original 0x166bfc DialogueWindow::DialogueWindow(Mission*, Level*, int)
+ours     0x166ecc DialogueWindow::DialogueWindow(Mission*, Level*, int)
+```
+
+### 27.2 The object order is first-reference order, not the original definition order
+
+`-ffunction-sections` section-header order is the order in which clang
+*creates* each function's section (first reference), while the body is emitted
+at the out-of-line definition.  The baseline `DialogueWindow.cpp.obj` order
+was:
+
+```text
+DialogueWindow::DialogueWindow()
+DialogueWindow::init()
+DialogueWindow::DialogueWindow(Mission*, Level*, int)
+DialogueWindow::set(Mission*, int, int)
+DialogueWindow::loadContent()
+DialogueWindow::DialogueWindow(String*, String*, int*)
+DialogueWindow::~DialogueWindow()
+Array<ImagePart*>::~Array()
+__clang_call_terminate
+DialogueWindow::hasBriefingDialogue(int)
+DialogueWindow::hasSuccessDialogue(int)
+DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int, Agent*)
+AbyssEngine::String::String(int)
+DialogueWindow::length()
+DialogueWindow::isLastPage()
+DialogueWindow::update(int)
+DialogueWindow::nextPage()
+DialogueWindow::hasLevel()
+DialogueWindow::setLevel(Level*)
+DialogueWindow::draw()
+DialogueWindow::OnTouchBegin(int, int)
+DialogueWindow::OnTouchMove(int, int)
+DialogueWindow::OnTouchEnd(int, int)
+DialogueWindow::previousPage()
+DialogueWindow::getMode()
+DialogueWindow::isFirstPage()
+```
+
+The default ctor was defined first, so it created the first section; its body
+calls `init`, which created the `init` section second.  The parameterized ctor
+was defined next, but `set`'s body calls `loadContent`, so `loadContent`'s
+section was created before the `String*` ctor's definition.  The tail of the
+order is also first-reference: `update`'s body creates `isLastPage` then
+`nextPage`; `nextPage`'s body creates `length`; `OnTouchEnd`'s body creates
+`previousPage` before the later `getMode`/`isFirstPage` definitions.
+
+To reproduce the original address order under `-ffunction-sections`, the
+source definition order must therefore differ from the original's apparent
+definition order: the parameterized ctor must be first, the default ctor must
+come after `init`, `set` must be emitted after `hasSuccessDialogue` (so that
+`loadContent`'s section is created at position 8), and `loadContent` must be
+emitted after `previousPage` but before `pickGerman` (so that `pickGerman`'s
+section is created at position 18 and `loadContent`'s body still odr-uses the
+briefing/success/station/generic tables before `pickGerman` odr-uses the
+German tables).
+
+### 27.3 Landed source change
+
+Only change: reorder the top-level definitions in
+`src/game/ui/DialogueWindow.cpp` (no body edited; `sort` of the old and new
+file is identical, 879 lines each, `97` insertions / `97` deletions).  The
+landed definition order is:
+
+```text
+DialogueWindow::DialogueWindow(Mission*, Level*, int)
+DialogueWindow::init
+DialogueWindow::DialogueWindow()
+DialogueWindow::DialogueWindow(String*, String*, int*)
+DialogueWindow::~DialogueWindow
+DialogueWindow::hasBriefingDialogue
+DialogueWindow::hasSuccessDialogue
+DialogueWindow::set
+DialogueWindow::getMode
+DialogueWindow::update
+DialogueWindow::isLastPage
+DialogueWindow::nextPage
+DialogueWindow::length
+DialogueWindow::isFirstPage
+DialogueWindow::hasLevel
+DialogueWindow::setLevel
+DialogueWindow::previousPage
+DialogueWindow::loadContent
+DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat
+DialogueWindow::draw
+DialogueWindow::OnTouchBegin
+DialogueWindow::OnTouchMove
+DialogueWindow::OnTouchEnd
+```
+
+The namespace-scope data blocks stay in their current relative order
+(`g_dw_briefingCounts`, `g_dw_successCounts`, `g_dw_briefingScript`,
+`g_dw_successScript`, `g_dw_station108ScriptLate`,
+`g_dw_station108Script`, the three generic tables, `g_dw_playerFace`,
+`g_dw_speakerFaceParts`, `g_dw_lastSpeakerFaceParts`, `g_dw_speakerFaces`,
+then the three German tables).  The two unused `EngineSoundConfig` statics
+stay immediately before `update`.
+
+The resulting `DialogueWindow.cpp.obj` section order is:
+
+```text
+DialogueWindow::DialogueWindow(Mission*, Level*, int)
+DialogueWindow::init()
+DialogueWindow::set(Mission*, int, int)
+DialogueWindow::DialogueWindow()
+DialogueWindow::DialogueWindow(AbyssEngine::String*, AbyssEngine::String*, int*)
+DialogueWindow::~DialogueWindow()
+Array<ImagePart*>::~Array()
+__clang_call_terminate
+DialogueWindow::hasBriefingDialogue(int)
+DialogueWindow::hasSuccessDialogue(int)
+DialogueWindow::loadContent()
+DialogueWindow::getMode()
+DialogueWindow::update(int)
+DialogueWindow::isLastPage()
+DialogueWindow::nextPage()
+DialogueWindow::length()
+DialogueWindow::isFirstPage()
+DialogueWindow::hasLevel()
+DialogueWindow::setLevel(Level*)
+DialogueWindow::previousPage()
+DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int, Agent*)
+AbyssEngine::String::String(int)
+DialogueWindow::draw()
+DialogueWindow::OnTouchBegin(int, int)
+DialogueWindow::OnTouchMove(int, int)
+DialogueWindow::OnTouchEnd(int, int)
+```
+
+The three weak duplicates (`Array<ImagePart*>::~Array`,
+`__clang_call_terminate`, `AbyssEngine::String::String(int)`) are
+deduplicated by the linker in favour of earlier TUs, so the final `.text`
+order is exactly the original's 23-function order.
+
+The object's data sections are unchanged: `.rodata` `0x290c`,
+`.rodata.str1.1` `0x14`, `.data.rel.ro` `0xfc`, `.bss` `0x14`, `.data`
+`0x4d8`.
+
+### 27.4 Measured before/after
+
+Every row is a controlled rebuild of this tree.  `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4498 / 4498** | `6cc48897…` | **2975** | 3784 / 4524 | 3742 | `DialogueWindow(Mission*, Level*, int)` `0x166bfc` vs `0x166ecc` |
+| landed | **4498 / 4498** | `b210fc0c…` | **2989** | **3811 / 4524** | **3769** | `TouchButton::TouchButton(String const&, int, int, int, unsigned char)` `0x1684f0` vs `0x16979c` |
+
+The landed delta is **+14 plain byte-exact, +27 functions at their original
+address, +27 exact-address prefix**, with the gate counts unchanged.
+
+The plain `report.json` changes exactly 14 rows, all `byte False -> True`:
+
+```text
+_ZN14DialogueWindow10OnTouchEndEii
+_ZN14DialogueWindow10isLastPageEv
+_ZN14DialogueWindow11OnTouchMoveEii
+_ZN14DialogueWindow12OnTouchBeginEii
+_ZN14DialogueWindow12previousPageEv
+_ZN14DialogueWindow4drawEv
+_ZN14DialogueWindow6updateEi
+_ZN14DialogueWindow8nextPageEv
+_ZN14DialogueWindowC1EP7MissionP5Leveli
+_ZN14DialogueWindowC1Ev
+_ZN14DialogueWindowC2EP7MissionP5Leveli
+_ZN14DialogueWindowC2Ev
+_ZN14DialogueWindowD1Ev
+_ZN14DialogueWindowD2Ev
+```
+
+The whole `DialogueWindow` block is now address-exact in the plain no-order
+link:
+
+```text
+$NM -nD --defined-only /tmp/w3745_dw/after_noorder.so | grep DialogueWindow
+00166bfc T _ZN14DialogueWindowC1EP7MissionP5Leveli / C2
+00166c58 T _ZN14DialogueWindow4initEv
+00166ee4 T _ZN14DialogueWindow3setEP7Missionii
+00166f5c T _ZN14DialogueWindowC1Ev / C2
+00166fa0 T _ZN14DialogueWindowC1EPN11AbyssEngine6StringES2_Pi / C2
+00167118 T _ZN14DialogueWindowD1Ev / D2
+001671b4 T _ZN14DialogueWindow19hasBriefingDialogueEi
+001671d4 T _ZN14DialogueWindow18hasSuccessDialogueEi
+001671f4 T _ZN14DialogueWindow11loadContentEv
+00167f90 T _ZN14DialogueWindow7getModeEv
+00167f94 T _ZN14DialogueWindow6updateEi
+00168008 T _ZN14DialogueWindow10isLastPageEv
+0016801e T _ZN14DialogueWindow8nextPageEv
+00168044 T _ZN14DialogueWindow6lengthEv
+001680ac T _ZN14DialogueWindow11isFirstPageEv
+001680b6 T _ZN14DialogueWindow8hasLevelEv
+001680c0 T _ZN14DialogueWindow8setLevelEP5Level
+001680c4 T _ZN14DialogueWindow12previousPageEv
+001680e0 T _ZN14DialogueWindow51pickGermanGenericTextBecauseWeSaved100EurosWithThatEiP5Agent
+00168198 T _ZN14DialogueWindow4drawEv
+00168318 T _ZN14DialogueWindow12OnTouchBeginEii
+00168370 T _ZN14DialogueWindow11OnTouchMoveEii
+001683c8 T _ZN14DialogueWindow10OnTouchEndEii
+```
+
+Gate `.so` A/B (`cmp -l` = 617 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| build-id | 20 | `.note.gnu.build-id` |
+| `.ARM.exidx` | 17 | extab-pointer words for the reordered functions |
+| `.ARM.extab` | 580 | extab record order for the reordered functions |
+
+`.text` (1259464 B) and `.rodata` (269159 B) are byte-identical between the
+baseline and landed gate `.so`, so the gate `report.json` is unchanged.
+Against the original, `.text` differing bytes stay 107393 and `.rodata`
+stays 0; `.ARM.exidx` differing bytes improve 1743 -> 1737.  `.ARM.extab`
+differing bytes go 128050 -> 128098, but the `DialogueWindow` extab records
+now appear in the original's order: every record offset is uniformly `-8`
+from the original (`0x1c5a44` vs `0x1c5a4c` for the parameterized ctor,
+`0x1c5b40` vs `0x1c5b48` for `loadContent`, …), whereas the baseline order
+was scrambled (`0x166bfc -> 0x1c5ab8`, `0x166c58 -> 0x1c5a64`).  The `-8`
+is the pre-existing cumulative extab record-size delta, not caused by this
+pass.
+
+Plain no-order section layout is unchanged by the pass
+(`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.rodata 0x41b67 @ 0x1c9e30`).
+
+### 27.5 Next frontier: `TouchButton`
+
+The first plain no-order mismatch is now the first function of the next TU:
+
+```text
+original 0x1684f0 TouchButton::TouchButton(String const&, int, int, int, unsigned char)
+ours     0x16979c TouchButton::TouchButton(String const&, int, int, int, unsigned char)
+```
+
+The original `TouchButton` block starts with that ctor, then
+`TouchButton(unsigned int, int, int, int, int, unsigned char, unsigned char)`,
+`TouchButton(unsigned int, unsigned int, int, int, int, unsigned char)`,
+`TouchButton(String const&, int, int, int, int, unsigned char, unsigned char)`,
+`TouchButton(String const&, int, int, int, int, unsigned char, unsigned char, unsigned int, int)`,
+`TouchButton(unsigned int, int, int, int, int, unsigned char, unsigned char)`,
+`TouchButton(int, int, String const&, int, int, unsigned char)`, …; our plain
+order starts with `TouchButton(unsigned int, int, int, int, int, unsigned char, unsigned char)`
+and puts the `String const&` ctor later.  This is a separate TU
+(`src/game/ui/TouchButton.cpp`) and was not changed in this pass.
+
+### 27.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_dw/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_dw/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_dw/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_dw/base_noorder.so
+
+# source reorder (23 definitions; see §27.3)
+python3 /tmp/w3745_dw/reorder.py     # scratch script, not committed
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_dw/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_dw/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_dw/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_dw/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ui/DialogueWindow.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN14DialogueWindow'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_dw/gate_after.so
+git stash push -- src/game/ui/DialogueWindow.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_dw/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745_dw/gate_base.so /tmp/w3745_dw/gate_after.so
+cmp -l /tmp/w3745_dw/gate_base.so /tmp/w3745_dw/gate_after.so | wc -l   # 617
+```
+
+### 27.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4498 / linked 4498`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2975 / 4498`, prefix 3742,
+  3784 / 4524, first mismatch `DialogueWindow(Mission*, Level*, int)`
+  `0x166bfc` vs `0x166ecc`.
+* The original emits the 23 `DialogueWindow` strong functions in the
+  `.dynsym` address order listed in §27.1.
+* The baseline object order is first-reference order, not definition order:
+  the default ctor created the first section and its body created `init`
+  second; `set`'s body created `loadContent` before the `String*` ctor's
+  definition; `update`'s body created `isLastPage`/`nextPage`;
+  `nextPage`'s body created `length`; `OnTouchEnd`'s body created
+  `previousPage` before the later `getMode`/`isFirstPage` definitions.
+* The landed definition order makes the object section order exactly the
+  original address order (modulo the three weak duplicates, which the
+  linker deduplicates).  The landed reorder is gate-neutral
+  (`4498 / 4498`, lint `CLEAN ✓`, drift 0, every ELF section size/base
+  unchanged) and the gate `.text` and `.rodata` are byte-identical
+  (`cmp` = 0 for both sections); only build-id, 17 `.ARM.exidx` bytes and
+  580 `.ARM.extab` bytes differ.
+* The plain no-order build now has the whole `DialogueWindow` block at its
+  original addresses: exact addresses 3784 -> 3811, exact-address prefix
+  3742 -> 3769, plain `byte_exact` 2975 -> 2989.  The next plain no-order
+  frontier is `TouchButton::TouchButton(String const&, int, int, int,
+  unsigned char)` (`0x1684f0` original, `0x16979c` ours).
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2989`, not `4498`.
+* The `DialogueWindow` extab records are now in the original's order but
+  shifted uniformly `-8`; the remaining cumulative extab delta is the
+  pre-existing record-size shortfall, not this pass.
+* The `TouchButton` TU is the next per-TU source-order experiment; it is a
+  separate TU and was not tested or landed in this pass.

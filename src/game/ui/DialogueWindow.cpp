@@ -47,10 +47,6 @@ static const int g_dw_successCounts[0xa2] = {
 };
 
 
-DialogueWindow::DialogueWindow() {
-    this->init();
-}
-
 [[gnu::aligned(4)]] DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->init();
     this->level = level;
@@ -115,23 +111,8 @@ void DialogueWindow::init() {
     this->choiceActive = 0;
 }
 
-void DialogueWindow::set(Mission *mission, int kind, int campaign) {
-    this->mission = mission;
-    this->kind = kind;
-    if (kind == 2) {
-        Agent *agent = mission->getAgent();
-        if (agent != 0 && agent->isGenericAgent() == 0)
-            agent->setOfferAccepted(false);
-        mission->setFailed(true);
-    } else if (kind == 1) {
-        mission->getAgent();
-        mission->setWon(true);
-    }
-    this->page = 0;
-    if (campaign == -1)
-        campaign = Globals::status->getCurrentCampaignMission();
-    this->campaignMission = campaign;
-    this->loadContent();
+DialogueWindow::DialogueWindow() {
+    this->init();
 }
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
@@ -461,6 +442,101 @@ static int *const g_dw_speakerFaces[63] = {
     g_dw_lastSpeakerFaceParts,
 };
 
+void DialogueWindow::set(Mission *mission, int kind, int campaign) {
+    this->mission = mission;
+    this->kind = kind;
+    if (kind == 2) {
+        Agent *agent = mission->getAgent();
+        if (agent != 0 && agent->isGenericAgent() == 0)
+            agent->setOfferAccepted(false);
+        mission->setFailed(true);
+    } else if (kind == 1) {
+        mission->getAgent();
+        mission->setWon(true);
+    }
+    this->page = 0;
+    if (campaign == -1)
+        campaign = Globals::status->getCurrentCampaignMission();
+    this->campaignMission = campaign;
+    this->loadContent();
+}
+
+int DialogueWindow::getMode() {
+    return this->kind;
+}
+
+static EngineSoundConfig g_dw_soundConfig_storage;
+static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
+
+
+void DialogueWindow::update(int dt) {
+    if (this->scrollWindow != 0)
+        this->scrollWindow->update(dt);
+    if (this->choiceActive != 0)
+        this->choiceWindow->update(dt);
+    if (Globals::options[14] != 0 && this->voiceSound != -1) {
+        Globals::sound->getPlayingProgress(this->voiceSound);
+        if (Globals::sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
+            if (this->autoAdvanceTimer >= this->pauseLength)
+                this->nextPage();
+            this->autoAdvanceTimer = this->autoAdvanceTimer + dt;
+        }
+    }
+}
+
+bool DialogueWindow::isLastPage() {
+    return this->page == this->length() - 1;
+}
+int DialogueWindow::nextPage() {
+    int currentPage = this->page;
+    int len = this->length();
+    if (currentPage < len - 1) {
+        this->page += 1;
+        this->loadContent();
+        return 1;
+    }
+    return 0;
+}
+
+int DialogueWindow::length() {
+    Mission *mission = this->mission;
+    if (mission != 0 && mission->isCampaignMission() != 0) {
+        if (this->kind == 0) {
+            return g_dw_briefingCounts[this->campaignMission] / 2;
+        }
+        if (this->kind == 1) {
+            return g_dw_successCounts[this->campaignMission] / 2;
+        }
+        return 1;
+    }
+    if (this->kind == 0 && this->mission != 0 &&
+        this->mission->getTargetStation() == 0x6c) {
+        int result = 6;
+        if (Globals::status->field_114 == 2) result = 0x12;
+        return result;
+    }
+    return 1;
+}
+
+bool DialogueWindow::isFirstPage() {
+    return this->page == 0;
+}
+
+bool DialogueWindow::hasLevel() {
+    return this->level != 0;
+}
+
+void DialogueWindow::setLevel(Level *level) {
+    this->level = level;
+}
+
+int DialogueWindow::previousPage() {
+    if (this->page <= 0) return 0;
+    this->page = this->page - 1;
+    this->loadContent();
+    return 1;
+}
+
 void DialogueWindow::loadContent() {
     this->nextButton->replaceTextKeepSize(*Globals::gameText->getText(180));
     this->autoAdvanceTimer = 0;
@@ -655,64 +731,6 @@ void DialogueWindow::loadContent() {
     }
 }
 
-static EngineSoundConfig g_dw_soundConfig_storage;
-static EngineSoundConfig *g_dw_soundConfig = &g_dw_soundConfig_storage;
-
-
-void DialogueWindow::update(int dt) {
-    if (this->scrollWindow != 0)
-        this->scrollWindow->update(dt);
-    if (this->choiceActive != 0)
-        this->choiceWindow->update(dt);
-    if (Globals::options[14] != 0 && this->voiceSound != -1) {
-        Globals::sound->getPlayingProgress(this->voiceSound);
-        if (Globals::sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
-            if (this->autoAdvanceTimer >= this->pauseLength)
-                this->nextPage();
-            this->autoAdvanceTimer = this->autoAdvanceTimer + dt;
-        }
-    }
-}
-
-int DialogueWindow::nextPage() {
-    int currentPage = this->page;
-    int len = this->length();
-    if (currentPage < len - 1) {
-        this->page += 1;
-        this->loadContent();
-        return 1;
-    }
-    return 0;
-}
-
-int DialogueWindow::length() {
-    Mission *mission = this->mission;
-    if (mission != 0 && mission->isCampaignMission() != 0) {
-        if (this->kind == 0) {
-            return g_dw_briefingCounts[this->campaignMission] / 2;
-        }
-        if (this->kind == 1) {
-            return g_dw_successCounts[this->campaignMission] / 2;
-        }
-        return 1;
-    }
-    if (this->kind == 0 && this->mission != 0 &&
-        this->mission->getTargetStation() == 0x6c) {
-        int result = 6;
-        if (Globals::status->field_114 == 2) result = 0x12;
-        return result;
-    }
-    return 1;
-}
-
-bool DialogueWindow::hasLevel() {
-    return this->level != 0;
-}
-
-void DialogueWindow::setLevel(Level *level) {
-    this->level = level;
-}
-
 // Generic German dialogue text ids, one table per dialogue kind: two variants per
 // male agent race (races 0..8), then two female variants. Races >= 10 are clamped
 // to row 10, which (as in the original) reads past the male rows.
@@ -859,21 +877,3 @@ bool DialogueWindow::OnTouchEnd(int x, int y) {
 
 
 
-int DialogueWindow::getMode() {
-    return this->kind;
-}
-
-bool DialogueWindow::isFirstPage() {
-    return this->page == 0;
-}
-
-int DialogueWindow::previousPage() {
-    if (this->page <= 0) return 0;
-    this->page = this->page - 1;
-    this->loadContent();
-    return 1;
-}
-
-bool DialogueWindow::isLastPage() {
-    return this->page == this->length() - 1;
-}
