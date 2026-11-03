@@ -2998,3 +2998,357 @@ cmp -l /tmp/w3745/ms/gate_base.so /tmp/w3745/ms/gate_after.so | wc -l   # 36
 * The next plain no-order frontier is `ChoiceWindow::ChoiceWindow()`
   (`0x1467ec` original, `0x14719c` ours); `ChoiceWindow.cpp` needs its own
   emission-order pass.
+
+## 18. `TargetFollowCamera` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **2866 / 4497** (prefix 3504,
+3510 / 4524) to **2954 / 4497** (prefix 3557, 3709 / 4524). The first plain
+no-order mismatch moves from `TargetFollowCamera::~TargetFollowCamera()` to
+`Mission::setFailed(bool)`.
+
+This is the next frontier recorded in
+`_work/reconstructions/statuswindow_accessor_order_w3745.md` §6.
+
+### 18.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout:
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data.rel.ro     0x002fe8 @ 0x20cbb0
+```
+
+The original's `TargetFollowCamera` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15a4c8  TargetFollowCamera::TargetFollowCamera(unsigned, AEGeometry*, Vector, Vector)  (C1 == C2)
+0x15a688  TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(...)
+0x15a998  TargetFollowCamera::~TargetFollowCamera()                                     (D1 == D2)
+0x15a99a  TargetFollowCamera::setActive(bool)
+0x15a9a0  TargetFollowCamera::setTarget(AEGeometry*)
+0x15a9a4  TargetFollowCamera::getTarget()
+0x15a9a8  TargetFollowCamera::setTargetOffset(Vector const&)
+0x15a9ae  TargetFollowCamera::getTargetOffset()
+0x15a9b2  TargetFollowCamera::setCamOffset(Vector const&)
+0x15a9cc  TargetFollowCamera::getCamOffset()
+0x15a9d0  TargetFollowCamera::setPosition(float, float, float)
+0x15a9d6  TargetFollowCamera::setPosition(Vector const&)
+0x15a9e4  TargetFollowCamera::getPosition()
+0x15a9e8  TargetFollowCamera::translate(float, float, float)
+0x15aa48  TargetFollowCamera::update(int)
+0x15b280  TargetFollowCamera::translateNoUpdate(float, float, float)
+0x15b2d8  TargetFollowCamera::enableFirstPersonCam(bool)
+0x15b32c  TargetFollowCamera::hideShipForFirstPersonCam()
+0x15b332  TargetFollowCamera::setFirstPersonMatrix(Matrix&)
+0x15b338  TargetFollowCamera::setBoostPercentage(float, int)
+0x15b34a  TargetFollowCamera::setRumblePercentage(float, int)
+0x15b350  TargetFollowCamera::setFixed(bool)
+0x15b358  TargetFollowCamera::setLocal(Matrix)
+0x15b3d4  TargetFollowCamera::getLocal()
+0x15b3e4  TargetFollowCamera::setLocked(bool)
+0x15b464  TargetFollowCamera::setRotationAroundTarget(bool)
+0x15b46c  TargetFollowCamera::rotateAroundTarget(float, float, float)
+0x15b498  TargetFollowCamera::zoomTarget(float)
+0x15b49e  TargetFollowCamera::setLookAtCam(bool)
+0x15b4a4  TargetFollowCamera::calculateCoefficents(float)
+0x15b50a  TargetFollowCamera::setFastForwardMode(bool)
+0x15b574  TargetFollowCamera::setShipHandling(float)
+0x15b5c8  TargetFollowCamera::isInFastForwardMode()
+0x15b5ce  TargetFollowCamera::isInLookAtMode()
+0x15b5d4  TargetFollowCamera::resetShipHandling()
+0x15b5ec  TargetFollowCamera::hit()
+0x15b60e  TargetFollowCamera::hitSmall()
+0x15b62c  TargetFollowCamera::useTargetsUpVector(bool)
+0x15b632  TargetFollowCamera::roll(float)
+0x15b644  TargetFollowCamera::setRoll(float)
+```
+
+The HD source-layout dump independently witnesses this order
+(`_work/original_layout/original_layout.json`,
+`gof2hd_1.1.19_ios` -> `Classes/Game/TargetFollowCamera.cpp`): constructor,
+`aproximateCooefficients...`, constructor, destructor, `setActive`, `setTarget`,
+`getTarget`, `setTargetOffset`, `getTargetOffset`, `setCamOffset`,
+`getCamOffset`, `setPosition(float,float,float)`, `setPosition(Vector const&)`,
+`getPosition`, `translate`, `update`, `translateNoUpdate`,
+`enableFirstPersonCam`, `hideShipForFirstPersonCam`, `setFirstPersonMatrix`,
+`setBoostPercentage`, `setRumblePercentage`, `setFixed`, `setLocal`,
+`setRotationAroundTarget`, `rotateAroundTarget`, `zoomTarget`, `setLookAtCam`,
+`calculateCoefficents`, `setFastForwardMode`, `setShipHandling`,
+`isInFastForwardMode`, `isInLookAtMode`, `resetShipHandling`, `hit`,
+`hitSmall`, `useTargetsUpVector`. The Android 2.0.16 binary additionally has
+`getLocal`, `setLocked`, `roll` and `setRoll`; their binary addresses place
+them exactly where the landed source now defines them.
+
+### 18.2 Baseline object order
+
+`readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ship/TargetFollowCamera.cpp.obj`
+(section-header order = emission order):
+
+```text
+TargetFollowCamera::TargetFollowCamera()
+AEMath::Matrix::Matrix()
+TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(...)
+TargetFollowCamera::getTarget()
+TargetFollowCamera::getPosition()
+TargetFollowCamera::getTargetOffset()
+TargetFollowCamera::getCamOffset()
+TargetFollowCamera::getLocal()
+TargetFollowCamera::setLocal(Matrix)
+TargetFollowCamera::setTarget(AEGeometry*)
+TargetFollowCamera::zoomTarget(float)
+TargetFollowCamera::setRoll(float)
+TargetFollowCamera::roll(float)
+TargetFollowCamera::~TargetFollowCamera()
+TargetFollowCamera::setLookAtCam(bool)
+TargetFollowCamera::setActive(bool)
+TargetFollowCamera::setFixed(bool)
+TargetFollowCamera::setRotationAroundTarget(bool)
+TargetFollowCamera::useTargetsUpVector(bool)
+TargetFollowCamera::isInLookAtMode()
+TargetFollowCamera::isInFastForwardMode()
+TargetFollowCamera::hideShipForFirstPersonCam()
+TargetFollowCamera::setFirstPersonMatrix(Matrix&)
+TargetFollowCamera::setCamOffset(Vector const&)
+TargetFollowCamera::setTargetOffset(Vector const&)
+TargetFollowCamera::setPosition(Vector const&)
+TargetFollowCamera::setPosition(float, float, float)
+TargetFollowCamera::setRumblePercentage(float, int)
+TargetFollowCamera::setBoostPercentage(float, int)
+TargetFollowCamera::enableFirstPersonCam(bool)
+TargetFollowCamera::rotateAroundTarget(float, float, float)
+TargetFollowCamera::hit()
+TargetFollowCamera::hitSmall()
+TargetFollowCamera::setLocked(bool)
+TargetFollowCamera::update(int)
+TargetFollowCamera::translateNoUpdate(float, float, float)
+TargetFollowCamera::translate(float, float, float)
+TargetFollowCamera::setShipHandling(float)
+TargetFollowCamera::calculateCoefficents(float)
+TargetFollowCamera::resetShipHandling()
+TargetFollowCamera::setFastForwardMode(bool)
+```
+
+The first plain no-order mismatch was exactly the destructor:
+
+```text
+original 0x15a998 TargetFollowCamera::~TargetFollowCamera()
+ours     0x15aa56 TargetFollowCamera::~TargetFollowCamera()
+```
+
+### 18.3 The change
+
+Only the top-level definition order in `src/game/ship/TargetFollowCamera.cpp`
+changed. No body text changed: extracting the 40 definition blocks from the
+before and after files gives the same 40 blocks byte-for-byte, only permuted.
+The new order is the original `.dynsym` address order above, with
+`aproximateCooefficients...` placed immediately after the constructor (the
+constructor calls it, so clang emits it there anyway) and the destructor next.
+The emission order after the reorder is:
+
+```text
+TargetFollowCamera::TargetFollowCamera()
+AEMath::Matrix::Matrix()
+TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(...)
+TargetFollowCamera::~TargetFollowCamera()
+TargetFollowCamera::setActive(bool)
+TargetFollowCamera::setTarget(AEGeometry*)
+TargetFollowCamera::getTarget()
+TargetFollowCamera::setTargetOffset(Vector const&)
+TargetFollowCamera::getTargetOffset()
+TargetFollowCamera::setCamOffset(Vector const&)
+TargetFollowCamera::getCamOffset()
+TargetFollowCamera::setPosition(float, float, float)
+TargetFollowCamera::setPosition(Vector const&)
+TargetFollowCamera::getPosition()
+TargetFollowCamera::translate(float, float, float)
+TargetFollowCamera::update(int)
+TargetFollowCamera::translateNoUpdate(float, float, float)
+TargetFollowCamera::enableFirstPersonCam(bool)
+TargetFollowCamera::hideShipForFirstPersonCam()
+TargetFollowCamera::setFirstPersonMatrix(Matrix&)
+TargetFollowCamera::setBoostPercentage(float, int)
+TargetFollowCamera::setRumblePercentage(float, int)
+TargetFollowCamera::setFixed(bool)
+TargetFollowCamera::setLocal(Matrix)
+TargetFollowCamera::getLocal()
+TargetFollowCamera::setLocked(bool)
+TargetFollowCamera::setRotationAroundTarget(bool)
+TargetFollowCamera::rotateAroundTarget(float, float, float)
+TargetFollowCamera::zoomTarget(float)
+TargetFollowCamera::setLookAtCam(bool)
+TargetFollowCamera::calculateCoefficents(float)
+TargetFollowCamera::setFastForwardMode(bool)
+TargetFollowCamera::setShipHandling(float)
+TargetFollowCamera::isInFastForwardMode()
+TargetFollowCamera::isInLookAtMode()
+TargetFollowCamera::resetShipHandling()
+TargetFollowCamera::hit()
+TargetFollowCamera::hitSmall()
+TargetFollowCamera::useTargetsUpVector(bool)
+TargetFollowCamera::roll(float)
+TargetFollowCamera::setRoll(float)
+```
+
+This matches the original address order exactly. The two forward-reference
+pulls are visible and match the binary: `setTargetOffset` pulls
+`getTargetOffset` after it, and `setCamOffset` pulls `getCamOffset` after it;
+`translate` pulls `update` after it; `setFastForwardMode` pulls
+`setShipHandling` after it.
+
+### 18.4 Measured A/B
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `c2f65daf…` | **2866** | 3510 / 4524 | 3504 | `TargetFollowCamera::~TargetFollowCamera()` `0x15a998` vs `0x15aa56` |
+| full reorder (landed) | **4497 / 4497** | `9f5e224a…` | **2954** | **3709 / 4524** | **3557** | `Mission::setFailed(bool)` `0x15bac0` vs `0x15bac4` |
+
+The landed delta is **+88 plain byte_exact, +199 functions at their original
+address, +53 exact-address prefix**, with the gate counts unchanged.
+
+All **47** exported rows that mention `TargetFollowCamera` are now at their
+original address in the plain no-order link (42 `TargetFollowCamera` dynsym
+rows from the 40 definitions, with `C1`/`C2` and `D1`/`D2` duplicated, plus
+the 2 `PlayerEgo`, 1 `Explosion` and 2 `LevelScript` users). The
+plain no-order `byte_exact` count for those 47 rows rises from **32 to 41**;
+the six remaining non-byte rows are `setShipHandling`, `setTargetOffset`,
+`resetShipHandling`, `setFirstPersonMatrix`, `translate` and
+`PlayerEgo::setTargetFollowCamera`, all `pct 100.0` / `linked True` with only
+PLT or literal-pool differences.
+
+Gate `.so` A/B (`cmp -l` = 85 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| `.note.gnu.build-id` | 19 | build-id |
+| `.ARM.exidx` | 6 | exidx record order for the reordered functions |
+| `.ARM.extab` | 60 | extab record order for the reordered functions |
+
+`.text`, `.rodata` and `.data.rel.ro` are byte-identical between the baseline
+and landed gate `.so`; every ELF section size and base is unchanged
+(`.text 0x1337c8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc08`,
+`.ARM.extab 0x2628c @ 0x1a3b78`, `.rodata 0x41b67 @ 0x1c9e10`). The
+differing-byte counts against the original are unchanged for `.text`
+(108023) and `.ARM.exidx` (1731), and improve for `.ARM.extab`
+(113823 -> 113820).
+
+Plain no-order `.rodata` content is byte-identical before and after; its base
+shifts `0x1c9e20 -> 0x1c9e30` because the plain `.ARM.exidx` grows
+`0x6f68 -> 0x6f70` and `.ARM.extab` shifts `+8`. The plain `.text` size is
+`0x1337e8` in both.
+
+### 18.5 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x15bac0 Mission::setFailed(bool)   (4 bytes)
+ours     0x15bac4 Mission::setFailed(bool)
+```
+
+`src/game/mission/Mission.cpp` defines `hasFailed()` before `setFailed()` and
+`hasWon()` before `setWon()`; the original address order is `setFailed`,
+`hasFailed`, `setWon`, `hasWon`. This is a separate TU and was not changed in
+this pass.
+
+### 18.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements (before and after the source reorder)
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/tfc/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/tfc/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/tfc/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/tfc/base_noorder.so
+
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/tfc/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/tfc/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/tfc/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/tfc/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ship/TargetFollowCamera.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN18TargetFollowCamera'
+
+# gate .so A/B (baseline vs landed source)
+sha256sum /tmp/w3745/tfc/gate_base.so cmake-build-match/libgof2hdaa.so
+cmp -l /tmp/w3745/tfc/gate_base.so cmake-build-match/libgof2hdaa.so | wc -l   # 85
+```
+
+### 18.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2866 / 4497`, prefix 3504,
+  3510 / 4524, first mismatch `TargetFollowCamera::~TargetFollowCamera()`
+  `0x15a998` vs `0x15aa56`.
+* The original emits `TargetFollowCamera` in the `.dynsym` address order
+  listed in §18.1; the `gof2hd_1.1.19_ios` source-layout dump independently
+  witnesses the same order for the functions it contains.
+* The baseline object emitted the accessor block before the destructor and
+  `update`/`translate` in the wrong order; the reordered source emits exactly
+  the original address order.
+* The reorder is a pure definition permutation: the 40 definition blocks are
+  byte-identical before and after.
+* The reorder is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0, every
+  ELF section size/base unchanged) and improves the plain no-order build to
+  `2954 / 4497`, 3709 / 4524 addresses, prefix 3557.
+* All 47 exported rows that mention `TargetFollowCamera` are address-exact in
+  the plain no-order link; the 47-row plain `byte_exact` count rises from 32
+  to 41.
+* The gate `.so` differs only in the build-id, 6 `.ARM.exidx` bytes and 60
+  `.ARM.extab` bytes; `.text`, `.rodata` and `.data.rel.ro` are byte-identical.
+  `.ARM.extab` differing bytes against the original improve 113823 -> 113820.
+* The next plain no-order frontier is `Mission::setFailed(bool)`
+  (`0x15bac0` original, `0x15bac4` ours).
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2954`, not `4497`.
+* The remaining six non-byte `TargetFollowCamera` rows are PLT/literal-pool
+  differences, not emission-order differences; they are expected to clear
+  only when the PLT/GOT first-reference order converges.

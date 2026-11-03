@@ -57,163 +57,6 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
         this->handlingDampingB, dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
 }
 
-AEGeometry *TargetFollowCamera::getTarget() { return this->target; }
-Vector *TargetFollowCamera::getPosition() { return &this->position; }
-Vector *TargetFollowCamera::getTargetOffset() { return &this->targetOffset; }
-Vector *TargetFollowCamera::getCamOffset() { return &this->camOffset; }
-
-Matrix TargetFollowCamera::getLocal() { return this->localMatrix; }
-void TargetFollowCamera::setLocal(Matrix m) { this->localMatrix = m; }
-void TargetFollowCamera::setTarget(AEGeometry *t) { this->target = t; }
-void TargetFollowCamera::zoomTarget(float zoom) { this->zoom = zoom; }
-void TargetFollowCamera::setRoll(float roll) { this->rollAngle = roll; }
-void TargetFollowCamera::roll(float delta) { this->rollAngle += delta; }
-
-TargetFollowCamera::~TargetFollowCamera() {
-}
-
-void TargetFollowCamera::setLookAtCam(bool e) { this->lookAtCam = e; }
-void TargetFollowCamera::setActive(bool e) { this->active = e; }
-void TargetFollowCamera::setFixed(bool e) { this->fixed = e; }
-void TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTargetEnabled = e; }
-void TargetFollowCamera::useTargetsUpVector(bool e) { this->useTargetsUpVec = e; }
-
-bool TargetFollowCamera::isInLookAtMode() { return this->lookAtCam; }
-unsigned char TargetFollowCamera::isInFastForwardMode() { return this->fastForward; }
-bool TargetFollowCamera::hideShipForFirstPersonCam() { return this->hideShip; }
-
-void TargetFollowCamera::setFirstPersonMatrix(Matrix &m) { this->firstPersonMatrix = m; }
-
-void TargetFollowCamera::setCamOffset(const Vector &offset) {
-    *getCamOffset() = offset;
-    this->zoom = VectorLength(offset);
-}
-
-void TargetFollowCamera::setTargetOffset(const Vector &offset) {
-    *getTargetOffset() = offset;
-}
-
-void TargetFollowCamera::setPosition(const Vector &position) {
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-    this->position.x = x;
-    this->position.y = y;
-    this->position.z = z;
-}
-
-void TargetFollowCamera::setPosition(float x, float y, float z) {
-    this->position.x = x;
-    this->position.y = y;
-    this->position.z = z;
-}
-
-void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {
-    this->shakeAmount = pct;
-    this->shakeFrequency = frequency;
-}
-
-void TargetFollowCamera::setBoostPercentage(float pct, int frequency) {
-    if (frequency > 8) frequency = 8;
-    if (frequency < 2) frequency = 2;
-    this->shakeAmount = pct;
-    this->shakeFrequency = frequency;
-}
-
-void TargetFollowCamera::enableFirstPersonCam(bool enabled) {
-    this->firstPerson = enabled;
-    Vector offset = {0.0f, 150.0f, -800.0f};
-    this->fpOffset = offset;
-    this->shakeAccum = 0;
-    this->shakeReference = 0;
-}
-
-void TargetFollowCamera::rotateAroundTarget(float x, float y, float z) {
-    Vector r = {x, y, z};
-    *getRotation() = r;
-}
-
-void TargetFollowCamera::hit() {
-    if (this->rumbleActive != 0) return;
-    this->rumbleActive = 1;
-    this->rumbleTimer = 1000;
-    this->rumbleStrength = 6;
-    this->smallRumble = 0;
-}
-
-void TargetFollowCamera::hitSmall() {
-    if (this->rumbleActive != 0) return;
-    this->rumbleActive = 1;
-    this->rumbleTimer = 50;
-    this->rumbleStrength = 2;
-    this->smallRumble = 1;
-}
-
-void TargetFollowCamera::setLocked(bool locked) {
-    this->locked = locked;
-    if (!locked) return;
-    Matrix m = this->target->getMatrix();
-    *getUp() = MatrixGetUp(m);
-    *getPosition() = MatrixTransformVector(m, *getCamOffset());
-    update(50);
-}
-
-void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
-    this->position.x += dx;
-    this->position.y += dy;
-    this->position.z += dz;
-    this->targetPos.x += dx;
-    this->targetPos.y += dy;
-    this->targetPos.z += dz;
-}
-
-void TargetFollowCamera::translate(float dx, float dy, float dz) {
-    this->position.x += dx;
-    this->position.y += dy;
-    this->position.z += dz;
-    this->targetPos.x += dx;
-    this->targetPos.y += dy;
-    this->targetPos.z += dz;
-    update(1000);
-}
-
-void TargetFollowCamera::setShipHandling(float handling) {
-    float s = handling * bitsToFloat(0x3c23d70a);
-    this->shipHandling = handling;
-    this->handlingDampingA = bitsToFloat(0x3b449ba6) +
-                             (bitsToFloat(0x3f800000) - s) * bitsToFloat(0x3c75c28e);
-    this->handlingDampingB = bitsToFloat(0x3a83126f) + s * bitsToFloat(0x3c343958);
-    calculateCoefficents(bitsToFloat(0x3f800000));
-}
-
-void TargetFollowCamera::resetShipHandling() {
-    this->handlingDampingA = bitsToFloat(0x3ba3d70a);
-    this->handlingDampingB = bitsToFloat(0x3bc49ba6);
-    calculateCoefficents(1.0f);
-}
-
-void TargetFollowCamera::calculateCoefficents(float t) {
-    aproximateCooefficientsForAproximationOfDampingFunktion(
-        this->handlingDampingA * t,
-        dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
-    aproximateCooefficientsForAproximationOfDampingFunktion(
-        this->handlingDampingB * t,
-        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
-}
-
-void TargetFollowCamera::setFastForwardMode(bool enabled) {
-    if ((enabled && !this->fastForward) || (!enabled && this->fastForward)) {
-        setShipHandling(this->shipHandling);
-        aproximateCooefficientsForAproximationOfDampingFunktion(
-            this->handlingDampingA,
-            dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
-        aproximateCooefficientsForAproximationOfDampingFunktion(
-            this->handlingDampingB,
-            dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
-        this->fastForward = enabled;
-    }
-}
-
 void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
     float t, double &outB, double &outA, double &outC, double &outD, double &outE) {
     // Degree-8 polynomial fits of the damping-function coefficients over the damping value
@@ -242,6 +85,55 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
     outE = -(x7 * -609933689.8511872 + x8 * 3091464099.7803183 + x6 * 56126838.41706436 +
              x5 * -3103835.9217881793 + x4 * 89689.50184512888 + x3 * -1.6589554694294697 +
              x2 * 0.00422802001700341 + x * -4.3754915810647766e-06 + 1.4969893482859894e-09);
+}
+
+TargetFollowCamera::~TargetFollowCamera() {
+}
+
+void TargetFollowCamera::setActive(bool e) { this->active = e; }
+
+void TargetFollowCamera::setTarget(AEGeometry *t) { this->target = t; }
+
+AEGeometry *TargetFollowCamera::getTarget() { return this->target; }
+
+void TargetFollowCamera::setTargetOffset(const Vector &offset) {
+    *getTargetOffset() = offset;
+}
+
+Vector *TargetFollowCamera::getTargetOffset() { return &this->targetOffset; }
+
+void TargetFollowCamera::setCamOffset(const Vector &offset) {
+    *getCamOffset() = offset;
+    this->zoom = VectorLength(offset);
+}
+
+Vector *TargetFollowCamera::getCamOffset() { return &this->camOffset; }
+
+void TargetFollowCamera::setPosition(float x, float y, float z) {
+    this->position.x = x;
+    this->position.y = y;
+    this->position.z = z;
+}
+
+void TargetFollowCamera::setPosition(const Vector &position) {
+    float x = position.x;
+    float y = position.y;
+    float z = position.z;
+    this->position.x = x;
+    this->position.y = y;
+    this->position.z = z;
+}
+
+Vector *TargetFollowCamera::getPosition() { return &this->position; }
+
+void TargetFollowCamera::translate(float dx, float dy, float dz) {
+    this->position.x += dx;
+    this->position.y += dy;
+    this->position.z += dz;
+    this->targetPos.x += dx;
+    this->targetPos.y += dy;
+    this->targetPos.z += dz;
+    update(1000);
 }
 
 void TargetFollowCamera::update(int dt) {
@@ -370,3 +262,125 @@ void TargetFollowCamera::update(int dt) {
     Globals::Canvas->CameraSetLocal(this->id, targetMatrix);
     this->localMatrix = targetMatrix;
 }
+
+void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
+    this->position.x += dx;
+    this->position.y += dy;
+    this->position.z += dz;
+    this->targetPos.x += dx;
+    this->targetPos.y += dy;
+    this->targetPos.z += dz;
+}
+
+void TargetFollowCamera::enableFirstPersonCam(bool enabled) {
+    this->firstPerson = enabled;
+    Vector offset = {0.0f, 150.0f, -800.0f};
+    this->fpOffset = offset;
+    this->shakeAccum = 0;
+    this->shakeReference = 0;
+}
+
+bool TargetFollowCamera::hideShipForFirstPersonCam() { return this->hideShip; }
+
+void TargetFollowCamera::setFirstPersonMatrix(Matrix &m) { this->firstPersonMatrix = m; }
+
+void TargetFollowCamera::setBoostPercentage(float pct, int frequency) {
+    if (frequency > 8) frequency = 8;
+    if (frequency < 2) frequency = 2;
+    this->shakeAmount = pct;
+    this->shakeFrequency = frequency;
+}
+
+void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {
+    this->shakeAmount = pct;
+    this->shakeFrequency = frequency;
+}
+
+void TargetFollowCamera::setFixed(bool e) { this->fixed = e; }
+
+void TargetFollowCamera::setLocal(Matrix m) { this->localMatrix = m; }
+
+Matrix TargetFollowCamera::getLocal() { return this->localMatrix; }
+
+void TargetFollowCamera::setLocked(bool locked) {
+    this->locked = locked;
+    if (!locked) return;
+    Matrix m = this->target->getMatrix();
+    *getUp() = MatrixGetUp(m);
+    *getPosition() = MatrixTransformVector(m, *getCamOffset());
+    update(50);
+}
+
+void TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTargetEnabled = e; }
+
+void TargetFollowCamera::rotateAroundTarget(float x, float y, float z) {
+    Vector r = {x, y, z};
+    *getRotation() = r;
+}
+
+void TargetFollowCamera::zoomTarget(float zoom) { this->zoom = zoom; }
+
+void TargetFollowCamera::setLookAtCam(bool e) { this->lookAtCam = e; }
+
+void TargetFollowCamera::calculateCoefficents(float t) {
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingA * t,
+        dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingB * t,
+        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
+}
+
+void TargetFollowCamera::setFastForwardMode(bool enabled) {
+    if ((enabled && !this->fastForward) || (!enabled && this->fastForward)) {
+        setShipHandling(this->shipHandling);
+        aproximateCooefficientsForAproximationOfDampingFunktion(
+            this->handlingDampingA,
+            dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+        aproximateCooefficientsForAproximationOfDampingFunktion(
+            this->handlingDampingB,
+            dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
+        this->fastForward = enabled;
+    }
+}
+
+void TargetFollowCamera::setShipHandling(float handling) {
+    float s = handling * bitsToFloat(0x3c23d70a);
+    this->shipHandling = handling;
+    this->handlingDampingA = bitsToFloat(0x3b449ba6) +
+                             (bitsToFloat(0x3f800000) - s) * bitsToFloat(0x3c75c28e);
+    this->handlingDampingB = bitsToFloat(0x3a83126f) + s * bitsToFloat(0x3c343958);
+    calculateCoefficents(bitsToFloat(0x3f800000));
+}
+
+unsigned char TargetFollowCamera::isInFastForwardMode() { return this->fastForward; }
+
+bool TargetFollowCamera::isInLookAtMode() { return this->lookAtCam; }
+
+void TargetFollowCamera::resetShipHandling() {
+    this->handlingDampingA = bitsToFloat(0x3ba3d70a);
+    this->handlingDampingB = bitsToFloat(0x3bc49ba6);
+    calculateCoefficents(1.0f);
+}
+
+void TargetFollowCamera::hit() {
+    if (this->rumbleActive != 0) return;
+    this->rumbleActive = 1;
+    this->rumbleTimer = 1000;
+    this->rumbleStrength = 6;
+    this->smallRumble = 0;
+}
+
+void TargetFollowCamera::hitSmall() {
+    if (this->rumbleActive != 0) return;
+    this->rumbleActive = 1;
+    this->rumbleTimer = 50;
+    this->rumbleStrength = 2;
+    this->smallRumble = 1;
+}
+
+void TargetFollowCamera::useTargetsUpVector(bool e) { this->useTargetsUpVec = e; }
+
+void TargetFollowCamera::roll(float delta) { this->rollAngle += delta; }
+
+void TargetFollowCamera::setRoll(float roll) { this->rollAngle = roll; }
