@@ -5195,3 +5195,5 @@ after the zero-fill, using `rnd` for the station pick and `Globals::rnd` for rot
 Wave-97 section-order pass: `Waypoint` emission order (`w3745`) — constructor first, then
 destructors/accessors. Plain no-order 2864 -> 2866 (exact addrs 3499 -> 3508). Gate 4497/4497.
 Note: `_work/reconstructions/waypoint_ctor_placement_w3745.md`.
+Wave-97 section-order pass: `StatusWindow` accessor order (`w3745`) — StartPos before Height.
+Gate 4497/4497. Note: `_work/reconstructions/statuswindow_accessor_order_w3745.md`.
