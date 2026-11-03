@@ -188,8 +188,8 @@ The original build is now pinned by evidence, not by A/B alone:
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
-| .ARM.exidx | 28,528 | 28,528 | **0** | exact size and base (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
-| .ARM.extab | 156,312 | 156,300 | **-12** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -12 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
+| .ARM.exidx | 28,528 | 28,536 | **+8** | base exact (0x19cc08); 3567 entries, CANTUNWIND 273, inline 856, extab 2438. The extra CANTUNWIND entry is the 272-byte `layoutCtorPad` size anchor after `Layout::Layout` (see below). One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
+| .ARM.extab | 156,312 | 156,300 | **-12** | base 0x1a3b80 (+8, following the pad's extra exidx entry). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -12 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,522/5,578 entries at the same index (324 differing bytes; 5,370/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining order gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size (1,268 differing bytes from the symbol-order shift). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
@@ -202,7 +202,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (55.0%), `Generator::createMission` (73.6%),
+   `Layout::Layout` (50.8%), `LevelScript::process` (55.0%), `Generator::createMission` (73.6%),
    `Radar::draw` (73.9%), `Gun::calcCharacterCollision` (74.0%), `Level::createShip` (74.1%),
    `MGame::OnTouchEnd` (78.1%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
    `Status::missionCompleted` (86.7%).
@@ -212,8 +212,10 @@ The original build is now pinned by evidence, not by A/B alone:
    byte-identical (0 differing bytes, w3477). The baseline 8,826-byte gap was pure table
    emission order (word multiset 6,586/6,586 common, 0 unique). See
    `_work/reconstructions/rodata_content_round5_w3477.md`.
-3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272,
-   inline 856, extab 2438); `.ARM.extab` is 12 B short (156,300 vs 156,312). The delta is
+3. **EH tables.** `.ARM.exidx` is base-exact but +8 B (3567 entries, CANTUNWIND 273,
+   inline 856, extab 2438); the extra entry is the 272-byte `layoutCtorPad` after
+   `Layout::Layout`. `.ARM.extab` is 12 B short (156,300 vs 156,312) and its base is +8.
+   The extab delta is
    the LSDA records of the mismatched bodies (net -12 B); one
    `Generator::createMission` CANT/INL offset (4-byte body shortfall) also remains. The 194
    duplicate-address exidx entries are fully explained (193 empty-`.text` CANTUNWIND
