@@ -1690,9 +1690,9 @@ void Level::createMission() {
     }
     if ((Globals::status->getCurrentCampaignMission() == 36 || Globals::status->getCurrentCampaignMission() == 37) &&
         Globals::status->getSystem() != 0 && ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 5) {
-        this->hostileCount = 0;
-        raid = false;
         this->friendCount = 0;
+        raid = false;
+        this->hostileCount = 0;
     }
     if (Globals::status->getCurrentCampaignMission() >= 42 && Globals::status->getCurrentCampaignMission() <= 43 &&
         !Globals::status->inAlienOrbit()) {
