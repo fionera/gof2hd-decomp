@@ -4497,3 +4497,296 @@ cmp -l /tmp/w3745/sparks/gate_base.so /tmp/w3745/sparks/gate_after.so | wc -l   
 * The `PlayerJunk` reorder is the obvious next per-TU source-order
   experiment, but it is a separate TU and was not tested or landed in this
   pass.
+
+## 23. `PlayerJunk` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `report.json` is **byte-identical** (0 changed rows); the
+gate `.so` differs from the baseline in 60 bytes (20 `.note.gnu.build-id`,
+3 `.ARM.exidx`, 37 `.ARM.extab`), all from the moved EH records. Every other
+section, including `.text`, `.rodata`, `.dynsym`, `.dynstr`, `.plt` and
+`.rel.plt`, is byte-identical. The plain no-order link improves from
+**byte 2961 / 3724 of 4524 exact addresses / prefix 3647** to
+**byte 2962 / 3728 of 4524 / prefix 3666**; the first plain no-order mismatch
+moves from `PlayerJunk::update` to `MarqueeImage::setPosition`.
+
+This is the next frontier recorded in §22.6.
+
+### 23.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `d38831b6`:
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+.bss             0x0069ac @ 0x216970
+```
+
+The original's `PlayerJunk` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15e720  0x48  PlayerJunk::PlayerJunk(int, Player*, AEGeometry*, float, float, float)  # C1/C2 alias
+0x15e768  0x04  PlayerJunk::~PlayerJunk()                                              # D1/D2 alias
+0x15e76c  0x10  PlayerJunk::~PlayerJunk()                                              # D0
+0x15e77c  0x1c  PlayerJunk::reset()
+0x15e798  0x134 PlayerJunk::update(int)
+0x15e8cc  0x24  PlayerJunk::render()
+0x15e8f0  0x04  PlayerJunk::collide(float, float, float)
+0x15e8f4  0x04  PlayerJunk::outerCollide(float, float, float)
+```
+
+The `gof2hd_1.1.19_ios` source-layout dump (`_work/original_layout/original_layout.json`,
+`tu_symbols.gof2hd_1.1.19_ios["Classes/Game/PlayerJunk.cpp"]`) independently
+witnesses the same relative order for the four non-trivial functions:
+`~PlayerJunk`, `update`, `render`, `collide`, `outerCollide` (the dump does not
+list `reset`, which is present in the Android binary between `D0` and `update`).
+
+The baseline `PlayerJunk.cpp.obj` emitted the definitions in this order:
+
+```text
+PlayerJunk::PlayerJunk(int, Player*, AEGeometry*, float, float, float)
+PlayerJunk::~PlayerJunk()          # D1/D2
+PlayerJunk::reset()
+PlayerJunk::collide(float, float, float)
+PlayerJunk::outerCollide(float, float, float)
+PlayerJunk::render()
+PlayerJunk::update(int)
+```
+
+That made the plain no-order link put `update` at `0x15e7c4` instead of
+`0x15e798`; the first plain no-order mismatch was exactly:
+
+```text
+original 0x15e798 PlayerJunk::update(int)   (0x134 bytes)
+ours     0x15e7c4 PlayerJunk::update(int)
+```
+
+### 23.2 Landed source change
+
+Only change: move the `PlayerJunk::update()`, `PlayerJunk::render()`,
+`PlayerJunk::collide()` and `PlayerJunk::outerCollide()` definitions in
+`src/game/ship/PlayerJunk.cpp` so the definition order is
+`ctor, dtor, reset, update, render, collide, outerCollide`. No body was edited.
+
+```diff
+@@ after PlayerJunk::reset()
+-int PlayerJunk::collide(...) { return 0; }
+-int PlayerJunk::outerCollide(...) { return 0; }
+-void PlayerJunk::render() { ... }
+ void PlayerJunk::update(int elapsed) { ... }
++
++void PlayerJunk::render() { ... }
++
++int PlayerJunk::collide(...) { return 0; }
++
++int PlayerJunk::outerCollide(...) { return 0; }
+```
+
+The resulting object order is exactly the original address order:
+
+```text
+PlayerJunk::PlayerJunk(int, Player*, AEGeometry*, float, float, float)
+PlayerJunk::~PlayerJunk()
+PlayerJunk::reset()
+PlayerJunk::update(int)
+PlayerJunk::render()
+PlayerJunk::collide(float, float, float)
+PlayerJunk::outerCollide(float, float, float)
+```
+
+The `.text.*` section bodies are unchanged (ctor 0x48, D1/D2 0x4, D0 0x10,
+`reset` 0x1c, `update` 0x134, `render` 0x24, `collide`/`outerCollide` 0x4);
+only their order changed. The whole `PlayerJunk` block now lands at the
+original addresses in the plain no-order link:
+
+```text
+$NM -nD --defined-only /tmp/w3745/playerjunk/after_noorder.so | grep '_ZN10PlayerJunk'
+0015e720 T _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff
+0015e720 T _ZN10PlayerJunkC2EiP6PlayerP10AEGeometryfff
+0015e768 T _ZN10PlayerJunkD1Ev
+0015e768 T _ZN10PlayerJunkD2Ev
+0015e76c T _ZN10PlayerJunkD0Ev
+0015e77c T _ZN10PlayerJunk5resetEv
+0015e798 T _ZN10PlayerJunk6updateEi
+0015e8cc T _ZN10PlayerJunk6renderEv
+0015e8f0 T _ZN10PlayerJunk7collideEfff
+0015e8f4 T _ZN10PlayerJunk12outerCollideEfff
+```
+
+### 23.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `5ebe1e38…` | **2961** | 3724 / 4524 | 3647 | `PlayerJunk::update` `0x15e798` vs `0x15e7c4` |
+| landed | **4497 / 4497** | `3ee988db…` | **2962** | **3728 / 4524** | **3666** | `MarqueeImage::setPosition` `0x15f5f2` vs `0x15f5f6` |
+
+The landed delta is **+1 plain byte-exact** (`PlayerJunk::update` itself),
+**+4 functions at their original address** (`update`, `render`, `collide`,
+`outerCollide`), and **+19 exact-address prefix**, with the gate counts
+unchanged.
+
+The plain `report.json` changes exactly one row:
+
+```text
+_ZN10PlayerJunk6updateEi  byte False -> True  (pct 100.0, linked True, 0x134 B)
+```
+
+`update` was `pct == 100.0` but not byte-exact before the move because its
+`blx` PLT immediate is PC-relative: the baseline body at `0x15e7c4` encoded
+a different branch displacement from the original at `0x15e798`. At the
+original address the encoding matches. `render`, `collide` and
+`outerCollide` move to their original addresses but remain non-byte in the
+plain link (`reset`, `D0`, `D1`, `D2` likewise): the plain link's `.dynsym`
+still differs by 7 bytes, so their PLT slots are not the gate's slots. They
+are byte-exact in the gate link.
+
+The plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b98`, `.rodata 0x41b67 @ 0x1c9e30`.
+
+### 23.4 Why the gate `.so` changes (and why that is correct)
+
+The section-ordering file orders `.text.*` only; `.ARM.exidx` and
+`.ARM.extab` follow the object's section order. The original emits the
+`update` LSDA record before the `render` record; the baseline emitted them
+in the opposite order. Correcting the source order therefore necessarily
+reorders those two records. The gate `.so` differs from the baseline in
+exactly 60 bytes:
+
+| section | differing bytes | cause |
+|---|---:|---|
+| `.note.gnu.build-id` | 20 | gold hashes the changed EH content |
+| `.ARM.exidx` | 3 | the `update`/`render` extab pointers move |
+| `.ARM.extab` | 37 | the two LSDA records swap to their original relative order |
+
+`.text`, `.rodata`, `.dynsym`, `.dynstr`, `.plt` and `.rel.plt` are
+byte-identical (0 differing bytes each). The `.ARM.exidx`/`.ARM.extab`
+section sizes and bases are unchanged.
+
+`readelf --unwind` shows the original relative order
+`ctor, D1/D2, D0, reset, update, render, collide`; the landed tree reproduces
+exactly that sequence. The absolute `.ARM.extab` offsets are uniformly
+`-0x18` from the original (`0x1c4f88` vs `0x1c4fa0` for the `reset` record,
+`0x1c4f94` vs `0x1c4fac` for `update`, `0x1c4fb4` vs `0x1c4fcc` for
+`render`), which is the pre-existing cumulative record-size delta from
+preceding functions, not caused by this pass. The baseline was non-uniform
+(`reset` `-0x18`, `update` `-0xc`, `render` `-0x38`).
+
+### 23.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/playerjunk/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/playerjunk/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/playerjunk/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/playerjunk/base_noorder.so
+
+# source reorder: move update/render before collide/outerCollide
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/playerjunk/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/playerjunk/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/playerjunk/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/playerjunk/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ship/PlayerJunk.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN10PlayerJunk'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/playerjunk/gate_after.so
+git stash push -- src/game/ship/PlayerJunk.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/playerjunk/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/playerjunk/gate_base.so /tmp/w3745/playerjunk/gate_after.so
+cmp -l /tmp/w3745/playerjunk/gate_base.so /tmp/w3745/playerjunk/gate_after.so | wc -l   # 60
+```
+
+### 23.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2961 / 4497`, prefix 3647,
+  3724 / 4524, first mismatch `PlayerJunk::update` `0x15e798` vs `0x15e7c4`.
+* The original emits `PlayerJunk` in the `.dynsym` address order
+  `ctor, D1/D2, D0, reset, update, render, collide, outerCollide`; the
+  `gof2hd_1.1.19_ios` source-layout dump independently witnesses
+  `update, render, collide, outerCollide` in that order.
+* The baseline object emitted `collide, outerCollide, render, update`;
+  moving the definitions to `update, render, collide, outerCollide` makes
+  the object's `.text.*` order match the original address order. The section
+  bodies are unchanged.
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `report.json` is
+  byte-identical (all 4524 rows unchanged). The gate `.so` differs only in
+  the build-id and the moved EH records (60 bytes total), which is the
+  original's own record order.
+* The plain no-order build now has all ten `PlayerJunk` dynsym rows at their
+  original addresses: exact addresses 3724 -> 3728, exact-address prefix
+  3647 -> 3666, plain `byte_exact` 2961 -> 2962.
+* The next plain no-order frontier is `MarqueeImage::setPosition`
+  (`0x15f5f2` original, `0x15f5f6` ours). The original `MarqueeImage` order
+  is `ctor, D1/D2, setPosition, setSpeed, update, draw(int,int), draw()`;
+  our object emits `setSpeed` before `setPosition` and `draw()` before
+  `draw(int,int)`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2962`, not `4497`.
+* `render`, `collide`, `outerCollide`, `reset`, `D0`, `D1` and `D2` are at
+  their original addresses after this pass but are not byte-exact in the
+  plain link; the plain `.dynsym` still differs by 7 bytes, so their PLT
+  slots differ. They are byte-exact in the gate link. The exact 7-byte
+  `.dynsym` difference was not investigated.
+* The `MarqueeImage` reorder is the obvious next per-TU source-order
+  experiment, but it is a separate TU and was not tested or landed in this
+  pass.

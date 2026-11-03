@@ -31,21 +31,6 @@ void PlayerJunk::reset() {
     this->setActive(true);
 }
 
-int PlayerJunk::collide(float x, float y, float z) {
-    return 0;
-}
-
-int PlayerJunk::outerCollide(float x, float y, float z) {
-    return 0;
-}
-
-void PlayerJunk::render() {
-    if (this->crateGeometry != nullptr)
-        this->crateGeometry->render();
-    if ((uint32_t)(this->state - 3) > 1)
-        KIPlayer::render();
-}
-
 void PlayerJunk::update(int elapsed) {
     this->field_0x124 = elapsed;
     if (this->player->getHitpoints() < 1) {
@@ -74,4 +59,19 @@ void PlayerJunk::update(int elapsed) {
 
     if (this->state == 3)
         this->state = 4;
+}
+
+void PlayerJunk::render() {
+    if (this->crateGeometry != nullptr)
+        this->crateGeometry->render();
+    if ((uint32_t)(this->state - 3) > 1)
+        KIPlayer::render();
+}
+
+int PlayerJunk::collide(float x, float y, float z) {
+    return 0;
+}
+
+int PlayerJunk::outerCollide(float x, float y, float z) {
+    return 0;
 }
