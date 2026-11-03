@@ -1894,7 +1894,8 @@ void Level::createMission() {
         (*this->enemies)[i]->setDead();
         int jumpCoords[3] = {Globals::rnd->nextInt(400000) - 200000, Globals::rnd->nextInt(200000) - 100000,
                              Globals::rnd->nextInt(100000) + 50000};
-        (*this->enemies)[i]->setRoute(new Route(jumpCoords, 3));
+        Route *jumpRoute = new Route(jumpCoords, 3);
+        (*this->enemies)[i]->setRoute(jumpRoute);
         (*this->enemies)[i]->setJumper(true);
     }
     int stationRace = localRace == 2 ? 0 : localRace;
