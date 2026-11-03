@@ -10,8 +10,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
-PlayerStaticFar::~PlayerStaticFar() = default;
-
 PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
     : PlayerStatic(playerId, geometry, x, y, z), viewDirection() {
     this->posX = x;
@@ -20,6 +18,8 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
     this->player->setRadius(0x1d4c);
     this->boundingVolumes = nullptr;
 }
+
+PlayerStaticFar::~PlayerStaticFar() = default;
 
 void PlayerStaticFar::setYRotation(int /*yRotation*/) {
 }

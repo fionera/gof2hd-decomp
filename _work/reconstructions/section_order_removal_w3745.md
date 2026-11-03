@@ -793,7 +793,7 @@ followed by `verify.py` and `addr_match.py`.
 | state | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
 |---|---:|---:|---:|---:|---|
 | baseline | **4497 / 4497** | **3020** | 3226 / 4524 | 2778 | `SystemPathFinder::constructPath` `0x11ba96` vs `0x11bada` |
-| landed | **4497 / 4497** | **3022** | **3228 / 4524** | **2810** | `PlayerStaticFar::PlayerStaticFar` `0x11c254` vs `0x11c278` |
+| landed | **4497 / 4497** | **3022** | **3228 / 4524** | **2810** | `PlayerStaticFar::PlayerStaticFar` `0x11c254` vs `0x11c268` |
 
 The entire `SystemPathFinder` block is now at its original address in the plain
 link, and `constructPath` is byte-exact there (`verify.py` row
@@ -877,8 +877,227 @@ changed.
   (call-site wins over definition point when the definition precedes the
   caller; the body is scanned at the definition), not from the compiler source.
 * The next plain no-order frontier is `PlayerStaticFar::PlayerStaticFar`
-  (`0x11c254` original, `0x11c278` ours). Its object emits the destructors
+  (`0x11c254` original, `0x11c268` ours). Its object emits the destructors
   before the constructor; that is a separate TU and was not changed in this
   pass.
 * The ordering file still cannot be removed: the plain no-order build is
   `3022`, not `4497`.
+
+## 10. `PlayerStaticFar` constructor placement (2026-11-02)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0, and the gate `.so` is **byte-identical** to the baseline (`cmp` status 0).
+The plain no-order link rises from **3022 / 4497** (prefix 2810, 3228 / 4524
+exported functions at their original address) to **3024 / 4497** (prefix 2864,
+3233 / 4524). The first plain no-order mismatch moves from
+`PlayerStaticFar::PlayerStaticFar` to `LensFlare::update`.
+
+This is the next frontier recorded in §9.5. The baseline value printed there
+(`0x11c278`) was a transcription error; the measured baseline constructor
+address is `0x11c268` (corrected in §9.3/§9.5).
+
+### 10.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `PlayerStaticFar` block from the binary's own `.dynsym`:
+
+```text
+0x11c254  PlayerStaticFar::PlayerStaticFar(int, AEGeometry*, float, float, float)
+0x11c2c4  PlayerStaticFar::~PlayerStaticFar()   # D1/D2
+0x11c2c8  PlayerStaticFar::~PlayerStaticFar()   # D0
+0x11c2d8  PlayerStaticFar::setYRotation(int)
+0x11c2da  PlayerStaticFar::render()
+0x11c2e0  PlayerStaticFar::update(int)
+0x11c460  PlayerStaticFar::collide(float, float, float)
+0x11c4ee  PlayerStaticFar::getInitPosition(AbyssEngine::AEMath::Vector)
+0x11c4fc  PlayerStaticFar::outerCollide(float, float, float)
+0x11c506  PlayerStaticFar::outerCollide(AbyssEngine::AEMath::Vector)
+0x11c510  PlayerStaticFar::getProjectionVector(AbyssEngine::AEMath::Vector const&)
+0x11c52e  PlayerStaticFar::projectCollisionOnSurface(AbyssEngine::AEMath::Vector const&)
+```
+
+The HD source-layout dump independently lists the constructor first, followed by
+the three destructor symbols (`_work/original_layout/original_layout.json`,
+`Classes/Game/PlayerStaticFar.cpp`), so the original source order had the
+constructor before the destructor.
+
+The baseline `PlayerStaticFar.cpp.obj` emitted the destructors before the
+constructor:
+
+```text
+PlayerStaticFar::~PlayerStaticFar()   # D2
+PlayerStaticFar::~PlayerStaticFar()   # D0
+PlayerStaticFar::PlayerStaticFar
+PlayerStaticFar::setYRotation
+PlayerStaticFar::render
+PlayerStaticFar::update
+...
+```
+
+That made the plain no-order link place the constructor at `0x11c268` instead
+of `0x11c254`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x11c254 PlayerStaticFar::PlayerStaticFar
+ours     0x11c268 PlayerStaticFar::PlayerStaticFar
+```
+
+### 10.2 Compile-only placement variants
+
+The exact `compile_commands.json` command for `PlayerStaticFar.cpp` was used
+with only the input and output paths replaced. The only source edit was moving
+`PlayerStaticFar::~PlayerStaticFar() = default;` after the constructor body.
+
+| source order | object `.text.*` order around the block |
+|---|---|
+| baseline: destructor, constructor | `D2, D0, ctor, setYRotation, render, update, ...` |
+| **landed: constructor, destructor** | **`ctor, D2, D0, setYRotation, render, update, ...`** |
+
+The two objects have the same 18 `.text.*` section names, and every section has
+the same size and SHA-256 by name; only their order changed. This is a pure
+emission-order fix, not a body change.
+
+### 10.3 Landed source change
+
+```diff
+@@ after the includes
+-PlayerStaticFar::~PlayerStaticFar() = default;
+-
+ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
+     : PlayerStatic(playerId, geometry, x, y, z), viewDirection() {
+@@
+     this->boundingVolumes = nullptr;
+ }
+
++PlayerStaticFar::~PlayerStaticFar() = default;
++
+ void PlayerStaticFar::setYRotation(int /*yRotation*/) {
+```
+
+### 10.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3022** | 3228 / 4524 | 2810 | `PlayerStaticFar::PlayerStaticFar` `0x11c254` vs `0x11c268` |
+| landed | **4497 / 4497** | **3024** | **3233 / 4524** | **2864** | `LensFlare::update` `0x11d082` vs `0x11d6a4` |
+
+The whole `PlayerStaticFar` block is now at its original address in the plain
+link, and both constructor symbols are byte-exact there:
+
+```text
+_ZN15PlayerStaticFarC1EiP10AEGeometryfff  pct 100.0  byte True  linked True  size 112
+_ZN15PlayerStaticFarC2EiP10AEGeometryfff  pct 100.0  byte True  linked True  size 112
+```
+
+The landed delta is **+2 plain byte_exact, +5 functions at their original
+address, +54 exact-address prefix**, with the gate unchanged. The gate `.so` is
+byte-identical to the baseline:
+
+```sh
+cmp -s /tmp/w3745/psf/gate_baseline.so /tmp/w3745/psf/gate_final.so
+echo $?   # 0
+```
+
+Section fingerprint after the change (all unchanged):
+
+```text
+.text        0x1337c8 @ 0x69440
+.ARM.exidx   0x006f70 @ 0x19cc08
+.ARM.extab   0x02628c @ 0x1a3b78   (original 0x26298; known -12)
+.rodata      0x041b67 @ 0x1c9e10
+.data.rel.ro 0x002fe8 @ 0x20cbb0
+.data        0x00296c @ 0x214000
+.bss         0x0069ac @ 0x216970
+```
+
+### 10.5 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x11d082 LensFlare::update(int)
+ours     0x11d6a4 LensFlare::update(int)
+```
+
+`LensFlare.cpp.obj` emits `render2D` before `update`; the original `.dynsym`
+and the HD source-layout dump both put `update` before `render2D`. This is a
+different TU and was not changed here.
+
+### 10.6 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/psf/final_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/psf/verify_final \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/psf/final_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/psf/final_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ship/PlayerStaticFar.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep PlayerStaticFar
+```
+
+The compile-only variants used the exact `compile_commands.json` command for
+`PlayerStaticFar.cpp` with only `-o` and the input path replaced; no flag was
+changed.
+
+### 10.7 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3022 / 4497`, prefix 2810,
+  3228 / 4524, first mismatch `PlayerStaticFar::PlayerStaticFar`
+  `0x11c254` vs `0x11c268`.
+* The original emits the constructor before the destructors: the original
+  `.dynsym` gives `0x11c254` for the constructor and `0x11c2c4` for D1/D2, and
+  the HD source-layout dump lists the constructor first.
+* Moving the destructor definition after the constructor makes the object order
+  `ctor, D2, D0, setYRotation, render, update, ...`; all 18 `.text.*` section
+  bytes are unchanged by name.
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0) and
+  the gate `.so` is byte-identical to the baseline.
+* The plain no-order build improves to `3024 / 4497`, prefix 2864,
+  3233 / 4524. Both constructor symbols are byte-exact at `0x11c254`.
+* The next plain no-order frontier is `LensFlare::update` (`0x11d082` original,
+  `0x11d6a4` ours); `LensFlare.cpp.obj` emits `render2D` before `update`, while
+  the original `.dynsym` and HD dump put `update` first.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3024`, not `4497`.
+* The `LensFlare` move is the obvious next per-TU source-order experiment, but
+  it was not tested or landed in this pass.
