@@ -92,9 +92,10 @@ reconstructed (see the fidelity section).
 
 ### Current state — ELF sections (2026-11-03)
 All 27 section headers are byte-identical. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
-`.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size-
-and base-exact; `.rel.plt` content is byte-identical. The only differing section bytes are
-`.text` (107,135), `.ARM.extab` (108,469), `.ARM.exidx` (839) and `.note.gnu.build-id` (20).
+`.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
+`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but `0x26290` (8 bytes short of
+the original's `0x26298`, the known w4270 HangarWindow EH residual). The only differing section
+bytes are `.text` (106,090), `.ARM.exidx` (1,647) and `.note.gnu.build-id` (20).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

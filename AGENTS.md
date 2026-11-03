@@ -92,9 +92,10 @@ Known gate limitations (do not lean on them):
 **4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
 **CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 25 functions are not
 byte-exact. All **27 ELF section headers are byte-identical**; `.text`, `.rodata`, `.data`,
-`.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
-`.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. The only
-differing section bytes are `.text` (107,135), `.ARM.extab` (108,469), `.ARM.exidx` (839) and
+`.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
+`.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. `.ARM.extab` is
+base-exact but `0x26290` (8 bytes short; known w4270 HangarWindow EH residual). The only
+differing section bytes are `.text` (106,090), `.ARM.exidx` (1,647) and
 `.note.gnu.build-id` (20).
 
 ## Source rules (hard)
