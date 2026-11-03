@@ -5125,3 +5125,5 @@ Wave-97 function pass: `Level::createMission` 88.08 -> 88.32% (`w3740`) by hoist
 `Route` to a local so the argument is constructed before the receiver. 17172 B, gate 4497/4497.
 Wave-97 section-order pass: `Standing::setStanding` reorder (`w3745`) to emit `Standing` in
 original dynsym order. Gate 4497/4497.
+Wave-97 section-order pass: `Wanted` (`w3745`) emitted in original dynsym order; plain no-order
+3085 -> 3088. Gate 4497/4497.
