@@ -612,7 +612,6 @@ bool LevelScript::process(int delta) {
     Array<KIPlayer *> *enemies;
     PlayerEgo *player = m_pLevel->getPlayer();
     enemies = m_pLevel->getEnemies();
-    Status *status = Globals::status;
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -695,7 +694,7 @@ bool LevelScript::process(int delta) {
                 m_pCamera->enableFirstPersonCam(false);
                 player->hideShipForFirstPersonCameraView(false);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pLevel->getPlayer()->setCollide(false);
+                player->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 player->player->removeAllGuns();
@@ -719,7 +718,7 @@ bool LevelScript::process(int delta) {
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
+                player->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -941,7 +940,7 @@ bool LevelScript::process(int delta) {
                 }
             }
         }
-    } else if (status->getCurrentCampaignMission() == 1) {
+    } else if (Globals::status->getCurrentCampaignMission() == 1) {
         // mission==1 intro (disasm 0x137d82). Slowly rotates the player ship and pans the camera
         // while radio message #2 plays; on fade-out it switches to the next scene.
         m_pLevel->lodManager->forceUpdate(delta, true);
@@ -973,7 +972,7 @@ bool LevelScript::process(int delta) {
             return 0;
         }
         m_pCamera->translate((float) ((double) delta * 0.1), 0.0f, 0.0f);
-    } else if (status->getCurrentCampaignMission() == 0x51 && status->inAlienOrbit()) {
+    } else if (Globals::status->getCurrentCampaignMission() == 0x51 && Globals::status->inAlienOrbit()) {
         // Chain A, mission 81 alien-orbit arrival (0x1381ca).
         m_pLevel->lodManager->forceUpdate(delta, true);
         m_pCamera->translate((float) (2 * delta), 0.0f, (float) (-4 * delta));
