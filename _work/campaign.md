@@ -5114,3 +5114,8 @@ byte_exact 4497 -> 2454; the worker measured it on an older base. `SystemPathFin
 placement (`18bea882`) is fine and landed (plain no-order 3020 -> 3022).
 Wave-97 section-order pass: `PlayerStaticFar` ctor placement (`w3745`) by defining the ctor
 before the dtor; plain no-order 3022 -> 3024 (prefix 2810 -> 2864). Gate 4497/4497.
+Wave-97 function pass: `Layout::Layout` 47.6 -> 47.7% (`w3724`) by the 0x1a8 float ternary
+and deriving `rewardBoxY2` from `rewardBoxY` (the 0x168 form alone is not safe: it grows
+`.text` by 0x20). 7072 B, gate 4497/4497.
+Wave-97 section-order pass: `LensFlare::update` placement (`w3745`) by defining `update`
+before `render2D`; plain no-order 3024 -> 3076 (prefix 2864 -> 2870). Gate 4497/4497.
