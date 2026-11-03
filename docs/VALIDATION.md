@@ -14,10 +14,15 @@ fetched once — the original's `.comment` names `GCC: (GNU) 4.9.x 20150123`) at
 zlib/libzip built with the app's ndk-build flags — `-Oz -g
 -fstack-protector-strong -ffunction-sections -funwind-tables -mthumb` and the SHA/CRYPTO_memcmp C files
 `-marm`, matching the original's per-function ISA modes) into `libgof2hdaa.so` with the NDK
-**gold** linker: `-shared -soname libgof2hdaa.so --build-id -s` (gold's own strip; the original's
-`.shstrtab` is in gold's Stringpool order, which a post-link GNU `strip --strip-all` rewrites into
-section-header order), libc++abi.a, zlib+libzip pulled
-`--whole-archive`, app-provided imports (FMOD, GLES, …) left unresolved as in the original.
+**gold** linker: `-shared -soname libgof2hdaa.so --build-id` (no `-s`), followed by the same
+post-link `arm-linux-androideabi-strip --strip-all` the original used, libc++abi.a, zlib+libzip
+pulled `--whole-archive`, app-provided imports (FMOD, GLES, …) left unresolved as in the original.
+The original's build-id is the SHA-1 of the **unstripped** gold output (gold zeroes the build-id
+note descriptor and hashes the whole file), so a gold `-s` link can never reproduce it. bfd's strip
+normalizes the section headers (`.rel.plt` `SHF_INFO_LINK`/`sh_info`, `.init_array`/`.fini_array`
+`sh_entsize=4`, unaligned `.bss` `sh_offset`) and rewrites `.shstrtab` into section-header order;
+`tools/reorder_shstrtab.py` restores gold's Stringpool order from the unstripped output before it
+is deleted.
 
 The link inputs mirror ndk-build's: the app's prebuilt `libfmodex.so`/`libfmodevent.so` from the
 original APK (`../_work/bins/apk_libs/`, NEEDED in the original's order) — FMOD re-exports the
@@ -37,8 +42,9 @@ is a function of the complete symbol-insertion sequence (every object, every ref
 in input order) and is expected to converge only as object contents/membership converge — not a
 knob to tune directly.
 
-This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
-`asm`, and **no `--section-ordering-file`**. The source tree reproduces the original TU membership
+This is a **single, plain gold link** followed by the original's post-link GNU strip (the only
+post-processing step; `tools/reorder_shstrtab.py` merely restores gold's own `.shstrtab` bytes) —
+no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The source tree reproduces the original TU membership
 and within-TU function order, so the plain object input order (`tools/source_order.txt`) places
 every one of the 4,524 exported functions at its original address; `.text`, `.rodata`, `.data`,
 `.bss`, `.got`, `.ARM.exidx` and the dynamic tables are size- and base-exact. The link order is a

@@ -166,10 +166,12 @@ The original build is now pinned by evidence, not by A/B alone:
   same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
-* **Current differing bytes (after the wave-95, w3616 relocation-order, w3624 GameResource
-  TU-convergence, w3695 strip-method and w3697 section-order passes).** `.text` 112,878;
-  `.ARM.exidx` 1,752; `.ARM.extab` 114,259 (size -12); `.rel.plt` 21; `.note.gnu.build-id` 20;
-  `.dynsym` 324; `.dynstr` 1,268; `.hash` 133; `.gnu.version` 0; `.rel.dyn` 74; `.shstrtab` 0.
+* **Current differing bytes (after the w4239 gold+GNU-strip pass).** `.text` 106,990;
+  `.ARM.extab` 117,742; `.ARM.exidx` 1,110; `.note.gnu.build-id` 20; `.rel.plt` 12;
+  `.dynsym` 0; `.dynstr` 0; `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 0;
+  **section headers 0** (all 27 × 40 bytes exact, including `.rel.plt`
+  `SHF_INFO_LINK`/`sh_info=20`, `.init_array`/`.fini_array` `sh_entsize=4` and `.bss`
+  `sh_offset=0x21596c`).
   `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`, `.fini_array`,
   `.comment`, `.note.*`, `.ARM.attributes` and `.shstrtab` are byte-identical, and the
   section table matches the original's 27 sections. The w3616 pass made
@@ -203,7 +205,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
 | .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
-| .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
+| .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac; `sh_offset` 0x21596c, the unaligned end of `.data` as bfd writes it). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
 | .dynamic | 328 | 328 | 0 | exact since the link passes `-z now` (DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, .dynamic at 0x20fba4). |
 
@@ -245,10 +247,12 @@ The original build is now pinned by evidence, not by A/B alone:
    that converges last.
 
 ## Done
-- **Pass 1: strip** the link output (gold `-s`; previously a post-link `strip --strip-all`) ->
-  section set matches the original (no .symtab/.strtab/.debug_*). Gold `-s` also reproduces the
-  original's gold-Stringpool `.shstrtab` order; GNU strip rewrote it. Parity unaffected
-  (35/0/0); verify/sodiff read .dynsym+.text.
+- **Pass 1: strip** the link output with the original's post-link GNU `strip --strip-all`
+  (previously gold `-s`) -> section set matches the original (no .symtab/.strtab/.debug_*) and the
+  bfd section-header normalization is exact. bfd rewrites `.shstrtab` into section-header order;
+  `tools/reorder_shstrtab.py` restores the gold-Stringpool order from the unstripped link output.
+  This also makes the build-id a hash of the unstripped link output, as in the original. Parity
+  unaffected (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
 Same-hash == completing the decompile to byte-perfection: make the remaining 27 functions exact,

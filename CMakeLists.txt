@@ -93,6 +93,13 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
 # not by hiding it at link time. The compiler-emitted duplicate C1/C2 & D1/D2 constructor/destructor
 # aliases that cannot be removed in source are the documented irreducible delta (see docs/VALIDATION.md).
 set(_so "${CMAKE_BINARY_DIR}/libgof2hdaa.so")
+# The original link was gold *without* -s, followed by a GNU strip: the shipped APK library has
+# bfd-normalized section headers (.rel.plt SHF_INFO_LINK/sh_info, INIT/FINI_ARRAY sh_entsize=4,
+# unaligned NOBITS .bss sh_offset) and a build-id hashed over the *unstripped* link output.  Gold's
+# -s instead hashes the stripped file and leaves gold's own header form.  We keep the unstripped
+# gold output only long enough to recover its Stringpool .shstrtab order (bfd rewrites .shstrtab
+# into section-header order); tools/reorder_shstrtab.py restores it.
+set(_so_unstripped "${CMAKE_BINARY_DIR}/libgof2hdaa.unstripped.so")
 set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
 
 # crtbegin_so.o is a plain link input; the original linked it directly, as we do.
@@ -116,17 +123,15 @@ add_custom_command(OUTPUT "${_so}"
     # must be a link error, not a silent first-wins pick.
     COMMAND ${GOF2_NDK_GOLD}
             -shared -soname libgof2hdaa.so --build-id
-            # Gold's own strip, not a post-link GNU strip: the original's .shstrtab is in gold's
-            # Stringpool order (the raw link order, debug names removed), while GNU strip rewrites
-            # it in section-header order. `-s` reproduces the original .shstrtab byte-for-byte and
-            # emits the same 27-section set (no .symtab/.strtab/.debug_*).
-            -s
+            # Do NOT pass -s: the original's build-id is the SHA-1 of the unstripped link output
+            # (gold zeroes the build-id note descriptor and hashes the whole file), so a gold -s
+            # link can never reproduce it even with identical section contents.
             # The original is fully RELRO-bound: DT_FLAGS=BIND_NOW, DT_FLAGS_1=NOW, and its .got
             # sits before .data inside PT_GNU_RELRO (gold only emits that order with -z now).
             # Evidence: readelf -d/-lW on the original; without -z now gold puts .got after .data.
             -z now
             --exclude-libs=libgcc.a
-            -o "${_so}"
+            -o "${_so_unstripped}"
             ${_crtbegin} -L ${_libdir}
             ${_link_objs}
             --whole-archive ${_link_zlib} ${_link_libzip} --no-whole-archive
@@ -139,13 +144,22 @@ add_custom_command(OUTPUT "${_so}"
             ${_link_libgcc}
             -l dl -l c
             ${_libdir}/crtend_so.o
+    # The original was stripped with GNU binutils after the link.  bfd normalizes the section
+    # headers (the 5 bytes the gold -s output gets wrong) and rewrites .shstrtab into section
+    # order; reorder_shstrtab.py then restores gold's Stringpool order from the unstripped file.
+    COMMAND ${GOF2_NDK_STRIP} --strip-all -o "${_so}" "${_so_unstripped}"
+    COMMAND ${CMAKE_COMMAND} -E env python3
+            "${CMAKE_SOURCE_DIR}/tools/reorder_shstrtab.py"
+            "${_so_unstripped}" "${_so}"
+    COMMAND ${CMAKE_COMMAND} -E remove "${_so_unstripped}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
     DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_crtbegin}
             ${_openssl_out} ${_libzip_out} ${_zlib_out}
             ${CMAKE_SOURCE_DIR}/tools/source_order.txt
-    COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
+            ${CMAKE_SOURCE_DIR}/tools/reorder_shstrtab.py
+    COMMENT "Linking libgof2hdaa.so (gold + GNU strip) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")
 
