@@ -587,3 +587,187 @@ cmake --build cmake-build-match --target check -j8  # byte_exact 4498 -> 2615 (F
 
 (The scratch helpers live in `/dev/shm/w4004`; `gen2.py`/`v8.py`/`gen3.py` are the generators,
 `fit.py` the 7-feature screen, `scorefn.py` the official per-function verifier.)
+
+## 9. Third pass (wave 90): X4 — bottom-of-loop condition + shared latch; the tail's
+## `difficulty` register is the remaining blocker
+
+Status: still no byte-exact shape. Best new local optimum is **X4: 1996 B, official pct
+70.400000** (vs V8 68.7, HEAD 73.590096). X4 is the first shape that reproduces the
+original's *loop* layout exactly: the loop condition is at the bottom
+(`movs.w r0,fp,lsl#31; beq.n ...` at the latch), the `pick == 8` path joins the shared
+`mov r2,r6` latch, and the `pick == 12` select survives CVP. Its tail is still V8's tail
+(104-byte frame, `difficulty` in `r5`, agent spilled), so it cannot land.
+
+### 9.1 The X4 shape
+
+X4 is V8 with exactly one edit:
+
+```c++
+        if (__builtin_expect(pick == 12, 0)) {
+```
+
+instead of `if (pick == 12) {`.  Everything else is the §8.1 V8 loop and the wave-89
+tail.  (The `__builtin_expect` is a real branch-weight statement: the original's `pick == 12`
+select block is laid out after the `selected = true` path and reached with a forward
+conditional branch; without the expect clang sinks the whole block and the loop condition
+returns to the top.)
+
+Measured with the official verifier (`scorefn.py`, `autojunk=False`):
+
+```
+osize=1996 usize=1996 pct=70.400000 byte=False linked=False
+```
+
+Loop region (original vs X4, addresses normalised):
+
+```
+  97264: mov  r6, r0            mov  r6, r0
+  97266: cmp  r0, #8            cmp  r0, #8
+  97268: beq.n 972d2            beq.n 972b8      ; shared latch (target differs)
+  9726a: cmp  r6, #10           ldr  r0, [sp, #44]   ; (c) pick-first vs race-first
+  9726c: bne.n 97276            cmp  r0, #4
+  9726e: ldr  r0, [sp, #36]     bcc.n 97276
+  97270: movs r2, #10           movs r2, #10
+  97272: cmp  r0, #3            cmp  r6, #10
+  97274: bhi.n 972d4            beq.n 972d4
+  ...
+  972b0: cmp  r6, #12           cmp  r6, #12
+  972b2: bne.n 972ce           beq.n 972bc      ; (d) select block inline vs out-of-line
+  972b4: ... select inline      ... not-12 path inline
+  972ce: mov.w fp, #1           mov.w fp, #1
+  972d2: mov  r2, r6            mov  r2, r6
+  972d4: movs.w r0, fp, lsl #31 movs.w r0, fp, lsl #31
+  972d8: beq.n 97248            beq.n 97248
+```
+
+Remaining loop diffs:
+
+* **(a)** the `pick == 12` select block is out-of-line in X4
+  (`cmp r6,#12; beq 972bc`), inline in the original (`cmp r6,#12; bne 972ce`); the
+  non-select `mov.w fp,#1` is inline in X4, out-of-line in the original.  This is the
+  direct effect of `__builtin_expect(pick == 12, 0)`.
+* **(b)** the `pick == 10` test is race-first in X4
+  (`ldr r0,[sp,#44]; cmp r0,#4; bcc; movs r2,#10; cmp r6,#10; beq`) but pick-first in
+  the original (`cmp r6,#10; bne; ldr race; movs r2,#10; cmp race,#3; bhi`).
+* **(c)** the frame is 104 (original 96); every spill offset is +8.
+* **(d)** the tail's `difficulty` lives in `r5` (X4) instead of `r6` (original), so the
+  agent spill slot `[sp,#36]` stays live and the colourer cannot merge it with
+  `difficulty` (the §8.3 mechanism).
+
+Normalised diff hunks (instruction text with `[sp,#N]`, `[pc,#N]`, branch targets and
+small immediates folded): **X4 88, HEAD 98, V8 89**.  Raw official diff hunks: X4 136,
+V8 139.
+
+### 9.2 The tail's `difficulty` register — root cause is store sinking
+
+The original's tail allocates `difficulty` to `r6` and spills it to `[sp,#24]`; X4/HEAD/V6
+allocate it to `r5` and never spill it.  Both have the same free callee-saved set at the
+`++difficulty` point (`r5` and `r6` are both dead), so the choice is decided by the
+*scheduling* of the `type == 8` block:
+
+```
+original (9748e-974ac)                 X4/HEAD (974a0-974bc)
+  bl nextInt(15)                         bl nextInt(15)
+  mov  r6, r0        ; amount temp       mov  r6, r0        ; amount temp
+  ldr  r0, [r5, #4]                      ldr  r0, [r5, #4]
+  bl   getTecLevel                       bl   getTecLevel
+  mov  r1, r0        ; tec temp          mov  r5, r0        ; difficulty -> r5
+  adds r0, r6, #5    ; amount             adds r0, r6, #5    ; amount
+  str  r0, [sp, #28] ; STORE in block     b    975fa        ; store SUNK to join
+  mov  r6, r1        ; difficulty -> r6   (str r0,[sp,#20] at the join)
+  b    9760a
+```
+
+Because the original stores `amount` *inside* the block, `r0` is free for the amount and
+`r6` (the just-dead amount temp) is reused for `difficulty`.  In X4/HEAD the amount store
+is sunk by `machine-sink` to the common join block, so `r0` keeps the `getTecLevel`
+result and `difficulty` is scheduled earlier into `r5`.  Once `difficulty` is in `r5`,
+`r5` is needed for `fromSystemPtr`/`galaxy`, `difficulty` moves to `r9`, and the agent is
+spilled instead — the whole 104-byte tail follows.
+
+The store is sunk only when every path reaches a single join block that can hold the
+store.  In the original the join is at `9760a` (`ldr r0,[pc,...]` galaxy) and the stores
+are in the predecessor blocks (`974a8`, `975ca`, `97604`, `97548`); in X4/HEAD the join is
+at `975fa` (`str r0,[sp,#N]`) and the galaxy load follows at `975fc`.
+
+### 9.3 Forcing `difficulty` into `r6` (and why it still fails)
+
+The only source change found that moves `difficulty` to `r6` is to keep the `items` local
+live across the `else` block, e.g.
+
+```c++
+    int itemId = 0;
+    int amount = 0;
+    Array<Item *> *items = Globals::items;   // hoisted out of the type == 8 branch
+    if (type == 8) {
+        ...
+        amount = Globals::rnd->nextInt(15) + 5;
+        int tec = (*items)[itemId]->getTecLevel();
+        difficulty = tec;
+    } else { ... }
+    ...
+    } else if (type == 8) {
+        reward = (float) ((*items)[itemId]->getMaxPrice() * amount) * 1.7f;
+    }
+```
+
+Measured: **1996 B, 63.2 %** (frame 104, 716 instructions).  The hoisted `items` live
+range spans the `else` block, so the colourer reserves `r5` for it and gives `difficulty`
+`r6` (`mov r6,r0` / `adds r6,r0,#1` appear).  But `items` itself then needs a spill slot
+(`str r5,[sp,#40]` / `ldr r1,[sp,#40]`), the frame grows to 104, and the tail is *worse*
+than X4's.  Adding the X4 expect to that shape gives **1992 B, 64.1 %**.
+
+A 144-combination sweep over `{itemId/amount declaration order} × {items local vs hoisted}
+× {amount-then-difficulty, difficulty-then-amount, amount/tec/difficulty, tec/difficulty/amount}
+× {++difficulty, difficulty++, difficulty = difficulty + 1} × {reward uses Globals::items vs
+the local}` found 36 shapes with `difficulty` in `r6`; **all 36 hoist `items` and all 36 have
+a 104-byte frame**.  No shape has both `r6` and frame 96.
+
+### 9.4 Other tail sweeps (all official verifier, `createMission` size noted)
+
+| shape | size | pct |
+|---|---:|---:|
+| X4 (`expect(pick==12,0)` on V8) | 1996 | **70.4** |
+| X4 + `int tec` temp + `0.5f` true arm | 1996 | 68.7 |
+| X4 + `0.5f` true arm only | 1992 | 70.6 |
+| X4 + amount temp | 1996 | 70.4 |
+| X4 + difficulty init/ternary/++/galaxy order | 1996 | 70.4 |
+| X4 + `items` hoisted + local reward use | 1996 | 63.2 |
+| X4 + `items` hoisted + local reward use + expect | 1992 | 64.1 |
+| HEAD + `expect(pick==12,0)` | 1996 | 72.9 |
+| HEAD + `int pick` + expect | 1960 | 48.3 |
+| `amount` short/int16/char/int8 (HEAD) | 2000/2000/2000/2000 | 69.0 |
+| `difficulty` volatile (HEAD) | 1988 | 68.0 |
+
+Loop-shape sweep: 192 `{while,for,do,for(;;)} × {guard top/before} × {pick8 goto/cont} ×
+{pick10 nested/nested_cont/and/and_cont} × {pick12 goto/inline} × {latch shared/shared_next}`
+shapes; 56 have a 96-byte frame, 136 have 104, **none** has `difficulty` in `r6`.
+
+### 9.5 Conclusion of the third pass
+
+X4 proves the loop can be reproduced exactly with a real branch-weight statement, and
+isolates the remaining blocker to the tail's `difficulty` register.  That register is a
+downstream consequence of `machine-sink` moving the `amount` store to the join block; the
+only way found to keep `difficulty` in `r6` is to keep `items` live across the `else`
+block, which costs an extra spill slot and a 104-byte frame.  A byte-exact shape needs a
+source form in which the `amount` store stays in the `type == 8` block (so the amount temp
+in `r6` is reused for `difficulty`) **without** keeping `items` live.  That is the
+remaining task.
+
+### 9.6 Reproduction (third pass)
+
+```sh
+git checkout -- src/game/mission/Generator.cpp
+cmake --build cmake-build-match --target check -j8      # baseline PASS
+
+# X4
+python3 /dev/shm/w4004/genX.py X4
+cp /dev/shm/w4004/varX.cpp src/game/mission/Generator.cpp
+cmake --build cmake-build-match --target link_so -j8
+python3 /dev/shm/w4004/scorefn.py                       # 1996/1996, pct 70.4
+python3 /dev/shm/w4004/ndiff.py > /dev/shm/w4004/n_x4.txt   # 88 normalised hunks
+```
+
+Scratch helpers: `genX.py` (X4 generator), `scorefn.py` (official verifier),
+`ndiff.py` (normalised diff), `tsig.py` (one-TU compile + signature),
+`brute_tail.py`/`t5.py`/`t6.py` (tail sweeps), `sweep_sig.py` (192-shape loop sweep).
