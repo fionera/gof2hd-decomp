@@ -40,6 +40,8 @@ template void ArrayReleaseClasses<AbstractGun*>(Array<AbstractGun*> &);
 
 template void ArrayReleaseClasses<ImagePart*>(Array<ImagePart*> &);
 
+template void ArrayReleaseClasses<AbyssEngine::AEMath::Vector *>(Array<AbyssEngine::AEMath::Vector *> &);
+
 template void ArrayReleaseClasses<Item*>(Array<Item*> &);
 
 template void ArrayReleaseClasses<ListItem*>(Array<ListItem*> &);

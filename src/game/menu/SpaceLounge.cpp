@@ -38,6 +38,12 @@
 #include "engine/audio/FModSound.h"
 #include "game/world/Standing.h"
 
+// The original TU saw only the declaration of this instantiation, so the
+// destructor's ArrayReleaseClasses<Vector*> call stayed an invoke (it is not
+// provably nounwind) and got a cleanup LSDA entry.  Keeping the definition in
+// ArrayInstantiations.cpp reproduces that.
+extern template void ArrayReleaseClasses<AbyssEngine::AEMath::Vector *>(Array<AbyssEngine::AEMath::Vector *> &);
+
 static inline int pc_GetWidth(PaintCanvas *self) { return self->GetWidth(); }
 static inline int pc_GetHeight(PaintCanvas *self) { return self->GetHeight(); }
 

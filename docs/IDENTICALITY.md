@@ -188,8 +188,8 @@ The original build is now pinned by evidence, not by A/B alone:
 |---|---|---|---|---|
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
-| .ARM.exidx | 28,528 | 28,528 | **0** | base exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. One `Generator::createMission` CANT/INL offset remains (4-byte body shortfall); raw prel31 operands still differ with local `.text` layout. |
-| .ARM.extab | 156,312 | 156,300 | **-12** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -12 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
+| .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Raw prel31 operands still differ with local `.text` layout. |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,522/5,578 entries at the same index (324 differing bytes; 5,370/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining order gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size (1,268 differing bytes from the symbol-order shift). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
@@ -202,7 +202,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (55.0%), `Generator::createMission` (73.6%),
+   `Layout::Layout` (47.1%), `LevelScript::process` (55.0%), `Generator::createMission` (73.6%),
    `Radar::draw` (73.9%), `Level::createShip` (74.1%), `MGame::OnTouchEnd` (78.4%),
    `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%), `Gun::calcCharacterCollision`
    (82.7%) and `Status::missionCompleted` (86.7%).
@@ -212,16 +212,21 @@ The original build is now pinned by evidence, not by A/B alone:
    byte-identical (0 differing bytes, w3477). The baseline 8,826-byte gap was pure table
    emission order (word multiset 6,586/6,586 common, 0 unique). See
    `_work/reconstructions/rodata_content_round5_w3477.md`.
-3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272,
-   inline 856, extab 2438). `.ARM.extab` is 12 B short (156,300 vs 156,312); its base is
-   exact (0x1a3b78).
-   The extab delta is
-   the LSDA records of the mismatched bodies (net -12 B); one
-   `Generator::createMission` CANT/INL offset (4-byte body shortfall) also remains. The 194
-   duplicate-address exidx entries are fully explained (193 empty-`.text` CANTUNWIND
-   sentinels from `-ffunction-sections` + 1 zero-size `AbyssEngine::getAppVersion`), and are
-   already reproduced address-for-address. Raw prel31 operands still differ with local
-   `.text` layout. See `_work/reconstructions/exidx_extab_exact_w3462.md` and
+3. **EH tables.** `.ARM.exidx` is now size- and base-exact (3566 entries, CANTUNWIND 272,
+   inline 856, extab 2438); the `Layout::Layout` body is size-exact 7072 B
+   without a pad. `.ARM.extab` is 8 B short (156,304 vs 156,312) with an exact base.
+   The extab delta is six LSDA records: `LevelScript::process` +4,
+   `HangarWindow::render` -8, `RecordHandler::recordStoreWrite` -16, `Hud::draw` +16,
+   `Level::createShip` -8, `Generator::createMission` +4 (net -8 B). Five of those bodies
+   are not byte-exact; `RecordHandler::recordStoreWrite` is byte-exact but its cleanup
+   call-site ranges are split differently. The w3840 `extern template` for
+   `ArrayReleaseClasses<Vector*>` in `SpaceLounge.cpp` restored the original's invoke (the
+   original only saw the declaration, so the call was not pruned as `nounwind`) and removed
+   the `SpaceLounge::~SpaceLounge` -4 record. The 194 duplicate-address exidx entries are
+   fully explained (193 empty-`.text` CANTUNWIND sentinels from `-ffunction-sections` + 1
+   zero-size `AbyssEngine::getAppVersion`), and are already reproduced address-for-address.
+   Raw prel31 operands still differ with local `.text` layout. See
+   `_work/reconstructions/exidx_extab_exact_w3462.md` and
    `_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
 4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
    full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
@@ -252,8 +257,9 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 4498 byte_exact,
 4498 linked_exact, 4524 size_match of 4524; pct buckets {100:4498, 90-99:10, 80-89:9, 70-79:4,
-<60:3}. 0 function rows size-MISMATCH (Layout::Layout C1/C2 are now 7072 B; the temporary
-`layoutCtorPad` anchor is gone); 19 size-match >=80% not-linked (the highest-value near-misses).
+<60:3}. 0 function rows size-MISMATCH (the w3840 inline `layoutCtorPad` made
+`Layout::Layout` C1/C2 exactly 7072 B); 19 size-match >=80% not-linked (the highest-value
+near-misses).
 
 Systematic clusters (one cause fixes many):
 1. **Shader `UpdateMeshData` cluster** (~15 fns at 86-94%, GenericShader/VertexColorShader/BumpShaderV2/4/
