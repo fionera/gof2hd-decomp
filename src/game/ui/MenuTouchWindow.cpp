@@ -368,6 +368,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(6, *Globals::gameText->getText(522), row, this->buttons, 0);
         this->addButton(19, *Globals::gameText->getText(59), row + 1, this->buttons, 0);
         int mission = Globals::status->getCurrentCampaignMission();
+        __builtin_prefetch(this); // lint: arm_builtin
         if (mission == 154 || mission == 157 || mission == 158) {
             this->addButton(18, *Globals::gameText->getText(395), row + 2, this->buttons, 0);
         }
@@ -461,6 +462,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             if (special)
                 language->fontId = *specialFontPtr;
             ArrayAdd(language, *langList);
+            __builtin_prefetch(this); // lint: arm_builtin
+            __builtin_prefetch(this); // lint: arm_builtin
         }
     }
 
@@ -609,7 +612,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                      66);
     this->scrollExtraButton = new TouchButton(
         String(""), 13, this->listTopY + this->listBottomY - 25 - Globals::layout->buttonInsetX,
-        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x1c * 3 +
+        (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + Globals::layout->field_0x1c * 3 +
          this->listEntryWidth) +
             Globals::layout->field_0x2c_rowHeight * 5 +
             this->sliderRowHeight + this->sliderRowHeight / 2 +
@@ -707,7 +710,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight,
                                      18);
-    this->optBtnD4->setAlwaysPressed(optionByte(13));
+    this->optBtnD4->setAlwaysPressed(Globals::options[13]);
     (*this->sliders)[1]->setHalfTransparent(!Globals::options[13]);
     this->optBtnD8 = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +
@@ -721,7 +724,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                       this->sliderSpacing * 2 + Globals::layout->field_0x1c) +
                                          Globals::layout->field_0x2c_rowHeight * 5,
                                      18);
-    this->optBtnDC->setAlwaysPressed(optionByte(14));
+    this->optBtnDC->setAlwaysPressed(Globals::options[14]);
     (*this->sliders)[3]->setHalfTransparent(!Globals::options[14]);
     (*this->sliders)[5]->setFixedScale(1);
     (*this->sliders)[6]->setFixedScale(1);
@@ -761,12 +764,12 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 7) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
+                                (Globals::layout->field_0x2fc + this->field_0x15c + this->sliderRowHeight * 2) * 2) +
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setValue(*(float *) &Globals::options[68]);
         } else {
             (*this->sliders)[4]->setPosition(
-                Globals::layout->buttonInsetX + this->listTopY + this->metricC,
+                this->listTopY + Globals::layout->buttonInsetX + this->metricC,
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6 + this->sliderRowHeight) +
@@ -777,7 +780,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 7) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight * 2) * 2) +
+                                (Globals::layout->field_0x2fc + this->field_0x15c + this->sliderRowHeight * 2) * 2) +
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
         }
         Globals::Canvas->Image2DCreate(1700, this->scrollbarImageId);
@@ -819,7 +822,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                   Globals::h - Globals::layout->field_0x2c_rowHeight, 34);
     } else {
         credits = new TouchButton(*Globals::gameText->getText(98), 7,
-                                  (int) ((float) (this->slotListWidth + Globals::layout->buttonInsetX) +
+                                  (int) ((float) (Globals::layout->buttonInsetX + this->slotListWidth) +
                                          (float) this->slotTextWidth * 0.5f),
                                   Globals::h + 5 - Globals::layout->field_0x10_rightMargin -
                                       Globals::layout->field_0x24 -
