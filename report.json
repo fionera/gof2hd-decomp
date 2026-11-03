@@ -16,14 +16,6 @@
  },
  "rows": [
   {
-   "name": "_ZN11LevelScript7processEi",
-   "pct": 42.8,
-   "byte": false,
-   "linked": false,
-   "osize": 57232,
-   "usize": 57232
-  },
-  {
    "name": "_ZN6LayoutC1Ev",
    "pct": 47.7,
    "byte": false,
@@ -38,6 +30,14 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
+  },
+  {
+   "name": "_ZN11LevelScript7processEi",
+   "pct": 52.0,
+   "byte": false,
+   "linked": false,
+   "osize": 57232,
+   "usize": 57232
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
