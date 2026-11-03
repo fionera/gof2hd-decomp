@@ -34,6 +34,9 @@ set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build
 # metadata at clang 7 -Oz: it keeps PostRA machine sinking from moving entry-block argument copies
 # past early exits (DBG_VALUE users pin them), which is the schedule the original shows. Measured:
 # linked 2779->2856, byte 1185->1194. The link output is stripped, so no debug bytes ship.
+# -DANDROID -DNDEBUG: the NDK r18b CMake toolchain's Release compile line carries both (see
+# _work/reconstructions/build_provenance_w3901.md §6.1). Measured codegen-neutral on this tree
+# (byte_exact 4498 both with and without), so this is a build-fidelity fix, not a matching knob.
 # -std=c++11: the original guards signed `new T[n]` counts against negative n (`orr rX, n, n,
 # asr #31`), which clang 7 emits only for C++98/C++11, not for its gnu++14 default.
 set(_match_api 16)
@@ -48,7 +51,7 @@ set(CMAKE_CXX_FLAGS
 --sysroot=${GOF2_NDK_SYSROOT} \
 -isystem ${GOF2_NDK_SYSROOT}/usr/include \
 -isystem ${GOF2_NDK_SYSROOT}/usr/include/arm-linux-androideabi \
--D__ANDROID_API__=${_match_api} \
+-D__ANDROID_API__=${_match_api} -DANDROID -DNDEBUG \
 -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast \
 -I${_gof2_root}/src \
 -I${_gof2_root}/third_party/fmod/inc \
@@ -65,7 +68,7 @@ set(CMAKE_C_FLAGS
 --sysroot=${GOF2_NDK_SYSROOT} \
 -isystem ${GOF2_NDK_SYSROOT}/usr/include \
 -isystem ${GOF2_NDK_SYSROOT}/usr/include/arm-linux-androideabi \
--D__ANDROID_API__=${_match_api} \
+-D__ANDROID_API__=${_match_api} -DANDROID -DNDEBUG \
 -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast \
 -I${_gof2_root}/src \
 -I${_gof2_root}/third_party/fmod/inc \
