@@ -131,7 +131,12 @@ The original build is now pinned by evidence, not by A/B alone:
   104 transitions, 0 interleaving). The current tree reproduces that with a plain input-order
   link: after the w4210 TU/function-order reconstruction (including the `BSphere` -> `Vector`
   merge), all 4,524 exported functions land at their original addresses and no ordering file is
-  used. See `_work/reconstructions/link_order_tu_reconstruction_w4210.md`,
+  used. The object order is now a checked-in plain source list (`tools/source_order.txt`), read
+  directly by `CMakeLists.txt` and linked as `$<TARGET_OBJECTS:gof2>`; the build no longer reads
+  the original `.so` to decide link order. `tools/gen_link_order.py` is analysis-only and the old
+  `gen_section_order.py`/`gen_exidx_markers.py` generators are deleted (w4217). See
+  `_work/reconstructions/link_order_tu_reconstruction_w4210.md`,
+  `_work/reconstructions/static_link_order_w4217.md`,
   `_work/reconstructions/ffunction_sections_and_order_file.md` and
   `_work/reconstructions/tu_membership_interleaving_w3613.md`.
 * **`-fdata-sections` was NOT used.** The original's `.rodata`, `.data` and

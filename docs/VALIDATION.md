@@ -25,9 +25,10 @@ libgcc helpers (`__aeabi_idiv`, `_Unwind_*`, ...), which therefore stay unversio
 original — then libc++abi.a and libgcc.a last, with ndk-build's default `--exclude-libs=libgcc.a`
 (the original defines `__aeabi_ldivmod` locally without exporting it).
 
-Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the original's link order
-(`tools/gen_link_order.py`, recovered from the original's .dynsym; gold emits symbols in its
-symbol-hash-table iteration order, not input order), the system `-l` libs up to libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
+Link-line order (2026-10-21) follows ndk-build: crtbegin, the objects in the original's TU order
+(`tools/source_order.txt`, a checked-in plain source list; gold emits symbols in input order, so
+this list is what places every function at its original address), the system `-l` libs up to
+libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
 (hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
 undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
 NEEDED identical. .dynsym ORDER is not yet identical (5566/5578 positions): gold (same r18b
@@ -38,14 +39,17 @@ knob to tune directly.
 
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
 `asm`, and **no `--section-ordering-file`**. The source tree reproduces the original TU membership
-and within-TU function order, so the plain object input order (recovered by
-`tools/gen_link_order.py`) places every one of the 4,524 exported functions at its original
-address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx` and the dynamic tables are
-size- and base-exact. The only remaining `.text`-layout input is the object link order itself.
-Gold's default shared-library handling of undefined imports is used (no `--unresolved-symbols`
-switch; undecompiled engine internals import as shims, and the import set is pinned by the
-ratchet, so a typo'd callee cannot slip in as a silent new import). See
-`_work/reconstructions/link_order_tu_reconstruction_w4210.md`.
+and within-TU function order, so the plain object input order (`tools/source_order.txt`) places
+every one of the 4,524 exported functions at its original address; `.text`, `.rodata`, `.data`,
+`.bss`, `.got`, `.ARM.exidx` and the dynamic tables are size- and base-exact. The link order is a
+static source input: the build reads the checked-in source list, not the original `.so`, so no
+manually linked data is generated at build time. `tools/gen_link_order.py` remains as an analysis
+tool (it produced the list once); `tools/gen_section_order.py` and `tools/gen_exidx_markers.py`
+are gone. Gold's default shared-library handling of undefined imports is used (no
+`--unresolved-symbols` switch; undecompiled engine internals import as shims, and the import set
+is pinned by the ratchet, so a typo'd callee cannot slip in as a silent new import). See
+`_work/reconstructions/link_order_tu_reconstruction_w4210.md` and
+`_work/reconstructions/static_link_order_w4217.md`.
 `--allow-multiple-definition` was removed after it was found masking a real triplicate definition
 of the Vector/Matrix operators — duplicate strong definitions are hard link errors now. Any symbol
 the original does not export but we do is removed by reshaping the C++, or recorded below as an

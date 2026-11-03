@@ -54,16 +54,11 @@ def newest_source_mtime():
 def newest_build_input_mtime(bd):
     """Inputs that are not under src/ but still change the linked .so.
 
-    A hand-edited section_order.txt (or a changed generator) must make the .so stale;
-    otherwise check can ratchet against a report for the previous link.
+    A hand-edited tools/source_order.txt (or a changed build recipe) must make the .so
+    stale; otherwise check can ratchet against a report for the previous link.
     """
     paths = [
-        bd / "section_order.txt",
-        bd / "link_order.rsp",
-        bd / "exidx_markers" / "stamp",
-        ROOT / "tools" / "gen_section_order.py",
-        ROOT / "tools" / "gen_link_order.py",
-        ROOT / "tools" / "gen_exidx_markers.py",
+        ROOT / "tools" / "source_order.txt",
         ROOT / "CMakeLists.txt",
         ROOT / "cmake" / "toolchain.cmake",
     ]

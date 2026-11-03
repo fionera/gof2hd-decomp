@@ -22,8 +22,31 @@ set(GOF2_FMOD_LIBDIR "${_orig_dir}/apk_libs" CACHE PATH "Directory holding the A
 
 # One OBJECT library feeds both the per-function ASM verify (diff vs the original) and the whole-.so
 # link (gold link below). The original .so is -fPIC, so these objects match it and link cleanly.
-file(GLOB_RECURSE _srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")
+#
+# The object link order is the original TU order. It is a plain checked-in source list
+# (tools/source_order.txt), not something derived from the original .so at build time: gold emits
+# symbols in input order, so this list is the only thing that places every function at its original
+# address. Keep the list in the original TU order; a new TU must be inserted at its witnessed
+# position (see _work/reconstructions/static_link_order_w4217.md).
+file(STRINGS "${CMAKE_SOURCE_DIR}/tools/source_order.txt" _srcs)
+list(TRANSFORM _srcs STRIP)
+# Keep only source paths, so comment/blank lines (and CMake's ';' list splitting) cannot leak in.
+list(FILTER _srcs INCLUDE REGEX "^src/")
 add_library(gof2 OBJECT ${_srcs})
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/tools/source_order.txt")
+
+# Guard against adding a source file without choosing its link position: the explicit list must
+# cover every C/C++ TU in src/.
+file(GLOB_RECURSE _all_srcs CONFIGURE_DEPENDS RELATIVE "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.c")
+set(_srcs_sorted ${_srcs})
+list(SORT _srcs_sorted)
+list(SORT _all_srcs)
+if(NOT _srcs_sorted STREQUAL _all_srcs)
+    message(FATAL_ERROR "tools/source_order.txt does not list exactly the src/ TUs; "
+                        "add/remove the file at its original link position")
+endif()
 # Whole-.so byte/hash identity requires reproducing the original's .text function order, since
 # every inter-function bl/blx and GOT/PLT relative offset depends on it. The original was compiled
 # with -ffunction-sections (proven by the 193 empty-.text CANTUNWIND sentinels in its .ARM.exidx)
@@ -78,18 +101,10 @@ set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
 # crtbegin_so.o is a plain link input; the original linked it directly, as we do.
 set(_crtbegin "${_libdir}/crtbegin_so.o")
 
-# Object link order recovered from the original's .dynsym (gold emits symbols in input order).
-set(_linkorder "${CMAKE_BINARY_DIR}/link_order.rsp")
-add_custom_command(OUTPUT "${_linkorder}"
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/gen_link_order.py
-            "${GOF2_ORIGINAL_SO}" ${GOF2_NDK_NM} "${_linkorder}" $<TARGET_OBJECTS:gof2>
-    DEPENDS "${GOF2_ORIGINAL_SO}" ${CMAKE_SOURCE_DIR}/tools/gen_link_order.py gof2 $<TARGET_OBJECTS:gof2>
-    COMMENT "Ordering link objects like the original"
-    COMMAND_EXPAND_LISTS VERBATIM)
-
 # The original was linked without a section-ordering file, so the object order alone reproduces
 # the original .text layout now that TU membership and within-TU function order are faithful.
-set(_link_objs "@${_linkorder}")
+# $<TARGET_OBJECTS:gof2> is in tools/source_order.txt order (the original TU order).
+set(_link_objs "$<TARGET_OBJECTS:gof2>")
 set(_link_zlib "${_zlib_out}")
 set(_link_libzip "${_libzip_out}")
 set(_link_openssl "${_openssl_out}")
@@ -130,8 +145,9 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_linkorder} ${_crtbegin}
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_crtbegin}
             ${_openssl_out} ${_libzip_out} ${_zlib_out}
+            ${CMAKE_SOURCE_DIR}/tools/source_order.txt
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 add_custom_target(link_so DEPENDS "${_so}")

@@ -188,6 +188,11 @@ the merge is now the correct move.
 `tools/gen_section_order.py` and `tools/gen_exidx_markers.py` remain in the tree as historical
 analysis tools but are no longer on the build path.
 
+Update (w4217): the object order is now frozen as a plain checked-in source list,
+`tools/source_order.txt`; `CMakeLists.txt` links `$<TARGET_OBJECTS:gof2>` directly and no longer
+runs `gen_link_order.py` at build time. The two historical generators above have been deleted.
+See `_work/reconstructions/static_link_order_w4217.md`.
+
 ## 6. `--unresolved-symbols=ignore-all` and `tools/sodiff_allow.txt`
 
 * The link line has **no** `--unresolved-symbols=ignore-all`; a shared-library link allows the
@@ -207,8 +212,8 @@ Neither is needed.
 * **`.dynsym`/`.dynstr`/`.hash` order** still differs (324 / 1268 / 133 bytes) because gold's
   symbol hash iteration follows the complete insertion sequence; it converges only as the
   remaining bodies/TU contents converge.
-* The two historical tools (`gen_section_order.py`, `gen_exidx_markers.py`) can be deleted once
-  no analysis note depends on them.
+* The two historical tools (`gen_section_order.py`, `gen_exidx_markers.py`) were deleted in
+  w4217 once the object order was frozen in `tools/source_order.txt`.
 
 ## 8. Reproduction
 
