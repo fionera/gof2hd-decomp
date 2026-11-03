@@ -141,6 +141,7 @@ if(GOF2_MATCH_LAYOUT)
         COMMENT "Generating section-ordering file from the original .so + object source order"
         COMMAND_EXPAND_LISTS VERBATIM)
     set(_order_flag "--section-ordering-file=${_order}")
+    set(_order_dep "${_order}")
     set(_link_objs "@${_marker_objs}")
     set(_link_zlib "${_marker_zlib}")
     set(_link_libzip "${_marker_libzip}")
@@ -150,6 +151,7 @@ if(GOF2_MATCH_LAYOUT)
     set(_link_libgcc "${_marker_libgcc}")
     set(_marker_dep "${_marker_stamp}")
 else()
+    set(_order_dep "")
     set(_link_objs "@${_linkorder}")
     set(_link_zlib "${_zlib_out}")
     set(_link_libzip "${_libzip_out}")
@@ -194,7 +196,7 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order} ${_linkorder} ${_crtbegin}
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_order_dep} ${_linkorder} ${_crtbegin}
             ${_marker_dep} ${_openssl_out} ${_libzip_out} ${_zlib_out}
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
