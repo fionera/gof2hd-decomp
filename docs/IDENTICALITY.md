@@ -4,13 +4,47 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-10-26
+## Update 2026-11-03 (wave 92)
 
-Current: **byte_exact 4499, linked_exact 4499, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4499/4524**, linked_exact **4499/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
+parity **5370/5370** (0 extra / 0 missing). 25 functions remain non-byte-exact.
+
+The build is **CMake + NDK r18b** (not ndk-build): clang 7.0.2 with
+`-Oz -g -std=c++11 -fPIC -frtti -fstack-protector-strong -ffunction-sections -funwind-tables
+-DANDROID -DNDEBUG`, armeabi-v7a/thumb/softfp. The link is a single plain **gold** link without
+`-s`, followed by the original's GNU `strip --strip-all` and `tools/reorder_shstrtab.py`.
+`tools/source_order.txt` is the checked-in TU/object link order; there is no
+`--section-ordering-file`, no `gen_section_order.py`/`gen_exidx_markers.py`, and no
+`--unresolved-symbols` switch. `tools/sodiff_allow.txt` is empty.
+
+All **27 section headers are byte-identical**. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
+`.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are
+size- and base-exact; `.rel.plt` content is byte-identical. The only differing section bytes are
+`.text` 107,135; `.ARM.extab` 108,469; `.ARM.exidx` 839; `.note.gnu.build-id` 20. Everything
+else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
+`.fini_array`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`,
+`.comment`, `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`, `.shstrtab`) is
+byte-identical.
+
+The 25 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
+`LevelScript::process` 52.0, `Status::missionCompleted` 57.7, `Radar::draw` 73.9,
+`Level::createShip` 74.1, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
+`HangarWindow::render` 78.8, `Globals::Globals` C1/C2 80.5, `Hud::draw` 86.2,
+`RocketGun::update` 86.9, `PlayerEgo::calcCollision` 87.3, `Level::createScene` 88.3,
+`Gun::calcCharacterCollision` 90.0, `Level::createMission` 90.7, `MenuTouchWindow::MenuTouchWindow`
+C1/C2 94.2, `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
+`MenuTouchWindow::OnTouchEnd` 97.9, `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
+See `_work/reconstructions/docs-wave92-w4269.md`.
+
+## Update 2026-10-26 — historical (superseded by the update above)
+
+Then-current: **byte_exact 4499, linked_exact 4499, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
-placement of local functions in the section-ordering file. The 2026-11-01 data-layout pass
+placement of local functions in the then-current section-ordering file. The 2026-11-01 data-layout pass
 dropped ten empty-`.text` CANTUNWIND sentinels that had inflated `.ARM.exidx` by 0x60 and
 pushed `.rodata` to 0x1c9e50 (byte 2646 -> 2732), and restored the original string-literal
 order in BloomShader/GlowPPShader/SandboxShader (byte 2732 -> 2734). The 2026-11-01
@@ -166,12 +200,11 @@ The original build is now pinned by evidence, not by A/B alone:
   same `.rodata` emission point. Both are gate-neutral (byte 4496 / linked 4496). See
   `_work/reconstructions/remove_s_processPad_anchor_w3571.md` and
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
-* **Current differing bytes (after the w4239 gold+GNU-strip pass).** `.text` 106,990;
-  `.ARM.extab` 117,742; `.ARM.exidx` 1,110; `.note.gnu.build-id` 20; `.rel.plt` 12;
-  `.dynsym` 0; `.dynstr` 0; `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 0;
-  **section headers 0** (all 27 × 40 bytes exact, including `.rel.plt`
-  `SHF_INFO_LINK`/`sh_info=20`, `.init_array`/`.fini_array` `sh_entsize=4` and `.bss`
-  `sh_offset=0x21596c`).
+* **Current differing bytes (2026-11-03).** `.text` 107,135; `.ARM.extab` 108,469;
+  `.ARM.exidx` 839; `.note.gnu.build-id` 20; `.rel.plt` 0; `.dynsym` 0; `.dynstr` 0;
+  `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 0; **section headers 0** (all 27 × 40
+  bytes exact, including `.rel.plt` `SHF_INFO_LINK`/`sh_info=20`,
+  `.init_array`/`.fini_array` `sh_entsize=4` and `.bss` `sh_offset=0x21596c`).
   `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`, `.fini_array`,
   `.comment`, `.note.*`, `.ARM.attributes` and `.shstrtab` are byte-identical, and the
   section table matches the original's 27 sections. The w3616 pass made
@@ -183,8 +216,8 @@ The original build is now pinned by evidence, not by A/B alone:
   `strip --strip-all` with gold `-s`, reproducing the original `.shstrtab` byte-for-byte
   (259 -> 0 differing bytes; see
   `_work/reconstructions/nontext_relplt_shstrtab_w3695.md`). The w3697 section-order pass
-  changed the `.text` function order, which is why the current `.dynsym`/`.dynstr`/`.hash`/
-  `.rel.dyn`/`.rel.plt` byte counts are no longer zero; the symbol *sets* still match
+  changed the `.text` function order; the later link-order reconstruction restored the dynamic
+  table order, and `.dynsym`/`.dynstr`/`.hash`/`.rel.dyn`/`.rel.plt` are byte-identical again
   (`sodiff` 0 extra / 0 missing).
 * **Build metadata.** `.note.android.ident` is byte-identical to the NDK r18b API-16
   `crtbegin_so.o` note; the only path-like string in the `.so` is the libc++abi buildbot
@@ -196,12 +229,15 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 107,135 content bytes differ across the 25 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 839 raw bytes (822 `w1` prel31 targets) still differ, all in the three remaining shifted LSDA ranges (`Generator::createMission`, `Level::createShip`, `LevelScript::process`). |
-| .ARM.extab | 156,312 | 156,312 | **0** | size- and base-exact (0x1a3b78). `HangarWindow::render` (948 B / 156 rows), `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are now record-length-exact; the three remaining per-function LSDA deltas (`Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4) cancel to zero. Raw address operands still differ with local `.text` layout. |
-| .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,522/5,578 entries at the same index (324 differing bytes; 5,370/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining order gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
-| .dynstr | 189,208 | 189,208 | 0 | same string table size (1,268 differing bytes from the symbol-order shift). |
+| .ARM.extab | 156,312 | 156,312 | **0** | size- and base-exact (0x1a3b78). `HangarWindow::render` (948 B / 156 rows), `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are now record-length-exact; the three remaining per-function LSDA deltas (`Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4) cancel to zero. Raw address operands still differ with local `.text` layout (108,469 differing bytes). |
+| .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (0 differing bytes; 5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The former `sha256_block_data_order_neon` order gap is closed. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
+| .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
+| .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
+| .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
+| .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
 | .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
@@ -212,10 +248,10 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **25 non-linked functions.** 4499 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (55.1%), `Status::missionCompleted` (57.7%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (52.0%), `Status::missionCompleted` (57.7%),
    `Radar::draw` (73.9%), `Level::createShip` (74.1%), `Generator::createMission` (74.3%),
-   `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
-   `Gun::calcCharacterCollision` (82.7%).
+   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (78.8%), `Globals::Globals` (80.5%) and
+   `Hud::draw` (86.2%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now
@@ -239,13 +275,12 @@ The original build is now pinned by evidence, not by A/B alone:
    Raw prel31 operands still differ with local `.text` layout. See
    `_work/reconstructions/exidx_extab_exact_w3462.md` and
    `_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
-4. **Link metadata.** `.dynsym`/`.dynstr`/`.dynamic` sizes now match exactly; the original's
-   full-RELRO link (`-z now`) is reproduced (BIND_NOW, `.got` before `.data` inside
-   `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro` exported-symbol addresses are now
-   exact; the remaining `.dynsym` order delta (5,566/5,578 entries at the same index;
-   5,358/5,370 defined symbols) is gold's hash-table iteration order over the
-   symbol-insertion sequence, not a tunable link knob. The GNU build-id is a content hash
-   that converges last.
+4. **Link metadata.** `.dynsym`/`.dynstr`/`.hash`/`.rel.dyn`/`.rel.plt` are now byte-identical
+   (5,578 entries, 5,370 defined symbols); the gold hash-table iteration order is reproduced.
+   `.dynamic` is exact, and the original's full-RELRO link (`-z now`) is reproduced (BIND_NOW,
+   `.got` before `.data` inside `PT_GNU_RELRO`, `.got` at 0x20fcf4). `.data.rel.ro`
+   exported-symbol addresses are exact. The GNU build-id is the remaining content hash
+   (20 differing bytes) and converges last.
 
 ## Done
 - **Pass 1: strip** the link output with the original's post-link GNU `strip --strip-all`
@@ -256,35 +291,39 @@ The original build is now pinned by evidence, not by A/B alone:
   unaffected (35/0/0); verify/sodiff read .dynsym+.text.
 
 ## Reality
-Same-hash == completing the decompile to byte-perfection: make the remaining 27 functions exact,
-recover the residual anonymous const/initialised data, and match the exact link layout. Progress is
-tracked by: byte_exact/linked_exact function counts (verify) and the section-size deltas above.
+Same-hash == completing the decompile to byte-perfection: make the remaining 25 functions exact
+and close the last EH/build-id bytes; `.rodata`, `.data` and the dynamic tables are already
+byte-identical. Progress is tracked by: byte_exact/linked_exact function counts (verify) and the
+section-size deltas above.
 
 ## Next levers (tractable, bounded first)
-- Pin the .rodata null source (largest zero runs -> owning TU) and fix oversize/placeholder const.
-- Reduce the handful of extra dynsym symbols (restrict libcrypto exports; fold the ctor aliases).
 - Byte-exactness campaign: verify.py worst-first, fix near-miss (80-99%) high-value functions first.
+- Close the last EH records (`Generator::createMission` +4, `Level::createShip` -8,
+  `LevelScript::process` +4, net 0) and the 839 raw `.ARM.exidx` bytes.
 - Implement missing engine functions in batches (math/Vector/Matrix shims are the densest cluster).
 
 ## Concrete leads found (for the byte-exactness campaign)
 
 The verify report (cmake-build-match/verify/report.json) has per-function rows: 4499 byte_exact,
-4499 linked_exact, 4524 size_match of 4524; pct buckets {100:4499, 90-99:9, 80-89:8, 70-79:4,
+4499 linked_exact, 4524 size_match of 4524; pct buckets {100:4499, 90-99:10, 80-89:6, 70-79:5,
 <60:4}. 0 function rows size-MISMATCH (the `Layout::Layout` body is size-exact 7072 B without a
-pad); 18 size-match >=80% not-linked (the highest-value near-misses).
+pad); 16 size-match >=80% not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):
-1. **Shader `UpdateMeshData` cluster** (~15 fns at 86-94%, GenericShader/VertexColorShader/BumpShaderV2/4/
+1. **Shader `UpdateMeshData` cluster (resolved).** The former ~15 fns at 86-94%
+   (GenericShader/VertexColorShader/BumpShaderV2/4/
    CubeMapping/EnergyShield/...). Diff via direct disasm: the only real (non-relocation) deltas are
    field-offset drift. In `GenericShader`, fields from `uSpecularColor` onward are +4 in the original
    (orig 0x5c/0x60/0x68/.. vs ours 0x58/0x5c/0x64/..) -> our decomp is missing a 4-byte uniform-location
    field between uDiffuseColor and uSpecularColor (or has them mis-ordered). Plus a 1-byte Mesh field
-   drift (orig [r4,#9] vs ours [r4,#10]). Fixing the shared base/layout flips the whole cluster.
-   NOTE: this is layout drift that field_0xNN scanning can't see (semantic-named fields) -- a class of
+   drift (orig [r4,#9] vs ours [r4,#10]). Fixing the shared base/layout flipped the whole cluster;
+   all of these are byte-exact in the current report.
+   NOTE: this was layout drift that field_0xNN scanning can't see (semantic-named fields) -- a class of
    drift beyond [[drift-campaign]]. A generalized ASM-offset-diff drift detector would surface all of it.
-2. **ParticleSettings_str[401401]={0}** -- 392KB zero array (the .rodata bloat), a mis-sized decomp
-   artifact; the real particle-name string table is a few KB. Needs the original's data recovered
-   (the `buf` results are dead in our decomp, so it's correctness-neutral but blocks .rodata identicality).
+2. **ParticleSettings_str[401401]={0} (resolved).** The former 392KB zero array (the .rodata
+   bloat) was a mis-sized decomp artifact; the real particle-name string table is a few KB. The
+   `.rodata` passes recovered the original data, and `.rodata` is now byte-identical (0 differing
+   bytes).
 
 ## PaintCanvas layout reconstruction (in progress — concrete data)
 

@@ -5,7 +5,8 @@ How the decompiled `libgof2hdaa.so` is checked against the original Android rele
 
 ## The build that is being validated
 
-`cmake/toolchain.cmake` compiles every TU in `src/` with the original's toolchain — NDK r18b clang
+The build is **CMake + NDK r18b**, not ndk-build. `cmake/toolchain.cmake` compiles every TU in
+`src/` with the original's toolchain — NDK r18b clang
 7.0.2, `-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
 -std=c++11 -fPIC -frtti -fstack-protector-strong -funwind-tables -Oz -g -DANDROID -DNDEBUG -stdlib=libc++`. The `link_so` target links those objects plus
 the vendored static libs the original statically linked (libcrypto subset, zlib 1.2.3, libzip 0.9.3 —
@@ -36,24 +37,26 @@ this list is what places every function at its original address), the system `-l
 libandroid, FMOD, libc++abi.a, `-l m`, libandroid_support.a
 (hidden posix_memalign wrapper over memalign), libgcc.a, `-l dl -l c`, crtend. Result: the
 undefined-import set and the defined-export set are identical to the original (207 / 0 extra),
-NEEDED identical. .dynsym ORDER is not yet identical (5566/5578 positions): gold (same r18b
-binary as the original's) emits dynamic symbols by iterating its symbol hash table, so the order
-is a function of the complete symbol-insertion sequence (every object, every referenced symbol,
-in input order) and is expected to converge only as object contents/membership converge — not a
-knob to tune directly.
+NEEDED identical, and `.dynsym`/`.dynstr`/`.hash`/`.rel.dyn` are now byte-identical (5,578
+entries, 5,370 defined symbols). Gold (same r18b binary as the original's) emits dynamic symbols
+by iterating its symbol hash table, so the order is a function of the complete symbol-insertion
+sequence (every object, every referenced symbol, in input order); the hash-order model reproduces
+it exactly (see `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`).
 
 This is a **single, plain gold link** followed by the original's post-link GNU strip (the only
 post-processing step; `tools/reorder_shstrtab.py` merely restores gold's own `.shstrtab` bytes) —
-no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The source tree reproduces the original TU membership
-and within-TU function order, so the plain object input order (`tools/source_order.txt`) places
-every one of the 4,524 exported functions at its original address; `.text`, `.rodata`, `.data`,
-`.bss`, `.got`, `.ARM.exidx` and the dynamic tables are size- and base-exact. The link order is a
-static source input: the build reads the checked-in source list, not the original `.so`, so no
-manually linked data is generated at build time. `tools/gen_link_order.py` remains as an analysis
-tool (it produced the list once); `tools/gen_section_order.py` and `tools/gen_exidx_markers.py`
-are gone. Gold's default shared-library handling of undefined imports is used (no
-`--unresolved-symbols` switch; undecompiled engine internals import as shims, and the import set
-is pinned by the ratchet, so a typo'd callee cannot slip in as a silent new import). See
+no `--version-script`, no `__attribute__`, no `asm`, and **no `--section-ordering-file`**. The
+source tree reproduces the original TU membership and within-TU function order, so the plain
+object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
+its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
+`.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
+content is byte-identical, and all 27 section headers are exact. The link order is a static source
+input: the build reads the checked-in source list, not the original `.so`, so no manually linked
+data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
+produced the list once); `tools/gen_section_order.py` and `tools/gen_exidx_markers.py` are gone.
+Gold's default shared-library handling of undefined imports is used (no `--unresolved-symbols`
+switch; undecompiled engine internals import as shims, and the import set is pinned by the
+ratchet, so a typo'd callee cannot slip in as a silent new import). See
 `_work/reconstructions/link_order_tu_reconstruction_w4210.md` and
 `_work/reconstructions/static_link_order_w4217.md`.
 `--allow-multiple-definition` was removed after it was found masking a real triplicate definition
@@ -76,7 +79,7 @@ irreducible delta (machine-checked via `tools/sodiff_allow.txt`).
 `objdump`; `layout.py`/`drift_scan.py` use the NDK clang (never the host compiler — host `-m32`
 is i386, which aligns 8-byte scalars to 4 and reports wrong offsets for ARM).
 
-## Current state — symbol parity (2026-10-21)
+## Current state — symbol parity (2026-11-03)
 
 ```
 original: 5370   ours: 5370   extra: 0   missing: 0   (wrong_type: 0   absent: 0)
@@ -86,6 +89,12 @@ original: 5370   ours: 5370   extra: 0   missing: 0   (wrong_type: 0   absent: 0
 the correct signature, and we export nothing it does not. `tools/sodiff_allow.txt` is empty; any
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
+
+### Current state — ELF sections (2026-11-03)
+All 27 section headers are byte-identical. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
+`.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size-
+and base-exact; `.rel.plt` content is byte-identical. The only differing section bytes are
+`.text` (107,135), `.ARM.extab` (108,469), `.ARM.exidx` (839) and `.note.gnu.build-id` (20).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
@@ -119,12 +128,13 @@ the touch buffer (`touches = realloc(touches, sizeof(Touch))`), and ParticleSett
 (`ParticleSettingsRef::init`, `::cur`). Any new namespace-scope object with a non-trivial
 ctor/dtor adds an entry the original does not have.
 
-### Known import delta: `posix_memalign`
-The original imports `memalign`, not `posix_memalign`: it links the NDK's `libandroid_support.a`
-after `libc++abi.a` (ndk-build's `c++_static` for a pre-21 `APP_PLATFORM`), whose hidden
-`posix_memalign` (at 0x19ae14, between the libc++abi code and libgcc's `__aeabi_ldivmod`) wraps
-`memalign`. libc++abi's `fallback_malloc.o`/`stdlib_new_delete.o` are the users. Our link does not
-pass `libandroid_support.a`, so `posix_memalign` stays an import; fixing it is a link-input change.
+### Import set: identical (no delta)
+The original and our build now import the same 207 names. In particular both import `memalign`,
+not `posix_memalign`: the link passes the NDK's `libandroid_support.a` after `libc++abi.a`
+(ndk-build's `c++_static` for a pre-21 `APP_PLATFORM`), whose hidden `posix_memalign` (at
+0x19ae14, between the libc++abi code and libgcc's `__aeabi_ldivmod`) wraps `memalign`.
+libc++abi's `fallback_malloc.o`/`stdlib_new_delete.o` are the users, and the former
+`posix_memalign` delta is gone.
 
 ## Structural invariants — all at 0
 
@@ -167,7 +177,7 @@ the 726 historical adjacent-line `void_ptr` waivers were mechanically migrated o
 (append-only comment edits), so a waiver can never silently cover a different, new violation on a
 nearby line.
 
-## Current state — per-function ASM fidelity (2026-10-21, metric v2)
+## Current state — per-function ASM fidelity (2026-11-03, metric v2)
 
 A separate axis from symbol parity. The verify metric was rebuilt for structural honesty:
 
@@ -226,8 +236,8 @@ Current numbers (of **4524** compared): **byte_exact 4499, linked_exact 4499, av
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
 monotone, linked_exact within a ±1 transient band, stubs/missing/extra frozen, exports pinned to
-`tools/sodiff_allow.txt`, undefined-import set pinned (207 names, the original's count: the only delta is posix_memalign for memalign; a typo'd callee is a hard
-failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
+`tools/sodiff_allow.txt`, undefined-import set pinned (207 names, identical to the original's; a
+typo'd callee is a hard failure), lint clean. `cmake --build … --target check` runs it; the pre-push hook
 (`git config core.hooksPath tools/hooks`) makes it unavoidable. Improvements are locked with
 `tools/ratchet.py --update-baseline` in the same commit.
 

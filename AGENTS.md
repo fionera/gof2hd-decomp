@@ -36,7 +36,21 @@ cmake --build cmake-build-match --target check          # tools/ratchet.py: the 
 ```
 
 The original `.so` path is configured in `CMakeLists.txt` (`GOF2_ORIGINAL_SO`, default
-`../_work/bins/...` relative to the repo).
+`../_work/bins/...` relative to the repo; a nested worktree must pass
+`-DGOF2_ORIGINAL_SO=/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so` and, if
+the cache already holds the default, `-DGOF2_FMOD_LIBDIR=.../apk_libs`).
+
+**Build recipe (2026-11-03).** The build is **CMake + NDK r18b**, not ndk-build. It compiles
+every TU with clang 7.0.2 and the original's flags:
+`-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
+-std=c++11 -fPIC -frtti -fstack-protector-strong -ffunction-sections -funwind-tables -Oz -g
+-DANDROID -DNDEBUG -stdlib=libc++`. The link is a single plain **gold** link *without* `-s`
+(`-shared -soname libgof2hdaa.so --build-id -z now --exclude-libs=libgcc.a`), followed by the
+original's post-link GNU `arm-linux-androideabi-strip --strip-all` and
+`tools/reorder_shstrtab.py` (restores gold's Stringpool `.shstrtab` order). There is no
+`--section-ordering-file`, no second link pass, and no `--unresolved-symbols` switch:
+`tools/source_order.txt` is the checked-in object/TU link order, and gold's default
+shared-library undefined-import handling is used. `tools/sodiff_allow.txt` is empty.
 
 ## The no-degradation gate (mandatory for every change)
 
@@ -72,6 +86,17 @@ Known gate limitations (do not lean on them):
 - Lint waivers are same-line only, every criterion — a waiver on a neighbouring line waives
   nothing.
 
+## Current state (2026-11-03, wave 92)
+
+`check` is green: byte_exact **4499/4524**, linked_exact **4499/4524**, size-exact
+**4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
+**CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 25 functions are not
+byte-exact. All **27 ELF section headers are byte-identical**; `.text`, `.rodata`, `.data`,
+`.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
+`.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. The only
+differing section bytes are `.text` (107,135), `.ARM.extab` (108,469), `.ARM.exidx` (839) and
+`.note.gnu.build-id` (20).
+
 ## Source rules (hard)
 
 - No `asm` in any spelling (`asm`, `__asm`, `__asm__`, `asm volatile`), no `__attribute__`, no
@@ -82,12 +107,14 @@ Known gate limitations (do not lean on them):
   exported unmangled by the original (JNI `Java_*`, `ndk*`, Blowfish, GL/libc ABI).
 - One class per header. `void*` and `union` only with same-line waivers at the documented
   ABI-mandated sites.
-- No linker tricks: single plain gold link, no `--version-script`, no second pass. The two
-  approved deviations are the `--section-ordering-file` (reproduces the original .text order) and
-  the existing `--unresolved-symbols=ignore-all` (undecompiled engine internals import as shims;
-  the import set is ratchet-gated). Duplicate strong definitions are hard link errors — the flag
-  that used to mask them (`--allow-multiple-definition`) hid a real triplicate of the Vector/Matrix
-  operators for weeks. Do not add link flags to make a symbol problem go away — reshape the C++.
+- No linker tricks: single plain gold link, no `--version-script`, no second pass, no
+  `--section-ordering-file`, no `--unresolved-symbols` switch. The link order is the checked-in
+  plain source list `tools/source_order.txt` (gold emits symbols in input order). Undefined
+  app-provided imports (FMOD, GLES, …) stay unresolved exactly as in the original; the import set
+  is pinned by the ratchet (207 names), so a typo'd callee is a hard failure. Duplicate strong
+  definitions are hard link errors — the flag that used to mask them
+  (`--allow-multiple-definition`) hid a real triplicate of the Vector/Matrix operators for weeks.
+  Do not add link flags to make a symbol problem go away — reshape the C++.
 
 ## Correctness pitfalls (each of these has already produced real bugs)
 
@@ -105,9 +132,9 @@ Known gate limitations (do not lean on them):
   `docs/VALIDATION.md`'s irreducible-delta list in the same commit.
 - **Constants from DeepOpen/Java are v1** — verify every threshold/table against the v2 binary's
   literal pools before use.
-- Undefined shim imports (`Mat_assign`, `MeshCreate`, …) resolve to nothing at link time and no
-  gate checks the import set — a typo'd callee vanishes silently. When calling engine internals,
-  copy the exact shim name from an existing use.
+- Undefined shim imports (`Mat_assign`, `MeshCreate`, …) resolve to nothing at link time. The
+  ratchet pins the 207-name import set, so a typo'd callee is a hard failure; when calling engine
+  internals, copy the exact shim name from an existing use.
 
 ## TU organization policy (from the original source dumps)
 
@@ -116,8 +143,9 @@ The original layout (see `_work/original_layout/original_layout_notes.md`): a fl
 `ParticleSystems/` and `MeshMerger/` subfolders) + platform glue. Our `src/engine|game|platform`
 folder taxonomy is fine — **folder paths are free, TU membership is not**:
 
-- `-ffunction-sections` + the section-ordering file reproduce the original `.text` order regardless
-  of file layout, but **`.rodata`/`.data` layout, string-literal pools, `__GLOBAL__sub_I_*`
+- `-ffunction-sections` + the checked-in `tools/source_order.txt` link order reproduce the
+  original `.text` order regardless of file layout, but **`.rodata`/`.data` layout, string-literal
+  pools, `__GLOBAL__sub_I_*`
   initializers (original has 3 `.init_array` entries; we have the same 3), per-TU statics, and -Oz
   same-TU inlining all follow TU membership**. Byte-identicality of data requires the original's
   TU ownership and link order.
