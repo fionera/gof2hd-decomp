@@ -202,7 +202,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (55.0%), `Status::missionCompleted` (57.7%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (55.1%), `Status::missionCompleted` (57.7%),
    `Generator::createMission` (73.6%), `Radar::draw` (73.9%), `Level::createShip` (74.1%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
    `Gun::calcCharacterCollision` (82.7%).
