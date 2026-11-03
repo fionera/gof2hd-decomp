@@ -2080,9 +2080,9 @@ void Level::createMission() {
         ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setName(*Globals::gameText->getText(3210));
     }
     if (blueprint) {
-        int index = Globals::status->getStation()->getHiddenBlueprintIndex();
         int slot = extraAliens + pirateEscorts + stationPirates + pirates + convoy + fortressGuns + alienGuns +
                    this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
+        int index = Globals::status->getStation()->getHiddenBlueprintIndex();
         (*this->enemies)[slot] = this->createShip(kBlueprintRaces[index], 1, index == 0 ? 13 : 15, nullptr, true, false);
         PlayerFixedObject *wreck = (PlayerFixedObject *) (*this->enemies)[slot];
         wreck->setDockingType(3);
@@ -2121,11 +2121,11 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    AERandom *rnd = Globals::rnd;
+    Globals *g = Globals::globals;
     for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
-                8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(rnd->nextInt(this->playerRoute->length())), true, false);
+                8, 0, g->getRandomEnemyFighter(8),
+                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
