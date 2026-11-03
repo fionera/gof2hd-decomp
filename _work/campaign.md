@@ -5212,3 +5212,5 @@ Wave-97 function pass: `Level::createShip` 73.9 -> 74.1% (`w3735`) by reordering
 locals to match the original frame slots. 2764 B, gate 4497/4497.
 Wave-97 section-order pass: `NewsTicker` update order (`w3745`) — update before draw.
 Plain no-order 2954 -> 2955 (addresses 3715 -> 3717, prefix 3625 -> 3634). Gate 4497/4497.
+Wave-97 section-order pass: `Sparks` destructor order (`w3745`) — `~Sparks` after `isRocket`.
+Plain no-order 2955 -> 2961 (addresses 3717 -> 3724, prefix 3634 -> 3647). Gate 4497/4497.
