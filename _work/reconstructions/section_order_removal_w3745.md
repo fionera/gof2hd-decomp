@@ -5059,3 +5059,293 @@ cmp -l /tmp/w3745_marquee_gate_base.so /tmp/w3745_marquee_gate_after.so | wc -l 
 * The `SpacePoint` reorder is the obvious next per-TU source-order
   experiment, but it is a separate TU and was not tested or landed in this
   pass.
+
+## 25. `SpacePoint` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4498 / linked 4498**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `.so` is **byte-identical** before and after
+(sha256 `ad921aed48964058c06d7268a3cb76d2514940567d38f4c3cbed5b670f24fbdb`,
+`cmp -l` = 0 bytes). The plain no-order link improves from
+**byte 2963 / 3733 of 4524 exact addresses / prefix 3685** to
+**byte 2963 / 3739 of 4524 / prefix 3694**; the first plain no-order mismatch
+moves from `SpacePoint::isFree` to `Hud::~Hud`.
+
+This is the next frontier recorded in §24.5.
+
+### 25.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `1f87e37d`:
+
+```text
+verify: byte 4498  linked 4498  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+.bss             0x0069ac @ 0x216970
+```
+
+The original's `SpacePoint` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x1603ac  0x3a  SpacePoint::SpacePoint(int, Vector const&, Vector const&, int)  # C1/C2 alias
+0x1603e6  0x04  SpacePoint::isFree()
+0x1603ea  0x06  SpacePoint::take()
+0x1603f0  0x06  SpacePoint::giveFree()
+0x1603f6  0x04  SpacePoint::getIndex()
+0x1603fa  0x02  SpacePoint::~SpacePoint()                                      # D1/D2 alias
+```
+
+The `gof2hd_1.1.19_ios` source-layout dump independently witnesses the
+relative order (it omits `getIndex`, which the Android binary has):
+
+```sh
+python3 - <<'PY'
+import json
+d = json.load(open('_work/original_layout/original_layout.json'))
+print(d['tu_symbols']['gof2hd_1.1.19_ios']['Classes/Game/SpacePoint.cpp']['symbols'])
+PY
+# ['_SpacePoint::SpacePoint(...)', '_SpacePoint::isFree()', '_SpacePoint::take()',
+#  '_SpacePoint::giveFree()', '_SpacePoint::~SpacePoint()']
+```
+
+The baseline `SpacePoint.cpp.obj` emitted the definitions in this order:
+
+```text
+SpacePoint::SpacePoint(int, Vector const&, Vector const&, int)
+SpacePoint::giveFree()
+SpacePoint::take()
+SpacePoint::~SpacePoint()
+SpacePoint::isFree()
+SpacePoint::getIndex()
+```
+
+That made the plain no-order link put `isFree` at `0x1603f4` instead of
+`0x1603e6`; the first plain no-order mismatch was exactly:
+
+```text
+original 0x1603e6 SpacePoint::isFree()
+ours     0x1603f4 SpacePoint::isFree()
+```
+
+### 25.2 Landed source change
+
+Only change: reorder the `SpacePoint` definitions in
+`src/game/world/SpacePoint.cpp` to the original emission order
+`ctor, isFree, take, giveFree, getIndex, dtor`. No body was edited.
+
+```diff
+@@ after SpacePoint::SpacePoint(...)
+-void SpacePoint::giveFree() {
+-    this->free = true;
++bool SpacePoint::isFree() {
++    return this->free;
+ }
+ 
+ void SpacePoint::take() {
+     this->free = false;
+ }
+ 
+-SpacePoint::~SpacePoint() {
+-}
+-
+-bool SpacePoint::isFree() {
+-    return this->free;
++void SpacePoint::giveFree() {
++    this->free = true;
+ }
+ 
+ int SpacePoint::getIndex() {
+     return this->param;
+ }
++
++SpacePoint::~SpacePoint() {
++}
+```
+
+The resulting object order is exactly the original address order, and every
+section size is unchanged and equal to the original's:
+
+```text
+SpacePoint::SpacePoint(...)  0x3a
+SpacePoint::isFree()         0x04
+SpacePoint::take()           0x06
+SpacePoint::giveFree()       0x06
+SpacePoint::getIndex()       0x04
+SpacePoint::~SpacePoint()    0x02
+```
+
+### 25.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4498 / 4498** | `ad921aed…` | **2963** | 3733 / 4524 | 3685 | `SpacePoint::isFree` `0x1603e6` vs `0x1603f4` |
+| landed | **4498 / 4498** | `ad921aed…` | **2963** | **3739 / 4524** | **3694** | `Hud::~Hud` `0x16126c` vs `0x166b18` |
+
+The landed delta is **+6 functions at their original address** (all six
+`SpacePoint` dynsym rows), **+9 exact-address prefix**, with the gate counts
+unchanged. The plain `byte_exact` count is unchanged because all six
+`SpacePoint` bodies are position-independent (`isFree`/`take`/`giveFree`/
+`getIndex` are 4–6-byte field accesses with no PC-relative reference; the
+ctor was already at its original address), so they were already byte-exact
+before the move. The plain `report.json` has **0 changed rows**.
+
+The gate `.so` is byte-identical, so the gate `report.json` is unchanged.
+
+All eight `SpacePoint` dynsym rows are now at their original addresses in the
+plain link, with exact sizes:
+
+```text
+$NM -nSD --defined-only /tmp/w3745_sp/after_noorder.so | grep _ZN10SpacePoint
+001603ac 0000003a T _ZN10SpacePointC1EiRKN11AbyssEngine6AEMath6VectorES4_i
+001603ac 0000003a T _ZN10SpacePointC2EiRKN11AbyssEngine6AEMath6VectorES4_i
+001603e6 00000004 T _ZN10SpacePoint6isFreeEv
+001603ea 00000006 T _ZN10SpacePoint4takeEv
+001603f0 00000006 T _ZN10SpacePoint8giveFreeEv
+001603f6 00000004 T _ZN10SpacePoint8getIndexEv
+001603fa 00000002 T _ZN10SpacePointD1Ev
+001603fa 00000002 T _ZN10SpacePointD2Ev
+```
+
+The plain no-order section layout is unchanged by the pass
+(`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b98`, `.rodata 0x41b67 @ 0x1c9e30`).
+
+### 25.4 Next frontier: `Hud::~Hud`
+
+The next plain no-order mismatch is `Hud::~Hud` (`0x16126c` original,
+`0x166b18` ours). The original `Hud` block starts:
+
+```text
+0x1603fc  Hud::Hud()                       # C1/C2 alias
+0x1604e4  Hud::init()
+0x16126c  Hud::~Hud()                      # D1/D2 alias, 0xe8
+0x161354  Hud::setAutofireEnabled(bool)    # 0x06
+0x16135a  Array<void*>::Array()            # 0x1c
+0x161376  void ArraySetLength<void*>(...)  # 0x24
+0x1613aa  Hud::closeHudMenu()
+0x1613d0  Hud::checkIfQuickMenuIsEmpty()
+0x161440  Hud::releaseAllKeys()
+0x161474  Hud::setVisible(bool)
+0x161478  Hud::updateSecondaryWeaponString()
+0x1615c8  Hud::initHudMenu(int, Level*)
+...
+```
+
+Our `Hud.cpp.obj` emits `Array<ListItem*>::Array()`,
+`ArraySetLength<ListItem*>`, `Array<void*>::Array()` and
+`ArraySetLength<void*>` immediately after `Hud::init()`, and emits
+`Hud::~Hud()` last (source line 2052). This is a full-TU reorder plus a
+weak-instantiation placement issue, not a single function move; it was not
+attempted in this pass.
+
+### 25.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_sp/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_sp/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_sp/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_sp/base_noorder.so
+
+# source reorder: isFree, take, giveFree, getIndex, dtor
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_sp/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_sp/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_sp/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_sp/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/world/SpacePoint.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep _ZN10SpacePoint
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_sp/gate_after.so
+git stash push -- src/game/world/SpacePoint.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_sp/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745_sp/gate_base.so /tmp/w3745_sp/gate_after.so
+cmp -l /tmp/w3745_sp/gate_base.so /tmp/w3745_sp/gate_after.so | wc -l   # 0
+```
+
+### 25.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4498 / linked 4498`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2963 / 4498`, prefix 3685,
+  3733 / 4524, first mismatch `SpacePoint::isFree` `0x1603e6` vs `0x1603f4`.
+* The original emits `SpacePoint` in the `.dynsym` address order
+  `ctor, isFree, take, giveFree, getIndex, D1/D2`; the
+  `gof2hd_1.1.19_ios` source-layout dump independently witnesses
+  `ctor, isFree, take, giveFree, dtor` (it omits `getIndex`).
+* The baseline object emitted `ctor, giveFree, take, dtor, isFree, getIndex`;
+  moving the definitions to `ctor, isFree, take, giveFree, getIndex, dtor`
+  makes the object's `.text.*` order match the original address order. The
+  section bodies and sizes are unchanged.
+* The landed move is gate-neutral (`4498 / 4498`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `.so` is byte-identical
+  (`cmp -l` = 0), so the gate `report.json` is unchanged.
+* The plain no-order build now has all eight `SpacePoint` dynsym rows at
+  their original addresses: exact addresses 3733 -> 3739, exact-address
+  prefix 3685 -> 3694. Plain `byte_exact` is unchanged at 2963 and the plain
+  `report.json` has 0 changed rows, because all six bodies were already
+  position-independent and byte-exact.
+* The next plain no-order frontier is `Hud::~Hud` (`0x16126c` original,
+  `0x166b18` ours). The original places `Hud::~Hud` immediately after
+  `Hud::init()` and places the `Array<void*>` instantiations after
+  `Hud::setAutofireEnabled`; our `Hud.cpp.obj` emits them immediately after
+  `Hud::init()` and emits `Hud::~Hud` last.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2963`, not `4498`.
+* The `Hud` TU is the next per-TU source-order experiment, but it is a
+  full-TU reorder plus a weak-instantiation placement issue, not a single
+  function move; it was not tested or landed in this pass.
