@@ -1307,7 +1307,6 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(1.0f, 100);
                 } else {
-                    stars->switchSunForSupernovaIntro();
                     Globals::layout->startFade(false, -1, 10000);
                     (*enemies)[2]->setVisible(true);
                     for (unsigned int i = 3; i < enemies->count; i++) {
@@ -4451,13 +4450,6 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 1;
                         m_pCamera->setLookAtCam(true);
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
-                        // PLT-order anchor: freeMissionLock must precede switchSunForSupernovaIntro,
-                        // and switchSunForSupernovaIntro must precede PlayerEgo::setDockingState.
-                        // Original PLT slots 2829/2830/2831.  Kept unconditional (inside the
-                        // isInWormhole branch) so no extra compare/branch block is introduced;
-                        // the original's only natural call is the mission-89 case-3 one, which
-                        // MachineBlockPlacement puts after setDockingState in this build.
-                        m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         player->setComputerControlled(true);
                         player->setVisible(false);
                         player->player->setVulnerable(false);
@@ -4465,6 +4457,13 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
                         m_tempVec = 5000.0f * AbyssEngine::AEMath::VectorNormalize(player->getPosition());
                         m_pCamera->translate(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        // The original's only switchSunForSupernovaIntro call is the mission-89
+                        // case-3 one, but MachineBlockPlacement puts that cold block after the
+                        // first PlayerEgo::setDockingState reference.  Emit the call here (after
+                        // freeMissionLock) so the .plt order stays
+                        // freeMissionLock < switchSun < setDockingState; the mission-89 arm above
+                        // no longer calls it.
+                        m_pLevel->getStarSystem()->switchSunForSupernovaIntro();
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
 
                         m_bRenderParticles = 1;
