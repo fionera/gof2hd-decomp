@@ -857,7 +857,7 @@ initState:
     // The original zeroes these flag clusters with one wide store each.
     *(uint32_t *) &this->quitConfirmShowing = 0;
     *(uint32_t *) &this->saveDialogShowing = 0;
-    *(volatile uint16_t *) &this->field_0x171 = 0;
+    *(volatile uint16_t *) &this->field_0x171 = 0; // anchor: MenuTouchWindow ctor; plain store lowers raw match 94.247 -> 94.157
     *(uint32_t *) &this->field_0x17b = 0;
     this->selectedRow = -1;
     this->okButton = 0;
@@ -2190,7 +2190,7 @@ void MenuTouchWindow::update(int dt) {
         this->dlcResultDialogShowing = 1;
         appData->purchaseResultFlag = 0;
     }
-    if (Globals::isTelekomCustomer && (uint8_t) (*(volatile uint8_t *) &this->messageShowing | Globals::options[53]) == 0) {
+    if (Globals::isTelekomCustomer && (uint8_t) (*(volatile uint8_t *) &this->messageShowing | Globals::options[53]) == 0) { // anchor: MenuTouchWindow::update; plain read changes body bytes
         this->choiceWindow->set(*Globals::gameText->getText(3234));
         this->messageShowing = 1;
         this->supernovaPurchaseDialogShowing = 1;
@@ -2788,7 +2788,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                                 // The original loads the choice window before getText() but keeps
                                 // the load branch-local; a volatile read pins that order (a plain
                                 // member load is hoisted above the iPadLargePossible test).
-                                ChoiceWindow *cw = *(ChoiceWindow *volatile *) &this->choiceWindow;
+                                ChoiceWindow *cw = *(ChoiceWindow *volatile *) &this->choiceWindow; // anchor: MenuTouchWindow::OnTouchEnd; plain load shrinks body 8132 -> 8120
                                 String *text = Globals::gameText->getText(
                                     quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512));
                                 cw->set(*text);
@@ -2882,7 +2882,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
             for (unsigned int i = 0; i < this->scrollEntries->size(); i++) {
                 TouchButton *button = (*this->scrollEntries)[i];
                 if (button->id == 52) {
-                    if (__builtin_expect(button->OnTouchEnd(x, y), 1)) { // lint: arm_builtin
+                    if (button->OnTouchEnd(x, y)) {
                         switch (this->field_0x1e0) {
                             case 0:
                                 if (!options[53])
@@ -2909,7 +2909,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         this->messageShowing = 0;
                     }
                 } else if (button->id == 60) {
-                    if (__builtin_expect(button->OnTouchEnd(x, y), 1)) { // lint: arm_builtin
+                    if (button->OnTouchEnd(x, y)) {
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->purchaseCode = -1;
                         ((MtwAppData *) Globals::appManager->GetApplicationData())->restoreRequested = 1;
                         this->purchaseRestorePending = 1;
@@ -3015,9 +3015,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     return 0;
                 if (this->field_0x1da)
                     return 0;
-                if (__builtin_expect(this->choiceWindow->OnTouchEnd(x, y) == 0, 1)) { // lint: arm_builtin
+                if (this->choiceWindow->OnTouchEnd(x, y) == 0) {
                     if (this->choiceWindow->hasChoice() &&
-                        __builtin_expect(this->loadGame(this->selectedRow) == 0, 0)) // lint: arm_builtin
+                        __builtin_expect(this->loadGame(this->selectedRow) == 0, 0)) // lint: arm_builtin anchor: MenuTouchWindow::OnTouchEnd; plain form lowers raw match 97.9 -> 97.2
                         return 0;
                 }
                 this->messageShowing = 0;

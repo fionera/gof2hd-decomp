@@ -656,7 +656,7 @@ void Gun::calcCharacterCollision() {
                 }
             } else if (mine) {
                 float r = (float) enemy->radius;
-                if (__builtin_expect(enemyPosition.x - position.x + velocity.x < r, 1) && // lint: arm_builtin
+                if (__builtin_expect(enemyPosition.x - position.x + velocity.x < r, 1) && // lint: arm_builtin anchor: Gun::calcCharacterCollision; plain form lowers raw match 90.0 -> 84.7
                     enemyPosition.x - position.x + velocity.x > (float) -enemy->radius &&
                     enemyPosition.y - position.y + velocity.y < r &&
                     enemyPosition.y - position.y + velocity.y > (float) -enemy->radius &&

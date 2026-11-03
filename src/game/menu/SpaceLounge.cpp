@@ -1208,7 +1208,7 @@ void SpaceLounge::drawLounge() {
                                                                : String("");
 
         int width = Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, name);
-        if (__builtin_expect(agent->isKnown(), 1)) { // lint: arm_builtin
+        if (__builtin_expect(agent->isKnown(), 1)) { // lint: arm_builtin anchor: SpaceLounge::drawLounge; plain form grows body 1948 -> 1952
             width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
         }
         Layout *layout = Globals::layout;
@@ -1466,7 +1466,7 @@ int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate) 
     }
     result = -1;
 done:
-    return __builtin_annotation(result, "sound"); // lint: arm_builtin
+    return __builtin_annotation(result, "sound"); // lint: arm_builtin anchor: SpaceLounge::getSpecificSoundForRace; plain return shrinks body 116 -> 106
 }
 
 void SpaceLounge::startChat() {

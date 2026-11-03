@@ -693,7 +693,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 120 &&
                (stationMode ? (*this->stations)[index]->getIndex() == 93
-                            : (bool) __builtin_expect( // lint: arm_builtin
+                            : (bool) __builtin_expect( // lint: arm_builtin anchor: StarMap::drawOnScreenInfo; plain form shrinks body 3488 -> 3480
                                   (int) (*this->systems)[index]->getStationEnumIndex(93) >= 0, 1))) {
         this->iconBuffer[1] = this->keyImageWanted;
     } else if (Globals::status->getCurrentCampaignMission() == 125 && stationMode &&
@@ -913,7 +913,7 @@ void StarMap::draw() {
         for (uint32_t i = 0; i < this->systems->size(); i++) {
             Array<bool> *visible = Globals::status->getSystemVisibilities();
             if (visible == 0 ||
-                __builtin_expect(i >= this->systemPositions->size(), 0) || // lint: arm_builtin
+                __builtin_expect(i >= this->systemPositions->size(), 0) || // lint: arm_builtin anchor: StarMap::draw; plain form shrinks body 2644 -> 2636
                 visible->size() <= i || !(*visible)[i])
                 continue;
             this->scratchVector = Vector(*(*this->systemPositions)[i]);
@@ -973,7 +973,7 @@ void StarMap::draw() {
         this->drawOnScreenInfo(this->selectedSystem, false);
     }
 
-    if (__builtin_expect(this->starSystemRoot != 0 && this->stations != 0, 1)) { // lint: arm_builtin
+    if (this->starSystemRoot != 0 && this->stations != 0) {
         SolarSystem *system = (*this->systems)[this->selectedSystem];
         if (!system->hasNoOwner()) {
             Globals::Canvas->SetColor(255, 255, 255, (uint8_t) (this->alpha ^ 255));

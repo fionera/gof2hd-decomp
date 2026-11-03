@@ -4223,13 +4223,13 @@ void Level::createSentryGuns() {
 }
 
 void Level::createFighterTurrets() {
-    Array<KIPlayer *> *list = *(Array<KIPlayer *> *volatile *) &enemies;
+    Array<KIPlayer *> *list = enemies;
     if (list == nullptr) {
         return;
     }
     // The original reloads the enemy list before each condition; keep that
     // evaluation order so the loop tail matches the binary's register use.
-    for (unsigned int i = 0; i < list->size(); list = *(Array<KIPlayer *> *volatile *) &enemies, i++) {
+    for (unsigned int i = 0; i < list->size(); list = *(Array<KIPlayer *> *volatile *) &enemies, i++) { // anchor: Level::createFighterTurrets loop tail; direct member load changes body bytes
         KIPlayer *ship = (*list)[i];
         if (ship == nullptr) {
             continue;
@@ -5217,7 +5217,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     try {
         player->setEmpData(empPoints, empTime);
     } catch (...) {
-        __builtin_trap(); // lint: arm_builtin
+        __builtin_trap(); // lint: arm_builtin anchor: Level::createShip; removal grows body 2764 -> 2772
     }
 
     KIPlayer *ship = nullptr;

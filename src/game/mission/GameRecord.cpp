@@ -195,7 +195,7 @@ void GameRecord::load() {
     Status *st;
     // The original reloads Globals::status for each wanted-list copy; the volatile
     // view keeps that load in the loop instead of hoisting it.
-    Status *volatile *statusRef = &Globals::status;
+    Status *volatile *statusRef = &Globals::status; // anchor: GameRecord::load; non-volatile pointer changes body bytes
 
     Globals::status->resetGame();
     Globals::galaxy->setVisited((bool *) this->data, this->field_0x04);

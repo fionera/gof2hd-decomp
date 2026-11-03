@@ -1641,7 +1641,7 @@ void Status::setStation(Station *s) {
     ArraySetLength(stationList->size(), *textures);
 
     Array<int> *stationIndices = (Array<int> *) asSystem(this->system)->getStations();
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    __atomic_signal_fence(__ATOMIC_SEQ_CST); // anchor: Status::setStation; removal changes body bytes
     for (unsigned i = 0; i < ((Array<int> *) asSystem(this->system)->getStations())->size(); i++) {
         for (unsigned j = 0; j < stationList->size(); j++) {
             Station *candidate = (*stationList)[j];
@@ -2288,14 +2288,14 @@ void Status::resetGame() {
     reinterpret_cast<int64_t &>(this->field_160) = 0;
     this->field_0x108 = 0;
     this->field_174 = 0;
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    __atomic_signal_fence(__ATOMIC_SEQ_CST); // anchor: Status::resetGame; removal changes body bytes
     this->field_0xf0 = 0;
     this->field_0xf1 = 0;
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    __atomic_signal_fence(__ATOMIC_SEQ_CST); // anchor: Status::resetGame; removal changes body bytes
     this->field_f4 = -1;
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    __atomic_signal_fence(__ATOMIC_SEQ_CST); // anchor: Status::resetGame; removal changes body bytes
     this->field_f8 = 1;
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    __atomic_signal_fence(__ATOMIC_SEQ_CST); // anchor: Status::resetGame; removal changes body bytes
     Achievements *ach = Globals::achievements;
     ach->init();
 

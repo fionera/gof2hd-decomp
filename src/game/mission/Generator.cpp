@@ -377,7 +377,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             terranExtras = true;
             break;
         case 1:
-            if (__builtin_expect(Globals::rnd->nextInt(5) == 0, 0)) { // lint: arm_builtin (cold path)
+            if (Globals::rnd->nextInt(5) == 0) {
                 ArrayAdd((*Globals::ships)[63]->makeShip(-1), *list);
                 list->data()[list->size() - 1]->setRace(1);
                 list->data()[list->size() - 1]->adjustPrice();
@@ -765,7 +765,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         short pick = Globals::rnd->nextInt(15);
         type = pick;
         if (pick == 8) goto assignType;
-        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin
+        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; plain form shrinks body 1996 -> 1988
             type = 10;
             if (race > 3) continue;
         }

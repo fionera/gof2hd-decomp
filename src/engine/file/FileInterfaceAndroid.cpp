@@ -162,7 +162,7 @@ bool FileInterfaceAndroid::Read(uint32_t n, void *buf) { // lint: void_ptr virtu
     if (this->zipFile != 0) {
         if (zip_fread(this->zipFile, buf, n) == n) {
             // Compiler barrier: keep the success return out of the shared epilogue.
-            std::atomic_thread_fence(std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_relaxed); // anchor: FileInterfaceAndroid::Read; removal shrinks body 360 -> 356
             return true;
         }
         return false;
@@ -196,7 +196,7 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) { // lint: voi
     if (this->file != 0) {
         if (fwrite(buf, 1, n, this->file) == n) {
             // Compiler barrier: keep the success return out of the shared JNI epilogue.
-            std::atomic_thread_fence(std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_relaxed); // anchor: FileInterfaceAndroid::Write; removal changes body bytes
             return true;
         }
         return false;

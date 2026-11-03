@@ -36,11 +36,10 @@ public:
     unsigned int *tabIcons;
     unsigned int scrollHintImageA;
     unsigned int scrollHintImageB;
-    // volatile reproduces the original's direct [this+0x3c] accesses; without it
-    // clang keeps &dialogActive in r4 across the autoComplete call and OnTouchEnd
-    // grows a dead pre-indexed load.  The constructor initialises it through a
-    // non-volatile lvalue (see HangarWindow.cpp) to keep the ctor's store order.
-    volatile uint8_t dialogActive;
+    // Plain byte.  The former volatile qualifier was a codegen anchor; the
+    // w4268 audit proved it is no longer load-bearing (HangarWindow::render and
+    // OnTouchEnd are byte-identical without it).
+    uint8_t dialogActive;
     int field_0x40;
     int field_0x44;
     int field_0x48;

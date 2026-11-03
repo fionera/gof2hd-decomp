@@ -571,7 +571,7 @@ unsigned int String::Compare(const char *s) {
     if (reachedEnd)
         d = -1;
     // When reachedEnd is set, d is -1; keep the sign extension after the select.
-    __builtin_assume(!reachedEnd || d == -1); // lint: arm_builtin
+    __builtin_assume(!reachedEnd || d == -1); // lint: arm_builtin anchor: String::Compare; removal changes body bytes
     return (signed char) d;
 }
 

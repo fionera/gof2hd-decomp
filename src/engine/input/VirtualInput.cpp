@@ -498,7 +498,7 @@ namespace {
 int ActualizeMouseVisibilty(int force) {
     // The original reads this flag through a volatile access: the load is not folded
     // into the menu-window test below.
-    volatile int &hackingVisible = Globals::is_hacking_visible;
+    volatile int &hackingVisible = Globals::is_hacking_visible; // anchor: ActualizeMouseVisibilty; plain ref changes body bytes
     if (Globals::mouseCursorActivated != 0) {
         const int arrows = ArrowKeyPressed();
         if ((g_mousePointerLatch != -1 || Globals::isCinematicModeActive != 0) &&
@@ -547,12 +547,12 @@ stillVisible:
             goto check;
         if (!IsInGameSubMenuNotActive(2))
             goto check;
-        if (__builtin_expect((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible | // lint: arm_builtin
+        if (__builtin_expect((Globals::is_dialogue_window_visible | Globals::is_choice_window_visible | // lint: arm_builtin anchor: ActualizeMouseVisibilty; plain form shrinks body 592 -> 540
                               Globals::is_menu_visible) != 0, 0))
             goto check;
-        if (__builtin_expect(hackingVisible != 0, 0)) // lint: arm_builtin
+        if (__builtin_expect(hackingVisible != 0, 0)) // lint: arm_builtin anchor: ActualizeMouseVisibilty; plain form shrinks body 592 -> 588
             goto check;
-        if (__builtin_expect((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0, 0)) // lint: arm_builtin
+        if (__builtin_expect((Globals::isStarMapVisible | Globals::isCinematicModeActive) != 0, 0)) // lint: arm_builtin anchor: ActualizeMouseVisibilty; plain form changes body bytes
             goto check;
 show:
         g_mousePointerLatch = -(g_mousePointerLatch != 1 && Globals::isCinematicModeActive != 0);

@@ -321,7 +321,7 @@ StarSystem::StarSystem(int mode) {
                     (*this->playerTargets)[i - 1] = new PlayerStatic(0, (*this->planetsArray)[i], 0.0f, 0.0f, 0.0f);
                     bool placed = false;
                     while (!placed) {
-                        AERandom *rnd = *(AERandom *volatile *) &Globals::rnd;
+                        AERandom *rnd = *(AERandom *volatile *) &Globals::rnd; // anchor: StarSystem::StarSystem; plain load shrinks body 2900 -> 2892
                         slot = rnd->nextInt(11) + 7;
                         placed = false;
                         if (abs(slot - sunSlot) >= 3) {

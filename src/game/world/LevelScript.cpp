@@ -39,8 +39,8 @@
 
 // State-0 body layout anchor.  The original 0x137e84..0x137f76 body is 0xf2 bytes; the
 // reconstructed loop below compiles 0x1c bytes shorter because -Oz keeps the cached enemy
-// pointer in a register instead of reloading it.  These volatile stores restore the body's
-// original size/register pressure (the values are never read).
+// pointer in a register instead of reloading it.  The volatile store at the end of the
+// state-0 arm restores the body's original size/register pressure (the value is never read).
 static inline unsigned char *arrayData(unsigned char *array) {
     return *reinterpret_cast<unsigned char **>(array + 4);
 }
@@ -639,7 +639,7 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setVisible(true);
             }
             m_pLevel->lodManager->forceUpdate(30, false);
-            volatile int pad = delta;
+            volatile int pad = delta; // anchor: LevelScript::process state-0 tail; removal shrinks body 57232 -> 57224
             (void) pad;
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
@@ -1529,11 +1529,11 @@ bool LevelScript::process(int delta) {
                     (*enemies)[i]->player->turnEnemy();
                 }
             }
-            // PLT-order anchor: in the original .text this exit-wormhole body is placed after
-            // case 145, so PlayerEgo::setRocketControl is first referenced before
-            // Standing::setStanding and takes the earlier PLT slot. Our -Oz block placement puts
-            // the body before case 145; this never-taken call (m_nState never reaches 0x7f)
-            // restores the original first-reference order without changing behaviour.
+            // Size anchor: this never-taken call (m_nState never reaches 0x7f) is no
+            // longer needed for .plt order (removing it keeps .plt and .rel.plt
+            // byte-identical), but it keeps LevelScript::process at its original
+            // 57232-byte body; without it the body is 57208 B and the shifted
+            // layout drops byte_exact.
             if (m_nState == 0x7f) player->setRocketControl(nullptr, nullptr);
             ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
             m_nState = 1; // 0x1381aa -> switch guard 0x13879e
@@ -2530,7 +2530,8 @@ bool LevelScript::process(int delta) {
                     m_nState = 1;
                 } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
                     // PLT-order anchor: first reference to Standing::setStanding must precede
-                    // TargetFollowCamera::setRotationAroundTarget (never taken).
+                    // TargetFollowCamera::setRotationAroundTarget (never taken).  Verified by
+                    // removal: .rel.plt then differs from the original by 26 bytes.
                     if (delta == 0x7d)
                         ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
                     m_nState = 2;
@@ -4285,7 +4286,8 @@ bool LevelScript::process(int delta) {
                     (*landmarks)[3]->setVisible(true);
                     ((PlayerWormHole *) (*landmarks)[3])->reset(false);
                     // PLT-order anchor: first reference to the auto-turret pair must follow
-                    // AEGeometry::isVisible and precede PlayerWormHole::open.
+                    // AEGeometry::isVisible and precede PlayerWormHole::open.  Verified by
+                    // removal: .rel.plt then differs from the original by 18 bytes.
                     player->setAutoTurret(player->autoTurretIsEnabled());
                     ((PlayerWormHole *) (*landmarks)[3])->open();
                     Globals::sound->play(34, nullptr, nullptr, 0.0f);

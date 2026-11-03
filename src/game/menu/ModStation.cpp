@@ -318,11 +318,10 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     this->camKeyY = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1];
     this->camKeyZ = (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2];
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     const float *pitchTable = gHangarCamPitch;
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
-    int pitchBits = *(const volatile int *) &pitchTable[race];
-    int yawBits = *(const volatile int *) &yawTable[race];
+    int pitchBits = *(const volatile int *) &pitchTable[race]; // anchor: ModStation::ModStation; plain load drops raw match 98.35 -> 85.9
+    int yawBits = *(const volatile int *) &yawTable[race]; // anchor: ModStation::ModStation; plain load drops raw match 98.35 -> 97.8
     MatrixSetRotation(nearKey, *(const float *) &pitchBits, *(const float *) &yawBits, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     Matrix farKey;
@@ -1917,7 +1916,7 @@ void ModStation::OnKeyPress(long long key, long long) {
                         }
                         return;
                     case 1:
-                        if (__builtin_expect(Globals::status->getCurrentCampaignMission() < 13, 0) || // lint: arm_builtin
+                        if (Globals::status->getCurrentCampaignMission() < 13 ||
                             Globals::status->getCurrentCampaignMission() == 49)
                             goto notAvailable;
                         if (Globals::status->getStation()->getIndex() == 88 &&
@@ -2542,7 +2541,7 @@ void ModStation::checkHints() {
 
     if (this->flag_0x69 || this->flag_0x6a || this->flag_0x63)
         return;
-    Status *volatile *statusPtr = &Globals::status;
+    Status *volatile *statusPtr = &Globals::status; // anchor: ModStation::checkHints; non-volatile pointer grows body 2748 -> 2756
     Status *status = *statusPtr;
     if (status->wingmen != nullptr && !this->flag_0xdb && (int) status->fadeValue <= 0 &&
         !Globals::layout->rewardMessageActive) {
@@ -2622,7 +2621,7 @@ void ModStation::OnRender2D() {
             this->paintCanvas->SetColor((int) (fade * 255.0f));
             Globals::Canvas->FillRectangle(0, 0, Globals::w, Globals::h);
         }
-        if (*reinterpret_cast<volatile int *>(&this->field_0xb4) > -6000)
+        if (*reinterpret_cast<volatile int *>(&this->field_0xb4) > -6000) // anchor: ModStation::OnRender2D; plain read changes body bytes
             this->cutScene->render2D();
     } else {
         Globals::layout->drawFooterStation();

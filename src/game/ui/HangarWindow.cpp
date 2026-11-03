@@ -581,7 +581,7 @@ void HangarWindow::render() {
                                         // Volatile sink: keeps the original
                                         // call-site cleanup scopes (and the
                                         // 376-byte frame) intact.
-                                        volatile int pad3 = 0;
+                                        volatile int pad3 = 0; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
@@ -871,7 +871,7 @@ void HangarWindow::render() {
                             }
                         }
                         if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
-                            volatile int padS = 0; (void) padS;
+                            volatile int padS = 0; (void) padS; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
                             (*this->buttons)[0]->setPosition(
                                 Globals::layout->buttonInsetX + this->hintOffsetX + (listWidth - buttonOffset),
                                 this->field_0x114 + y, 18);
@@ -916,14 +916,9 @@ void HangarWindow::render() {
             for (count = 0; count <= 4; count++) {
                 String description("");
                 String price("");
-                // Layout anchor: keep this TU's .text at 0x1343d0 so the
-                // archive-sensitive libstdc++ exception constructors remain
-                // byte-exact.  Three self-assignments are no-ops on the rendered
-                // text but steer codegen to the original 9700-byte body while
-                // OnTouchEnd keeps its exact 5828-byte shape; the remaining
-                // 32 bytes of the layout live in Gun::calcCharacterCollision.
-                // The two volatile stores below pin the same 8-byte size delta
-                // introduced by the free-credits textY scheduling fix.
+                // Layout anchor: the three self-assignments at count == 4 below
+                // are no-ops on the rendered text but steer codegen to the
+                // original 9700-byte HangarWindow::render body.
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
@@ -959,17 +954,15 @@ void HangarWindow::render() {
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 // Scoped block: the original's LSDA has a separate cleanup
-                // region for these calls, which also keeps .ARM.extab at
-                // 0x2628c so .rodata stays at 0x1c9e10.
+                // region for these calls.  The volatile pad0b below is
+                // load-bearing: removing it (w4268) raised the raw match
+                // 78.79 -> 79.36 but shrank .ARM.extab by 12 bytes
+                // (0x26298 -> 0x2628c), so it is kept.
                 {
-                    // Sink: keeps the original 4-byte size/regalloc delta.
-                    volatile int pad0b = count;
+                    volatile int pad0b = count; // anchor: HangarWindow::render; keeps .ARM.extab at 0x26298
                     (*this->buttons)[12 + count]->setSplitText(price);
                 }
                 (*this->buttons)[12 + count]->draw();
-                // Layout anchor: two volatile stores keep this TU's .text at
-                // 0x1343d0 (see the credit-dialog comment above) and steer the
-                // register allocation of the surrounding credit-list loop.
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
@@ -1069,7 +1062,7 @@ void HangarWindow::render() {
                 int height = button->getHeight();
                 int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
                 Globals::Canvas->SetColor(0xffffffffu);
-                volatile float textYf = (float) y + (float) height * 0.2f;
+                volatile float textYf = (float) y + (float) height * 0.2f; // anchor: HangarWindow::render; plain float grows body 9700 -> 9752
                 int textY = (int) textYf;
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
@@ -1507,7 +1500,7 @@ bool HangarWindow::OnTouchEnd(int x, int y) {
                 this->dialogActive = 0;
                 this->buyCreditsActive = 0;
                 for (int i = 12; i != 17; i++) {
-                    TouchButton **data = *(TouchButton ** volatile *) &this->buttons->data_;
+                    TouchButton **data = *(TouchButton ** volatile *) &this->buttons->data_; // anchor: HangarWindow::OnTouchEnd; plain load shrinks body 5828 -> 5824
                     data[i]->setVisible(false);
                 }
                 (*this->buttons)[17]->setVisible(false);

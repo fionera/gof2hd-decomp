@@ -166,7 +166,7 @@ void RocketGun::update(int elapsed) {
     Gun &g = *this->gun;
     g.update(elapsed);
 
-    if (__builtin_expect(this->hasGeometry != 0 && this->gun->delayActive != 0, 1)) { // lint: arm_builtin
+    if (__builtin_expect(this->hasGeometry != 0 && this->gun->delayActive != 0, 1)) { // lint: arm_builtin anchor: RocketGun::update; plain form lowers raw match 86.9 -> 84.6
         // Muzzle flash grows on the launcher while the launch delay runs down.
         PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
@@ -229,7 +229,7 @@ void RocketGun::update(int elapsed) {
             // Second pressure anchor: the extra zeroed frame slot in this branch steers the
             // greedy allocator's block layout, which is what the original's frame-time
             // placement depends on.
-            volatile int padx = 0;
+            volatile int padx = 0; // anchor: RocketGun::update; removal lowers raw match 86.9 -> 86.7
             goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
@@ -286,7 +286,7 @@ void RocketGun::update(int elapsed) {
     const float dt = (float) elapsed;
     // Keep the frame time in a stack slot for the loop; the original reloads it from the
     // frame in the launch block rather than holding it in a callee-saved register.
-    volatile int unused = elapsed;
+    volatile int unused = elapsed; // anchor: RocketGun::update; removal lowers raw match 86.9 -> 85.8
     Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;

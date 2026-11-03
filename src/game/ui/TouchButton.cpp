@@ -610,7 +610,7 @@ void TouchButton::draw() {
                 Globals::Canvas->SetColor(this->textColor);
             }
         }
-        __builtin_assume(canvasTop != 0); // lint: arm_builtin
+        __builtin_assume(canvasTop != 0); // lint: arm_builtin anchor: TouchButton::draw; removal grows body 1376 -> 1380
         break;
     }
     }

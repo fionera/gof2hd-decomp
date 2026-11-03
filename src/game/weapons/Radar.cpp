@@ -406,7 +406,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin
+    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin anchor: Radar::draw; plain form shrinks body 9908 -> 9612
                                  this->field_0x1c == nullptr,
                          0)) {
         otherLock = this->field_0x14 != 0;
@@ -426,7 +426,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->landmarks->data()[i]);
-            if (__builtin_expect(this->onScreen, 1) && // lint: arm_builtin
+            if (__builtin_expect(this->onScreen, 1) && // lint: arm_builtin anchor: Radar::draw; plain form shrinks body 9908 -> 9896
                 this->screenX > this->centerX - this->field_0x128 &&
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
@@ -475,7 +475,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if (__builtin_expect((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3, 0)) { // lint: arm_builtin
+            } else if (__builtin_expect((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3, 0)) { // lint: arm_builtin anchor: Radar::draw; plain form grows body 9908 -> 9912
                 Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8,
                                              this->screenX, this->screenY, 17, 68);
             }

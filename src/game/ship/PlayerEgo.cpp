@@ -2073,7 +2073,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
                 this->autoPilotTarget = (int) (intptr_t) ((Waypoint *) (intptr_t) this->autoPilotTarget)->route->getWaypoint();
             }
             KIPlayer *target = (KIPlayer *) (intptr_t) this->autoPilotTarget;
-            if (__builtin_expect(target == nullptr, 0) || this->dockedToStream) { // lint: arm_builtin
+            if (__builtin_expect(target == nullptr, 0) || this->dockedToStream) { // lint: arm_builtin anchor: PlayerEgo::update; plain form shrinks body 8852 -> 8844
                 this->setAutoPilot(nullptr);
             } else {
                 this->moveTarget = target->getPosition();
@@ -2089,7 +2089,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             }
         }
     } else if (!this->field_0x145) {
-        if (__builtin_expect(this->turretActive, 0) || this->field_0x1a1) { // lint: arm_builtin
+        if (__builtin_expect(this->turretActive, 0) || this->field_0x1a1) { // lint: arm_builtin anchor: PlayerEgo::update; plain form grows body 8852 -> 8868
             this->handleTurretView(dt);
         } else {
             this->roll(this->shakeIntensity);
