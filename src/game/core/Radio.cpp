@@ -47,18 +47,6 @@ Radio::~Radio() {
     this->rows = 0;
 }
 
-bool Radio::isShowingMessage() {
-    return this->currentMessage != 0;
-}
-
-uint8_t Radio::lastMessageShown() {
-    return this->lastMessageWasShown;
-}
-
-RadioMessage *Radio::getMessage(int index) {
-    return (*this->messages)[index];
-}
-
 void Radio::setMessages(Array<RadioMessage *> *messages) {
     this->messages = messages;
     if (messages != 0) {
@@ -69,6 +57,14 @@ void Radio::setMessages(Array<RadioMessage *> *messages) {
 
 void Radio::setCurrentMessage(RadioMessage *message) {
     this->currentMessage = message;
+}
+
+RadioMessage *Radio::getMessage(int index) {
+    return (*this->messages)[index];
+}
+
+uint8_t Radio::lastMessageShown() {
+    return this->lastMessageWasShown;
 }
 
 void Radio::update(long time, PlayerEgo *ego, LevelScript *script) {
@@ -193,4 +189,8 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
         this->currentMessage->finish();
         this->currentMessage = 0;
     }
+}
+
+bool Radio::isShowingMessage() {
+    return this->currentMessage != 0;
 }
