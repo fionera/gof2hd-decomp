@@ -5224,3 +5224,8 @@ Wave-97 function pass: `Level::createMission` 90.6887 -> 90.7052% (`w3740`) by r
 Wave-97 section-order pass: `MarqueeImage` emission order (`w3745`) — setPosition, setSpeed,
 update, draw(int,int), draw. Plain no-order 2962 -> 2963 (addresses 3728 -> 3733, prefix 3666 -> 3685).
 Gate 4498/4498.
+Wave-97 function pass: `MGame::OnTouchEnd` (`w3717`) faithful mission-success order (instant-action
+before campaign dispatch) and per-call campaign fetch; fuzzy 78.3565 -> 78.0901% but the source
+order is now the original's. 8080 B, gate 4498/4498.
+Wave-97 section-order pass: `SpacePoint` emission order (`w3745`) — isFree, take, giveFree,
+getIndex, dtor. Plain no-order addresses 3733 -> 3739 (prefix 3685 -> 3694). Gate 4498/4498.
