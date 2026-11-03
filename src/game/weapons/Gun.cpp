@@ -584,15 +584,10 @@ void Gun::calcCharacterCollision() {
     }
 
     this->lastHitKIPlayer = 0;
-    const int itemIndex = this->itemIndex;
+    Vector *td = &this->targetDir;
 
     for (unsigned e = 0; e < this->enemies->size(); ++e) {
         Player *enemy = (*this->enemies)[e];
-        // Codegen anchor: the volatile slot pins the outer enemy pointer to a stack slot, which
-        // reproduces the shipped binary's callee-saved register assignment (this=r9, enemy=r8,
-        // mine=r5, e=r2).  The original has no per-projectile reload; a plain reload here drops
-        // the match to 53.2% / 1904 B.
-        Player *volatile enemySlot = enemy;
         if (mine) {
             if (!enemy->enemyFlagsLo) continue;
             if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->deadFlag) continue;
@@ -601,7 +596,6 @@ void Gun::calcCharacterCollision() {
         if (enemy->getHitpoints() < 1) continue;
 
         for (unsigned i = 0; i < this->positions.count; ++i) {
-            enemy = enemySlot;
             Vector position = this->positions.data()[i];
             Vector velocity = this->velocities.data()[i];
             Vector enemyPosition = AbyssEngine::AEMath::MatrixGetPosition(enemy->transform);
@@ -685,29 +679,26 @@ void Gun::calcCharacterCollision() {
             if (this->empDamage != kNoAttribute) {
                 enemy->damageEmp(this->empDamage, this->friendGun);
             }
+            int dmg = this->damage;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     enemy->damage((int) ((float) this->damage * 3.0f * 0.25f), this->friendGun, this->itemIndex);
                 } else {
-                    enemy->damage(this->damage, this->friendGun, itemIndex);
+                    enemy->damage(dmg, this->friendGun, this->itemIndex);
                 }
             } else if (enemy->egoFlag) {
                 enemy->damage((int) ((float) this->damage * 0.2f), this->friendGun, this->itemIndex);
             } else {
-                enemy->damage(this->damage, this->friendGun, this->itemIndex);
+                enemy->damage(dmg, this->friendGun, this->itemIndex);
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
+            enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
+            this->lastHitKIPlayer = (int) (intptr_t) enemy->getKIPlayer();
+            this->lifetimes[i] = -1000000;
             if (this->playerGun) {
-                // Codegen anchor: the original has no reload here, but this 4-byte read keeps the
-                // block at the shipped binary's 1984 B size and preserves the frame layout.
-                uint8_t hitFlag = *(volatile uint8_t *) &enemy->field_54;
-                (void) hitFlag;
                 ((Level *) this->level)->field_30 = 1;
             }
-            enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
-            this->lifetimes[i] = -1000000;
-            this->lastHitKIPlayer = (int) (intptr_t) enemy->getKIPlayer();
             if (explosive) {
                 ((Level *) this->level)->field_74->emitManual(((Level *) this->level)->field_3c, position, 0, velocity,
                                                               -1.0f);
@@ -732,10 +723,10 @@ void Gun::calcCharacterCollision() {
                 this->hitFlags[i] = 1;
                 this->hitPositions.data()[i] = position;
                 for (unsigned k = 0; k < this->enemies->size(); ++k) {
-                    Player *other = (*this->enemies)[k];
-                    this->targetDir = other->getPosition();
-                    this->targetDir -= position;
-                    int distance = (int) AbyssEngine::AEMath::VectorLength(this->targetDir);
+                    enemy = (*this->enemies)[k];
+                    *td = enemy->getPosition();
+                    *td -= position;
+                    int distance = (int) AbyssEngine::AEMath::VectorLength(*td);
                     if (distance < this->magnitude) {
                         float falloff = (float) (this->magnitude - distance) / (float) this->magnitude;
                         if (falloff > 1.0f) {
@@ -743,9 +734,9 @@ void Gun::calcCharacterCollision() {
                         } else if (falloff < 0.0f) {
                             falloff = 0.0f;
                         }
-                        other->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
+                        enemy->damage((int) (falloff * (float) this->damage), this->friendGun, this->itemIndex);
                         if (this->empDamage > 0) {
-                            other->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
+                            enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
                     }
                 }
