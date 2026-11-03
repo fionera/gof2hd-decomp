@@ -5208,3 +5208,7 @@ setWon/hasWon in original dynsym order. Plain no-order addresses 3709 -> 3713 (p
 Gate 4497/4497.
 Wave-97 section-order pass: `SentryGun` render order (`w3745`) — render before update.
 Plain no-order addresses 3713 -> 3715 (prefix 3615 -> 3625). Gate 4497/4497.
+Wave-97 function pass: `Level::createShip` 73.9 -> 74.1% (`w3735`) by reordering the waypoint
+locals to match the original frame slots. 2764 B, gate 4497/4497.
+Wave-97 section-order pass: `NewsTicker` update order (`w3745`) — update before draw.
+Plain no-order 2954 -> 2955 (addresses 3715 -> 3717, prefix 3625 -> 3634). Gate 4497/4497.
