@@ -300,10 +300,6 @@ SpaceLounge::~SpaceLounge() {
     this->headEase = 0;
 }
 
-void SpaceLounge::setHangarUpdate(bool value) {
-    this->hangarUpdate = value;
-}
-
 // Mod sale offers: {mod, bonus percentage shown in the pitch}.
 static const int SpaceLounge_modBonuses[4][2] = {{0, 40}, {1, 30}, {2, 1}, {3, 20}};
 
@@ -332,7 +328,7 @@ void SpaceLounge::init() {
         this->choiceWindow = 0;
     }
     this->choiceWindow = new ChoiceWindow();
-    this->hangarUpdate = 0;
+    this->setHangarUpdate(0);
     if (this->cutScene != 0) {
         this->cutScene->resetCamera();
     }
@@ -463,6 +459,10 @@ void SpaceLounge::init() {
     this->initialized = 1;
 }
 
+
+void SpaceLounge::setHangarUpdate(bool value) {
+    this->hangarUpdate = value;
+}
 
 void SpaceLounge::startChat() {
     Agent *agent = (*this->agents)[this->selectedAgent];

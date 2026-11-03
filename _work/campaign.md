@@ -5252,3 +5252,8 @@ weights restoring the original EH landing-pad order. 1948 B, gate 4498/4498.
 Wave-97 section-order pass: `SpriteGun` emission order (`w3745`) — ctor, dtor, render, update,
 setEnemies, setEnemy. Plain no-order addresses 3858 -> 3862 (prefix 3817 -> 3830). Gate 4498/4498.
 Note: `_work/reconstructions/spritegun_emission_order_w3745.md`.
+Wave-97 section-order pass: `SpaceLounge` weak-copy order (`w3745`) — move `setHangarUpdate`
+after `init` and call it from `init` (inlined to the same store) so the `Array<Array<ImagePart*>*>`
+ctor/`ArraySetLength` weak copies precede it. Plain no-order 3001 -> 3003 (addresses 3862 -> 3865,
+prefix 3830 -> 3834). Gate 4498/4498, gate `.so` byte-identical.
+Note: `_work/reconstructions/spacelounge_weak_copy_order_w3745.md`.
