@@ -240,6 +240,12 @@ static inline float &optionFloat(int offset) { return *reinterpret_cast<float *>
 
 static inline int &optionInt(int offset) { return *reinterpret_cast<int *>(&Globals::options[offset]); }
 
+// Maps the touch-control size slider (0..1) to the three layout coordinates the
+// preview and the fire/steer pads use.
+static inline int mtw_scaleControlSize(float size, int lo, int mid, int hi) {
+    return size <= 0.0f ? lo : (size >= 1.0f ? hi : mid);
+}
+
 
 
 template<class T>
@@ -2783,9 +2789,13 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                                 *(float *) &options[68] = quality <= 0.33f ? 0.0f : (quality <= 0.66f ? 0.5f : 1.0f);
                                 Globals::recordHandler->saveOptions();
                             } else {
+                                // The original loads the choice window before getText() but keeps
+                                // the load branch-local; a volatile read pins that order (a plain
+                                // member load is hoisted above the iPadLargePossible test).
+                                ChoiceWindow *cw = *(ChoiceWindow *volatile *) &this->choiceWindow;
                                 String *text = Globals::gameText->getText(
                                     quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512));
-                                this->choiceWindow->set(*text);
+                                cw->set(*text);
                                 this->messageShowing = 1;
                             }
                             break;
@@ -3091,8 +3101,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     this->menuState = 3;
                 if (this->cinematicBtnB->OnTouchEnd(x, y)) {
                     float controlSize = optionFloat(68);
-                    optionInt(88) = controlSize <= 0.0f ? 365 : (controlSize >= 1.0f ? 730 : 513);
-                    optionInt(84) = controlSize <= 0.0f ? 415 : (controlSize >= 1.0f ? 830 : 583);
+                    optionInt(84) = mtw_scaleControlSize(controlSize, 415, 583, 830);
+                    optionInt(88) = mtw_scaleControlSize(controlSize, 365, 513, 730);
                     Globals::globals->setCoordsFire(optionInt(88), Globals::Canvas->GetImage2DWidth(this->fireImageA),
                                                     this->fireImageA, this->fireImageB, this->fireSize_0x74,
                                                     this->fireCoord_0x60, this->fireCoord_0x62, this->fireCoord_0x64,
