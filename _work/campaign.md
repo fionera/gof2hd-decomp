@@ -5158,3 +5158,7 @@ Wave-97 revert: `Level::createMission` 90.6% (`48c0f54d`) was reverted because i
 the body to 17168 B (original 17172 B). Keep the function size-exact.
 Wave-97 section-order pass: `HackingGame` emission order (`w3745`) — reproduce the original
 object order. Gate 4497/4497. Note: `_work/reconstructions/hackinggame_dtor_placement_w3745.md`.
+Wave-97 section-order pass: `RadioMessage` emission order (`w3745`) — original
+ctor/reset/accessor order. Gate 4497/4497. Plain no-order metric drops 3132 -> 2852 because
+the reorder shifts `.rodata` by +0x10 (a base shift, not a body regression); this is a
+faithful stepping stone. Note: `_work/reconstructions/radiomessage_ctor_placement_w3745.md`.
