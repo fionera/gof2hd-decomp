@@ -6,7 +6,7 @@ How the decompiled `libgof2hdaa.so` is checked against the original Android rele
 ## The build that is being validated
 
 `cmake/toolchain.cmake` compiles every TU in `src/` with the original's toolchain — NDK r18b clang
-7.0.2, `-target armv7-none-linux-androideabi21 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
+7.0.2, `-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp
 -std=c++11 -fPIC -frtti -fstack-protector-strong -funwind-tables -Oz -g -stdlib=libc++`. The `link_so` target links those objects plus
 the vendored static libs the original statically linked (libcrypto subset, zlib 1.2.3, libzip 0.9.3 —
 `third_party/match_libs.cmake`; libcrypto is OpenSSL 1.1.0l built with real GCC 4.9 (NDK r13b,
