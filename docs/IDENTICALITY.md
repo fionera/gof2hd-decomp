@@ -202,14 +202,10 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.6%), `LevelScript::process` (55.0%), `Status::missionCompleted` (86.7%),
-<<<<<<< HEAD
-   `Generator::createMission` (73.6%), `Level::createShip` (74.1%), `Radar::draw` (73.9%),
-   `MGame::OnTouchEnd` (78.1%), `HangarWindow::render` (80.4%) and `Globals::Globals` (80.5%).
-=======
-   `Generator::createMission` (73.6%), `Level::createShip` (73.9%), `Radar::draw` (73.9%),
-   `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%) and `HangarWindow::render` (80.6%).
->>>>>>> ee9e360a (HangarWindow::render pass: scoped credit-row cleanup + volatile amount anchor (78.8 -> 80.6%, 9700B; gate byte 4497 linked 4497, .text 0x1337c8))
+   `Layout::Layout` (47.7%), `LevelScript::process` (55.0%), `Generator::createMission` (73.6%),
+   `Radar::draw` (73.9%), `Gun::calcCharacterCollision` (74.0%), `Level::createShip` (74.1%),
+   `MGame::OnTouchEnd` (78.1%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
+   `Status::missionCompleted` (86.7%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now
@@ -252,10 +248,9 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 2345 byte_exact,
-4493 linked_exact, 4522 size_match of 4524; pct buckets {100:4495, 90-99:8, 80-89:13, 70-79:5,
-<60:3}. 2 function rows size-MISMATCH (Generator -4 B; HangarWindow::initialize -68 B); 22 size-match >=80%
-not-linked (the highest-value near-misses).
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 4498 byte_exact,
+4498 linked_exact, 4524 size_match of 4524; pct buckets {100:4498, 90-99:10, 80-89:8, 70-79:5,
+<60:3}. 0 function rows size-MISMATCH; 18 size-match >=80% not-linked (the highest-value near-misses).
 
 Systematic clusters (one cause fixes many):
 1. **Shader `UpdateMeshData` cluster** (~15 fns at 86-94%, GenericShader/VertexColorShader/BumpShaderV2/4/

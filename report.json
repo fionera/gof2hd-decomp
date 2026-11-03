@@ -184,14 +184,6 @@
    "usize": 1948
   },
   {
-   "name": "_ZN7StarMap4drawEv",
-   "pct": 97.5,
-   "byte": false,
-   "linked": false,
-   "osize": 2644,
-   "usize": 2644
-  },
-  {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
    "pct": 97.7,
    "byte": false,
@@ -214,6 +206,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
+  },
+  {
+   "name": "_ZN7StarMap4drawEv",
+   "pct": 99.1,
+   "byte": false,
+   "linked": false,
+   "osize": 2644,
+   "usize": 2644
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
