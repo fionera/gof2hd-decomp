@@ -5146,3 +5146,7 @@ Wave-97 function pass: `Level::createMission` 88.3 -> 90.4% (`w3740`) by caching
 Wave-97 section-order pass: `AutoPilotList::fire` placement (`w3745`) by defining
 `fire`/`getTargetString` before `up` and `touch` after `draw`; plain no-order 3099 -> 3102.
 Gate 4497/4497.
+Wave-97 function pass: `Level::createShip` 73.4 -> 73.5% (`w3721`) by fixing the
+`PlayerFixedObject` ctor race/type argument order. 2764 B, gate 4497/4497.
+Wave-97 section-order pass: `ListItemWindow` definitions reordered to the original emission
+order (`w3745`). Gate 4497/4497.
