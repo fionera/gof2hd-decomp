@@ -7,6 +7,59 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/GameText.h"
 
+TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
+    init(text, 0xffffffff, x, -1, -1, y, p4, 0, p5, 0x44);
+}
+
+
+TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag) {
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    PaintCanvas *canvas = Globals::Canvas;
+    this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
+
+    String tmp("", false);
+    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
+}
+
+
+TouchButton::TouchButton(unsigned int kind, unsigned int image,
+                         int a, int b, int c, unsigned char flag) {
+    PaintCanvas **canvas = &Globals::Canvas;
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    this->image = image;
+    this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
+
+    String tmp("", false);
+    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
+}
+
+
+TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
+    init(text, 0xffffffff, type, -1, -1, x, y, p5, p6, p7);
+}
+
+
+TouchButton::TouchButton(String const &text,
+                         int a, int b, int c, int d,
+                         unsigned char flags0, unsigned char flags1,
+                         unsigned int spacing, int kerning) {
+    this->fontId = spacing;
+    this->fontSpacing = kerning;
+
+    PaintCanvas **canvas = &Globals::Canvas;
+    int prev = (*canvas)->FontGetSpacing(this->fontId);
+    (*canvas)->FontSetSpacing(spacing, (short) kerning);
+
+    this->init(text, 0xffffffffu, a, -1, -1, b, c, d, flags0, flags1);
+
+    (*canvas)->FontSetSpacing(spacing, prev);
+}
+
+
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
                          unsigned char flags0, unsigned char flags1) {
     PaintCanvas **canvas = &Globals::Canvas;
@@ -18,157 +71,17 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
 }
 
 
-void TouchButton::setVisible(bool value) {
-    this->visible = value;
+TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6) {
+    this->fontId = (uint32_t) (uintptr_t) Globals::font;
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
+    init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
 }
 
-void TouchButton::setPosition(int x, int y, unsigned char flags) {
-    unsigned int f = (unsigned int) flags;
-    this->x = x;
-    this->y = y;
-    this->flags0 = flags;
-    if ((flags & 0x20) != 0) {
-        y = y - this->layoutHeight;
-        this->y = y;
-    }
-    if ((int) (f << 0x1e) < 0) {
-        x = x - this->width;
-        this->x = x;
-    }
-    if ((int) (f << 0x19) < 0) {
-        this->y = y - this->layoutHeight / 2;
-    }
-    if ((int) (f << 0x1d) < 0) {
-        this->x = x - this->width / 2;
-    }
-}
-
-void TouchButton::translate(int dx, int dy) {
-    this->x = dx + this->x;
-    this->y = dy + this->y;
-}
-
-void TouchButton::setNumberText(String const &value) {
-    this->numberText = value;
-}
 
 TouchButton::~TouchButton() {
 }
 
-bool TouchButton::OnTouchMove(int px, int py) {
-    if (this->visible != 0 && this->halfTransparent == 0) {
-        bool r;
-        if (this->touched == 0)
-            r = false;
-        else
-            r = touchedInside(px, py);
-        this->touched = r;
-        return r;
-    }
-    return false;
-}
 
-bool TouchButton::isVisible() {
-    return this->visible;
-}
-
-void TouchButton::setPressProgress(float value) {
-    this->pressProgress = value;
-}
-
-bool TouchButton::isTouched() {
-    return this->touched;
-}
-
-String TouchButton::getText() {
-    return String(this->text, false);
-}
-
-void TouchButton::replaceTextKeepSize(String const &text) {
-    this->text = text;
-    if (this->kind == 10) {
-        int w = this->width;
-        int tw = Globals::Canvas->GetTextWidth(this->fontId, text);
-        this->textOffsetX = w / 2 - tw / 2;
-    }
-}
-
-void TouchButton::setSplitText(String const &value) {
-    this->splitText = value;
-}
-
-Vector TouchButton::getPosition() {
-    float fx = static_cast<float>(this->x);
-    float fy = static_cast<float>(this->y);
-    Vector pos;
-    pos.x = fx;
-    pos.y = fy;
-    pos.z = 0.0f;
-    return pos;
-}
-
-void TouchButton::setTextColor(int color) {
-    this->textColor = color;
-}
-
-void TouchButton::setAlwaysPressed(bool value) {
-    this->alwaysPressed = value;
-}
-
-void TouchButton::resetTouch() {
-    this->touched = 0;
-}
-
-
-bool TouchButton::OnTouchBegin(int px, int py) {
-    if (this->visible == 0 || this->halfTransparent != 0)
-        return 0;
-    bool r = touchedInside(px, py);
-    this->touched = r;
-    if (r == 0)
-        return 0;
-    Globals::sound->play(0x7c, 0, 0, 0.0f);
-    return this->touched != 0;
-}
-
-bool TouchButton::OnTouchEnd(int px, int py) {
-    bool res;
-    if (this->visible == 0 || this->halfTransparent != 0) {
-        res = false;
-    } else if (this->touched == 0 || touchedInside(px, py) == 0) {
-        res = false;
-        this->touched = 0;
-    } else {
-        this->touched = 0;
-        Globals::sound->play(0x7b, 0, 0, 0.0f);
-        res = true;
-    }
-    return res;
-}
-
-int TouchButton::getWidth() {
-    return this->width;
-}
-
-void TouchButton::setPosition(int x, int y) {
-    setPosition(x, y, this->flags0);
-}
-
-void TouchButton::setGamePadButtonImage(unsigned int image) {
-    this->adornImage = static_cast<int>(image);
-}
-
-void TouchButton::setHalfTransparent(bool value) {
-    this->halfTransparent = value;
-}
-
-void TouchButton::setPressProgressHighlight(bool value) {
-    this->progressHighlight = value;
-}
-
-int TouchButton::getHeight() {
-    return this->height;
-}
 
 
 // Medal button images by medal stage (bronze .. gold, elite variants) and their tint colours.
@@ -209,6 +122,7 @@ static const int g_TB_frameImagesPhone[21][9] = {
     {1116, 1115, 1117, 1122, 1121, 1123, 1122, 1121, 1123},
     {9506, 9508, 9510, 9507, 9509, 9511, 9507, 9509, 9511},
 };
+
 
 void TouchButton::init(const String &text, unsigned int subId, int kind, int medalIndex, int medalStage, int x, int y,
                        int width, unsigned char flags0, unsigned char flags1) {
@@ -406,6 +320,161 @@ void TouchButton::init(const String &text, unsigned int subId, int kind, int med
 }
 
 
+void TouchButton::setText(String const &text) {
+    this->text = text;
+    int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
+    if (this->subId != -1)
+        textW = Globals::Canvas->GetImage2DWidth(this->subId);
+    if (this->requestedWidth > 0)
+        this->midStretch = this->requestedWidth - this->leftWidth - this->rightWidth;
+    else
+        this->midStretch = textW;
+    this->width = this->leftWidth + this->midStretch + this->rightWidth;
+    if ((this->flags1 & 2) != 0) {
+        this->textOffsetX = this->width - (textW + this->leftWidth);
+    } else if ((this->flags1 & 1) != 0) {
+        this->textOffsetX = this->leftWidth;
+    } else {
+        this->textOffsetX = (this->width - textW) / 2;
+        if (this->kind == 5)
+            this->textOffsetX = (this->width - textW) / 2 + 5;
+        else if (this->kind == 6)
+            this->textOffsetX = (this->width - textW) / 2 - 5;
+    }
+    this->textOffsetY = (this->height - Globals::Canvas->GetTextHeight(this->fontId)) / 2;
+    if (this->kind == 3)
+        this->textOffsetY = this->textOffsetY + 2;
+    if (this->subId != -1) {
+        this->textOffsetY = (this->height - Globals::Canvas->GetImage2DHeight(this->subId)) / 2;
+        if (this->kind == 1)
+            this->textOffsetX = this->textOffsetX + 3;
+    }
+    this->setPosition(this->initX, this->initY, this->flags0);
+}
+
+
+void TouchButton::setPosition(int x, int y, unsigned char flags) {
+    unsigned int f = (unsigned int) flags;
+    this->x = x;
+    this->y = y;
+    this->flags0 = flags;
+    if ((flags & 0x20) != 0) {
+        y = y - this->layoutHeight;
+        this->y = y;
+    }
+    if ((int) (f << 0x1e) < 0) {
+        x = x - this->width;
+        this->x = x;
+    }
+    if ((int) (f << 0x19) < 0) {
+        this->y = y - this->layoutHeight / 2;
+    }
+    if ((int) (f << 0x1d) < 0) {
+        this->x = x - this->width / 2;
+    }
+}
+
+
+void TouchButton::setNumberText(String const &value) {
+    this->numberText = value;
+}
+
+
+void TouchButton::setGamePadButtonImage(unsigned int image) {
+    this->adornImage = static_cast<int>(image);
+}
+
+
+void TouchButton::replaceTextKeepSize(String const &text) {
+    this->text = text;
+    if (this->kind == 10) {
+        int w = this->width;
+        int tw = Globals::Canvas->GetTextWidth(this->fontId, text);
+        this->textOffsetX = w / 2 - tw / 2;
+    }
+}
+
+
+void TouchButton::setSplitText(String const &value) {
+    this->splitText = value;
+}
+
+
+String TouchButton::getText() {
+    return String(this->text, false);
+}
+
+
+int TouchButton::getWidth() {
+    return this->width;
+}
+
+
+int TouchButton::getHeight() {
+    return this->height;
+}
+
+
+void TouchButton::setPosition(int x, int y) {
+    setPosition(x, y, this->flags0);
+}
+
+
+void TouchButton::setYPosition(int y) {
+    setPosition(this->x, y, this->flags0);
+}
+
+
+Vector TouchButton::getPosition() {
+    float fx = static_cast<float>(this->x);
+    float fy = static_cast<float>(this->y);
+    Vector pos;
+    pos.x = fx;
+    pos.y = fy;
+    pos.z = 0.0f;
+    return pos;
+}
+
+
+void TouchButton::setHalfTransparent(bool value) {
+    this->halfTransparent = value;
+}
+
+
+void TouchButton::setVisible(bool value) {
+    this->visible = value;
+}
+
+
+bool TouchButton::isVisible() {
+    return this->visible;
+}
+
+
+void TouchButton::translate(int dx, int dy) {
+    this->x = dx + this->x;
+    this->y = dy + this->y;
+}
+
+
+void TouchButton::setAlwaysPressed(bool value) {
+    this->alwaysPressed = value;
+}
+
+
+void TouchButton::setTextColor(int color) {
+    this->textColor = color;
+}
+
+
+void TouchButton::setPressProgress(float value) {
+    this->pressProgress = value;
+}
+
+
+void TouchButton::setPressProgressHighlight(bool value) {
+    this->progressHighlight = value;
+}
 
 
 void TouchButton::draw() {
@@ -555,48 +624,6 @@ restoreDrawState:
 }
 
 
-TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
-    init(text, 0xffffffff, type, -1, -1, x, y, p5, p6, p7);
-}
-
-void TouchButton::setText(String const &text) {
-    this->text = text;
-    int textW = Globals::Canvas->GetTextWidth(this->fontId, text);
-    if (this->subId != -1)
-        textW = Globals::Canvas->GetImage2DWidth(this->subId);
-    if (this->requestedWidth > 0)
-        this->midStretch = this->requestedWidth - this->leftWidth - this->rightWidth;
-    else
-        this->midStretch = textW;
-    this->width = this->leftWidth + this->midStretch + this->rightWidth;
-    if ((this->flags1 & 2) != 0) {
-        this->textOffsetX = this->width - (textW + this->leftWidth);
-    } else if ((this->flags1 & 1) != 0) {
-        this->textOffsetX = this->leftWidth;
-    } else {
-        this->textOffsetX = (this->width - textW) / 2;
-        if (this->kind == 5)
-            this->textOffsetX = (this->width - textW) / 2 + 5;
-        else if (this->kind == 6)
-            this->textOffsetX = (this->width - textW) / 2 - 5;
-    }
-    this->textOffsetY = (this->height - Globals::Canvas->GetTextHeight(this->fontId)) / 2;
-    if (this->kind == 3)
-        this->textOffsetY = this->textOffsetY + 2;
-    if (this->subId != -1) {
-        this->textOffsetY = (this->height - Globals::Canvas->GetImage2DHeight(this->subId)) / 2;
-        if (this->kind == 1)
-            this->textOffsetX = this->textOffsetX + 3;
-    }
-    this->setPosition(this->initX, this->initY, this->flags0);
-}
-
-void TouchButton::setYPosition(int y) {
-    setPosition(this->x, y, this->flags0);
-}
-
 bool TouchButton::touchedInside(int px, int py) {
     int x = this->x;
     int left = x - 1;
@@ -620,50 +647,56 @@ bool TouchButton::touchedInside(int px, int py) {
     return this->layoutHeight + (this->y + m) + 1 >= py;
 }
 
-TouchButton::TouchButton(unsigned int kind, unsigned int image,
-                         int a, int b, int c, unsigned char flag) {
-    PaintCanvas **canvas = &Globals::Canvas;
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->image = image;
-    this->fontSpacing = (*canvas)->FontGetSpacing(this->fontId);
 
-    String tmp("", false);
-    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
+void TouchButton::resetTouch() {
+    this->touched = 0;
 }
 
-TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
-    init(text, 0xffffffff, x, -1, -1, y, p4, 0, p5, 0x44);
+
+bool TouchButton::isTouched() {
+    return this->touched;
 }
 
-TouchButton::TouchButton(String const &text,
-                         int a, int b, int c, int d,
-                         unsigned char flags0, unsigned char flags1,
-                         unsigned int spacing, int kerning) {
-    this->fontId = spacing;
-    this->fontSpacing = kerning;
 
-    PaintCanvas **canvas = &Globals::Canvas;
-    int prev = (*canvas)->FontGetSpacing(this->fontId);
-    (*canvas)->FontSetSpacing(spacing, (short) kerning);
-
-    this->init(text, 0xffffffffu, a, -1, -1, b, c, d, flags0, flags1);
-
-    (*canvas)->FontSetSpacing(spacing, prev);
+bool TouchButton::OnTouchBegin(int px, int py) {
+    if (this->visible == 0 || this->halfTransparent != 0)
+        return 0;
+    bool r = touchedInside(px, py);
+    this->touched = r;
+    if (r == 0)
+        return 0;
+    Globals::sound->play(0x7c, 0, 0, 0.0f);
+    return this->touched != 0;
 }
 
-TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6) {
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
-    init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
+
+bool TouchButton::OnTouchMove(int px, int py) {
+    if (this->visible != 0 && this->halfTransparent == 0) {
+        bool r;
+        if (this->touched == 0)
+            r = false;
+        else
+            r = touchedInside(px, py);
+        this->touched = r;
+        return r;
+    }
+    return false;
 }
 
-TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag) {
-    this->fontId = (uint32_t) (uintptr_t) Globals::font;
-    PaintCanvas *canvas = Globals::Canvas;
-    this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
-    String tmp("", false);
-    this->init(tmp, kind, a, -1, -1, b, c, 0, flag, 0x44);
+bool TouchButton::OnTouchEnd(int px, int py) {
+    bool res;
+    if (this->visible == 0 || this->halfTransparent != 0) {
+        res = false;
+    } else if (this->touched == 0 || touchedInside(px, py) == 0) {
+        res = false;
+        this->touched = 0;
+    } else {
+        this->touched = 0;
+        Globals::sound->play(0x7b, 0, 0, 0.0f);
+        res = true;
+    }
+    return res;
 }
+
+
