@@ -871,7 +871,6 @@ void HangarWindow::render() {
                             }
                         }
                         if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
-                            volatile int padS = 0; (void) padS; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
                             (*this->buttons)[0]->setPosition(
                                 Globals::layout->buttonInsetX + this->hintOffsetX + (listWidth - buttonOffset),
                                 this->field_0x114 + y, 18);
@@ -954,12 +953,14 @@ void HangarWindow::render() {
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 // Scoped block: the original's LSDA has a separate cleanup
-                // region for these calls.  The volatile pad0b below is
-                // load-bearing: removing it (w4268) raised the raw match
-                // 78.79 -> 79.36 but shrank .ARM.extab by 12 bytes
-                // (0x26298 -> 0x2628c), so it is kept.
+                // region for these calls.  Both volatile sinks below are
+                // load-bearing: removing pad0b (w4268) raised the raw match
+                // 78.79 -> 79.36 but shrank .ARM.extab by 12 bytes, and the
+                // pad0/pad0b pair is the pre-34e source shape.
                 {
-                    volatile int pad0b = count; // anchor: HangarWindow::render; keeps .ARM.extab at 0x26298
+                    volatile int pad0 = count;
+                    // Second sink: pins the same 4-byte size/regalloc delta as pad0.
+                    volatile int pad0b = count; // anchor: HangarWindow::render; load-bearing for the .ARM.extab row split
                     (*this->buttons)[12 + count]->setSplitText(price);
                 }
                 (*this->buttons)[12 + count]->draw();

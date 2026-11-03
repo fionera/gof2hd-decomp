@@ -31,7 +31,7 @@ byte-identical.
 The 25 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
 `LevelScript::process` 52.0, `Status::missionCompleted` 57.7, `Radar::draw` 73.9,
 `Level::createShip` 74.1, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
-`HangarWindow::render` 78.8, `Globals::Globals` C1/C2 80.5, `Hud::draw` 86.2,
+`HangarWindow::render` 80.6, `Globals::Globals` C1/C2 80.5, `Hud::draw` 86.2,
 `RocketGun::update` 86.9, `PlayerEgo::calcCollision` 87.3, `Level::createScene` 88.3,
 `Gun::calcCharacterCollision` 90.0, `Level::createMission` 90.7, `MenuTouchWindow::MenuTouchWindow`
 C1/C2 94.2, `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
@@ -94,12 +94,14 @@ offset (4-byte body shortfall) and seven extab record-length deltas. Those seven
 belong to the seven still-mismatched bodies (`Generator::createMission`,
 `Level::createShip`, `StarMap::draw`, `RecordHandler::recordStoreWrite`,
 `LevelScript::process`, `HangarWindow::render`, `Hud::draw`) and netted **-8 bytes** at
-that point. The w4209 pass made `HangarWindow::render`'s record size-exact (948 B / 156
-rows) with a relocation-order-preserving sink, so `.ARM.extab` is now `0x26298`
-(156,312 B), size- and base-exact; the five remaining record deltas cancel to zero. See
+that point. The later `RecordHandler::recordStoreWrite`/`Hud::draw` record fixes leave
+four deltas (`Generator::createMission` +4, `Level::createShip` -8,
+`LevelScript::process` +4, `HangarWindow::render` -8) netting **-8 bytes**, so
+`.ARM.extab` is `0x26290` (156,304 B) until those bodies match. See
 `_work/reconstructions/exidx_extab_exact_w3462.md`,
-`_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md` and
-`_work/reconstructions/extab_hangarwindow_sink_w4209.md`.
+`_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`,
+`_work/reconstructions/exidx-records_w4237.md` and
+`_work/reconstructions/hangarwindow-render-w4243.md`.
 
 The w3472 `Status::missionCompleted` pass then recovered the 4-byte `.text` shortfall that
 had blocked the Level `.rodata` block. The original switches directly on `m->getType()` and is
@@ -232,7 +234,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 107,135 content bytes differ across the 25 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 839 raw bytes (822 `w1` prel31 targets) still differ, all in the three remaining shifted LSDA ranges (`Generator::createMission`, `Level::createShip`, `LevelScript::process`). |
-| .ARM.extab | 156,312 | 156,312 | **0** | size- and base-exact (0x1a3b78). `HangarWindow::render` (948 B / 156 rows), `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are now record-length-exact; the three remaining per-function LSDA deltas (`Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4) cancel to zero. Raw address operands still differ with local `.text` layout (108,469 differing bytes). |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The four remaining per-function LSDA deltas are `Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4 and `HangarWindow::render` -8 (net -8). `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are record-length-exact. Raw address operands still differ with local `.text` layout (108,469 differing bytes). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (0 differing bytes; 5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The former `sha256_block_data_order_neon` order gap is closed. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
@@ -250,7 +252,7 @@ The original build is now pinned by evidence, not by A/B alone:
 1. **25 non-linked functions.** 4499 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (52.0%), `Status::missionCompleted` (57.7%),
    `Radar::draw` (73.9%), `Level::createShip` (74.1%), `Generator::createMission` (74.3%),
-   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (78.8%), `Globals::Globals` (80.5%) and
+   `MGame::OnTouchEnd` (78.4%), `HangarWindow::render` (80.6%), `Globals::Globals` (80.5%) and
    `Hud::draw` (86.2%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
@@ -260,11 +262,11 @@ The original build is now pinned by evidence, not by A/B alone:
    `_work/reconstructions/rodata_content_round5_w3477.md`.
 3. **EH tables.** `.ARM.exidx` is now size- and base-exact (3566 entries, CANTUNWIND 272,
    inline 856, extab 2438); the `Layout::Layout` body is size-exact 7072 B
-   without a pad. `.ARM.extab` is now size- and base-exact (156,312 B at 0x1a3b78).
-   The three remaining LSDA record deltas cancel to zero: `LevelScript::process` +4,
-   `Level::createShip` -8, `Generator::createMission` +4. `HangarWindow::render`
-   (948 B / 156 rows), `RecordHandler::recordStoreWrite` (656 B / 107 rows,
-   table-identical) and `Hud::draw` (476 B / 77 rows) are now record-length-exact,
+   without a pad. `.ARM.extab` is 8 B short (156,304 vs 156,312) with an exact base.
+   The four remaining LSDA record deltas are `LevelScript::process` +4,
+   `Level::createShip` -8, `Generator::createMission` +4 and `HangarWindow::render` -8
+   (net -8 B). `RecordHandler::recordStoreWrite` (656 B / 107 rows,
+   table-identical) and `Hud::draw` (476 B / 77 rows) are record-length-exact,
    which cut the raw `.ARM.exidx` differing bytes from 1110 to 839 (1056 -> 822
    entries); see `_work/reconstructions/exidx-records_w4237.md`. The w3840 `extern template` for
    `ArrayReleaseClasses<Vector*>` in `SpaceLounge.cpp` restored the original's invoke (the
