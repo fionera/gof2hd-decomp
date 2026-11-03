@@ -6,8 +6,11 @@
 # objdump/nm/as the verifier needs) and a standalone ld.gold, alongside clang and libc++.
 #
 # CMake downloads + extracts the NDK once into a gitignored cache and resolves every tool/include
-# path the toolchain and the Python verifier consume. The darwin-x86_64 package runs natively under
-# Rosetta 2 on Apple Silicon -- this build targets that host only.
+# path the toolchain and the Python verifier consume. On macOS the darwin-x86_64 package runs
+# natively (or under Rosetta 2 on Apple Silicon); on Linux the linux-x86_64 package is used. The
+# original .so's libc++abi.a came from the darwin package (its abort_message.o embeds a
+# /Volumes/Android/... source path), so a Linux host additionally fetches that one archive -- see
+# the libc++abi provenance block below.
 #
 # Outputs (CACHE):
 #   GOF2_NDK_ROOT
@@ -32,7 +35,15 @@ if(NOT EXISTS "${_root}/toolchains/llvm/prebuilt/${_host}/bin/clang++")
     set(_zip "${_cache}/${_ndk}-${_host}.zip")
     set(_url "https://dl.google.com/android/repository/${_ndk}-${_host}.zip")
     message(STATUS "Downloading ${_ndk}-${_host} (~500MB, one time) ...")
-    file(DOWNLOAD "${_url}" "${_zip}" SHOW_PROGRESS STATUS _dl)
+    # Pinned official package hashes (dl.google.com). r18b is immutable; a mismatch means a
+    # corrupt/partial download or a changed mirror, not a newer NDK.
+    if(_host STREQUAL "linux-x86_64")
+        set(_zip_sha256 "4f61cbe4bbf6406aa5ef2ae871def78010eed6271af72de83f8bd0b07a9fd3fd")
+    else()
+        set(_zip_sha256 "dd6524c3cc91725b5c39370f6deb27d8eee056e2bb2efef0a8008b4ca6d83891")
+    endif()
+    file(DOWNLOAD "${_url}" "${_zip}" EXPECTED_HASH SHA256=${_zip_sha256}
+         SHOW_PROGRESS STATUS _dl)
     list(GET _dl 0 _code)
     if(NOT _code EQUAL 0)
         list(GET _dl 1 _msg)
@@ -44,6 +55,51 @@ if(NOT EXISTS "${_root}/toolchains/llvm/prebuilt/${_host}/bin/clang++")
     file(REMOVE "${_zip}")
     if(NOT EXISTS "${_root}/sources/cxx-stl/llvm-libc++/include")
         message(FATAL_ERROR "NDK extraction incomplete: ${_root} missing libc++ headers")
+    endif()
+endif()
+
+# ---------------------------------------------------------------------------------------------
+# libc++abi.a provenance: the original .so was built on macOS, so the only path-like string in it
+# is the darwin buildbot path
+#   /Volumes/Android/buildbot/src/android/ndk-release-r18/external/libcxx/../../external/libcxxabi/src/abort_message.cpp
+# The linux-x86_64 package's libc++abi.a carries /buildbot/... instead. That 16-byte difference is
+# in abort_message.o's .rodata.str1.1 and shifts the whole .rodata block: a linux-package build
+# reproduces byte_exact 4344/4524 instead of 4498/4524 (linked_exact stays 4498). libc++_static.a,
+# libunwind.a (not pulled by this link), libandroid_support.a and libgcc.a have identical
+# non-debug sections in both packages, so only libc++abi.a has to come from the darwin package.
+# Fetch that one member once and cache it in the extracted tree; the macOS package already has it.
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    set(_abi_dir "${_root}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a")
+    set(_abi_marker "${_abi_dir}/.libcxxabi-darwin")
+    if(NOT EXISTS "${_abi_marker}")
+        set(_darwin_host "darwin-x86_64")
+        set(_darwin_zip "${_cache}/${_ndk}-${_darwin_host}.zip")
+        set(_darwin_url "https://dl.google.com/android/repository/${_ndk}-${_darwin_host}.zip")
+        message(STATUS "Downloading ${_ndk}-${_darwin_host} for libc++abi.a provenance (~500MB, one time) ...")
+        file(DOWNLOAD "${_darwin_url}" "${_darwin_zip}"
+             EXPECTED_HASH SHA256=dd6524c3cc91725b5c39370f6deb27d8eee056e2bb2efef0a8008b4ca6d83891
+             SHOW_PROGRESS STATUS _dl)
+        list(GET _dl 0 _code)
+        if(NOT _code EQUAL 0)
+            list(GET _dl 1 _msg)
+            file(REMOVE "${_darwin_zip}")
+            message(FATAL_ERROR "NDK darwin package download failed: ${_msg}\n  URL: ${_darwin_url}")
+        endif()
+        set(_darwin_extract "${_cache}/${_ndk}-darwin-libcxxabi")
+        file(ARCHIVE_EXTRACT INPUT "${_darwin_zip}" DESTINATION "${_darwin_extract}"
+             PATTERNS "${_ndk}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a")
+        set(_darwin_abi "${_darwin_extract}/${_ndk}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a")
+        if(NOT EXISTS "${_darwin_abi}")
+            message(FATAL_ERROR "darwin libc++abi.a not found in ${_darwin_zip}")
+        endif()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${_darwin_abi}" "${_abi_dir}/libc++abi.a"
+                        RESULT_VARIABLE _copy_rc)
+        file(REMOVE_RECURSE "${_darwin_extract}")
+        file(REMOVE "${_darwin_zip}")
+        if(NOT _copy_rc EQUAL 0)
+            message(FATAL_ERROR "failed to install darwin libc++abi.a into ${_abi_dir}")
+        endif()
+        file(WRITE "${_abi_marker}" "libc++abi.a from ${_ndk}-${_darwin_host}.zip\n")
     endif()
 endif()
 
