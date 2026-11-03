@@ -3230,8 +3230,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                             return 0;
                         g_android_link_game_gp = 1;
                     }
-                    this->messageShowing = 0;
                     this->genericConfirmB = 0;
+                    this->messageShowing = 0;
                     return 0;
                 }
                 if (this->quitConfirmShowing) {
@@ -3241,18 +3241,21 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                         Globals::sound->stopAll();
                         Globals::switch_to_target_setting = 2;
                         Globals::appManager->SetCurrentApplicationModule(1);
-                        this->quitConfirmShowing = 0;
-                        goto clearMessage;
-                    } else if (r == 1) {
-                        this->returnToMenuSubFlag = 0;
                         this->messageShowing = 0;
                         this->quitConfirmShowing = 0;
+                        return 0;
+                    } else if (r == 1) {
+                        this->messageShowing = 0;
+                        this->quitConfirmShowing = 0;
+                        this->returnToMenuSubFlag = 0;
                     }
                     return 0;
                 }
                 if (this->leaderboardDialogShowing) {
                     int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 1 || r == 0)
+                    if (r == 0)
+                        Globals::globals->reportLeaderboards();
+                    if (r == 1)
                         Globals::globals->reportLeaderboards();
                     this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
@@ -3273,8 +3276,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->loadFailedDialogShowing) {
                     this->loadFailedDialogShowing = 0;
-                    this->messageShowing = 0;
-                    return 0;
+                    goto clearMessage;
                 }
                 if (this->genericConfirmA && this->choiceWindow->OnTouchEnd(x, y) == 0) {
                     this->genericConfirmA = 0;
@@ -3434,8 +3436,8 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     else
                         this->startGOF2();
                 } else if (r == 1) {
-                    this->returnToMenuSubFlag = 0;
                     this->messageShowing = 0;
+                    this->returnToMenuSubFlag = 0;
                     return 0;
                 }
                 return 0;
