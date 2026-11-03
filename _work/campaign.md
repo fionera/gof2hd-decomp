@@ -5112,3 +5112,5 @@ Wave-97 revert: `Layout::Layout` 47.9% (`853488d7`) was reverted. On current mas
 `field_0x168`/`field_0x1a8` float-ternary rewrite grows `.text` by 0x20 (0x1337e8) and drops
 byte_exact 4497 -> 2454; the worker measured it on an older base. `SystemPathFinder::constructPath`
 placement (`18bea882`) is fine and landed (plain no-order 3020 -> 3022).
+Wave-97 section-order pass: `PlayerStaticFar` ctor placement (`w3745`) by defining the ctor
+before the dtor; plain no-order 3022 -> 3024 (prefix 2810 -> 2864). Gate 4497/4497.
