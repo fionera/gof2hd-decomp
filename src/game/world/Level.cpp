@@ -2080,9 +2080,9 @@ void Level::createMission() {
         ((PlayerFixedObject *) (*this->enemies)[this->miningPlantIndex])->setName(*Globals::gameText->getText(3210));
     }
     if (blueprint) {
-        int index = Globals::status->getStation()->getHiddenBlueprintIndex();
         int slot = extraAliens + pirateEscorts + stationPirates + pirates + convoy + fortressGuns + alienGuns +
                    this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
+        int index = Globals::status->getStation()->getHiddenBlueprintIndex();
         (*this->enemies)[slot] = this->createShip(kBlueprintRaces[index], 1, index == 0 ? 13 : 15, nullptr, true, false);
         PlayerFixedObject *wreck = (PlayerFixedObject *) (*this->enemies)[slot];
         wreck->setDockingType(3);
