@@ -3,6 +3,12 @@
 Status: landed pass. Branch `wave89-w3840`, based on master `5710f6d0`.
 Original: `../_work/bins/android_2.0.16_libgof2hdaa.so` (NDK r18b clang 7.0.2, `-Oz`).
 
+> Coordinator note (master merge): the `cd21a3aa` inline-pad commit was **not**
+> cherry-picked. Master already had the size-exact 7072 B real body from
+> `56f2d4f1` (w3821), which also made `.ARM.exidx` exact. Only `a0fec18e`
+> (SpaceLounge) and this note were landed; `.ARM.extab` is now -8 B
+> (`0x26290`), base exact. The pad section below is therefore historical.
+
 ## Result
 
 | | before | after |
