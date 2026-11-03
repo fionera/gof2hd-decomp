@@ -3897,3 +3897,322 @@ cmp -l /tmp/w3745/sentry/gate_base.so /tmp/w3745/sentry/gate_after.so | wc -l   
   `2954`, not `4497`.
 * The `NewsTicker` reorder is the obvious next per-TU source-order experiment,
   but it is a separate TU and was not tested or landed in this pass.
+
+## 21. `NewsTicker::update` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `.so` is **not** byte-identical to the baseline: it differs
+in 32 bytes (20 `.note.gnu.build-id`, 2 `.ARM.exidx`, 10 `.ARM.extab`); every
+other section, including `.text`, `.rodata`, `.dynsym`, `.dynstr`, `.plt` and
+`.rel.plt`, is byte-identical. The EH-table change is the expected consequence
+of correcting the source order: the original's `.ARM.extab` records are emitted
+in function order, and the baseline had `draw`'s record before `update`'s.
+The plain no-order link improves from **byte 2954 / 3715 of 4524 exact
+addresses / prefix 3625** to **byte 2955 / 3717 of 4524 / prefix 3634**; the
+first plain no-order mismatch moves from `NewsTicker::update` to
+`Sparks::~Sparks`.
+
+This is the next frontier recorded in §20.4 (the `SentryGun` pass).
+
+### 21.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `647b324d`:
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data.rel.ro     0x002fe8 @ 0x20cbb0
+.data            0x00296c @ 0x214000
+```
+
+The original's `NewsTicker` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15c468  0x3cc  NewsTicker::NewsTicker(int, int, int, int, int)   # C1/C2 alias
+0x15c858  0x1814 NewsTicker::replaceTokens(AbyssEngine::String)
+0x15e0d2  0x10   NewsTicker::~NewsTicker()                         # D1/D2 alias
+0x15e0e4  0x90   NewsTicker::update(int)
+0x15e174  0x140  NewsTicker::draw()
+0x15e2b4  0x24   NewsTicker::getHeight()
+0x15e2d8  0x50   NewsTicker::OnTouchBegin(int, int)
+0x15e328  0x4c   NewsTicker::OnTouchMove(int, int)
+0x15e374  0x16   NewsTicker::OnTouchEnd(int, int)
+```
+
+The HD source-layout dump independently witnesses `update` before `draw`
+(`_work/original_layout/original_layout.json` ->
+`gof2hd_1.1.19_ios` -> `Classes/Game/NewsTicker.cpp`):
+
+```text
+_NewsTicker::NewsTicker(int, int, int, int, int)
+_NewsTicker::replaceTokens(AbyssEngine::String)
+_void ArrayReleaseClasses<NewsItem*>(Array<NewsItem*>&)
+_NewsTicker::NewsTicker(int, int, int, int, int)
+_NewsTicker::~NewsTicker()
+_NewsTicker::update(int)
+_NewsTicker::draw()
+_NewsTicker::OnTouchBegin(int, int)
+_NewsTicker::OnTouchMove(int, int)
+_NewsTicker::OnTouchEnd(int, int)
+```
+
+(The dump's duplicate ctor and `ArrayReleaseClasses` are weak/template
+emissions; the binary `.dynsym` is the authority for the strong-function
+order and also places `getHeight` between `draw` and `OnTouchBegin`.)
+
+The baseline `NewsTicker.cpp.obj` emitted `draw` before `update`:
+
+```text
+NewsTicker::NewsTicker(int, int, int, int, int)
+Array<NewsItem*>::Array()
+void ArrayAdd<NewsItem*>(NewsItem*, Array<NewsItem*>&)
+NewsTicker::replaceTokens(AbyssEngine::String)
+void ArrayReleaseClasses<NewsItem*>(Array<NewsItem*>&)
+Array<NewsItem*>::~Array()
+AbyssEngine::String::String(int)
+Array<Item*>::Array()
+void ArrayAdd<Item*>(Item*, Array<Item*>&)
+Array<Item*>::~Array()
+NewsTicker::~NewsTicker()
+NewsTicker::draw()
+NewsTicker::update(int)
+NewsTicker::getHeight()
+NewsTicker::OnTouchBegin(int, int)
+NewsTicker::OnTouchMove(int, int)
+NewsTicker::OnTouchEnd(int, int)
+```
+
+That made the plain no-order link put `draw` at `0x15e0e4` and `update` at
+`0x15e224`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x15e0e4 NewsTicker::update(int)   (0x90 bytes)
+ours     0x15e1e4 NewsTicker::update(int)
+```
+
+### 21.2 Landed source change
+
+Only change: move the `NewsTicker::update()` definition in
+`src/game/world/NewsTicker.cpp` from after `NewsTicker::draw()` to before it.
+No body was edited.
+
+```diff
+@@ after NewsTicker::~NewsTicker()
++void NewsTicker::update(int dt) {
++    ...
++}
+ void NewsTicker::draw() {
+     ...
+ }
+-void NewsTicker::update(int dt) {
+-    ...
+-}
+```
+
+The resulting object order is exactly the original strong-function order:
+
+```text
+NewsTicker::NewsTicker(int, int, int, int, int)
+...
+NewsTicker::~NewsTicker()
+NewsTicker::update(int)
+NewsTicker::draw()
+NewsTicker::getHeight()
+NewsTicker::OnTouchBegin(int, int)
+NewsTicker::OnTouchMove(int, int)
+NewsTicker::OnTouchEnd(int, int)
+```
+
+The `.text.*` section bodies are unchanged (`update` 0x90 bytes, `draw`
+0x140 bytes); only their order changed.
+
+### 21.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `b79f0185…` | **2954** | 3715 / 4524 | 3625 | `NewsTicker::update` `0x15e0e4` vs `0x15e1e4` |
+| landed | **4497 / 4497** | `418fc2d5…` | **2955** | **3717 / 4524** | **3634** | `Sparks::~Sparks` `0x15e474` vs `0x15e708` |
+
+The landed delta is **+1 plain byte-exact** (`NewsTicker::update` itself),
+**+2 functions at their original address** (`update` and `draw`), and
+**+9 exact-address prefix**, with the gate counts unchanged.
+
+The plain `report.json` changes exactly one row:
+
+```text
+_ZN10NewsTicker6updateEi  byte False -> True  (pct 100.0, linked True, 144 B)
+```
+
+`update` was `pct == 100.0` but not byte-exact before the move because its
+`blx GameText::getLanguage@plt` immediate is PC-relative: the baseline body at
+`0x15e224` encoded `f701 e97a`, the original at `0x15e0e4` encodes
+`f701 ea1a`. At the original address the encoding matches. The gate
+`report.json` is byte-identical before/after (all 4524 rows unchanged).
+
+The plain no-order link now has the whole `NewsTicker` block at its original
+address:
+
+```text
+$NM -nD --defined-only /tmp/w3745/newsticker/after_noorder.so | grep '_ZN10NewsTicker'
+0015c468 T _ZN10NewsTickerC1Eiiiii
+0015c468 T _ZN10NewsTickerC2Eiiiii
+0015c858 T _ZN10NewsTicker13replaceTokensEN11AbyssEngine6StringE
+0015e0d2 T _ZN10NewsTickerD1Ev
+0015e0d2 T _ZN10NewsTickerD2Ev
+0015e0e4 T _ZN10NewsTicker6updateEi
+0015e174 T _ZN10NewsTicker4drawEv
+0015e2b4 T _ZN10NewsTicker9getHeightEv
+0015e2d8 T _ZN10NewsTicker12OnTouchBeginEii
+0015e328 T _ZN10NewsTicker11OnTouchMoveEii
+0015e374 T _ZN10NewsTicker10OnTouchEndEii
+```
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b98`, `.rodata 0x41b67 @ 0x1c9e30`.
+
+### 21.4 Why the gate `.so` changes (and why that is correct)
+
+The section-ordering file orders `.text.*` only; `.ARM.exidx` and
+`.ARM.extab` follow the object's section order. The original emits the
+`update` LSDA record before the `draw` record; the baseline emitted them in
+the opposite order. Correcting the source order therefore necessarily
+reorders those two records. The gate `.so` differs from the baseline in
+exactly 32 bytes:
+
+| section | differing bytes | cause |
+|---|---:|---|
+| `.note.gnu.build-id` | 20 | gold hashes the changed EH content |
+| `.ARM.exidx` | 2 | the two `w1` prel31 extab pointers for `update`/`draw` swap |
+| `.ARM.extab` | 10 | the two 12-byte LSDA records swap positions |
+
+`.text`, `.rodata`, `.dynsym`, `.dynstr`, `.plt` and `.rel.plt` are
+byte-identical (0 differing bytes each). The `.ARM.exidx`/`.ARM.extab`
+section sizes and bases are unchanged.
+
+The record contents are identical in all three binaries; only their order
+changes. For the `NewsTicker` block the original sequence is
+`X, Y, Y, A(update), B(draw), Y, B`; the baseline was
+`X, Y, Y, B(draw), A(update), Y, B`; the landed tree is
+`X, Y, Y, A(update), B(draw), Y, B`, i.e. exactly the original sequence.
+The landed block is uniformly `-0x18` in `.ARM.extab` offsets from the
+original (`0x1c4ef4` vs `0x1c4f0c` for the first record), which is the
+pre-existing cumulative record-size delta from preceding functions, not a
+regression from this pass.
+
+### 21.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/newsticker/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/newsticker/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/newsticker/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/newsticker/base_noorder.so
+
+# source reorder: move NewsTicker::update() before NewsTicker::draw()
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/newsticker/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/newsticker/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/newsticker/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/newsticker/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/world/NewsTicker.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN10NewsTicker'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/newsticker/gate_after.so
+git stash push -- src/game/world/NewsTicker.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/newsticker/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/newsticker/gate_base.so /tmp/w3745/newsticker/gate_after.so
+cmp -l /tmp/w3745/newsticker/gate_base.so /tmp/w3745/newsticker/gate_after.so | wc -l   # 32
+```
+
+### 21.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2954 / 4497`, prefix 3625,
+  3715 / 4524, first mismatch `NewsTicker::update` `0x15e0e4` vs `0x15e1e4`.
+* The original emits `NewsTicker` in the `.dynsym` address order
+  `ctor, replaceTokens, D1/D2, update, draw, getHeight, OnTouchBegin,
+  OnTouchMove, OnTouchEnd`; the `gof2hd_1.1.19_ios` source-layout dump
+  independently witnesses `update` before `draw`.
+* The baseline object emitted `draw` before `update`; moving the `update`
+  definition before `draw` makes the object's `.text.*` order match the
+  original address order. The section bodies are unchanged (0x90 and 0x140
+  bytes).
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `report.json` is
+  byte-identical (all 4524 rows unchanged). The gate `.so` differs only in
+  the build-id and the two swapped EH records (32 bytes total), which is the
+  original's own record order.
+* The plain no-order build now has all eleven `NewsTicker` dynsym rows at
+  their original addresses: exact addresses 3715 -> 3717, exact-address
+  prefix 3625 -> 3634, plain `byte_exact` 2954 -> 2955
+  (`NewsTicker::update` flips to byte-exact because its PC-relative PLT
+  branch immediate now matches).
+* The next plain no-order frontier is `Sparks::~Sparks`
+  (`0x15e474` original, `0x15e708` ours); the original `Sparks` order is
+  `ctor, isRocket, D1/D2, explode, explode(Vector), render, update,
+  translate`, while our object emits `D1/D2` after `translate`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2955`, not `4497`.
+* The `-0x18` `.ARM.extab` block offset is a pre-existing cumulative
+  record-size delta from preceding functions (the known seven-record
+  backlog), not caused by this pass.
+* The `Sparks` destructor reorder is the obvious next per-TU source-order
+  experiment, but it is a separate TU and was not tested or landed in this
+  pass.

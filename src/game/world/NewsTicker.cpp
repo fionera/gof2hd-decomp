@@ -277,6 +277,24 @@ String NewsTicker::replaceTokens(String text) {
 }
 NewsTicker::~NewsTicker() {}
 
+void NewsTicker::update(int dt) {
+    if (this->touched != 0) {
+        return;
+    }
+
+    float step = ((float) dt / 1000.0f) * 50.0f;
+    if (GameText::getLanguage() == 9) {
+        this->scrollOffset += step;
+        if (this->scrollOffset > (float) this->width) {
+            this->scrollOffset = (float) -this->textWidth;
+        }
+    } else {
+        this->scrollOffset -= step;
+        if (this->scrollOffset < (float) -this->textWidth) {
+            this->scrollOffset = 0;
+        }
+    }
+}
 void NewsTicker::draw() {
     Globals::Canvas->SetColor(0x6f);
     Globals::Canvas->FillRectangle(this->x, this->y - 2, this->width,
@@ -298,24 +316,6 @@ void NewsTicker::draw() {
     }
 
     Globals::Canvas->DisableClip();
-}
-void NewsTicker::update(int dt) {
-    if (this->touched != 0) {
-        return;
-    }
-
-    float step = ((float) dt / 1000.0f) * 50.0f;
-    if (GameText::getLanguage() == 9) {
-        this->scrollOffset += step;
-        if (this->scrollOffset > (float) this->width) {
-            this->scrollOffset = (float) -this->textWidth;
-        }
-    } else {
-        this->scrollOffset -= step;
-        if (this->scrollOffset < (float) -this->textWidth) {
-            this->scrollOffset = 0;
-        }
-    }
 }
 int NewsTicker::getHeight() {
     return Globals::h + 2 - Globals::layout->field_0x10_rightMargin - this->y;
