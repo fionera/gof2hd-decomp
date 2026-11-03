@@ -31,9 +31,10 @@ add_library(gof2 OBJECT ${_srcs})
 # derived from the original's symbol addresses (see the link step). This keeps one-class-per-file,
 # human-style source while letting the linker place functions in the original's exact sequence.
 option(GOF2_MATCH_LAYOUT "Reproduce the original .text function order via section ordering" ON)
-if(GOF2_MATCH_LAYOUT)
-    target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
-endif()
+# The original was compiled with -ffunction-sections (proven by the 193 empty-.text
+# CANTUNWIND sentinels in its .ARM.exidx).  Keep it on in both modes; the option only
+# controls whether the generated section-ordering file is used to place the sections.
+target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 
 # ModStation::OnInitialize's lazy CutScene check is a plain pointer comparison.  LLVM's
 # BranchProbabilityInfo pointer heuristic already gives the original 20:12 successor probability,
