@@ -2436,3 +2436,302 @@ cmp -l /tmp/w3745/autopilot/gate_base.so /tmp/w3745/autopilot/gate_after.so | wc
 * The next plain no-order frontier is `ListItemWindow::ListItemWindow()`
   (`0x131528` original, `0x133ad8` ours); `ListItemWindow.cpp` needs its own
   emission-order pass.
+
+## 16. `ListItemWindow` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **3102 / 4497** (prefix 3101,
+3389 / 4524 exported functions at their original address) to **3112 / 4497**
+(prefix 3172, 3401 / 4524). The first plain no-order mismatch moves from
+`ListItemWindow::ListItemWindow()` to `MovingStars::MovingStars()`.
+
+This is the next frontier recorded in §15.6 (the `AutoPilotList::fire` pass).
+
+### 16.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The original's `ListItemWindow` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x131528  0x08c  ListItemWindow::ListItemWindow()   (C1 == C2)
+0x1315b4  0x0a2  ListItemWindow::~ListItemWindow()  (D1 == D2)
+0x131658  0x1aa4 ListItemWindow::set(ListItem*, unsigned, unsigned, unsigned, unsigned, bool)
+0x1330fc  0x006  ListItemWindow::shows3DShip()
+0x133104  0x764  ListItemWindow::draw()
+0x133868  0x160  ListItemWindow::update(int)
+0x1339c8  0x0ac  ListItemWindow::render()
+0x133a74  0x060  ListItemWindow::OnTouchBegin(int, int)
+0x133ad4  0x030  ListItemWindow::OnTouchMove(int, int)
+0x133b04  0x060  ListItemWindow::OnTouchEnd(int, int)
+```
+
+The HD source-layout dump witnesses the TU
+(`_work/original_layout/tu_mapping.md` line 169:
+`game/ui/ListItemWindow.cpp` -> `Classes/Game/ListItemWindow.cpp`), but not the
+function order; the Android `.dynsym` is the authority for the emitted order.
+
+The baseline plain no-order link put the ctor last:
+
+```text
+original 0x131528 ListItemWindow::ListItemWindow()   (0x8c bytes)
+ours     0x133ad8 ListItemWindow::ListItemWindow()
+```
+
+This was the first plain no-order mismatch (`addr_match.py`).
+
+### 16.2 Baseline object order
+
+`readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ui/ListItemWindow.cpp.obj`
+(section-header order = emission order, weak copies included):
+
+```text
+ListItemWindow::OnTouchBegin(int, int)
+ListItemWindow::shows3DShip()
+ListItemWindow::OnTouchMove(int, int)
+ListItemWindow::OnTouchEnd(int, int)
+ListItemWindow::render()
+ListItemWindow::set(...)
+Array<AbyssEngine::String*>::~Array()
+Array<AbyssEngine::String*>::Array()
+Array<int>::Array()
+AbyssEngine::String::String(int)
+void ArrayAdd<AbyssEngine::String*>(...)
+void ArrayAdd<int>(...)
+ListItemWindow::~ListItemWindow()
+void ArrayRelease<int>(Array<int>&)
+Array<int>::~Array()
+__clang_call_terminate
+ListItemWindow::draw()
+ListItemWindow::update(int)
+ListItemWindow::ListItemWindow()
+AbyssEngine::AEMath::Matrix::Matrix()
+```
+
+The weak template copies are deduplicated by the linker and placed by the
+ordering file, so the effective strong order was
+`OnTouchBegin`, `shows3DShip`, `OnTouchMove`, `OnTouchEnd`, `render`, `set`,
+`dtor`, `draw`, `update`, `ctor` — the reverse of the original block in several
+places.
+
+### 16.3 Controlled experiments
+
+Each row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| experiment | gate byte/linked | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---:|---:|---:|---|
+| baseline | **4497 / 4497** | **3102** | 3389 / 4524 | 3101 | `ListItemWindow::ListItemWindow()` `0x131528` vs `0x133ad8` |
+| A: move only the ctor definition before `OnTouchBegin` | **4497 / 4497** | **3104** | 3391 | 3103 | `ListItemWindow::~ListItemWindow()` `0x1315b4` vs `0x13319c` |
+| B: reorder all strong definitions to the original address order (landed) | **4497 / 4497** | **3112** | **3401** | **3172** | `MovingStars::MovingStars()` `0x146050` vs `0x146088` |
+
+Experiment A is gate-neutral and proves the ctor move itself is causal, but it
+only recovers the ctor (`C1`/`C2`); the dtor is still displaced. Experiment B
+is the strict improvement and is landed.
+
+### 16.4 Landed source change
+
+Only change: reorder the top-level definitions in
+`src/game/ui/ListItemWindow.cpp` so the emitted strong order is the original's.
+No body was edited. The static const arrays stay immediately before their
+current user (`set`, `draw`, `update`) and keep their relative order, so the
+object's `.rodata` content order is unchanged.
+
+```text
+before (source / object strong order):
+  OnTouchBegin, shows3DShip, OnTouchMove, OnTouchEnd, render, set, dtor,
+  draw, update, ctor
+
+after:
+  ctor, dtor, set, shows3DShip, draw, update, render, OnTouchBegin,
+  OnTouchMove, OnTouchEnd
+```
+
+The object order becomes (weak copies still interleaved, but all in the
+ordering file):
+
+```text
+ListItemWindow::ListItemWindow()
+AbyssEngine::AEMath::Matrix::Matrix()
+ListItemWindow::~ListItemWindow()
+Array<AbyssEngine::String*>::~Array()
+void ArrayRelease<int>(Array<int>&)
+Array<int>::~Array()
+__clang_call_terminate
+ListItemWindow::set(...)
+Array<AbyssEngine::String*>::Array()
+Array<int>::Array()
+AbyssEngine::String::String(int)
+void ArrayAdd<AbyssEngine::String*>(...)
+void ArrayAdd<int>(...)
+ListItemWindow::shows3DShip()
+ListItemWindow::draw()
+ListItemWindow::update(int)
+ListItemWindow::render()
+ListItemWindow::OnTouchBegin(int, int)
+ListItemWindow::OnTouchMove(int, int)
+ListItemWindow::OnTouchEnd(int, int)
+```
+
+which matches the original address order exactly.
+
+### 16.5 Measured before/after
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `423730f2…` | **3102** | 3389 / 4524 | 3101 | `ListItemWindow::ListItemWindow()` `0x131528` vs `0x133ad8` |
+| full reorder (landed) | **4497 / 4497** | `1ff6423a…` | **3112** | **3401 / 4524** | **3172** | `MovingStars::MovingStars()` `0x146050` vs `0x146088` |
+
+The landed delta is **+10 plain byte_exact, +12 functions at their original
+address, +71 exact-address prefix**, with the gate counts unchanged.
+
+The whole `ListItemWindow` block is now address-exact in the plain no-order
+link (all 12 exported rows, `C1`/`C2`, `D1`/`D2`, `set`, `shows3DShip`, `draw`,
+`update`, `render`, `OnTouchBegin`, `OnTouchMove`, `OnTouchEnd`). Every row is
+`byte=True` in the plain verify report except `render` (the known
+`ListItemWindow.h` layout blocker, `x`/`y`/`width` offsets; size is exact).
+
+Gate `.so` A/B (`cmp -l` = 993 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| `0x1dc..0x1ef` | 19 | `.note.gnu.build-id` |
+| `.ARM.exidx` | 15 | extab-pointer words for the reordered functions |
+| `.ARM.extab` | 959 | extab record order for the reordered functions |
+
+`.text` and `.rodata` are byte-identical between the baseline and landed gate
+`.so`. The `.ARM.exidx` differing-byte count against the original improves
+1743 -> 1737; the `.ARM.extab` common-prefix count moves 113810 -> 113811
+(the known `-8` absolute size delta). Parsing the `.ARM.exidx` extab pointers
+for the `ListItemWindow` range shows the landed gate now has the original's
+ascending relative record order with a constant `-8` offset:
+
+```text
+orig  0x131528 CANTUNWIND, 0x131528 -> 0x1c22c8, 0x1315b4 -> 0x1c22e8,
+      0x131658 -> 0x1c2304, 0x133104 -> 0x1c26c0, 0x133868 -> 0x1c273c,
+      0x1339c8 -> 0x1c274c, 0x133a74 -> 0x1c2758, 0x133ad4 -> 0x1c2764,
+      0x133b04 -> 0x1c2770
+after 0x131528 CANTUNWIND, 0x131528 -> 0x1c22c0, 0x1315b4 -> 0x1c22e0,
+      0x131658 -> 0x1c22fc, 0x133104 -> 0x1c26b8, 0x133868 -> 0x1c2734,
+      0x1339c8 -> 0x1c2744, 0x133a74 -> 0x1c2750, 0x133ad4 -> 0x1c275c,
+      0x133b04 -> 0x1c2768
+```
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f58 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b80`, `.rodata 0x41b67 @ 0x1c9e10`.
+
+### 16.6 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x146050 MovingStars::MovingStars()   (C1/C2, 0x140 bytes)
+ours     0x146088 MovingStars::MovingStars()
+```
+
+Our plain `MovingStars` order starts with the destructor
+(`0x146050 MovingStars::~MovingStars()`), then the ctor at `0x146088`; the
+original starts with the ctor. This is a separate TU
+(`src/game/world/MovingStars.cpp`) and was not changed in this pass.
+
+### 16.7 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/liw/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/liw/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/liw/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/liw/base_noorder.so
+
+# after the source move
+cmake --build cmake-build-match --target check -j8
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/liw/final_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/liw/verify_final \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/liw/final_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/liw/final_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/ui/ListItemWindow.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN14ListItemWindow'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/liw/gate_after.so
+git stash push -- src/game/ui/ListItemWindow.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/liw/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/liw/gate_base.so /tmp/w3745/liw/gate_after.so
+cmp -l /tmp/w3745/liw/gate_base.so /tmp/w3745/liw/gate_after.so | wc -l   # 993
+```
+
+### 16.8 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3102 / 4497`, prefix 3101,
+  3389 / 4524, first mismatch `ListItemWindow::ListItemWindow()` `0x131528`
+  vs `0x133ad8`.
+* The original emits `ListItemWindow` in the `.dynsym` address order listed in
+  §16.1; the HD dump independently witnesses the TU membership.
+* The baseline object emits the ctor last, after `update`; the strong order is
+  nearly the reverse of the original.
+* Moving only the ctor definition before `OnTouchBegin` is gate-neutral and
+  makes the ctor address-exact (`plain 3102 -> 3104`), proving the ctor move
+  itself is causal; the dtor then becomes the first mismatch.
+* Reordering all strong definitions to the original address order is
+  gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0) and makes the whole
+  `ListItemWindow` block address-exact in the plain no-order link.
+* The gate `.so` differs only in the build-id, 15 `.ARM.exidx` bytes and 959
+  `.ARM.extab` bytes; `.text` and `.rodata` are byte-identical. The
+  `.ARM.exidx` extab records for `ListItemWindow` are now in the original's
+  ascending relative order (constant `-8` absolute offset).
+* The plain no-order build improves to `3112 / 4497`, prefix 3172,
+  3401 / 4524. All `ListItemWindow` rows are byte-exact there except the known
+  `render` layout blocker.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3112`, not `4497`.
+* The next plain no-order frontier is `MovingStars::MovingStars()`
+  (`0x146050` original, `0x146088` ours); `MovingStars.cpp` needs its own
+  emission-order pass. Its plain order currently starts with the destructor,
+  so the ctor is not simply last as in `ListItemWindow`.

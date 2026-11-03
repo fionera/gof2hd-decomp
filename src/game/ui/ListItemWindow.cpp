@@ -41,76 +41,43 @@ char *LISTITEMWINDOW_UNITS[62] = {
 };
 
 
-void ListItemWindow::OnTouchBegin(int x, int y) {
-    this->scrollWindow->OnTouchBegin(x, y);
-    if (this->shows3DShipFlag &&
-        this->x + (this->width >> 1) < x) {
-        Layout *obj = (Layout *) Globals::layout;
-        if (y < this->y + obj->field_0xc_leftMargin + obj->field_0x20_top + this->previewHeight) {
-            this->dragLastX = x;
-            this->dragStartX = x;
-            this->dragDelta = 0;
-            this->dragging = 1;
-        }
+
+ListItemWindow::ListItemWindow() {
+    this->labels = 0;
+    this->values = 0;
+    this->statsCur = 0;
+    this->statsPrev = 0;
+    this->scrollWindow = 0;
+    this->textHalfHeight = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 - 1;
+    this->previewHeight = 0;
+}
+
+ListItemWindow::~ListItemWindow() {
+    if (this->labels) {
+        ArrayReleaseClasses(*this->labels);
+        delete this->labels;
+        this->labels = 0;
     }
-}
-
-uint8_t ListItemWindow::shows3DShip() {
-    return this->shows3DShipFlag;
-}
-
-void ListItemWindow::OnTouchMove(int x, int y) {
-    this->scrollWindow->OnTouchMove(x, y);
-    if (this->shows3DShipFlag && this->dragging) {
-        int d = x - this->dragLastX;
-        this->dragDelta = d;
-        this->spinDamping = 1.0f;
-        this->dragAccum = this->dragAccum + d;
-        this->dragLastX = x;
+    if (this->values) {
+        ArrayReleaseClasses(*this->values);
+        delete this->values;
+        this->values = 0;
     }
-}
-
-void ListItemWindow::OnTouchEnd(int x, int y) {
-    this->scrollWindow->OnTouchEnd(x, y);
-    if (this->shows3DShipFlag && this->dragging) {
-        int dv = this->dragDelta;
-        int sum = this->dragAccum + dv;
-        float vel = (float) dv;
-        int a = dv < 0 ? -dv : dv;
-        float v = 0.0f;
-        if (a > 3) v = vel;
-        this->spinDamping = 0.9f;
-        this->dragging = 0;
-        this->dragAccum = sum;
-        this->dragSettled = sum;
-        this->spinVelocity = v;
+    if (this->statsCur) {
+        ArrayRelease(*(this->statsCur));
+        delete this->statsCur;
+        this->statsCur = 0;
     }
+    if (this->statsPrev) {
+        ArrayRelease(*(this->statsPrev));
+        delete this->statsPrev;
+        this->statsPrev = 0;
+    }
+    delete this->scrollWindow;
+    this->scrollWindow = 0;
 }
 
 
-
-void ListItemWindow::render() {
-    if (!this->shows3DShipFlag)
-        return;
-
-    PaintCanvas **canvas = &Globals::Canvas;
-    (*canvas)->Begin3d();
-
-    Layout *obj = Globals::layout;
-    int s = obj->field_0x128;
-    int h = this->previewHeight - s * 2;
-    (*canvas)->EnableClip(
-        this->x + s + (this->width >> 1) + obj->field_0x2c_rowHeight,
-        this->y + s + obj->field_0xc_leftMargin + obj->field_0x20_top,
-        ((this->width >> 1) - (obj->field_0x2c_rowHeight + s * 2)) - obj->buttonInsetX,
-        h);
-    (*canvas)->SetColor((unsigned int) -1);
-    Matrix *m = (Matrix *) (*canvas)->CameraGetLocal(this->camera);
-    this->previewTransform = *m;
-    this->previewGeometry->render();
-    (*canvas)->End3d();
-    (*canvas)->DisableClip();
-}
 
 
 
@@ -493,42 +460,13 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
     this->dragStartX = 0;
 }
 
-ListItemWindow::~ListItemWindow() {
-    if (this->labels) {
-        ArrayReleaseClasses(*this->labels);
-        delete this->labels;
-        this->labels = 0;
-    }
-    if (this->values) {
-        ArrayReleaseClasses(*this->values);
-        delete this->values;
-        this->values = 0;
-    }
-    if (this->statsCur) {
-        ArrayRelease(*(this->statsCur));
-        delete this->statsCur;
-        this->statsCur = 0;
-    }
-    if (this->statsPrev) {
-        ArrayRelease(*(this->statsPrev));
-        delete this->statsPrev;
-        this->statsPrev = 0;
-    }
-    delete this->scrollWindow;
-    this->scrollWindow = 0;
+uint8_t ListItemWindow::shows3DShip() {
+    return this->shows3DShipFlag;
 }
-
-
-
-
-
-
-
 
 static String **g_liw_d_arrowL = nullptr;
 
 static String **g_liw_d_arrowR = nullptr;
-
 
 void ListItemWindow::draw() {
     if (Globals::iPad)
@@ -679,12 +617,67 @@ void ListItemWindow::update(int frameTime) {
 
 
 
-ListItemWindow::ListItemWindow() {
-    this->labels = 0;
-    this->values = 0;
-    this->statsCur = 0;
-    this->statsPrev = 0;
-    this->scrollWindow = 0;
-    this->textHalfHeight = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2 - 1;
-    this->previewHeight = 0;
+void ListItemWindow::render() {
+    if (!this->shows3DShipFlag)
+        return;
+
+    PaintCanvas **canvas = &Globals::Canvas;
+    (*canvas)->Begin3d();
+
+    Layout *obj = Globals::layout;
+    int s = obj->field_0x128;
+    int h = this->previewHeight - s * 2;
+    (*canvas)->EnableClip(
+        this->x + s + (this->width >> 1) + obj->field_0x2c_rowHeight,
+        this->y + s + obj->field_0xc_leftMargin + obj->field_0x20_top,
+        ((this->width >> 1) - (obj->field_0x2c_rowHeight + s * 2)) - obj->buttonInsetX,
+        h);
+    (*canvas)->SetColor((unsigned int) -1);
+    Matrix *m = (Matrix *) (*canvas)->CameraGetLocal(this->camera);
+    this->previewTransform = *m;
+    this->previewGeometry->render();
+    (*canvas)->End3d();
+    (*canvas)->DisableClip();
+}
+
+void ListItemWindow::OnTouchBegin(int x, int y) {
+    this->scrollWindow->OnTouchBegin(x, y);
+    if (this->shows3DShipFlag &&
+        this->x + (this->width >> 1) < x) {
+        Layout *obj = (Layout *) Globals::layout;
+        if (y < this->y + obj->field_0xc_leftMargin + obj->field_0x20_top + this->previewHeight) {
+            this->dragLastX = x;
+            this->dragStartX = x;
+            this->dragDelta = 0;
+            this->dragging = 1;
+        }
+    }
+}
+
+void ListItemWindow::OnTouchMove(int x, int y) {
+    this->scrollWindow->OnTouchMove(x, y);
+    if (this->shows3DShipFlag && this->dragging) {
+        int d = x - this->dragLastX;
+        this->dragDelta = d;
+        this->spinDamping = 1.0f;
+        this->dragAccum = this->dragAccum + d;
+        this->dragLastX = x;
+    }
+}
+
+void ListItemWindow::OnTouchEnd(int x, int y) {
+    this->scrollWindow->OnTouchEnd(x, y);
+    if (this->shows3DShipFlag && this->dragging) {
+        int dv = this->dragDelta;
+        int sum = this->dragAccum + dv;
+        float vel = (float) dv;
+        int a = dv < 0 ? -dv : dv;
+        float v = 0.0f;
+        if (a > 3) v = vel;
+        this->spinDamping = 0.9f;
+        this->dragging = 0;
+        this->dragAccum = sum;
+        this->dragSettled = sum;
+        this->spinVelocity = v;
+    }
 }
