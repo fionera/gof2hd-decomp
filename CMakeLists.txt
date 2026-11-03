@@ -78,10 +78,18 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 
-# Radar.cpp (80:1), SpaceLounge.cpp (20:12) and MenuTouchWindow.cpp (5:1) used to carry per-file
-# overrides too.  They were matching knobs, not original build flags: with the default 2000:1
-# __builtin_expect weight the linked .so is byte-identical (byte_exact/linked_exact unchanged and
-# the official per-function percentages unchanged), so those overrides were removed.
+# Radar.cpp needs its own 80:1 weight.  The linked .so is byte-identical with the default 2000:1
+# weight, but the official per-function percentage is NOT: Radar::draw drops from 73.9255 % to
+# 72.4825 % (normalized stream 3488 -> 3489) because the default weight lays the otherLock block
+# out differently.  80:1 is a broad plateau (74, 80..96, 110 all give 73.9255 %); see
+# _work/reconstructions/radar-draw-pass8-w4241.md.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
+
+# SpaceLounge.cpp (20:12) and MenuTouchWindow.cpp (5:1) used to carry per-file overrides too.
+# They were matching knobs, not original build flags: with the default 2000:1 __builtin_expect
+# weight the linked .so is byte-identical (byte_exact/linked_exact unchanged and the official
+# per-function percentages unchanged), so those overrides were removed.
 
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI
