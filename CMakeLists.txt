@@ -49,6 +49,13 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
 
+# StarMap::drawOnScreenInfo's campaign-target arm (getStationEnumIndex(93) >= 0) is reached from
+# both the station and system paths; the original's register allocation keeps `campaign` in r6
+# only when that edge's block frequency crosses the allocator's spill-cost threshold.  The natural
+# zero-compare heuristic (20:12) lands just below it, so weight the hint 7:1.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
+
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI
 # runtime (libc++abi.a), and the zlib/libzip archives pulled whole (the original exports their full
