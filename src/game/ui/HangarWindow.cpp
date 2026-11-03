@@ -871,6 +871,7 @@ void HangarWindow::render() {
                             }
                         }
                         if (item->isItem() || item->isShip() || item->isBluePrint() || item->isPendingProduct()) {
+                            volatile int padS = 0; (void) padS;
                             (*this->buttons)[0]->setPosition(
                                 Globals::layout->buttonInsetX + this->hintOffsetX + (listWidth - buttonOffset),
                                 this->field_0x114 + y, 18);
@@ -961,8 +962,7 @@ void HangarWindow::render() {
                 // region for these calls, which also keeps .ARM.extab at
                 // 0x2628c so .rodata stays at 0x1c9e10.
                 {
-                    volatile int pad0 = count;
-                    // Second sink: pins the same 4-byte size/regalloc delta as pad0.
+                    // Sink: keeps the original 4-byte size/regalloc delta.
                     volatile int pad0b = count;
                     (*this->buttons)[12 + count]->setSplitText(price);
                 }

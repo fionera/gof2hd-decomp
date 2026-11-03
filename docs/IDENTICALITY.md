@@ -59,10 +59,13 @@ byte 4408 -> 4409. The remaining EH content is one `Generator::createMission` CA
 offset (4-byte body shortfall) and seven extab record-length deltas. Those seven records
 belong to the seven still-mismatched bodies (`Generator::createMission`,
 `Level::createShip`, `StarMap::draw`, `RecordHandler::recordStoreWrite`,
-`LevelScript::process`, `HangarWindow::render`, `Hud::draw`) and now net **-8 bytes**, so
-`.ARM.extab` is `0x26290` (156,304 B) until those bodies match. See
-`_work/reconstructions/exidx_extab_exact_w3462.md` and
-`_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md`.
+`LevelScript::process`, `HangarWindow::render`, `Hud::draw`) and netted **-8 bytes** at
+that point. The w4209 pass made `HangarWindow::render`'s record size-exact (948 B / 156
+rows) with a relocation-order-preserving sink, so `.ARM.extab` is now `0x26298`
+(156,312 B), size- and base-exact; the five remaining record deltas cancel to zero. See
+`_work/reconstructions/exidx_extab_exact_w3462.md`,
+`_work/reconstructions/exidx_duplicate_address_root_cause_w3565.md` and
+`_work/reconstructions/extab_hangarwindow_sink_w4209.md`.
 
 The w3472 `Status::missionCompleted` pass then recovered the 4-byte `.text` shortfall that
 had blocked the Level `.rodata` block. The original switches directly on `m->getType()` and is
@@ -169,7 +172,7 @@ The original build is now pinned by evidence, not by A/B alone:
   `.dynsym` 324; `.dynstr` 1,268; `.hash` 133; `.gnu.version` 0; `.rel.dyn` 74; `.shstrtab` 0.
   `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`, `.fini_array`,
   `.comment`, `.note.*`, `.ARM.attributes` and `.shstrtab` are byte-identical, and the
-  section table matches the original's 27 sections except `.ARM.extab`. The w3616 pass made
+  section table matches the original's 27 sections. The w3616 pass made
   `.rel.dyn` byte-identical at the time and cut `.rel.plt` to one moved symbol
   (`PlayerEgo::deleteHackingGame`); the w3624 pass merged `BuildResourceList.cpp` +
   `LowResourceTable.cpp` + `ResourceMaterial.cpp` back into the original `GameResource.cpp` TU
@@ -194,7 +197,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Raw prel31 operands still differ with local `.text` layout. |
-| .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The per-function LSDA records that differ belong to the mismatched bodies listed above and net -8 B; every other record is identical. Raw address operands still differ with local `.text` layout. |
+| .ARM.extab | 156,312 | 156,312 | **0** | size- and base-exact (0x1a3b78). `HangarWindow::render`'s record is now 948 B / 156 rows; the five remaining per-function LSDA deltas (`Generator::createMission` +4, `Level::createShip` -8, `RecordHandler::recordStoreWrite` -16, `LevelScript::process` +4, `Hud::draw` +16) cancel to zero. Raw address operands still differ with local `.text` layout. |
 | .dynsym | 89,248 | 89,248 | 0 | same symbol count/set; 5,522/5,578 entries at the same index (324 differing bytes; 5,370/5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The remaining order gap is `sha256_block_data_order_neon` (libcrypto archive-member order); the w3624 GameResource TU merge removed the `ResourceTexture(String const&, float)` gap. All 79 versioned imports now match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | same string table size (1,268 differing bytes from the symbol-order shift). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
@@ -219,12 +222,12 @@ The original build is now pinned by evidence, not by A/B alone:
    `_work/reconstructions/rodata_content_round5_w3477.md`.
 3. **EH tables.** `.ARM.exidx` is now size- and base-exact (3566 entries, CANTUNWIND 272,
    inline 856, extab 2438); the `Layout::Layout` body is size-exact 7072 B
-   without a pad. `.ARM.extab` is 8 B short (156,304 vs 156,312) with an exact base.
-   The extab delta is six LSDA records: `LevelScript::process` +4,
-   `HangarWindow::render` -8, `RecordHandler::recordStoreWrite` -16, `Hud::draw` +16,
-   `Level::createShip` -8, `Generator::createMission` +4 (net -8 B). Five of those bodies
-   are not byte-exact; `RecordHandler::recordStoreWrite` is byte-exact but its cleanup
-   call-site ranges are split differently. The w3840 `extern template` for
+   without a pad. `.ARM.extab` is now size- and base-exact (156,312 B at 0x1a3b78).
+   The five remaining LSDA record deltas cancel to zero: `LevelScript::process` +4,
+   `RecordHandler::recordStoreWrite` -16, `Hud::draw` +16, `Level::createShip` -8,
+   `Generator::createMission` +4. `HangarWindow::render` is now record-size-exact
+   (948 B / 156 rows) via a volatile sink that replaces the old pad0 anchor while
+   preserving the `.rel.plt` first-reference order. The w3840 `extern template` for
    `ArrayReleaseClasses<Vector*>` in `SpaceLounge.cpp` restored the original's invoke (the
    original only saw the declaration, so the call was not pruned as `nounwind`) and removed
    the `SpaceLounge::~SpaceLounge` -4 record. The 194 duplicate-address exidx entries are
