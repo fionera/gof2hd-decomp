@@ -910,10 +910,11 @@ void StarMap::draw() {
         Globals::Canvas->SetColor(255, 255, 255, (uint8_t) this->alpha);
         this->scratchVector2 = Vector(*(*this->systemPositions)[((SolarSystem *) Globals::status->getSystem())->getIndex()]);
         Array<int> *routes = (Array<int> *) ((SolarSystem *) Globals::status->getSystem())->getRoutes();
-        Array<SolarSystem *> &systems = *this->systems;
-        for (uint32_t i = 0; i < systems.size(); i++) {
+        for (uint32_t i = 0; i < this->systems->size(); i++) {
             Array<bool> *visible = Globals::status->getSystemVisibilities();
-            if (visible == 0 || i >= this->systemPositions->size() || visible->size() <= i || !(*visible)[i])
+            if (visible == 0 ||
+                __builtin_expect(i >= this->systemPositions->size(), 0) || // lint: arm_builtin
+                visible->size() <= i || !(*visible)[i])
                 continue;
             this->scratchVector = Vector(*(*this->systemPositions)[i]);
             bool hidden = this->scratchVector.z < 0.0f && this->scratchVector2.z < 0.0f;

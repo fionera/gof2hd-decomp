@@ -215,7 +215,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4524** compared): **byte_exact 4498, linked_exact 4498, avg 99.91%**
+Current numbers (of **4524** compared): **byte_exact 4499, linked_exact 4499, avg 99.9%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact

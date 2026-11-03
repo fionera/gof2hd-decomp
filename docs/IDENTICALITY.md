@@ -6,7 +6,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 
 ## Update 2026-10-26
 
-Current: **byte_exact 4498, linked_exact 4498, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
+Current: **byte_exact 4499, linked_exact 4499, avg 99.9%**. libcrypto is OpenSSL 1.1.0l via
 NDK r13b GCC 4.9 -O3 ARM (adds the original's genuine `memcpy`/`memset`/`mkstemp` imports). Adds `-g` (authentic ndk-build
 default; keeps entry-block argument copies from PostRA sinking), the app flags for vendored
 zlib/libzip (`-Oz -g -fstack-protector-strong -ffunction-sections`, was `-O2`), and source-order
@@ -209,7 +209,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **26 non-linked functions.** 4498 of 4524 compared functions are linked-exact. The worst are
+1. **25 non-linked functions.** 4499 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (55.1%), `Status::missionCompleted` (57.7%),
    `Generator::createMission` (73.6%), `Radar::draw` (73.9%), `Level::createShip` (74.1%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
@@ -263,8 +263,8 @@ tracked by: byte_exact/linked_exact function counts (verify) and the section-siz
 
 ## Concrete leads found (for the byte-exactness campaign)
 
-The verify report (cmake-build-match/verify/report.json) has per-function rows: 4498 byte_exact,
-4498 linked_exact, 4524 size_match of 4524; pct buckets {100:4498, 90-99:10, 80-89:8, 70-79:4,
+The verify report (cmake-build-match/verify/report.json) has per-function rows: 4499 byte_exact,
+4499 linked_exact, 4524 size_match of 4524; pct buckets {100:4499, 90-99:9, 80-89:8, 70-79:4,
 <60:4}. 0 function rows size-MISMATCH (the `Layout::Layout` body is size-exact 7072 B without a
 pad); 18 size-match >=80% not-linked (the highest-value near-misses).
 
