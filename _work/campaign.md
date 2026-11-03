@@ -5219,3 +5219,8 @@ weighting the 120-arm station-enum hint 7:1 so `campaign` stays in r6. Gate **by
 4497 -> 4498, linked_exact 4497 -> 4498**, .text 0x1337c8, lint CLEAN, drift 0.
 Wave-97 section-order pass: `PlayerJunk` emission order (`w3745`) — update before render before
 collide. Plain no-order 2961 -> 2962 (addresses 3724 -> 3728, prefix 3647 -> 3666). Gate 4498/4498.
+Wave-97 function pass: `Level::createMission` 90.6887 -> 90.7052% (`w3740`) by reordering the
+36/37 stores (friendCount, raid, hostileCount). 17172 B, gate 4498/4498.
+Wave-97 section-order pass: `MarqueeImage` emission order (`w3745`) — setPosition, setSpeed,
+update, draw(int,int), draw. Plain no-order 2962 -> 2963 (addresses 3728 -> 3733, prefix 3666 -> 3685).
+Gate 4498/4498.
