@@ -1769,8 +1769,8 @@ void Level::createMission() {
                          Globals::rnd->nextInt(30000) + 20000};
     Route *wingRoute = new Route(wingCoords, 3);
     if (siegedStation) {
-        this->hostileCount = 0;
         this->field_164 = 0;
+        this->hostileCount = 0;
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(this->friendCount + 8, *this->enemies);
         int coords[3];
