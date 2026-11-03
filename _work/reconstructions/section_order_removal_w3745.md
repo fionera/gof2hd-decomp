@@ -1605,3 +1605,244 @@ $NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep -E 'St
   `linked_exact` are the more stable convergence measures.
 * The `Wanted` reorder is the obvious next per-TU source-order experiment,
   but it was not tested or landed in this pass.
+
+## 13. `Wanted` ctor placement / full TU reorder (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0, and the gate `.so` is **byte-identical** before and after
+(`sha256 d61445d5e77792199a94c360745efea80e88c37c7277f05eaefd09e590153d00`).
+The plain no-order link rises from **3085 / 4497** (prefix 2994,
+3342 / 4524 exported functions at their original address) to **3088 / 4497**
+(prefix 3032, 3373 / 4524). The first plain no-order mismatch moves from
+`Wanted::Wanted` to `MenuTouchWindow::~MenuTouchWindow`.
+
+This is the next frontier recorded in §12.5.
+
+### 13.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+The brief's 4496 baseline is stale; this HEAD is 4497/4497.
+
+The original's `Wanted` block from the binary's own address-sorted `.dynsym`
+(`nm -nD --defined-only`):
+
+```text
+0x122890  Wanted::Wanted(int, AEMath::String, int, int, bool, int, int, int, int, int, int, int, int, int)  # C1/C2
+0x122904  Wanted::~Wanted()                                                                                # D1/D2
+0x122920  Wanted::getIndex()
+0x122924  Wanted::getName()
+0x122930  Wanted::getNumWingmen()
+0x122934  Wanted::getBoard()
+0x122938  Wanted::getRace()
+0x12293c  Wanted::isMale()
+0x122940  Wanted::getShip()
+0x122944  Wanted::getWeapon()
+0x122948  Wanted::getHitpoints()
+0x12294c  Wanted::getLoot()
+0x122950  Wanted::getLootAmount()
+0x122954  Wanted::getReward()
+0x122958  Wanted::getRequiredBounties()
+0x12295c  Wanted::getRequiredMission()
+0x122960  Wanted::setRequiredMission(int)
+0x122964  Wanted::setImageParts(int*)
+0x122968  Wanted::getImageParts()
+0x12296c  Wanted::setTerminated(bool)
+0x122972  Wanted::setActive(bool)
+0x122978  Wanted::setTravelsTo(int)
+0x12297c  Wanted::setCurrentLocation(int)
+0x122980  Wanted::setLastSeen(int)
+0x122984  Wanted::isActive()
+0x12298a  Wanted::isTerminated()
+0x122990  Wanted::getLastSeen()
+0x122994  Wanted::getTravelsTo()
+0x122998  Wanted::getCurrentLocation()
+```
+
+The HD source-layout dump (`_work/original_layout/original_layout.json`,
+`gof2hd_1.1.19_ios` -> `Classes/Game/Wanted.cpp`) lists the same order for
+every symbol it contains; `setRequiredMission` is an Android-2.0.x addition
+witnessed only by the Android `.dynsym`. The Android address order is the
+authority used here.
+
+The baseline `Wanted.cpp.obj` order was the .cpp definition order:
+
+```text
+getIndex, getBoard, getRace, isMale, getShip, getWeapon, getHitpoints,
+getLoot, getLootAmount, getReward, getRequiredBounties, getRequiredMission,
+getNumWingmen, getCurrentLocation, getTravelsTo, getLastSeen, getImageParts,
+setImageParts, setRequiredMission, setCurrentLocation, setTravelsTo,
+setLastSeen, isTerminated, setTerminated, isActive, setActive, getName,
+ctor, dtor
+```
+
+so the plain no-order link put the constructor at `0x12290c` instead of
+`0x122890`. The first plain no-order mismatch was exactly:
+
+```text
+original 0x122890 Wanted::Wanted(...)
+ours     0x12290c Wanted::Wanted(...)
+```
+
+### 13.2 Landed source change
+
+The `Wanted.cpp` definitions were re-emitted in the original address order
+above. No body was edited; there are no namespace-scope statics in this TU, so
+there is no `.rodata`/`.data` emission-order side effect. The reordered object
+order now matches the original address order exactly:
+
+```text
+ctor, dtor, getIndex, getName, getNumWingmen, getBoard, getRace, isMale,
+getShip, getWeapon, getHitpoints, getLoot, getLootAmount, getReward,
+getRequiredBounties, getRequiredMission, setRequiredMission, setImageParts,
+getImageParts, setTerminated, setActive, setTravelsTo, setCurrentLocation,
+setLastSeen, isActive, isTerminated, getLastSeen, getTravelsTo,
+getCurrentLocation
+```
+
+The gate build (with the ordering file) is **byte-identical** to the baseline,
+including the 20-byte build-id: `cmp` reports 0 differing bytes. The ordering
+file already placed the `Wanted` output block correctly; this pass only removes
+a source/object-order divergence that the plain input-order link exposed.
+
+### 13.3 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `d61445d5…` | **3085** | 3342 / 4524 | 2994 | `Wanted::Wanted` `0x122890` vs `0x12290c` |
+| `Wanted` full reorder (landed) | **4497 / 4497** | `d61445d5…` (identical) | **3088** | **3373 / 4524** | **3032** | `MenuTouchWindow::~MenuTouchWindow` `0x125170` vs `0x125186` |
+
+The landed delta is **+3 plain byte_exact, +31 functions at their original
+address, +38 exact-address prefix**, with the gate unchanged and the gate `.so`
+byte-identical.
+
+The whole `Wanted` block is now address-exact in the plain no-order link, and
+29 of its 31 exported function rows are byte-exact. The two remaining rows are
+`Wanted::~Wanted()` D1/D2, which are disassembly-identical but tail-call
+`operator delete[]` at `0x79584` (original) vs `0x795a4` (ours); the `b.w`
+immediate is a local-address difference, not a `Wanted` placement problem:
+
+```text
+orig 28B @0x122904  |  ours 28B @0x122904
+  ...
+  b.w 0x79584        ~  b.w 0x795a4
+```
+
+The plain no-order `.ARM.exidx` grows by one 8-byte entry
+(`0x6f50 -> 0x6f58`; original `0x6f70`), which moves `.ARM.extab` from
+`0x1a3b78` to `0x1a3b80` (same size `0x2628c`). `.rodata` stays at
+`0x1c9e10` because the 16-byte alignment absorbs the 8-byte shift, so the
+literal-pool addresses are unchanged and the plain `byte_exact` rises rather
+than falls. The plain `.text` size is `0x1337e8` before and after (the gate
+`.text` is `0x1337c8`; the plain link's extra `0x20` is the known marker
+effect).
+
+### 13.4 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x125170 MenuTouchWindow::~MenuTouchWindow()   # D1/D2
+ours     0x125186 MenuTouchWindow::~MenuTouchWindow()   # D1/D2
+```
+
+The `MenuTouchWindow` constructor (`0x12299c`), `loadPreviewRecords`
+(`0x124f1c`), `addButton` (`0x124fd8`), `ArrayAdd<TouchButton*>`
+(`0x12510c`), `Array<TouchSlider*>::Array()` (`0x125130`) and
+`ArrayAdd<TouchSlider*>` (`0x12514c`) are all already address-exact. The
+16-byte displacement is one extra weak copy emitted by our object at the
+original dtor address:
+
+```text
+original 0x125170  MenuTouchWindow::~MenuTouchWindow()
+ours     0x125170  Array<GameRecord*>::~Array()          # 16 bytes
+ours     0x125186  MenuTouchWindow::~MenuTouchWindow()
+```
+
+`MenuTouchWindow.cpp.obj` emits `Array<GameRecord*>::~Array()` between the
+`ArrayAdd<TouchSlider*>` weak copy and the destructor; the original does not
+place it there. This is the same weak-copy TU-membership/emission class as
+§4 and §12.3, and it was not changed in this pass.
+
+### 13.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/wanted/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/wanted/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/wanted/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/wanted/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/world/Wanted.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep -E 'Wanted|MenuTouchWindow'
+
+# gate .so A/B (baseline vs landed source)
+sha256sum /tmp/w3745/wanted/gate_base.so /tmp/w3745/wanted/gate_after.so
+cmp -l /tmp/w3745/wanted/gate_base.so /tmp/w3745/wanted/gate_after.so | wc -l   # 0
+```
+
+### 13.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3085 / 4497`, prefix 2994,
+  3342 / 4524, first mismatch `Wanted::Wanted` `0x122890` vs `0x12290c`.
+* The original emits `Wanted` in the address order listed in §13.1; the HD
+  source-layout dump independently lists the same order for every symbol it
+  contains.
+* Re-emitting the `Wanted.cpp` definitions in that order makes the object's
+  `.text.*` order match the original address order exactly and is
+  gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0).
+* The gate `.so` is byte-identical before and after (same sha256, `cmp` 0
+  differing bytes), so the ordering file already reproduced the `Wanted`
+  output block.
+* The plain no-order build improves to `3088 / 4497`, prefix 3032,
+  3373 / 4524. The entire `Wanted` block is address-exact there; 29/31 rows
+  are byte-exact, and the two remaining rows (D1/D2) differ only in the
+  `b.w` target `operator delete[]` (`0x79584` vs `0x795a4`).
+* The plain `.ARM.exidx` grows by one entry (`0x6f50 -> 0x6f58`, original
+  `0x6f70`); `.ARM.extab` shifts `+8` in base but keeps its size, and
+  `.rodata` stays at `0x1c9e10`.
+* The next plain no-order frontier is `MenuTouchWindow::~MenuTouchWindow`
+  (`0x125170` original, `0x125186` ours), displaced by an extra
+  `Array<GameRecord*>::~Array()` weak copy at `0x125170`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3088`, not `4497`.
+* The `MenuTouchWindow` weak-copy placement is the next per-TU emission-order
+  experiment, but it was not tested or landed in this pass.
