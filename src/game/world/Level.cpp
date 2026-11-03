@@ -6644,9 +6644,9 @@ void Level::createScene() {
                 shipCount = ships != nullptr ? (capacity <= ships->size() ? capacity : ships->size()) : 0;
             }
             unsigned char *spotUsed = new unsigned char[capacity];
-            AbyssEngine::AERandom *rnd = Globals::rnd;
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
+            AbyssEngine::AERandom *rnd = Globals::rnd;
             const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
@@ -6657,7 +6657,7 @@ void Level::createScene() {
                 }
                 int type = Globals::globals->getRandomEnemyFighter(race);
                 if (Globals::status->getStation()->getIndex() == 100) {
-                    int pick = Globals::rnd->nextInt(3);
+                    int pick = rnd->nextInt(3);
                     type = pick == 0 ? 37 : pick == 1 ? 38 : 40;
                 }
                 if (ownHangar)
@@ -6689,7 +6689,7 @@ void Level::createScene() {
                                   (float) table[spot * 3 + 2]);
                 ship->player->setAlwaysFriend(true);
                 ship->setToSleep();
-                ship->geometry->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
+                ship->geometry->setRotation(0.0f, (float) Globals::rnd->nextInt(300) / 100.0f, 0.0f);
                 ((PlayerFighter *) ship)->setExhaustVisible(false);
                 ArrayAdd(ship, *this->enemies);
             }
