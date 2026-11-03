@@ -4216,3 +4216,284 @@ cmp -l /tmp/w3745/newsticker/gate_base.so /tmp/w3745/newsticker/gate_after.so | 
 * The `Sparks` destructor reorder is the obvious next per-TU source-order
   experiment, but it is a separate TU and was not tested or landed in this
   pass.
+
+## 22. `Sparks` destructor emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `report.json` is **byte-identical** (0 changed rows); the
+gate `.so` differs from the baseline in 51 bytes (20 `.note.gnu.build-id`,
+5 `.ARM.exidx`, 26 `.ARM.extab`), all from the destructor's EH-record move.
+Every other section, including `.text`, `.rodata`, `.dynsym`, `.dynstr`,
+`.plt` and `.rel.plt`, is byte-identical. The plain no-order link improves
+from **byte 2955 / 3717 of 4524 exact addresses / prefix 3634** to
+**byte 2961 / 3724 of 4524 / prefix 3647**; the first plain no-order mismatch
+moves from `Sparks::~Sparks` to `PlayerJunk::update`.
+
+This is the next frontier recorded in §21.6.
+
+### 22.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `95be20ac`:
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+```
+
+The original's `Sparks` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15e38c  0xdc  Sparks::Sparks(int)                    # C1/C2 alias
+0x15e468  0x0c  Sparks::isRocket()
+0x15e474  0x16  Sparks::~Sparks()                      # D1/D2 alias
+0x15e48c  0x108 Sparks::explode(int, int, int)
+0x15e594  0x28  Sparks::explode(AEMath::Vector const&)
+0x15e5c0  0xa0  Sparks::render()
+0x15e660  0x74  Sparks::update(int)
+0x15e6d4  0x4c  Sparks::translate(AEMath::Vector const&)
+```
+
+The baseline `Sparks.cpp.obj` emitted the destructor last:
+
+```text
+Sparks::Sparks(int)
+Sparks::isRocket()
+Sparks::explode(int, int, int)
+Sparks::explode(AbyssEngine::AEMath::Vector const&)
+Sparks::render()
+Sparks::update(int)
+Sparks::translate(AbyssEngine::AEMath::Vector const&)
+Sparks::~Sparks()
+```
+
+That made the plain no-order link put `~Sparks` at `0x15e708` instead of
+`0x15e474`; the first plain no-order mismatch was exactly:
+
+```text
+original 0x15e474 Sparks::~Sparks()   (0x16 bytes)
+ours     0x15e708 Sparks::~Sparks()
+```
+
+### 22.2 Landed source change
+
+Only change: move the `Sparks::~Sparks()` definition in
+`src/engine/render/Sparks.cpp` from the end of the file to immediately after
+`Sparks::isRocket()`. No body was edited.
+
+```diff
+@@ after Sparks::isRocket()
++Sparks::~Sparks() {
++    delete[] this->lifetimeThresholds;
++    this->lifetimeThresholds = nullptr;
++}
++
+ void Sparks::explode(int x, int y, int z) {
+@@ end of file
+-Sparks::~Sparks() {
+-    delete[] this->lifetimeThresholds;
+-    this->lifetimeThresholds = nullptr;
+-}
+```
+
+The resulting object order is exactly the original address order:
+
+```text
+Sparks::Sparks(int)
+Sparks::isRocket()
+Sparks::~Sparks()
+Sparks::explode(int, int, int)
+Sparks::explode(AbyssEngine::AEMath::Vector const&)
+Sparks::render()
+Sparks::update(int)
+Sparks::translate(AbyssEngine::AEMath::Vector const&)
+```
+
+The `.text.*` section bodies are unchanged (destructor 0x16 bytes, `explode`
+0x108, `render` 0xa0, `update` 0x74, `translate` 0x4c); only their order
+changed. The whole Sparks block now lands at the original addresses in the
+plain no-order link:
+
+```text
+$NM -nD --defined-only /tmp/w3745/sparks/after_noorder.so | grep '_ZN6Sparks'
+0015e38c T _ZN6SparksC1Ei
+0015e38c T _ZN6SparksC2Ei
+0015e468 T _ZN6Sparks8isRocketEv
+0015e474 T _ZN6SparksD1Ev
+0015e474 T _ZN6SparksD2Ev
+0015e48c T _ZN6Sparks7explodeEiii
+0015e594 T _ZN6Sparks7explodeERKN11AbyssEngine6AEMath6VectorE
+0015e5c0 T _ZN6Sparks6renderEv
+0015e660 T _ZN6Sparks6updateEi
+0015e6d4 T _ZN6Sparks9translateERKN11AbyssEngine6AEMath6VectorE
+```
+
+### 22.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `527d4920…` | **2955** | 3717 / 4524 | 3634 | `Sparks::~Sparks` `0x15e474` vs `0x15e708` |
+| landed | **4497 / 4497** | `5ebe1e38…` | **2961** | **3724 / 4524** | **3647** | `PlayerJunk::update` `0x15e798` vs `0x15e7c4` |
+
+The landed delta is **+6 plain byte-exact** (`render`, `update`,
+`explode(int,int,int)`, `translate`, `D1`, `D2`), **+7 functions at their
+original address** (those six plus `explode(Vector)`), and **+13
+exact-address prefix**, with the gate counts unchanged. The plain
+`report.json` changes exactly six rows, all `byte False -> True`:
+
+```text
+_ZN6Sparks6renderEv
+_ZN6Sparks6updateEi
+_ZN6Sparks7explodeEiii
+_ZN6Sparks9translateERKN11AbyssEngine6AEMath6VectorE
+_ZN6SparksD1Ev
+_ZN6SparksD2Ev
+```
+
+`Sparks::explode(Vector)` is at its original address but is still not
+byte-exact in the plain no-order link: it tail-calls
+`Sparks::explode(int,int,int)` through the PLT, and the Thumb→ARM
+interworking veneer it branches to is at `0x19c5f8` in the original but
+`0x19c618` in the plain link. The gate link has it byte-exact. This is a
+link/veneer-placement artifact, not a source-order issue.
+
+### 22.4 Why the gate `.so` changes (and why that is correct)
+
+The section-ordering file orders `.text.*` only; `.ARM.exidx` and
+`.ARM.extab` follow the object's section order. The original emits the
+`~Sparks` LSDA record immediately after `isRocket` and before `explode(int)`;
+the baseline emitted it after `translate`. Correcting the source order
+therefore necessarily reorders those records. The gate `.so` differs from
+the baseline in exactly 51 bytes:
+
+| section | differing bytes | cause |
+|---|---:|---|
+| `.note.gnu.build-id` | 20 | gold hashes the changed EH content |
+| `.ARM.exidx` | 5 | the `~Sparks`/`explode(int)` extab pointers move |
+| `.ARM.extab` | 26 | the two LSDA records move to their original relative order |
+
+`.text`, `.rodata`, `.dynsym`, `.dynstr`, `.plt` and `.rel.plt` are
+byte-identical (0 differing bytes each). The `.ARM.exidx`/`.ARM.extab`
+section sizes and bases are unchanged.
+
+`readelf --unwind` shows the original relative order
+`ctor, (isRocket inline), ~Sparks, explode(int), (explode(Vector) inline),
+render, update, translate`; the landed tree reproduces exactly that sequence.
+The absolute `.ARM.extab` offsets are uniformly `-0x18` from the original
+(`0x1c4f3c` vs `0x1c4f54` for the ctor record), which is the pre-existing
+cumulative record-size delta from preceding functions, not caused by this
+pass.
+
+### 22.5 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/sparks/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/sparks/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/sparks/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/sparks/base_noorder.so
+
+# source reorder: move Sparks::~Sparks() before Sparks::explode(int,int,int)
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/sparks/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/sparks/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/sparks/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/sparks/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/render/Sparks.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN6Sparks'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/sparks/gate_after.so
+git stash push -- src/engine/render/Sparks.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/sparks/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/sparks/gate_base.so /tmp/w3745/sparks/gate_after.so
+cmp -l /tmp/w3745/sparks/gate_base.so /tmp/w3745/sparks/gate_after.so | wc -l   # 51
+```
+
+### 22.6 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2955 / 4497`, prefix 3634,
+  3717 / 4524, first mismatch `Sparks::~Sparks` `0x15e474` vs `0x15e708`.
+* The original emits `Sparks` in the `.dynsym` address order
+  `ctor, isRocket, D1/D2, explode(int), explode(Vector), render, update,
+  translate`; the baseline object emitted `~Sparks` last.
+* Moving the `~Sparks` definition immediately after `Sparks::isRocket()`
+  makes the object's `.text.*` order match the original address order. The
+  section bodies are unchanged.
+* The landed move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `report.json` is
+  byte-identical (all 4524 rows unchanged). The gate `.so` differs only in
+  the build-id and the moved EH records (51 bytes total), which is the
+  original's own record order.
+* The plain no-order build now has all ten `Sparks` dynsym rows at their
+  original addresses: exact addresses 3717 -> 3724, exact-address prefix
+  3634 -> 3647, plain `byte_exact` 2955 -> 2961.
+* The next plain no-order frontier is `PlayerJunk::update`
+  (`0x15e798` original, `0x15e7c4` ours). The original `PlayerJunk` order is
+  `ctor, D1/D2, D0, reset, update, render, collide, outerCollide`; our object
+  emits `reset, collide, outerCollide, render, update`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2961`, not `4497`.
+* `Sparks::explode(Vector)` is blocked in the plain link only by the
+  Thumb→ARM veneer address (`0x19c5f8` original vs `0x19c618` plain); it is
+  byte-exact in the gate link. The veneer placement rule is not characterized
+  here.
+* The `PlayerJunk` reorder is the obvious next per-TU source-order
+  experiment, but it is a separate TU and was not tested or landed in this
+  pass.

@@ -59,6 +59,11 @@ bool Sparks::isRocket() {
     return this->kind == 1;
 }
 
+Sparks::~Sparks() {
+    delete[] this->lifetimeThresholds;
+    this->lifetimeThresholds = nullptr;
+}
+
 void Sparks::explode(int x, int y, int z) {
     int x0 = x;
     int y0 = y;
@@ -145,7 +150,3 @@ void Sparks::translate(Vector const &v) {
                                            v.x, v.y, v.z);
 }
 
-Sparks::~Sparks() {
-    delete[] this->lifetimeThresholds;
-    this->lifetimeThresholds = nullptr;
-}
