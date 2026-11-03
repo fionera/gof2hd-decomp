@@ -4790,3 +4790,272 @@ cmp -l /tmp/w3745/playerjunk/gate_base.so /tmp/w3745/playerjunk/gate_after.so | 
 * The `MarqueeImage` reorder is the obvious next per-TU source-order
   experiment, but it is a separate TU and was not tested or landed in this
   pass.
+
+## 24. `MarqueeImage` emission order (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4498 / linked 4498**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The gate `.so` is **byte-identical** before and after
+(sha256 `e23253eb79646e94d5c4768ad1d8ded49937e74daa20c2244e324790324433e3`,
+`cmp -l` = 0 bytes). The plain no-order link improves from
+**byte 2962 / 3728 of 4524 exact addresses / prefix 3666** to
+**byte 2963 / 3733 of 4524 / prefix 3685**; the first plain no-order mismatch
+moves from `MarqueeImage::setPosition` to `SpacePoint::isFree`.
+
+This is the next frontier recorded in §23.6.
+
+### 24.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`) at branch `wave87-w3745`, HEAD `52e03527`:
+
+```text
+verify: byte 4498  linked 4498  stubs 0  missing 0  extra 0  avg 99.91
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate ELF layout (unchanged by this pass):
+
+```text
+.text            0x1337c8 @ 0x69440
+.ARM.exidx       0x006f70 @ 0x19cc08
+.ARM.extab       0x02628c @ 0x1a3b78
+.rodata          0x041b67 @ 0x1c9e10
+.data            0x00296c @ 0x214000
+```
+
+The original's `MarqueeImage` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x15f59c  0x54  MarqueeImage::MarqueeImage(unsigned short, int, int, int, float)  # C1/C2 alias
+0x15f5f0  0x02  MarqueeImage::~MarqueeImage()                                    # D1/D2 alias
+0x15f5f2  0x06  MarqueeImage::setPosition(int, int)
+0x15f5f8  0x04  MarqueeImage::setSpeed(float)
+0x15f5fc  0x58  MarqueeImage::update(int)
+0x15f654  0xa0  MarqueeImage::draw(int, int)
+0x15f6f4  0x08  MarqueeImage::draw()
+```
+
+The `gof2hd_1.1.19_ios` source-layout dump
+(`_work/original_layout/original_layout.json`,
+`tu_symbols.gof2hd_1.1.19_ios["Classes/Game/MarqueeImage.cpp"]`) independently
+witnesses the relative order `setSpeed, update, draw(int, int), draw()`; the
+dump does not list `setPosition` or the destructor, which are present in the
+Android binary between the ctor and `setSpeed`.
+
+The baseline `MarqueeImage.cpp.obj` emitted the definitions in this order:
+
+```text
+MarqueeImage::MarqueeImage(unsigned short, int, int, int, float)
+MarqueeImage::~MarqueeImage()
+MarqueeImage::setSpeed(float)
+MarqueeImage::setPosition(int, int)
+MarqueeImage::draw()
+MarqueeImage::draw(int, int)
+MarqueeImage::update(int)
+```
+
+That made the plain no-order link put `setPosition` at `0x15f5f6` instead of
+`0x15f5f2`; the first plain no-order mismatch was exactly:
+
+```text
+original 0x15f5f2 MarqueeImage::setPosition(int, int)
+ours     0x15f5f6 MarqueeImage::setPosition(int, int)
+```
+
+### 24.2 Landed source change
+
+Only change: move the `MarqueeImage` definitions in
+`src/engine/render/MarqueeImage.cpp` so the definition order is
+`ctor, dtor, setPosition, setSpeed, update, draw(int, int), draw()`. No body
+was edited.
+
+```diff
+@@ after MarqueeImage::~MarqueeImage()
+-void MarqueeImage::setSpeed(float speed) {
+-    this->speed = speed;
+-}
+-
+ void MarqueeImage::setPosition(int x, int y) {
+     this->x = x;
+     this->y = y;
+ }
+ 
+-void MarqueeImage::draw() {
+-    return draw(this->x, this->y);
++void MarqueeImage::setSpeed(float speed) {
++    this->speed = speed;
+ }
+ 
+ void MarqueeImage::update(int dt) {
+@@ ... (end of update)
++void MarqueeImage::draw() {
++    return draw(this->x, this->y);
++}
+```
+
+The resulting object order is exactly the original address order. The
+`.text.*` section sizes are unchanged and equal the original's:
+
+```text
+MarqueeImage::MarqueeImage(unsigned short, int, int, int, float)  0x54
+MarqueeImage::~MarqueeImage()                                     0x02
+MarqueeImage::setPosition(int, int)                               0x06
+MarqueeImage::setSpeed(float)                                     0x04
+MarqueeImage::update(int)                                         0x58
+MarqueeImage::draw(int, int)                                      0xa0
+MarqueeImage::draw()                                              0x08
+```
+
+`draw()` stays 8 bytes: moving `draw(int, int)` before it does not cause
+same-TU inlining at `-Oz`.
+
+### 24.3 Measured before/after
+
+Every row is a controlled rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8` (ordering file on);
+`plain` is `relink_noorder.py` (the exact gold line minus
+`--section-ordering-file`) followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4498 / 4498** | `e23253eb…` | **2962** | 3728 / 4524 | 3666 | `MarqueeImage::setPosition` `0x15f5f2` vs `0x15f5f6` |
+| landed | **4498 / 4498** | `e23253eb…` | **2963** | **3733 / 4524** | **3685** | `SpacePoint::isFree` `0x1603e6` vs `0x1603f4` |
+
+The landed delta is **+1 plain byte-exact** (`MarqueeImage::draw(int, int)`),
+**+5 functions at their original address** (`setPosition`, `setSpeed`,
+`update`, `draw(int, int)`, `draw()`), and **+19 exact-address prefix**, with
+the gate counts unchanged. The gate `.so` is byte-identical, so the gate
+`report.json` is unchanged.
+
+The plain `report.json` changes exactly one row:
+
+```text
+_ZN12MarqueeImage4drawEii  byte False -> True  (pct 100.0, linked True, 0xa0 B)
+```
+
+All nine `MarqueeImage` dynsym rows are now at their original addresses in the
+plain link:
+
+```text
+$NM -nD --defined-only /tmp/w3745_marquee_after.so | grep MarqueeImage
+0015f59c T _ZN12MarqueeImageC1Etiiif
+0015f59c T _ZN12MarqueeImageC2Etiiif
+0015f5f0 T _ZN12MarqueeImageD1Ev
+0015f5f0 T _ZN12MarqueeImageD2Ev
+0015f5f2 T _ZN12MarqueeImage11setPositionEii
+0015f5f8 T _ZN12MarqueeImage8setSpeedEf
+0015f5fc T _ZN12MarqueeImage6updateEi
+0015f654 T _ZN12MarqueeImage4drawEii
+0015f6f4 T _ZN12MarqueeImage4drawEv
+```
+
+The plain no-order section layout is unchanged by the pass
+(`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f70 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b98`, `.rodata 0x41b67 @ 0x1c9e30`).
+
+`MarqueeImage::draw()` is at its original address but is still not byte-exact
+in the plain link: it tail-calls `draw(int, int)` through the Thumb→ARM
+interworking veneer, which is at `0x19c618` in the original and `0x19c638` in
+the plain link (`b.w` displacement `0x3cbf8e` vs `0x3cbf9e`). This is the same
+veneer-placement artifact recorded for `Sparks::explode(Vector)` in §22.3; it
+is byte-exact in the gate link.
+
+### 24.4 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order baseline
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_marquee_base.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_marquee_base.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_marquee_base.so
+
+# source reorder: setPosition, setSpeed, update, draw(int,int), draw()
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order after
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745_marquee_after.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745_verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745_marquee_after.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745_marquee_after.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/engine/render/MarqueeImage.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep MarqueeImage
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_marquee_gate_after.so
+git stash push -- src/engine/render/MarqueeImage.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745_marquee_gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745_marquee_gate_base.so /tmp/w3745_marquee_gate_after.so
+cmp -l /tmp/w3745_marquee_gate_base.so /tmp/w3745_marquee_gate_after.so | wc -l   # 0
+```
+
+### 24.5 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4498 / linked 4498`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `2962 / 4498`, prefix 3666,
+  3728 / 4524, first mismatch `MarqueeImage::setPosition` `0x15f5f2` vs
+  `0x15f5f6`.
+* The original emits `MarqueeImage` in the `.dynsym` address order
+  `ctor, D1/D2, setPosition, setSpeed, update, draw(int,int), draw()`; the
+  `gof2hd_1.1.19_ios` source-layout dump independently witnesses
+  `setSpeed, update, draw(int,int), draw()` in that order.
+* The baseline object emitted `setSpeed, setPosition, draw(), draw(int,int),
+  update`; moving the definitions to `setPosition, setSpeed, update,
+  draw(int,int), draw()` makes the object's `.text.*` order match the original
+  address order. The section bodies and sizes are unchanged.
+* The landed move is gate-neutral (`4498 / 4498`, lint `CLEAN ✓`, drift 0,
+  every ELF section size/base unchanged) and the gate `.so` is byte-identical
+  (`cmp -l` = 0), so the gate `report.json` is unchanged.
+* The plain no-order build now has all nine `MarqueeImage` dynsym rows at
+  their original addresses: exact addresses 3728 -> 3733, exact-address
+  prefix 3666 -> 3685, plain `byte_exact` 2962 -> 2963.
+* The next plain no-order frontier is `SpacePoint::isFree`
+  (`0x1603e6` original, `0x1603f4` ours). The original `SpacePoint` order is
+  `ctor, isFree, take, giveFree, getIndex, D1/D2`; our object emits
+  `ctor, giveFree, take, D1/D2, isFree, getIndex`.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `2963`, not `4498`.
+* `MarqueeImage::draw()` is at its original address but is not byte-exact in
+  the plain link only because the Thumb→ARM veneer is at `0x19c638` instead
+  of `0x19c618`. The veneer placement rule is not characterized here; it is
+  byte-exact in the gate link.
+* The `SpacePoint` reorder is the obvious next per-TU source-order
+  experiment, but it is a separate TU and was not tested or landed in this
+  pass.

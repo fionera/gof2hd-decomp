@@ -18,17 +18,13 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
 MarqueeImage::~MarqueeImage() {
 }
 
-void MarqueeImage::setSpeed(float speed) {
-    this->speed = speed;
-}
-
 void MarqueeImage::setPosition(int x, int y) {
     this->x = x;
     this->y = y;
 }
 
-void MarqueeImage::draw() {
-    return draw(this->x, this->y);
+void MarqueeImage::setSpeed(float speed) {
+    this->speed = speed;
 }
 
 void MarqueeImage::update(int dt) {
@@ -55,4 +51,8 @@ void MarqueeImage::draw(int x, int y) {
         Globals::Canvas->DrawRegion2D(this->image, 0, 0, this->visibleWidth - this->scrollOffset,
                                       this->imageHeight, 0.0f, 0, 0, this->scrollOffset + x, y);
     }
+}
+
+void MarqueeImage::draw() {
+    return draw(this->x, this->y);
 }
