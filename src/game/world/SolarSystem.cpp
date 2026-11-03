@@ -54,25 +54,13 @@ SolarSystem::~SolarSystem() {
 }
 
 int SolarSystem::getIndex() { return systemId; }
-int SolarSystem::getRace() { return (int) faction; }
-int SolarSystem::getSecurityLevel() { return securityLevel; }
-int SolarSystem::getTextureIndex() { return textureIndex; }
-int SolarSystem::getX() { return mapX; }
-int SolarSystem::getY() { return mapY; }
-int SolarSystem::getZ() { return mapZ; }
-int SolarSystem::getWarpGateIndex() { return jumpgateStationId; }
-uint32_t *SolarSystem::getStations() { return (uint32_t *) stationIds; }
-uint32_t *SolarSystem::getRoutes() { return (uint32_t *) linkedSystemIds; }
-void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; } // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
-// lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
-
-bool SolarSystem::isVisible() {
-    return this->visible;
-}
 
 String SolarSystem::getName() {
     return this->name;
 }
+
+int SolarSystem::getSecurityLevel() { return securityLevel; }
+int SolarSystem::getRace() { return (int) faction; }
 
 int SolarSystem::getAttackRace() {
     uint32_t r = this->faction;
@@ -106,6 +94,12 @@ int SolarSystem::hasHiddenBlueprint() {
     }
     return 0;
 }
+
+int SolarSystem::getX() { return mapX; }
+int SolarSystem::getY() { return mapY; }
+int SolarSystem::getZ() { return mapZ; }
+int SolarSystem::getTextureIndex() { return textureIndex; }
+int SolarSystem::getWarpGateIndex() { return jumpgateStationId; }
 
 int SolarSystem::getWarpGateEnumIndex() {
     return (int) getStationEnumIndex(this->jumpgateStationId);
@@ -145,6 +139,11 @@ void SolarSystem::setCoords(int x, int y) {
     this->mapY = y;
 }
 
+uint32_t *SolarSystem::getStations() { return (uint32_t *) stationIds; }
+void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; } // lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
+// lint: void_ptr (method return type — rule 3 forbids changing ClassName::method return types)
+uint32_t *SolarSystem::getRoutes() { return (uint32_t *) linkedSystemIds; }
+
 bool SolarSystem::systemIsInSystemRoutes(int sys) {
     if (this->systemId != sys) {
         Array<int> *arr = this->linkedSystemIds;
@@ -158,6 +157,10 @@ bool SolarSystem::systemIsInSystemRoutes(int sys) {
         return false;
     }
     return true;
+}
+
+bool SolarSystem::isVisible() {
+    return this->visible;
 }
 
 void SolarSystem::setVisible(bool v) {

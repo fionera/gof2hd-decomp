@@ -5176,3 +5176,7 @@ Wave-97 section-order pass: `Gun::setOffset` overload order (`w3745`) — `Vecto
 Wave-97 section-order pass: `Radio` emission order (`w3745`) — original setMessages/accessor
 order. Plain no-order 2856 -> 2857 (exact addrs 3463 -> 3470). Gate 4497/4497.
 Note: `_work/reconstructions/radio_setmessages_placement_w3745.md`.
+Wave-97 section-order pass: `SolarSystem` emission order (`w3745`) — original
+ctor/dtor/accessor order. Gate 4497/4497, gate `.so` byte-identical; plain no-order
+2857 -> 2860 (exact addrs 3470 -> 3495). Next frontier `GameRecord`.
+Note: `_work/reconstructions/solarsystem_emission_order_w3745.md`.
