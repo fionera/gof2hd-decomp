@@ -122,10 +122,23 @@ The function stays byte-identical (`0xf94`, `byte_exact=True`), and the LSDA is
 now **656 B / 107 rows and row-for-row identical to the original** — verified
 by diffing the parsed call-site tables:
 
-```
-$ python3 /dev/shm/w4237/lsda.py <orig> _ZN13RecordHandler16recordStoreWriteEi
-$ python3 /dev/shm/w4237/lsda.py <ours> _ZN13RecordHandler16recordStoreWriteEi
-# both: ttype=0xff n=638 rows=107; diff of the row lists is empty
+```python
+import sys
+sys.path.insert(0, '_work/reconstructions')
+import exidx_table as E
+for tag, path in [('orig', ORIG), ('ours', OURS)]:
+    d = E.parse(path)
+    for r in d['entries']:
+        if r['name'] == '_ZN13RecordHandler16recordStoreWriteEi' and r['kind'] == 'EXT':
+            # Generic EHABI model: word0 is a prel31 personality, then the
+            # unwind opcodes.  nops is byte 3 of the first opcode word, so the
+            # LSDA starts at base + 4 + 4*(1+nops).
+            et = d['secs']['.ARM.extab']
+            base = et['off'] + (r['extab'] - et['addr'])
+            nops = d['data'][base + 7]
+            ls = E.parse_lsda(d['data'], base + 4 + 4 * (1 + nops))
+            print(tag, hex(ls['ttype_enc']), len(ls['table']))
+# both: ttype=0xff rows=107 (call-site table length 638); row lists identical
 ```
 
 This is a **+16 B** record growth, so it needs a −16 B compensation.
@@ -196,6 +209,56 @@ are exactly the records in the three shifted ranges: 346 in
 `createMission..createShip`, 77 in `createShip..recordStoreWrite`, 388 in
 `recordStoreWrite..LevelScript::process`, plus 11 boundary records).
 
+## Follow-up (w4237, measured but not landed): `Level::createShip` = 336 B
+
+While verifying the handoff, the real `createShip` cleanup shape was
+reconstructed and measured.  It makes the record **336 B / 57 rows /
+`ttypeEncoding=0xff`** — exactly the original — but it cannot be landed
+alone.  With `createMission` and `LevelScript::process` still +4 each, the
+section grows by 8 B, `.rodata` moves from `0x1c9e10` to `0x1c9e20`, and
+every PC-relative literal load in `.text` changes displacement.
+`byte_exact` drops 4498 -> 4040 even though the `.text` instruction bytes
+are unchanged; only the literal offsets move.  It must land together with
+the other two length fixes.
+
+The three source changes (all ordinary C++):
+
+1. Drop the artificial `try { player->setEmpData(...); } catch (...) {
+   __builtin_trap(); }`.  The original calls `setEmpData` with a plain
+   `blx` (`0xc03ee`) and has no type table (`ttypeEncoding=0xff`).
+2. Use real `new PlayerFighter(...)` / `new PlayerFixedObject(...)`
+   instead of `::operator new(sizeof(...))` plus placement new.  The
+   original allocates with `_Znwj` (`0xc0408`, `0xc06ca`) and has a
+   cleanup row for each constructor; placement new suppresses those two
+   rows.
+3. Rewrite the `switch (type)` as the original's if-chain in the order
+   the binary tests: `0x33`, `0x31`, `0x2c` (original `cmp #0x33` at
+   `0xc02b0`, `cmp #0x31` at `0xc02c0`, `cmp #0x2c` at `0xc02c6`).
+
+Measured on an isolated `Level.cpp` compile:
+
+| variant | text | extab |
+|---|---:|---:|
+| base (try/catch + placement new + switch) | 2764 (0xacc) | 328 (0x148) |
+| drop try/catch | 2776 (0xad8) | 316 (0x13c) |
+| + real `new` for both classes | 2768 (0xad0) | 336 (0x150) |
+| + if-chain order 0x33/0x31/0x2c | **2764 (0xacc)** | **336 (0x150)** |
+
+The last row is the original's `2764 B` body and `336 B` LSDA; the parsed
+table is `ttype=0xff n=315 rows=57`, and the call-site structure matches
+the original row-for-row (the landing-pad offsets differ only because the
+body is still 65.9 % matched).
+
+`createMission` was also investigated: the +4 B is one extra call-site
+row.  The original groups the five `getStation/getSystem/getStation/
+getSystem/distance` calls into one cleanup row and keeps the `race < 4 &&
+type == 13` `nextInt(2)` block out-of-line as a separate `lp=0` row; ours
+splits the distance block into three rows and inlines the `nextInt(2)`
+block.  Every source variant that merges the distance rows (inlining
+`SolarSystem *toSystem = ...` into the `distance` call) also changes the
+body size (`0x7cc -> 0x7c0/0x7d0`), which shifts the whole `.text` layout,
+so it cannot be landed without a compensating body-size change.
+
 ## Reproduction
 
 ```sh
@@ -211,7 +274,8 @@ cmake --build cmake-build-match --target drift   -j8   # 0 fields
 
 # per-record lengths / rows
 python3 _work/reconstructions/exidx_table.py --diff \
-  ../_work/bins/android_2.0.16_libgof2hdaa.so cmake-build-match/libgof2hdaa.so
+  /home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so \
+  cmake-build-match/libgof2hdaa.so
 ```
 
 ## Files changed
