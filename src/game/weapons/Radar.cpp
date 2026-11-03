@@ -1346,6 +1346,12 @@ asteroids_done:
     this->field_0x1bc = 0;
 
 }
+int Radar::getPlanetDockIndex() {
+    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
+        static_cast<intptr_t>(Globals::status->getSystem()));
+    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
+    return (*stations)[this->planetDockIndex];
+}
 void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
@@ -1493,12 +1499,6 @@ String Radar::calcDistance(float x1, float y1, float z1, float x2, float y2, flo
         text = String((int) ((unsigned int) distance / 125u)) + String(".", false) + text + String("km", false);
     }
     return text;
-}
-int Radar::getPlanetDockIndex() {
-    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
-        static_cast<intptr_t>(Globals::status->getSystem()));
-    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
-    return (*stations)[this->planetDockIndex];
 }
 KIPlayer *Radar::getLockedGasCloud() {
     return this->lockedGasCloud;
