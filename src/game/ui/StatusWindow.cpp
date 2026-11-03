@@ -99,6 +99,12 @@ StatusWindow::~StatusWindow() {
     this->detailLines = 0;
 }
 
+float StatusWindow::getRelativeScrollStartPos() {
+    int range = this->scrollOffset;
+    if (range > 0) return 0.0f;
+    return -(float) range / (float) this->contentHeight;
+}
+
 float StatusWindow::getRelativeScrollHeight() {
     if (this->viewportHeight > this->contentHeight)
         return 0.0f;
@@ -107,12 +113,6 @@ float StatusWindow::getRelativeScrollHeight() {
     if (this->scrollOffset < this->viewportHeight - this->contentHeight)
         return (float) (this->scrollOffset + this->contentHeight) / (float) this->contentHeight;
     return (float) this->viewportHeight / (float) this->contentHeight;
-}
-
-float StatusWindow::getRelativeScrollStartPos() {
-    int range = this->scrollOffset;
-    if (range > 0) return 0.0f;
-    return -(float) range / (float) this->contentHeight;
 }
 
 void StatusWindow::update(int frameTime) {
