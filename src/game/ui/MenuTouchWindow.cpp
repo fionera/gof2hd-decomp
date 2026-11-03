@@ -2753,7 +2753,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                     optionFlag(14) = old ^ 1;
                     this->optBtnDC->setAlwaysPressed(!old);
                     (*this->sliders)[3]->setHalfTransparent(!options[14]);
-                    Globals::sound->enableCategory(3, options[14]);
+                    Globals::sound->enableCategory(3, optionFlag(14));
                 }
                 *(float *) &options[0] = (*this->sliders)[1]->getValue();
                 *(float *) &options[4] = (*this->sliders)[2]->getValue();
@@ -2775,8 +2775,9 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                                 *(float *) &options[68] = quality <= 0.33f ? 0.0f : (quality <= 0.66f ? 0.5f : 1.0f);
                                 Globals::recordHandler->saveOptions();
                             } else {
-                                this->choiceWindow->set(*Globals::gameText->getText(
-                                    quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512)));
+                                String *text = Globals::gameText->getText(
+                                    quality <= 0.33f ? 510 : (quality <= 0.66f ? 511 : 512));
+                                this->choiceWindow->set(*text);
                                 this->messageShowing = 1;
                             }
                             break;
@@ -3233,9 +3234,7 @@ int MenuTouchWindow::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr
                 }
                 if (this->leaderboardDialogShowing) {
                     int r = this->choiceWindow->OnTouchEnd(x, y);
-                    if (r == 1)
-                        Globals::globals->reportLeaderboards();
-                    else if (r == 0)
+                    if (r == 1 || r == 0)
                         Globals::globals->reportLeaderboards();
                     this->messageShowing = 0;
                     this->leaderboardDialogShowing = 0;
