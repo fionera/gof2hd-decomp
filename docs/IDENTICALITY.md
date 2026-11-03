@@ -34,12 +34,12 @@ else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_arr
 byte-identical.
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
-`LevelScript::process` 52.0, `Status::missionCompleted` 57.7, `Radar::draw` 73.9,
-`Level::createShip` 74.1, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
-`Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.6, `Hud::draw` 89.1,
-`RocketGun::update` 86.9, `PlayerEgo::calcCollision` 87.3, `Level::createScene` 88.3,
-`Gun::calcCharacterCollision` 90.0, `Level::createMission` 90.7, `MenuTouchWindow::MenuTouchWindow`
-C1/C2 95.1, `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
+`LevelScript::process` 54.1, `Status::missionCompleted` 57.9, `Radar::draw` 73.9,
+`Level::createShip` 74.4, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
+`Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.6, `RocketGun::update` 86.9,
+`PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
+`Level::createMission` 90.7, `Hud::draw` 91.7, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.1,
+`SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
 `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
 See `_work/reconstructions/docs-wave92-w4269.md`.
 
@@ -255,10 +255,10 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (52.0%), `Status::missionCompleted` (57.7%),
-   `Radar::draw` (73.9%), `Level::createShip` (74.1%), `Generator::createMission` (74.3%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (54.1%), `Status::missionCompleted` (57.9%),
+   `Radar::draw` (73.9%), `Generator::createMission` (74.3%), `Level::createShip` (74.4%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
-   `Hud::draw` (89.1%).
+   `RocketGun::update` (86.9%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
 2. **`.rodata` content — resolved.** Size and base are exact and the content is now
