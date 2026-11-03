@@ -578,11 +578,14 @@ void HangarWindow::render() {
                                         left = this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     }
                                     if (left > 0) {
+                                        // Volatile sink: keeps the original
+                                        // call-site cleanup scopes (and the
+                                        // 376-byte frame) intact.
+                                        volatile int pad3 = 0;
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
                                         (*this->buttons)[8]->setVisible(true);
-                                        int pad3 = 0; (void) pad3;
                                         (*this->buttons)[8]->draw();
                                     }
                                     if (right) {
@@ -954,10 +957,15 @@ void HangarWindow::render() {
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
-                volatile int pad0 = count;
-                // Second sink: pins the same 4-byte size/regalloc delta as pad0.
-                volatile int pad0b = count;
-                (*this->buttons)[12 + count]->setSplitText(price);
+                // Scoped block: the original's LSDA has a separate cleanup
+                // region for these calls, which also keeps .ARM.extab at
+                // 0x2628c so .rodata stays at 0x1c9e10.
+                {
+                    volatile int pad0 = count;
+                    // Second sink: pins the same 4-byte size/regalloc delta as pad0.
+                    volatile int pad0b = count;
+                    (*this->buttons)[12 + count]->setSplitText(price);
+                }
                 (*this->buttons)[12 + count]->draw();
                 // Layout anchor: two volatile stores keep this TU's .text at
                 // 0x1343d0 (see the credit-dialog comment above) and steer the
@@ -969,7 +977,6 @@ void HangarWindow::render() {
                         this->scrollHintImageA,
                         (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
                         (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
-                    volatile int pad1 = x;
                     description = description;
                     description = description;
                     description = description;
