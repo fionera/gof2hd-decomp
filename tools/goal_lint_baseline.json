@@ -11,7 +11,7 @@
   "engine/render/Curve.cpp": 6,
   "game/ui/MenuTouchWindow.cpp": 3,
   "game/world/Level.cpp": 3,
-  "platform/android/NdkAutosave.cpp": 2
+  "platform/android/NdkHooks.cpp": 2
  },
  "void_ptr": {
   "game/ui/MenuTouchWindow.cpp": 5
