@@ -5199,3 +5199,10 @@ Wave-97 section-order pass: `StatusWindow` accessor order (`w3745`) — StartPos
 Gate 4497/4497. Note: `_work/reconstructions/statuswindow_accessor_order_w3745.md`.
 Wave-97 section-order pass: `TargetFollowCamera` emission order (`w3745`) — original dynsym
 order. Plain no-order 2866 -> 2954 (addresses 3510 -> 3709, prefix 3504 -> 3557). Gate 4497/4497.
+Wave-97 function pass: `Level::createShip` 73.5 -> 73.9% (`w3721`) by restoring the literal-pool
+order for race-0 type-14 hull boxes. 2764 B, gate 4497/4497.
+Wave-97 function pass: `StarMap::draw` 95.6 -> **97.5%** (`w3732`) with if-before-line, width
+local, canvas local, and Globals final. 2644 B, gate 4497/4497.
+Wave-97 section-order pass: `Mission` emission order (`w3745`) — setFailed/hasFailed and
+setWon/hasWon in original dynsym order. Plain no-order addresses 3709 -> 3713 (prefix 3557 -> 3615).
+Gate 4497/4497.

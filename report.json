@@ -49,7 +49,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.5,
+   "pct": 73.9,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -73,7 +73,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 80.4,
+   "pct": 78.8,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -185,7 +185,7 @@
   },
   {
    "name": "_ZN7StarMap4drawEv",
-   "pct": 95.6,
+   "pct": 97.5,
    "byte": false,
    "linked": false,
    "osize": 2644,
