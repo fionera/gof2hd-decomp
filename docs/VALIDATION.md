@@ -37,20 +37,15 @@ in input order) and is expected to converge only as object contents/membership c
 knob to tune directly.
 
 This is a **single, plain link** — no second pass, no `--version-script`, no `__attribute__`, no
-`asm`. Its full flag set, stated honestly: `--section-ordering-file` (an approved deviation that
-reproduces the original's interleaved .text function order from the original's symbol addresses;
-local functions, absent from the original's .dynsym, are slotted after their predecessor in their
-own object, i.e. source order — the original was a plain input-order link; three groups are
-listed explicitly because an ordering file disables gold's default `.text.startup`-first sort:
-`.text.startup` (the three `_GLOBAL__sub_I_*` ctors) and crtbegin's renamed `.text.crtbegin`
-come first, and the plain `.text` group (libcrypto's sha256/armv4cpuid objects, libgcc) is
-placed at the original's block start (one ZIP TU earlier, so the following 32-byte-aligned
-libc++abi section needs no padding). A trailing `*` keeps archive-local sections that the
-original's `.dynsym` cannot name after the listed ones; without it gold gives them ordering
-index 0 and they sort to the front of `.text`), and gold's default shared-library handling of
-undefined imports (no `--unresolved-symbols` switch; undecompiled engine internals import as
-shims, and the import set is pinned by the ratchet, so a typo'd callee cannot slip in as a
-silent new import).
+`asm`, and **no `--section-ordering-file`**. The source tree reproduces the original TU membership
+and within-TU function order, so the plain object input order (recovered by
+`tools/gen_link_order.py`) places every one of the 4,524 exported functions at its original
+address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx` and the dynamic tables are
+size- and base-exact. The only remaining `.text`-layout input is the object link order itself.
+Gold's default shared-library handling of undefined imports is used (no `--unresolved-symbols`
+switch; undecompiled engine internals import as shims, and the import set is pinned by the
+ratchet, so a typo'd callee cannot slip in as a silent new import). See
+`_work/reconstructions/link_order_tu_reconstruction_w4210.md`.
 `--allow-multiple-definition` was removed after it was found masking a real triplicate definition
 of the Vector/Matrix operators — duplicate strong definitions are hard link errors now. Any symbol
 the original does not export but we do is removed by reshaping the C++, or recorded below as an

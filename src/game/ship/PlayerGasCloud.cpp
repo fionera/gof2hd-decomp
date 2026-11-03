@@ -101,8 +101,12 @@ PlayerGasCloud::~PlayerGasCloud() {
     this->modelGeometry = 0;
 }
 
-void PlayerGasCloud::translate(const Vector &v) {
-    this->geometry->translate(v);
+void PlayerGasCloud::setSparkInSight(int index, bool inSight) {
+    Array<AEGeometry *> *arr = this->sparkGeometries;
+    if (arr == 0)
+        return;
+    if ((unsigned int) index < arr->size())
+        (*this->sparkInSight)[index] = inSight;
 }
 
 bool PlayerGasCloud::isSparkAlive(int index) {
@@ -114,18 +118,6 @@ bool PlayerGasCloud::isSparkAlive(int index) {
     return -1500 < (*this->sparkTimers)[index];
 }
 
-void PlayerGasCloud::setSparkInSight(int index, bool inSight) {
-    Array<AEGeometry *> *arr = this->sparkGeometries;
-    if (arr == 0)
-        return;
-    if ((unsigned int) index < arr->size())
-        (*this->sparkInSight)[index] = inSight;
-}
-
-void PlayerGasCloud::setPosition(const Vector &position) {
-    this->geometry->setPosition(position);
-}
-
 void *PlayerGasCloud::getSparks() { // lint: void_ptr (exported method return type baked into ABI)
     // lint: void_ptr (exported method return type baked into ABI)
     return this->sparkGeometries;
@@ -135,8 +127,12 @@ Vector PlayerGasCloud::getPosition() {
     return this->geometry->getPosition();
 }
 
-uint8_t PlayerGasCloud::hasExploded() {
-    return this->exploded;
+void PlayerGasCloud::setPosition(const Vector &position) {
+    this->geometry->setPosition(position);
+}
+
+void PlayerGasCloud::translate(const Vector &v) {
+    this->geometry->translate(v);
 }
 
 void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
@@ -182,6 +178,10 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
         ArrayAdd(false, *this->sparkInSight);
         ArrayAdd(1.0f, *this->sparkScale);
     }
+}
+
+uint8_t PlayerGasCloud::hasExploded() {
+    return this->exploded;
 }
 
 void PlayerGasCloud::update(int dt) {

@@ -1,6 +1,46 @@
 #include "engine/render/ParticleSettings.h"
 #include "engine/render/ParticleSettingsRef.h"
 
+
+// Rescales the live set (ParticleSettingsRef::cur) from the pristine copy (ParticleSettingsRef::init).
+void ParticleSettings::multiplyAll(float scale) {
+    ParticleSettings &cur = ParticleSettingsRef::cur;
+    ParticleSettings &init = ParticleSettingsRef::init;
+    float inverse = 1.0f / scale;
+    float alphaScale = (float) (1.0 / ((scale + 1.0f) * 0.5));
+    for (int i = 0; i < 48; i++) {
+        SetDefinition &dst = cur.sets[i];
+        SetDefinition &src = init.sets[i];
+        float lifetime;
+        if (dst.flags & 0x20) {
+            lifetime = src.flLifetime * scale;
+        } else if (dst.flags & 0x10) {
+            lifetime = inverse * src.flLifetime;
+        } else {
+            continue;
+        }
+        dst.flLifetime = lifetime;
+        uint32_t alpha0 = (uint32_t) (alphaScale * (float) (int) (src.color0 & 0xff));
+        uint32_t alpha1 = (uint32_t) (alphaScale * (float) (int) (src.color1 & 0xff));
+        if (alpha0 > 0xff) alpha0 = 0xff;
+        if (alpha1 > 0xff) alpha1 = 0xff;
+        dst.color0 = alpha0 | (src.color0 & 0xffffff00);
+        dst.color1 = alpha1 | (src.color1 & 0xffffff00);
+        dst.count = (int) ((float) src.count * scale);
+    }
+}
+
+// Blends two pristine sets (ParticleSettingsRef::init) into the live set (ParticleSettingsRef::cur).
+void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out) {
+    SetDefinition &pa = ParticleSettingsRef::init.sets[a];
+    SetDefinition &pb = ParticleSettingsRef::init.sets[b];
+    SetDefinition &po = ParticleSettingsRef::cur.sets[out];
+    float omt = 1.0f - t;
+    po.lifetime = (int) (omt * (float) pa.lifetime + (float) pb.lifetime * t);
+    po.lifeBase = omt * pa.lifeBase + pb.lifeBase * t;
+    po.endSize = omt * pa.endSize + pb.endSize * t;
+    po.velDir = omt * pa.velDir + pb.velDir * t;
+}
 ParticleSettings::ParticleSettings() {
 }
 
@@ -654,46 +694,6 @@ void ParticleSettings::init() {
     this->sets[47].uvV0 = 0.0f;
     this->sets[47].uvU1 = 0.25f;
     this->sets[47].uvV1 = 0.25f;
-}
-
-// Rescales the live set (ParticleSettingsRef::cur) from the pristine copy (ParticleSettingsRef::init).
-void ParticleSettings::multiplyAll(float scale) {
-    ParticleSettings &cur = ParticleSettingsRef::cur;
-    ParticleSettings &init = ParticleSettingsRef::init;
-    float inverse = 1.0f / scale;
-    float alphaScale = (float) (1.0 / ((scale + 1.0f) * 0.5));
-    for (int i = 0; i < 48; i++) {
-        SetDefinition &dst = cur.sets[i];
-        SetDefinition &src = init.sets[i];
-        float lifetime;
-        if (dst.flags & 0x20) {
-            lifetime = src.flLifetime * scale;
-        } else if (dst.flags & 0x10) {
-            lifetime = inverse * src.flLifetime;
-        } else {
-            continue;
-        }
-        dst.flLifetime = lifetime;
-        uint32_t alpha0 = (uint32_t) (alphaScale * (float) (int) (src.color0 & 0xff));
-        uint32_t alpha1 = (uint32_t) (alphaScale * (float) (int) (src.color1 & 0xff));
-        if (alpha0 > 0xff) alpha0 = 0xff;
-        if (alpha1 > 0xff) alpha1 = 0xff;
-        dst.color0 = alpha0 | (src.color0 & 0xffffff00);
-        dst.color1 = alpha1 | (src.color1 & 0xffffff00);
-        dst.count = (int) ((float) src.count * scale);
-    }
-}
-
-// Blends two pristine sets (ParticleSettingsRef::init) into the live set (ParticleSettingsRef::cur).
-void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out) {
-    SetDefinition &pa = ParticleSettingsRef::init.sets[a];
-    SetDefinition &pb = ParticleSettingsRef::init.sets[b];
-    SetDefinition &po = ParticleSettingsRef::cur.sets[out];
-    float omt = 1.0f - t;
-    po.lifetime = (int) (omt * (float) pa.lifetime + (float) pb.lifetime * t);
-    po.lifeBase = omt * pa.lifeBase + pb.lifeBase * t;
-    po.endSize = omt * pa.endSize + pb.endSize * t;
-    po.velDir = omt * pa.velDir + pb.velDir * t;
 }
 
 float ParticleSettings::particleMultiply = 1.0f;

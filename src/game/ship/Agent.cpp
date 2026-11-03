@@ -2,236 +2,6 @@
 #include "game/core/String.h"
 #include "game/mission/Mission.h"
 
-String Agent::getStationName() {
-    return String(this->stationName, false);
-}
-
-bool Agent::hasAcceptedOffer() {
-    return this->offerAccepted;
-}
-
-bool Agent::isStoryAgent() {
-    return this->category == 0;
-}
-
-Array<AbyssEngine::String *> *Agent::getWingmanNames() {
-    return this->wingmanNames;
-}
-
-int *Agent::getImageParts() {
-    return this->imageParts;
-}
-
-Mission *Agent::getMission() {
-    return this->mission;
-}
-
-void Agent::setMission(Mission *mission) {
-    this->mission = mission;
-}
-
-int Agent::getSellModIndex() {
-    return this->sellModIndex;
-}
-
-void Agent::setStationName(String src) {
-    this->stationName = src;
-}
-
-String Agent::getMissionString() {
-    return String(this->missionString, false);
-}
-
-bool Agent::isMale() {
-    return this->male;
-}
-
-String Agent::getName() {
-    return this->name;
-}
-
-static const int kModPriceTable[4] = {20, 30, 40, 20};
-
-int Agent::getModPricePercentage() {
-    uint32_t i = this->sellModIndex;
-    if (i < 4)
-        return kModPriceTable[i];
-    return 0x28;
-}
-
-void Agent::setOfferAccepted(bool v) {
-    this->offerAccepted = v;
-}
-
-void Agent::nextEvent() {
-    this->eventCount = this->eventCount + 1;
-}
-
-bool Agent::hasReward() {
-    return this->rewardAtNextChat;
-}
-
-void Agent::setImageParts(int *parts) {
-    this->imageParts = parts;
-}
-
-bool Agent::isKnown() {
-    return this->eventCount > 0;
-}
-
-bool Agent::isGenericAgent() {
-    return this->category == 1;
-}
-
-int Agent::getType() {
-    return this->category;
-}
-
-String Agent::getSystemName() {
-    return String(this->systemName, false);
-}
-
-void Agent::giveRewardAtNextChat(bool v) {
-    this->rewardAtNextChat = v;
-}
-
-void Agent::setSellItemData(int index, int quantity, int price) {
-    this->sellItemIndex = index;
-    this->sellItemQuantity = quantity;
-    this->sellItemPrice = price;
-}
-
-void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
-    delete this->wingman1;
-    this->wingman1 = nullptr;
-    delete this->wingman2;
-    this->wingman2 = nullptr;
-    if (this->wingmanNames != nullptr) {
-        delete this->wingmanNames;
-        this->wingmanNames = nullptr;
-    }
-
-    this->wingmanNames = new Array<AbyssEngine::String *>();
-    ArrayAdd(new String(this->name), *(this->wingmanNames));
-    this->wingmanCount = 0;
-    if (param == nullptr)
-        return;
-
-    if (param->size() != 0) {
-        String *w0 = (*param)[0];
-        if (w0 != nullptr) {
-            this->wingman1 = w0;
-            this->wingmanCount = 1;
-            ArrayAdd(w0, *(this->wingmanNames));
-        }
-        if (param->size() >= 2) {
-            String *w1 = (*param)[1];
-            if (w1 != nullptr) {
-                this->wingman2 = w1;
-                this->wingmanCount += 1;
-                ArrayAdd(w1, *(this->wingmanNames));
-            }
-        }
-    }
-
-    delete param;
-}
-
-String Agent::getWingmanName(int idx) {
-    String *src;
-    if (idx == 0)
-        src = &this->name;
-    else if (idx == 1)
-        src = this->wingman1;
-    else
-        src = this->wingman2;
-    return String(*src, false);
-}
-
-void Agent::setSystemName(String src) {
-    this->systemName = src;
-}
-
-Agent::~Agent() {
-    delete[] this->imageParts;
-    this->imageParts = nullptr;
-    if (this->wingman1 != nullptr) {
-        delete this->wingman1;
-        this->wingman1 = nullptr;
-    }
-}
-
-void Agent::setMissionString(String src) {
-    this->missionString = String(src, false);
-}
-
-int Agent::getStation() {
-    return this->station;
-}
-
-int Agent::getSystem() {
-    return this->system;
-}
-
-int Agent::getRace() {
-    return this->race;
-}
-
-int Agent::getIndex() {
-    return (int) this->type;
-}
-
-int Agent::getCosts() {
-    return this->costs;
-}
-
-void Agent::setCosts(int costs) {
-    this->costs = costs;
-}
-
-int Agent::getOffer() {
-    return this->offer;
-}
-
-void Agent::setOffer(int offer) {
-    this->offer = offer;
-}
-
-int Agent::getEvent() {
-    return this->eventCount;
-}
-
-void Agent::setEvent(int event) {
-    this->eventCount = event;
-}
-
-int Agent::getSellItemIndex() {
-    return this->sellItemIndex;
-}
-
-int Agent::getSellItemQuantity() {
-    return this->sellItemQuantity;
-}
-
-int Agent::getSellItemPrice() {
-    return this->sellItemPrice;
-}
-
-void Agent::setSellItemPrice(int price) {
-    this->sellItemPrice = price;
-}
-
-int Agent::getSellSystemIndex() {
-    return this->sellSystemIndex;
-}
-
-int Agent::getSellBlueprintIndex() {
-    return this->sellBlueprintIndex;
-}
-
-int Agent::getWingmanFriendsCount() {
-    return this->wingmanCount;
-}
 
 Agent::Agent(int kind, String name, int station, int system, int race,
              bool male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
@@ -275,4 +45,234 @@ Agent::Agent(int kind, String name, int station, int system, int race,
     else if (kind == 0x1a)
         this->offer = 10;
     this->sellModIndex = sellModIndex;
+}
+
+Agent::~Agent() {
+    delete[] this->imageParts;
+    this->imageParts = nullptr;
+    if (this->wingman1 != nullptr) {
+        delete this->wingman1;
+        this->wingman1 = nullptr;
+    }
+}
+
+int Agent::getIndex() {
+    return (int) this->type;
+}
+
+String Agent::getName() {
+    return this->name;
+}
+
+int Agent::getType() {
+    return this->category;
+}
+
+int Agent::getOffer() {
+    return this->offer;
+}
+
+int Agent::getRace() {
+    return this->race;
+}
+
+int Agent::getSystem() {
+    return this->system;
+}
+
+int Agent::getStation() {
+    return this->station;
+}
+
+bool Agent::isMale() {
+    return this->male;
+}
+
+int Agent::getEvent() {
+    return this->eventCount;
+}
+
+void Agent::setEvent(int event) {
+    this->eventCount = event;
+}
+
+static const int kModPriceTable[4] = {20, 30, 40, 20};
+
+void Agent::nextEvent() {
+    this->eventCount = this->eventCount + 1;
+}
+
+bool Agent::isStoryAgent() {
+    return this->category == 0;
+}
+
+bool Agent::isGenericAgent() {
+    return this->category == 1;
+}
+
+void Agent::setImageParts(int *parts) {
+    this->imageParts = parts;
+}
+
+int *Agent::getImageParts() {
+    return this->imageParts;
+}
+
+void Agent::setOffer(int offer) {
+    this->offer = offer;
+}
+
+void Agent::setMission(Mission *mission) {
+    this->mission = mission;
+}
+
+Mission *Agent::getMission() {
+    return this->mission;
+}
+
+bool Agent::isKnown() {
+    return this->eventCount > 0;
+}
+
+void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
+    delete this->wingman1;
+    this->wingman1 = nullptr;
+    delete this->wingman2;
+    this->wingman2 = nullptr;
+    if (this->wingmanNames != nullptr) {
+        delete this->wingmanNames;
+        this->wingmanNames = nullptr;
+    }
+
+    this->wingmanNames = new Array<AbyssEngine::String *>();
+    ArrayAdd(new String(this->name), *(this->wingmanNames));
+    this->wingmanCount = 0;
+    if (param == nullptr)
+        return;
+
+    if (param->size() != 0) {
+        String *w0 = (*param)[0];
+        if (w0 != nullptr) {
+            this->wingman1 = w0;
+            this->wingmanCount = 1;
+            ArrayAdd(w0, *(this->wingmanNames));
+        }
+        if (param->size() >= 2) {
+            String *w1 = (*param)[1];
+            if (w1 != nullptr) {
+                this->wingman2 = w1;
+                this->wingmanCount += 1;
+                ArrayAdd(w1, *(this->wingmanNames));
+            }
+        }
+    }
+
+    delete param;
+}
+
+int Agent::getSellSystemIndex() {
+    return this->sellSystemIndex;
+}
+
+int Agent::getSellBlueprintIndex() {
+    return this->sellBlueprintIndex;
+}
+
+void Agent::setCosts(int costs) {
+    this->costs = costs;
+}
+
+int Agent::getCosts() {
+    return this->costs;
+}
+
+int Agent::getWingmanFriendsCount() {
+    return this->wingmanCount;
+}
+
+String Agent::getWingmanName(int idx) {
+    String *src;
+    if (idx == 0)
+        src = &this->name;
+    else if (idx == 1)
+        src = this->wingman1;
+    else
+        src = this->wingman2;
+    return String(*src, false);
+}
+
+Array<AbyssEngine::String *> *Agent::getWingmanNames() {
+    return this->wingmanNames;
+}
+
+String Agent::getMissionString() {
+    return String(this->missionString, false);
+}
+
+void Agent::setMissionString(String src) {
+    this->missionString = String(src, false);
+}
+
+int Agent::getSellItemIndex() {
+    return this->sellItemIndex;
+}
+
+int Agent::getSellItemQuantity() {
+    return this->sellItemQuantity;
+}
+
+int Agent::getSellItemPrice() {
+    return this->sellItemPrice;
+}
+
+void Agent::setSellItemPrice(int price) {
+    this->sellItemPrice = price;
+}
+
+void Agent::setSellItemData(int index, int quantity, int price) {
+    this->sellItemIndex = index;
+    this->sellItemQuantity = quantity;
+    this->sellItemPrice = price;
+}
+
+bool Agent::hasAcceptedOffer() {
+    return this->offerAccepted;
+}
+
+void Agent::setOfferAccepted(bool v) {
+    this->offerAccepted = v;
+}
+
+bool Agent::hasReward() {
+    return this->rewardAtNextChat;
+}
+
+void Agent::giveRewardAtNextChat(bool v) {
+    this->rewardAtNextChat = v;
+}
+String Agent::getStationName() {
+    return String(this->stationName, false);
+}
+
+void Agent::setStationName(String src) {
+    this->stationName = src;
+}
+
+String Agent::getSystemName() {
+    return String(this->systemName, false);
+}
+
+void Agent::setSystemName(String src) {
+    this->systemName = src;
+}
+
+int Agent::getSellModIndex() {
+    return this->sellModIndex;
+}
+
+int Agent::getModPricePercentage() {
+    uint32_t i = this->sellModIndex;
+    if (i < 4)
+        return kModPriceTable[i];
+    return 0x28;
 }

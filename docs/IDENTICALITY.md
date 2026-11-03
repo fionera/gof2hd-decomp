@@ -128,10 +128,10 @@ The original build is now pinned by evidence, not by A/B alone:
   sentinel for the empty plain `.text` section every `-ffunction-sections` object carries. A
   rebuild without the flag produces only 52. The original was linked **without** a
   section-ordering file: its `.text` is grouped by original TU (2,231 mapped functions, 105 TUs,
-  104 transitions, 0 interleaving). Our ordering file is needed only because 144 of 195 objects
-  have *any* exported symbol interleaved with another object, but only 1 of 193 objects has a
-  strong (`T`) function interleaved (the `NdkHooks`/`NdkAutosave` pair); the 144 figure is
-  dominated by weak inline copies. It disappears when TU membership converges. See
+  104 transitions, 0 interleaving). The current tree reproduces that with a plain input-order
+  link: after the w4210 TU/function-order reconstruction (including the `BSphere` -> `Vector`
+  merge), all 4,524 exported functions land at their original addresses and no ordering file is
+  used. See `_work/reconstructions/link_order_tu_reconstruction_w4210.md`,
   `_work/reconstructions/ffunction_sections_and_order_file.md` and
   `_work/reconstructions/tu_membership_interleaving_w3613.md`.
 * **`-fdata-sections` was NOT used.** The original's `.rodata`, `.data` and

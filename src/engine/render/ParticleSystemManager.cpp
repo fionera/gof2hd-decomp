@@ -21,16 +21,6 @@ ParticleSystemManager::ParticleSystemManager(
     construct();
 }
 
-ParticleSystemManager::ParticleSystemManager(
-    PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
-    AbyssEngine::BlendMode spriteBlend, bool spriteFlag,
-    unsigned short meshTex, AbyssEngine::BlendMode meshBlend, bool meshFlag)
-    : canvas(canvas), cameraSet(cameraSet),
-      spriteTextureId(0xffff), spriteUvId(spriteTex), spriteBlendMode(spriteBlend), spriteUsesExtra(spriteFlag),
-      meshTextureId(0xffff), meshUvId(meshTex), meshBlendMode(meshBlend), meshUsesExtra(meshFlag) {
-    construct();
-}
-
 void ParticleSystemManager::construct() {
     this->accumulatedDt = 0;
     this->enabled = 0;
@@ -42,6 +32,16 @@ void ParticleSystemManager::construct() {
     this->meshParticleCount = 0;
     this->flags = 1;
     this->flagsHigh = 1;
+}
+
+ParticleSystemManager::ParticleSystemManager(
+    PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
+    AbyssEngine::BlendMode spriteBlend, bool spriteFlag,
+    unsigned short meshTex, AbyssEngine::BlendMode meshBlend, bool meshFlag)
+    : canvas(canvas), cameraSet(cameraSet),
+      spriteTextureId(0xffff), spriteUvId(spriteTex), spriteBlendMode(spriteBlend), spriteUsesExtra(spriteFlag),
+      meshTextureId(0xffff), meshUvId(meshTex), meshBlendMode(meshBlend), meshUsesExtra(meshFlag) {
+    construct();
 }
 
 void ParticleSystemManager::init() {
@@ -280,20 +280,6 @@ void ParticleSystemManager::renderSprites() {
             static_cast<AbyssEngine::BlendMode>(this->spriteBlendMode));
 }
 
-void ParticleSystemManager::release() {
-    releaseSprites();
-    this->canvas = nullptr;
-    ArrayReleaseClasses(this->meshSystems);
-}
-
-void ParticleSystemManager::releaseSprites() {
-    ArrayReleaseClasses(this->spriteSystems);
-    if (this->spriteSystemId != 0xffffffff) {
-        this->canvas->ReleaseSpriteSystemResource(this->spriteSystemId);
-        this->spriteSystemId = 0xffffffff;
-    }
-}
-
 void ParticleSystemManager::renderPost3d() {
 }
 
@@ -309,6 +295,24 @@ void ParticleSystemManager::reset() {
             p->reset();
     }
 }
+
+
+void ParticleSystemManager::release() {
+    releaseSprites();
+    this->canvas = nullptr;
+    ArrayReleaseClasses(this->meshSystems);
+}
+
+
+void ParticleSystemManager::releaseSprites() {
+    ArrayReleaseClasses(this->spriteSystems);
+    if (this->spriteSystemId != 0xffffffff) {
+        this->canvas->ReleaseSpriteSystemResource(this->spriteSystemId);
+        this->spriteSystemId = 0xffffffff;
+    }
+}
+
+
 
 void ParticleSystemManager::emitManual(int handle, AbyssEngine::AEMath::Vector const &pos,
                                                      int ret, AbyssEngine::AEMath::Vector const &velocity,

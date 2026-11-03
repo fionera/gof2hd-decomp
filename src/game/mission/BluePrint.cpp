@@ -26,30 +26,6 @@ BluePrint::BluePrint(int item) {
     remainingBatch = batchMultiplier;
 }
 
-int BluePrint::getAutoCompletionPrice() {
-    if (itemIndex == 0xd2)
-        return getIngredientsValue() + 0x1e8480;
-    int maxPrice = (*Globals::items)[itemIndex]->getMaxPrice();
-    return (int) ((float) (batchMultiplier * maxPrice) * 1.25f);
-}
-
-int BluePrint::getRemainingAmount(int item) {
-    Array<int> *il = getIngredientList();
-    for (uint32_t i = 0; i < ingredientCounters->size(); i++) {
-        if ((*il)[i] == item)
-            return (*ingredientCounters)[i];
-    }
-    return 0;
-}
-
-bool BluePrint::isEmpty() {
-    return spentValue == 0;
-}
-
-AbyssEngine::String BluePrint::getStationName() {
-    return AbyssEngine::String(stationName, false);
-}
-
 BluePrint::~BluePrint() {
     if (ingredientCounters != nullptr) {
         ArrayRelease(*ingredientCounters);
@@ -57,84 +33,6 @@ BluePrint::~BluePrint() {
     }
     ingredientCounters = nullptr;
 }
-
-void BluePrint::complete() {
-    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
-        (*ingredientCounters)[i] = 0;
-}
-
-int BluePrint::getCurrentAmount(int item) {
-    return getTotalAmount(item) - getRemainingAmount(item);
-}
-
-bool BluePrint::isCompleted() {
-    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
-        if ((*ingredientCounters)[i] >= 1)
-            return false;
-    return true;
-}
-
-int BluePrint::getIndex() { return itemIndex; }
-
-int BluePrint::getStationIndex() { return stationIndex; }
-
-int BluePrint::getQuantity() { return remainingBatch; }
-
-bool BluePrint::isUnlocked() { return locked; }
-
-void BluePrint::unlock() {
-    locked = 1;
-}
-
-void BluePrint::reset() {
-    productionCount += 1;
-    Globals::status->incGoodsProduced(1);
-    Array<int> *ql = getQuantityList();
-    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
-        (*ingredientCounters)[i] = (*ql)[i];
-    stationIndex = -1;
-    remainingBatch = batchMultiplier;
-    spentValue = 0;
-}
-
-void BluePrint::lock() {
-    locked = 1;
-}
-
-int BluePrint::getTotalAmount(int item) {
-    Array<int> *il = getIngredientList();
-    Array<int> *ql = getQuantityList();
-    for (uint32_t i = 0; i < ql->size(); i++) {
-        if ((*il)[i] == item)
-            return (*ql)[i];
-    }
-    return 0;
-}
-
-Array<int> *BluePrint::getIngredientList() {
-    return (Array<int> *) (*Globals::items)[itemIndex]->getIngredients();
-}
-
-Array<int> *BluePrint::getQuantityList() {
-    return (Array<int> *) (*Globals::items)[itemIndex]->getQuantities();
-}
-
-int BluePrint::getIngredientsValue() {
-    Array<int> *il = getIngredientList();
-    if (il == nullptr)
-        return 0;
-    int total = 0;
-    for (uint32_t i = 0; i < il->size(); i++) {
-        int price = (*Globals::items)[(*il)[i]]->getSinglePrice();
-        total += (*ingredientCounters)[i] * price;
-    }
-    return total;
-}
-
-int BluePrint::getBaseQuantity() { return batchMultiplier; }
-
-int BluePrint::getMoneySpent() { return spentValue; }
-void BluePrint::setMoneySpent(int value) { spentValue = value; }
 
 void BluePrint::addItem(Item *item, int amount, int station) {
     if (amount == 0)
@@ -166,6 +64,54 @@ set_station:
     return;
 }
 
+Array<int> *BluePrint::getIngredientList() {
+    return (Array<int> *) (*Globals::items)[itemIndex]->getIngredients();
+}
+
+void BluePrint::complete() {
+    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
+        (*ingredientCounters)[i] = 0;
+}
+
+bool BluePrint::isCompleted() {
+    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
+        if ((*ingredientCounters)[i] >= 1)
+            return false;
+    return true;
+}
+
+int BluePrint::getIndex() { return itemIndex; }
+
+int BluePrint::getMoneySpent() { return spentValue; }
+void BluePrint::setMoneySpent(int value) { spentValue = value; }
+
+Array<int> *BluePrint::getQuantityList() {
+    return (Array<int> *) (*Globals::items)[itemIndex]->getQuantities();
+}
+
+int BluePrint::getTotalAmount(int item) {
+    Array<int> *il = getIngredientList();
+    Array<int> *ql = getQuantityList();
+    for (uint32_t i = 0; i < ql->size(); i++) {
+        if ((*il)[i] == item)
+            return (*ql)[i];
+    }
+    return 0;
+}
+
+int BluePrint::getCurrentAmount(int item) {
+    return getTotalAmount(item) - getRemainingAmount(item);
+}
+
+int BluePrint::getRemainingAmount(int item) {
+    Array<int> *il = getIngredientList();
+    for (uint32_t i = 0; i < ingredientCounters->size(); i++) {
+        if ((*il)[i] == item)
+            return (*ingredientCounters)[i];
+    }
+    return 0;
+}
+
 float BluePrint::getCompletionRate() {
     Array<int> *quantity = getQuantityList();
     float rate = 0.0f;
@@ -176,4 +122,58 @@ float BluePrint::getCompletionRate() {
         rate += frac / (float) ingredientCounters->size();
     }
     return rate;
+}
+
+int BluePrint::getIngredientsValue() {
+    Array<int> *il = getIngredientList();
+    if (il == nullptr)
+        return 0;
+    int total = 0;
+    for (uint32_t i = 0; i < il->size(); i++) {
+        int price = (*Globals::items)[(*il)[i]]->getSinglePrice();
+        total += (*ingredientCounters)[i] * price;
+    }
+    return total;
+}
+
+int BluePrint::getAutoCompletionPrice() {
+    if (itemIndex == 0xd2)
+        return getIngredientsValue() + 0x1e8480;
+    int maxPrice = (*Globals::items)[itemIndex]->getMaxPrice();
+    return (int) ((float) (batchMultiplier * maxPrice) * 1.25f);
+}
+
+int BluePrint::getBaseQuantity() { return batchMultiplier; }
+
+int BluePrint::getStationIndex() { return stationIndex; }
+
+AbyssEngine::String BluePrint::getStationName() {
+    return AbyssEngine::String(stationName, false);
+}
+
+int BluePrint::getQuantity() { return remainingBatch; }
+
+bool BluePrint::isUnlocked() { return locked; }
+
+void BluePrint::unlock() {
+    locked = 1;
+}
+
+void BluePrint::lock() {
+    locked = 1;
+}
+
+bool BluePrint::isEmpty() {
+    return spentValue == 0;
+}
+
+void BluePrint::reset() {
+    productionCount += 1;
+    Globals::status->incGoodsProduced(1);
+    Array<int> *ql = getQuantityList();
+    for (uint32_t i = 0; i < ingredientCounters->size(); i++)
+        (*ingredientCounters)[i] = (*ql)[i];
+    stationIndex = -1;
+    remainingBatch = batchMultiplier;
+    spentValue = 0;
 }
