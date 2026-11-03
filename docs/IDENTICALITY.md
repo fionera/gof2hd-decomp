@@ -20,9 +20,13 @@ The build is **CMake + NDK r18b** (not ndk-build): clang 7.0.2 with
 `--unresolved-symbols` switch. `tools/sodiff_allow.txt` is empty.
 
 All **27 section headers are byte-identical**. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
-`.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are
-size- and base-exact; `.rel.plt` content is byte-identical. The only differing section bytes are
-`.text` 107,135; `.ARM.extab` 108,469; `.ARM.exidx` 839; `.note.gnu.build-id` 20. Everything
+`.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
+`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but currently `0x26290`, 8 bytes
+short of the original's `0x26298`: the w4270 HangarWindow pass reverted the `padS` EH anchor
+(78.8 -> 80.6% body) and the missing 8-byte row is the known residual (see
+`_work/reconstructions/hangarwindow-render-w4270.md`). The only differing section bytes are
+`.text` 106,090; `.ARM.exidx` 1,647; `.note.gnu.build-id` 20 (plus the `.ARM.extab` 8-byte size
+delta). Everything
 else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
 `.fini_array`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`,
 `.comment`, `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`, `.shstrtab`) is
@@ -31,11 +35,11 @@ byte-identical.
 The 25 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
 `LevelScript::process` 52.0, `Status::missionCompleted` 57.7, `Radar::draw` 73.9,
 `Level::createShip` 74.1, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
-`HangarWindow::render` 80.6, `Globals::Globals` C1/C2 80.5, `Hud::draw` 86.2,
+`Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.6, `Hud::draw` 89.1,
 `RocketGun::update` 86.9, `PlayerEgo::calcCollision` 87.3, `Level::createScene` 88.3,
 `Gun::calcCharacterCollision` 90.0, `Level::createMission` 90.7, `MenuTouchWindow::MenuTouchWindow`
 C1/C2 94.2, `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
-`MenuTouchWindow::OnTouchEnd` 97.9, `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
+`MenuTouchWindow::OnTouchEnd` 99.9, `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
 See `_work/reconstructions/docs-wave92-w4269.md`.
 
 ## Update 2026-10-26 — historical (superseded by the update above)

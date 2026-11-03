@@ -80,14 +80,6 @@
    "usize": 8080
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 78.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN7GlobalsC1Ev",
    "pct": 80.5,
    "byte": false,
@@ -104,12 +96,12 @@
    "usize": 612
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 86.2,
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 80.6,
    "byte": false,
    "linked": false,
-   "osize": 9332,
-   "usize": 9332
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN9RocketGun6updateEi",
@@ -134,6 +126,14 @@
    "linked": false,
    "osize": 2252,
    "usize": 2252
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 89.1,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
@@ -184,14 +184,6 @@
    "usize": 1896
   },
   {
-   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
-   "pct": 97.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8132,
-   "usize": 8132
-  },
-  {
    "name": "_ZN10ModStationC1Ev",
    "pct": 98.4,
    "byte": false,
@@ -206,6 +198,14 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
+  },
+  {
+   "name": "_ZN15MenuTouchWindow10OnTouchEndEiiPv",
+   "pct": 99.9,
+   "byte": false,
+   "linked": false,
+   "osize": 8132,
+   "usize": 8132
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
