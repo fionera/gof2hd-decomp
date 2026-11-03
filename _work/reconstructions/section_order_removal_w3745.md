@@ -2125,3 +2125,314 @@ cmp -l /tmp/w3745/radar/gate_base.so cmake-build-match/libgof2hdaa.so | wc -l   
 * The next plain no-order frontier is `AutoPilotList::fire` (`0x131398`
   original, `0x13140c` ours); `AutoPilotList.cpp` needs its own emission-order
   pass.
+
+## 15. `AutoPilotList::fire` placement (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **3099 / 4497** (prefix 3096,
+3384 / 4524 exported functions at their original address) to **3102 / 4497**
+(prefix 3101, 3389 / 4524). The first plain no-order mismatch moves from
+`AutoPilotList::fire` to `ListItemWindow::ListItemWindow()`.
+
+This is the next frontier recorded in §14.6 (the `Radar::getPlanetDockIndex`
+pass).
+
+### 15.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate section fingerprint (unchanged by this pass): `.text 0x1337c8 @ 0x69440`,
+`.ARM.exidx 0x6f70 @ 0x19cc08`, `.ARM.extab 0x2628c @ 0x1a3b78`,
+`.rodata 0x41b67 @ 0x1c9e10`.
+
+The original's `AutoPilotList` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x131064  0x2f8  AutoPilotList::AutoPilotList(Level*)   (C1 == C2)
+0x13135c  0x01c  AutoPilotList::down()
+0x131378  0x020  AutoPilotList::~AutoPilotList()        (D1 == D2)
+0x131398  0x004  AutoPilotList::fire()
+0x13139c  0x030  AutoPilotList::getTargetString()
+0x1313cc  0x01c  AutoPilotList::up()
+0x1313e8  0x0e8  AutoPilotList::draw()
+0x1314d0  0x058  AutoPilotList::touch(int, int)
+0x131528  0x08c  ListItemWindow::ListItemWindow()       (next TU)
+```
+
+The HD source-layout dump (`_work/original_layout/original_layout.json`,
+`tu_symbols/gof2hd_1.1.19_ios/Classes/Game/AutoPilotList.cpp`) lists only the
+two template symbols (`ArraySetLength<String*>`,
+`ArrayReleaseClasses<String*>`), so it does not witness the function order;
+the Android `.dynsym` is the authority for the emitted order. TU membership is
+witnessed: `_work/original_layout/tu_mapping.md` line 109 maps
+`game/core/AutoPilotList.cpp` to `Classes/Game/AutoPilotList.cpp` exactly.
+
+The baseline plain no-order link put `fire` after `touch`:
+
+```text
+original 0x131398 AutoPilotList::fire()          (0x4 bytes)
+ours     0x13140c AutoPilotList::fire()
+```
+
+This was the first plain no-order mismatch (`addr_match.py`).
+
+### 15.2 Baseline object order
+
+`readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/core/AutoPilotList.cpp.obj`
+(section-header order = emission order):
+
+```text
+AutoPilotList::AutoPilotList(Level*)
+Array<AbyssEngine::String*>::Array()                 # weak copy
+void ArraySetLength<AbyssEngine::String*>(...)
+AutoPilotList::down()
+AutoPilotList::~AutoPilotList()
+void ArrayReleaseClasses<AbyssEngine::String*>(...)
+Array<AbyssEngine::String*>::~Array()                # weak copy
+AutoPilotList::up()
+AutoPilotList::touch(int, int)
+AutoPilotList::fire()
+AutoPilotList::getTargetString()
+AutoPilotList::draw()
+```
+
+The weak template copies are deduplicated by the linker and do not occupy slots
+in the `AutoPilotList` block, so the effective strong order was
+`ctor`, `down`, `dtor`, `up`, `touch`, `fire`, `getTargetString`, `draw`.
+
+`down` is emitted before the out-of-line destructor even though its definition
+follows the destructor in the .cpp: its section is created at its **first
+reference**, the `while ((*this->entries)[this->selected] == nullptr) this->down();`
+loop at the end of the constructor. This is the same first-reference emission
+rule already recorded for `Radar::calcDistance` in §14.2.
+
+### 15.3 Landed source change
+
+Only change: reorder the definitions in `src/game/core/AutoPilotList.cpp` so
+the emitted strong order is the original's. `fire` and `getTargetString` move
+before `up`; `touch` moves after `draw`. No body was edited.
+
+```diff
+@@ after AutoPilotList::~AutoPilotList()
+ void AutoPilotList::down() { ... }
+ 
++int AutoPilotList::fire() {
++    return this->selected;
++}
++
++String AutoPilotList::getTargetString() {
++    int idx = this->selected;
++    if (idx >= 0 && (uint32_t) idx < this->entries->size())
++        return String(*(*this->entries)[idx], false);
++    return String("", false);
++}
++
+ void AutoPilotList::up() { ... }
+ 
+-void AutoPilotList::touch(int px, int py) { ... }
+-
+-int AutoPilotList::fire() { ... }
+-
+-String AutoPilotList::getTargetString() { ... }
+-
+ void AutoPilotList::draw() { ... }
++
++int AutoPilotList::touch(int px, int py) { ... }
+```
+
+The object order becomes:
+
+```text
+AutoPilotList::AutoPilotList(Level*)
+Array<AbyssEngine::String*>::Array()
+void ArraySetLength<AbyssEngine::String*>(...)
+AutoPilotList::down()
+AutoPilotList::~AutoPilotList()
+void ArrayReleaseClasses<AbyssEngine::String*>(...)
+Array<AbyssEngine::String*>::~Array()
+AutoPilotList::fire()
+AutoPilotList::getTargetString()
+AutoPilotList::up()
+AutoPilotList::draw()
+AutoPilotList::touch(int, int)
+```
+
+which matches the original address order exactly.
+
+### 15.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `0c8c704c…` | **3099** | 3384 / 4524 | 3096 | `AutoPilotList::fire` `0x131398` vs `0x13140c` |
+| `fire`/`getTargetString` before `up`, `touch` after `draw` (landed) | **4497 / 4497** | `e753425b…` | **3102** | **3389 / 4524** | **3101** | `ListItemWindow::ListItemWindow()` `0x131528` vs `0x133ad8` |
+
+The landed delta is **+3 plain byte_exact, +5 functions at their original
+address, +5 exact-address prefix**, with the gate counts unchanged.
+
+The whole `AutoPilotList` block is now address-exact in the plain no-order
+link, and every `AutoPilotList` row in the plain verify report is
+`byte=True` (10 rows: ctor C1/C2, down, dtor D1/D2, fire, getTargetString,
+up, draw, touch; all sizes exact).
+
+Gate `.so` A/B (`cmp -l` = 59 differing bytes, all outside `.text` and
+`.rodata`):
+
+| range | bytes | what |
+|---|---:|---|
+| `0x1dc..0x1ef` | 20 | `.note.gnu.build-id` |
+| `0x1a111c`, `0x1a1124` | 2 | `.ARM.exidx` extab-pointer words for `up` / `touch` |
+| `0x1c2298..0x1c22bf` | 37 | `.ARM.extab` record order for the two swapped functions |
+
+The original's `.ARM.exidx` extab pointers for `up` (`0x1313ec`) / `touch`
+(`0x1314d4`) are `0x1c22a0` / `0x1c22c0` (ascending). The baseline gate had
+them reversed (`0x1c22a4` / `0x1c2298`); the landed gate has them ascending
+again (`0x1c2298` / `0x1c22b8`), matching the original's relative order. The
+absolute offsets differ by the known `.ARM.extab` size delta (ours `0x2628c`,
+original `0x26298`). Differing-byte counts against the original:
+
+| section | baseline gate | landed gate |
+|---|---:|---:|
+| `.text` | 111241 | 111241 |
+| `.ARM.exidx` | 1743 | 1743 |
+| `.ARM.extab` (common prefix) | 113810 | 113811 |
+| `.rodata` | 0 | 0 |
+| `.data.rel.ro` | 0 | 0 |
+| `.data` | 0 | 0 |
+| `.dynsym` / `.dynstr` / `.hash` | 324 / 1268 / 133 | 324 / 1268 / 133 |
+| `.rel.dyn` / `.rel.plt` | 74 / 21 | 74 / 21 |
+| `.plt` / `.got` / `.dynamic` / `.gnu.version` | 0 | 0 |
+
+The `+1` `.ARM.extab` common-prefix byte is the absolute-offset shift of the
+two records; the relative record order is now the original's.
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f58 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b80`, `.rodata 0x41b67 @ 0x1c9e10`.
+
+### 15.5 Control: `down`'s source position is irrelevant
+
+Moving the `down` definition to the end of the .cpp (source order `ctor`,
+`dtor`, `fire`, `getTargetString`, `up`, `draw`, `touch`, `down`) produces the
+**same object section order** and a **byte-identical plain no-order `.so`**
+(`cmp` 0 differing bytes, same sha256 `032c4fa4…`). This confirms that `down`
+is emitted at its first reference in the constructor, not at its definition;
+the minimal landed move is sufficient.
+
+### 15.6 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x131528 ListItemWindow::ListItemWindow()   (C1/C2, 0x8c bytes)
+ours     0x133ad8 ListItemWindow::ListItemWindow()
+```
+
+Our plain `ListItemWindow` order is
+`OnTouchBegin`, `shows3DShip`, `OnTouchMove`, `OnTouchEnd`, `render`, `set`,
+`dtor`, `draw`, `update`, `ctor`; the original is
+`ctor`, `dtor`, `set`, `shows3DShip`, `draw`, `update`, `render`,
+`OnTouchBegin`, `OnTouchMove`, `OnTouchEnd`. This is a separate TU
+(`src/game/ui/ListItemWindow.cpp`) and was not changed in this pass.
+
+### 15.7 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/autopilot/base_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/autopilot/verify_base \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/autopilot/base_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/autopilot/base_noorder.so
+
+# after the source move
+cmake --build cmake-build-match --target check -j8
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/autopilot/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/autopilot/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/autopilot/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/autopilot/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/core/AutoPilotList.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN13AutoPilotList'
+
+# gate .so A/B (baseline vs landed source)
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/autopilot/gate_after.so
+git stash push -- src/game/core/AutoPilotList.cpp
+cmake --build cmake-build-match --target link_so -j8
+cp cmake-build-match/libgof2hdaa.so /tmp/w3745/autopilot/gate_base.so
+git stash pop
+cmake --build cmake-build-match --target link_so -j8
+sha256sum /tmp/w3745/autopilot/gate_base.so /tmp/w3745/autopilot/gate_after.so
+cmp -l /tmp/w3745/autopilot/gate_base.so /tmp/w3745/autopilot/gate_after.so | wc -l   # 59
+```
+
+### 15.8 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3099 / 4497`, prefix 3096,
+  3384 / 4524, first mismatch `AutoPilotList::fire` `0x131398` vs `0x13140c`.
+* The original emits `AutoPilotList` in the `.dynsym` address order listed in
+  §15.1; the HD dump independently witnesses the TU membership but not the
+  function order.
+* The baseline object emits `up`, `touch`, `fire`, `getTargetString`, `draw`
+  after the destructor; `down` is emitted immediately after the constructor
+  because the constructor first-references it.
+* Moving `fire`/`getTargetString` before `up` and `touch` after `draw` makes
+  the object's strong `.text.*` order match the original address order. The
+  move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0).
+* The gate `.so` differs only in the build-id, two `.ARM.exidx` extab
+  pointers, and the corresponding `.ARM.extab` record order; `.text` and
+  `.rodata` are byte-identical. The `.ARM.exidx` extab records for `up` /
+  `touch` are now in the original's ascending relative order.
+* The plain no-order build improves to `3102 / 4497`, prefix 3101,
+  3389 / 4524. The whole `AutoPilotList` block is address-exact there and all
+  10 exported rows are byte-exact.
+* The control experiment (moving `down` to the end of the .cpp) produces a
+  byte-identical plain no-order `.so`, proving `down`'s source position is
+  irrelevant because of the constructor's first reference.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3102`, not `4497`.
+* The next plain no-order frontier is `ListItemWindow::ListItemWindow()`
+  (`0x131528` original, `0x133ad8` ours); `ListItemWindow.cpp` needs its own
+  emission-order pass.

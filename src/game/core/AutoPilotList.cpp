@@ -81,6 +81,17 @@ void AutoPilotList::down() {
     this->selected = i;
 }
 
+int AutoPilotList::fire() {
+    return this->selected;
+}
+
+String AutoPilotList::getTargetString() {
+    int idx = this->selected;
+    if (idx >= 0 && (uint32_t) idx < this->entries->size())
+        return String(*(*this->entries)[idx], false);
+    return String("", false);
+}
+
 void AutoPilotList::up() {
     String **data = this->entries->data();
     int i = this->selected;
@@ -88,6 +99,20 @@ void AutoPilotList::up() {
         i = (i > 0) ? i - 1 : 4;
     } while (data[i] == nullptr);
     this->selected = i;
+}
+
+void AutoPilotList::draw() {
+    (Globals::layout)->drawWindow(*Globals::gameText->getText(0x23c),
+        this->x, this->y, this->width, this->count * 0xf + 0x16);
+
+    int drawn = 0;
+    for (uint32_t i = 0; i < this->entries->size(); i++) {
+        if ((*this->entries)[i] != nullptr) {
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*this->entries)[i],
+                                        this->x, drawn * 0xf + this->y + 0x12, false);
+            drawn++;
+        }
+    }
 }
 
 int AutoPilotList::touch(int px, int py) {
@@ -103,29 +128,4 @@ int AutoPilotList::touch(int px, int py) {
     for (int i = 0; i < row; i++)
         this->down();
     return this->selected;
-}
-
-int AutoPilotList::fire() {
-    return this->selected;
-}
-
-String AutoPilotList::getTargetString() {
-    int idx = this->selected;
-    if (idx >= 0 && (uint32_t) idx < this->entries->size())
-        return String(*(*this->entries)[idx], false);
-    return String("", false);
-}
-
-void AutoPilotList::draw() {
-    (Globals::layout)->drawWindow(*Globals::gameText->getText(0x23c),
-        this->x, this->y, this->width, this->count * 0xf + 0x16);
-
-    int drawn = 0;
-    for (uint32_t i = 0; i < this->entries->size(); i++) {
-        if ((*this->entries)[i] != nullptr) {
-            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, *(*this->entries)[i],
-                                        this->x, drawn * 0xf + this->y + 0x12, false);
-            drawn++;
-        }
-    }
 }
