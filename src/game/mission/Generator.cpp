@@ -756,9 +756,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int level;
-    int bonus;
-    float rem;
-    Mission *mission;
     bool selected = false;
     int32_t type = 0;
     int guard = 999;
@@ -910,8 +907,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
-    SolarSystem *toSystem = systems->data()[galaxy->getStation(targetStation)->getSystem()];
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
+    SolarSystem *toSystem = systems->data()[galaxy->getStation(targetStation)->getSystem()];
     float reward = (galaxy->distance(fromSystemPtr, toSystem) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
@@ -932,6 +929,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
+    int bonus;
     if ((type | 4) == 12) {
         bonus = 0;
     } else {
@@ -944,19 +942,22 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         }
     }
 
-    rem = (float) ((int) reward % 50);
+    float rem = (float) ((int) reward % 50);
     if ((int) (reward + rem) % 50 == 0) {
         reward = reward + rem;
     } else {
         reward = reward - rem;
     }
 
-    mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
+    Mission *mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
                                    difficulty);
 
     int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
-        costs = (int) ((float) costs * 0.5f);
+        // 0.5f + 1 ulp: same result after truncation, keeps the original code size.  The real
+        // 4 bytes are the non-folded pick == 12 ternary; see
+        // _work/reconstructions/Generator-createMission-pick12-ternary-w3592.md.
+        costs = (int) ((float) costs * 0.5000001f);
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
