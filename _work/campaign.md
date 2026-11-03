@@ -5240,3 +5240,8 @@ prefix 3742 -> 3769). Gate 4498/4498.
 Wave-97 function pass: `Gun::calcCharacterCollision` (`w3722`) drops both volatile anchors and
 keeps the 208 B frame via a real per-projectile enemy reload; fuzzy 82.7 -> 74.0% but the source
 is now anchor-free and semantically faithful. 1984 B, gate 4498/4498.
+Wave-97 function pass: `Generator::createMission` 72.9 -> 73.6% (`w3715`) by restoring the
+`fromSystemPtr` order, deferring bonus/rem, and a 0.5f size anchor. 1996 B, gate 4498/4498.
+Wave-97 section-order pass: `TouchButton` emission order (`w3745`) — ctor, init, ctors, dtor,
+setText, ... Plain no-order 2989 -> 3001 (addresses 3811 -> 3858, prefix 3769 -> 3817). Gate 4498/4498.
+Note: `_work/reconstructions/touchbutton_emission_order_w3745.md`.
