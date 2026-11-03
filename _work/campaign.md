@@ -5229,3 +5229,5 @@ before campaign dispatch) and per-call campaign fetch; fuzzy 78.3565 -> 78.0901%
 order is now the original's. 8080 B, gate 4498/4498.
 Wave-97 section-order pass: `SpacePoint` emission order (`w3745`) — isFree, take, giveFree,
 getIndex, dtor. Plain no-order addresses 3733 -> 3739 (prefix 3685 -> 3694). Gate 4498/4498.
+Wave-97 function pass: `HangarWindow::render` 80.4 -> 80.6% (`w3741`) with scoped credit-row
+cleanup and a volatile amount anchor. 9700 B, gate 4498/4498.
