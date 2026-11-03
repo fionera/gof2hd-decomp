@@ -450,11 +450,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                     (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
             }
             bool special = (i | 1) == 9;
+            unsigned int fontValue = Globals::font;
+            int langValue = Globals::fontLangSelect;
             int spacing = Globals::Canvas->FontGetSpacing(
-                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font);
+                special ? (unsigned int) langValue : fontValue);
             TouchButton *language = new TouchButton(
                 *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, this->buttonWidth, 17, 4,
-                special ? (unsigned int) *specialFontPtr : (unsigned int) (uintptr_t) Globals::font, spacing);
+                (i == 9 || i == 8) ? fontValue : (unsigned int) langValue, spacing);
             language->id = MenuTouchWindow_languageIds[i];
             if (special)
                 language->fontId = *specialFontPtr;
@@ -615,11 +617,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
              this->sliderRowHeight) * 2,
         66);
     this->optBtnD0->setHalfTransparent(Globals::options[17]);
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     this->optBtnCC->setAlwaysPressed(Globals::options[16]);
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     this->scrollExtraButton->setAlwaysPressed(Globals::options[64]);
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     if (Globals::iPad) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
@@ -716,9 +715,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                          Globals::layout->field_0x2c_rowHeight * 3,
                                      18);
     this->optBtnD8->setAlwaysPressed(Globals::options[12]);
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
-    __builtin_prefetch(&Globals::options[0]); // lint: arm_builtin
     (*this->sliders)[2]->setHalfTransparent(!Globals::options[14]);
     this->optBtnDC = new TouchButton(String(""), 13, Globals::w - Globals::layout->buttonInsetX,
                                      (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top +

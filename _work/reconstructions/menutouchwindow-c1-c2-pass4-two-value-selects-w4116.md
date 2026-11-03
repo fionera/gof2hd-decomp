@@ -1,19 +1,21 @@
 # MenuTouchWindow C1/C2 pass 4: the two-value-select mechanism, and the
-# swapped-operand shape that finally reproduces it (94.079%, 9600 B; no code change)
+# swapped-operand shape that finally reproduces it (94.079 -> 94.2%, 9600 B)
 
-**Status:** analysis-only pass, 2026-11-03. Worktree `wt/w4116`, branch
+**Status:** code change landed, 2026-11-03. Worktree `wt/w4116`, branch
 `wave91-w4116`, base `a4557300`. Original binary:
 `/home/debian/GalaxyOnFire2/_work/bins/android_2.0.16_libgof2hdaa.so`
 (armeabi-v7a, NDK r18b clang 7.0.2, `-Oz`, image base 0x10000; real VMA =
-Ghidra - 0x10000). No source change was landed: the two-select mechanism is
-now understood and reproduced in the real TU, but the reproduced pair has the
-wrong operand orientation and a different function size, so `byte_exact`
-cannot rise yet.
+Ghidra - 0x10000). The two-select mechanism is understood and the real TU now
+emits the original loop's two `cmp.w sl,#9; it eq; moveq` value selects. The
+landed shape is the swapped-operand second select plus removal of the six
+`__builtin_prefetch` anchors: **94.079 -> 94.2%**, still 9600 B. The second
+select is still `eq ? font : lang` (original: `eq ? lang : font`), so the
+function is not byte-identical yet; `byte_exact` stays 4498.
 
 ## TL;DR
 
-* HEAD (`a4557300`) is unchanged: `_ZN15MenuTouchWindowC1Ei` / `C2` are
-  **9600 B / 94.078650%** (original 9600 B / 3320 insns). Gate:
+* Landed: `_ZN15MenuTouchWindowC1Ei` / `C2` are **9600 B / 94.2%** (was
+  94.078650%; original 9600 B / 3320 insns). Gate unchanged:
   `byte_exact 4498 / linked_exact 4498`, `data 843/843`, imports 207,
   `.text 0x1337c8`, `.rodata 0x41b67`, lint CLEAN, drift 0.
 * Pass 3 proved that `EarlyCSE` merges the two identical
@@ -30,7 +32,28 @@ cannot rise yet.
   that differ but coalesce to the same registers. Neither was found; the
   PHI route is blocked because the late SimplifyCFG folds the PHI to a
   select and the second EarlyCSE then merges it with the first select.
-* No code change landed. `byte_exact` stays **4498**.
+* Landed source shape: keep `int *specialFontPtr = &Globals::fontLangSelect;`
+  and `optionByte(13/14)`, delete all six `__builtin_prefetch` anchors, and
+  use value locals with a swapped-operand second select:
+
+  ```cpp
+  bool special = (i | 1) == 9;
+  unsigned int fontValue = Globals::font;
+  int langValue = Globals::fontLangSelect;
+  int spacing = Globals::Canvas->FontGetSpacing(
+      special ? (unsigned int) langValue : fontValue);
+  TouchButton *language = new TouchButton(
+      *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y,
+      this->buttonWidth, 17, 4,
+      (i == 9 || i == 8) ? fontValue : (unsigned int) langValue, spacing);
+  language->id = MenuTouchWindow_languageIds[i];
+  if (special)
+      language->fontId = *specialFontPtr;
+  ```
+
+  This keeps two selects alive (`select %c, lang, font` and
+  `select %c, font, lang`), so the loop emits two `cmp.w sl,#9; moveq`.
+  `byte_exact` stays **4498** because the function is still not identical.
 
 ## 1. Original language loop (verbatim, VMA 0x1233fa..0x1234ae)
 
@@ -219,6 +242,7 @@ compare is wrong.
 | q2b | q2 with `fontId = *specialFontPtr` | 9624 | -- | 2 | 2 |
 | q2c | q2 with `fontId = langValue` | 9608 | 90.4 | 1 | 1 |
 | `i>=8&&i<=9` | `(i>=8&&i<=9) ? langValue : fontValue` | 9600 | 76.5 | 0 (`bic;cmp`) | 2 |
+| **`v_headq2_nopf` (landed)** | HEAD + value locals, second select `(i==9\|\|i==8) ? fontValue : langValue`, `fontId = *specialFontPtr`, no prefetch anchors | **9600** | **94.2** | **2** | **2** |
 
 q2's loop (side by side with the original) is structurally the closest
 source-level match found so far: two value selects, both `cmp.w sl,#9`,
@@ -337,8 +361,9 @@ swapped-operand repro is `e5.cpp`/`f1.cpp`.
 1. Find a source shape whose two selects are both `eq ? lang : font` and
    survive GVN: most likely a PHI diamond with 4+ non-trivial PHIs at the
    late SimplifyCFG, or two DAG operands that coalesce.
-2. Once the loop matches, align the rest of the RA (the original keeps `i`
-   in r9 and spills it to `[sp,#80]`; q2 keeps it in r8) and get the ctor
-   back to 9600 B.
-3. Only then delete the six `__builtin_prefetch` anchors and the last two
-   `optionByte(13/14)` sites and land if `byte_exact` rises.
+2. Align the rest of the RA (the original keeps `i` in r9 and spills it to
+   `[sp,#80]`; the landed shape keeps it in r8) and make the second select
+   same-orientation; only then can the ctor be byte-identical.
+3. The six `__builtin_prefetch` anchors are now deleted (landed). The last
+   two `optionByte(13/14)` sites remain; delete them only once the ctor is
+   3320 insns / 9600 B byte-identical.
