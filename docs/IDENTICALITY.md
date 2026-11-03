@@ -21,11 +21,11 @@ The build is **CMake + NDK r18b** (not ndk-build): clang 7.0.2 with
 
 All **27 section headers are byte-identical**. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
-`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but currently `0x26290`, 8 bytes
+`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but currently `0x26294`, 4 bytes
 short of the original's `0x26298`: the w4270 HangarWindow pass reverted the `padS` EH anchor
-(78.8 -> 80.6% body) and the missing 8-byte row is the known residual (see
-`_work/reconstructions/hangarwindow-render-w4270.md`). The only differing section bytes are
-`.text` 106,081; `.ARM.exidx` 1,647; `.note.gnu.build-id` 20 (plus the `.ARM.extab` 8-byte size
+(78.8 -> 80.6% body) and the w4415 Hud pass changed the extab row split by +4; the remaining
+4-byte row is the known residual. The only differing section bytes are
+`.text` 103,084; `.ARM.exidx` 1,637; `.note.gnu.build-id` 20 (plus the `.ARM.extab` 4-byte size
 delta). Everything
 else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
 `.fini_array`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`,
@@ -235,7 +235,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 106,081 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 103,084 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 839 raw bytes (822 `w1` prel31 targets) still differ, all in the three remaining shifted LSDA ranges (`Generator::createMission`, `Level::createShip`, `LevelScript::process`). |
 | .ARM.extab | 156,312 | 156,304 | **-8** | base exact (0x1a3b78). The four remaining per-function LSDA deltas are `Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4 and `HangarWindow::render` -8 (net -8). `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are record-length-exact. Raw address operands still differ with local `.text` layout (108,469 differing bytes). |
