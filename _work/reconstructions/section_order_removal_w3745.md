@@ -1846,3 +1846,282 @@ cmp -l /tmp/w3745/wanted/gate_base.so /tmp/w3745/wanted/gate_after.so | wc -l   
   `3088`, not `4497`.
 * The `MenuTouchWindow` weak-copy placement is the next per-TU emission-order
   experiment, but it was not tested or landed in this pass.
+
+## 14. `Radar::getPlanetDockIndex` placement (2026-11-03)
+
+Status: landed in this pass. The section-ordering-file gate stays at
+**byte 4497 / linked 4497**, `.text` `0x1337c8 @ 0x69440`, lint `CLEAN ✓`,
+drift 0. The plain no-order link rises from **3097 / 4497** (prefix 3081,
+3382 / 4524 exported functions at their original address) to **3099 / 4497**
+(prefix 3096, 3384 / 4524). The first plain no-order mismatch moves from
+`Radar::getPlanetDockIndex` to `AutoPilotList::fire`.
+
+This is the next frontier recorded in §13.4 of this note (the `Wanted` pass),
+after the intervening `MenuTouchWindow` and `PendingProduct` placement passes.
+
+### 14.1 Baseline and target
+
+Baseline (`cmake --build cmake-build-match --target check -j8`, then `lint`,
+`drift`):
+
+```text
+verify: byte 4497  linked 4497  stubs 0  missing 0  extra 0  avg 99.9
+data:   exact 843 of 843 exported objects
+sodiff: extra-beyond-allow 0  missing 0  allowed 0   imports: 207
+RATCHET PASS
+lint: CLEAN ✓ (no new soft violations; hard invariants 0)
+drift: 0 field(s) across 0 class(es)
+```
+
+Gate section fingerprint: `.text 0x1337c8 @ 0x69440`,
+`.ARM.exidx 0x6f70 @ 0x19cc08`, `.ARM.extab 0x2628c @ 0x1a3b78`,
+`.rodata 0x41b67 @ 0x1c9e10`.
+
+The original's `Radar` block from the binary's own `.dynsym`
+(`nm -nSD --defined-only`):
+
+```text
+0x130704  0x270  Radar::calcDistance(float, float, float, float, float, float)
+0x130974  0x024  Radar::getPlanetDockIndex()
+0x130998  0x690  Radar::drawCurrentLock(Hud*)
+0x131028  0x004  Radar::getLockedGasCloud()
+0x13102c  0x004  Radar::getLockedAsteroid()
+0x131030  0x006  Radar::unlockAsteroid()
+0x131036  0x004  Radar::getLockedEnemy()
+0x13103a  0x014  Radar::stationLocked()
+0x13104e  0x008  Radar::getTurretScopeWidth()
+0x131056  0x006  Radar::isPlasmaInRange()
+0x13105c  0x006  Radar::hasScanner()
+```
+
+The HD source-layout dump (`_work/original_layout/original_layout.json`,
+`gof2hd_1.1.19_ios` -> `Classes/Game/Radar.cpp`) lists the same order for the
+symbols it contains: `calcDistance`, `getPlanetDockIndex`, `drawCurrentLock`,
+`getLockedAsteroid`, `unlockAsteroid`, `getLockedEnemy`, `stationLocked`,
+`isPlasmaInRange`, `hasScanner`. `getLockedGasCloud` and
+`getTurretScopeWidth` are Android-2.0.x additions witnessed only by the
+Android `.dynsym`; `update(KIPlayer*)` is also an Android addition.
+
+The baseline plain no-order link put `drawCurrentLock` at the original
+`getPlanetDockIndex` address and `getPlanetDockIndex` after it:
+
+```text
+original 0x130974 Radar::getPlanetDockIndex()   (0x24 bytes)
+         0x130998 Radar::drawCurrentLock(Hud*)  (0x690 bytes)
+ours     0x130974 Radar::drawCurrentLock(Hud*)
+         0x131004 Radar::getPlanetDockIndex()
+```
+
+This was the first plain no-order mismatch:
+`Radar::getPlanetDockIndex` `0x130974` vs `0x131004`.
+
+### 14.2 Baseline object order
+
+`readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/weapons/Radar.cpp.obj`
+(section-header order = emission order):
+
+```text
+...
+Radar::draw(Player*, Hud*, int)
+Radar::calcDistance(float, float, float, float, float, float)
+AbyssEngine::String::String(int)          # weak copy
+Radar::drawCurrentLock(Hud*)
+Radar::getPlanetDockIndex()
+Radar::getLockedGasCloud()
+...
+```
+
+`calcDistance` is emitted before `drawCurrentLock` even though it is defined
+later in the .cpp: its section is created at its first reference inside
+`Radar::draw` (line 395), which precedes the `drawCurrentLock` definition. The
+`String::String(int)` weak copy is deduplicated by the linker to `0x737b4` and
+does not occupy a slot in the `Radar` block.
+
+### 14.3 Landed source change
+
+Only change: move `Radar::getPlanetDockIndex()` in
+`src/game/weapons/Radar.cpp` from after `Radar::calcDistance()` to immediately
+before `Radar::drawCurrentLock()`. No body was edited.
+
+```diff
+@@ after Radar::draw()
++int Radar::getPlanetDockIndex() {
++    SolarSystem *sys = reinterpret_cast<SolarSystem *>(
++        static_cast<intptr_t>(Globals::status->getSystem()));
++    Array<int> *stations = reinterpret_cast<Array<int> *>(sys->getStations());
++    return (*stations)[this->planetDockIndex];
++}
+ void Radar::drawCurrentLock(Hud *) {
+@@ after Radar::calcDistance()
+-int Radar::getPlanetDockIndex() { ... }
+ KIPlayer *Radar::getLockedGasCloud() {
+```
+
+The object order becomes:
+
+```text
+Radar::calcDistance(...)
+AbyssEngine::String::String(int)
+Radar::getPlanetDockIndex()
+Radar::drawCurrentLock(Hud*)
+Radar::getLockedGasCloud()
+...
+```
+
+which matches the original address order. The gate `.so` is unchanged in
+`.text` and `.rodata`; it differs only in the 20-byte build-id, two
+`.ARM.exidx` extab-pointer words, and the corresponding `.ARM.extab` record
+order for the two swapped functions. The `.ARM.exidx` differing-byte count
+against the original improves 1744 -> 1743.
+
+### 14.4 Measured before/after
+
+Every row is a full rebuild of this tree. `gate` is
+`cmake --build cmake-build-match --target check -j8`; `plain` is
+`relink_noorder.py` (the exact gold line minus `--section-ordering-file`)
+followed by `verify.py` and `addr_match.py`.
+
+| state | gate byte/linked | gate `.so` sha256 | plain byte | funcs at orig addr | prefix | first plain mismatch (orig vs ours) |
+|---|---:|---|---:|---:|---:|---|
+| baseline | **4497 / 4497** | `0f27c0e1…` | **3097** | 3382 / 4524 | 3081 | `Radar::getPlanetDockIndex` `0x130974` vs `0x131004` |
+| `getPlanetDockIndex` before `drawCurrentLock` (landed) | **4497 / 4497** | `63b008d9…` | **3099** | **3384 / 4524** | **3096** | `AutoPilotList::fire` `0x131398` vs `0x13140c` |
+
+The landed delta is **+2 plain byte_exact, +2 functions at their original
+address, +15 exact-address prefix**, with the gate counts unchanged.
+
+The whole `Radar` block is now address-exact in the plain no-order link, and
+every `Radar` function except the known-incomplete `Radar::draw` is
+byte-exact there (checked with `verify.py --show` for each exported `Radar`
+symbol). `Radar::getPlanetDockIndex` itself is 36 bytes at `0x130974` in both
+the original and the plain link.
+
+Gate `.so` A/B: `cmp -l` reports 180 differing bytes, all outside `.text` and
+`.rodata`:
+
+| range | bytes | what |
+|---|---:|---|
+| `0x1dc..0x1ef` | 20 | `.note.gnu.build-id` |
+| `0x1a10cc`..`0x1a10d4` | 3 | `.ARM.exidx` extab-pointer words for `0x130974` / `0x130998` |
+| `0x1c213c..0x1c220d` | 157 | `.ARM.extab` record order for the two swapped functions |
+
+The original's `.ARM.exidx` extab pointers for `0x130974` / `0x130998` are
+`0x1c2144` / `0x1c2150` (ascending). The baseline gate had them reversed
+(`0x1c2204` / `0x1c213c`); the landed gate has them ascending again
+(`0x1c213c` / `0x1c2148`), matching the original's relative order. The
+absolute offset differs by the known `.ARM.extab` size delta (ours `0x2628c`,
+original `0x26298`). Differing-byte counts against the original:
+
+| section | baseline gate | landed gate |
+|---|---:|---:|
+| `.text` | 111719 | 111719 |
+| `.ARM.exidx` | 1744 | **1743** |
+| `.ARM.extab` | 113810 | 113810 |
+| `.rodata` | 0 | 0 |
+| `.data.rel.ro` | 6277 | 6277 |
+
+Plain no-order section layout is unchanged by the pass:
+`.text 0x1337e8 @ 0x69440`, `.ARM.exidx 0x6f58 @ 0x19cc28`,
+`.ARM.extab 0x2628c @ 0x1a3b80`, `.rodata 0x41b67 @ 0x1c9e10`.
+
+### 14.5 Negative control: full HD tail reorder
+
+Re-emitting the whole `calcDistance` / `getPlanetDockIndex` /
+`drawCurrentLock` tail in the HD dump order (`calcDistance`, then
+`getPlanetDockIndex`, then `drawCurrentLock`) produces the *same* object order
+as §14.3, but is **gate-regressive**:
+
+| variant | gate byte/linked | plain byte | funcs at orig addr | prefix |
+|---|---:|---:|---:|---:|
+| landed minimal move (A) | **4497 / 4497** | **3099** | **3384 / 4524** | **3096** |
+| full tail reorder (B) | 4494 / 4497 | 3097 | 3384 / 4524 | 3096 |
+
+So the minimal move is the correct landing; the extra `calcDistance` source
+move costs 3 gate byte_exact and 2 plain byte_exact without changing any
+address. The cause was not investigated further (it is a local
+`.text`/`.ARM.extab` side effect of the source move, not a placement change).
+
+### 14.6 Next frontier
+
+The first plain no-order mismatch is now:
+
+```text
+original 0x131398 AutoPilotList::fire()
+ours     0x13140c AutoPilotList::fire()
+```
+
+The original `AutoPilotList` order is `ctor`, `down`, `dtor`, `fire`,
+`getTargetString`, `up`, `draw`, `touch`. Our `AutoPilotList.cpp.obj` order is
+`ctor`, `Array<String*>::Array()`, `ArraySetLength<String*>`, `down`, `dtor`,
+`ArrayReleaseClasses<String*>`, `Array<String*>::~Array()`, `up`, `touch`,
+`fire`, `getTargetString`, `draw`. This is a separate TU and was not changed
+in this pass.
+
+### 14.7 Exact commands
+
+```sh
+cmake --preset default
+cmake --build cmake-build-match --target check -j8
+cmake --build cmake-build-match --target lint  -j8
+cmake --build cmake-build-match --target drift -j8
+
+# plain no-order link + measurements
+python3 _work/reconstructions/w3696/relink_noorder.py /tmp/w3745/radar/after_noorder.so
+python3 tools/verify/verify.py \
+  --build-dir /tmp/w3745/radar/verify_after \
+  --original ../_work/bins/android_2.0.16_libgof2hdaa.so \
+  --ours /tmp/w3745/radar/after_noorder.so \
+  --objdump .cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-objdump \
+  --fail-on-wrong-type --top 0
+python3 _work/reconstructions/w3696/addr_match.py \
+  ../_work/bins/android_2.0.16_libgof2hdaa.so /tmp/w3745/radar/after_noorder.so
+
+# object section order
+readelf -SW cmake-build-match/CMakeFiles/gof2.dir/src/game/weapons/Radar.cpp.obj \
+  | sed -n 's/^ *\[ *[0-9]*\] \(\.text\.[^ ]*\).*/\1/p' \
+  | sed 's/^\.text\.//' | c++filt
+
+# original address order
+NM=.cache/ndk/android-ndk-r18b/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-nm
+$NM -nSD --defined-only ../_work/bins/android_2.0.16_libgof2hdaa.so | grep '_ZN5Radar'
+
+# gate .so A/B (baseline vs landed source)
+sha256sum /tmp/w3745/radar/gate_base.so cmake-build-match/libgof2hdaa.so
+cmp -l /tmp/w3745/radar/gate_base.so cmake-build-match/libgof2hdaa.so | wc -l   # 180
+```
+
+### 14.8 Proven vs hypothesis
+
+**Proven by measurement**
+
+* Baseline gate is `byte 4497 / linked 4497`, `.text 0x1337c8 @ 0x69440`,
+  lint `CLEAN ✓`, drift 0; plain no-order is `3097 / 4497`, prefix 3081,
+  3382 / 4524, first mismatch `Radar::getPlanetDockIndex` `0x130974` vs
+  `0x131004`.
+* The original emits `Radar` in the `.dynsym` address order listed in §14.1;
+  the HD source-layout dump independently lists the same order for every
+  symbol it contains.
+* The baseline `Radar.cpp.obj` emits `drawCurrentLock` before
+  `getPlanetDockIndex`; `calcDistance` is emitted before both because its
+  section is created at its first reference in `Radar::draw`.
+* Moving `getPlanetDockIndex` before `drawCurrentLock` in the .cpp swaps the
+  two object sections and makes the object order match the original address
+  order. The move is gate-neutral (`4497 / 4497`, lint `CLEAN ✓`, drift 0).
+* The gate `.so` differs only in the build-id, two `.ARM.exidx` extab
+  pointers, and the corresponding `.ARM.extab` record order; `.text` and
+  `.rodata` are byte-identical. The `.ARM.exidx` differing-byte count against
+  the original improves 1744 -> 1743, and the extab records are now in the
+  original's relative order.
+* The plain no-order build improves to `3099 / 4497`, prefix 3096,
+  3384 / 4524. The whole `Radar` block is address-exact there and every
+  `Radar` function except `Radar::draw` is byte-exact.
+* The full HD tail reorder (experiment B) is gate-regressive
+  (`4494 / 4497`) and plain-regressive (`3097`), so the minimal move is the
+  correct landing.
+
+**Hypothesis / open**
+
+* The ordering file still cannot be removed: the plain no-order build is
+  `3099`, not `4497`.
+* The next plain no-order frontier is `AutoPilotList::fire` (`0x131398`
+  original, `0x13140c` ours); `AutoPilotList.cpp` needs its own emission-order
+  pass.
