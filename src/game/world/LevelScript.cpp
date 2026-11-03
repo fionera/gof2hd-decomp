@@ -947,7 +947,7 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
-        m_pLevel->getPlayer()->rotate(0.0f, angle, angle);
+        player->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
@@ -3576,8 +3576,7 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                }
-                if (m_nState == 3) {
+                } else if (m_nState == 3) {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -3610,8 +3609,7 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
-                }
-                if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
                            && player->getHackingGameDockIndex() >= 0) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
