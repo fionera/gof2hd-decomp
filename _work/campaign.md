@@ -5197,3 +5197,5 @@ destructors/accessors. Plain no-order 2864 -> 2866 (exact addrs 3499 -> 3508). G
 Note: `_work/reconstructions/waypoint_ctor_placement_w3745.md`.
 Wave-97 section-order pass: `StatusWindow` accessor order (`w3745`) — StartPos before Height.
 Gate 4497/4497. Note: `_work/reconstructions/statuswindow_accessor_order_w3745.md`.
+Wave-97 section-order pass: `TargetFollowCamera` emission order (`w3745`) — original dynsym
+order. Plain no-order 2866 -> 2954 (addresses 3510 -> 3709, prefix 3504 -> 3557). Gate 4497/4497.
