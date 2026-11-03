@@ -5273,3 +5273,6 @@ Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md`.
 Wave-97 section-order pass: `SpaceLounge::startChat` pull (`w3745`) by moving `startChat` after
 `getSpecificSoundForRace`; plain no-order 3003 -> 3007 (addresses 3865 -> 3880, prefix 3834 -> 3856).
 Gate 4498/4498. Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md`.
+Wave-97 section-order pass: `MeshMerger` order (`w3745`) — setMesh/setLod/setMatrix/setEnabled/
+init/transformMesh/update/render/dtor. Plain no-order 3007 -> 3012 (addresses 3880 -> 3890,
+prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_order_w3745.md`.
