@@ -1328,12 +1328,14 @@ Wanted *RecordHandler::readWanted(unsigned int fd) {
 
 int RecordHandler::recordStoreWrite(int slot) {
     String path = this->recordDir + String(slot);
+    Array<Item *> *stationItems;
     if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
     }
     unsigned int fd;
     AEFile::OpenWrite(path, &fd);
 
+    HintFlags *hints = reinterpret_cast<HintFlags *>(Globals::hints);
     bool *visited = Globals::galaxy->getVisited();
     AEFile::Write((int32_t) 135, fd);
     for (unsigned i = 0; i < 135; i++) {
@@ -1431,7 +1433,6 @@ int RecordHandler::recordStoreWrite(int slot) {
     }
 
     Array<Station *> *stack = Globals::status->getStationStack();
-    Array<Item *> *stationItems;
     AEFile::Write((int32_t) 3, fd);
     for (unsigned i = 0; i < stack->size() + 1; i++) {
         Station *station = i == stack->size() ? Globals::status->getStation() : (*stack)[i];
@@ -1567,7 +1568,6 @@ int RecordHandler::recordStoreWrite(int slot) {
         this->writeAgent((*agents)[i], fd);
     }
 
-    HintFlags *hints = reinterpret_cast<HintFlags *>(Globals::hints);
     AEFile::Write(hints->flag[8], fd);
     AEFile::Write(hints->flag[9], fd);
     AEFile::Write(hints->flag[10], fd);
@@ -1597,14 +1597,12 @@ int RecordHandler::recordStoreWrite(int slot) {
     AEFile::Write(hints->flag[33], fd);
     AEFile::Write(hints->flag[35], fd);
     AEFile::Write(hints->flag[36], fd);
-    OptionsBuffer *options = reinterpret_cast<OptionsBuffer *>(Globals::options);
-    AEFile::Write(options->difficulty, fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->difficulty, fd);
     AEFile::Write(reinterpret_cast<int64_t &>(Globals::status->field_0x100), fd);
     AEFile::Write(hints->flag[37], fd);
     AEFile::Write(hints->flag[38], fd);
 
-    Ship *wingman = reinterpret_cast<Ship *>(Globals::status->field_8c);
-    if (wingman != 0) {
+    if (reinterpret_cast<Ship *>(Globals::status->field_8c) != 0) {
         AEFile::Write((int32_t) 1, fd);
         AEFile::Write((int32_t) reinterpret_cast<Ship *>(Globals::status->field_8c)->getIndex(), fd);
         AEFile::Write((int32_t) reinterpret_cast<Ship *>(Globals::status->field_8c)->getRace(), fd);
@@ -1623,14 +1621,14 @@ int RecordHandler::recordStoreWrite(int slot) {
         } else {
             AEFile::Write((int32_t) 0, fd);
         }
-        items = reinterpret_cast<Ship *>(Globals::status->field_8c)->getCargo();
-        if (items != 0) {
-            AEFile::Write((int32_t) items->size(), fd);
-            for (unsigned i = 0; i < items->size(); i++) {
-                AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
-                AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
-                AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
-                AEFile::Write((*items)[i]->isUnsaleable(), fd);
+        Array<Item *> *wingCargo = reinterpret_cast<Ship *>(Globals::status->field_8c)->getCargo();
+        if (wingCargo != 0) {
+            AEFile::Write((int32_t) wingCargo->size(), fd);
+            for (unsigned i = 0; i < wingCargo->size(); i++) {
+                AEFile::Write((int32_t) (*wingCargo)[i]->getIndex(), fd);
+                AEFile::Write((int32_t) (*wingCargo)[i]->getAmount(), fd);
+                AEFile::Write((int32_t) (*wingCargo)[i]->getSinglePrice(), fd);
+                AEFile::Write((*wingCargo)[i]->isUnsaleable(), fd);
             }
         } else {
             AEFile::Write((int32_t) 0, fd);
@@ -1648,14 +1646,14 @@ int RecordHandler::recordStoreWrite(int slot) {
     AEFile::Write((int32_t) Globals::status->field_114, fd);
     AEFile::Write(Globals::status->field_0x111, fd);
 
-    items = Globals::status->voidStation->getItems();
-    if (items != 0) {
-        AEFile::Write((int32_t) items->size(), fd);
-        for (unsigned i = 0; i < items->size(); i++) {
-            AEFile::Write((int32_t) (*items)[i]->getIndex(), fd);
-            AEFile::Write((int32_t) (*items)[i]->getAmount(), fd);
-            AEFile::Write((int32_t) (*items)[i]->getSinglePrice(), fd);
-            AEFile::Write((*items)[i]->isUnsaleable(), fd);
+    Array<Item *> *voidItems = Globals::status->voidStation->getItems();
+    if (voidItems != 0) {
+        AEFile::Write((int32_t) voidItems->size(), fd);
+        for (unsigned i = 0; i < voidItems->size(); i++) {
+            AEFile::Write((int32_t) (*voidItems)[i]->getIndex(), fd);
+            AEFile::Write((int32_t) (*voidItems)[i]->getAmount(), fd);
+            AEFile::Write((int32_t) (*voidItems)[i]->getSinglePrice(), fd);
+            AEFile::Write((*voidItems)[i]->isUnsaleable(), fd);
         }
     } else {
         AEFile::Write((int32_t) 0, fd);
@@ -1672,8 +1670,8 @@ int RecordHandler::recordStoreWrite(int slot) {
     }
 
     AEFile::Write(hints->flag[39], fd);
-    AEFile::Write(options->byte_0x35, fd);
-    AEFile::Write(options->byte_0x36, fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->byte_0x35, fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->byte_0x36, fd);
     AEFile::Write((int32_t) Globals::status->field_54->size(), fd);
     for (unsigned i = 0; i < Globals::status->field_54->size(); i++) {
         AEFile::Write((*Globals::status->field_54)[i], fd);
@@ -1690,11 +1688,11 @@ int RecordHandler::recordStoreWrite(int slot) {
         AEFile::Write((int32_t) 0, fd);
     }
     if (Globals::status->field_8c != 0) {
-        mods = reinterpret_cast<Ship *>(Globals::status->field_8c)->getMods();
-        if (mods != 0) {
-            AEFile::Write((int32_t) mods->size(), fd);
-            for (unsigned i = 0; i < mods->size(); i++) {
-                AEFile::Write((int32_t) (*mods)[i], fd);
+        Array<int> *wingMods = reinterpret_cast<Ship *>(Globals::status->field_8c)->getMods();
+        if (wingMods != 0) {
+            AEFile::Write((int32_t) wingMods->size(), fd);
+            for (unsigned i = 0; i < wingMods->size(); i++) {
+                AEFile::Write((int32_t) (*wingMods)[i], fd);
             }
         } else {
             AEFile::Write((int32_t) 0, fd);
@@ -1734,9 +1732,9 @@ int RecordHandler::recordStoreWrite(int slot) {
             for (unsigned j = 0; j < ships->size(); j++) {
                 if ((*ships)[j]->getMods() != 0) {
                     AEFile::Write((uint32_t) (*ships)[j]->getMods()->size(), fd);
-                    mods = (*ships)[j]->getMods();
-                    for (unsigned k = 0; k < mods->size(); k++) {
-                        AEFile::Write((int32_t) (*mods)[k], fd);
+                    Array<int> *shipMods = (*ships)[j]->getMods();
+                    for (unsigned k = 0; k < shipMods->size(); k++) {
+                        AEFile::Write((int32_t) (*shipMods)[k], fd);
                     }
                 } else {
                     AEFile::Write((int32_t) 0, fd);
@@ -1754,7 +1752,7 @@ int RecordHandler::recordStoreWrite(int slot) {
     for (int i = 0; i < 4; i++) {
         AEFile::Write((int32_t) Globals::status->getCollectedBounties(i), fd);
     }
-    AEFile::Write(options->byte_0x37, fd);
+    AEFile::Write(reinterpret_cast<OptionsBuffer *>(Globals::options)->byte_0x37, fd);
     AEFile::Write((int32_t) Globals::status->field_178, fd);
     AEFile::Write(hints->flag[40], fd);
     AEFile::Write(hints->flag[41], fd);

@@ -100,7 +100,10 @@ def parse_lsda(data, off):
     _lps, i = _read_enc(data, i, lps_enc)
     ttype_enc = data[i]
     i += 1
-    _ci, i = _read_enc(data, i, ttype_enc)
+    # libc++abi reads classInfoOffset as a ULEB128 offset from the byte after
+    # it (cxa_personality.cpp), NOT with ttypeEncoding.
+    if ttype_enc != 0xff:
+        _cioff, i = _uleb(data, i)
     cs_enc = data[i]
     i += 1
     n, i = _uleb(data, i)
@@ -145,12 +148,14 @@ def parse(path):
                     rec['model'] = 'prel31'
         best = None
         for v, sz, nm in funcs:
-            if v <= fn:
+            # .dynsym FUNC values are Thumb-tagged (odd); the exidx prel31
+            # decodes to the even function address.
+            if (v & ~1) <= fn:
                 best = (v, sz, nm)
             else:
                 break
         rec['name'] = best[2] if best else None
-        rec['foff'] = fn - best[0] if best else None
+        rec['foff'] = fn - (best[0] & ~1) if best else None
         entries.append(rec)
     return dict(data=data, secs=secs, entries=entries)
 
