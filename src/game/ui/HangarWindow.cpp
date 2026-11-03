@@ -846,7 +846,7 @@ void HangarWindow::render() {
                                         ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
                                           replaceable) &&
                                          (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
-                                        int b = item->inTabIndex < 0 ? 4 : 3;
+                                        int b = item->inTabIndex == -1 ? 4 : 3;
                                         (*this->buttons)[b]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX + listWidth -
                                             2 * Globals::layout->field_0x2c_rowHeight,
