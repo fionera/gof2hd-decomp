@@ -871,62 +871,6 @@ initState:
     this->dragging = 0;
 }
 
-void MenuTouchWindow::loadPreviewRecords() {
-    this->scrollOffset = 0;
-
-    this->dragLastX = 0;
-    this->field_0x210 = 0;
-    this->dragVelocity = 0;
-    this->inertiaDecay = 0;
-    this->inertiaVel = 0.0f;
-    this->dragStartX = 0;
-    this->dragging = 0;
-
-    int *metrics = &Globals::h;
-    Layout *layout = Globals::layout;
-    int *rowObj = &Globals::recordSlots;
-
-    this->contentHeight = (((metrics[0] - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin)
-                           - layout->field_0x20_top) - layout->field_0x24;
-
-    this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
-
-    Array<GameRecord *> *rec = this->previewRecords;
-    if (rec != 0) {
-        delete rec;
-        this->previewRecords = 0;
-    }
-    RecordHandler *rh = new RecordHandler();
-    this->previewRecords = (Array<GameRecord *> *) rh->readAllPreviewRecords();
-    delete rh;
-
-}
-
-void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
-    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
-                                       (yOff - this->buttonYBias) + Globals::h / 2 +
-                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
-                                       this->buttonWidth, 0x11, 0x04);
-    btn->id = id;
-    ArrayAdd<TouchButton *>(btn, *arr);
-
-    int *posX = Globals::sub_menu_buttons_x;
-    int *posY = Globals::sub_menu_buttons_y;
-    for (uint32_t i = 0; i < arr->count; i++) {
-        if (i < 10) {
-            {
-                Vector bpos = arr->data_[i]->getPosition();
-                posX[i] = (int) bpos.x;
-            }
-            {
-                Vector bpos = arr->data_[i]->getPosition();
-                posY[i] = (int) bpos.y;
-            }
-        }
-    }
-    Globals::sub_menu_button_count = arr->count;
-}
-
 MenuTouchWindow::~MenuTouchWindow() {
     if (this->buttons != 0) {
         ArrayReleaseClasses(*this->buttons);
@@ -1006,6 +950,62 @@ MenuTouchWindow::~MenuTouchWindow() {
     if (this->heapBufB != 0)
         ::operator delete[](this->heapBufB);
     this->heapBufB = 0;
+}
+
+void MenuTouchWindow::loadPreviewRecords() {
+    this->scrollOffset = 0;
+
+    this->dragLastX = 0;
+    this->field_0x210 = 0;
+    this->dragVelocity = 0;
+    this->inertiaDecay = 0;
+    this->inertiaVel = 0.0f;
+    this->dragStartX = 0;
+    this->dragging = 0;
+
+    int *metrics = &Globals::h;
+    Layout *layout = Globals::layout;
+    int *rowObj = &Globals::recordSlots;
+
+    this->contentHeight = (((metrics[0] - layout->field_0x10_rightMargin) - layout->field_0xc_leftMargin)
+                           - layout->field_0x20_top) - layout->field_0x24;
+
+    this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
+
+    Array<GameRecord *> *rec = this->previewRecords;
+    if (rec != 0) {
+        delete rec;
+        this->previewRecords = 0;
+    }
+    RecordHandler *rh = new RecordHandler();
+    this->previewRecords = (Array<GameRecord *> *) rh->readAllPreviewRecords();
+    delete rh;
+
+}
+
+void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
+    TouchButton *btn = new TouchButton(label, 0, Globals::w / 2 - this->buttonWidth / 2,
+                                       (yOff - this->buttonYBias) + Globals::h / 2 +
+                                       (Globals::layout->field_0x30_rowHeight + this->buttonRowGap) * row,
+                                       this->buttonWidth, 0x11, 0x04);
+    btn->id = id;
+    ArrayAdd<TouchButton *>(btn, *arr);
+
+    int *posX = Globals::sub_menu_buttons_x;
+    int *posY = Globals::sub_menu_buttons_y;
+    for (uint32_t i = 0; i < arr->count; i++) {
+        if (i < 10) {
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posX[i] = (int) bpos.x;
+            }
+            {
+                Vector bpos = arr->data_[i]->getPosition();
+                posY[i] = (int) bpos.y;
+            }
+        }
+    }
+    Globals::sub_menu_button_count = arr->count;
 }
 
 bool MenuTouchWindow::isInMissionScreen() {
