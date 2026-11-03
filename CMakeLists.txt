@@ -58,6 +58,13 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/SpaceLounge.cpp"
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 
+# MenuTouchWindow::OnTouchEnd's button-dispatch loop carries four __builtin_expect hints.  The
+# original's block layout is reproduced by the 3:1..19:1 (and 20:12) likely/unlikely plateau;
+# 5:1 raises the function's fuzzy match 95.2 -> 95.3 with byte_exact/linked_exact unchanged.
+# 25:1 and above fall back to the default 2000:1 layout.
+set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/ui/MenuTouchWindow.cpp"
+    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=5;-mllvm;-unlikely-branch-weight=1")
+
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI
 # runtime (libc++abi.a), and the zlib/libzip archives pulled whole (the original exports their full
