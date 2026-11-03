@@ -5180,3 +5180,8 @@ Wave-97 section-order pass: `SolarSystem` emission order (`w3745`) — original
 ctor/dtor/accessor order. Gate 4497/4497, gate `.so` byte-identical; plain no-order
 2857 -> 2860 (exact addrs 3470 -> 3495). Next frontier `GameRecord`.
 Note: `_work/reconstructions/solarsystem_emission_order_w3745.md`.
+Wave-97 function pass: `Level::createMission` 90.6392 -> 90.6887% (`w3740`) by using
+`bigAlienWave == 1` in the alienGuns ternary. 17172 B, gate 4497/4497.
+Wave-97 section-order pass: `SolarSystem` emission order (`w3745`) — original
+ctor/dtor/accessor order. Plain no-order 2857 -> 2860 (exact addrs 3470 -> 3495). Gate 4497/4497.
+Note: `_work/reconstructions/solarsystem_emission_order_w3745.md`.
