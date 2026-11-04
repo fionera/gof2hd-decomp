@@ -1,9 +1,12 @@
 # LevelScript::process — `.rel.plt` first-reference rotation (w4803, wave 98)
 
-Status: **analysis-only, no code change landed**. Branch `wave98-w4803`, base master
+Status: **landed** (`LevelScript::process pass 6`). Branch `wave98-w4803`, base master
 `fe4f5e7cf`. Target `_ZN11LevelScript7processEi` (`LevelScript::process`), original
-`0x137d18`, **57232 B (0xdf90)**, 20169 instructions. Current official raw
-**54.806399** (54.8 %).
+`0x137d18`, **57232 B (0xdf90)**, 20169 instructions.  The landed shape keeps the
+body size-exact at 57232 B and restores the original `.rel.plt` first-reference
+order (12 -> 0 differing bytes); its official raw is **53.131534** (53.1 %,
+was 54.806399) and `.text` differing bytes are **102,168** (was 101,978).
+The trade-off is documented in section 5.
 
 This pass attacks the last documented non-`.text` identity delta: the **12-byte
 `.rel.plt` rotation** (`docs/IDENTICALITY.md` §"only differing section bytes").
@@ -170,7 +173,7 @@ clean rows move `this` to `r9` and lose ~8-18 points.
 A further sweep of 16 separator combinations × one `__builtin_expect` on any of
 the four conditions (128 compiles) found **no size-exact clean variant**.
 
-## 5. Best size-exact clean candidate (not landed)
+## 5. Landed size-exact clean candidate
 
 `v_a` = HEAD + these five edits:
 
@@ -180,25 +183,71 @@ the four conditions (128 compiles) found **no size-exact clean variant**.
 4. case-139 `setCollide`: `m_pLevel->getPlayer()->setCollide(true)` → `player->setCollide(true)` (line 1471);
 5. drop the now-inert `(void) pad;` line (line 643).
 
-Result:
+Result (re-measured in the follow-up pass; the earlier 51.723880 / 102,329
+figures in this note were a stale measurement of the same edit set):
 
 ```
 size            57232 / 57232   (size-exact)
-official raw    51.723880       (was 54.806399)
-insns           20169 / 20002
+official raw    53.131534       (was 54.806399; -1.67 points)
+insns           20169 / 20003
 .rel.plt        byte-identical  (delete 0x675e > setVisible 0x64b2)
-.text diff      102,329 bytes   (was 101,978 -> +351)
+.text diff      102,168 bytes   (was 101,978 -> +190)
 gate            byte 4500, linked 4500, size 4524/4524, data 843/843,
                 imports 207, lint CLEAN, drift 0  (RATCHET PASS)
 ```
 
-So the PLT order is restored at the cost of 3.08 points of function score and
-+351 `.text` differing bytes — a net identity regression, hence not landed.
-Edits 2-4 are exactly the faithful `getPlayer()` re-fetches that w4702 added to
-reach 54.8 %; the S2 split is what flips the layout, and it forces those
-re-fetches back out to stay at `0xdf90`.
+The PLT order is restored at the cost of 1.67 points of function score and
++190 `.text` differing bytes.  Total differing bytes go from 101,990
+(101,978 + 12) to 102,168 (+178), so this is a `.rel.plt`-for-`.text`
+trade, not a free win; it was landed because the `.rel.plt` rotation was the
+explicitly requested target and the S2 split is the faithful CFG (section 6).
+Edits 2-4 revert the pass-5 `getPlayer()` re-fetches that w4702 added to reach
+54.8 %.  Section 6 shows that the `:721` and `:1471` re-fetches are faithful in
+the original, so reverting them is the size price paid for the clean PLT; only
+the `:1694` revert is itself faithful.
 
-## 6. Other measured variants (all size-exact, all dirty unless noted)
+## 6. Follow-up faithfulness audit (wave 98, w4803)
+
+The original disassembly proves the S2 split is the *faithful* shape, not an
+artefact:
+
+* mission-125 state-3 check: the original's `cmp r0,#3` at `0x13dcb6` is reached
+  both from the state-2 check's `bne.w 13dcb6` (`0x13b51e`) **and** from the
+  state-2 body's `beq.w 13dcb2` (`0x13b52e`) fall-through (which reloads
+  `m_nState` at `0x13dcb2` and falls into `cmp r0,#3`).  That is only possible
+  when state 3 is an independent `if`, i.e. `} if (m_nState == 3)`, not
+  `} else if`.  HEAD (bits `1011`) has `else if`; the landed shape uses the
+  independent `if` (bits `1001`).
+* mission-125 state-3 body: the original stores `movs r0,#4; str r0,[r5,#28]`
+  at `0x13dd22`, i.e. `m_nState = 4`, not `m_nState++`.  (`m_nState = 4` is
+  size-neutral in this shape and was measured at 53.131534 as well.)
+* pass-5 `getPlayer()` re-fetch audit (original vs source line):
+  - state-3 `setCollide(true)` (`LevelScript.cpp:721`) -> `0x138a34` **re-fetches**
+    `Level::getPlayer()`; the refetch is faithful.
+  - mission-1 `setCollide(true)` (`:1471`) -> `0x138028` **re-fetches**; faithful.
+  - case-139 `setCollide(true)` (`:1694`) -> `0x13f432` uses the cached player in
+    `r9`; the pass-5 refetch there is **not** faithful.
+  The landed shape reverts all three to `player->setCollide(...)` because that
+  is what buys the 24 bytes needed to offset the S2 split; the two reverts at
+  `:721`/`:1471` are therefore unfaithful and are the price of the size-exact
+  clean PLT.
+* `volatile int pad` (line 643) is inert in this shape (removal alone is
+  size-neutral); it is dropped in the landed tree.
+
+Other size-exact clean variants measured in the follow-up:
+
+| variant | size | official raw | .text diff |
+|---|---:|---:|---:|
+| landed: S2 + rotate + c721(all 3) + nopad | 57232 | 53.131534 | 102,168 |
+| + `m_nState = 4` | 57232 | 53.131534 | 102,160 |
+| + revert pass-5 `if` at "State-2 conclude" (`r3`) | 57232 | 52.957284 | 102,120 |
+| + `r3` + `m_nState = 4` | 57232 | 52.957284 | 102,108 |
+| + `r3` + `m_nState = 4` + case-139 revert | 57232 | 52.955965 | 102,105 |
+
+The last row has the lowest `.text` diff but needs an extra unfaithful
+`else if` revert; none reaches HEAD's 101,978.
+
+## 7. Other measured variants (all size-exact, all dirty unless noted)
 
 | variant | size | official raw | PLT |
 |---|---:|---:|---|
@@ -212,20 +261,23 @@ re-fetches back out to stay at `0xdf90`.
 | fold `state==2 && isOver()` (L_fold) | 57252 | 46.180677 | clean |
 | merge `state==2` into the 0/1 chain (E_merge) | 57244 | 40.930325 | clean |
 
-## 7. Conclusion / next steps
+## 8. Conclusion / next steps
 
 The `.rel.plt` rotation is a pure MachineBlockPlacement artefact: the
 mission-125 `>=4` chain (`bb.585`, frequency 3.6e8) is emitted before the
 mission-0 state-9 chain (`bb.667`, 1.5e8).  Restoring the original order
 requires the mission-125 chain to become colder than the mission-0 state-8/9
 chains, which in this tree can only be done by changing the `case 125`
-`if`/`else if` structure (`S2`), and that change also perturbs the register
-allocation / block layout enough to cost 3 points of score.  A future pass that
-decodes the mission-125 state machine (or the mission-0 state-8/9 bodies) more
-faithfully should re-run the 16-combination sweep: if the `S2` split becomes
-size-neutral with the faithful re-fetches, the PLT falls out for free.
+`if`/`else if` structure (`S2`).  The landed S2 split is the faithful shape
+(section 6a) and restores `.rel.plt` byte-identity, at the cost of 1.67 points
+of function score and +190 `.text` bytes.
 
-## 8. Reproduction
+A future pass that decodes the mission-125 state machine (or the mission-0
+state-8/9 bodies) more faithfully should re-run the 16-combination sweep: if the
+`S2` split becomes size-neutral with the faithful `:721`/`:1471` re-fetches
+kept, both the `.text` and `.rel.plt` deltas fall out for free.
+
+## 9. Reproduction
 
 ```
 cmake --build cmake-build-match --target link_so -j8
