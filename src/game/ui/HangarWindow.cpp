@@ -578,8 +578,9 @@ void HangarWindow::render() {
                                     if (left > 0) {
                                         // Codegen anchor: the dead store keeps the
                                         // list-body register roles (this -> r6) and
-                                        // the 9700-byte body of the original.
-                                        volatile int pad3 = y;
+                                        // the 9700-byte body of the original. Storing
+                                        // `left` (already in r0) avoids a reload of y.
+                                        volatile int pad3 = left;
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
@@ -952,11 +953,11 @@ void HangarWindow::render() {
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
+                // Codegen anchor: taking x's address pins the buy-credits
+                // register allocation, and the dead pointer keeps the original's
+                // separate cleanup region (156-row .ARM.extab) at 9700 bytes.
+                volatile int *pad0 = &x;
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
-                volatile int pad0 = count;
-                // The original's LSDA has a separate cleanup region covering
-                // this call; the volatile sink keeps that region (and hence
-                // .ARM.extab) at the original size without changing behaviour.
                 (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
@@ -1054,8 +1055,8 @@ void HangarWindow::render() {
             if (visible) {
                 int height = button->getHeight();
                 int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
-                volatile float textYf = (float) y + (float) height * 0.2f;
                 Globals::Canvas->SetColor(0xffffffffu);
+                volatile float textYf = (float) y + (float) height * 0.2f;
                 int textY = (int) textYf;
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
