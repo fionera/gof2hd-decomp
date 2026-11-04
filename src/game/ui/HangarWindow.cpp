@@ -544,16 +544,16 @@ void HangarWindow::render() {
                     if (item->isSelectable()) {
                         if (this->selectedItem == item && !item->isTextButton()) {
                             if (tab == 0 && item->inTabIndex >= 0)
-                                Globals::layout->drawBox(10, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                Globals::layout->drawBox(10, Globals::layout->buttonInsetX + this->hintOffsetX, y,
                                                          listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                             else
-                                Globals::layout->drawBox(4, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                                Globals::layout->drawBox(4, Globals::layout->buttonInsetX + this->hintOffsetX, y,
                                                          listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                         } else if (tab == 0 && item->inTabIndex >= 0) {
-                            Globals::layout->drawBox(9, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                            Globals::layout->drawBox(9, Globals::layout->buttonInsetX + this->hintOffsetX, y,
                                                      listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                         } else {
-                            Globals::layout->drawBox(3, this->hintOffsetX + Globals::layout->buttonInsetX, y,
+                            Globals::layout->drawBox(3, Globals::layout->buttonInsetX + this->hintOffsetX, y,
                                                      listWidth, Globals::layout->field_0x70_rowHeight, String(""));
                         }
                     }
@@ -604,24 +604,24 @@ void HangarWindow::render() {
                                 if (tab == 1) {
                                     Globals::Canvas->DrawString(
                                         hangarFont(), *Globals::gameText->getText(136),
-                                        this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a -
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + this->field_0x100.a -
                                         Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(136)) / 2,
                                         y + 2, false);
                                     Globals::Canvas->DrawString(
                                         hangarFont(), *Globals::gameText->getText(183),
-                                        listWidth + this->hintOffsetX - this->field_0x100.a -
+                                        this->hintOffsetX + listWidth - this->field_0x100.a -
                                         Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(183)) / 2,
                                         y + 2, false);
                                 } else {
                                     Globals::Canvas->DrawString(
                                         hangarFont(), *Globals::gameText->getText(183),
-                                        this->hintOffsetX + Globals::layout->buttonInsetX + this->field_0x100.a -
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + this->field_0x100.a -
                                         Globals::layout->field_0x254 -
                                         Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(183)) / 2,
                                         y + 2, false);
                                     Globals::Canvas->DrawString(
                                         hangarFont(), *Globals::gameText->getText(271),
-                                        listWidth + this->hintOffsetX - this->field_0x100.a +
+                                        this->hintOffsetX + listWidth - this->field_0x100.a +
                                         Globals::layout->field_0x258 -
                                         Globals::Canvas->GetTextWidth(hangarFont(), *Globals::gameText->getText(271)) / 2,
                                         y + 2, false);
@@ -815,13 +815,15 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            if (tab != 0 && !(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
-                                (*this->buttons)[1]->setPosition(
-                                    Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
-                                    this->field_0x114 + y, 18);
-                                (*this->buttons)[1]->setVisible(true);
-                                (*this->buttons)[1]->draw();
-                                buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                            if (tab != 0) {
+                                if (!(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                                    (*this->buttons)[1]->setPosition(
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
+                                        this->field_0x114 + y, 18);
+                                    (*this->buttons)[1]->setVisible(true);
+                                    (*this->buttons)[1]->draw();
+                                    buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                }
                             }
                             if (tab == 1 && this->upgradeMode) {
                                 (*this->buttons)[2]->setVisible(true);
@@ -1053,9 +1055,9 @@ void HangarWindow::render() {
             if (visible) {
                 int height = button->getHeight();
                 int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
-                volatile float textYf = (float) y + (float) height * 0.2f; // anchor: HangarWindow::render; plain float grows body 9700 -> 9752
-                int textY = (int) textYf;
+                volatile float textYf = (float) y + (float) height * 0.2f;
                 Globals::Canvas->SetColor(0xffffffffu);
+                int textY = (int) textYf;
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
                 Globals::Canvas->SetColor(0x777777ffu);
