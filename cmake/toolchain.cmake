@@ -25,11 +25,12 @@ set(CMAKE_AR "${GOF2_NDK_AR}" CACHE FILEPATH "NDK llvm-ar" FORCE)
 set(GOF2_MATCH_OPT "-Oz" CACHE STRING "Optimization level for the matching build (-Oz/-O2/-Os/...)")
 
 # The canonical match flags. Toolchain: NDK r18b, clang 7.0.2, armeabi-v7a, libc++ -- the compiler
-# the original .so's .comment names. -fPIC (not -fpic): the original .so has no R_ARM_REL32 text
-# relocs / DT_TEXTREL and accesses globals GOT-indirect (R_ARM_GLOB_DAT), which is -fPIC codegen;
-# -fpic emits R_ARM_REL32 the original lacks. API 16 is the original's: the first word of its
-# .note.android.ident is 0x10 (16), and NDK r18b's ndk-build default is android-16. All include
-# paths are absolute (CMake compiles from the build dir).
+# the original .so's .comment names. -fPIC: the original .so has no R_ARM_REL32 text relocs /
+# DT_TEXTREL and accesses globals GOT-indirect (R_ARM_GLOB_DAT). Both -fPIC and -fpic are
+# byte-identical on this source (the GOT fits the small model); -fPIC is CMake's spelling and the
+# conservative choice. API 16 is the original's: the first word of its .note.android.ident is
+# 0x10 (16), and NDK r18b's ndk-build default is android-16. All include paths are absolute
+# (CMake compiles from the build dir).
 # -g: ndk-build compiles with -g by default and strips at packaging. Debug info is not just
 # metadata at clang 7 -Oz: it keeps PostRA machine sinking from moving entry-block argument copies
 # past early exits (DBG_VALUE users pin them), which is the schedule the original shows. Measured:
