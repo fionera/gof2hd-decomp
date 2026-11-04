@@ -5399,3 +5399,26 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.jcr` 192; `.dynsym` 661; `.shstrtab` 5; build-id 20. 28 sections, file +44.
 - Open follow-ups: remove `.jcr` without losing 87.0%; close the last 4 B of `.ARM.extab`
   (a 332-byte createShip LSDA would do it); Layout/LevelScript/Radar remain the worst.
+
+## Session 2026-11-04 (wave 109 — 20-agent worst-first fleet)
+
+- Launched 20 `codex exec -p dsv41` workers from `7c34c4098`, one per worst function/angle,
+  each in its own `wt/w57xx` worktree with REA. Harvested after completion; worktrees removed.
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `Layout::Layout` 48.05 -> **48.27** (0x10c/0x138/0x160 int-phi round trips, 0x1a4 cast strip).
+  - `Level::createShip` 73.8 -> **74.4** (tuned spawn slot-map match).
+  - `HangarWindow::render` 88.25 -> **88.52** (sink value/placement tuning).
+  - `RocketGun::update` 88.3 -> **92.4** (hoist the dt conversion past the muzzle block).
+  - `MenuTouchWindow` ctor 95.63 -> **95.69** (hoist language-loop y base/pitch).
+  - `LevelScript::process` 56.057 -> **56.087** (6 adjacent-statement reorders; the
+    w5703+w5704 union was not size-exact, so only w5704 landed).
+- `Status::missionCompleted`: tried moving the rank table to a last-linked `.rodata` TU
+  (27 sections, exact file size) but it perturbed `.dynsym`/`.dynstr`/`.hash`/`.gnu.version`/
+  `.rel.plt` ordering (4,417 `.dynstr` bytes); reverted, so the `.jcr` placement stays.
+  Note: `status-missioncompleted-wave109-w5710.md`.
+- Section deltas now: `.text` **95,946**; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
+  `.jcr` 192; `.dynsym` 661; `.shstrtab` 5; build-id 20. 28 sections, file +44.
+- Open follow-ups: close the last 4 B of `.ARM.extab` (a 332-byte createShip LSDA would do it);
+  remove `.jcr` without losing 87.0% or perturbing the dynamic tables; Layout/LevelScript/Radar
+  remain the worst.

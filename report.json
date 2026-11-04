@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 48.0,
+   "pct": 48.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 48.0,
+   "pct": 48.3,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -40,20 +40,20 @@
    "usize": 57232
   },
   {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
-  },
-  {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
    "pct": 74.0,
    "byte": false,
    "linked": false,
    "osize": 9908,
    "usize": 9908
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 74.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -104,14 +104,6 @@
    "usize": 968
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 88.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
    "pct": 88.3,
    "byte": false,
@@ -120,12 +112,12 @@
    "usize": 2252
   },
   {
-   "name": "_ZN9RocketGun6updateEi",
-   "pct": 88.3,
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 88.5,
    "byte": false,
    "linked": false,
-   "osize": 1908,
-   "usize": 1908
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
@@ -142,6 +134,14 @@
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN9RocketGun6updateEi",
+   "pct": 92.4,
+   "byte": false,
+   "linked": false,
+   "osize": 1908,
+   "usize": 1908
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
@@ -161,7 +161,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 95.6,
+   "pct": 95.7,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -169,7 +169,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 95.6,
+   "pct": 95.7,
    "byte": false,
    "linked": false,
    "osize": 9600,

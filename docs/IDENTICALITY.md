@@ -4,7 +4,7 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-04 (wave 108)
+## Update 2026-11-04 (wave 109)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact **4524/4524**, data_exact
@@ -12,42 +12,41 @@ byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact **4524/4524**, 
 parity **5370/5370** (0 extra / 0 missing), avg **99.92%**. 24 functions remain
 non-byte-exact.
 
-Wave 108 (20 parallel `codex exec -p dsv41` workers) continued worst-first and recovered the
-wave-106 fuzzy peaks while keeping the file layout stable: `Hud::draw` 93.3 -> **94.6**,
-`Level::createShip` 66.0 -> **73.8**, `HangarWindow::render` 86.3 -> **88.3**,
-`LevelScript::process` 54.8 -> **56.1**, `Layout::Layout` 48.0 -> **48.05**,
-`MenuTouchWindow` ctor 95.5 -> **95.6**. `.text` content delta dropped 98,918 -> **96,488**.
+Wave 109 (20 parallel `codex exec -p dsv41` workers) continued worst-first:
+`Layout::Layout` 48.0 -> **48.3**, `Level::createShip` 73.8 -> **74.4**,
+`HangarWindow::render` 88.3 -> **88.5**, `RocketGun::update` 88.3 -> **92.4**,
+`MenuTouchWindow` ctor 95.6 -> **95.7**; `LevelScript::process` stayed at **56.1**.
+`.text` content delta dropped 96,488 -> **95,946**.
 
-The `Status::missionCompleted` rank table moved from `.fini_array` to a new `.jcr` section,
-which gold places in the zero-filled `.rodata`..`.fini_array` gap: `.fini_array` is back to
-8 B, `.dynamic` and `.rel.dyn` are byte-identical, and the 48 table words are no longer
-called as exit destructors. Cost: a 28th section header, `.shstrtab` 279 -> 284 B, file size
-+44 B, and 661 `.dynsym` bytes (section-index shift). The table is a codegen device, not
-original data; removing it without losing the 87.0% body order is the top structural
-follow-up.
+The `Status::missionCompleted` rank table stays in the `.jcr` section (192 B) placed in the
+zero-filled `.rodata`..`.fini_array` gap: `.fini_array`/`.dynamic`/`.rel.dyn` are exact and
+there is no exit-destructor hazard. A wave-109 attempt to move the table into a last-linked
+`.rodata` TU restored 27 sections and the exact file size but perturbed
+`.dynsym`/`.dynstr`/`.hash`/`.gnu.version`/`.rel.plt` ordering (4,417 `.dynstr` bytes), so it
+was reverted; the note is `status-missioncompleted-wave109-w5710.md`.
 
 **One structural delta remains open:** `.ARM.extab` is 4 bytes short (`0x26294` vs `0x26298`;
 `LevelScript::process` +4, `Hud::draw` +4, `Level::createShip` -8,
 `Generator::createMission` -4 sum to -4). `.rodata` still starts at the original `0x1c9e10`
 because the 4-byte shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **96,488**; `.ARM.exidx` **1,683** raw bytes;
+The only differing section bytes are `.text` **95,946**; `.ARM.exidx` **1,683** raw bytes;
 `.ARM.extab` **128,950** (size 4 B short); `.jcr` **192** (the rank table); `.dynsym`
 **661**; `.shstrtab` **5**; and `.note.gnu.build-id` **20**. Everything else (`.rodata`,
 `.data`, `.data.rel.ro`, `.plt`, `.got`, `.init_array`, `.fini_array`, `.dynamic`,
 `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`, `.comment`,
 `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`) is byte-identical.
 
-The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.0,
-`LevelScript::process` 56.1, `Level::createShip` 73.8, `Radar::draw` 74.0,
+The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.3,
+`LevelScript::process` 56.1, `Radar::draw` 74.0, `Level::createShip` 74.4,
 `MGame::OnTouchEnd` 78.9, `Globals::Globals` C1/C2 80.5, `Generator::createMission` 82.1,
 `Status::missionCompleted` 87.0, `PlayerEgo::calcCollision` 87.6,
-`HangarWindow::render` 88.3, `Level::createScene` 88.3, `RocketGun::update` 88.3,
-`Gun::calcCharacterCollision` 90.0, `Level::createMission` 92.1, `Hud::draw` 94.6,
-`SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.6,
+`Level::createScene` 88.3, `HangarWindow::render` 88.5, `Gun::calcCharacterCollision` 90.0,
+`Level::createMission` 92.1, `RocketGun::update` 92.4, `Hud::draw` 94.6,
+`SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.7,
 `MenuTouchWindow::OnTouchBegin` 98.1, `ModStation::ModStation` C1/C2 98.6,
 `MGame::OnUpdate` 99.9. See `_work/reconstructions/build_flag_research_wave104.md` and the
-wave-106/107/108 notes.
+wave-106..109 notes.
 
 ## Update 2026-10-26 — historical (superseded by the update above)
 
@@ -251,7 +250,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 96,488 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 95,946 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,683 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short** after wave 108: `LevelScript::process` +4 (352 vs 348), `Hud::draw` +4 (480 vs 476), `Level::createShip` -8 (328 vs 336), `Generator::createMission` -4 (168 vs 172) sum to -4. The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 128,950 content bytes differ. |
