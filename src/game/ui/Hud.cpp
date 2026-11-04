@@ -1635,39 +1635,36 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
+            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
-            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             unsigned short top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
                                           (Globals::w >> 1) - barW / 2, barYOffset + top);
-            unsigned int fontId = (unsigned int) (uintptr_t) Globals::font;
-            int halfW = Globals::w >> 1;
-            float textY = (float) top + (float) barH * 2.5f;
-            Globals::Canvas->DrawString(fontId, text, halfW - (Globals::Canvas->GetTextWidth(fontId, text) >> 1), (int) textY, false);
+            Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1), (int) ((float) (top * 2) + (float) barH * 2.5f), false);
             if (this->field_0x27a && Globals::status->getMission() != 0 &&
                 Globals::status->getMission()->getType() != 168)
                 Globals::Canvas->DrawImage2D(
                     this->image_0x380,
                     (Globals::w >> 1) +
                         (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
-                    (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                    (int) (((float) (top * 2) + (float) barH * 2.5f) + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
                     0x11, 0x41);
             if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174)
                 Globals::Canvas->DrawImage2D(
                     this->image_0x384,
                     (Globals::w >> 1) +
                         (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1),
-                    (int) (textY + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
+                    (int) (((float) (top * 2) + (float) barH * 2.5f) + (float) (Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font) / 2)),
                     0x11, 0x41);
         }
         float rate;
@@ -1682,8 +1679,8 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
-            int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
+            int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int barYOffset = Globals::layout->field_0x218;
             this->field_0x464 += dt;
