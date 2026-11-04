@@ -36,7 +36,7 @@ byte-identical.
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
 `LevelScript::process` 54.8, `Status::missionCompleted` 60.4, `Radar::draw` 73.9,
 `Level::createShip` 74.4, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
-`Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.6, `RocketGun::update` 86.9,
+`Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.8, `RocketGun::update` 86.9,
 `PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
 `Level::createMission` 91.0, `Hud::draw` 91.7, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.1,
 `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
@@ -257,7 +257,7 @@ The original build is now pinned by evidence, not by A/B alone:
 1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
    `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (60.4%),
    `Radar::draw` (73.9%), `Generator::createMission` (74.3%), `Level::createShip` (74.4%),
-   `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.6%) and
+   `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.8%) and
    `RocketGun::update` (86.9%).
    The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
    deltas, not missing code.
