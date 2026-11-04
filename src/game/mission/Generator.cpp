@@ -747,9 +747,8 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
-    // LSDA-scope anchor: keeps the body at the original 1996 B while the `toSystem`
-    // temporary below is folded into the distance call (see
-    // _work/reconstructions/extab_lsda_scopes_w102_wm103.md).
+    // LSDA-scope anchor: keeps the body at the original 1996 B and the .ARM.extab
+    // record at 168 B (see _work/reconstructions/Generator-createMission-w103.md).
     volatile double padA = 0; (void) padA;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
@@ -760,16 +759,19 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int level;
+    int itemId;
+    volatile int amount;
+
     bool selected = false;
     int32_t type = 0;
     int guard = 999;
     Array<bool> *used = Globals::status->field_50;
-    for (; !selected; --guard) {
+    while (!selected) {
         selected = guard < 1;
-        short pick = Globals::rnd->nextInt(15);
-        type = pick;
+        int pick = Globals::rnd->nextInt(15);
+        --guard;
         if (pick == 8) goto assignType;
-        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; plain form shrinks body 1996 -> 1988
+        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint, plain form drops the match 74.3% -> 54.1%
             type = 10;
             if (race > 3) continue;
         }
@@ -870,8 +872,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = Globals::rnd->nextInt(9);
     }
 
-    int itemId = 0;
-    int amount = 0;
+    itemId = 0;
+    amount = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
         do {
@@ -879,8 +881,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         } while ((*items)[itemId]->getOccurence() == 0 || (*items)[itemId]->getSinglePrice() == 0 ||
                  (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
-        amount = Globals::rnd->nextInt(15) + 5;
+        int count = Globals::rnd->nextInt(15);
         difficulty = (*items)[itemId]->getTecLevel();
+        amount = count + 5;
     } else {
         ++difficulty;
         switch (type) {
@@ -964,10 +967,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
-        // 0.5f + 1 ulp: same result after truncation, keeps the original code size.  The real
-        // 4 bytes are the non-folded pick == 12 ternary; see
-        // _work/reconstructions/Generator-createMission-pick12-ternary-w3592.md.
-        costs = (int) ((float) costs * 0.5000001f);
+        costs = (int) ((float) costs * 0.5f);
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
     }
