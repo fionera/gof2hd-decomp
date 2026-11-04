@@ -593,7 +593,7 @@ void HangarWindow::render() {
                                         (*this->buttons)[8]->setVisible(true);
                                         (*this->buttons)[8]->draw();
                                     }
-                                    if (right) {
+                                    if (right > 0) {
                                         (*this->buttons)[9]->setPosition(
                                             Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                             this->field_0x114 + y, 18);
