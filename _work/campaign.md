@@ -5276,3 +5276,31 @@ Gate 4498/4498. Note: `_work/reconstructions/spacelounge_startchat_pull_w3745.md
 Wave-97 section-order pass: `MeshMerger` order (`w3745`) — setMesh/setLod/setMatrix/setEnabled/
 init/transformMesh/update/render/dtor. Plain no-order 3007 -> 3012 (addresses 3880 -> 3890,
 prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_order_w3745.md`.
+
+## Session 2026-11-04 (wave 105 — 20-agent worst-first fleet)
+
+- Launched 20 `codex exec -p dsv41` workers from `835748c18`, one per worst function/angle,
+  each in its own `wt/w53xx` worktree with REA (`GHIDRA_INSTALL_DIR=/tmp/ghidra_12.1.2_PUBLIC`)
+  for shipped-binary evidence. All 20 completed; worktrees removed after harvest.
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `Layout::Layout` 47.77 -> 47.85 (true 3-arm `rewardBoxY2` + `(int)(float)` round-trips).
+  - `LevelScript::process` 53.4 -> 54.2 (prologue/re-fetch codegen; w5304's 3,5,4 code was
+    not additive on top, so only its note landed).
+  - `Generator::createMission` 77.5 -> 81.5 (LSDA pad placement + cold type-12 arm).
+  - `Level::createShip` 66.4 -> 66.6 (waypoint declaration order).
+  - `MGame::OnTouchEnd` 74.8 -> 78.4 (tuned block layout).
+  - `HangarWindow::render` 84.4 -> 84.7 (drawBox/header operand order + SetColor schedule).
+  - `Hud::draw` 92.9 -> 93.3 (dock/second-bar ordering + `short frameH`/`transferred`).
+- `Status::missionCompleted` reached 87.0 with a 32-entry rank table, but that adds a 28th
+  `.missioncase` section (original has 27) and is a codegen device, not original data. Code was
+  not landed; the note is in `_work/reconstructions/status-missioncompleted-wave105-w5305.md`.
+- Remaining 24 functions are size-exact. `.text` content delta dropped 100,113 -> 99,226 bytes;
+  `.ARM.extab` 108,294; `.ARM.exidx` 829; `.rel.plt` 0; build-id 20. Section count stayed 27.
+- New durable notes: `layout-layout-c1-c2-*_w5301.md`, `levelscript-process-eh-lsda-w5304.md`,
+  `status-missioncompleted-wave105-w5305.md`, `level-createscene-wave105-w5308.md`,
+  `level-createmission-wave105-w5309.md`, `radar-draw-pass18-w5310.md`,
+  `mgame-onupdate-wave105-w5312.md`, `globals-globals-c1-c2-w5314.md`,
+  `rocketgun-update-w5315.md`, `playerego-calccollision-wave105-w5316.md`,
+  `gun-calccharactercollision-w5317.md`, `menutouchwindow-wave105-w5319.md`,
+  `spacelounge-drawlounge-modstation-ctor-w5320.md`.
