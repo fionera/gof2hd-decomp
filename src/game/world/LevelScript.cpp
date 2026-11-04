@@ -684,8 +684,8 @@ bool LevelScript::process(int delta) {
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
-                Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
+                Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 resetCamera(m_pLevel);
                 player->setFreeLookMode(false);
                 m_pCamera->enableFirstPersonCam(false);
@@ -713,9 +713,9 @@ bool LevelScript::process(int delta) {
                 m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
                 m_nState = 4;
                 player->setComputerControlled(false);
+                m_pLevel->getPlayer()->setCollide(true);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -2157,8 +2157,8 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                         m_nState = 2;
+                        m_bCinematicBreak = 0; // cinematicBreak_ (m_nFlags high byte @0x11) = 0
                         (*m_pLevel->getEnemies())[0]->setActive(false);
                         (*m_pLevel->getEnemies())[0]->setToSleep();
                         (*m_pLevel->getEnemies())[0]->setPosition(0.0f, 0.0f, -5000000.0f); // vtable+0x48
@@ -2273,8 +2273,8 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (((RadioMessage *) ((*messages)[9]))->isTriggered() && m_nState == 5) {
                     player->player->setVulnerable(true);
-                    player->freeze = 0;
                     (*enemies)[10]->setSpeed(8.0f);
+                    player->freeze = 0;
                     m_pCamera->setLookAtCam(false);
                     m_pCamera->setTarget(player->geometry);
                     player->setComputerControlled(false);
@@ -2556,8 +2556,8 @@ bool LevelScript::process(int delta) {
                         m_nState = 3;
                     }
                 } else if (m_nState == 3) {
-                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
+                    (*enemies)[0]->geometry->updateReferenceMatrix();
                     freighter->setPosition(2006.0f, -31500.0f, -86720.0f);
                     freighter->geometry->setRotation(-0.4f, 0.0f, 1.8f);
                     ((PlayerFixedObject *) freighter)->setExhaustVisible(false);
@@ -2862,8 +2862,8 @@ bool LevelScript::process(int delta) {
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
-                        AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pRadar->enabled = 0;
+                        AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
                         m_dirVec = leader->getDirection();
@@ -3536,8 +3536,8 @@ bool LevelScript::process(int delta) {
                             Vector playerPos = player->getPosition();
                             int sideX = Globals::rnd->nextInt(100);
                             int offsetY = Globals::rnd->nextInt(1000);
-                            int offsetZ = Globals::rnd->nextInt(2000);
                             int sideZ = Globals::rnd->nextInt(100);
+                            int offsetZ = Globals::rnd->nextInt(2000);
                             Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
                                           (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
                             pirate->setPosition(playerPos + offset);
@@ -4624,13 +4624,13 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                Vector pos = (*enemies)[0]->geometry->getPosition();
                 Vector zero{0.0f, 0.0f, 0.0f};
+                Vector pos = (*enemies)[0]->geometry->getPosition();
                 Globals::sound->updateEvent3DAttributes(2281, &pos, &zero, false);
                 if (Globals::status->field_178 > 7 && m_nScriptTime <= 179999) {
                     if (m_nScriptTimerB == 0) {
-                        Globals::sound->play(2282, nullptr, nullptr, 0.0f);
                         m_nScriptTimerB = 1;
+                        Globals::sound->play(2282, nullptr, nullptr, 0.0f);
                     }
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*enemies)[0]->geometry->transform))
                             ->Update((long long) delta, true);
