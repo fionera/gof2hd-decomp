@@ -26,7 +26,7 @@ rank-table section (28 total, `.shstrtab` 0x124 vs the original's 0x117). `.text
 short of the original's `0x26298`: the w4270 HangarWindow pass reverted the `padS` EH anchor
 (78.8 -> 80.6% body) and the w4415 Hud pass changed the extab row split by +4; the remaining
 4-byte row is the known residual. The only differing section bytes are
-`.text` 101,394; `.ARM.exidx` 1,637; `.rel.plt` **0** (the former 6-entry rotation was removed by the
+`.text` 101,721; `.ARM.exidx` 1,637; `.rel.plt` **0** (the former 6-entry rotation was removed by the
 w4803/w5002 `LevelScript::process` independent-state-3 pass); `.note.gnu.build-id` 20 (plus the
 `.ARM.extab` 4-byte size delta). Everything
 else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
@@ -238,7 +238,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 101,394 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 101,721 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 839 raw bytes (822 `w1` prel31 targets) still differ, all in the three remaining shifted LSDA ranges (`Generator::createMission`, `Level::createShip`, `LevelScript::process`). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base exact (0x1a3b78). The five remaining per-function LSDA deltas are `Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4, `HangarWindow::render` -8 and `Hud::draw` +4 (480 B / 78 rows; net -4). `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) is record-length-exact. Raw address operands still differ with local `.text` layout (108,469 differing bytes). |
