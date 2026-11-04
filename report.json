@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.9,
+  "avg_match": 99.91,
   "byte_exact": 4500,
   "linked_exact": 4500,
   "fuzzy_perfect": 4500,
@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 47.7,
+   "pct": 47.8,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 47.7,
+   "pct": 47.8,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,19 +33,11 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 54.8,
+   "pct": 53.2,
    "byte": false,
    "linked": false,
    "osize": 57232,
    "usize": 57232
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 60.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -104,6 +96,14 @@
    "usize": 9700
   },
   {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 85.6,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
+  },
+  {
    "name": "_ZN9RocketGun6updateEi",
    "pct": 86.9,
    "byte": false,
@@ -137,7 +137,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 91.0,
+   "pct": 91.1,
    "byte": false,
    "linked": false,
    "osize": 17172,
@@ -145,7 +145,7 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 91.7,
+   "pct": 93.0,
    "byte": false,
    "linked": false,
    "osize": 9332,
