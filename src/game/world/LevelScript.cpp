@@ -716,7 +716,7 @@ bool LevelScript::process(int delta) {
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
+                player->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -1592,7 +1592,7 @@ bool LevelScript::process(int delta) {
                     (*enemies)[0]->geometry->moveForward((float) m_nScriptTimerA * 0.1f);
                     if (m_nScriptTimerB >= 12001 && ((RadioMessage *) ((*messages)[2]))->isOver()) {
                         field_0x24 = 0;
-                        player->resetGunDelay();
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -3169,7 +3169,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (((RadioMessage *) ((*messages)[3]))->isOver() && m_nScriptTimerA >= 18001) {
-                        player->resetGunDelay();
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -3574,7 +3574,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += leader->getRightVector() * -500.0f;
                         m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
-                        m_nState++;
+                        m_nState = 4;
                     }
                 } else if (m_nState == 3) {
                     // First-reference anchor for the five mission-0 intro calls. The original
@@ -3600,7 +3600,7 @@ bool LevelScript::process(int delta) {
                         for (int i = 2; i < 6; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                         }
-                        m_nState++;
+                        m_nState = 4;
                         player->setVisible(true);
                         player->setFreeze(false);
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
@@ -4588,7 +4588,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec = player->geometry->getPosition();
                         AEGeometry *ship = player->geometry;
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
-                                                   m_pLevel->getPlayer()->getPosition()
+                                                   player->getPosition()
                                                    - ((KIPlayer *) m_pLevel->getDockingTarget(0))->geometry->getPosition()),
                                            Vector{0.0f, 1.0f, 0.0f});
                         m_dirVec = player->geometry->getDirection();
