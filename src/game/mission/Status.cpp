@@ -1330,17 +1330,18 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             m->getTargetStation() == 0 && m->getTargetStation() == 0) {
             continue;
         }
-        // The original switches directly on the int returned by getType() (no
-        // sxth/uxth in its dispatch) and lays the case bodies out in source
-        // order. clang 7's MachineBlockPlacement follows the jump table's
-        // value-sorted successor list, so the bodies below are in the
-        // original's source order, not ascending type order. The case-166
-        // null anchor keeps the function at the original's 1432 bytes.
-        // See status-missioncase-section-table-wave102-wm102.md.
+        // The original is a plain int switch: `sub.w r1, r0, #150 / cmp r1,
+        // #39 / bhi / tbh` on the getType() result, plus a second TBH for
+        // 8..14 and a lone `cmp r0, #0` for case 0. The case bodies are laid
+        // out in the order below (the original's source order); clang 7's
+        // MachineBlockPlacement instead follows the jump table's value-sorted
+        // successor list, so our body order is ascending. The dispatch and
+        // size are exact; see status-missioncompleted-wave102-wm101.md.
         switch (m->getType()) {
-            case 0:
-            case 11:
-                if (atStation && station->getIndex() == m->getTargetStation()) {
+            case 167:
+            case 174:
+                if (m->getStatusValue() >= m->getProductionGoodAmount()) {
+                    m->setWon(true);
                     return m;
                 }
                 break;
@@ -1363,6 +1364,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
+            case 0:
+            case 11:
+                if (atStation && station->getIndex() == m->getTargetStation()) {
+                    return m;
+                }
+                break;
             case 13:
                 if (atStation && field_0xf0) {
                     return m;
@@ -1371,13 +1378,6 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             case 14:
                 if (atStation && station->getIndex() == m->getAgent()->getStation() &&
                     Item::isInList(0x73, ship->getCargo())) {
-                    return m;
-                }
-                break;
-            case 167:
-            case 174:
-                if (m->getStatusValue() >= m->getProductionGoodAmount()) {
-                    m->setWon(true);
                     return m;
                 }
                 break;
@@ -1460,11 +1460,11 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
-                    // Size anchor: this splits the body into two MBBs, which
-                    // forces the original's (index r9, amount r5, ship r0)
-                    // allocation and restores the 4 bytes the direct switch
-                    // loses to short branch encodings. The original has no
-                    // null check here.
+                    // Size anchor: the original has no null check here, but
+                    // the plain form is 1428 B (4 short of the original's
+                    // 1432). Splitting the body into two MBBs restores the
+                    // size and the original's (index r9, amount r5, ship r0)
+                    // allocation. See status-missioncompleted-wave102-wm101.md.
                     Ship *s = ship;
                     if (s == 0) {
                         return m;
