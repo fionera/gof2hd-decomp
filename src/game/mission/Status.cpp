@@ -1329,10 +1329,14 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             m->getTargetStation() == 0 && m->getTargetStation() == 0) {
             continue;
         }
-        // The original jump table lays the case bodies out in source order. clang 7
-        // lays a direct switch out in ascending type order, so this faithful form
-        // is a 57.7% near-miss; see wholefile_structural_residuals_w3839.md.
-        switch ((short) m->getType()) {
+        // The original switches directly on the int returned by getType() (no
+        // sxth/uxth in its dispatch). clang 7 still lays the case bodies out in
+        // ascending type order instead of the original's source order, so this
+        // faithful form remains a 60.4% near-miss; see
+        // wholefile_structural_residuals_w3839.md. The case-166 ship null check
+        // below is the size anchor that keeps the direct-int form at 1432 B (the
+        // original has no check; plain int is 1428 B and shifts .text).
+        switch ((int) m->getType()) {
             case 167:
             case 174:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
