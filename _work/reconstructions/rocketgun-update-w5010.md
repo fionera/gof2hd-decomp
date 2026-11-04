@@ -311,3 +311,50 @@ compile), `try.sh` (copy variant + `ninja link_so` + score), `score.py`
 (single-symbol official verifier), `slots.py` / `search*.py` (weight-set
 search), `batch*.py` (variant batteries), and the `v_*.cpp` variants; none of
 it is in the repo.
+
+---
+
+## 9. Register-allocation trace: why `elapsed` lands in `r5`, not `r4`
+
+The wave-100 brief says the residual is not register colouring, but the trace
+is worth recording because it explains the coupled weight problem. With the
+self-built clang (`RA_TRACE=1`, `-mllvm -debug-only=regalloc`):
+
+```
+ENQ %29 size=14894 prio=3758111278          ; elapsed (arg)
+select %29 ... try $r4 intf=0
+assign %29 -> $r4                            ; elapsed first takes r4
+select %28 ... try $r4 intf=1 i0=%29
+assign %28 -> $r5                            ; this takes r5
+select %247 ... try $r4 intf=1 i0=%29
+assign %247 -> $r6                           ; dt
+select %251 ... try $r4 intf=1 i0=%29
+TRYASSIGN2 %251 phys=$r8 cheap=$r4 cost=1
+assign %251 -> $r4                           ; hoisted %stack.4 address EVICTS elapsed
+ENQ %29 ... select %29
+try $r4 intf=1 i0=%251 ; try $r5 intf=1 i0=%28 ; try $r6 intf=1 i0=%247
+try $r8 intf=0
+assign %29 -> $r8                            ; elapsed evicted to r8
+... RS_Split ...
+select %426 (COPY %29) ... try $r5 intf=0
+assign %426 -> $r5                           ; entry copy ends in r5
+```
+
+`%251` is `t2ADDri %stack.4.ref.tmp, 0`, the loop-invariant address of the
+shared `Vector` temporary (`velocities[i] * dt * 0.5f`), hoisted to the
+preheader and live across the whole loop. It evicts `%29` from `r4` even at
+1/1000 of its weight (pass 9's `VRW` sweep). Forcing the entry copy with
+`FORCEEVICT=1 FORCEANYFN=1 FORCEVREG=2147484074:70 RA_TRACE=1` reproduces
+**88.3 %** (635/636 insns, 1908 B): `elapsed`→r4, `player`/`this`→r5, but the
+frame slots stay `elapsed@12, this@20` (no `strd`). So register colouring and
+slot assignment are indeed independent: the 88.3 % is real but does not fix
+the byte diff, and no source shape tried this pass moves `elapsed` to `r4`
+(the `%251` hoist is decided by MachineLICM, and disabling it drops the score
+to 48.9).
+
+The source lever implied by the trace is to stop the three
+`velocities[i] * dt * 0.5f` temporaries from sharing one stack object, so the
+address is not hoisted. Every shape tried (`Vector vel = ...`, `halfDt`
+scalar, parenthesisation, `pos`/`vel` pointer locals, distinct forms in the
+two ahead computations) either keeps the baseline allocation (86.9) or changes
+it wholesale (52-62 %).
