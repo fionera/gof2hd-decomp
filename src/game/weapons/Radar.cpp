@@ -440,7 +440,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     int top = (int) (PlayerEgo::crosshairPos.y - (float) size);
                     bool topOk = top < this->screenY;
                     if (left < this->screenX && this->screenY < top + size + size && topOk &&
-                        left + size + size > this->screenX) {
+                        this->screenX < left + size + size) {
                         if (this->field_0x28 != this->landmarks->data()[i]) {
                             this->stationLockTimer = 0;
                         }
