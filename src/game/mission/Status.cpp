@@ -1320,7 +1320,7 @@ static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xf
 // The ranks span 150..181 (a 32-entry TBH) rather than the full 150..189: the
 // narrower table plus the case-159 null anchor below keeps the function at the
 // original's 1432 bytes. See status-missioncompleted-wave101-wf108.md.
-#pragma clang section rodata=".missioncase"
+#pragma clang section rodata=".fini_array"
 static const unsigned char kMissionCase[192] = {
     0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
