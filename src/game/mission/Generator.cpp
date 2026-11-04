@@ -869,7 +869,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     AbyssEngine::String agentName = agent->getName();
 
     int itemId = 0;
-    amount = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
         do {
@@ -881,6 +880,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
+        amount = 0;
         ++difficulty;
         switch (type) {
             case 0:
