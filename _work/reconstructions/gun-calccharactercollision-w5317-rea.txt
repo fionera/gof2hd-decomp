@@ -1,0 +1,363 @@
+
+/* Gun::calcCharacterCollision() */
+
+void __thiscall Gun::calcCharacterCollision(Gun *this)
+
+{
+  uint uVar1;
+  uint uVar2;
+  byte bVar3;
+  bool bVar4;
+  bool bVar5;
+  bool bVar6;
+  bool bVar7;
+  PaintCanvas *this_00;
+  uint *puVar8;
+  int iVar9;
+  undefined8 *puVar10;
+  Gun *pGVar11;
+  int *piVar12;
+  undefined4 uVar13;
+  PlayerEgo *pPVar14;
+  Hud *pHVar15;
+  Gun GVar16;
+  int iVar17;
+  uint uVar18;
+  int iVar19;
+  uint uVar20;
+  Vector *this_01;
+  Player *this_02;
+  uint uVar21;
+  uint in_fpscr;
+  float extraout_s0;
+  float fVar22;
+  float extraout_s0_00;
+  float extraout_s0_01;
+  float extraout_s1;
+  float extraout_s1_00;
+  float fVar23;
+  float extraout_s2;
+  float extraout_s2_00;
+  float fVar24;
+  Vector aVStack_10c [60];
+  AEMath aAStack_d0 [60];
+  float local_94;
+  float local_90;
+  float local_8c;
+  undefined8 local_88;
+  float local_80;
+  undefined8 local_78;
+  float local_70;
+  int local_6c;
+  
+  local_6c = __stack_chk_guard;
+  puVar8 = *(uint **)(this + 0xb4);
+  if (puVar8 != (uint *)0x0) {
+    iVar17 = *(int *)(this + 0x5c);
+    if ((iVar17 - 6U < 2) || (iVar17 == 0x2a || iVar17 == 0x22)) {
+      bVar5 = true;
+      bVar7 = true;
+    }
+    else {
+      bVar5 = true;
+      bVar7 = false;
+      if ((1 < iVar17 - 4U) && (bVar7 = false, iVar17 != 0x28)) {
+        bVar7 = false;
+        bVar5 = false;
+      }
+    }
+    bVar6 = iVar17 == 0xb;
+    this_01 = (Vector *)(this + 0xd8);
+    *(undefined4 *)this = 0;
+    for (uVar18 = 0; uVar18 < *puVar8; uVar18 = uVar18 + 1) {
+      this_02 = *(Player **)(puVar8[1] + uVar18 * 4);
+      if ((((!bVar6) ||
+           ((this_02[0x5c] != (Player)0x0 &&
+            ((iVar9 = Player::getKIPlayer(this_02), iVar9 == 0 ||
+             (iVar9 = Player::getKIPlayer(this_02), *(char *)(iVar9 + 0x41) == '\0')))))) &&
+          (iVar9 = Player::isActive(this_02), iVar9 != 0)) &&
+         (iVar9 = Player::getHitpoints(this_02), 0 < iVar9)) {
+        for (uVar21 = 0; uVar21 < *(uint *)(this + 8); uVar21 = uVar21 + 1) {
+          puVar10 = (undefined8 *)(*(int *)(this + 0xc) + uVar21 * 0xc);
+          local_78 = *puVar10;
+          local_70 = *(float *)(puVar10 + 1);
+          puVar10 = (undefined8 *)(*(int *)(this + 0x18) + uVar21 * 0xc);
+          local_88 = *puVar10;
+          local_80 = *(float *)(puVar10 + 1);
+          AbyssEngine::AEMath::MatrixGetPosition((AEMath *)&local_94,(Matrix *)(this_02 + 4));
+          pGVar11 = (Gun *)(this_02 + 0x40);
+          if (this[0x68] != (Gun)0x0) {
+            pGVar11 = this + 0x104;
+          }
+          iVar9 = *(int *)pGVar11;
+          if (bVar6) {
+            iVar9 = iVar9 * 5;
+          }
+          else if (iVar17 == 0x19) {
+            Level::getPlayer(*(Level **)(this + 0x38));
+            PlayerEgo::getPosition();
+            AbyssEngine::AEMath::operator-(aAStack_d0,(Vector *)&local_94,aVStack_10c);
+            fVar22 = (float)AbyssEngine::AEMath::VectorLength((Vector *)aAStack_d0);
+            iVar19 = Player::getKIPlayer(this_02);
+            if ((iVar19 == 0) ||
+               (iVar19 = Player::getKIPlayer(this_02), *(char *)(iVar19 + 0x71) == '\0')) {
+              if ((int)fVar22 < 0x4e21) {
+                fVar24 = (float)VectorSignedToFloat(iVar9,(byte)(in_fpscr >> 0x16) & 3);
+                fVar23 = (float)VectorSignedToFloat(iVar9 << 1,(byte)(in_fpscr >> 0x16) & 3);
+                fVar24 = fVar24 * 1.5;
+                if (10000 < (int)fVar22) {
+                  fVar24 = fVar23;
+                }
+              }
+              else {
+                fVar24 = (float)VectorSignedToFloat(iVar9 * 3,(byte)(in_fpscr >> 0x16) & 3);
+              }
+            }
+            else {
+              fVar22 = (float)VectorSignedToFloat(iVar9,(byte)(in_fpscr >> 0x16) & 3);
+              fVar24 = fVar22 * 0.5;
+            }
+            iVar9 = (int)fVar24;
+          }
+          piVar12 = (int *)Player::getKIPlayer(this_02);
+          if (this_02[0x69] == (Player)0x0) {
+            if ((piVar12 != (int *)0x0) && ((char)piVar12[0x23] != '\0')) goto LAB_0016317c;
+          }
+          else if (piVar12 == (int *)0x0) {
+LAB_001631b2:
+            bVar4 = false;
+LAB_001631b8:
+            fVar22 = (float)VectorSignedToFloat(iVar9,(byte)(in_fpscr >> 0x16) & 3);
+            fVar24 = (local_94 - (float)local_78) + (float)local_88;
+            uVar20 = in_fpscr & 0xfffffff;
+            in_fpscr = uVar20;
+            if (fVar24 < fVar22) {
+              fVar23 = (float)VectorSignedToFloat(-iVar9,(byte)(uVar20 >> 0x16) & 3);
+              uVar1 = uVar20 | (uint)(fVar24 < fVar23) << 0x1f | (uint)(fVar24 == fVar23) << 0x1e;
+              in_fpscr = uVar1 | (uint)(NAN(fVar24) || NAN(fVar23)) << 0x1c;
+              bVar3 = (byte)(uVar1 >> 0x18);
+              if (!(bool)(bVar3 >> 6 & 1) && bVar3 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1)) {
+                fVar24 = (local_90 - local_78._4_4_) + local_88._4_4_;
+                in_fpscr = uVar20;
+                if ((fVar24 < fVar22) &&
+                   (uVar1 = uVar20 | (uint)(fVar24 < fVar23) << 0x1f |
+                            (uint)(fVar24 == fVar23) << 0x1e,
+                   in_fpscr = uVar1 | (uint)(NAN(fVar24) || NAN(fVar23)) << 0x1c,
+                   bVar3 = (byte)(uVar1 >> 0x18),
+                   !(bool)(bVar3 >> 6 & 1) && bVar3 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1))) {
+                  fVar24 = (local_8c - local_70) + local_80;
+                  uVar20 = uVar20 | (uint)(fVar24 < fVar23) << 0x1f |
+                           (uint)(fVar24 == fVar23) << 0x1e;
+                  in_fpscr = uVar20 | (uint)(NAN(fVar24) || NAN(fVar23)) << 0x1c;
+                  bVar3 = (byte)(uVar20 >> 0x18);
+                  if (!bVar4 && (fVar24 < fVar22 &&
+                                (!(bool)(bVar3 >> 6 & 1) &&
+                                bVar3 >> 7 == ((byte)(in_fpscr >> 0x1c) & 1)))) goto LAB_0016318c;
+                }
+              }
+            }
+          }
+          else {
+LAB_0016317c:
+            if ((char)piVar12[0x10] == '\0') goto LAB_001631b2;
+            iVar19 = (**(code **)(*piVar12 + 0x40))(piVar12,&local_78);
+            if (iVar19 == 0) {
+              bVar4 = true;
+              goto LAB_001631b8;
+            }
+LAB_0016318c:
+            iVar9 = Player::isAsteroid(this_02);
+            if (iVar9 == 0) {
+              if (bVar6) {
+                iVar17 = *(int *)(this_02 + 0x40);
+                fVar22 = (float)VectorSignedToFloat(iVar17,(byte)(in_fpscr >> 0x16) & 3);
+                fVar24 = (local_94 - (float)local_78) + (float)local_88;
+                if ((fVar24 < fVar22) &&
+                   (fVar23 = (float)VectorSignedToFloat(-iVar17,(byte)((in_fpscr & 0xfffffff) >>
+                                                                      0x16) & 3), fVar23 < fVar24))
+                {
+                  fVar24 = (local_90 - local_78._4_4_) + local_88._4_4_;
+                  if (((int)((uint)(fVar24 < fVar22) << 0x1f) < 0) &&
+                     (((fVar23 < fVar24 &&
+                       (fVar24 = (local_8c - local_70) + local_80,
+                       (int)((uint)(fVar24 < fVar22) << 0x1f) < 0)) && (fVar23 < fVar24))))
+                  goto LAB_001635aa;
+                }
+                AbyssEngine::AEMath::operator-
+                          ((AEMath *)aVStack_10c,(Vector *)&local_94,(Vector *)&local_78);
+                AbyssEngine::AEMath::VectorNormalize(aAStack_d0,aVStack_10c);
+                fVar22 = (float)AbyssEngine::AEMath::Vector::operator=
+                                          ((Vector *)(*(int *)(this + 0x18) + uVar21 * 0xc),
+                                           (Vector *)aAStack_d0);
+                fVar22 = (float)AbyssEngine::AEMath::operator*
+                                          ((AEMath *)aVStack_10c,
+                                           (Vector *)(*(int *)(this + 0x18) + uVar21 * 0xc),fVar22);
+                AbyssEngine::AEMath::operator*(aAStack_d0,aVStack_10c,fVar22);
+                AbyssEngine::AEMath::Vector::operator+=
+                          ((Vector *)(*(int *)(this + 0xc) + uVar21 * 0xc),(Vector *)aAStack_d0);
+                goto LAB_00163640;
+              }
+LAB_0016326e:
+              if (bVar7 || bVar6) {
+LAB_001635aa:
+                ignite(this);
+                goto LAB_00163640;
+              }
+              if (*(int *)(this + 100) != -0x3a6687db) {
+                Player::damageEmp(this_02,*(int *)(this + 100),(bool)this[0xf9]);
+              }
+              if ((*(int *)(this + 4) == 0) || (*(char *)(*(int *)(this + 4) + 0x5c) != '\0')) {
+                if ((this_02[0x69] != (Player)0x0) &&
+                   (iVar9 = Level::getPlayer(*(Level **)(this + 0x38)), iVar9 != 0)) {
+                  pPVar14 = (PlayerEgo *)Level::getPlayer(*(Level **)(this + 0x38));
+                  iVar9 = PlayerEgo::isDockedToDockingPoint(pPVar14);
+                  if (iVar9 != 0) {
+                    fVar22 = (float)VectorSignedToFloat(*(undefined4 *)(this + 0x60),
+                                                        (byte)(in_fpscr >> 0x16) & 3);
+                    fVar22 = fVar22 * 3.0 * 0.25;
+                    goto LAB_001632e0;
+                  }
+                }
+LAB_00163304:
+                iVar19 = *(int *)(this + 0x58);
+                iVar9 = *(int *)(this + 0x60);
+                GVar16 = this[0xf9];
+              }
+              else {
+                if (this_02[0x69] == (Player)0x0) goto LAB_00163304;
+                fVar22 = (float)VectorSignedToFloat(*(undefined4 *)(this + 0x60),
+                                                    (byte)(in_fpscr >> 0x16) & 3);
+                fVar22 = fVar22 * 0.2;
+LAB_001632e0:
+                iVar19 = *(int *)(this + 0x58);
+                GVar16 = this[0xf9];
+                iVar9 = (int)fVar22;
+              }
+              Player::damage(this_02,iVar9,(bool)GVar16,iVar19);
+              this_02[0x54] = (Player)0x1;
+              if (this[0xf0] != (Gun)0x0) {
+                *(undefined1 *)(*(int *)(this + 0x38) + 0x30) = 1;
+              }
+              Player::setHitVector(this_02,extraout_s0_00,extraout_s1,extraout_s2);
+              *(undefined4 *)(*(int *)(this + 0x3c) + uVar21 * 4) = 0xfff0bdc0;
+              uVar13 = Player::getKIPlayer(this_02);
+              *(undefined4 *)this = uVar13;
+              if (bVar5) {
+                ParticleSystemManager::emitManual
+                          (*(ParticleSystemManager **)(*(int *)(this + 0x38) + 0x74),
+                           *(int *)(*(int *)(this + 0x38) + 0x3c),(Vector *)&local_78,0,
+                           (Vector *)&local_88,extraout_s0_01);
+              }
+              else if (*(int *)(this + 0x10c) != 0) {
+                uVar13 = AbyssEngine::PaintCanvas::TransformGetTransform
+                                   (Globals::Canvas,*(uint *)(*(int *)(this + 0x10c) + uVar21 * 4));
+                AbyssEngine::Transform::SetAnimationState(uVar13,3,0);
+                uVar13 = AbyssEngine::PaintCanvas::TransformGetTransform
+                                   (Globals::Canvas,*(uint *)(*(int *)(this + 0x10c) + uVar21 * 4));
+                AbyssEngine::Transform::SetAnimationState(uVar13,1,0);
+                this_00 = Globals::Canvas;
+                uVar20 = AbyssEngine::PaintCanvas::CameraGetCurrent(Globals::Canvas);
+                uVar13 = AbyssEngine::PaintCanvas::CameraGetLocal(this_00,uVar20);
+                __aeabi_memcpy((Matrix *)aAStack_d0,uVar13,0x3c);
+                AbyssEngine::AEMath::MatrixSetTranslation
+                          ((AEMath *)aVStack_10c,(Matrix *)aAStack_d0,local_70,extraout_s1_00,
+                           extraout_s2_00);
+                AbyssEngine::PaintCanvas::TransformSetLocal
+                          (Globals::Canvas,*(uint *)(*(int *)(this + 0x10c) + uVar21 * 4),
+                           (Matrix *)aAStack_d0);
+              }
+              if (*(Sparks **)(this + 0xb8) != (Sparks *)0x0) {
+                iVar9 = Sparks::isRocket(*(Sparks **)(this + 0xb8));
+                if (iVar9 != 0) {
+                  this_02[0x55] = (Player)0x1;
+                }
+                if (*(Sparks **)(this + 0xb8) != (Sparks *)0x0) {
+                  Sparks::explode(*(Sparks **)(this + 0xb8),(Vector *)&local_78);
+                }
+              }
+              if (iVar17 == 0x19) {
+                *(undefined1 *)(*(int *)(this + 0x40) + uVar21) = 1;
+                AbyssEngine::AEMath::Vector::operator=
+                          ((Vector *)(*(int *)(this + 0x30) + uVar21 * 0xc),(Vector *)&local_78);
+                for (uVar20 = 0; uVar20 < **(uint **)(this + 0xb4); uVar20 = uVar20 + 1) {
+                  this_02 = *(Player **)((*(uint **)(this + 0xb4))[1] + uVar20 * 4);
+                  Player::getPosition();
+                  AbyssEngine::AEMath::Vector::operator=(this_01,(Vector *)aAStack_d0);
+                  AbyssEngine::AEMath::Vector::operator-=(this_01,(Vector *)&local_78);
+                  fVar22 = (float)AbyssEngine::AEMath::VectorLength(this_01);
+                  iVar9 = *(int *)(this + 0x100);
+                  if ((int)fVar22 < iVar9) {
+                    fVar24 = (float)VectorSignedToFloat(iVar9,(byte)(in_fpscr >> 0x16) & 3);
+                    fVar23 = (float)VectorSignedToFloat(iVar9 - (int)fVar22,
+                                                        (byte)(in_fpscr >> 0x16) & 3);
+                    fVar23 = fVar23 / fVar24;
+                    uVar1 = in_fpscr & 0xfffffff;
+                    uVar2 = uVar1 | (uint)(fVar23 < 1.0) << 0x1f | (uint)(fVar23 == 1.0) << 0x1e;
+                    in_fpscr = uVar2 | (uint)NAN(fVar23) << 0x1c;
+                    bVar3 = (byte)(uVar2 >> 0x18);
+                    fVar22 = 1.0;
+                    if (((bool)(bVar3 >> 6 & 1) || bVar3 >> 7 != ((byte)(in_fpscr >> 0x1c) & 1)) &&
+                       (in_fpscr = uVar1, fVar22 = fVar23, fVar23 < 0.0)) {
+                      fVar22 = 0.0;
+                    }
+                    fVar24 = (float)VectorSignedToFloat(*(undefined4 *)(this + 0x60),
+                                                        (byte)(in_fpscr >> 0x16) & 3);
+                    Player::damage(this_02,(int)(fVar22 * fVar24),(bool)this[0xf9],
+                                   *(int *)(this + 0x58));
+                    if (0 < *(int *)(this + 100)) {
+                      fVar24 = (float)VectorSignedToFloat(*(int *)(this + 100),
+                                                          (byte)(in_fpscr >> 0x16) & 3);
+                      Player::damageEmp(this_02,(int)(fVar22 * fVar24),(bool)this[0xf9]);
+                    }
+                  }
+                }
+              }
+            }
+            else if (!bVar6) {
+              Player::setBombForce(this_02,extraout_s0);
+              if (!bVar5) goto LAB_0016326e;
+              Player::damage(this_02,9999,false,*(int *)(this + 0x58));
+              iVar17 = Achievements::hasMedal(Globals::achievements,0x29,1);
+              if ((iVar17 == 0) &&
+                 ((iVar17 = *(int *)(this + 0x5c), iVar17 - 4U < 2 ||
+                  (iVar17 == 0x28 || iVar17 == 0x22)))) {
+                iVar9 = *(int *)(Globals::status + 300) + 1;
+                *(int *)(Globals::status + 300) = iVar9;
+                iVar17 = Achievements::getValue(Globals::achievements,0x29,1);
+                if (iVar17 <= iVar9) {
+                  pPVar14 = (PlayerEgo *)Level::getPlayer(*(Level **)(this + 0x38));
+                  pHVar15 = (Hud *)PlayerEgo::getHUD(pPVar14);
+                  Hud::hudEventMedal(pHVar15,0x29,100);
+                  *(undefined1 *)(Globals::status + 0x130) = 1;
+                }
+              }
+              else if ((*(int *)(this + 0x58) == 0xb3) &&
+                      (iVar17 = Achievements::hasMedal(Globals::achievements,0x2c,1), iVar17 == 0))
+              {
+                iVar9 = *(int *)(Globals::status + 0x144) + 1;
+                *(int *)(Globals::status + 0x144) = iVar9;
+                iVar17 = Achievements::getValue(Globals::achievements,0x2c,1);
+                if (iVar17 <= iVar9) {
+                  pPVar14 = (PlayerEgo *)Level::getPlayer(*(Level **)(this + 0x38));
+                  pHVar15 = (Hud *)PlayerEgo::getHUD(pPVar14);
+                  Hud::hudEventMedal(pHVar15,0x2c,100);
+                  *(undefined1 *)(Globals::status + 0x148) = 1;
+                }
+              }
+              goto LAB_00163640;
+            }
+          }
+        }
+      }
+      puVar8 = *(uint **)(this + 0xb4);
+    }
+  }
+LAB_00163640:
+  if (__stack_chk_guard != local_6c) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return;
+}
+
+
