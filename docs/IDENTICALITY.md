@@ -25,7 +25,7 @@ All **27 original section headers are byte-identical** (no extra section). `.tex
 (the wave-102 LSDA-scope pass fixed `Level::createShip` 328->336, `HangarWindow::render`
 932->948, `Hud::draw` 480->476 and `Generator::createMission` 176->168; the remaining
 `LevelScript::process` +4 is cancelled by the Generator -4). The only differing section bytes are
-`.text` 104,335; `.ARM.exidx` 842; `.rel.plt` **0** (the former
+`.text` 102,798; `.ARM.exidx` 842; `.rel.plt` **0** (the former
 6-entry rotation was removed by the w4803/w5002 `LevelScript::process` independent-state-3 pass)
 and `.note.gnu.build-id` 20. Everything
 else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
@@ -34,7 +34,7 @@ else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_arr
 byte-identical. `.shstrtab` is byte-identical.
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
-`LevelScript::process` 54.8, `Status::missionCompleted` 60.4, `Radar::draw` 73.9,
+`LevelScript::process` 53.4, `Status::missionCompleted` 60.4, `Radar::draw` 73.9,
 `Level::createShip` 74.4, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 74.7,
 `Globals::Globals` C1/C2 80.5, `HangarWindow::render` 83.1, `RocketGun::update` 86.9,
 `PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
@@ -245,7 +245,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 104,335 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 102,798 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 842 raw bytes (822 `w1` prel31 targets) still differ, all in the single shifted LSDA range `Generator::createMission`..`LevelScript::process` (the Generator record is 4 B short and the LevelScript record 4 B long, so the section size is exact but the records between them sit at -4). |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` (336 B / 57 rows), `HangarWindow::render` (948 B / 156 rows) and `Hud::draw` (476 B / 77 rows) are now record-length-exact. The two remaining length deltas are `Generator::createMission` -4 (168 vs 172) and `LevelScript::process` +4 (352 vs 348), which cancel. Raw address operands still differ with local `.text` layout. |
@@ -264,7 +264,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (60.4%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (53.4%), `Status::missionCompleted` (60.4%),
    `Radar::draw` (73.9%), `Generator::createMission` (74.3%), `Level::createShip` (74.4%),
    `MGame::OnTouchEnd` (74.7%), `Globals::Globals` (80.5%), `HangarWindow::render` (83.1%) and
    `RocketGun::update` (86.9%).

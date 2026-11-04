@@ -96,7 +96,7 @@ All 27 original section headers are byte-identical (no extra section). `.text`, 
 `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
 `.rel.plt` content is byte-identical. `.ARM.extab` is now size- and base-exact at `0x26298`
 (the wave-102 LSDA-scope pass closed the last 12 bytes). The only differing section
-bytes are `.text` (104,335), `.ARM.exidx` (842), `.rel.plt` (0) and
+bytes are `.text` (102,798), `.ARM.exidx` (842), `.rel.plt` (0) and
 `.note.gnu.build-id` (20); `.shstrtab` is byte-identical.
 
 ### Reducible (all fixed)
