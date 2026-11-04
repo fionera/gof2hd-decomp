@@ -5370,3 +5370,6 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.fini_array` 192; `.dynamic` 3; `.rel.dyn` 4; build-id 20. 27 sections, exact file size.
 - Open follow-ups: remove the `.fini_array` rank table without losing 87.0% (and the
   destructor hazard); recover the 94.6% Hud / 73.8% createShip extab-neutral peaks.
+- `Globals::Globals` wave-107 sweep: exhaustive declaration-order search, `movw`/`@pool`
+  and `imageFactory` 4-byte analysis; no order reaches the original pool slot 26 (80.5% kept).
+  Note: `_work/reconstructions/globals-globals-c1-c2-wave107-w5509.md`.
