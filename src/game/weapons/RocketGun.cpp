@@ -191,11 +191,11 @@ void RocketGun::update(int elapsed) {
         this->activeShotId = -1;
         gun->hitSmall = 0;
 
+        Vector heading = this->gun->velocities.data()[this->gun->currentProjectile];
         PaintCanvas *canvas = Globals::Canvas;
         Matrix &local = *(Matrix *) canvas->TransformGetLocal(this->transform);
         const Vector &shot = this->gun->positions.data()[this->gun->currentProjectile];
         MatrixSetTranslation(local, shot.x, shot.y, shot.z);
-        Vector heading = this->gun->velocities.data()[this->gun->currentProjectile];
 
         Matrix frame = *(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         Vector up = {0.0f, 1.0f, 0.0f};
@@ -226,10 +226,6 @@ void RocketGun::update(int elapsed) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
             this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
-            // Second pressure anchor: the extra zeroed frame slot in this branch steers the
-            // greedy allocator's block layout, which is what the original's frame-time
-            // placement depends on.
-            volatile int padx = 0; // anchor: RocketGun::update; removal lowers raw match 86.9 -> 86.7
             goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
@@ -284,10 +280,6 @@ void RocketGun::update(int elapsed) {
     }
 
     const float dt = (float) elapsed;
-    // Keep the frame time in a stack slot for the loop; the original reloads it from the
-    // frame in the launch block rather than holding it in a callee-saved register.
-    volatile int unused = elapsed; // anchor: RocketGun::update; removal lowers raw match 86.9 -> 85.8
-    Array<Matrix> *trailMatrices = this->trailMatrices;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
         ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
@@ -295,7 +287,7 @@ void RocketGun::update(int elapsed) {
         gun = this->gun;
         if (gun->active != 0) {
             if (ahead.z == 50000.0f) {
-                if (trailMatrices == nullptr)
+                if (this->trailMatrices == nullptr)
                     goto fade;
                 this->particleManager->enableSystemEmit((*this->trailSystems)[i], false);
                 if ((*this->trailTimers)[i] == 0)
@@ -310,21 +302,26 @@ void RocketGun::update(int elapsed) {
                     // Cluster rockets corkscrew around their flight path, phase-shifted per rocket.
                     const int total = gun->initialLifetime;
                     const uint32_t n = gun->positions.count;
-                    const int life = gun->lifetimes[i];
                     const float phase = (float) ((uint32_t) (total * (int) i) / n);
+                    const int life = gun->lifetimes[i];
                     const float s = Sinf((phase + (float) (total - life)) * 0.003f);
                     const float c = Cosf((phase + (float) (this->gun->initialLifetime - this->gun->lifetimes[i])) * 0.003f);
-                    const Vector cross = VectorCross(this->gun->velocities.data()[i],
-                                                     this->gun->upVectors.data()[i]);
+                    // The cross product is materialised in its own temporary and then copied
+                    // into the named local, matching the original's two-step construction.
+                    struct V3 { float x, y, z; };
+                    V3 crossBuf;
+                    Vector &cross = *(Vector *) &crossBuf;
+                    cross = VectorCross(this->gun->velocities.data()[i],
+                                        this->gun->upVectors.data()[i]);
                     this->gun->positions.data()[i] += VectorNormalize(cross) * (s + s) * dt;
                     this->gun->positions.data()[i] += this->gun->upVectors.data()[i] * (c + c) * dt;
                 }
             }
 
-            if (trailMatrices != nullptr) {
+            if (this->trailMatrices != nullptr) {
                 gun = this->gun;
                 ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
-                MatrixSetTranslation((*trailMatrices)[i], ahead.x, ahead.y, ahead.z);
+                MatrixSetTranslation((*this->trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
                 Matrix &trail = this->trailMatrices->data()[i];
                 trail.m.e2 = heading.x;
