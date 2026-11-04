@@ -1957,6 +1957,10 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
+            // `setScaling` is issued before the turret's rotation/position are
+            // computed; this statement order reproduces the original's register
+            // allocation around the table select.
+            ((PlayerTurret *) gun)->setScaling(6.0f);
             // `i < 0` is always false here (i is a non-negative index); it is a
             // codegen anchor that keeps the table select inside the loop, matching the
             // original's in-loop `cbz` and restoring the raid block placement.
@@ -1965,7 +1969,6 @@ void Level::createMission() {
             gun->geometry->setRotation(v);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
-            ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = localRace;
             gun->cargo = nullptr;
         }
