@@ -793,9 +793,6 @@ void HangarWindow::render() {
                         buttonOffset = 0;
                     } else if (item->isMoveToCargoButton()) {
                         (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
-                        // LSDA sink: splits the item-branch cleanup region so the
-                        // 156-row / 948-byte .ARM.extab record is preserved.
-                        volatile int *S = 0;
                         (*this->buttons)[6]->setVisible(true);
                         (*this->buttons)[6]->draw();
                         continue;
@@ -816,6 +813,9 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
+                            // LSDA sink: splits the ship-branch cleanup region so the
+                            // 156-row / 948-byte .ARM.extab record is preserved.
+                            volatile int *padX = 0;
                             if (tab != 0) {
                                 if (!(tab == 3 && item->ship == Globals::status->getShip())) {
                                     (*this->buttons)[1]->setPosition(
@@ -957,10 +957,7 @@ void HangarWindow::render() {
                 // The original's LSDA has a separate cleanup region covering
                 // this call; the volatile sink keeps that region (and hence
                 // .ARM.extab) at the original size without changing behaviour.
-                {
-                    volatile ChoiceWindow *p = this->dialog;
-                    (*this->buttons)[12 + count]->setSplitText(price);
-                }
+                (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
@@ -1046,8 +1043,6 @@ void HangarWindow::render() {
             bool visible;
             if (i == 0 || (Globals::options[73] && i == 1) || (Globals::options[74] && i == 2) ||
                 (Globals::options[75] && i == 3)) {
-                // Sink: pins the free-credits block's register allocation.
-                volatile int S2 = 0;
                 visible = false;
             } else {
                 visible = i != 4 || !Globals::options[76];
