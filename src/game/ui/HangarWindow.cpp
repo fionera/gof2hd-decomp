@@ -576,17 +576,13 @@ void HangarWindow::render() {
                                         left = this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     }
                                     if (left > 0) {
-                                        // Codegen anchors: the dead stores keep the
+                                        // Codegen anchor: the dead store keeps the
                                         // list-body register roles (this -> r6) and
                                         // the 9700-byte body of the original.
                                         volatile int pad3 = y;
-                                        volatile int pad3b = y;
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
-                                        // LSDA sink: keeps the original 156-row
-                                        // .ARM.extab record (no sink -> 155 rows).
-                                        volatile int PADX = 0;
                                         (*this->buttons)[8]->setVisible(true);
                                         (*this->buttons)[8]->draw();
                                     }
@@ -797,6 +793,9 @@ void HangarWindow::render() {
                         buttonOffset = 0;
                     } else if (item->isMoveToCargoButton()) {
                         (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        // LSDA sink: splits the item-branch cleanup region so the
+                        // 156-row / 948-byte .ARM.extab record is preserved.
+                        volatile int *S = 0;
                         (*this->buttons)[6]->setVisible(true);
                         (*this->buttons)[6]->draw();
                         continue;
@@ -1047,6 +1046,8 @@ void HangarWindow::render() {
             bool visible;
             if (i == 0 || (Globals::options[73] && i == 1) || (Globals::options[74] && i == 2) ||
                 (Globals::options[75] && i == 3)) {
+                // Sink: pins the free-credits block's register allocation.
+                volatile int S2 = 0;
                 visible = false;
             } else {
                 visible = i != 4 || !Globals::options[76];
