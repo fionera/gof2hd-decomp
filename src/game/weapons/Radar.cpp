@@ -408,7 +408,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (__builtin_expect(this->lockedAsteroid == nullptr && this->lockedGasCloud == nullptr && // lint: arm_builtin anchor: Radar::draw; plain form shrinks body 9908 -> 9612
+    if (__builtin_expect(this->lockedAsteroid == nullptr && // lint: arm_builtin anchor: Radar::draw
+                                 __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
                                  this->field_0x1c == nullptr,
                          0)) {
         otherLock = this->field_0x14 != 0;
