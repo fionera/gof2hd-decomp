@@ -22,8 +22,15 @@ Usage
   # per-TU optimization-level spot check
   python3 tools/flag_fingerprint.py --mode per-tu --jobs 8
 
+  # broad -mllvm screen on the TUs that own non-exact functions (object bytes only)
+  python3 tools/flag_fingerprint.py --mode llvm-screen \
+      --llvm-candidates /dev/shm/flags.txt --jobs 8
+
   # both
   python3 tools/flag_fingerprint.py --mode all --jobs 8
+
+  # explicit full-link variant list (JSON [{name, flags, cmake_args}, ...])
+  python3 tools/flag_fingerprint.py --mode variants --variants-file variants.json --jobs 4
 
 The canonical build (cmake-build-match) is used as the baseline and is never modified.  All
 scratch builds live under --workdir (default /dev/shm/w5020/flag_fingerprint).  Results are written
@@ -554,15 +561,117 @@ def default_variants(watch):
     ]
 
 
+
+# ---------------------------------------------------------------------------------------------
+# Broad LLVM flag screening (object-level, target TUs only)
+# ---------------------------------------------------------------------------------------------
+def llvm_screen_mode(workdir, jobs, baseline_build, candidates_path):
+    """Compile only the TUs that own non-exact functions with each candidate flag.
+
+    This is a cheap pre-filter for the full-link matrix: a flag that does not change any
+    target function's object bytes cannot change that function's linked instruction stream
+    (cross-function relocations are compared by symbol name by the official verifier).
+    It also records changes to exact functions in those same TUs, so a candidate that is
+    already visibly non-neutral on matched code can be rejected before a full link.
+    """
+    cc = json.loads((Path(baseline_build) / "compile_commands.json").read_text())
+    by_src = {e["file"]: e for e in cc}
+    report = json.loads((Path(baseline_build) / "verify" / "report.json").read_text())
+    base = {r["name"]: r for r in report["rows"]}
+    nonexact = [n for n, r in base.items() if not r["byte"]]
+
+    obj_funcs = {}
+    for e in cc:
+        obj = Path(baseline_build) / e["output"]
+        if obj.exists():
+            obj_funcs[e["file"]] = set(object_functions(obj))
+    target_srcs = set()
+    for n in nonexact:
+        for src, funcs in obj_funcs.items():
+            if n in funcs:
+                target_srcs.add(src)
+
+    cands = []
+    for line in Path(candidates_path).read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        cands.append(line)
+
+    outdir = workdir / "llvm_screen"
+    outdir.mkdir(parents=True, exist_ok=True)
+    base_funcs = {}
+    for src in target_srcs:
+        e = by_src[src]
+        base_funcs[src] = object_functions(Path(baseline_build) / e["output"])
+
+    def one(flag, src):
+        e = by_src[src]
+        tag = re.sub(r"[^A-Za-z0-9_.-]", "_", flag)
+        st = re.sub(r"[^A-Za-z0-9_.-]", "_", str(Path(src).relative_to(ROOT)))
+        out = outdir / tag / f"{st}.o"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            p = subprocess.run(compile_command(e, flag, out), cwd=e["directory"],
+                               capture_output=True, text=True, timeout=20)
+        except subprocess.TimeoutExpired:
+            return dict(flag=flag, source=src, built=False, error="timeout")
+        if p.returncode:
+            return dict(flag=flag, source=src, built=False,
+                        error=(p.stderr or "")[-400:])
+        if not out.exists():
+            return dict(flag=flag, source=src, built=False,
+                        error="compiler produced no object (driver-only flag?)")
+        a = base_funcs[src]
+        b = object_functions(out)
+        changed = sorted(n for n in a if n in b and a[n] != b[n])
+        return dict(flag=flag, source=src, built=True, changed=changed,
+                    changed_targets=[n for n in changed if n in nonexact],
+                    changed_exact=[n for n in changed
+                                   if n in base and base[n]["byte"]],
+                    changed_nonexact=[n for n in changed
+                                      if n in base and not base[n]["byte"]])
+
+    tasks = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
+        for flag in cands:
+            for src in sorted(target_srcs):
+                tasks.append(ex.submit(one, flag, src))
+        rows = [t.result() for t in tasks]
+
+    by_flag = {}
+    for r in rows:
+        by_flag.setdefault(r["flag"], []).append(r)
+    summary = []
+    for flag in cands:
+        rr = by_flag.get(flag, [])
+        built = [r for r in rr if r.get("built")]
+        changed_targets = sorted({n for r in built for n in r["changed_targets"]})
+        changed_exact = sorted({n for r in built for n in r["changed_exact"]})
+        changed_tus = sorted({str(Path(r["source"]).relative_to(ROOT))
+                              for r in built if r["changed"]})
+        errs = [r for r in rr if not r.get("built")]
+        summary.append(dict(flag=flag, built=len(built), total=len(rr),
+                            changed_targets=changed_targets,
+                            changed_exact=changed_exact,
+                            changed_tus=changed_tus,
+                            errors=[r.get("error", "") for r in errs]))
+    return dict(target_sources=[str(Path(s).relative_to(ROOT)) for s in sorted(target_srcs)],
+                candidates=cands, rows=rows, summary=summary)
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=("variants", "per-tu", "per-tu-all", "branch-weights",
-                                       "all"), default="variants")
+                                       "llvm-screen", "all"), default="variants")
     ap.add_argument("--workdir", default=str(DEFAULT_WORKDIR))
     ap.add_argument("--baseline-build", default=str(ROOT / "cmake-build-match"))
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--variants", default=None,
                     help="comma-separated subset of variant names (default: all)")
+    ap.add_argument("--variants-file", default=None,
+                    help="JSON list of {name, flags, cmake_args} specs for --mode variants")
+    ap.add_argument("--llvm-candidates", default=None,
+                    help="file with one -mllvm flag per line for --mode llvm-screen")
     ap.add_argument("--json", default=None, help="output JSON path (default <workdir>/results.json)")
     ap.add_argument("--full-verify", action="store_true",
                     help="run the full difflib fuzzy score (slow on variants with many changes)")
@@ -586,7 +695,10 @@ def main():
                variants=[], per_tu=None)
 
     if args.mode in ("variants", "all"):
-        specs = default_variants(watch)
+        if args.variants_file:
+            specs = json.loads(Path(args.variants_file).read_text())
+        else:
+            specs = default_variants(watch)
         if args.variants:
             wanted = {x.strip() for x in args.variants.split(",") if x.strip()}
             specs = [s for s in specs if s["name"] in wanted]
@@ -613,6 +725,11 @@ def main():
                                     all_tus=args.mode in ("per-tu-all", "all"))
     if args.mode in ("branch-weights", "all"):
         out["branch_weights"] = branch_weight_mode(workdir, args.jobs, baseline_build)
+    if args.mode == "llvm-screen":
+        if not args.llvm_candidates:
+            raise SystemExit("--mode llvm-screen requires --llvm-candidates")
+        out["llvm_screen"] = llvm_screen_mode(workdir, args.jobs, baseline_build,
+                                              args.llvm_candidates)
 
     jpath = Path(args.json) if args.json else workdir / "results.json"
     jpath.write_text(json.dumps(out, indent=1) + "\n")
@@ -668,6 +785,14 @@ def print_markdown(out):
                   f"{r['opts'].get('-O1', {}).get('changed_count', 'FAIL')} | "
                   f"{r['opts'].get('-O2', {}).get('changed_count', 'FAIL')} | "
                   f"{r['opts'].get('-Os', {}).get('changed_count', 'FAIL')} |")
+    if out.get("llvm_screen"):
+        print("\n## LLVM flag screen (target TUs, object bytes)\n")
+        print("| flag | built | target functions changed | exact functions changed | TUs changed |")
+        print("|---|---:|---|---|---:|")
+        for r in out["llvm_screen"]["summary"]:
+            print(f"| `{r['flag']}` | {r['built']}/{r['total']} | "
+                  f"{', '.join(r['changed_targets']) or '—'} | "
+                  f"{len(r['changed_exact'])} | {len(r['changed_tus'])} |")
     if out.get("branch_weights"):
         print("\n## Global branch-weight defaults (per-TU object A/B, StarMap/Radar excluded)\n")
         print("| variant | TUs | changed TUs | changed exact | changed non-exact |")
