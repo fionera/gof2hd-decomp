@@ -78,13 +78,13 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
     PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 
-# Radar.cpp needs its own 80:1 weight.  The linked .so is byte-identical with the default 2000:1
-# weight, but the official per-function percentage is NOT: Radar::draw drops from 73.9255 % to
-# 72.4825 % (normalized stream 3488 -> 3489) because the default weight lays the otherLock block
-# out differently.  80:1 is a broad plateau (74, 80..96, 110 all give 73.9255 %); see
-# _work/reconstructions/radar-draw-pass8-w4241.md.
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/weapons/Radar.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=80;-mllvm;-unlikely-branch-weight=1")
+# Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
+# the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
+# (`__builtin_expect(onScreen,1) && __builtin_expect(screenX > centerX - field_0x128,1) && ...`),
+# which reproduces the 80:1 block layout at the default 2000:1 weight.  Radar::draw stays 9908 B
+# and the official percentage stays 73.9 % (raw 73.9255 -> 73.8682, normalized stream 3488/3488);
+# the remaining 0.057 raw points are the otherLock cold-block address (0x261e vs 0x2480).  See
+# _work/reconstructions/radar-draw-pass15-w5004.md.
 
 # SpaceLounge.cpp (20:12) and MenuTouchWindow.cpp (5:1) used to carry per-file overrides too.
 # They were matching knobs, not original build flags: with the default 2000:1 __builtin_expect

@@ -428,8 +428,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                 continue;
             }
             this->update(this->landmarks->data()[i]);
-            if (__builtin_expect(this->onScreen, 1) && // lint: arm_builtin anchor: Radar::draw; plain form shrinks body 9908 -> 9896
-                this->screenX > this->centerX - this->field_0x128 &&
+            if (__builtin_expect(this->onScreen, 1) && // lint: arm_builtin anchor: Radar::draw
+                __builtin_expect(this->screenX > this->centerX - this->field_0x128, 1) && // lint: arm_builtin anchor: Radar::draw
                 this->screenX < this->centerX + this->field_0x128 &&
                 this->screenY > this->centerY - this->field_0x128 &&
                 this->screenY < this->centerY + this->field_0x128) {
