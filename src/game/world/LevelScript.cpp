@@ -639,8 +639,6 @@ bool LevelScript::process(int delta) {
                 enemy->geometry->setVisible(true);
             }
             m_pLevel->lodManager->forceUpdate(30, false);
-            volatile int pad = delta; // anchor: LevelScript::process state-0 tail; removal shrinks body 57232 -> 57224
-            (void) pad;
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
         } else if (m_nState <= 2) {
             // Per-frame pulse wobble of the three ships while the intro plays (disasm 0x1383fe).
@@ -694,7 +692,7 @@ bool LevelScript::process(int delta) {
                 m_pCamera->enableFirstPersonCam(false);
                 player->hideShipForFirstPersonCameraView(false);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pLevel->getPlayer()->setCollide(false);
+                player->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 player->player->removeAllGuns();
@@ -718,7 +716,7 @@ bool LevelScript::process(int delta) {
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
+                player->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -947,7 +945,7 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
-        m_pLevel->getPlayer()->rotate(0.0f, angle, angle);
+        player->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
@@ -1531,11 +1529,10 @@ bool LevelScript::process(int delta) {
                 }
             }
             // The former `if (m_nState == 0x7f) player->setRocketControl(...)` size anchor
-            // lived here; it was removed in this pass (it kept .plt/.rel.plt byte-identical,
-            // so no PLT-order dependency). The body stays at its original 57232 B because the
-            // faithful mission-0 state-3/state-4 Level::getPlayer() re-fetches and the
-            // mission-1 rotate re-fetch (which reproduces the original prologue register map)
-            // replace the anchor's bytes.
+            // lived here; it was removed in the .rel.plt pass (it kept .plt/.rel.plt
+            // byte-identical, so no PLT-order dependency). The body stays at its original
+            // 57232 B because the mission-125 state-3 arm is an independent `if` (see the
+            // case-125 chain) and the state-0 `volatile` pad anchor is gone.
             ((Standing *) (intptr_t) Globals::status->getStanding())->setStanding(0, 100);
             m_nState = 1; // 0x1381aa -> switch guard 0x13879e
         }
@@ -1691,7 +1688,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLocal(local);
                     if (((RadioMessage *) ((*messages)[0]))->isOver()) {
                         player->player->setVulnerable(true);
-                        m_pLevel->getPlayer()->setCollide(true);
+                        player->setCollide(true);
                         player->setComputerControlled(false);
                         player->setTurretMode(false);
                         player->setFreeLookMode(false);
@@ -3579,7 +3576,14 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 3) {
+                }
+                // Independent `if`, not `else if` of the state-2 arm: this is the original
+                // block order (Ghidra's case-125 chain) and it is what makes clang emit the
+                // mission-125 state>=4 arm -- the first reference to
+                // PlayerEgo::deleteHackingGame -- after the mission-0 state-9/11 blocks.
+                // That reproduces the original .rel.plt first-reference order; joining this
+                // arm back to state-2 rotates six .rel.plt entries (12 bytes).
+                if (m_nState == 3) {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
