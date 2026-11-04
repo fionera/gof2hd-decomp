@@ -431,7 +431,6 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(25, *Globals::gameText->getText(0), 2, this->optionsButtons, 0);
         // Language selection.
         this->buttonsB0 = new Array<TouchButton *>();
-        Array<TouchButton *> *langList = this->buttonsB0;
         int *specialFontPtr = &Globals::fontLangSelect;
         int rowHeight = (int) (Globals::iPad ? (float) Globals::layout->field_0x34
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
@@ -455,13 +454,18 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             int spacing = Globals::Canvas->FontGetSpacing(
                 special ? (unsigned int) langValue : fontValue);
             int bw = this->buttonWidth;
+            unsigned int ctorFont = fontValue;
+            if (special) {
+                ctorFont = (unsigned int) langValue;
+                __builtin_assume(i < 100); // lint: arm_builtin
+            }
             TouchButton *language = new TouchButton(
                 *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, bw, 17, 4,
-                (i == 9 || i == 8) ? fontValue : (unsigned int) langValue, spacing);
-            language->id = MenuTouchWindow_languageIds[i];
+                ctorFont, spacing);
             if (special)
                 language->fontId = *specialFontPtr;
-            ArrayAdd(language, *langList);
+            ArrayAdd(language, *this->buttonsB0);
+            language->id = MenuTouchWindow_languageIds[i];
         }
     }
 
