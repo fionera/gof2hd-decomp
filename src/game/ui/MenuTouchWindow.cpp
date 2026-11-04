@@ -438,15 +438,15 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         (void) MenuTouchWindow_languageIds;
         for (i = 0; (i & 0xf) != 10; i++) {
             // Phone: two columns; iPad: one centred column.
+            int yBase = Globals::h / 2 - this->buttonYBias;
+            int rowPitch = rowHeight + Globals::layout->field_0x30_rowHeight;
+            int y = (yBase - 12 - Globals::layout->field_0x29c_buttonRowGap) + rowPitch * (i >> 1);
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
-            int y = (Globals::h / 2 - this->buttonYBias - 12 - Globals::layout->field_0x29c_buttonRowGap) +
-                    (rowHeight + Globals::layout->field_0x30_rowHeight) * (i >> 1);
             if (Globals::iPad) {
                 x = Globals::w / 2 - this->buttonWidth / 2;
-                y = (Globals::h / 2 - this->buttonYBias - Globals::layout->field_0x29c_buttonRowGap -
-                     Globals::layout->field_0x30_rowHeight) +
-                    (rowHeight + Globals::layout->field_0x30_rowHeight) * i;
+                y = (yBase - Globals::layout->field_0x29c_buttonRowGap -
+                     Globals::layout->field_0x30_rowHeight) + rowPitch * i;
             }
             bool special = (i | 1) == 9;
             unsigned int fontValue = Globals::font;
