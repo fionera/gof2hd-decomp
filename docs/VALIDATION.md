@@ -50,7 +50,8 @@ source tree reproduces the original TU membership and within-TU function order, 
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
 its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact (no extra section).
+content is byte-identical, and all 27 original section headers are exact; wave 106 adds one
+`.missioncase` section (see the section table below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -91,14 +92,16 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-04)
-All 27 original section headers are byte-identical (no extra section). `.text`, `.rodata`, `.data`, `.bss`, `.got`,
-`.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
-`.rel.plt` content is byte-identical. `.ARM.extab` is now size- and base-exact at `0x26298`
-(the wave-102 LSDA-scope pass closed the last 12 bytes). The only differing section
-bytes are `.text` (99,226), `.ARM.exidx` (829), `.ARM.extab` (108,294; size/base exact,
-LSDA content shifted), `.rel.plt` (0) and `.note.gnu.build-id` (20); `.shstrtab` is
-byte-identical.
+### Current state — ELF sections (2026-11-04, wave 106)
+All 27 original section headers are present and exact, but wave 106 adds a 28th section,
+`.missioncase` (192 B), so the section count is 28 and `.shstrtab` grows 279 -> 292 B. `.text`,
+`.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash` and `.rel.dyn`
+are size- and base-exact; `.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but
+**4 B short** (`0x26294` vs `0x26298`) after the wave-106 `Level::createShip`/`Hud::draw`/
+`Generator::createMission` LSDA-length changes. The differing section bytes are `.text`
+(98,926), `.ARM.exidx` (1,683), `.ARM.extab` (128,949; size 4 B short, records shifted),
+`.dynsym` (661, `st_shndx` shift only), `.shstrtab` (86), `.rel.plt` (0) and
+`.note.gnu.build-id` (20).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

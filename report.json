@@ -40,16 +40,8 @@
    "usize": 57232
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 60.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
-  },
-  {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 66.6,
+   "pct": 73.8,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -65,7 +57,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.4,
+   "pct": 78.9,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -89,7 +81,7 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 81.5,
+   "pct": 82.1,
    "byte": false,
    "linked": false,
    "osize": 1996,
@@ -97,7 +89,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 84.7,
+   "pct": 85.1,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -110,6 +102,14 @@
    "linked": false,
    "osize": 1908,
    "usize": 1908
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 87.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
@@ -145,27 +145,11 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 93.3,
+   "pct": 94.4,
    "byte": false,
    "linked": false,
    "osize": 9332,
    "usize": 9332
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 95.1,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
@@ -176,8 +160,24 @@
    "usize": 1948
   },
   {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 95.5,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 95.5,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 97.7,
+   "pct": 98.1,
    "byte": false,
    "linked": false,
    "osize": 1896,
@@ -185,7 +185,7 @@
   },
   {
    "name": "_ZN10ModStationC1Ev",
-   "pct": 98.4,
+   "pct": 98.6,
    "byte": false,
    "linked": false,
    "osize": 1008,
@@ -193,7 +193,7 @@
   },
   {
    "name": "_ZN10ModStationC2Ev",
-   "pct": 98.4,
+   "pct": 98.6,
    "byte": false,
    "linked": false,
    "osize": 1008,

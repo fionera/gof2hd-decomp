@@ -5304,3 +5304,43 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `rocketgun-update-w5315.md`, `playerego-calccollision-wave105-w5316.md`,
   `gun-calccharactercollision-w5317.md`, `menutouchwindow-wave105-w5319.md`,
   `spacelounge-drawlounge-modstation-ctor-w5320.md`.
+
+## Session 2026-11-04 (wave 106 — 25-agent worst-first fleet + build research)
+
+- Launched 25 `codex exec -p dsv41` workers from `486f8a119`, one per worst function/angle,
+  each in its own `wt/w54xx` worktree with REA (`GHIDRA_INSTALL_DIR=/tmp/ghidra_1.2.2_PUBLIC`
+  typo corrected: `/tmp/ghidra_12.1.2_PUBLIC`). 22 function passes + 3 build/research audits.
+  All completed; worktrees removed after harvest.
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `Status::missionCompleted` 60.4 -> 87.0 (rank-table source-order dispatch; +1 section).
+  - `Level::createShip` 66.6 -> 73.8 (placement-new + try shape, correct spawn; extab -8).
+  - `Hud::draw` 93.3 -> 94.4 (faithful `T P B W H D` dock order; extab +4).
+  - `MGame::OnTouchEnd` 78.4 -> 78.9 (mission-dispatch order, unguarded hud0 close).
+  - `HangarWindow::render` 84.7 -> 85.1 (relocate LSDA sink, keep 156-row record).
+  - `Radar::draw` 73.9 -> 74.0 (landmark hit-box right bound).
+  - `MenuTouchWindow::MenuTouchWindow` 95.1 -> 95.5 (two-value-select language loop).
+  - `MenuTouchWindow::OnTouchBegin` 97.7 -> 98.1 (drop top local, regroup scrollbar cond).
+  - `ModStation::ModStation` 98.4 -> 98.6 (barrier after table-pointer setup).
+  - `Generator::createMission` 81.5 -> 82.1 (move `amount=0` into the non-type-8 arm).
+  - `LevelScript::process` 54.2 -> 54.2 (statement reorders; precise 54.155 -> 54.223).
+  - `Generator::createMission` recovered 67.9 -> 82.1 by restoring the `agentName`
+    declaration order after the Hud extab shave.
+- Research (notes only, no gate change):
+  - `build-id-feasibility-wave106-w5423.md`: gold build-id is the SHA-1 of the **unstripped**
+    output (proved); matching `c011810d...` needs the original `.debug_*`/`.symtab` bytes and
+    is a final checksum, not a usable oracle.
+  - `mllvm_residual_screen-wave106-w5424.md`: 1,113 payloads / 643 rows re-screened at byte
+    4500; no strict improvement, no target becomes exact.
+  - `build-archaeology-toolchain-ab-wave106-w5425.md`: NDK **r18b** confirmed by the
+    `.note.android.ident` (r18 differs only there); no surviving build file; a second official
+    2.0.16 build (clang 3.8/gnustl) was found and is not the ground truth.
+- Section deltas moved: `.text` 99,226 -> **98,926**; `.ARM.exidx` 829 -> **1,683**;
+  `.ARM.extab` 108,294 -> **128,949** and now **4 B short** (`0x26294` vs `0x26298`) because
+  `Level::createShip`'s LSDA is 328 B instead of 336 B; `.dynsym` 0 -> **661** (only the
+  `st_shndx` shift from the extra `.missioncase` section); `.shstrtab` 279 -> **292**;
+  section count 27 -> **28**.
+- Open follow-ups: grow `Level::createShip`'s LSDA by 8 B without changing `.text` (restores
+  `.ARM.extab` size and realigns ~20 KB of records); remove the `.missioncase` rank table
+  without losing the 87.0% body order (restores 27 sections and byte-identical
+  `.dynsym`/`.shstrtab`).
