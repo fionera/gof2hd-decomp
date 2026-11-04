@@ -584,11 +584,13 @@ void HangarWindow::render() {
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
+                                        // LSDA sink: keeps the original 156-row
+                                        // .ARM.extab record (no sink -> 155 rows).
+                                        volatile int PADX = 0;
                                         (*this->buttons)[8]->setVisible(true);
                                         (*this->buttons)[8]->draw();
                                     }
                                     if (right > 0) {
-                                        volatile int padR = 0;
                                         (*this->buttons)[9]->setPosition(
                                             Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                             this->field_0x114 + y, 18);
@@ -816,7 +818,7 @@ void HangarWindow::render() {
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
                             if (tab != 0) {
-                                if (!(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                                if (!(tab == 3 && item->ship == Globals::status->getShip())) {
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
@@ -899,6 +901,7 @@ void HangarWindow::render() {
         this->render();
         this->viewMode = 1;
         this->listItemWindow->draw();
+        volatile int pV = 0;
     }
 
     Globals::layout->drawFooter();
