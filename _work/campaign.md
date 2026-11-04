@@ -5422,3 +5422,26 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
 - Open follow-ups: close the last 4 B of `.ARM.extab` (a 332-byte createShip LSDA would do it);
   remove `.jcr` without losing 87.0% or perturbing the dynamic tables; Layout/LevelScript/Radar
   remain the worst.
+
+## Session 2026-11-04 (wave 110 — 20-agent worst-first fleet)
+
+- Launched 20 `codex exec -p dsv41` workers from `390f58052`, one per worst function/angle,
+  each in its own `wt/w58xx` worktree with REA. Harvested after completion; worktrees removed.
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `RocketGun::update` 92.4 -> **93.8** (heading/z-arm reorder).
+  - `HangarWindow::render` 88.52 -> **88.71** (normalized buttonInset sums, upgrade test swap).
+  - `Generator::createMission` 82.1 -> **82.6** (hoist `padA` next to `amount`).
+  - `MGame::OnTouchEnd` 78.88 -> **78.92** (`char refinedAny` restores the `lsls` flag test).
+  - `Layout::Layout` 48.269 -> **48.338** (`0x9c` int-phi + four int-phi wraps).
+- **Structural: `.jcr` removed.** The `Status::missionCompleted` rank table moved to
+  `tools/mission_case_table.cpp`, linked as the last `.rodata` input. It lands at `0x20b977`
+  (first byte past the original `.rodata`), so the original `.rodata` image is untouched; the
+  address is spelled out in `Status.cpp` because a cross-TU symbol reference reorders
+  `.dynsym`. Result: **27 sections (exact), exact file size 2,187,328 B, `.dynsym`/`.shstrtab`
+  byte-identical**. Cost: `.text` 95,946 -> 95,999 and 192 B extra `.rodata` (the table).
+  This supersedes wave-109's last-`.rodata` attempt (which perturbed `.dynstr`).
+- Section deltas now: `.text` **95,999**; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
+  `.rodata` 192; build-id 20. File size exact.
+- Open follow-ups: close the last 4 B of `.ARM.extab` (a 332-byte createShip LSDA would do it);
+  Layout/LevelScript/Radar remain the worst; 24 functions non-exact.

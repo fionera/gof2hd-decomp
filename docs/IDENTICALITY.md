@@ -394,3 +394,33 @@ SEPARATE `cubeTextures` Array at 0x20, displacing field_0x20/meshCount/meshes by
 ~10 PaintCanvas near-misses, e.g. engine 0x3c-should-be-0x34). FIX: map `cubeTextures`->0x10 (merge
 with field_0x10/0x14/0x18 uses), add the standalone `field_0x20` int, shift meshCount/meshes/
 gameOrientation/engine back by 0xc. Verify-gate each step.
+
+## Session 2026-11-04 (wave 110 — 20-agent worst-first fleet)
+
+- Gate after harvest: `byte_exact 4500/4524`, `linked_exact 4500/4524`, size 4524/4524,
+  data 843/843, imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS.
+- **Structural win: the `.jcr` section is gone.** `Status::missionCompleted`'s rank table is
+  now the last `.rodata` input (`tools/mission_case_table.cpp`), landing at `0x20b977` (first
+  byte past the original `.rodata` image). Result: 27 sections (exact), exact file size
+  2,187,328 B, `.dynsym`/`.shstrtab` content byte-identical. Cost: `.text` 95,946 -> 95,999
+  (+53 B in that function's literal-pool reference) and 192 B of extra `.rodata` (the table
+  itself). This supersedes the wave-109 last-`.rodata` attempt that perturbed `.dynstr`.
+- Landed fuzzy improvements:
+  - `RocketGun::update` 92.4 -> **93.8** (heading/z-arm reorder).
+  - `HangarWindow::render` 88.52 -> **88.71** (normalized `buttonInset` sums, upgrade test swap).
+  - `Generator::createMission` 82.1 -> **82.6** (hoist `padA` next to `amount`).
+  - `MGame::OnTouchEnd` 78.88 -> **78.92** (`char refinedAny` restores the `lsls` flag test).
+  - `Layout::Layout` 48.269 -> **48.338** (`0x9c` int-phi + four int-phi wraps).
+- Notes only (measured dead ends, local optima): Level::createShip (332 B LSDA target),
+  Radar::draw, Globals::Globals, PlayerEgo::calcCollision, Level::createScene (93.3% pinned to
+  sink+mask 35/37), Gun::calcCharacterCollision, Level::createMission, SpaceLounge::drawLounge,
+  MenuTouchWindow ctor, MenuTouchWindow::OnTouchBegin + MGame::OnUpdate.
+- Remaining 24 non-exact functions (all size-exact): Layout C1/C2 48.3, LevelScript::process
+  56.1, Radar::draw 74.0, Level::createShip 74.4, MGame::OnTouchEnd 78.9, Globals C1/C2 80.5,
+  Generator::createMission 82.6, Status::missionCompleted 87.0, PlayerEgo::calcCollision 87.6,
+  Level::createScene 88.3, HangarWindow::render 88.7, Gun::calcCharacterCollision 90.0,
+  Level::createMission 92.1, RocketGun::update 93.8, Hud::draw 94.6, SpaceLounge::drawLounge
+  95.5, MenuTouchWindow C1/C2 95.7, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 98.6,
+  MGame::OnUpdate 99.9.
+- Section deltas: `.text` 95,999; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
+  `.rodata` 192 (appended table); build-id 20. Everything else exact, file size exact.

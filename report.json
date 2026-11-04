@@ -81,7 +81,7 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 82.1,
+   "pct": 82.6,
    "byte": false,
    "linked": false,
    "osize": 1996,
@@ -113,7 +113,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 88.5,
+   "pct": 88.7,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -137,7 +137,7 @@
   },
   {
    "name": "_ZN9RocketGun6updateEi",
-   "pct": 92.4,
+   "pct": 93.8,
    "byte": false,
    "linked": false,
    "osize": 1908,

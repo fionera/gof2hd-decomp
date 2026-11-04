@@ -92,18 +92,19 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-04, wave 108)
-All 27 original section headers are present and exact, plus a 28th `.jcr` section (192 B) for
-the `Status::missionCompleted` rank table; gold places `.jcr` in the zero-filled
-`.rodata`..`.fini_array` gap, so `.fini_array` (8 B), `.dynamic`, `.rel.dyn`, `.data.rel.ro`
-and `.rodata` keep their original size/address. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
-`.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn` and `.dynamic` are size- and
-base-exact; `.rel.plt`, `.dynamic` and `.rel.dyn` content is byte-identical. `.ARM.extab` is
-base-exact but **4 B short** (`0x26294` vs `0x26298`); the shortfall fits the `.rodata`
-alignment gap, so no address moves. The differing section bytes are `.text` (95,946),
-`.ARM.exidx` (1,683), `.ARM.extab` (128,950; size 4 B short), `.jcr` (192), `.dynsym` (661,
-`st_shndx` shift), `.shstrtab` (5), `.rel.plt` (0) and `.note.gnu.build-id` (20). File size is
-2,187,372 (+44).
+### Current state — ELF sections (2026-11-04, wave 110)
+All **27 original section headers are present and exact**, with no extra section and an
+**exact file size** (2,187,328 B). The `Status::missionCompleted` rank table is now emitted by
+`tools/mission_case_table.cpp`, the last `.rodata` input: it lands at `0x20b977`, the first byte
+past the original `.rodata` image, so every original `.rodata` byte is untouched (the table is
+the only 192 B of extra `.rodata`). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
+`.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
+and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
+`.dynsym` and `.shstrtab` content is byte-identical. `.ARM.extab` is base-exact but **4 B
+short** (`0x26294` vs `0x26298`); the shortfall fits the `.rodata` alignment gap, so no address
+moves. The differing section bytes are `.text` (95,999), `.ARM.exidx` (1,683), `.ARM.extab`
+(128,950; size 4 B short), `.rodata` (192, the appended codegen table) and
+`.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
