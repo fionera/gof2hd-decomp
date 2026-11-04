@@ -1957,15 +1957,13 @@ void Level::createMission() {
             (*this->enemies)[i] = this->createStaticObject(nullptr, 6772, true);
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
-            const float *t = (bigAlienWave ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
-            // turretPos is constructed after the direction rotation: the original keeps
-            // t[0..2] live across the first MatrixRotateVector and reuses the same
-            // 12-byte stack slot for both vectors.
-            Vector turretPos;
-            Vector turretDir = {t[3], t[4], t[5]};
-            v = MatrixRotateVector(rotation, turretDir);
+            // `i < 0` is always false here (i is a non-negative index); it is a
+            // codegen anchor that keeps the table select inside the loop, matching the
+            // original's in-loop `cbz` and restoring the raid block placement.
+            const float *t = ((bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
+            v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
             gun->geometry->setRotation(v);
-            turretPos = Vector{t[0], t[1], t[2]};
+            Vector turretPos = {t[0], t[1], t[2]};
             v = MatrixRotateVector(rotation, turretPos);
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
