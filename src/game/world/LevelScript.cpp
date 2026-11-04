@@ -676,6 +676,61 @@ bool LevelScript::process(int delta) {
                     }
                 }
             }
+        } else if (m_nState == 3) {
+            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
+            // message #8 finishes hand control back to the player and reframe onto the player ship.
+            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
+            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
+            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
+                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
+                m_nState = 4;
+                player->setComputerControlled(false);
+                player->player->field_5e = 0;
+                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                player->setCollide(true);
+                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
+                m_pCamera->setLookAtCam(false);
+                m_pCamera->setTarget(player->geometry);
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
+                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+            }
+            // falls through to the shared active tail (0x137f7c)
+        } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
+            // State 5: brake the player towards the station, starting the docking sounds once the
+            // ship has slowed to cruise speed.
+            // PLT-order anchor: the state-4 body is emitted after this block in the 3,5,4 chain,
+            // so its setFreeLookMode/enableFirstPersonCam/hideShip/removeAllGuns first references
+            // would otherwise follow PlayerEgo::getSpeed and rotate five .rel.plt entries.  The
+            // branch is never taken by the caller (delta is a frame time).
+            if (delta == 0x5e) {
+                player->setFreeLookMode(false);
+                m_pCamera->enableFirstPersonCam(false);
+                player->hideShipForFirstPersonCameraView(false);
+                player->player->removeAllGuns();
+            }
+            Vector pos = player->getPosition();
+            int speedBits = player->getSpeed();
+            if (reinterpret_cast<float &>(speedBits) == 2.0f) {
+                Globals::sound->play(157, nullptr, nullptr, 0.0f);
+                Vector zero157{0.0f, 0.0f, 0.0f};
+                Globals::sound->updateEvent3DAttributes(157, &pos, &zero157, false);
+                Globals::sound->play(158, nullptr, nullptr, 0.0f);
+                Vector zero158{0.0f, 0.0f, 0.0f};
+                Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
+                Globals::sound->stop(player->field_0x1c);
+                Globals::sound->play(161, nullptr, nullptr, 0.0f);
+            }
+            Vector zero161{0.0f, 0.0f, 0.0f};
+            Globals::sound->updateEvent3DAttributes(161, &pos, &zero161, false);
+            speedBits = player->getSpeed();
+            player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
+            if (((RadioMessage *) ((*messages)[13]))->isOver()) {
+                m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
+            }
+            if (((RadioMessage *) ((*messages)[14]))->isTriggered()) {
+                m_nScriptTimerA = 0;
+                m_nState = 6;
+            }
         } else if (m_nState == 4) {
             // State 4 (0x138d2a): once radio message #10 finishes, run the standard cutscene-exit
             // teardown -- stop event 143's radio sting and replay it, drop the player out of turret
@@ -704,51 +759,6 @@ bool LevelScript::process(int delta) {
                 m_nState = 5;
             }
             // falls through to the shared active tail (0x13d4ec -> 0x137f7c)
-        } else if (m_nState == 3) {
-            // State 3 (0x1389d4): drift the camera in toward the intro ships, then once radio
-            // message #8 finishes hand control back to the player and reframe onto the player ship.
-            // FP immediates @0x1389c0 = 0.2f, @0x1389c4 = 2.2f.
-            m_pCamera->translate((float) delta * 0.2f, 0.0f, (float) delta * 2.2f);
-            if (((RadioMessage *) ((*messages)[8]))->isOver()) {
-                m_nScriptTimerA = 0; // strd 0 -> this+0x90 (64-bit)
-                m_nState = 4;
-                player->setComputerControlled(false);
-                player->player->field_5e = 0;
-                m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                m_pLevel->getPlayer()->setCollide(true);
-                m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
-                m_pCamera->setLookAtCam(false);
-                m_pCamera->setTarget(player->geometry);
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
-                reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
-            }
-            // falls through to the shared active tail (0x137f7c)
-        } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
-            // State 5: brake the player towards the station, starting the docking sounds once the
-            // ship has slowed to cruise speed.
-            Vector pos = player->getPosition();
-            int speedBits = player->getSpeed();
-            if (reinterpret_cast<float &>(speedBits) == 2.0f) {
-                Globals::sound->play(157, nullptr, nullptr, 0.0f);
-                Vector zero157{0.0f, 0.0f, 0.0f};
-                Globals::sound->updateEvent3DAttributes(157, &pos, &zero157, false);
-                Globals::sound->play(158, nullptr, nullptr, 0.0f);
-                Vector zero158{0.0f, 0.0f, 0.0f};
-                Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
-                Globals::sound->stop(player->field_0x1c);
-                Globals::sound->play(161, nullptr, nullptr, 0.0f);
-            }
-            Vector zero161{0.0f, 0.0f, 0.0f};
-            Globals::sound->updateEvent3DAttributes(161, &pos, &zero161, false);
-            speedBits = player->getSpeed();
-            player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
-            if (((RadioMessage *) ((*messages)[13]))->isOver()) {
-                m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
-            }
-            if (((RadioMessage *) ((*messages)[14]))->isTriggered()) {
-                m_nScriptTimerA = 0;
-                m_nState = 6;
-            }
         } else {
             switch (m_nState) {
                 case 6: {
@@ -2995,8 +3005,8 @@ bool LevelScript::process(int delta) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
-                        m_pLevel->getPlayer()->resetGunDelay();
-                        m_pLevel->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
+                        player->resetGunDelay();
+                        player->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
                     }
@@ -3607,13 +3617,13 @@ bool LevelScript::process(int delta) {
                         m_nState = 4;
                         player->setVisible(true);
                         player->setFreeze(false);
-                        m_pLevel->getPlayer()->setAutoPilot(nullptr);
-                        if (!m_pLevel->getPlayer()->isDockedToDockingPoint()) {
+                        player->setAutoPilot(nullptr);
+                        if (!player->isDockedToDockingPoint()) {
                             m_pRadar->lockedEnemy = nullptr;
                             m_pRadar->dockNavPtr = nullptr;
                         }
-                        m_pLevel->getPlayer()->resetGunDelay();
-                        m_pLevel->getPlayer()->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
+                        player->resetGunDelay();
+                        player->dockToDockingPoint(m_pRadar->lockedEnemy, m_pRadar);
                         player->geometry->setDirection(
                                 AbyssEngine::AEMath::VectorNormalize((*enemies)[4]->getPosition() - player->getPosition()),
                                 Vector{0.0f, 1.0f, 0.0f});
