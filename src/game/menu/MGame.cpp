@@ -1375,7 +1375,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     case 0: {
                     String report;
                     Ship *ship = Globals::status->getShip();
-                    int refinedAny = 0;
+                    char refinedAny = 0;
                     for (int ore = 154; ore < 166; ore++) {
                         int refined = ore + 11;
                         if (ore == 165) {
