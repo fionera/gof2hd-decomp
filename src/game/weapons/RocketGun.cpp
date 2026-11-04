@@ -185,6 +185,7 @@ void RocketGun::update(int elapsed) {
     gun = this->gun;
     this->wasFiring = gun->delayActive;
 
+    const float dt = (float) elapsed;
     if (gun->hitSmall != 0) {
         // A rocket was just launched: orient the rocket mesh along its velocity.
         this->fadeTimer = 0;
@@ -279,7 +280,6 @@ void RocketGun::update(int elapsed) {
         }
     }
 
-    const float dt = (float) elapsed;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
         ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
