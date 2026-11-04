@@ -5,21 +5,6 @@
 
 #include <cstdlib>
 
-// Defined in NdkAutosave.cpp: the original first mentions these globals before
-// Globals::Canvas, which is first referenced in this TU.  The initializer stays
-// here so the GOT first-reference order (curTouchSize, maxTouchSize, touches,
-// Canvas) is unchanged.
-extern Touch *touches;
-extern int maxTouchSize;
-extern int curTouchSize;
-
-namespace {
-struct TouchBufferInit {
-    TouchBufferInit() { touches = static_cast<Touch *>(realloc(touches, sizeof(Touch))); }
-};
-TouchBufferInit touchBufferInit;
-}
-
 LODManager::LODManager() {
     this->cameraPos.x = 0;
     this->cameraPos.y = 0;

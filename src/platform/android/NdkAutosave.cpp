@@ -3,12 +3,21 @@
 #include <cstdlib>
 
 // The original touch TU (its empty .text starts at 0x950dc, the address of AddTouch): the touch
-// globals and the four touch accessors.  Its second .init_array entry allocates a one-entry
-// buffer at static-init time (touches = realloc(touches, 16)); that initializer lives in
-// LODManager.cpp, which is the next TU.
+// globals, the four touch accessors and the second .init_array entry, which allocates a
+// one-entry buffer at static-init time (touches = realloc(touches, 16)).  The initializer must
+// live in this TU: its `.ARM.extab.text.startup` record is emitted after AddTouch's record and
+// before the next TU's, which is what places the record at the original 0x1a768c (see
+// _work/reconstructions/exidx_reconcile_w103_wm201.md).
 Touch *touches;
 int maxTouchSize = 0;
 int curTouchSize = 0;
+
+namespace {
+struct TouchBufferInit {
+    TouchBufferInit() { touches = static_cast<Touch *>(realloc(touches, sizeof(Touch))); }
+};
+TouchBufferInit touchBufferInit;
+}
 
 void AddTouch(int x, int y, int id, int action) {
     int index = curTouchSize;
