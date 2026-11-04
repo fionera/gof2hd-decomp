@@ -1375,7 +1375,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     case 0: {
                     String report;
                     Ship *ship = Globals::status->getShip();
-                    bool refinedAny = false;
+                    int refinedAny = 0;
                     for (int ore = 154; ore < 166; ore++) {
                         int refined = ore + 11;
                         if (ore == 165) {
@@ -1554,18 +1554,17 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
-                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
-                    if (mission->isCampaignMission()) {
-                        Globals::status->nextCampaignMission(true);
-                    } else {
-                        Globals::status->setFreelanceMission(Mission::empty);
-                        Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
-                    }
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     if (mission->isInstantActionMission()) {
                         Globals::switch_to_target_setting = 2;
                         this->active = 0;
                         this->applicationManager->SetCurrentApplicationModule(1);
                         return;
+                    } else if (mission->isCampaignMission()) {
+                        Globals::status->nextCampaignMission(true);
+                    } else {
+                        Globals::status->setFreelanceMission(Mission::empty);
+                        Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
                     }
                     Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                     this->levelScript->m_nTimeLimit = 0;
@@ -2112,10 +2111,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             resumeSounds();
         }
         if (this->hudTouchFlags == 0) {
+            this->hud->closeHudMenu();
             this->hudMenuOpen = 0;
-            if (this->hud != nullptr) {
-                this->hud->closeHudMenu();
-            }
             this->touch0Id = nullptr;
             this->touch1Id = nullptr;
             this->pauseOpen = 0;
