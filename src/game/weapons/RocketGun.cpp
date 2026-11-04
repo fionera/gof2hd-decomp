@@ -192,11 +192,11 @@ void RocketGun::update(int elapsed) {
         this->activeShotId = -1;
         gun->hitSmall = 0;
 
-        Vector heading = this->gun->velocities.data()[this->gun->currentProjectile];
         PaintCanvas *canvas = Globals::Canvas;
         Matrix &local = *(Matrix *) canvas->TransformGetLocal(this->transform);
         const Vector &shot = this->gun->positions.data()[this->gun->currentProjectile];
         MatrixSetTranslation(local, shot.x, shot.y, shot.z);
+        Vector heading = this->gun->velocities.data()[this->gun->currentProjectile];
 
         Matrix frame = *(const Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         Vector up = {0.0f, 1.0f, 0.0f};
@@ -225,8 +225,8 @@ void RocketGun::update(int elapsed) {
             goto itemEmit;
         } else if (this->gun->positions.data()[this->gun->currentProjectile].z == 50000.0f) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
-            this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             (*this->trailTimers)[this->gun->currentProjectile] = 0;
+            this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
             goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
