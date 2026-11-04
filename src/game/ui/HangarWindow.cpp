@@ -582,7 +582,7 @@ void HangarWindow::render() {
                                         // `left` (already in r0) avoids a reload of y.
                                         volatile int pad3 = left;
                                         (*this->buttons)[8]->setPosition(
-                                            this->hintOffsetX + Globals::layout->buttonInsetX,
+                                            Globals::layout->buttonInsetX + this->hintOffsetX,
                                             this->field_0x114 + y, 17);
                                         (*this->buttons)[8]->setVisible(true);
                                         (*this->buttons)[8]->draw();
@@ -793,12 +793,12 @@ void HangarWindow::render() {
                             Globals::layout->buttonInsetX + iconSpace + this->hintOffsetX, this->iconOffsetY + y);
                         buttonOffset = 0;
                     } else if (item->isMoveToCargoButton()) {
-                        (*this->buttons)[6]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[6]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX, y, 17);
                         (*this->buttons)[6]->setVisible(true);
                         (*this->buttons)[6]->draw();
                         continue;
                     } else if (item->isSellButton()) {
-                        (*this->buttons)[5]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX, y, 17);
+                        (*this->buttons)[5]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX, y, 17);
                         (*this->buttons)[5]->setVisible(true);
                         (*this->buttons)[5]->draw();
                         continue;
@@ -827,9 +827,9 @@ void HangarWindow::render() {
                                     buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
                                 }
                             }
-                            if (tab == 1 && this->upgradeMode) {
+                            if (this->upgradeMode && tab == 1) {
                                 (*this->buttons)[2]->setVisible(true);
-                                (*this->buttons)[10]->setPosition(this->hintOffsetX + Globals::layout->buttonInsetX,
+                                (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
                                                                   this->field_0x114 + y, 17);
                                 (*this->buttons)[10]->setVisible(true);
                                 (*this->buttons)[10]->draw();
@@ -852,7 +852,7 @@ void HangarWindow::render() {
                                          (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
                                         int b = item->inTabIndex == -1 ? 4 : 3;
                                         (*this->buttons)[b]->setPosition(
-                                            this->hintOffsetX + Globals::layout->buttonInsetX + listWidth -
+                                            Globals::layout->buttonInsetX + this->hintOffsetX + listWidth -
                                             2 * Globals::layout->field_0x2c_rowHeight,
                                             this->field_0x114 + y, 18);
                                         (*this->buttons)[b]->setVisible(true);
@@ -865,7 +865,7 @@ void HangarWindow::render() {
                             case 2:
                                 if (item->isBluePrint()) {
                                     (*this->buttons)[7]->setPosition(
-                                        this->hintOffsetX + Globals::layout->buttonInsetX + listWidth,
+                                        Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
                                     (*this->buttons)[7]->setVisible(true);
                                     (*this->buttons)[7]->draw();
@@ -1041,7 +1041,7 @@ void HangarWindow::render() {
         int row = 0;
         for (int i = 0; i < 5; i++) {
             TouchButton *button = (*this->buttons)[18 + i];
-            bool visible;
+            int visible;
             if (i == 0 || (Globals::options[73] && i == 1) || (Globals::options[74] && i == 2) ||
                 (Globals::options[75] && i == 3)) {
                 visible = false;
