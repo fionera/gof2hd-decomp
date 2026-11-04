@@ -860,13 +860,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         }
     }
 
+    AbyssEngine::String agentName = agent->getName();
     int difficulty;
     if (Globals::status->getCurrentCampaignMission() <= 15) {
         difficulty = Globals::rnd->nextInt(2);
     } else {
         difficulty = Globals::rnd->nextInt(9);
     }
-    AbyssEngine::String agentName = agent->getName();
 
     int itemId = 0;
     if (type == 8) {
