@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.91,
+  "avg_match": 99.92,
   "byte_exact": 4500,
   "linked_exact": 4500,
   "fuzzy_perfect": 4500,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 54.8,
+   "pct": 55.4,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 66.0,
+   "pct": 73.8,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -88,14 +88,6 @@
    "usize": 1996
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 86.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 87.0,
    "byte": false,
@@ -110,6 +102,14 @@
    "linked": false,
    "osize": 968,
    "usize": 968
+  },
+  {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 88.3,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
   },
   {
    "name": "_ZN5Level11createSceneEv",
@@ -145,7 +145,7 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 93.3,
+   "pct": 94.6,
    "byte": false,
    "linked": false,
    "osize": 9332,
@@ -161,7 +161,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 95.5,
+   "pct": 95.6,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -169,7 +169,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 95.5,
+   "pct": 95.6,
    "byte": false,
    "linked": false,
    "osize": 9600,
