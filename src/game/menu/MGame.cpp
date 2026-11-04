@@ -1387,12 +1387,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         while (ship->hasCargo(ore, fee)) {
                             ship->removeCargo(ore, fee);
                             ship->addCargo((*Globals::items)[refined]->makeItem(1));
-                            amount--;
+                            amount++;
                             refinedAny = true;
                         }
-                        int count = -amount;
-                        if (count > 0) {
-                            report += String("\n") + String(count) + String("t ") +
+                        if (amount > 0) {
+                            report += String("\n") + String(amount) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
                     }
@@ -2092,9 +2091,9 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
-            resumeSounds();
             this->pauseOpen = 0;
             this->hudMenuOpen = 0;
+            resumeSounds();
             this->hud->closeHudMenu();
         } else {
             if (wingmanCommand >= 0) {
