@@ -320,11 +320,14 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     MatrixSetTranslation(nearKey, this->camKeyX, this->camKeyY, this->camKeyZ);
     // Compiler barrier only (no instruction emitted): keeps the two table
     // address materialisations ahead of the iPad load, matching the original.
-    __atomic_signal_fence(__ATOMIC_SEQ_CST);
     const float *pitchTable = gHangarCamPitch;
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
-    int pitchBits = *(const volatile int *) &pitchTable[race]; // anchor: ModStation::ModStation; plain load drops raw match 98.35 -> 85.9
-    int yawBits = *(const volatile int *) &yawTable[race]; // anchor: ModStation::ModStation; plain load drops raw match 98.35 -> 97.8
+    // Compiler barrier only (no instruction emitted).  Placed after the table-pointer
+    // setup so the two yaw-table address materialisations keep the original's order
+    // (YawIPad before Yaw) and are scheduled ahead of the volatile pitch load.
+    __atomic_signal_fence(__ATOMIC_SEQ_CST);
+    int pitchBits = *(const volatile int *) &pitchTable[race];
+    int yawBits = *(const volatile int *) &yawTable[race];
     MatrixSetRotation(nearKey, *(const float *) &pitchBits, *(const float *) &yawBits, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     Matrix farKey;
