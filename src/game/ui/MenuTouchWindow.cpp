@@ -566,9 +566,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::Canvas->Image2DCreate(1702, this->fireImage_0x54);
         Globals::Canvas->Image2DCreate(1703, this->fireImage_0x58);
         Globals::Canvas->Image2DCreate(1704, this->fireImage_0x5c);
-        GameText *cinematicText = Globals::gameText;
+        GameText *cinematicText;
         this->cinematicBtnB = new TouchButton(
-            *cinematicText->getText(497), 0, Globals::w >> 1,
+            *(cinematicText = Globals::gameText)->getText(497), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 * 2 -
                 Globals::layout->field_0x30_rowHeight * 2,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
