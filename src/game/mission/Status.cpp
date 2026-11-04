@@ -1317,6 +1317,9 @@ static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xf
 // permutation keeps the ascending table order aligned with the original body
 // layout. It is a codegen device, not original data: it lives in its own
 // section so .rodata (and every PC-relative reference into it) stays exact.
+// The ranks span 150..181 (a 32-entry TBH) rather than the full 150..189: the
+// narrower table plus the case-159 null anchor below keeps the function at the
+// original's 1432 bytes. See status-missioncompleted-wave101-wf108.md.
 #pragma clang section rodata=".missioncase"
 static const unsigned char kMissionCase[192] = {
     0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
@@ -1329,7 +1332,7 @@ static const unsigned char kMissionCase[192] = {
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 151, 152, 153, 154, 155, 156, 163, 164, 157, 190,
-    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 182, 190, 150, 190,
+    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 181, 190, 150, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 161, 190, 190, 190, 190, 162, 190, 190,
 };
 #pragma clang section rodata=""
@@ -1357,7 +1360,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         // order. clang 7's MachineBlockPlacement follows the jump table's
         // value-sorted successor list, so the rank table above reorders the
         // case values to match that layout; the switch itself stays a plain
-        // int switch. See status-missioncompleted-wave100-w5003.md.
+        // int switch. See status-missioncompleted-wave100-w5003.md and
+        // status-missioncompleted-wave101-wf108.md.
         switch (kMissionCase[m->getType()]) {
             case 0:
             case 11:
@@ -1480,7 +1484,15 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
-                    if (Item::isInList(index, amount, ship->getCargo())) {
+                    // Size anchor: this splits the body into two MBBs, which
+                    // forces the original's (index r9, amount r5, ship r0)
+                    // allocation and restores the 4 bytes the 32-entry TBH
+                    // gives up. The original has no null check here.
+                    Ship *s = ship;
+                    if (s == 0) {
+                        continue;
+                    }
+                    if (Item::isInList(index, amount, s->getCargo())) {
                         return m;
                     }
                     if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
@@ -1577,7 +1589,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 182:
+            case 181:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();

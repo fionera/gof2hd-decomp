@@ -35,7 +35,7 @@ else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_arr
 byte-identical. `.shstrtab` differs only by the `.missioncase` name (86 bytes, 0x124 vs 0x117).
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
-`LevelScript::process` 54.8, `Status::missionCompleted` 85.6, `Radar::draw` 73.9,
+`LevelScript::process` 54.8, `Status::missionCompleted` 87.0, `Radar::draw` 73.9,
 `Level::createShip` 74.4, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
 `Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.8, `RocketGun::update` 86.9,
 `PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
@@ -248,7 +248,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
 | .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
-| .missioncase | absent | 192 | **192** | re-added by w5003: a semantically correct `kMissionCase[192]` type -> rank permutation (`#pragma clang section rodata=".missioncase"`, file-static) that forces clang 7's jump-table successor order to match the original's source-order body layout. It lives in the 0x1229-byte gap between `.rodata` (ends 0x20b977) and `.fini_array` (0x20cba0), so no existing address moves; section count 27 -> 28, `.shstrtab` 0x117 -> 0x124. `Status::missionCompleted` 60.4 -> 85.6. |
+| .missioncase | absent | 192 | **192** | re-added by w5003: a semantically correct `kMissionCase[192]` type -> rank permutation (`#pragma clang section rodata=".missioncase"`, file-static) that forces clang 7's jump-table successor order to match the original's source-order body layout. It lives in the 0x1229-byte gap between `.rodata` (ends 0x20b977) and `.fini_array` (0x20cba0), so no existing address moves; section count 27 -> 28, `.shstrtab` 0x117 -> 0x124. `Status::missionCompleted` 60.4 -> 85.6 (87.0 after the wf108 32-entry-TBH refinement). |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac; `sh_offset` 0x21596c, the unaligned end of `.data` as bfd writes it). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
@@ -257,7 +257,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (85.6%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (87.0%),
    `Radar::draw` (73.9%), `Generator::createMission` (74.3%), `Level::createShip` (74.4%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.8%) and
    `RocketGun::update` (86.9%).
