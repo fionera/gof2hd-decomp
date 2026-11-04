@@ -195,3 +195,129 @@ $OD -d --start-address=0x1233f0 --stop-address=0x1234b0 \
 
 Scratch (not tracked): `/dev/shm/w5416/` (`best2.cpp`, `raparse.py`,
 `batch*.py`, `score.py`, `measure.sh`, `mi2.txt`).
+
+---
+
+# Wave 106 continuation (w5416, second session): local-optimum audit
+
+Date: 2026-11-04. Same worktree/branch, base `486f8a119` + commit
+`34abc6cd4`. The landed source above was re-verified and then audited for
+further gains. **No further improvement was found**; the landed source is
+a measured local optimum at **95.451807 % / 9600 B / 3320 insns /
+2100 raw-diff lines**. Gate re-run after the audit: `RATCHET PASS`,
+`byte 4500 / linked 4500 / size 4524 / data 843 / imports 207`,
+`lint CLEAN`, `drift 0`.
+
+## 1. Where the remaining bytes are (size accounting)
+
+The function is exactly 9600 B / 3320 insns in both binaries, but four
+blocks differ in *size* and cancel out:
+
+| block | orig | landed | delta |
+|---|---|---|---|
+| `case 1` mission `addButton(18,..)` | `adds r4,r5,#2` + `mov r3,r4` | `adds r3,r5,#2` | **-2 B** |
+| language loop | `mov r9,r8` (i copied to r9, r8 reused for lang) | none (i stays r8, lang=r9) | **-2 B** |
+| iPad `cinematicText` block | loads gameText after `new` | hoists it before `new` + `mov sl,r4` + `ldr.w sl,[sp,#88]` | **+2 B** |
+| branch-target alignment `nop` at 0x1236ce | none | `nop` | **+2 B** |
+
+Everything else is instruction *placement* / register choice at equal
+size. Fixing any one of these changes the function size and therefore
+shifts every later address; each must be fixed together with its
+compensating partner.
+
+## 2. The `case 1` add is a list-scheduler artifact (proven)
+
+ARM's `ARMTargetLowering::getSchedulingPreference` returns
+`Sched::RegPressure` for integer nodes (LLVM 7 `ARMISelLowering.cpp:1437`),
+i.e. the `ScheduleDAGRRList` bottom-up list scheduler — *not* `source`.
+The `%row2 = add nsw i32 %row, 2` node is a leaf whose only use is the
+`addButton` invoke, so it only becomes available after `addButton` is
+scheduled; `getNodePriority` then places it just before the call. The
+original's `adds r4,r5,#2` *before* `blx getText` therefore cannot be
+reproduced by reordering the source.
+
+Measured (all byte-neutral, 9600 B / 3320 / 95.451807 / 2100):
+`int row2 = row + 2;` before the `if`, inside the `if`, before the
+`addButton(19,..)` line, `2 + row`, `row + 1 + 1`, `row - (-2)`,
+`row + 2u`, a real `switch (mission) { case 154: case 157: case 158: }`,
+and `int row2 = row + 2; ... row = row2 - 2;` after the call.
+A named `String text(*getText(395), false);` local is much worse
+(9624 B / 3331 / 89.49 %).
+
+Diagnostic: a whole-`.so` build with
+`-DGOF2_MATCH_OPT="-Oz -mllvm -pre-RA-sched=source"` gives
+**9516 B / 3333 insns / 46.60 %** — the `source` scheduler does hoist the
+add but destroys the stack frame and register allocation, so the original
+cannot have used it.
+
+## 3. `sliders[2]` reassociation (proven shape, not reachable)
+
+The original `(*this->sliders)[2]->setPosition(...)` y-argument is built as
+
+```
+t1 = field_0x1c + rowHeight
+t2 = field_0x15c + t1
+t3 = field_0x20_top + leftMargin
+t4 = t3 + listEntryWidth
+t5 = rowHeight * 3
+t6 = t4 + t5
+t7 = field_0x2fc + t6
+t8 = t7 + sliderRowHeight
+t9 = t8 + t2 * 2
+```
+
+i.e. it folds `rowHeight*5` into `rowHeight*3 + (..+rowHeight)*2` and
+loads the `Globals::layout` fields before the `this` fields. The current
+source (`(field_0x15c + field_0x1c)*2 + .. + rowHeight*5`) produces the
+mathematically identical but differently-associated tree
+(`rowHeight*5` + `(field_0x15c+field_0x1c)*2`). 14 source orderings /
+parenthesizations were measured; none beats the landed source:
+
+| variant | size | insns | fuzzy | rawdiff |
+|---|---:|---:|---:|---:|
+| landed | 9600 | 3320 | **95.451807** | **2100** |
+| `fc` first, `(..+rowHeight)*2` last | 9600 | 3320 | 95.301205 | 2106 |
+| `(..+rowHeight)*2` last, `fc` before `sliderRowHeight` | 9600 | 3320 | 95.361446 | 2105 |
+| orig tree, `rowHeight*3` + `(..+rowHeight)*2` | 9600 | 3320 | 95.000000 | 2310 |
+| `(..+rowHeight)*2` first, `rowHeight*3` | 9600 | 3321 | 95.316970 | 2887 |
+| layout-first, `(field_0x15c+field_0x1c)*2` last | 9596 | 3319 | 91.881307 | 2707 |
+
+`sliders[0]`, `[1]`, `[3]`, `[4]`, `[5]` already match the original
+instruction-for-instruction (only address-shifted), so only `[2]`'s
+reassociation is wrong.
+
+## 4. iPad `cinematicText` block (proven trade-off)
+
+Removing the `GameText *cinematicText = Globals::gameText;` local makes
+the block match the original exactly (gameText loaded after `operator
+new`, no `mov sl,r4`, no `ldr.w sl,[sp,#88]`), but the function shrinks to
+**9592 B / 3317 insns / 93.325298 %** and the 8-byte shift destroys more
+downstream matches than it gains. Keeping the local is worth +2.1 points.
+
+## 5. Loop statement order (proven tuning)
+
+The original's post-ctor order is `id store; fontId store; ArrayAdd`
+(see `strd r0,r1,[r6]` before the `ittt eq` fontId store). Reconstructing
+that faithful order scores **9604 B / 3321 / 89.685288 %**; the tuned
+`fontId store; ArrayAdd; id store` is **9600 B / 3320 / 95.451807 %**.
+The fuzzy metric therefore prefers a *non-faithful* order here.
+
+## 6. Loop index copy
+
+`mov r9,r8` in the original is the allocator copying the loop counter
+before reusing r8 for `langValue`. Introducing an explicit
+`unsigned int idx = i;` (used for `special`, the array indices, or both)
+is coalesced away and byte-neutral. `i < 10` (the original's `bcc`)
+folds the ctor-font PHI and drops to ~72 %; `i != 10` is required.
+
+## 7. Reproduction
+
+```sh
+cd /home/debian/GalaxyOnFire2/wt/w5416
+TMPDIR=/dev/shm/w5416/tmp cmake --build cmake-build-match --target check -j6
+# per-variant harness (scratch): python3 /dev/shm/w5416/runvar.py <variants.json>
+```
+
+Scratch: `/dev/shm/w5416/` (`v0.cpp` = landed source, `score2.py`,
+`runvar.py`, `show_s2.sh`, `sw_*.json`, `dbgc1.txt` = source-line-annotated
+C1 disassembly, `ScheduleDAGRRList.cpp`, `ARMISelLowering.cpp`).
