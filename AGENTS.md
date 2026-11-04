@@ -91,7 +91,7 @@ Known gate limitations (do not lean on them):
 `check` is green: byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact
 **4524/4524**, data_exact **843/843**, imports **207** (identical to the original), lint
 **CLEAN**, drift **0**, symbol parity **5370/5370** (0 extra / 0 missing). 24 functions are not
-byte-exact. All **27 ELF section headers are byte-identical**; `.text`, `.rodata`, `.data`,
+byte-exact. All **27 original ELF section headers are byte-identical** (plus our extra `.missioncase` rank-table section); `.text`, `.rodata`, `.data`,
 `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and
 `.rel.dyn` are size- and base-exact, and `.rel.plt` content is byte-identical. `.ARM.extab` is
 base-exact but `0x26294` (4 bytes short; known w4270/w4415 EH residual). The only

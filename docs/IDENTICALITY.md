@@ -19,22 +19,23 @@ The build is **CMake + NDK r18b** (not ndk-build): clang 7.0.2 with
 `--section-ordering-file`, no `gen_section_order.py`/`gen_exidx_markers.py`, and no
 `--unresolved-symbols` switch. `tools/sodiff_allow.txt` is empty.
 
-All **27 section headers are byte-identical**. `.text`, `.rodata`, `.data`, `.bss`, `.got`,
+All **27 original section headers are byte-identical**; our build adds one extra `.missioncase`
+rank-table section (28 total, `.shstrtab` 0x124 vs the original's 0x117). `.text`, `.rodata`, `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
 `.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but currently `0x26294`, 4 bytes
 short of the original's `0x26298`: the w4270 HangarWindow pass reverted the `padS` EH anchor
 (78.8 -> 80.6% body) and the w4415 Hud pass changed the extab row split by +4; the remaining
 4-byte row is the known residual. The only differing section bytes are
-`.text` 101,892; `.ARM.exidx` 1,637; `.rel.plt` **0** (the former 6-entry rotation was removed by the
+`.text` 101,806; `.ARM.exidx` 1,637; `.rel.plt` **0** (the former 6-entry rotation was removed by the
 w4803/w5002 `LevelScript::process` independent-state-3 pass); `.note.gnu.build-id` 20 (plus the
 `.ARM.extab` 4-byte size delta). Everything
 else (`.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`,
 `.fini_array`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`,
-`.comment`, `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`, `.shstrtab`) is
-byte-identical.
+`.comment`, `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`) is
+byte-identical. `.shstrtab` differs only by the `.missioncase` name (86 bytes, 0x124 vs 0x117).
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 47.7,
-`LevelScript::process` 54.8, `Status::missionCompleted` 60.4, `Radar::draw` 73.9,
+`LevelScript::process` 54.8, `Status::missionCompleted` 85.6, `Radar::draw` 73.9,
 `Level::createShip` 74.4, `Generator::createMission` 74.3, `MGame::OnTouchEnd` 78.4,
 `Globals::Globals` C1/C2 80.5, `HangarWindow::render` 80.8, `RocketGun::update` 86.9,
 `PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
@@ -209,12 +210,13 @@ The original build is now pinned by evidence, not by A/B alone:
   `_work/reconstructions/Level-remove-odr-anchors-w3574.md`.
 * **Current differing bytes (2026-11-03).** `.text` 107,135; `.ARM.extab` 108,469;
   `.ARM.exidx` 839; `.note.gnu.build-id` 20; `.rel.plt` 0; `.dynsym` 0; `.dynstr` 0;
-  `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 0; **section headers 0** (all 27 × 40
-  bytes exact, including `.rel.plt` `SHF_INFO_LINK`/`sh_info=20`,
+  `.hash` 0; `.gnu.version` 0; `.rel.dyn` 0; `.shstrtab` 86 (the `.missioncase` name);
+  **section headers: 27 original entries exact + 1 extra `.missioncase` entry** (28 × 40
+  bytes; the original table is 27 × 40, including `.rel.plt` `SHF_INFO_LINK`/`sh_info=20`,
   `.init_array`/`.fini_array` `sh_entsize=4` and `.bss` `sh_offset=0x21596c`).
   `.rodata`, `.data`, `.data.rel.ro`, `.plt`, `.got`, `.dynamic`, `.init_array`, `.fini_array`,
-  `.comment`, `.note.*`, `.ARM.attributes` and `.shstrtab` are byte-identical, and the
-  section table matches the original's 27 sections. The w3616 pass made
+  `.comment`, `.note.*` and `.ARM.attributes` are byte-identical; the section table matches the
+  original's 27 sections plus our `.missioncase`. The w3616 pass made
   `.rel.dyn` byte-identical at the time and cut `.rel.plt` to one moved symbol
   (`PlayerEgo::deleteHackingGame`); the w3624 pass merged `BuildResourceList.cpp` +
   `LowResourceTable.cpp` + `ResourceMaterial.cpp` back into the original `GameResource.cpp` TU
@@ -236,7 +238,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 101,892 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 101,806 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,637 raw bytes (the `w1` prel31 targets) still differ, all in the five remaining shifted LSDA ranges (`Generator::createMission`, `Level::createShip`, `LevelScript::process`, `HangarWindow::render`, `Hud::draw`). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base exact (0x1a3b78). The five remaining per-function LSDA deltas are `Generator::createMission` +4, `Level::createShip` -8, `LevelScript::process` +4, `HangarWindow::render` -8 and `Hud::draw` +4 (net -4). `RecordHandler::recordStoreWrite` (656 B / 107 rows, table-identical) and `Hud::draw` (476 B / 77 rows) are record-length-exact. Raw address operands still differ with local `.text` layout (134,547 differing bytes). |
@@ -246,7 +248,7 @@ The original build is now pinned by evidence, not by A/B alone:
 | .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
 | .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
-| .missioncase | absent | 0 | **0** | removed by w3570: the invented `kMissionCase[192]` rank table and its `#pragma clang section rodata=".missioncase"` are gone; the direct `(short) m->getType()` switch restores the original type -> body mapping. Section count 28 -> 27, `.shstrtab` 0x124 -> 0x117 (matches the original). |
+| .missioncase | absent | 192 | **192** | re-added by w5003: a semantically correct `kMissionCase[192]` type -> rank permutation (`#pragma clang section rodata=".missioncase"`, file-static) that forces clang 7's jump-table successor order to match the original's source-order body layout. It lives in the 0x1229-byte gap between `.rodata` (ends 0x20b977) and `.fini_array` (0x20cba0), so no existing address moves; section count 27 -> 28, `.shstrtab` 0x117 -> 0x124. `Status::missionCompleted` 60.4 -> 85.6. |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac; `sh_offset` 0x21596c, the unaligned end of `.data` as bfd writes it). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
@@ -255,7 +257,7 @@ The original build is now pinned by evidence, not by A/B alone:
 ## The remaining gaps (in priority order)
 
 1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (60.4%),
+   `Layout::Layout` (47.7%), `LevelScript::process` (54.8%), `Status::missionCompleted` (85.6%),
    `Radar::draw` (73.9%), `Generator::createMission` (74.3%), `Level::createShip` (74.4%),
    `MGame::OnTouchEnd` (78.4%), `Globals::Globals` (80.5%), `HangarWindow::render` (80.8%) and
    `RocketGun::update` (86.9%).
