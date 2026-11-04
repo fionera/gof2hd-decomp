@@ -1960,11 +1960,10 @@ void Level::createMission() {
             // `i < 0` is always false here (i is a non-negative index); it is a
             // codegen anchor that keeps the table select inside the loop, matching the
             // original's in-loop `cbz` and restoring the raid block placement.
-            const float *t = ((bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets)[k];
-            v = MatrixRotateVector(rotation, Vector{t[3], t[4], t[5]});
+            const float (*t)[6] = (bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
+            v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
-            Vector turretPos = {t[0], t[1], t[2]};
-            v = MatrixRotateVector(rotation, turretPos);
+            v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
             ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->shipGroup = localRace;
