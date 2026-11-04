@@ -50,8 +50,8 @@ source tree reproduces the original TU membership and within-TU function order, 
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
 its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact (the build adds one
-extra `.missioncase` rank-table section, 28 total). The link order is a static source
+content is byte-identical, and all 27 original section headers are exact (no extra section).
+The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
 produced the list once); `tools/gen_section_order.py` and `tools/gen_exidx_markers.py` are gone.
@@ -92,13 +92,12 @@ extra export is a hard failure. The 12 formerly broken zero-size UB stubs have a
 reconstructed (see the fidelity section).
 
 ### Current state — ELF sections (2026-11-04)
-All 27 original section headers are byte-identical; our build adds one extra `.missioncase`
-rank-table section (28 total, `.shstrtab` 0x124 vs the original's 0x117). `.text`, `.rodata`, `.data`, `.bss`, `.got`,
+All 27 original section headers are byte-identical (no extra section). `.text`, `.rodata`, `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact;
-`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but `0x26294` (4 bytes short of
+`.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but `0x2628c` (12 bytes short of
 the original's `0x26298`, the known w4270/w4415 EH residual). The only differing section
-bytes are `.text` (101,704), `.ARM.exidx` (1,637), `.rel.plt` (0) and `.note.gnu.build-id` (20);
-`.shstrtab` also differs (73 bytes) because it names the extra `.missioncase` section.
+bytes are `.text` (102,940), `.ARM.extab` (128,108), `.ARM.exidx` (1,666), `.rel.plt` (0) and
+`.note.gnu.build-id` (20); `.shstrtab` is byte-identical.
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
