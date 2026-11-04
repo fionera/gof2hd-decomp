@@ -1212,11 +1212,15 @@ void SpaceLounge::drawLounge() {
             width += Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, role + String("  "));
         }
         Layout *layout = Globals::layout;
+        // The original right-edge clamp folds the layout padding through a
+        // 16-bit sign-extend (mov.w r1, pad, lsl #16; add.w r1, width,
+        // r1, asr #15) rather than reusing the int pad*2 kept in sl.
+        short pad3 = pad;
         int x = centerX;
         if (x - pad < layout->buttonInsetX) {
             x = layout->buttonInsetX + pad;
         } else if (pad + x + width > Globals::w - layout->buttonInsetX) {
-            x = Globals::w - layout->buttonInsetX + (-width - pad - pad);
+            x = Globals::w - layout->buttonInsetX - (width + pad3 * 2);
         }
         int lineHeight = layout->field_0x30_rowHeight;
         layout->drawBox(2, x - pad, top - pad, pad * 2 + width, lineHeight, String(""));
