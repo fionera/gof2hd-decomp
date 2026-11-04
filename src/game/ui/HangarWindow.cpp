@@ -578,15 +578,6 @@ void HangarWindow::render() {
                                         left = this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     }
                                     if (left > 0) {
-                                        // Volatile sink: keeps the original
-                                        // call-site cleanup scopes (and the
-                                        // 376-byte frame) intact.  The
-                                        // initialiser reads the same
-                                        // `this->field_0x114` the setPosition
-                                        // below uses; the CSE'd load is what
-                                        // nudges the list-body register roles
-                                        // (raw 0.8064427 -> 0.8082060).
-                                        volatile int pad3 = this->field_0x114; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
@@ -706,17 +697,12 @@ void HangarWindow::render() {
                     } else if (item->isShip()) {
                         name = *Globals::gameText->getText(item->ship->getIndex() + 913);
                         Globals::Canvas->SetColor(0x777777ffu);
-                        if (tab == 1 && this->upgradeMode) {
+                        if (this->upgradeMode && tab == 1) {
                             Globals::Canvas->DrawString(
                                 hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
                                 y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
                         } else if (tab == 1 || i > 1) {
-                            Globals::Canvas->DrawString(
-                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
-                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
-                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
-                        } else {
                             Globals::Canvas->SetColor(
                                 item->ship->getPrice() - Globals::status->getShip()->getPrice() >
                                 Globals::status->getCredits()
@@ -726,6 +712,11 @@ void HangarWindow::render() {
                                 hangarFont(),
                                 Globals::layout->formatCredits(item->ship->getPrice() -
                                                                Globals::status->getShip()->getPrice()),
+                                textX + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
+                        } else {
+                            Globals::Canvas->DrawString(
+                                hangarFont(), Globals::layout->formatCredits(item->ship->getPrice()),
                                 textX + Globals::layout->buttonInsetX + this->hintOffsetX,
                                 y + Globals::layout->field_0x70_rowHeight / 2 + 1, false);
                         }
@@ -920,9 +911,6 @@ void HangarWindow::render() {
             for (count = 0; count <= 4; count++) {
                 String description("");
                 String price("");
-                // Layout anchor: the three self-assignments at count == 4 below
-                // are no-ops on the rendered text but steer codegen to the
-                // original 9700-byte HangarWindow::render body.
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
@@ -957,15 +945,11 @@ void HangarWindow::render() {
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
-                // Scoped block: the original's LSDA has a separate cleanup
-                // region for these calls.  Both volatile sinks below are
-                // load-bearing: removing pad0b (w4268) raised the raw match
-                // 78.79 -> 79.36 but shrank .ARM.extab by 12 bytes, and the
-                // pad0/pad0b pair is the pre-34e source shape.
+                // The original's LSDA has a separate cleanup region covering
+                // this call; the volatile sink keeps that region (and hence
+                // .ARM.extab) at the original size without changing behaviour.
                 {
-                    volatile int pad0 = count;
-                    // Second sink: pins the same 4-byte size/regalloc delta as pad0.
-                    volatile int pad0b = count; // anchor: HangarWindow::render; load-bearing for the .ARM.extab row split
+                    volatile ChoiceWindow *p = this->dialog;
                     (*this->buttons)[12 + count]->setSplitText(price);
                 }
                 (*this->buttons)[12 + count]->draw();
@@ -976,9 +960,6 @@ void HangarWindow::render() {
                         this->scrollHintImageA,
                         (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
                         (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
-                    description = description;
-                    description = description;
-                    description = description;
                 }
             }
         } else {
