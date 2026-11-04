@@ -760,18 +760,14 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int level;
-    int costs;
-    int itemId;
-    int amount;
-
     bool selected = false;
     int32_t type = 0;
     int guard = 999;
     Array<bool> *used = Globals::status->field_50;
-    while (!selected) {
+    for (; !selected; --guard) {
         selected = guard < 1;
-        int pick = Globals::rnd->nextInt(15);
-        --guard;
+        short pick = Globals::rnd->nextInt(15);
+        type = pick;
         if (pick == 8) goto assignType;
         if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; plain form shrinks body 1996 -> 1988
             type = 10;
@@ -795,7 +791,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             }
             used->data()[pick] = true;
         }
-        if (__builtin_expect(pick == 12, 0)) {  // lint: arm_builtin anchor: Generator::createMission; plain `if` reorders the pick==12 arm
+        if (pick == 12) {
             selected = true;
             if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
                 type = 12;
@@ -874,8 +870,8 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = Globals::rnd->nextInt(9);
     }
 
-    itemId = 0;
-    amount = 0;
+    int itemId = 0;
+    int amount = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
         do {
@@ -884,8 +880,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
                  (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
         amount = Globals::rnd->nextInt(15) + 5;
-        int tec = (*items)[itemId]->getTecLevel();
-        difficulty = tec;
+        difficulty = (*items)[itemId]->getTecLevel();
     } else {
         ++difficulty;
         switch (type) {
@@ -967,11 +962,11 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Mission *mission = new Mission(type, agentName, agent->getImageParts(), race, (int) reward, targetStation,
                                    difficulty);
 
-    costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
+    int costs = (int) (reward / 10.0f + (float) Globals::rnd->nextInt((int) reward / 10));
     if (type == 8) {
         // 0.5f + 1 ulp: same result after truncation, keeps the original code size.  The real
-        // 4 bytes are the out-of-line `getRoutes() == nullptr` arm (original cmp+beq.w, ours an
-        // inline cbz); see _work/reconstructions/Generator-createMission-w102.md.
+        // 4 bytes are the non-folded pick == 12 ternary; see
+        // _work/reconstructions/Generator-createMission-pick12-ternary-w3592.md.
         costs = (int) ((float) costs * 0.5000001f);
     } else if (type == 6) {
         mission->setTargetName(Globals::globals->getRandomName(0, true));
