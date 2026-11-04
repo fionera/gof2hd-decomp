@@ -1315,35 +1315,20 @@ static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xf
 // source order, but clang 7's MachineBlockPlacement follows the jump table's
 // value-sorted successor list, so a direct switch emits ascending order. This
 // permutation keeps the ascending table order aligned with the original body
-// layout. It is a codegen device, not original data: it lives in its own
-// section so .rodata (and every PC-relative reference into it) stays exact.
+// layout. It is a codegen device, not original data.
 // The ranks span 150..181 (a 32-entry TBH) rather than the full 150..189: the
 // narrower table plus the case-159 null anchor below keeps the function at the
 // original's 1432 bytes. See status-missioncompleted-wave101-wf108.md.
 //
-// `.jcr` is a read-only PROGBITS section that gold places in the zero-filled
-// gap between .rodata and .fini_array (ORDER_READONLY, immediately after
-// .rodata), so the 192-byte table neither moves .rodata nor grows the RELRO
-// segment: .fini_array, .data.rel.ro, .dynamic and .rel.dyn stay byte-exact
-// and the table words are never called as exit destructors. (The earlier
-// `.fini_array` placement made DT_FINI_ARRAYSZ 200 and grew .dynamic/.rel.dyn.)
-// See status-missioncompleted-wave108-w5602.md.
-#pragma clang section rodata=".jcr"
-static const unsigned char kMissionCase[192] = {
-    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 151, 152, 153, 154, 155, 156, 163, 164, 157, 190,
-    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 181, 190, 150, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 161, 190, 190, 190, 190, 162, 190, 190,
-};
-#pragma clang section rodata=""
+// The table is defined in tools/mission_case_table.cpp, which the link places
+// after every vendored archive: it is therefore the last .rodata input, so
+// appending it shifts no existing .rodata byte (and no literal-pool address).
+// It is hidden, so it adds no new .dynsym/.dynstr entry (the dynamic-symbol
+// insertion order still shifts slightly; see the note). See
+// status-missioncompleted-wave109-w5710.md.
+#pragma GCC visibility push(hidden)
+extern const unsigned char kMissionCase[192];
+#pragma GCC visibility pop
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
