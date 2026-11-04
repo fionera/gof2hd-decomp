@@ -366,8 +366,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     this->cameraZ = this->transform.m[11];
     this->transform = AbyssEngine::AEMath::MatrixGetInverse(this->transform);
 
+    bool onPlanetCourse;
     if (alienOrbit) {
-        this->field_0x1a8 =
+        onPlanetCourse =
                 this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet();
     } else {
         if (this->level->getPlayer()->goingToPlanet() && !this->level->getPlayer()->isDockingToPlanet()) {
@@ -377,11 +378,12 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
-            this->field_0x1a8 = autoPilotTarget == targets->data()[stationIndex];
+            onPlanetCourse = autoPilotTarget == targets->data()[stationIndex];
         } else {
-            this->field_0x1a8 = false;
+            onPlanetCourse = false;
         }
     }
+    this->field_0x1a8 = onPlanetCourse;
 
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX - this->imageWidth, this->centerY - this->imageHeight);
     Globals::Canvas->DrawImage2D(this->field_0x1c4, this->centerX, this->centerY - this->imageHeight, 1);
@@ -615,9 +617,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
-            this->field_0x1a8 = this->level->getPlayer()->goingToPlanet() &&
-                                !this->level->getPlayer()->isDockingToPlanet() &&
-                                autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
+            onPlanetCourse = this->level->getPlayer()->goingToPlanet() &&
+                             !this->level->getPlayer()->isDockingToPlanet() &&
+                             autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
+            this->field_0x1a8 = onPlanetCourse;
         }
 
         if (!turretMode && !landmarkHit) {
@@ -952,8 +955,9 @@ enemies:
     otherLock = (this->dockNavPtr != nullptr && this->lockedEnemy == nullptr) || this->field_0x1c != nullptr ||
                 this->lockedStation != nullptr || this->field_0x14 != 0;
     if (this->gasClouds != nullptr) {
+        uint32_t i = 0;
         bool gasHit = false;
-        for (uint32_t i = 0; i < this->gasClouds->size(); ++i) {
+        for (; i < this->gasClouds->size(); ++i) {
             PlayerGasCloud *cloud = (PlayerGasCloud *) this->gasClouds->data()[i];
             Array<AEGeometry *> *sparks = (Array<AEGeometry *> *) cloud->getSparks();
             if (sparks != nullptr && Globals::status->getShip()->getFirstEquipmentOfSort(35) != nullptr) {
