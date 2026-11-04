@@ -487,12 +487,11 @@ void HangarWindow::render3D() {
 static inline unsigned int hangarFont() { return (unsigned int) (uintptr_t) Globals::font; }
 
 void HangarWindow::render() {
-    Layout *layout = Globals::layout;
     Globals::Canvas->SetColor(0xffffffffu);
     ModStation *station = (ModStation *) Globals::appManager->GetApplicationModule(5);
     if (station == nullptr || !station->pendingHangarClose) {
         if (this->viewMode == 0) {
-            layout->drawBG();
+            Globals::layout->drawBG();
             int tab = this->hangarList->getCurrentTab();
             Array<ListItem *> *items = this->hangarList->getCurrentTabItems();
             if (items != nullptr) {
@@ -515,13 +514,12 @@ void HangarWindow::render() {
                     int imgW = Globals::Canvas->GetImage2DWidth(this->hintImage);
                     int imgH = Globals::Canvas->GetImage2DHeight(this->hintImage);
                     int rows = Globals::h / imgH;
-                    Layout *hintLayout = Globals::layout;
                     for (int r = 0; r <= rows; r++) {
                         Globals::Canvas->DrawImage2D(this->hintImage,
-                                                     this->hintOffsetX + (hintLayout->buttonInsetX - imgW),
+                                                     (Globals::layout->buttonInsetX - imgW) + this->hintOffsetX,
                                                      r * imgH, 1);
                         Globals::Canvas->DrawImage2D(this->hintImage,
-                                                     hintLayout->buttonInsetX + this->hintOffsetX + listWidth +
+                                                     Globals::layout->buttonInsetX + this->hintOffsetX + listWidth +
                                                      (barHeight > 0
                                                           ? Globals::layout->field_0x2c_rowHeight +
                                                             Globals::layout->field_0x48
@@ -578,6 +576,11 @@ void HangarWindow::render() {
                                         left = this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     }
                                     if (left > 0) {
+                                        // Codegen anchors: the dead stores keep the
+                                        // list-body register roles (this -> r6) and
+                                        // the 9700-byte body of the original.
+                                        volatile int pad3 = y;
+                                        volatile int pad3b = y;
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
@@ -585,6 +588,7 @@ void HangarWindow::render() {
                                         (*this->buttons)[8]->draw();
                                     }
                                     if (right > 0) {
+                                        volatile int padR = 0;
                                         (*this->buttons)[9]->setPosition(
                                             Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                             this->field_0x114 + y, 18);
@@ -827,7 +831,6 @@ void HangarWindow::render() {
                                 (*this->buttons)[10]->draw();
                             }
                         } else {
-                            volatile int padS = 0; (void) padS;
                             // The original dispatches the two selected-item button
                             // cases through a jump table on `tab`.
                             switch (tab) {
@@ -946,6 +949,7 @@ void HangarWindow::render() {
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
+                volatile int pad0 = count;
                 // The original's LSDA has a separate cleanup region covering
                 // this call; the volatile sink keeps that region (and hence
                 // .ARM.extab) at the original size without changing behaviour.
@@ -1049,9 +1053,9 @@ void HangarWindow::render() {
             if (visible) {
                 int height = button->getHeight();
                 int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
-                Globals::Canvas->SetColor(0xffffffffu);
                 volatile float textYf = (float) y + (float) height * 0.2f; // anchor: HangarWindow::render; plain float grows body 9700 -> 9752
                 int textY = (int) textYf;
+                Globals::Canvas->SetColor(0xffffffffu);
                 Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
                 Globals::Canvas->SetColor(0x777777ffu);
