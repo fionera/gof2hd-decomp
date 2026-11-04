@@ -2905,8 +2905,8 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setTarget(leader);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = leader->getDirection();
+                    m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_tempVec += m_dirVec * ((float) delta * 1.7f);
                     m_dirVec = leader->getRightVector();
                     m_tempVec += m_dirVec * ((float) -delta * 0.03f);
@@ -2994,8 +2994,8 @@ bool LevelScript::process(int delta) {
                     if (player->isDockedToDockingPoint()) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
-                        m_pRadar->dockNavPtr = nullptr;
                         m_pLevel->getPlayer()->resetGunDelay();
+                        m_pRadar->dockNavPtr = nullptr;
                         m_pLevel->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
@@ -3018,8 +3018,8 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->setCollide(false);
                     m_pCamera->setLookAtCam(true);
-                    m_tempVec = player->geometry->getPosition();
                     m_pCamera->setTarget(player->geometry);
+                    m_tempVec = player->geometry->getPosition();
                     m_dirVec = player->geometry->getDirection();
                     m_tempVec += m_dirVec * 7000.0f;
                     m_dirVec = player->geometry->getRightVector();
@@ -3297,8 +3297,8 @@ bool LevelScript::process(int delta) {
                         player->setSpeed(4.0f);
                         player->setFreeze(false);
                         player->setPosition(*m_pCamera->getPosition() + Vector{5000.0f, 300.0f, -14000.0f});
-                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_pCamera->setTarget(station->rootGeometry);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_nState = 8;
                     }
@@ -3494,8 +3494,8 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_60 = player->player->getArmorHP();
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
-                        player->player->setGammaHP(100);
                         m_bCinematicBreak = 1;
+                        player->player->setGammaHP(100);
                         Level::initStreamOutPosition = 1;
                         Globals::switch_to_target_setting = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
@@ -3685,8 +3685,8 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
                         player->setComputerControlled(false);
-                        m_pCamera->setLookAtCam(false);
                         player->player->setVulnerable(true);
+                        m_pCamera->setLookAtCam(false);
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && (*enemies)[0]->getPosition().z >= 90000.0f) {
@@ -3865,8 +3865,8 @@ bool LevelScript::process(int delta) {
                     AEGeometry *leaderShip = (*enemies)[leader]->geometry;
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    m_dirVec = leaderShip->getDirection();
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    m_dirVec = leaderShip->getDirection();
                     m_tempVec += m_dirVec * (step * 2.04f);
                     m_dirVec = leaderShip->getRightVector();
                     m_tempVec += m_dirVec * (step * 0.04f);
@@ -3903,8 +3903,8 @@ bool LevelScript::process(int delta) {
                             if ((*enemies)[i]->shipGroup == 10 && (*enemies)[i]->isDead()) {
                                 (*enemies)[i]->revive();
                                 (*enemies)[i]->awake();
-                                KIPlayer *fighter = (*enemies)[i];
                                 int dx = Globals::rnd->nextInt(10000) + 35000;
+                                KIPlayer *fighter = (*enemies)[i];
                                 int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                                 int dz = Globals::rnd->nextInt(10000) + 35000;
                                 int dy = Globals::rnd->nextInt(10000);
@@ -4071,8 +4071,8 @@ bool LevelScript::process(int delta) {
                     (*enemies)[0]->geometry->moveForward(step);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
-                    m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = player->GetDirVector();
+                    m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
@@ -4119,8 +4119,8 @@ bool LevelScript::process(int delta) {
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->GetDirVector();
-                    m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
+                    m_dirVec = player->geometry->getRightVector();
                     m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.005f);
                     m_pCamera->setFixed(true);
@@ -4598,8 +4598,8 @@ bool LevelScript::process(int delta) {
                         m_dirVec = player->geometry->getDirection();
                         m_tempVec += m_dirVec * 10000.0f;
                         m_dirVec = player->geometry->getRightVector();
-                        m_tempVec += m_dirVec * 700.0f;
                         m_pCamera->setPosition(m_tempVec);
+                        m_tempVec += m_dirVec * 700.0f;
                         (*enemies)[0]->player->setHitpoints(0);
                         m_nState = 6;
                     }
@@ -4887,8 +4887,8 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 1; // cinematicBreak_ high byte @0x11 = 1
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
-                        m_pCamera->setTarget((*enemies)[2]->geometry);
                         AEGeometry *ref2 = (*enemies)[2]->geometry;
+                        m_pCamera->setTarget((*enemies)[2]->geometry);
                         Vector *camPos = &m_tempVec; // tempVec @0x28
                         Vector *tmp = &m_dirVec;
                         *camPos = ref2->getPosition();
