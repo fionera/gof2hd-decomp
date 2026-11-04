@@ -75,8 +75,14 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 # of the original 0xda0).  Only the 7:1 ratio reproduces the original's block frequencies and the
 # campaign-in-r6 allocation.  Clang 7.0.2 has no __builtin_expect_with_probability, and no
 # source-level comparison form yields 7:1 (see _work/reconstructions/branch-weight-overrides_w4218.md).
-set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
-    PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
+# The flag A/B harness (tools/flag_fingerprint.py) can suppress these per-file overrides so a
+# global -mllvm branch-weight default can be tested: clang 7 rejects a repeated
+# -likely-branch-weight on one command line, and the per-file property would duplicate it.
+option(GOF2_NO_PER_FILE_WEIGHTS "Omit per-file branch-weight overrides (flag A/B harness)" OFF)
+if(NOT GOF2_NO_PER_FILE_WEIGHTS)
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
+        PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
+endif()
 
 # Radar.cpp used to carry a per-file 80:1 branch-weight override.  Wave 100 (w5004) removed it:
 # the landmark on-screen test now hints both the `onScreen` load and the first bounds comparison
