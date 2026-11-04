@@ -733,8 +733,8 @@ bool LevelScript::process(int delta) {
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
-                player->setTurretMode(false);
                 Globals::sound->play(143, nullptr, nullptr, 0.0f);
+                player->setTurretMode(false);
                 resetCamera(m_pLevel);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 m_pLevel->getPlayer()->setCollide(false);
@@ -2402,8 +2402,8 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setLookAtCam(false);
                     m_pCamera->setTarget(player->geometry);
-                    player->setComputerControlled(false);
                     m_pHud->visible = 1;
+                    player->setComputerControlled(false);
                     m_pRadar->enabled = 1;
                     resetCamera(m_pLevel);
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -2929,8 +2929,8 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 4) {
                     m_nScriptTimerA += delta;
-                    m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     AEGeometry *leader = (*enemies)[0]->geometry;
+                    m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     m_pCamera->setTarget(leader);
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
@@ -2961,8 +2961,8 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 2001) {
                         for (int i = 0; i < 3; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                             (*enemies)[i]->field_0x38 = 4;
+                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                         }
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget(player->geometry);
@@ -3521,8 +3521,8 @@ bool LevelScript::process(int delta) {
                             for (int i = 8; i <= 10; i++) {
                                 PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
                                 (*enemies)[i]->setActive(true);
-                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
                                 (*enemies)[i]->field_0x74 = 0;
+                                port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
                             }
                         }
                     }
