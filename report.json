@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.4,
+   "pct": 74.7,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -89,19 +89,11 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 80.8,
+   "pct": 83.1,
    "byte": false,
    "linked": false,
    "osize": 9700,
    "usize": 9700
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 85.6,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN9RocketGun6updateEi",
@@ -110,6 +102,14 @@
    "linked": false,
    "osize": 1908,
    "usize": 1908
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 87.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
