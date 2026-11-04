@@ -580,8 +580,13 @@ void HangarWindow::render() {
                                     if (left > 0) {
                                         // Volatile sink: keeps the original
                                         // call-site cleanup scopes (and the
-                                        // 376-byte frame) intact.
-                                        volatile int pad3 = 0; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
+                                        // 376-byte frame) intact.  The
+                                        // initialiser reads the same
+                                        // `this->field_0x114` the setPosition
+                                        // below uses; the CSE'd load is what
+                                        // nudges the list-body register roles
+                                        // (raw 0.8064427 -> 0.8082060).
+                                        volatile int pad3 = this->field_0x114; // anchor: HangarWindow::render; removal shrinks body 9700 -> 9696
                                         (*this->buttons)[8]->setPosition(
                                             this->hintOffsetX + Globals::layout->buttonInsetX,
                                             this->field_0x114 + y, 17);
