@@ -1311,39 +1311,19 @@ int Status::missionFailed(bool docked, int64_t time) {
 
 static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xfc, 0x13b, 0x181, 0x1ce, 0x222, 0x27d, 0x2df, 0x348, 0x3b8, 0x42f, 0x4ad, 0x532, 0x672};
 
-// Mission type -> case-label rank. The original lays the switch bodies out in
+// Mission type -> case-label rank.  The original lays the switch bodies out in
 // source order, but clang 7's MachineBlockPlacement follows the jump table's
-// value-sorted successor list, so a direct switch emits ascending order. This
+// value-sorted successor list, so a direct switch emits ascending order.  This
 // permutation keeps the ascending table order aligned with the original body
-// layout. It is a codegen device, not original data: it lives in its own
-// section so .rodata (and every PC-relative reference into it) stays exact.
-// The ranks span 150..181 (a 32-entry TBH) rather than the full 150..189: the
-// narrower table plus the case-159 null anchor below keeps the function at the
-// original's 1432 bytes. See status-missioncompleted-wave101-wf108.md.
-//
-// `.jcr` is a read-only PROGBITS section that gold places in the zero-filled
-// gap between .rodata and .fini_array (ORDER_READONLY, immediately after
-// .rodata), so the 192-byte table neither moves .rodata nor grows the RELRO
-// segment: .fini_array, .data.rel.ro, .dynamic and .rel.dyn stay byte-exact
-// and the table words are never called as exit destructors. (The earlier
-// `.fini_array` placement made DT_FINI_ARRAYSZ 200 and grew .dynamic/.rel.dyn.)
-// See status-missioncompleted-wave108-w5602.md.
-#pragma clang section rodata=".jcr"
-static const unsigned char kMissionCase[192] = {
-    0, 190, 190, 190, 190, 190, 190, 190, 8, 190, 190, 11, 190, 13, 14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 151, 152, 153, 154, 155, 156, 163, 164, 157, 190,
-    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 181, 190, 150, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 161, 190, 190, 190, 190, 162, 190, 190,
-};
-#pragma clang section rodata=""
+// layout.  It is a codegen device, not original data: tools/mission_case_table.cpp
+// emits it as the last .rodata input, so it lands at the first byte past the
+// original .rodata image (0x20b977) and shifts no existing .rodata byte.  The
+// address is spelled out instead of naming the symbol because a cross-TU
+// reference makes gold insert an undefined symbol mid-table, which reorders
+// .dynsym.  The (unsigned char) index cast bounds the load to 0..255, which is
+// what keeps the function at the original's 1432 bytes.
+// See status-missioncompleted-wave110-w5810.md.
+#define MISSION_CASE ((const unsigned char *) 0x20b977)
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     bool notAtStation = !atStation;
@@ -1370,7 +1350,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         // case values to match that layout; the switch itself stays a plain
         // int switch. See status-missioncompleted-wave100-w5003.md and
         // status-missioncompleted-wave101-wf108.md.
-        switch (kMissionCase[m->getType()]) {
+        switch (MISSION_CASE[(unsigned char)m->getType()]) {
             case 0:
             case 11:
                 if (atStation && station->getIndex() == m->getTargetStation()) {

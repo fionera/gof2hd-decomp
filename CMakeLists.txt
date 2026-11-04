@@ -130,6 +130,12 @@ set(_link_libcxxabi "${GOF2_NDK_LIBCXXABI_A}")
 set(_link_aos "${GOF2_NDK_ANDROID_SUPPORT_A}")
 set(_link_libgcc "${GOF2_NDK_LIBGCC_A}")
 
+# Status::missionCompleted's mission-type -> case-rank table (see
+# _work/reconstructions/status-missioncompleted-wave110-w5810.md).  It must be the *last*
+# .rodata input so appending it shifts no existing .rodata byte; linked after every archive.
+add_library(mission_table OBJECT tools/mission_case_table.cpp)
+target_compile_options(mission_table PRIVATE -ffunction-sections -funwind-tables)
+
 add_custom_command(OUTPUT "${_so}"
     # A shared-library link allows undefined imports by default, as the original's app-provided
     # imports require; the import set is gated by tools/ratchet.py (a typo'd callee would otherwise
@@ -156,6 +162,7 @@ add_custom_command(OUTPUT "${_so}"
             ${_link_libcxxabi}
             ${_link_aos}
             ${_link_libgcc}
+            $<TARGET_OBJECTS:mission_table>
             -l dl -l c
             ${_libdir}/crtend_so.o
     # The original was stripped with GNU binutils after the link.  bfd normalizes the section
@@ -169,7 +176,7 @@ add_custom_command(OUTPUT "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
-    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2> ${_crtbegin}
+    DEPENDS gof2 gof2_libs mission_table $<TARGET_OBJECTS:gof2> $<TARGET_OBJECTS:mission_table> ${_crtbegin}
             ${_openssl_out} ${_libzip_out} ${_zlib_out}
             ${CMAKE_SOURCE_DIR}/tools/source_order.txt
             ${CMAKE_SOURCE_DIR}/tools/reorder_shstrtab.py
