@@ -756,6 +756,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int level;
+    volatile double padA;
     volatile int amount;
 
     bool selected = false;
@@ -918,7 +919,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
-    volatile double padA = 0; (void) padA;
+    padA = 0; (void) padA;
     float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
