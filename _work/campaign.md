@@ -5344,3 +5344,29 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.ARM.extab` size and realigns ~20 KB of records); remove the `.missioncase` rank table
   without losing the 87.0% body order (restores 27 sections and byte-identical
   `.dynsym`/`.shstrtab`).
+
+## Session 2026-11-04 (wave 107 — 20-agent worst-first fleet + structural cleanup)
+
+- Launched 20 `codex exec -p dsv41` workers from `f857b5171`, one per worst function/angle,
+  each in its own `wt/w55xx` worktree with REA. All completed; worktrees removed after harvest.
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `Layout::Layout` 47.8 -> 48.0 (float-typed arms restore the `vcvt` round-trip).
+  - `LevelScript::process` 54.2 -> 54.8 (statement reorders + mission-0 3,5,4 body order).
+  - `HangarWindow::render` 85.1 -> 86.3 (LSDA sinks to `buttons[6]` + free-credits).
+  - `RocketGun::update` 86.9 -> 88.3 (hoist launch-block heading read).
+  - `Level::createMission` 92.03 -> 92.09 (issue `setScaling` before turret rotation).
+  - `SpaceLounge::drawLounge` 95.47 -> 95.54 (16-bit clamp padding intermediate).
+  - `MenuTouchWindow` ctor 95.45 -> 95.48 (defer `gameText` load past `operator new`).
+- Structural cleanup:
+  - `Level::createShip` restored to the faithful real-`new` shape: LSDA 328 -> 336 B /
+    57 rows, `.ARM.extab` back to `0x26298` (66.0%, was 73.8% tuned).
+  - `Status::missionCompleted` rank table moved from `.missioncase` to `.fini_array`:
+    27 sections again, file size exact, `.rodata`/`.dynsym`/`.dynstr`/`.hash`/`.shstrtab`
+    byte-identical, 87.0% kept. New deltas: `.fini_array` 8 -> 200 B, `.dynamic` 3 bytes,
+    `.rel.dyn` 4 bytes; the 48 table words would be called as destructors on a clean exit.
+  - `Hud::draw` kept extab-neutral at 93.3% (the wave-107 94.6% order needs +4 extab).
+- Section deltas now: `.text` 98,918; `.ARM.exidx` 829; `.ARM.extab` 108,288 (size exact);
+  `.fini_array` 192; `.dynamic` 3; `.rel.dyn` 4; build-id 20. 27 sections, exact file size.
+- Open follow-ups: remove the `.fini_array` rank table without losing 87.0% (and the
+  destructor hazard); recover the 94.6% Hud / 73.8% createShip extab-neutral peaks.

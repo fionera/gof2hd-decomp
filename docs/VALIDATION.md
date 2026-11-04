@@ -50,8 +50,8 @@ source tree reproduces the original TU membership and within-TU function order, 
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
 its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact; wave 106 adds one
-`.missioncase` section (see the section table below).
+content is byte-identical, and all 27 original section headers are exact (wave 107 restored the
+27-section table; the `Status::missionCompleted` rank table now lives in `.fini_array`).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -92,16 +92,18 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-04, wave 106)
-All 27 original section headers are present and exact, but wave 106 adds a 28th section,
-`.missioncase` (192 B), so the section count is 28 and `.shstrtab` grows 279 -> 292 B. `.text`,
-`.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash` and `.rel.dyn`
-are size- and base-exact; `.rel.plt` content is byte-identical. `.ARM.extab` is base-exact but
-**4 B short** (`0x26294` vs `0x26298`) after the wave-106 `Level::createShip`/`Hud::draw`/
-`Generator::createMission` LSDA-length changes. The differing section bytes are `.text`
-(98,926), `.ARM.exidx` (1,683), `.ARM.extab` (128,949; size 4 B short, records shifted),
-`.dynsym` (661, `st_shndx` shift only), `.shstrtab` (86), `.rel.plt` (0) and
-`.note.gnu.build-id` (20).
+### Current state — ELF sections (2026-11-04, wave 107)
+All 27 original section headers are present and exact, and the file size is exact
+(2,187,328 B). `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
+`.rel.plt`, `.dynsym`, `.dynstr`, `.hash`, `.shstrtab` and `.rel.dyn` are size- and base-exact;
+`.rel.plt` content is byte-identical. `.ARM.extab` is size- and base-exact again at `0x26298`.
+The `Status::missionCompleted` rank table now lives in `.fini_array`, which grows 8 -> 200 B
+backwards into the zero-filled `.rodata`..`.data.rel.ro` gap; the real destructor entries stay
+first and byte-identical, but `DT_FINI_ARRAY`/`DT_FINI_ARRAYSZ` (3 bytes in `.dynamic`) and the
+two `.rel.dyn` offsets (4 bytes) move, and the 48 table words would be called as destructors on
+a clean exit. The differing section bytes are `.text` (98,918), `.ARM.exidx` (829),
+`.ARM.extab` (108,288; size/base exact), `.fini_array` (192), `.dynamic` (3), `.rel.dyn` (4),
+`.rel.plt` (0) and `.note.gnu.build-id` (20).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
