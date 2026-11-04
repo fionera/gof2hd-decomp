@@ -1387,11 +1387,12 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         while (ship->hasCargo(ore, fee)) {
                             ship->removeCargo(ore, fee);
                             ship->addCargo((*Globals::items)[refined]->makeItem(1));
-                            amount++;
+                            amount--;
                             refinedAny = true;
                         }
-                        if (amount > 0) {
-                            report += String("\n") + String(amount) + String("t ") +
+                        int count = -amount;
+                        if (count > 0) {
+                            report += String("\n") + String(count) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
                     }
@@ -1553,20 +1554,18 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
-                    Mission *mission = Globals::status->getMission()->hasWon()
-                                           ? Globals::status->getMission()
-                                           : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    if (mission->isInstantActionMission()) {
-                        Globals::switch_to_target_setting = 2;
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(1);
-                        return;
-                    }
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
                     if (mission->isCampaignMission()) {
                         Globals::status->nextCampaignMission(true);
                     } else {
                         Globals::status->setFreelanceMission(Mission::empty);
                         Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
+                    }
+                    if (mission->isInstantActionMission()) {
+                        Globals::switch_to_target_setting = 2;
+                        this->active = 0;
+                        this->applicationManager->SetCurrentApplicationModule(1);
+                        return;
                     }
                     Globals::status->changeCredits(mission->getReward() + mission->getBonus());
                     this->levelScript->m_nTimeLimit = 0;
@@ -2091,40 +2090,40 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
+            resumeSounds();
             this->pauseOpen = 0;
             this->hudMenuOpen = 0;
-            resumeSounds();
             this->hud->closeHudMenu();
-        } else {
-            if (wingmanCommand >= 0) {
-                // Order the wingmen.
-                Array<KIPlayer *> *enemies = this->level->getEnemies();
-                if (enemies != nullptr) {
-                    for (unsigned i = 0; i < enemies->size(); i++) {
-                        KIPlayer *wingman = (*enemies)[i];
-                        if (wingman->isWingMan() && !wingman->isDead()) {
-                            wingman->setWingmanCommand(wingmanCommand,
-                                                       wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
-                        }
+        } else if (wingmanCommand >= 0) {
+            // Order the wingmen.
+            Array<KIPlayer *> *enemies = this->level->getEnemies();
+            if (enemies != nullptr) {
+                for (unsigned i = 0; i < enemies->size(); i++) {
+                    KIPlayer *wingman = (*enemies)[i];
+                    if (wingman->isWingMan() && !wingman->isDead()) {
+                        wingman->setWingmanCommand(wingmanCommand,
+                                                   wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
                     }
                 }
-                this->hudMenuOpen = 0;
-                this->hud->closeHudMenu();
-                this->pauseOpen = 0;
-                resumeSounds();
             }
-            if (this->hudTouchFlags == 0) {
+            this->hudMenuOpen = 0;
+            this->hud->closeHudMenu();
+            this->pauseOpen = 0;
+            resumeSounds();
+        }
+        if (this->hudTouchFlags == 0) {
+            this->hudMenuOpen = 0;
+            if (this->hud != nullptr) {
                 this->hud->closeHudMenu();
-                this->hudMenuOpen = 0;
-                this->touch0Id = nullptr;
-                this->touch1Id = nullptr;
-                this->pauseOpen = 0;
-                resumeSounds();
-                if (this->_bc8) {
-                    this->_bc8 = 0;
-                    if (this->player != nullptr) {
-                        this->player->resetGunDelay();
-                    }
+            }
+            this->touch0Id = nullptr;
+            this->touch1Id = nullptr;
+            this->pauseOpen = 0;
+            resumeSounds();
+            if (this->_bc8) {
+                this->_bc8 = 0;
+                if (this->player != nullptr) {
+                    this->player->resetGunDelay();
                 }
             }
         }
