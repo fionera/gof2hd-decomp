@@ -10,7 +10,7 @@
   "engine/core/Array.h": 5,
   "engine/render/Curve.cpp": 6,
   "game/ui/MenuTouchWindow.cpp": 3,
-  "game/world/Level.cpp": 3,
+  "game/world/Level.cpp": 1,
   "platform/android/NdkHooks.cpp": 2
  },
  "void_ptr": {

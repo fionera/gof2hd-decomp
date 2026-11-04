@@ -516,10 +516,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     this->blipSprite->draw(1.0f, 1.0f);
                 }
                 landmarkHit = true;
-            } else if (this->lockedStation == nullptr) {
-                this->stationLockTimer = 0;
-                this->field_0x28 = 0;
             } else {
+                if (this->lockedStation == nullptr) {
+                    this->field_0x28 = 0;
+                }
                 this->stationLockTimer = 0;
             }
         }
@@ -942,13 +942,10 @@ enemies:
                 enemyHit = true;
             } else {
                 if (*(navWreck ? &this->field_0x1c : &this->lockedEnemy) == nullptr) {
-                    this->enemyLockTimer = 0;
-                    enemyHit = false;
                     this->dockNavPtr = nullptr;
-                } else {
-                    this->enemyLockTimer = 0;
-                    enemyHit = false;
                 }
+                this->enemyLockTimer = 0;
+                enemyHit = false;
             }
         }
     }
