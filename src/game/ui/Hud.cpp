@@ -1261,9 +1261,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                      0x11, 0x14);
         this->field_0x4b4 -= dt;
     }
-    // The null guard is also load-bearing: it makes the allocator reload &Globals::status
-    // in the damage block, which colours the status spill to the original's #108 slot.
-    if (Globals::status == 0 || this->field_0x4b8 >= 1) {
+    if (Globals::status && this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
@@ -1385,7 +1383,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     } else {
         String load = String(Globals::status->getShip()->getCurrentLoad()) + String(" / ") +
                       String(Globals::status->getShip()->getMaxLoad()) + String("t");
-        short shift = 0;
+        int shift = 0;
         if (Globals::status->getShip()->getCurrentLoad() >= 101)
             shift = -2 * Globals::layout->field_0x2c_rowHeight;
         Globals::Canvas->DrawImage2D(this->image_0x324, this->field_0x438 - Globals::layout->field_0x1ec, this->field_0x43a);
