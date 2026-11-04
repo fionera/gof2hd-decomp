@@ -747,9 +747,6 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
-    // LSDA-scope anchor: keeps the body at the original 1996 B and the .ARM.extab
-    // record at 168 B (see _work/reconstructions/Generator-createMission-w103.md).
-    volatile double padA = 0; (void) padA;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -759,7 +756,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int level;
-    int itemId;
     volatile int amount;
 
     bool selected = false;
@@ -793,7 +789,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             }
             used->data()[pick] = true;
         }
-        if (pick == 12) {
+        if (__builtin_expect(pick == 12, 0)) {  // lint: arm_builtin anchor: Generator::createMission; cold mission type 12
             selected = true;
             if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
                 type = 12;
@@ -872,7 +868,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = Globals::rnd->nextInt(9);
     }
 
-    itemId = 0;
+    int itemId = 0;
     amount = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
@@ -922,6 +918,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
+    volatile double padA = 0; (void) padA;
     float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
