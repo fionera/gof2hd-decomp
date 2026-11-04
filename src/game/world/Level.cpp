@@ -2118,10 +2118,10 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    Globals *g = Globals::globals;
-    for (unsigned i = 0; i < this->enemies->size(); i++) {
+    unsigned n = this->enemies->size();
+    for (unsigned i = 0; i < n; i++) {
         (*this->enemies)[i] = this->createShip(
-                8, 0, g->getRandomEnemyFighter(8),
+                8, 0, Globals::globals->getRandomEnemyFighter(8),
                 this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
@@ -2363,8 +2363,9 @@ case4Tail:
                             p->setMaxHitpoints((int) (hp * (*(float *) &Globals::options[44] > 0.7 ? 1.4f : 1.0f)));
                             ((PlayerFixedObject *) (*this->enemies)[i])->setMoving(true);
                             (*this->enemies)[i]->player->setAlwaysFriend(true);
-                            (*this->enemies)[i]->cargo = nullptr;
-                            ((PlayerFighter *) (*this->enemies)[i])->crateCaptured() = 0;
+                            KIPlayer *ship = (*this->enemies)[i];
+                            ((PlayerFighter *) ship)->crateCaptured() = 0;
+                            ship->cargo = nullptr;
                         }
                     }
                     (*this->enemies)[attackerCount]->setPosition(-2500.0f, -300.0f, 27000.0f);
