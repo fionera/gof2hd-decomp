@@ -38,7 +38,7 @@ The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C
 `Level::createShip` 66.4, `Radar::draw` 73.9, `Generator::createMission` 77.5, `MGame::OnTouchEnd` 74.8,
 `HangarWindow::render` 80.2, `Globals::Globals` C1/C2 80.5, `RocketGun::update` 86.9,
 `PlayerEgo::calcCollision` 87.6, `Level::createScene` 88.3, `Gun::calcCharacterCollision` 90.0,
-`Level::createMission` 92.0, `Hud::draw` 92.1, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.1,
+`Level::createMission` 92.0, `Hud::draw` 92.9, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.1,
 `SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::OnTouchBegin` 97.7,
 `ModStation::ModStation` C1/C2 98.4, `MGame::OnUpdate` 99.9.
 See `_work/reconstructions/docs-wave92-w4269.md`.

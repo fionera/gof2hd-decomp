@@ -1632,13 +1632,13 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
+            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
-            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
@@ -1649,7 +1649,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, top * 2, 0x11, 0x14);
             Globals::Canvas->DrawRegion2D(this->image_0x38c, 0, 0, (int) (progress * (float) barW), barH, 0.0f, 0, 0,
-                                          (Globals::w >> 1) - barW / 2, barYOffset + top);
+                                          (Globals::w >> 1) - barW / 2, barYOffset + top * 2);
             Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, text, (Globals::w >> 1) - (Globals::Canvas->GetTextWidth((unsigned int) (uintptr_t) Globals::font, text) >> 1), (int) ((float) (top * 2) + (float) barH * 2.5f), false);
             if (this->field_0x27a && Globals::status->getMission() != 0 &&
                 Globals::status->getMission()->getType() != 168)
