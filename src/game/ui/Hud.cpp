@@ -1632,18 +1632,18 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             short transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            float progress = (float) transferred / (float) total;
+            if (this->field_0x279)
+                progress = 1.0f - progress;
+            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
             if (fadeIn < 1.0f)
                 fade = fadeIn;
-            barOffset = (int) ((float) textH + (float) frameH * 2.5f);
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
-            float progress = (float) transferred / (float) total;
-            if (this->field_0x279)
-                progress = 1.0f - progress;
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             unsigned short top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             Globals::Canvas->SetColor((int) (fade * 255.0f) - 256);
