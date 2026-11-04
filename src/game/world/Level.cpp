@@ -5205,9 +5205,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = jitterZ + jitterX - 20000;
-    float y = (float) (wy + jitterY - 20000);
-    float z = (float) (wz + wx - 20000);
+    int x = wz + jitterY - 20000;
+    float z = (float) (wx + jitterX - 20000);
+    float y = (float) (wy + jitterZ - 20000);
     player->setEmpData(empPoints, empTime);
 
     KIPlayer *ship = nullptr;
