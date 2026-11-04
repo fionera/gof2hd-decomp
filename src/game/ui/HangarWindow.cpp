@@ -827,6 +827,7 @@ void HangarWindow::render() {
                                 (*this->buttons)[10]->draw();
                             }
                         } else {
+                            volatile int padS = 0; (void) padS;
                             // The original dispatches the two selected-item button
                             // cases through a jump table on `tab`.
                             switch (tab) {

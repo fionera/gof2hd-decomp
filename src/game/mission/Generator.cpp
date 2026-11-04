@@ -747,6 +747,10 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+    // LSDA-scope anchor: keeps the body at the original 1996 B while the `toSystem`
+    // temporary below is folded into the distance call (see
+    // _work/reconstructions/extab_lsda_scopes_w102_wm103.md).
+    volatile double padA = 0; (void) padA;
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -915,8 +919,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
-    SolarSystem *toSystem = systems->data()[galaxy->getStation(targetStation)->getSystem()];
-    float reward = (galaxy->distance(fromSystemPtr, toSystem) / 1200.0f + 1.0f) *
+    float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
     if (type == 7) {
         reward *= 0.7f;
