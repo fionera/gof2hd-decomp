@@ -1,9 +1,14 @@
-# `RocketGun::update(int)` — pass 11 (w4812, wave 98)
+# `RocketGun::update(int)` — pass 11 + 12 (w4812, wave 98)
 
 **Status:** research note, 2026-11-04. Worktree `wt/w4812`, branch `wave98-w4812`,
 base `fe4f5e7cf`. **No source change landed**: every source shape tried this pass
 scores <= 86.9 %. Tree clean, gate unchanged (byte 4500, linked 4500, size
 4524/4524, data 843/843, imports 207, lint CLEAN, drift 0).
+
+> **Pass 12 addendum is section 8 (below).** It replaces the weight table of
+> sections 2-3 with the exact per-reference decomposition and resolves the
+> apparent `this > dt` contradiction: the original's third loop `this` reload
+> is inside the cluster block, so `this` weighs 12.52, not 52.0.
 
 Target `_ZN9RocketGun6updateEi`: original **1908 B / 635 insns**, ours
 **1908 B / 636 insns**, official verify score **86.9**.
@@ -378,3 +383,140 @@ compile command), `linkcmd.sh` (checked-in gold link), `fast3.sh`
 (compile+link+score, ~0.8 s), `score1.py` (single-symbol official verifier),
 `ra.log`, `ra_faithful.log`, `pmi.log`, `ssc.log`, `irsc.log`, `diff*.txt`;
 none of it is in the repo.
+
+---
+
+## 8. Pass 12 addendum (w4812, wave 98): the exact weight decomposition
+
+This section supersedes the hand-wavy "weights" of sections 2-3 with the
+**exact per-reference decomposition** (each slot weight is the sum of
+`blockFreq/entryFreq` over every machine instruction that references the
+frame index, `StackSlotColoring::ScanForSpillSlotRefs` ->
+`LiveIntervals::getSpillWeight(false, true, MBFI, MI)`). Block frequencies are
+read with `-mllvm -print-machine-bfi` (entry freq 273, loop body 31.0,
+`for.cond` 32.0). Scratch: `/dev/shm/w4812`.
+
+### 8.1 Baseline (our source, 636 insns, 86.9 %)
+
+| slot | refs (block freq) | weight | offset |
+|---|---|---|---|
+| `dt` | preheader store (1.0) + for.body (31.0) + cluster (3.6328) + trail-block (12.109) | **47.742** | 24 |
+| `this` | store (1.0) + launch (0.625) + cluster ×3 (3×3.6328) + trail-block ×2 (2×12.109) | **36.742** | 20 |
+| `trailMatrices` local | preheader store (1.0) + A (12.109) + B (7.2656) + C (12.109) | **32.484** | 16 |
+| `elapsed` | store (1.0) + `if.then76` (0.17578) + `if.then91` (0.24414) + `if.else104` (0.14648) + `itemEmit` (0.058594) + fade (9.6875) | **11.3125** | 12 |
+| `c` | cluster store+load (2×3.6328) | **7.2656** | 8 |
+| guard | (2.0) | 2.0 | 4 |
+
+The `this` reloads are at `0x60c`, `0x620`, `0x63e` (cluster block,
+3.6328 each) and `0x6ac`, `0x6b8` (trail block, 12.109 each). The last two
+exist only because `sl` is clobbered by the `Vector::operator*` sret pointer
+(`add.w sl, sp, #128` at `0x66c`).
+
+### 8.2 The original (635 insns)
+
+Same block frequencies (same CFG shape), but the reference set is different:
+
+| slot | refs (block freq) | weight | offset |
+|---|---|---|---|
+| `dt` | preheader store (1.0) + for.body (31.0) + cluster (3.6328) + trail-block (12.109) | **47.742** | 24 |
+| `this` | store (1.0) + launch (0.625) + cluster ×3 (3×3.6328) | **12.523** | 20 |
+| `elapsed` | store (1.0) + `if.then72` (0.11719) + `if.else` (0.39063) + `itemEmit` (0.058594) + fade (9.6875) | **11.254** | 16 |
+| `c` | cluster store+load (2×3.6328) | **7.266** | 12 |
+| `s` | cluster store+load (2×3.6328) | **7.266** | 8 |
+| guard | (2.0) | 2.0 | 4 |
+
+**This resolves the apparent contradiction in section 2.** The original's
+`ldr.w sl, [sp, #20]` at line 530 is *inside the cluster block* (it feeds the
+third `+=`, still inside `if (weaponType == 40)`), not in the following block.
+So the original has only **three** `this` reloads in the loop, all at 3.6328,
+and `this` weighs 12.52 — just 1.27 above `elapsed`'s 11.25. The ordering
+`dt > this > elapsed > c = s > guard` then reproduces the original's offsets
+exactly.
+
+### 8.3 What must change
+
+Two independent defects, both now quantified:
+
+1. **`this` is 24.2 too heavy** (36.74 vs 12.52) because of the two extra
+   trail-block reloads (`0x6ac`, `0x6b8`). They disappear iff the sret pointer
+   of the trail-block `Vector::operator*` takes `r6` instead of `sl`.
+2. **The `trailMatrices` slot must not exist** (original weight table has no
+   trail entry). With the local removed, however, `this` is reloaded far more
+   (faithful form: `this` 72.27, `dt` 44.90, order `this > dt`), so the local
+   is currently what keeps `this` cheap.
+
+The only source lever that changes (1) is the `dt` reload placement: if `dt`
+is live in `r4` when the sret pointer is chosen, the pointer takes `r6`
+(original), `s` spills (7.27), `c` moves to 12, `elapsed` to 16 and `strd`
+fires. In our build `dt` is reloaded after `Cosf`, so `r4` is free and takes
+the sret pointer.
+
+### 8.4 A/B/C subset weights (new)
+
+Replacing individual local uses with `this->trailMatrices` (keeping the
+declaration) changes the CFG enough that the model is not additive, but the
+measurements are:
+
+| variant (use replaced by member) | trail w | this w | dt w | elapsed w | pct |
+|---|---|---|---|---|---|
+| none (baseline) | 32.484 | 36.742 | 47.742 | 11.313 | **86.9** |
+| A only | 25.105 | 72.271 | 44.904 | 5.258 | 68.2 |
+| B only | 22.381 | 72.271 | 44.904 | 5.258 | 68.8 |
+| C only | 20.375 | — (no slot) | 47.742 | 11.313 | 66.3 |
+| A+B | 10.271 | 72.271 | 44.904 | 5.258 | 64.2 |
+| A+C | 15.834 | 72.271 | 44.904 | 5.258 | 64.2 |
+| B+C | 13.109 | 72.271 | 44.904 | 5.258 | 64.2 |
+| all (faithful) | — | 72.271 | 44.904 | 12.040 | 57.6 |
+
+Every member substitution pushes `this` above `dt` (72.27 > 44.90), so the
+slot order flips regardless of the trail weight. This is why no A/B/C subset
+can win: the local is load-bearing for `this`'s colouring.
+
+### 8.5 New source experiments this pass (all <= 86.9)
+
+| variant | pct | note |
+|---|---|---|
+| baseline | **86.9** | |
+| `life` declared after `phase` (matches the original's post-`uidiv` load order) | 86.5 | weights identical; instruction order shifts |
+| `life` before `total` | 86.7 | |
+| `Sinf` uses `total - gun->lifetimes[i]` (no `life` local) | 86.5 | |
+| `Cosf` uses `total - life` | 53.2 | |
+| both trig args via member | 76.6 | |
+| `n` as `int` | 86.9 | |
+| `phase` via float division | 59.0 | |
+| `trailMatrices->data()[i]` for the second access | 85.7 | |
+| `(*trailMatrices)[i]` for the second access | 84.0 | |
+| `Matrix *trail` + `->` | 84.0 | |
+| `heading` computed before the first `MatrixSetTranslation` | 59.3 | |
+| `first_uses_trail` / `both_via_trail` | 53.1 | |
+| `RocketGun *self = this` + `self->trailMatrices` (7 subsets) | 57.6-68.8 | coalesces with `this` |
+| `lifetimes` base-pointer local (both / s only) | 85.8 / 86.5 | |
+| `lifeKeep` volatile after `Sinf` | 77.0 | |
+| `life2 = life` after `Sinf` | 75.4 | 635 insns, 1904 B |
+| `dt * 0.0f` added to the `s` / `c` / `phase` argument | 82.2-82.8 | forces a `vmul` |
+| `const float zero = dt * 0.0f;` (dead) | 86.9 | folded |
+| `__builtin_expect` on cluster / trail / active / ahead.z / homing (0 and 1) | 44.4-86.9 | `expect_trail1` = 86.9 |
+| anchor grid `{expect,padx,unused,local}` × 2^4 | best 86.9 | `exp=0` variants give 635 insns but 83.5-84.6 |
+| same grid with `life` after `phase` | best 86.5 | |
+
+The 635-insn variants (`exp=0,padx=0,unused=0,local=1` -> 83.5;
+`exp=0,padx=0,unused=1,local=1` -> 84.6) still emit
+`str r6,[sp,#12]` + `str.w sl,[sp,#20]`, i.e. no `strd`: instruction count
+alone is not the target.
+
+### 8.6 Conclusion
+
+The residual is now fully quantified as two coupled weights:
+
+```
+this  = 1 + 0.625 + 3*3.6328 + 2*12.109 = 36.742   (original: 12.523)
+trail = 1 + 12.109 + 7.2656 + 12.109     = 32.484   (original: absent)
+```
+
+To match, a source shape must (a) make the trail-block sret pointer take `r6`
+(dropping `this` to 12.52 and spilling `s`), and (b) have no trail slot. Both
+are downstream of the `dt` reload being placed before `Sinf`; every source
+reordering tried (this pass and passes 2-11, ~450 variants total) leaves it
+after `Cosf`. The remaining lever is the pre-RA list-scheduler/regalloc
+interaction around `%29` (`elapsed`, evicted from `r4` by `%251`, the hoisted
+`%stack.4` address), not any expression shape in the source.
