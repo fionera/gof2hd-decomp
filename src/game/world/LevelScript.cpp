@@ -608,10 +608,9 @@ bool LevelScript::process(int delta) {
     // the mission==1 intro state machine (0x137d82-0x137e82) and the shared "active" tail
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
-    Array<RadioMessage *> *messages = m_pLevel->getMessages();
-    Array<KIPlayer *> *enemies;
+    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
     PlayerEgo *player = m_pLevel->getPlayer();
-    enemies = m_pLevel->getEnemies();
+    Array<RadioMessage *> *messages = m_pLevel->getMessages();
     if (Globals::status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
@@ -716,7 +715,7 @@ bool LevelScript::process(int delta) {
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
-                player->setCollide(true);
+                m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
@@ -1464,13 +1463,13 @@ bool LevelScript::process(int delta) {
             m_bStartSequence = 0;    // active = false
             m_bStartSequenceOver = 1; // startSequenceIsOver = true
             m_pCamera->setLookAtCam(false);
-            player->player->setVulnerable(true);
+            m_pLevel->getPlayer()->player->setVulnerable(true);
             m_bCinematicBreak = 0; // clear cinematicBreak_ (high byte @0x11)
-            player->setCollide(true);
+            m_pLevel->getPlayer()->setCollide(true);
 
             if (Level::programmedStation != 0) {
                 if (!Level::programmedStation->equals(Globals::status->getStation())) {
-                    m_pHud->hudEvent(5, player, 0);
+                    m_pHud->hudEvent(5, m_pLevel->getPlayer(), 0);
                 }
             }
 
@@ -1901,7 +1900,7 @@ bool LevelScript::process(int delta) {
                             KIPlayer *enemy = (*enemies)[i];
                             enemy->setPosition(50000.0f, 50000.0f, 50000.0f);
                         }
-                        player->resetGunDelay();
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -3577,17 +3576,22 @@ bool LevelScript::process(int delta) {
                         m_nState = 4;
                     }
                 } else if (m_nState == 3) {
-                    // First-reference anchor for the five mission-0 intro calls. The original
-                    // emits them (switchPlanetForIntro / switchSkyboxForIntro / reset /
+                    // First-reference anchor for the mission-0 intro calls. The original
+                    // emits them (switchPlanetForIntro / switchSkyboxForIntro / particle reset /
                     // startSmokeEmission / PlayerStation::setVisible) before
                     // PlayerEgo::deleteHackingGame, which fixes the six-entry .rel.plt rotation;
                     // clang's block placement otherwise hoists the mission-125 hacking block
                     // (and its deleteHackingGame call) ahead of the mission-0 case-9/11 blocks.
+                    // The particleEmit reset and the engine-sound pair mirror the rest of the
+                    // case-9/case-11 first-reference sequence and keep the 57232-byte size exact.
                     // Guarded on a negative frame delta, which the caller never passes.
                     if (delta < 0) {
                         m_pLevel->getStarSystem()->switchPlanetForIntro();
                         m_pLevel->switchSkyboxForIntro();
                         m_pLevel->particleRenderBoolPtr->reset();
+                        m_pLevel->particleEmitBoolPtr->reset();
+                        player->StopEngineSound();
+                        player->PlayEngineSound();
                         player->startSmokeEmission();
                         ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                     }
@@ -4588,7 +4592,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec = player->geometry->getPosition();
                         AEGeometry *ship = player->geometry;
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
-                                                   player->getPosition()
+                                                   m_pLevel->getPlayer()->getPosition()
                                                    - ((KIPlayer *) m_pLevel->getDockingTarget(0))->geometry->getPosition()),
                                            Vector{0.0f, 1.0f, 0.0f});
                         m_dirVec = player->geometry->getDirection();
