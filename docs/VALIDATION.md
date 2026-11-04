@@ -100,7 +100,7 @@ and `.rodata` keep their original size/address. `.text`, `.rodata`, `.data`, `.b
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn` and `.dynamic` are size- and
 base-exact; `.rel.plt`, `.dynamic` and `.rel.dyn` content is byte-identical. `.ARM.extab` is
 base-exact but **4 B short** (`0x26294` vs `0x26298`); the shortfall fits the `.rodata`
-alignment gap, so no address moves. The differing section bytes are `.text` (96,261),
+alignment gap, so no address moves. The differing section bytes are `.text` (96,488),
 `.ARM.exidx` (1,683), `.ARM.extab` (128,950; size 4 B short), `.jcr` (192), `.dynsym` (661,
 `st_shndx` shift), `.shstrtab` (5), `.rel.plt` (0) and `.note.gnu.build-id` (20). File size is
 2,187,372 (+44).

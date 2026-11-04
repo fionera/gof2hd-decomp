@@ -15,8 +15,8 @@ non-byte-exact.
 Wave 108 (20 parallel `codex exec -p dsv41` workers) continued worst-first and recovered the
 wave-106 fuzzy peaks while keeping the file layout stable: `Hud::draw` 93.3 -> **94.6**,
 `Level::createShip` 66.0 -> **73.8**, `HangarWindow::render` 86.3 -> **88.3**,
-`LevelScript::process` 54.8 -> **55.4**, `Layout::Layout` 48.0 -> **48.05**,
-`MenuTouchWindow` ctor 95.5 -> **95.6**. `.text` content delta dropped 98,918 -> **96,261**.
+`LevelScript::process` 54.8 -> **56.1**, `Layout::Layout` 48.0 -> **48.05**,
+`MenuTouchWindow` ctor 95.5 -> **95.6**. `.text` content delta dropped 98,918 -> **96,488**.
 
 The `Status::missionCompleted` rank table moved from `.fini_array` to a new `.jcr` section,
 which gold places in the zero-filled `.rodata`..`.fini_array` gap: `.fini_array` is back to
@@ -31,7 +31,7 @@ follow-up.
 `Generator::createMission` -4 sum to -4). `.rodata` still starts at the original `0x1c9e10`
 because the 4-byte shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **96,261**; `.ARM.exidx` **1,683** raw bytes;
+The only differing section bytes are `.text` **96,488**; `.ARM.exidx` **1,683** raw bytes;
 `.ARM.extab` **128,950** (size 4 B short); `.jcr` **192** (the rank table); `.dynsym`
 **661**; `.shstrtab` **5**; and `.note.gnu.build-id` **20**. Everything else (`.rodata`,
 `.data`, `.data.rel.ro`, `.plt`, `.got`, `.init_array`, `.fini_array`, `.dynamic`,
@@ -39,7 +39,7 @@ The only differing section bytes are `.text` **96,261**; `.ARM.exidx` **1,683** 
 `.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`) is byte-identical.
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.0,
-`LevelScript::process` 55.4, `Level::createShip` 73.8, `Radar::draw` 74.0,
+`LevelScript::process` 56.1, `Level::createShip` 73.8, `Radar::draw` 74.0,
 `MGame::OnTouchEnd` 78.9, `Globals::Globals` C1/C2 80.5, `Generator::createMission` 82.1,
 `Status::missionCompleted` 87.0, `PlayerEgo::calcCollision` 87.6,
 `HangarWindow::render` 88.3, `Level::createScene` 88.3, `RocketGun::update` 88.3,
@@ -251,7 +251,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 96,261 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 96,488 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,683 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short** after wave 108: `LevelScript::process` +4 (352 vs 348), `Hud::draw` +4 (480 vs 476), `Level::createShip` -8 (328 vs 336), `Generator::createMission` -4 (168 vs 172) sum to -4. The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 128,950 content bytes differ. |

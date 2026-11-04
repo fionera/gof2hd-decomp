@@ -5383,7 +5383,7 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `Hud::draw` 93.3 -> **94.6** (wave-107 dock order + a Generator extab shave).
   - `Level::createShip` 66.0 -> **73.8** (placement-new + try shape).
   - `HangarWindow::render` 86.3 -> **88.3** (LSDA sink to the isShip branch).
-  - `LevelScript::process` 54.8 -> **55.4** (faithful switch-case body order + statement sweep).
+  - `LevelScript::process` 54.8 -> **56.1** (18 statement reorders + 7 getPlayer re-fetches).
   - `Layout::Layout` 48.0 -> **48.05** (mid-block 0xa8 int phi + 0x188/0x180 order).
   - `MenuTouchWindow` ctor 95.5 -> **95.6** (mask language-loop backedge).
   - `Generator::createMission` kept at 82.1 by restoring `agentName` order under the new
@@ -5395,7 +5395,7 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
 - `.ARM.extab` is 4 B short (`0x26294`): LevelScript +4, Hud +4, createShip -8,
   Generator -4. The shortfall fits the `.rodata` alignment gap, so `.rodata` stays at
   0x1c9e10 and byte_exact stays 4500.
-- Section deltas now: `.text` 96,261; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
+- Section deltas now: `.text` 96,488; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
   `.jcr` 192; `.dynsym` 661; `.shstrtab` 5; build-id 20. 28 sections, file +44.
 - Open follow-ups: remove `.jcr` without losing 87.0%; close the last 4 B of `.ARM.extab`
   (a 332-byte createShip LSDA would do it); Layout/LevelScript/Radar remain the worst.
