@@ -98,3 +98,35 @@ cmake --preset default -DGOF2_ORIGINAL_SO=/home/debian/GalaxyOnFire2/_work/bins/
 cmake --build cmake-build-match --target check -j6
 cmake --build cmake-build-match --target verify -j6   # syncs report.json
 ```
+
+## Follow-up: p10/p12 branch-weight sweep (this session, no further gain)
+
+The residual p12 block order is coupled to the `pick == 10` branch weight through
+MBP's frequency-based chain formation, not just through `findBestLoopExit` as the
+wave-105 note assumed.  Measured with the official scorer (all variants keep
+`amount=0` in the else):
+
+| variant | pct | usize | p12 branch | loop-cond branch |
+|---|---:|---:|---|---|
+| **landed** (p10 expect 1, p12 expect 0) | **82.1** | 1996 | `beq` (wrong) | `beq` (right) |
+| p12 plain (50/50) | 79.3 | 1996 | `bne` (right) | `bne` (wrong) |
+| p12 plain + p10 plain | 52.4 | 1988 | `bne` | `beq` |
+| p12 plain + p10 expect 0 | 51.8 | 1992 | `bne` | `beq` |
+| p12 expect 1 | 69.4 | 1992 | `bne` | n/a |
+| p12 plain + p10 expect 1 + `used->data[pick]` expect 1 | 79.3 | 1996 | `bne` | `bne` |
+| p12 plain + `pick==10 && race<=3` | 61.6 | 1972 | `bne` | `beq` |
+
+The original has `p12=bne` **and** `cond=beq` (cond at the bottom).  Both are only
+reached together when the p10 block is *not* hot, which moves the p10 block out of
+line and collapses the score.  The full MBP trace (`-debug-only=block-placement`)
+shows why: the p12 weight changes `FREQ %bb.18` (hot `selected=true` block) from
+`500966735` (cold p12) to `250608609` (plain p12); that flips the
+`hasBetterLayoutPredecessor` verdict for `%bb.19` from "non-cold CFG conflict"
+(cold) to a viable `(CFG break)` candidate (plain).  Selecting `%bb.19` first makes
+the loop chain start with the cond block, so `rotateLoop` bails and the cond stays
+at the top.
+
+`__builtin_expect` only emits 1:2000 / 2000:1 weights in clang 7, so there is no
+intermediate weight available from source; `__builtin_expect_with_probability`
+does not exist in clang 7.  The `assignType` shared label is still required (any
+form that duplicates `type = pick` in both arms is CVP-folded to 1988 B / ~50 %).
