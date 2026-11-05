@@ -637,7 +637,6 @@ static const int gDialogueSoundPairs[3008] = {
 Globals::Globals() {
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     Globals::shipTemplate = 0;
-    Globals::recordHandler = 0;
     Globals::Canvas = 0;
     Globals::gameText = 0;
     Globals::font = 0;
@@ -649,7 +648,7 @@ Globals::Globals() {
     Globals::layout = 0;
     Globals::appManager = 0;
     Globals::generator = 0;
-    Globals::status = 0;
+    Globals::recordHandler = 0;
 
     this->field_0x0 = 0;
 
@@ -657,36 +656,46 @@ Globals::Globals() {
     settings->colorG = 0.5f;
     settings->colorB = 0.5f;
     reinterpret_cast<int16_t &>(settings->_region[0]) = 0x101;
-    *reinterpret_cast<int16_t *>(reinterpret_cast<uint8_t *>(settings) + 0x10) = 0;
 
     settings->tintG = 0.6f;
     settings->glowG = 0.5f;
 
     settings->tintB = 0.5f;
     settings->glowR = 0.5f;
+    *reinterpret_cast<volatile int16_t *>(reinterpret_cast<uint8_t *>(settings) + 0x10) = 0;
     CtorSecondaryObject *secondary = (CtorSecondaryObject *) Globals::hints;
     settings->brightness = 1.0f;
     settings->contrast = 0.5f;
     settings->_region[2] = 1;
     settings->enableFlag30 = 1;
-    reinterpret_cast<int16_t &>(settings->shortAt40) = 0;
-    settings->intAt50 = 0;
-    settings->flagAt39 = 0;
-    reinterpret_cast<int32_t &>(settings->intAt35) = 0;
-    reinterpret_cast<int32_t &>(settings->intAt31) = 0;
-    reinterpret_cast<int32_t &>(settings->intAt3b) = 0;
-    settings->flagAt4e = 0;
-    reinterpret_cast<int16_t &>(settings->shortAt4c) = 0;
-    settings->intAt48 = 0;
-    reinterpret_cast<int32_t &>(secondary->slot1) = 0;
-    secondary->flagAt13 = 0;
-    reinterpret_cast<int32_t &>(secondary->slot0) = 0;
-    settings->flagAt3f = 0;
+    volatile GameSettingsRecord *vs = settings;
+    volatile CtorSecondaryObject *vsec = secondary;
+    reinterpret_cast<volatile int16_t &>(vs->shortAt40) = 0;
+    vs->intAt50 = 0;
+    vs->flagAt39 = 0;
+    reinterpret_cast<volatile int32_t &>(vs->intAt35) = 0;
+    reinterpret_cast<volatile int32_t &>(vs->intAt31) = 0;
+    reinterpret_cast<volatile int32_t &>(vsec->slot1) = 0;
+    vsec->flagAt13 = 0;
+    vs->flagAt3f = 0;
+    reinterpret_cast<volatile int32_t &>(vs->intAt3b) = 0;
+    vs->flagAt4e = 0;
+    reinterpret_cast<volatile int16_t &>(vs->shortAt4c) = 0;
+    vs->intAt48 = 0;
+    reinterpret_cast<volatile int32_t &>(vsec->slot0) = 0;
 
     Globals::lastSpaceMusicPlayed = -1;
     Globals::gameLoaded = 0;
     Globals::gameSaving = 0;
-
+    Globals::initMemoryWarning = 0;
+    Globals::imageFactory = 0;
+    Globals::achievements = 0;
+    Globals::galaxy = 0;
+    Globals::instantActionScore = 0;
+    Globals::instantActionWave = 0;
+    Globals::lastStationMusicPlayed = -1;
+    Globals::lastCampaignMissionFailed = -1;
+    Globals::lastCampaignMissionFailCount = 0;
     float fv = settings->qualityLevel;
     int v54 = 0x247;
     if (1.0f <= fv) v54 = 0x33e;
@@ -696,22 +705,13 @@ Globals::Globals() {
     if (1.0f <= fv) v58 = 0x2da;
     if (fv <= 0.0f) v58 = 0x16d;
     settings->resHeight = v58;
-
-    Globals::initMemoryWarning = 0;
-    Globals::imageFactory = 0;
-    Globals::achievements = 0;
-    Globals::galaxy = 0;
-    Globals::instantActionScore = 0;
-    Globals::lastStationMusicPlayed = -1;
-    Globals::instantActionType = -1;
-    Globals::instantActionPlayerName = 0;
     Globals::items = 0;
     Globals::ships = 0;
-    Globals::instantActionWave = 0;
-    Globals::lastCampaignMissionFailed = -1;
-    this->soundResources = 0;
+    Globals::instantActionPlayerName = 0;
+    Globals::instantActionType = -1;
+    Globals::status = 0;
     reinterpret_cast<int16_t &>(settings->shortAt60) = 0x100;
-    Globals::lastCampaignMissionFailCount = 0;
+    this->soundResources = 0;
 }
 Globals::~Globals() {
     if (Globals::recordHandler != nullptr)
