@@ -3008,8 +3008,8 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 2001) {
                         for (int i = 0; i < 3; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
-                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                             (*enemies)[i]->field_0x38 = 4;
+                            ((PlayerFighter *) (*enemies)[i])->field_0x128 = 50000;
                         }
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget(player->geometry);
@@ -3106,8 +3106,8 @@ bool LevelScript::process(int delta) {
                             m_pCamera->setLookAtCam(false);
                             m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                             m_pHud->visible = 1;
-                            m_pRadar->enabled = 1;
                             resetCamera(m_pLevel);
+                            m_pRadar->enabled = 1;
                             m_pLevel->lodManager->forceUpdate(delta, false);
                             player->setComputerControlled(false);
                             m_bCinematicBreak = 0;
@@ -3950,8 +3950,8 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                         player->setFreeze(true);
                         AEGeometry *leader = (*enemies)[4]->geometry;
-                        m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
+                        m_pCamera->setTarget(leader);
                         m_tempVec += leader->getDirection() * 4000.0f;
                         m_tempVec += leader->getUpVector() * -500.0f;
                         m_tempVec += leader->getRightVector() * -500.0f;
@@ -4720,9 +4720,9 @@ bool LevelScript::process(int delta) {
             case 157: {
                 // Supernova finale: the alien station escapes, the sun collapses and the player is
                 // thrown out to the next system. The escort ship slots depend on the device tier.
+                int fighterIndex = 10;
                 int stationIndex = 12;
                 int chaserIndex = 11;
-                int fighterIndex = 10;
                 if (!Globals::isRunningHDonWeakDevice) {
                     stationIndex = 23;
                     chaserIndex = 22;
