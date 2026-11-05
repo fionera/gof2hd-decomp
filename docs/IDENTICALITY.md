@@ -542,3 +542,27 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   Gun::calcCharacterCollision 93.4, Hud::draw 95.5, SpaceLounge::drawLounge 95.7,
   MenuTouchWindow C1/C2 97.2, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2,
   MGame::OnUpdate 99.9.
+
+## Session 2026-11-05 (wave 116 — Layout pool audit, MenuTouchWindow 99.0)
+
+- Gate: `byte_exact 4501/4524`, `linked_exact 4501/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS.
+- Landed fuzzy improvements:
+  - `MenuTouchWindow` ctor 97.24 -> **99.04** (faithful cinematic block + reassociation masks).
+  - `LevelScript::process` 58.05 -> **58.20** (case-91/92 statement order + mission-40 state-6
+    epilogue order).
+  - `Layout::Layout` 48.545 -> **48.60** (faithful int-store typing + `field_0x2c8` float
+    round-trip).
+  - `Status::missionCompleted` 91.5 -> **91.9** (rank table re-based to the original TBH slot
+    pattern).
+  - `Hud::draw` 95.46 -> **95.61** (docking-bar total/barW widths).
+- `.text` differing bytes fell 91,907 -> **88,975**. `.ARM.extab` remains 4 B short
+  (`0x26294`), solely because `Generator::createMission`'s record is 168 B vs the original
+  172 B; `.ARM.exidx` 1,663; `.rodata` 192; build-id 20. 27 sections, exact file size.
+- Remaining 23 non-exact functions (all size-exact): Layout C1/C2 48.6, LevelScript::process
+  58.2, Level::createShip 67.4, Radar::draw 74.0, MGame::OnTouchEnd 78.9, Globals C1/C2 80.5,
+  Generator::createMission 83.3, PlayerEgo::calcCollision 87.6, Level::createScene 90.7,
+  HangarWindow::render 91.2, Status::missionCompleted 91.9, Level::createMission 92.1,
+  Gun::calcCharacterCollision 93.4, Hud::draw 95.6, SpaceLounge::drawLounge 95.7,
+  MenuTouchWindow::OnTouchBegin 98.1, MenuTouchWindow C1/C2 99.0, ModStation C1/C2 99.2,
+  MGame::OnUpdate 99.9.

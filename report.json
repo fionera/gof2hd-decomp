@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 48.5,
+   "pct": 48.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 48.5,
+   "pct": 48.6,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 58.1,
+   "pct": 58.2,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -113,7 +113,7 @@
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 91.5,
+   "pct": 91.9,
    "byte": false,
    "linked": false,
    "osize": 1432,
@@ -137,7 +137,7 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 95.5,
+   "pct": 95.6,
    "byte": false,
    "linked": false,
    "osize": 9332,
@@ -152,8 +152,16 @@
    "usize": 1948
   },
   {
+   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
+   "pct": 98.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1896,
+   "usize": 1896
+  },
+  {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 97.2,
+   "pct": 99.0,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -161,19 +169,11 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 97.2,
+   "pct": 99.0,
    "byte": false,
    "linked": false,
    "osize": 9600,
    "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
-   "pct": 98.1,
-   "byte": false,
-   "linked": false,
-   "osize": 1896,
-   "usize": 1896
   },
   {
    "name": "_ZN10ModStationC1Ev",

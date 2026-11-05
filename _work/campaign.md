@@ -5515,3 +5515,14 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `Gun::calcCharacterCollision` 92.8 -> **93.4**.
 - `.text` differing bytes 92,493 -> **91,907**. `.ARM.extab` 4 B short again, now solely
   `Generator::createMission` (168 vs 172); `.ARM.exidx` 1,663; 27 sections, exact file size.
+
+## Session 2026-11-05 (wave 116 — Layout pool audit, MenuTouchWindow 99.0)
+
+- 20 `codex exec -p dsv41` workers from `d672d349f`. Landed:
+  - `MenuTouchWindow` ctor 97.24 -> **99.04** (faithful cinematic block + reassociation masks).
+  - `LevelScript::process` 58.05 -> **58.20** (case-91/92 order + mission-40 state-6 epilogue).
+  - `Layout::Layout` 48.545 -> **48.60** (faithful int-store typing + 0x2c8 round-trip).
+  - `Status::missionCompleted` 91.5 -> **91.9** (TBH slot pattern).
+  - `Hud::draw` 95.46 -> **95.61** (docking-bar widths).
+- `.text` differing bytes 91,907 -> **88,975**. `.ARM.extab` 4 B short (Generator 168 vs 172);
+  `.ARM.exidx` 1,663; 27 sections, exact file size.
