@@ -464,10 +464,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                         String(String(Globals::status->getStation()->getTecLevel()), false),
                                 this->screenX + this->originX, this->screenY + Globals::layout->field_0x4, false);
                         KIPlayer *landmark = this->landmarks->data()[i];
-                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                             this->cameraX, this->cameraY,
-                                                             this->cameraZ);
-                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
+                        String label = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                          this->cameraX, this->cameraY, this->cameraZ);
+                        Globals::Canvas->DrawString(radarFont(), label, this->screenX + this->originX,
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
