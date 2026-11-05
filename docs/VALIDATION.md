@@ -92,19 +92,19 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-05, wave 117)
+### Current state — ELF sections (2026-11-05, wave 118)
 All **27 original section headers are present and exact**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
 and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
 `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
-`.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact but **12 B short**
-(`0x2628c` vs `0x26298`): `Level::createShip`'s record is 328 B vs 336 B (-8) and
-`Generator::createMission` is 168 B vs 172 B (-4). The
+`.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact but **8 B short**
+(`0x26290` vs `0x26298`): `Level::createShip`'s record is 328 B vs 336 B (-8);
+`Generator::createMission` is now exact at 172 B (wave 118). The
 `Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`), so the original `.rodata` image is
 untouched (the table is the only 192 B of extra `.rodata`). The differing section bytes are
-`.text` (89,185), `.ARM.exidx` (1,704), `.ARM.extab` (120,131; size 12 B short), `.rodata`
+`.text` (90,022), `.ARM.exidx` (1,327), `.ARM.extab` (108,055; size 8 B short), `.rodata`
 (192, the appended codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file
 bytes are linker padding).
 

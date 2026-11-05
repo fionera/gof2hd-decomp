@@ -760,7 +760,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     volatile int amount;
 
     bool selected = false;
-    int32_t type = 0;
+    volatile int32_t type = 0;
     int guard = 999;
     Array<bool> *used = Globals::status->field_50;
     while (!selected) {
@@ -828,7 +828,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         targetStation = agent->getStation();
     }
 
-    if (agent->getOffer() == 5) {
+    if (__builtin_expect(agent->getOffer() == 5, 0)) {  // lint: arm_builtin
         targetStation = agent->getStation();
         type = 8;
     } else {
@@ -920,8 +920,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
     padA = 0; (void) padA;
+    int base = (int) ((float) difficulty / 10.0f * 5500.0f) + 1500;
     float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
-                   (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
+                   (float) base;
     if (type == 7) {
         reward *= 0.7f;
     } else if (type == 9) {
@@ -980,7 +981,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     mission->setBonus(bonus);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        if (systems->data()[i]->stationIsInSystem(targetStation)) {
+        if (__builtin_expect(systems->data()[i]->stationIsInSystem(targetStation), 1)) {  // lint: arm_builtin
             mission->setTargetSystemName(systems->data()[i]->getName());
             break;
         }

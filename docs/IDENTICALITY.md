@@ -25,13 +25,13 @@ there is no exit-destructor hazard. A wave-109 attempt to move the table into a 
 `.dynsym`/`.dynstr`/`.hash`/`.gnu.version`/`.rel.plt` ordering (4,417 `.dynstr` bytes), so it
 was reverted; the note is `status-missioncompleted-wave109-w5710.md`.
 
-**One structural delta remains open:** `.ARM.extab` is 4 bytes short (`0x26294` vs `0x26298`;
-`LevelScript::process` +4, `Hud::draw` +4, `Level::createShip` -8,
-`Generator::createMission` -4 sum to -4). `.rodata` still starts at the original `0x1c9e10`
-because the 4-byte shortfall fits the 16-byte alignment gap, so no function address moves.
+**One structural delta remains open:** `.ARM.extab` is 8 bytes short (`0x26290` vs `0x26298`;
+`Level::createShip` -8, 328 vs 336).  `Generator::createMission`'s record is now exact at
+172 B (wave 118). `.rodata` still starts at the original `0x1c9e10` because the 8-byte
+shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **95,946**; `.ARM.exidx` **1,683** raw bytes;
-`.ARM.extab` **128,950** (size 4 B short); `.jcr` **192** (the rank table); `.dynsym`
+The only differing section bytes are `.text` **90,022**; `.ARM.exidx` **1,327** raw bytes;
+`.ARM.extab` **108,055** (size 8 B short); `.jcr` **192** (the rank table); `.dynsym`
 **661**; `.shstrtab` **5**; and `.note.gnu.build-id` **20**. Everything else (`.rodata`,
 `.data`, `.data.rel.ro`, `.plt`, `.got`, `.init_array`, `.fini_array`, `.dynamic`,
 `.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`, `.comment`,
@@ -39,7 +39,7 @@ The only differing section bytes are `.text` **95,946**; `.ARM.exidx` **1,683** 
 
 The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.3,
 `LevelScript::process` 56.1, `Radar::draw` 74.0, `Level::createShip` 74.4,
-`MGame::OnTouchEnd` 78.9, `Globals::Globals` C1/C2 80.5, `Generator::createMission` 82.1,
+`MGame::OnTouchEnd` 78.9, `Globals::Globals` C1/C2 80.5, `Generator::createMission` 50.1,
 `Status::missionCompleted` 87.0, `PlayerEgo::calcCollision` 87.6,
 `Level::createScene` 88.3, `HangarWindow::render` 88.5, `Gun::calcCharacterCollision` 90.0,
 `Level::createMission` 92.1, `RocketGun::update` 92.4, `Hud::draw` 94.6,
@@ -250,10 +250,10 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 95,946 content bytes differ across the 24 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 90,022 content bytes differ across the 24 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
-| .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,683 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
-| .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short** after wave 108: `LevelScript::process` +4 (352 vs 348), `Hud::draw` +4 (480 vs 476), `Level::createShip` -8 (328 vs 336), `Generator::createMission` -4 (168 vs 172) sum to -4. The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 128,950 content bytes differ. |
+| .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is now exact at 172 B (wave 118). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 108,055 content bytes differ. |
 | .dynsym | 89,248 | 89,248 | 0 | size-exact; **661 bytes differ** because the extra `.jcr` section shifts `st_shndx` after it (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The former `sha256_block_data_order_neon` order gap is closed. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
@@ -282,10 +282,10 @@ The original build is now pinned by evidence, not by A/B alone:
    emission order (word multiset 6,586/6,586 common, 0 unique). See
    `_work/reconstructions/rodata_content_round5_w3477.md`.
 3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272, inline
-   856, extab 2438); `.ARM.extab` is base-exact but **4 B short** (156,308 vs 156,312 @
-   0x1a3b78). The record deltas are `LevelScript::process` +4, `Hud::draw` +4,
-   `Level::createShip` -8 and `Generator::createMission` -4 (sum -4); the shortfall fits the
-   `.rodata` alignment gap, so no address moves. 1,683 raw `.ARM.exidx` bytes differ. The
+   856, extab 2438); `.ARM.extab` is base-exact but **8 B short** (156,304 vs 156,312 @
+   0x1a3b78). The only record delta is `Level::createShip` -8 (328 vs 336);
+   `Generator::createMission` is now exact at 172 B (wave 118). The shortfall fits the
+   `.rodata` alignment gap, so no address moves. 1,327 raw `.ARM.exidx` bytes differ. The
    `Layout::Layout` body is size-exact 7072 B without a pad. See
    `_work/reconstructions/exidx-records_w4237.md` and
    `_work/reconstructions/extab_lsda_scopes_w102_wm103.md`. The w3840 `extern template` for
@@ -323,9 +323,8 @@ section-size deltas above.
 - Byte-exactness campaign: verify.py worst-first, fix near-miss (80-99%) high-value functions first.
 - Remove the `.jcr` rank table without losing `Status::missionCompleted`'s 87.0% body order,
   restoring the 27-section table and the byte-identical `.dynsym`/`.shstrtab`.
-- Close the last 4 B of `.ARM.extab`: `LevelScript::process` +4, `Hud::draw` +4,
-  `Level::createShip` -8 and `Generator::createMission` -4 sum to -4. A 332-byte createShip
-  LSDA (55-56 rows) would make the total zero without giving up the 73.8% body.
+- Close the last 8 B of `.ARM.extab`: `Level::createShip` -8 (328 vs 336). A 336-byte
+  createShip LSDA (55-56 rows) would make the total zero.
 - Implement missing engine functions in batches (math/Vector/Matrix shims are the densest cluster).
 
 ## Concrete leads found (for the byte-exactness campaign)
