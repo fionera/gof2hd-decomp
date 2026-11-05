@@ -1486,7 +1486,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->starMapOpen = 0;
                 this->pauseOpen = 0;
                 resumeSounds();
-                if (this->starMap->exitRequested) {
+                if (this->starMap->exitRequested == true) {
                     if (this->touchesStream) {
                         this->usingJumpDrive = 0;
                         startJumpScene();
@@ -1545,16 +1545,16 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->levelScript->m_nTimeLimit = 0;
                     Globals::status->setMission(Mission::empty);
                     this->player->setRoute(nullptr);
-                    if (this->player->goingToWaypoint()) {
+                    if (this->player->goingToWaypoint() == true) {
                         this->player->setAutoPilot(nullptr);
                     }
                     this->player->removeRoute();
                     this->level->setPlayerRoute(nullptr);
                 } else if (Globals::status->getMission()->hasWon() == true ||
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
-                    Mission *mission = Globals::status->getMission()->hasWon() == true ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
+                    bool keepObjectives = campaign->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
                     if (mission->isCampaignMission()) {
                         Globals::status->nextCampaignMission(true);
                     } else if (mission->isInstantActionMission()) {
@@ -1753,7 +1753,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->level->removeObjectives();
                         Globals::status->setMission(Mission::empty);
                         this->player->setRoute(nullptr);
-                        if (this->player->goingToWaypoint()) {
+                        if (this->player->goingToWaypoint() == true) {
                             this->player->setAutoPilot(nullptr);
                         }
                         this->player->removeRoute();
@@ -1780,7 +1780,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->hud->releaseAllKeys();
                 return;
             }
-            if (this->menuTouchOpen) {
+            if (this->menuTouchOpen == true) {
                 if (this->freeCamMode) {
                     MGameAppData *appData = (MGameAppData *) Globals::appManager->GetApplicationData();
                     if (appData->modalActive || appData->transitionActive) {
