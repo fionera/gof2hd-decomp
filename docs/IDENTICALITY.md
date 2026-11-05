@@ -486,3 +486,29 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   Level::createMission 92.1, RocketGun::update 93.8, Hud::draw 94.9, SpaceLounge::drawLounge
   95.7, MenuTouchWindow C1/C2 97.2, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2,
   MGame::OnUpdate 99.9.
+
+## Session 2026-11-05 (wave 114 — worst-first fleet, continued)
+
+- Gate: `byte_exact 4500/4524`, `linked_exact 4500/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS. `.ARM.extab` stays size-exact.
+- Landed fuzzy improvements:
+  - `HangarWindow::render` 89.3 -> **91.2** (faithful `selectedItem->ship` + `b`, `bool visible`).
+  - `Gun::calcCharacterCollision` 90.0 -> **92.8** (named `playerPosition` temp, `hitFlags` at
+    k-loop tail).
+  - `Status::missionCompleted` 87.0 -> **88.3** (37-entry rank table + body-size fixes land the
+    first body at 0xfe and latch at 0x522).
+  - `Generator::createMission` 82.6 -> **83.3** (bitmask branch hint fixes spill-slot allocation).
+  - `Level::createShip` 67.3 -> **67.4** (hitpoint type-chain source order 0x2c/0x31/0x33).
+  - `LevelScript::process` 58.00 -> **58.02** (case-157 decl order + adjacent-statement swaps,
+    cached player at two sites).
+  - `MenuTouchWindow` ctor 97.214 -> **97.244** (signed loop bound restores the `bcc` backedge).
+- `.text` differing bytes fell 94,443 -> **92,493**. All other section deltas unchanged:
+  `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact); `.rodata` 192 (appended table);
+  build-id 20. 27 sections, exact file size.
+- Remaining 24 non-exact functions (all size-exact): Layout C1/C2 48.5, LevelScript::process
+  58.0, Level::createShip 67.4, Radar::draw 74.0, Globals C1/C2 78.8, MGame::OnTouchEnd 78.9,
+  Generator::createMission 83.3, PlayerEgo::calcCollision 87.6, Status::missionCompleted 88.3,
+  Level::createScene 90.5, HangarWindow::render 91.2, Level::createMission 92.1,
+  Gun::calcCharacterCollision 92.8, RocketGun::update 93.8, Hud::draw 94.9,
+  SpaceLounge::drawLounge 95.7, MenuTouchWindow C1/C2 97.2, MenuTouchWindow::OnTouchBegin 98.1,
+  ModStation C1/C2 99.2, MGame::OnUpdate 99.9.

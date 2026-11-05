@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 67.3,
+   "pct": 67.4,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -81,19 +81,11 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 82.6,
+   "pct": 83.3,
    "byte": false,
    "linked": false,
    "osize": 1996,
    "usize": 1996
-  },
-  {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 87.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
@@ -104,20 +96,12 @@
    "usize": 968
   },
   {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 89.3,
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 88.3,
    "byte": false,
    "linked": false,
-   "osize": 9700,
-   "usize": 9700
-  },
-  {
-   "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 90.0,
-   "byte": false,
-   "linked": false,
-   "osize": 1984,
-   "usize": 1984
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN5Level11createSceneEv",
@@ -128,12 +112,28 @@
    "usize": 2252
   },
   {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 91.2,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
    "name": "_ZN5Level13createMissionEv",
    "pct": 92.1,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN3Gun22calcCharacterCollisionEv",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 1984,
+   "usize": 1984
   },
   {
    "name": "_ZN9RocketGun6updateEi",

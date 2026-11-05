@@ -5489,3 +5489,15 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `Globals` 78.8 with faithful 31/31 pool order **and** `movw #583`@34 in one store.
 - `.text` differing bytes 97,001 -> **94,443**; `.ARM.extab` stays size-exact; 27 sections,
   exact file size.
+
+## Session 2026-11-05 (wave 114 — worst-first fleet, continued)
+
+- 20 `codex exec -p dsv41` workers from `d8557f7e2`. Landed:
+  - `HangarWindow::render` 89.3 -> **91.2** (faithful `selectedItem->ship` + `b`, `bool visible`).
+  - `Gun::calcCharacterCollision` 90.0 -> **92.8** (named `playerPosition`, `hitFlags` tail).
+  - `Status::missionCompleted` 87.0 -> **88.3** (37-entry rank table, first body 0xfe, latch 0x522).
+  - `Generator::createMission` 82.6 -> **83.3** (bitmask branch hint fixes spill slots).
+  - `Level::createShip` 67.3 -> **67.4** (hitpoint type-chain order 0x2c/0x31/0x33).
+  - `LevelScript::process` 58.00 -> **58.02** (case-157 decl order, cached player).
+  - `MenuTouchWindow` ctor 97.214 -> **97.244** (signed loop bound restores `bcc`).
+- `.text` differing bytes 94,443 -> **92,493**; `.ARM.extab` size-exact; 27 sections, exact file.
