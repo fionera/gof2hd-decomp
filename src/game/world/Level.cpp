@@ -6623,8 +6623,11 @@ void Level::createScene() {
                 if (mesh < 0)
                     continue;
                 AEGeometry *g = new AEGeometry(mesh, Globals::Canvas, false);
-                Vector rot(0.0f, 3.1415927f, 0.0f);
-                Vector *rp = (Vector *) ((char *) &rot - ((size_t) g + 1));
+                Vector rot;
+                rot.y = 3.1415927f;
+                rot.z = 0.0f;
+                rot.x = 0.0f;
+                Vector *rp = (Vector *) ((char *) &rot - (size_t) g);
                 g->setRotation(*rp);
                 PlayerStatic *hangarPart = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 if (!plainHangar) {
@@ -6654,12 +6657,12 @@ void Level::createScene() {
                 int race = sceneRace;
                 if (rnd->nextInt(100) <= 29) {
                     race = rnd->nextInt(4);
-                    if (rnd->nextInt(100) < 30)
+                    if (Globals::rnd->nextInt(100) < 30)
                         race = 8;
                 }
                 int type = Globals::globals->getRandomEnemyFighter(race);
                 if (Globals::status->getStation()->getIndex() == 100) {
-                    int pick = rnd->nextInt(3);
+                    int pick = Globals::rnd->nextInt(3);
                     type = pick == 0 ? 37 : pick == 1 ? 38 : 40;
                 }
                 if (ownHangar)
