@@ -928,9 +928,9 @@ bool LevelScript::process(int delta) {
             // after the switch -- otherwise the mission-0 intro never ends.
             if (m_nState == 16) {
                 if (!Globals::layout->isFading()) {
+                    Globals::appManager->SetCurrentApplicationModule(2);
                     Globals::layout->enableFillScreen(true);
                     Globals::status->nextCampaignMission(true);
-                    Globals::appManager->SetCurrentApplicationModule(2);
                     Globals::switch_to_target_setting = 1;
                     Level::initStreamOutPosition = 0;
                     return 0;
@@ -2078,8 +2078,8 @@ bool LevelScript::process(int delta) {
                     Globals::sound->play(153, nullptr, nullptr, 0.0f);
                     m_pCamera->translate((float) delta, (float) delta, (float) (-2 * delta));
                     delete m_pLevel->objectivesB;
-                    m_pLevel->objectivesB = nullptr;
                     delete m_pLevel->objectivesA;
+                    m_pLevel->objectivesB = nullptr;
                     m_pLevel->objectivesA = nullptr;
                     (*m_pLevel->getLandmarks())[3]->setPosition(25000.0f, 20000.0f, -55000.0f);
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
@@ -2129,8 +2129,8 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                     }
                 } else if (m_nState == 7) {
-                    m_pCamera->translate(0.0f, (float) ((double) delta * 0.2), 0.0f);
                     m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
+                    m_pCamera->translate(0.0f, (float) ((double) delta * 0.2), 0.0f);
                     if (m_bRenderParticles) {
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                 ->Update((long long) delta, false);
@@ -2393,8 +2393,8 @@ bool LevelScript::process(int delta) {
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     m_pCamera->setActive(true);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[0]->geometry);
                     Vector camPos = (*m_pLevel->getEnemies())[0]->getPosition();
                     Vector dir = (*m_pLevel->getEnemies())[0]->geometry->getDirection();
                     camPos += dir * 10000.0f;
@@ -2641,8 +2641,8 @@ bool LevelScript::process(int delta) {
                         AbyssEngine::AEMath::MatrixSetTranslation(m_matrix, m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_pLevel->field_74->systemSetMatrix(m_pLevel->field_5c, &m_matrix);
                         m_pLevel->field_74->enableSystemEmit(m_pLevel->field_5c, true);
-                        m_nScriptTimerA = 0;
                         m_nState = 9;
+                        m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 9) {
                     m_pExplosion->update(delta, nullptr);
@@ -2923,8 +2923,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
-                        m_pHud->visible = 0;
                         m_nState++;
+                        m_pHud->visible = 0;
                     }
                 } else if (m_nState == 2) {
                     for (int i = 0; i < 3; i++) {
@@ -3977,8 +3977,8 @@ bool LevelScript::process(int delta) {
                         player->startSmokeEmission();
                         m_pLevel->particleEmitBoolPtr->reset();
                         player->PlayEngineSound();
-                        ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                         player->StopEngineSound();
+                        ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                     }
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
@@ -4832,9 +4832,9 @@ bool LevelScript::process(int delta) {
                                 if ((*enemies)[i]->shipGroupFlag == 44) {
                                     ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                     Vector offset;
+                                    offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     offset.z = (float) (Globals::rnd->nextInt(30000) - 87000);
                                     offset.x = 120000.0f;
-                                    offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     (*enemies)[i]->translate(offset);
                                 } else {
                                     Vector offset(20000.0f,
