@@ -47,7 +47,7 @@ Layout::Layout() {
     this->field_0x2d0 = (int)(float)(int)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     this->field_0x2cc = Globals::iPadHD ? 90 * 1.40625f : (Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
     this->field_0x2c8 = Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
-    this->field_0x2d8 = Globals::iPadHD ? 141 : ((Globals::retinaDisplay || Globals::n9) ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? 125 : 75));
+    this->field_0x2d8 = Globals::iPadHD ? 141 : (((Globals::retinaDisplay + Globals::n9) != 0) ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? 125 : 75));
     if (Globals::iPadHD)
         this->field_0x2d4 = 112;
     else if ((Globals::retinaDisplay || Globals::n9))
