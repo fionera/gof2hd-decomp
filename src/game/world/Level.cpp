@@ -5216,16 +5216,19 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
         PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, group);
+        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
-            KIPlayer *kiFighter = fighter;
-            lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
+            lodManager->addObject(fighter->parentGeometry != nullptr ? fighter->parentGeometry : fighter->geometry);
         }
-        if (type == 0x2c || type == 0x31) {
+        switch (type) {
+        case 0x2c:
+        case 0x31:
             delete fighter->cargo;
             fighter->cargo = nullptr;
-        } else if (type == 0x33) {
+            break;
+        case 0x33:
             fighter->field_0x25 = 0;
+            break;
         }
         ship = fighter;
     } else if (shipClass == 1) {
