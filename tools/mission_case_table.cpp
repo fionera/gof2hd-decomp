@@ -3,9 +3,10 @@
 // The original lays the switch bodies out in source order, but clang 7's
 // MachineBlockPlacement follows the jump table's value-sorted successor list, so a
 // direct switch emits ascending order.  This permutation keeps the ascending table
-// order aligned with the original body layout.  The ranks are 150..186 with a hole
-// after the 22nd body: 37 TBH entries is the size that lands the first case body at
-// the original's 0xfe.
+// order aligned with the original body layout.  The first group's ranks are 0..21
+// plus 39: 40 TBH entries, the same size and base as the original's, and a range
+// starting at 0 so the dispatch needs no `sub`.  The second group (types 0, 8, 11,
+// 13, 14) uses ranks 200..214 so clang keeps it in a separate 8..14 TBH.
 //
 // The table lives in its own translation unit that is linked *after* every archive,
 // so it is the last .rodata input: appending it does not shift any existing .rodata
@@ -15,20 +16,21 @@
 // dynamic symbol table).  Status.cpp reads it through that fixed address rather
 // than through this symbol: a cross-TU reference would add an undefined symbol to
 // gold's table mid-link and reorder .dynsym.
-// See _work/reconstructions/status-missioncompleted-wave110-w5810.md.
+// See _work/reconstructions/status-missioncompleted-wave110-w5810.md and
+// status-missioncompleted-wave115-w6311.md.
 #pragma GCC visibility push(hidden)
 extern const unsigned char kMissionCase[192] = {
-      0, 190, 190, 190, 190, 190, 190, 190,   8, 190, 190,  11, 190,  13,  14, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
-    190, 190, 190, 190, 190, 190, 151, 152, 153, 154, 155, 156, 163, 164, 157, 190,
-    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 186, 190, 150, 190,
-    190, 190, 190, 190, 190, 190, 190, 190, 161, 190, 190, 190, 190, 162, 190, 190,
+    200, 250, 250, 250, 250, 250, 250, 250, 208, 250, 250, 211, 250, 213, 214, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
+    250, 250, 250, 250, 250, 250,   1,   2,   3,   4,   5,   6,  13,  14,   7, 250,
+     15, 250,   8,  16,  17,  18,   9,   0,  19,  20,  10,  21,  39, 250,   0, 250,
+    250, 250, 250, 250, 250, 250, 250, 250,  11, 250, 250, 250, 250,  12, 250, 250,
 };
 #pragma GCC visibility pop
