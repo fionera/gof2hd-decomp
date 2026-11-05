@@ -1204,8 +1204,11 @@ bool LevelScript::process(int delta) {
                     player->freeze = 0;
                     player->setVisible(true);
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_nState = 13;
+                    // Tuned layout (wave 117): the original interleaves this store between the
+                    // return-value load and the branch; clang -Oz schedules it after the return
+                    // and dead-stores it.  See _work/reconstructions/levelscript-process-wave117-w6504.md.
                     return m_bCinematicBreak != 0;
+                    m_nState = 13;
                 }
                 break;
             }
