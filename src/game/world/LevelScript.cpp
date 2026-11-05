@@ -4511,13 +4511,13 @@ bool LevelScript::process(int delta) {
                             }
                         }
                         m_tempVec = player->getPosition();
-                        m_pCamera->setTarget(player->geometry);
-                        m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
-                        m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
                         m_nState = 2;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
+                        m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
+                        m_pCamera->setPosition(m_tempVec);
+                        m_pCamera->setTarget(player->geometry);
                     }
                 } else if (m_nState == 2) {
                     player->setSpeed(0.0f);
