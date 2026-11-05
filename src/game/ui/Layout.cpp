@@ -75,13 +75,13 @@ Layout::Layout() {
     this->field_0xcc = Globals::iPadHD ? 180 * 1.40625f : (Globals::n9 ? 270 : (Globals::retinaDisplay ? 360 : 180));
     this->progressBarYBase = Globals::iPadHD ? 52 : (Globals::n9 ? 55 : (Globals::retinaDisplay ? 74 : 37));
     this->field_0xb8 = Globals::iPadHD ? 18 * 1.40625f : (Globals::n9 ? 25 : (Globals::retinaDisplay ? 36 : 18));
+    this->field_0xb4 = Globals::iPadHD ? 20 : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 29 : 15));
     this->hudInset = Globals::iPadHD ? 7 : (Globals::n9 ? 0 : (Globals::retinaDisplay ? 10 : 5));
     this->field_0xa4 = Globals::iPadHD ? 7 : (Globals::n9 ? 9 : (Globals::retinaDisplay ? 10 : 5));
     this->oreTextYOffset = Globals::iPadHD ? 5.0f : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 5 : 3));
     this->field_0xc4 = Globals::iPadHD ? 8 * 1.40625f : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 14 : 8));
     this->field_0xbc = Globals::iPadHD ? 11 : (Globals::n9 ? 12 : (Globals::retinaDisplay ? 16 : 8));
     this->field_0xc0 = Globals::iPadHD ? 9 : (Globals::n9 ? 11 : (Globals::retinaDisplay ? 13 : 6));
-    this->field_0xb4 = Globals::iPadHD ? 20 : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 29 : 15));
     this->field_0xf0 = Globals::iPadHD ? 80 * 1.40625f : (Globals::n9 ? 120 : (Globals::retinaDisplay ? 160 : 80));
     this->field_0xc8 = Globals::iPadHD ? 4 * 1.40625f : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 10 : 4));
     this->oreLabelYOffset = Globals::iPadHD ? 2 * 1.40625f : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 4 : 2));
@@ -280,8 +280,8 @@ Layout::Layout() {
     this->rewardBoxWidth = Globals::iPadHD ? 100 * 1.40625f : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
     this->rewardBoxX = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
     this->rewardBoxHeight = Globals::n9 ? 352 : (Globals::retinaDisplay ? 392 : 196);
-    this->field_0x94 = Globals::iPadHD ? 14 : (Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10));
     this->field_0x1f4 = Globals::iPadHD ? 16 * 1.40625f : (Globals::retinaDisplay ? (Globals::iPad ? 32 : 4) : (Globals::iPad ? 16 : 2));
+    this->field_0x94 = Globals::iPadHD ? 14 : (Globals::n9 ? 15 : (Globals::retinaDisplay ? 20 : 10));
     this->rewardBoxY = Globals::iPadHD ? 55 * 1.40625f : (Globals::n9 ? 57 : (Globals::iPadLarge ? 110 : (Globals::iPad ? 55 : (Globals::retinaDisplay ? 76 : 38))));
     this->field_0x1f0 = Globals::iPadHD ? 19 * 1.40625f : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
     this->field_0x144 = Globals::iPadHD ? 13 * 1.40625f : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13));
