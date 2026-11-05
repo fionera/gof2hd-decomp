@@ -1630,15 +1630,15 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
             short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
-            short transferred = ego->getDockTransferedAmount();
+            int transferred = ego->getDockTransferedAmount();
             int total = ego->getDockTotalAmount();
-            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
+            String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
+            short barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
@@ -1679,16 +1679,16 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
-            String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
+            String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
-            int top = this->field_0x3e2;
             int barYOffset = Globals::layout->field_0x218;
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int fadeColor = 0xffffffff;
             if (fade < 1.0f)
                 fadeColor = (int) (fade * 255.0f) - 256;
+            int top = this->field_0x3e2;
             int y = barOffset + top * 2;
             Globals::Canvas->SetColor(fadeColor);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
