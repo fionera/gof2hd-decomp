@@ -5526,3 +5526,17 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `Hud::draw` 95.46 -> **95.61** (docking-bar widths).
 - `.text` differing bytes 91,907 -> **88,975**. `.ARM.extab` 4 B short (Generator 168 vs 172);
   `.ARM.exidx` 1,663; 27 sections, exact file size.
+
+## Session 2026-11-05 (wave 117 — createShip 73.5, MenuTouchWindow 99.7)
+
+- 20 `codex exec -p dsv41` workers from `c22678d64`. Landed:
+  - `Level::createShip` 67.4 -> **73.5** (placement-new + try, correct ctor/decl order).
+    LSDA 336 -> 328 B, so `.ARM.extab` is now 12 B short.
+  - `MenuTouchWindow` ctor 99.04 -> **99.70** (sliders[2] left grouping + inner mask).
+  - `Status::missionCompleted` 91.9 -> **92.5** (TBH-target LCS re-tune).
+  - `Hud::draw` 95.61 -> **95.90** (Canvas null-test anchor).
+  - `Level::createMission` 92.15 -> **92.29** (volatile size() latch).
+  - `MGame::OnTouchEnd` 78.92 -> **79.05**.
+  - `LevelScript::process` 58.19 -> **58.20**.
+- `Globals` 80.5 -> 78.8 with stores 96-103 byte-exact (volatile settings tail).
+- `.text` 89,185; `.ARM.extab` 12 B short (createShip -8, Generator -4); 27 sections, exact file.

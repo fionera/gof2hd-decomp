@@ -566,3 +566,33 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   Gun::calcCharacterCollision 93.4, Hud::draw 95.6, SpaceLounge::drawLounge 95.7,
   MenuTouchWindow::OnTouchBegin 98.1, MenuTouchWindow C1/C2 99.0, ModStation C1/C2 99.2,
   MGame::OnUpdate 99.9.
+
+## Session 2026-11-05 (wave 117 — createShip 73.5, MenuTouchWindow 99.7)
+
+- Gate: `byte_exact 4501/4524`, `linked_exact 4501/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS.
+- Landed fuzzy improvements:
+  - `Level::createShip` 67.4 -> **73.5** (wave-89 placement-new + `try` shape with the correct
+    ctor/declaration order). Trade-off: its LSDA shrinks 336 -> 328 B, so `.ARM.extab` goes
+    from 4 B short to 12 B short.
+  - `MenuTouchWindow` ctor 99.04 -> **99.70** (`sliders[2]` original left grouping + inner
+    mask).
+  - `Status::missionCompleted` 91.9 -> **92.5** (TBH-target LCS re-tune of the rank labels).
+  - `Hud::draw` 95.61 -> **95.90** (`Globals::Canvas` null-test anchor).
+  - `Level::createMission` 92.15 -> **92.29** (volatile `size()` latch in `case4Tail`).
+  - `MGame::OnTouchEnd` 78.92 -> **79.05** (campaign-first dispatch + campaign reuse +
+    `hasWon() == true`).
+  - `LevelScript::process` 58.19 -> **58.20** (case-78 s12 store after return; case-154
+    state-1 epilogue order).
+- `Globals` 80.5 -> **78.8** but with stores 96-103 byte-exact (volatile settings tail) — a
+  faithfulness-for-fuzzy trade, like the pool-faithful variant.
+- `.text` differing bytes 88,975 -> **89,185** (the createShip placement shape is worse in raw
+  bytes even though its fuzzy score is +6.1). `.ARM.extab` 12 B short; `.ARM.exidx` 1,704;
+  `.rodata` 192; build-id 20. 27 sections, exact file size.
+- Remaining 23 non-exact functions (all size-exact): Layout C1/C2 48.6, LevelScript::process
+  58.2, Level::createShip 73.5, Radar::draw 74.0, Globals C1/C2 78.8, MGame::OnTouchEnd 79.0,
+  Generator::createMission 83.3, PlayerEgo::calcCollision 87.6, Level::createScene 90.7,
+  HangarWindow::render 91.2, Level::createMission 92.3, Status::missionCompleted 92.5,
+  Gun::calcCharacterCollision 93.4, SpaceLounge::drawLounge 95.7, Hud::draw 95.9,
+  MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2, MenuTouchWindow C1/C2 99.7,
+  MGame::OnUpdate 99.9.

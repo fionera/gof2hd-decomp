@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 67.4,
+   "pct": 73.5,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -56,16 +56,8 @@
    "usize": 9908
   },
   {
-   "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8080,
-   "usize": 8080
-  },
-  {
    "name": "_ZN7GlobalsC1Ev",
-   "pct": 80.5,
+   "pct": 78.8,
    "byte": false,
    "linked": false,
    "osize": 612,
@@ -73,11 +65,19 @@
   },
   {
    "name": "_ZN7GlobalsC2Ev",
-   "pct": 80.5,
+   "pct": 78.8,
    "byte": false,
    "linked": false,
    "osize": 612,
    "usize": 612
+  },
+  {
+   "name": "_ZN5MGame10OnTouchEndEiiPv",
+   "pct": 79.0,
+   "byte": false,
+   "linked": false,
+   "osize": 8080,
+   "usize": 8080
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
@@ -112,20 +112,20 @@
    "usize": 9700
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 91.9,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
-  },
-  {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 92.1,
+   "pct": 92.3,
    "byte": false,
    "linked": false,
    "osize": 17172,
    "usize": 17172
+  },
+  {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 92.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
@@ -136,14 +136,6 @@
    "usize": 1984
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 95.6,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
-  },
-  {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
    "pct": 95.7,
    "byte": false,
@@ -152,28 +144,20 @@
    "usize": 1948
   },
   {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 95.9,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
+  },
+  {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
    "pct": 98.1,
    "byte": false,
    "linked": false,
    "osize": 1896,
    "usize": 1896
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 99.0,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 99.0,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
   },
   {
    "name": "_ZN10ModStationC1Ev",
@@ -190,6 +174,22 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 99.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 99.7,
+   "byte": false,
+   "linked": false,
+   "osize": 9600,
+   "usize": 9600
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
