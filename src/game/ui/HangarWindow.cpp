@@ -1053,8 +1053,9 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
+                Layout *lay = Globals::layout;
                 int height = button->getHeight();
-                int textX = button->getWidth() + baseX + Globals::layout->field_0x2c_rowHeight;
+                int textX = button->getWidth() + baseX + lay->field_0x2c_rowHeight;
                 Globals::Canvas->SetColor(0xffffffffu);
                 volatile float textYf = (float) y + (float) height * 0.2f;
                 int textY = (int) textYf;
