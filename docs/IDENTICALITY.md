@@ -461,3 +461,28 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   MGame::OnUpdate 99.9.
 - Section deltas: `.text` 97,001; `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact);
   `.rodata` 192 (appended table); build-id 20. Everything else exact, file size exact.
+
+## Session 2026-11-05 (wave 113 — worst-first fleet, continued)
+
+- Gate: `byte_exact 4500/4524`, `linked_exact 4500/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS. `.ARM.extab` stays size-exact.
+- Landed fuzzy improvements:
+  - `LevelScript::process` 57.6 -> **58.0** (w5904 move subset: case-80/91/92/106/131).
+  - `Layout::Layout` 48.34 -> **48.50** (0x2d8 sum condition, 0x184 test order, forced retina
+    reload, 0x2d0 round-trip fix).
+  - `Level::createShip` 66.6 -> **67.3** (setShipGroup flag + cargo switch).
+  - `MenuTouchWindow` ctor 96.16 -> **97.21** (narrow row2 local, `i != 10` loop).
+  - `HangarWindow::render` 89.06 -> **89.34** (free-credits Layout alias steers regalloc).
+  - `Level::createMission` 92.094 -> **92.145** (setScaling receiver/position sweep).
+  - `Globals` kept 78.8 but now has **both** the faithful 31/31 GOT-pool order and the
+    `movw #583` hoist at index 34 in one store (late-block reorder).
+- `.text` differing bytes fell 97,001 -> **94,443**. All other section deltas unchanged:
+  `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact); `.rodata` 192 (appended table);
+  build-id 20. 27 sections, exact file size.
+- Remaining 24 non-exact functions (all size-exact): Layout C1/C2 48.5, LevelScript::process
+  58.0, Level::createShip 67.3, Radar::draw 74.0, Globals C1/C2 78.8, MGame::OnTouchEnd 78.9,
+  Generator::createMission 82.6, Status::missionCompleted 87.0, PlayerEgo::calcCollision 87.6,
+  HangarWindow::render 89.3, Gun::calcCharacterCollision 90.0, Level::createScene 90.5,
+  Level::createMission 92.1, RocketGun::update 93.8, Hud::draw 94.9, SpaceLounge::drawLounge
+  95.7, MenuTouchWindow C1/C2 97.2, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2,
+  MGame::OnUpdate 99.9.

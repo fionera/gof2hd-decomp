@@ -5475,3 +5475,17 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   second official 2.0.16 build is NDK r14 (clang 3.8, gold 1.11, gnustl).
 - Section deltas now: `.text` 97,001; `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact);
   `.rodata` 192; build-id 20. File size exact.
+
+## Session 2026-11-05 (wave 113 — worst-first fleet, continued)
+
+- 20 `codex exec -p dsv41` workers from `a979ace18`. Landed:
+  - `LevelScript::process` 57.6 -> **58.0** (w5904 move subset).
+  - `Layout::Layout` 48.34 -> **48.50** (0x2d8 sum condition, 0x184 test order, forced retina
+    reload, 0x2d0 round-trip fix).
+  - `Level::createShip` 66.6 -> **67.3** (setShipGroup flag + cargo switch).
+  - `MenuTouchWindow` ctor 96.16 -> **97.21** (narrow row2 local, `i != 10` loop).
+  - `HangarWindow::render` 89.06 -> **89.34** (free-credits Layout alias steers regalloc).
+  - `Level::createMission` 92.094 -> **92.145** (setScaling receiver/position sweep).
+  - `Globals` 78.8 with faithful 31/31 pool order **and** `movw #583`@34 in one store.
+- `.text` differing bytes 97,001 -> **94,443**; `.ARM.extab` stays size-exact; 27 sections,
+  exact file size.
