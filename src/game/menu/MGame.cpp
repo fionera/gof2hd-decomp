@@ -1554,7 +1554,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
-                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
+                    Mission *mission = Globals::status->getMission()->hasWon() == true ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     if (mission->isCampaignMission()) {
                         Globals::status->nextCampaignMission(true);
                     } else if (mission->isInstantActionMission()) {
@@ -1627,8 +1627,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         return;
                     } else if (mission->isCampaignMission() &&
                                (Globals::status->getCurrentCampaignMission() == 96 ||
-                                (mission->isCampaignMission() &&
-                                 Globals::status->getCurrentCampaignMission() == 127))) {
+                                Globals::status->getCurrentCampaignMission() == 127)) {
                         Globals::switch_to_target_setting = 1;
                         Globals::status->field_64 = this->player->player->getHitpoints();
                         Globals::status->field_5c = this->player->player->getShieldHP();
