@@ -281,7 +281,6 @@ static const int MenuTouchWindow_languageTextIds[10] = {2, 1, 4, 3, 5, 7, 8, 14,
 static const int MenuTouchWindow_controlImages[3][2] = {{9500, 9501}, {9504, 9505}, {9502, 9503}};
 
 MenuTouchWindow::MenuTouchWindow(int menuType) {
-    unsigned int i;
     this->buttonWidth = Globals::layout->field_0x294_buttonWidth;
     this->buttonYBias = Globals::layout->field_0x298_buttonYBias;
     this->buttonRowGap = Globals::layout->field_0x29c_buttonRowGap;
@@ -436,7 +435,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
         // Emission-order reference: the original TU emits languageIds before languageTextIds.
         (void) MenuTouchWindow_languageIds;
-        for (i = 0; (i & 0xf) != 10; i++) {
+        for (unsigned int i = 0; (i & 0xf) != 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int yBase = Globals::h / 2 - this->buttonYBias;
             int rowPitch = rowHeight + Globals::layout->field_0x30_rowHeight;
@@ -462,10 +461,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
             TouchButton *language = new TouchButton(
                 *Globals::gameText->getText(MenuTouchWindow_languageTextIds[i]), 0, x, y, bw, 17, 4,
                 ctorFont, spacing);
+            language->id = MenuTouchWindow_languageIds[i];
             if (special)
                 language->fontId = *specialFontPtr;
             ArrayAdd(language, *this->buttonsB0);
-            language->id = MenuTouchWindow_languageIds[i];
         }
     }
 
@@ -510,7 +509,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
     this->scrollSlots = new Array<TouchButton *>();
     ArraySetLength(5, *this->scrollSlots);
     this->slotSpacing = Globals::layout->field_0x2c_rowHeight;
-    for (i = 0; i < this->scrollSlots->size(); i++) {
+    for (unsigned int i = 0; i < this->scrollSlots->size(); i++) {
         (*this->scrollSlots)[i] = new TouchButton(this->heapBufA[i], 16, this->slotX,
                                                   (this->slotSpacing + this->contentHeightCache) * i + this->slotY, 17);
         (*this->scrollSlots)[i]->id = 54 + i;
