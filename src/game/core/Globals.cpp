@@ -637,7 +637,6 @@ static const int gDialogueSoundPairs[3008] = {
 Globals::Globals() {
     GameSettingsRecord *settings = (GameSettingsRecord *) Globals::options;
     Globals::shipTemplate = 0;
-    Globals::recordHandler = 0;
     Globals::Canvas = 0;
     Globals::gameText = 0;
     Globals::font = 0;
@@ -649,7 +648,7 @@ Globals::Globals() {
     Globals::layout = 0;
     Globals::appManager = 0;
     Globals::generator = 0;
-    Globals::status = 0;
+    Globals::recordHandler = 0;
 
     this->field_0x0 = 0;
 
@@ -703,6 +702,7 @@ Globals::Globals() {
     Globals::galaxy = 0;
     Globals::instantActionScore = 0;
     Globals::lastStationMusicPlayed = -1;
+    Globals::status = 0;
     Globals::instantActionType = -1;
     Globals::instantActionPlayerName = 0;
     Globals::items = 0;
