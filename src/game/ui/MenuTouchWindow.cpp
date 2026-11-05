@@ -566,14 +566,13 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         Globals::Canvas->Image2DCreate(1702, this->fireImage_0x54);
         Globals::Canvas->Image2DCreate(1703, this->fireImage_0x58);
         Globals::Canvas->Image2DCreate(1704, this->fireImage_0x5c);
-        GameText *cinematicText;
         this->cinematicBtnB = new TouchButton(
-            *(cinematicText = Globals::gameText)->getText(497), 0, Globals::w >> 1,
+            *Globals::gameText->getText(497), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 * 2 -
                 Globals::layout->field_0x30_rowHeight * 2,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
         this->cinematicBtnA = new TouchButton(
-            *cinematicText->getText(496), 0, Globals::w >> 1,
+            *Globals::gameText->getText(496), 0, Globals::w >> 1,
             Globals::layout->field_0x300 + Globals::layout->choiceWindowTitleHeight - Globals::layout->field_0x34 -
                 Globals::layout->field_0x30_rowHeight,
             (int) (Globals::iPadHD ? 281.25f : (Globals::iPadLarge ? 400.0f : 200.0f)), 68, 4);
@@ -618,8 +617,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
          this->listEntryWidth) +
             Globals::layout->field_0x2c_rowHeight * 5 +
             this->sliderRowHeight + this->sliderRowHeight / 2 +
-            (Globals::layout->field_0x2fc + (this->field_0x15c + Globals::layout->field_0x2c_rowHeight) +
-             this->sliderRowHeight) * 2,
+            (Globals::layout->field_0x2fc + ((this->field_0x15c + Globals::layout->field_0x2c_rowHeight) & 0x7fffffff) +
+             (this->sliderRowHeight & 0x7fffffff)) * 2,
         66);
     this->optBtnD0->setHalfTransparent(Globals::options[17]);
     this->optBtnCC->setAlwaysPressed(Globals::options[16]);
@@ -628,8 +627,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->scrollUpButton = new TouchButton(
             *Globals::gameText->getText(494), 0,
             this->listTopY + this->listBottomY - Globals::layout->buttonInsetX - this->listEntryHeight / 2,
-            (this->listEntryWidth + (Globals::layout->field_0xc_leftMargin +
-                                     Globals::layout->field_0x20_top)) +
+            ((Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top) +
+             this->listEntryWidth) +
                 Globals::layout->field_0x2c_rowHeight + this->field_0x15c / 2,
             this->listEntryHeight - 20, 68, 4);
     }
@@ -747,10 +746,10 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                    (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         (*this->sliders)[2]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC,
-            (int) ((float) ((this->field_0x15c + Globals::layout->field_0x1c) * 2 +
+            (int) ((float) ((this->field_0x15c + (Globals::layout->field_0x1c + Globals::layout->field_0x2c_rowHeight)) * 2 +
+                            Globals::layout->field_0x2c_rowHeight * 3 + this->sliderRowHeight +
                             this->listEntryWidth + Globals::layout->field_0x20_top +
-                            Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2c_rowHeight * 5 +
-                            this->sliderRowHeight + Globals::layout->field_0x2fc) +
+                            Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x2fc) +
                    (Globals::iPadHD ? 19.6875f : (Globals::iPadLarge ? 28.0f : 14.0f))));
         (*this->sliders)[3]->setPosition(
             this->listTopY + Globals::layout->buttonInsetX + this->metricC,
@@ -775,7 +774,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                 (int) ((float) ((Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin +
                                  Globals::layout->field_0x1c * 3 + this->listEntryWidth +
                                  Globals::layout->field_0x2c_rowHeight * 6 + this->sliderRowHeight) +
-                                (this->field_0x15c + Globals::layout->field_0x2fc + this->sliderRowHeight) * 2) +
+                                (((this->field_0x15c + Globals::layout->field_0x2fc) & 0x7fffffff) + this->sliderRowHeight) * 2) +
                        (Globals::iPadHD ? 9.84375f : (Globals::iPadLarge ? 14.0f : 7.0f))));
             (*this->sliders)[5]->setPosition(
                 Globals::layout->buttonInsetX + this->listTopY + this->metricC,
