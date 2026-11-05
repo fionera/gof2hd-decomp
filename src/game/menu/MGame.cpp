@@ -1550,18 +1550,18 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                     this->player->removeRoute();
                     this->level->setPlayerRoute(nullptr);
-                } else if (Globals::status->getMission()->hasWon() ||
+                } else if (Globals::status->getMission()->hasWon() == true ||
                            ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     bool keepObjectives = campaign->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
-                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    if (mission->isInstantActionMission()) {
+                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
+                    if (mission->isCampaignMission()) {
+                        Globals::status->nextCampaignMission(true);
+                    } else if (mission->isInstantActionMission()) {
                         Globals::switch_to_target_setting = 2;
                         this->active = 0;
                         this->applicationManager->SetCurrentApplicationModule(1);
                         return;
-                    } else if (mission->isCampaignMission()) {
-                        Globals::status->nextCampaignMission(true);
                     } else {
                         Globals::status->setFreelanceMission(Mission::empty);
                         Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
