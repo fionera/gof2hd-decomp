@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 48.6,
+   "pct": 48.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 48.6,
+   "pct": 48.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 67.1,
+   "pct": 67.4,
    "byte": false,
    "linked": false,
    "osize": 2764,
