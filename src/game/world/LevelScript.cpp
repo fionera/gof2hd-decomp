@@ -686,13 +686,13 @@ bool LevelScript::process(int delta) {
                 m_nState = 4;
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
-                m_pLevel->getPlayer()->setCollide(true);
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
             }
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
