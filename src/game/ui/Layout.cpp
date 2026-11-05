@@ -11,7 +11,6 @@
 #include "engine/render/PaintCanvas.h"
 
 Layout::Layout() {
-    int u9c;
     this->field_0x4 = Globals::iPadHD ? 15 * 1.40625f : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 30 : 15));
     this->footerTextInset = Globals::iPadHD ? 22 * 1.40625f : (Globals::n9 ? 37 : (Globals::retinaDisplay ? 50 : 22));
     this->field_0x1c = Globals::iPadHD ? 20 * 1.40625f : (Globals::n9 ? 30 : (Globals::retinaDisplay ? 40 : 20));
@@ -46,7 +45,8 @@ Layout::Layout() {
     this->eventBannerScale = Globals::iPadHD ? 1.40625f : (Globals::n9 ? 2.0f : (Globals::retinaDisplay ? 2.0f : 1.0f));
     this->field_0x2d0 = (int)(float)(Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 53 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30)))));
     this->field_0x2cc = Globals::iPadHD ? 90 * 1.40625f : (Globals::n9 ? 106 : (Globals::iPadLarge ? 180 : (Globals::retinaDisplay ? 120 : (Globals::iPad ? 90 : 60))));
-    this->field_0x2c8 = Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
+    int t_field_0x2c8 = Globals::iPadHD ? 45 * 1.40625f : (Globals::n9 ? 45 : (Globals::iPadLarge ? 90 : (Globals::retinaDisplay ? 60 : (Globals::iPad ? 45 : 30))));
+    this->field_0x2c8 = (int)(float)t_field_0x2c8;
     this->field_0x2d8 = Globals::iPadHD ? 141 : ((Globals::retinaDisplay || Globals::n9) ? (Globals::iPad ? 200 : 125) : (Globals::iPad ? 125 : 75));
     volatile unsigned char *rd = &Globals::retinaDisplay;
     if (Globals::iPadHD)
@@ -64,16 +64,8 @@ Layout::Layout() {
     this->field_0x8c = Globals::iPadHD ? 32.0f * 1.40625f : (Globals::n9 ? 57.6f : (Globals::retinaDisplay ? 64.0f : 32.0f));
     this->field_0x90 = Globals::iPadHD ? 0.46222222f : (Globals::retinaDisplay ? 0.325f : (Globals::iPad ? 0.325f : (Globals::n9 ? 0.325f : 0.65f)));
     this->field_0x98 = Globals::iPadHD ? 420 * 1.40625f : (Globals::n9 ? 630 : (Globals::retinaDisplay ? 840 : 420));
-    if (Globals::iPadHD)
-        u9c = 70;
-    else if (Globals::n9)
-        u9c = 75;
-    else if (Globals::retinaDisplay)
-        u9c = 100;
-    else
-        u9c = 50;
-    this->field_0x9c = (int)(float)u9c;
-    this->field_0xac = (int)(float)(int)(Globals::iPadHD ? 61 * 1.40625f : (Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41)))));
+    this->field_0x9c = (int)(float)(Globals::iPadHD ? 70 : (Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50)));
+    this->field_0xac = Globals::iPadHD ? 61 * 1.40625f : (Globals::iPadLarge ? 122 : (Globals::n9 ? 61 : (Globals::iPad ? 61 : (Globals::retinaDisplay ? 82 : 41))));
     int v = Globals::iPadHD ? 61.0f * 1.40625f : (Globals::iPadLarge ? 122.0f : (Globals::n9 ? 61.0f : (Globals::iPad ? 61.0f : (Globals::retinaDisplay ? 82.0f : 41.0f))));
     this->field_0xa8 = (int)(float)v;
     this->field_0xb0 = Globals::iPadHD ? 3 * 1.40625f : (Globals::n9 ? 4 : (Globals::retinaDisplay ? 6 : 3));
@@ -161,7 +153,7 @@ Layout::Layout() {
     this->field_0x174 = Globals::iPadHD ? 84.0f : (Globals::iPadLarge ? 84 : (Globals::iPad ? 42 : (Globals::n9 ? 45 : (Globals::retinaDisplay ? 60 : 30))));
     this->field_0x17c = Globals::iPadHD ? 155 * 1.40625f : (Globals::iPadLarge ? 310 : (Globals::iPad ? 155 : (Globals::n9 ? 146 : (Globals::retinaDisplay ? 170 : 85))));
     this->field_0x170 = Globals::iPadHD ? 174 : (Globals::iPadLarge ? 248 : (Globals::iPad ? 124 : (Globals::n9 ? 106 : (Globals::retinaDisplay ? 128 : 64))));
-    this->field_0x194 = (int)(float)(Globals::iPadHD ? 8 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6)));
+    this->field_0x194 = Globals::iPadHD ? 8 : (Globals::n9 ? 10 : (Globals::retinaDisplay ? 12 : 6));
     if (Globals::iPadHD)
         this->field_0x184 = 163;
     else if (Globals::iPadLarge)
@@ -294,7 +286,7 @@ Layout::Layout() {
     else
         this->field_0x280 = 0;
     this->field_0x285 = 1;
-    this->scrollBarInset = (int)(float)(int)(Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1)));
+    this->scrollBarInset = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->scrollBarHandle = Globals::iPadHD ? 0.0f : (Globals::n9 ? 1 : Globals::retinaDisplay);
     this->rewardBoxWidth = Globals::iPadHD ? 100 * 1.40625f : (Globals::n9 ? 112 : (Globals::iPadLarge ? 200 : (Globals::iPad ? 100 : (Globals::retinaDisplay ? 150 : 75))));
     this->rewardBoxX = Globals::n9 ? 75 : (Globals::retinaDisplay ? 100 : 50);
