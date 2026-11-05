@@ -436,7 +436,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
         // Emission-order reference: the original TU emits languageIds before languageTextIds.
         (void) MenuTouchWindow_languageIds;
-        for (unsigned int i = 0; i != 10; i++) {
+        for (unsigned int i = 0; (int) i < 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int yBase = Globals::h / 2 - this->buttonYBias;
             int rowPitch = rowHeight + Globals::layout->field_0x30_rowHeight;
