@@ -41,7 +41,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 58.2,
+   "pct": 58.4,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -161,7 +161,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 99.7,
+   "pct": 99.8,
    "byte": false,
    "linked": false,
    "osize": 9600,
@@ -169,7 +169,7 @@
   },
   {
    "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 99.7,
+   "pct": 99.8,
    "byte": false,
    "linked": false,
    "osize": 9600,

@@ -4070,9 +4070,9 @@ bool LevelScript::process(int delta) {
                     Vector *tempVec = &m_tempVec;
                     Vector *scratch = &m_dirVec;
                     *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
+                    *scratch = player->GetDirVector();
                     *scratch = player->geometry->getRightVector();
                     *tempVec += *scratch * ((float) delta * 2.01f);
-                    *scratch = player->GetDirVector();
                     *tempVec += *scratch * ((float) delta * 0.03f);
                     *scratch = player->GetUpVector();
                     *tempVec += *scratch * ((float) delta * 0.01f);
@@ -4893,8 +4893,8 @@ bool LevelScript::process(int delta) {
                         chaser->setVisible(true);
                         chaser->setActive(true);
                         KIPlayer *fighterShip = (*enemies)[fighterIndex];
-                        fighterShip->player->setVulnerable(false);
                         ((PlayerFighter *) fighterShip)->field_0x140 = 0;
+                        fighterShip->player->setVulnerable(false);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_nState = 6;
