@@ -737,7 +737,7 @@ bool LevelScript::process(int delta) {
                 player->setTurretMode(false);
                 resetCamera(m_pLevel);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                m_pLevel->getPlayer()->setCollide(false);
+                player->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 m_pCamera->setLookAtCam(true);
@@ -794,8 +794,8 @@ bool LevelScript::process(int delta) {
                                  ->animating) {
                         Globals::sound->stop(Globals::sound->currentMusicEvent);
                         Globals::sound->play(141, nullptr, nullptr, 0.0f);
-                        m_nScriptTimerA = 0;
                         m_nState = 8;
+                        m_nScriptTimerA = 0;
                     }
                     break;
                 }
@@ -2343,8 +2343,8 @@ bool LevelScript::process(int delta) {
                     player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
-                    player->stopShooting(0);
                     m_bCinematicBreak = 1;
+                    player->stopShooting(0);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
@@ -3174,7 +3174,7 @@ bool LevelScript::process(int delta) {
                             for (int i = 0; i != 2; i++) {
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             }
-                            m_pLevel->getPlayer()->resetGunDelay();
+                            player->resetGunDelay();
                             m_pCamera->setLookAtCam(false);
                             m_pCamera->setTarget(player->geometry);
                             bool docked = player->isDockedToDockingPoint();
@@ -4460,8 +4460,8 @@ bool LevelScript::process(int delta) {
                     player->stopShooting(0);
                     player->setComputerControlled(true);
                     player->player->setVulnerable(false);
-                    player->setSpeed(0.0f);
                     field_0xaa = player->autoTurretIsEnabled();
+                    player->setSpeed(0.0f);
                     if (field_0xaa) {
                         player->setAutoTurret(false);
                     }
