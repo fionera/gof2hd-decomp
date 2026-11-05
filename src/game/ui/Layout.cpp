@@ -108,9 +108,9 @@ Layout::Layout() {
     this->field_0x118 = Globals::iPadHD ? 9 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 14 : 7));
     this->field_0x124 = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x10c_rowBaseY = (int)(float)(int)(Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1)));
-    this->field_0x128 = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x238_blk16.b = Globals::iPadHD ? 15 * 1.40625f : (Globals::n9 ? 27 : (Globals::retinaDisplay ? 30 : 15));
     this->field_0x120 = Globals::iPadHD ? 21 : (Globals::n9 ? 22 : (Globals::retinaDisplay ? 28 : 15));
+    this->field_0x128 = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? 2 : (Globals::retinaDisplay ? 2 : 1));
     this->field_0x114_strip5c = Globals::iPadHD ? 1 * 1.40625f : (Globals::n9 ? -1 : (Globals::retinaDisplay ? -1 : 1));
     this->field_0x108 = Globals::iPadHD ? -2 : (Globals::n9 ? -1 : (Globals::retinaDisplay ? -2 : 0));
     int v138;
@@ -135,7 +135,7 @@ Layout::Layout() {
         this->field_0x134 = Globals::iPad ? 108 : 80;
         v138 = Globals::iPad ? 47 : 35;
     }
-    this->field_0x138 = (int)(float)((int)(float)v138);
+    this->field_0x138 = v138;
     this->field_0x13c = Globals::iPadHD ? 23 : (Globals::n9 ? 25 : (Globals::retinaDisplay ? 34 : 17));
     this->field_0x14c = Globals::iPadHD ? 189 : (Globals::n9 ? 243 : (Globals::retinaDisplay ? 270 : 135));
     this->field_0x150 = (int)(float)(Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4)));
@@ -297,6 +297,7 @@ Layout::Layout() {
     this->field_0x1f0 = Globals::iPadHD ? 19 * 1.40625f : (Globals::n9 ? 34 : (Globals::retinaDisplay ? 38 : 19));
     this->field_0x144 = Globals::iPadHD ? 13 * 1.40625f : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 26 : 13));
     this->footerButtonOffset = Globals::iPadHD ? 4 : (Globals::n9 ? 5 : (Globals::retinaDisplay ? 6 : 3));
+    this->field_0x28c = Globals::n9 ? -19 : 0;
     if (Globals::iPadHD)
         this->rewardBoxY2 = 132;
     else if (Globals::n9)
@@ -305,7 +306,6 @@ Layout::Layout() {
         this->rewardBoxY2 = (this->rewardBoxY + 17) << Globals::retinaDisplay;
     this->field_0x1f8 = Globals::iPadHD ? 2 : (Globals::retinaDisplay ? (Globals::iPad ? 4 : 2) : 2);
     this->field_0x140 = Globals::iPadHD ? 15 : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 22 : 11));
-    this->field_0x28c = Globals::n9 ? -19 : 0;
     this->field_0x286 = Globals::n9 ? 0 : 1;
     this->field_0x288 = Globals::n9 ? 20 : 0;
     this->field_0x290 = Globals::n9 ? 4 : (Globals::retinaDisplay ? 7 : 3);
