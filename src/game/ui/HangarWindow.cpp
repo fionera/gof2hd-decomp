@@ -750,7 +750,7 @@ void HangarWindow::render() {
                             Globals::Canvas->DrawRegion2D(
                                 this->progressBarFillImage, 0, 0, (int) (rate * (float) this->progressBarWidth),
                                 this->progressBarHeight, 0.0f, 0, 0,
-                                textX + 3 + Globals::layout->buttonInsetX + this->hintOffsetX,
+                                this->hintOffsetX + textX + 3 + Globals::layout->buttonInsetX,
                                 y + 2 + Globals::layout->field_0x70_rowHeight / 2);
                             Globals::Canvas->DrawImage2D(
                                 this->progressBarBorderImage,
@@ -898,10 +898,10 @@ void HangarWindow::render() {
     }
     if (this->viewMode == 1) {
         this->viewMode = 0;
+        volatile int pV = 0;
         this->render();
         this->viewMode = 1;
         this->listItemWindow->draw();
-        volatile int pV = 0;
     }
 
     Globals::layout->drawFooter();
