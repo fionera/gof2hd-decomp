@@ -5588,3 +5588,10 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
 - Gate: byte 4505 / linked 4505, avg 99.94, data 843/843, imports 207, lint CLEAN,
   drift 0. `.text` 87,909; `.ARM.exidx` 1,674; `.ARM.extab` 156,304 (4 B short,
   Generator only); `.rodata` +192; build-id 20; 27 sections, exact file size.
+
+- `LevelScript::process` 59.490 -> **59.958** (statement-permutation hill-climb; 57232 B).
+- `MGame::OnTouchEnd` 80.396 -> **81.283** (predicate-probability spellings; `.rel.plt`
+  now differs by 6 bytes, two adjacent JUMP_SLOT entries swapped).
+- `PlayerEgo::calcCollision` real `i == 0 && field_0x71` tail landed (968 B).
+- `.ARM.extab` is **8 B short** (156,304 vs 156,312); 156,304 is the hard minimum that
+  keeps `.rodata` at 0x1c9e10 (one more byte lost -> `.rodata` 0x1c9e00, byte 4043).

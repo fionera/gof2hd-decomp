@@ -16,8 +16,8 @@ Wave 119 (20 parallel `codex exec -p dsv41` workers, worst-first) made
 `MenuTouchWindow::MenuTouchWindow` C1/C2 **byte-exact** (99.82 -> **100.0**; hoisting row2
 before `addButton(19)`), moving `byte_exact` 4503 -> **4505**. Other gains:
 `Level::createScene` 90.7 -> **92.8**, `Radar::draw` 74.0 -> **74.4**,
-`LevelScript::process` 58.2 -> **59.5** (merged wave-119 statement reorders at exactly
-57232 B). `.text` content delta 89,836 -> **87,909**.
+`LevelScript::process` 58.2 -> **60.0** (merged wave-119 statement reorders at exactly
+57232 B). `.text` content delta 89,836 -> **88,125**.
 
 The `Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`); every original `.rodata` byte
@@ -33,15 +33,17 @@ hard wall: `156,304 B` is the minimum that keeps `.rodata` at `0x1c9e10`; losing
 `.ARM.extab` byte moves `.rodata` to `0x1c9e00` and collapses `byte_exact` (4505 -> 4043,
 measured by the w6829 placement-new shape).
 
-The only differing section bytes are `.text` **87,909**; `.ARM.exidx` **1,674** raw bytes;
+The only differing section bytes are `.text` **88,125**; `.ARM.exidx` **1,674** raw bytes;
 `.ARM.extab` **135,831** (size 8 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
-`.shstrtab`, `.ARM.attributes`) is byte-identical.
+`.shstrtab`, `.ARM.attributes`) is byte-identical. `.rel.plt` now differs by **6 bytes**: the
+`MGame::OnTouchEnd` cold-block layout swaps two adjacent `JUMP_SLOT` entries
+(`MenuTouchWindow` / `MGame::setCinematicMode`); it returns to exact when that function matches.
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.9,
-`Generator::createMission` 83.6, `LevelScript::process` 59.5, `Level::createShip` 70.2,
+`Generator::createMission` 83.6, `LevelScript::process` 60.0, `Level::createShip` 70.2,
 `Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`

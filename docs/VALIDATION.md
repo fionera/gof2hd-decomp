@@ -104,7 +104,7 @@ and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel
 `Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`), so the original `.rodata` image is
 untouched (the table is the only 192 B of extra `.rodata`). The differing section bytes are
-`.text` (87,909), `.ARM.exidx` (1,674), `.ARM.extab` (135,831; size 8 B short), `.rodata`
+`.text` (88,125), `.ARM.exidx` (1,674), `.ARM.extab` (135,831; size 8 B short), `.rodata`
 (192, the appended codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file
 bytes are linker padding).
 
