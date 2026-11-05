@@ -4890,14 +4890,14 @@ bool LevelScript::process(int delta) {
                                 AbyssEngine::AEMath::VectorNormalize(stationShip->getPosition()
                                                                      - chaser->getPosition()),
                                 Vector{0.0f, 1.0f, 0.0f});
-                        chaser->setVisible(true);
-                        chaser->setActive(true);
+                        m_pLevel->lodManager->forceUpdate(delta, false);
                         KIPlayer *fighterShip = (*enemies)[fighterIndex];
                         ((PlayerFighter *) fighterShip)->field_0x140 = 0;
-                        fighterShip->player->setVulnerable(false);
-                        m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nScriptTimerA = 0;
                         m_nState = 6;
+                        fighterShip->player->setVulnerable(false);
+                        chaser->setVisible(true);
+                        m_nScriptTimerA = 0;
+                        chaser->setActive(true);
                     }
                 } else if (m_nState == 6) {
                     m_nScriptTimerA = 0;
