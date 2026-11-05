@@ -1312,7 +1312,7 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->player->setHitpoints(0);
                     }
                     m_nScriptTimerA = 0;
-                    m_nState = 4;
+                    m_nState = 5;
                 }
                 break;
             }
@@ -1321,7 +1321,7 @@ bool LevelScript::process(int delta) {
                 m_pLevel->getStarSystem()->updateSupernova(delta);
                 if (m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000) {
                     Globals::layout->startFade(true, 255, delta + 1000);
-                    m_nState = 5;
+                    m_nState = 4;
                 }
                 m_nScriptTimerA += delta;
                 break;
@@ -2141,18 +2141,18 @@ bool LevelScript::process(int delta) {
                         AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                         Vector dir = AbyssEngine::AEMath::MatrixGetDir(
                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
-                        m_pParticleGeom1->setPosition(dir * 10000.0f);
-                        m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        m_nScriptTimerA += delta;
                         if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                     ->currentTime >= 4001) {
                             ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                         }
-                        m_nScriptTimerA += delta;
+                        m_pParticleGeom1->setPosition(dir * 10000.0f);
                         if (m_nScriptTimerA >= 15001) {
                             m_bRenderParticles = 0;
-                            Globals::layout->startFade(true, 255, 4000);
                             m_nScriptTimerA = 0;
+                            Globals::layout->startFade(true, 255, 4000);
                         }
                     } else {
                         m_nScriptTimerA += delta;
@@ -2822,9 +2822,9 @@ bool LevelScript::process(int delta) {
                         player->setComputerControlled(true);
                         player->setCollide(false);
                         m_pCamera->setLookAtCam(true);
+                        AEGeometry *ship = player->geometry;
                         (*enemies)[0]->player->setHitpoints(0);
                         m_tempVec = player->geometry->getPosition();
-                        AEGeometry *ship = player->geometry;
                         ship->setDirection(AbyssEngine::AEMath::VectorNormalize(
                                                    m_pLevel->getPlayer()->getPosition()
                                                    - ((KIPlayer *) m_pLevel->getDockingTarget(0))->geometry->getPosition()),
@@ -4279,7 +4279,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA > 4000) {
                         (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
                         if (m_nScriptTimerA >= 7001) {
-                            m_nState = 4;
+                            Globals::appManager->SetCurrentApplicationModule(2);
                             Globals::status->nextCampaignMission(true);
                             Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
@@ -4287,7 +4287,7 @@ bool LevelScript::process(int delta) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
                                 Level::initStreamOutPosition = 1;
                             }
-                            Globals::appManager->SetCurrentApplicationModule(2);
+                            m_nState = 4;
                         }
                     }
                 }
@@ -4696,17 +4696,17 @@ bool LevelScript::process(int delta) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nState++;
+                        m_nScriptTime = 0;
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
-                        m_nScriptTime = 0;
+                        delete m_pLevel->objectivesB;
                         m_nTimeLimit = 91000;
                         m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel);
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;
-                        delete m_pLevel->objectivesB;
+                        m_nState++;
                         m_nScriptTimerA = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 9) {
