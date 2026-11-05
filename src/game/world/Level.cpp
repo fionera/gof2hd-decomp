@@ -6614,7 +6614,9 @@ void Level::createScene() {
                 if (mesh < 0)
                     continue;
                 AEGeometry *g = new AEGeometry(mesh, Globals::Canvas, false);
-                g->setRotation(Vector{0.0f, 3.1415927f, 0.0f});
+                Vector rot(0.0f, 3.1415927f, 0.0f);
+                Vector *rp = (Vector *) ((char *) &rot + ((size_t) g << 31));
+                g->setRotation(*rp);
                 PlayerStatic *hangarPart = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 if (!plainHangar) {
                     for (int j = 0; j < kBarChildCounts[sceneRace]; j++) {
@@ -6642,8 +6644,8 @@ void Level::createScene() {
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
                 if (rnd->nextInt(100) <= 29) {
-                    race = Globals::rnd->nextInt(4);
-                    if (Globals::rnd->nextInt(100) < 30)
+                    race = rnd->nextInt(4);
+                    if (rnd->nextInt(100) < 30)
                         race = 8;
                 }
                 int type = Globals::globals->getRandomEnemyFighter(race);
