@@ -5183,12 +5183,12 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int jitterZ = Globals::rnd->nextInt(40000);
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x33) {
-        hitpoints = (int) ((float) hitpoints * 1.7f);
+    if (type == 0x2c) {
+        hitpoints = (int) ((float) hitpoints * 2.25f);
     } else if (type == 0x31) {
         hitpoints = (int) ((float) hitpoints * 17.0f);
-    } else if (type == 0x2c) {
-        hitpoints = (int) ((float) hitpoints * 2.25f);
+    } else if (type == 0x33) {
+        hitpoints = (int) ((float) hitpoints * 1.7f);
     }
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
