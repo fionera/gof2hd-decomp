@@ -1352,7 +1352,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                          Globals::Canvas->GetImage2DHeight(this->image_0x334));
         Globals::Canvas->DrawString((unsigned int) (uintptr_t) Globals::font, status,
                                     Globals::layout->field_0x200 + this->field_0x438,
-                                    this->field_0x43a + Globals::layout->field_0x1f4 + Globals::layout->field_0x1f8 * 2 +
+                                    this->field_0x43a + (Globals::layout->field_0x1f8 * 2 + Globals::layout->field_0x1f4) +
                                         Globals::Canvas->GetImage2DHeight(this->image_0x334),
                                     false);
     } else if (Globals::status->getMission() != 0 && Globals::status->getMission()->getType() == 174) {
