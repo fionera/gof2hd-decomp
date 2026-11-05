@@ -5168,27 +5168,31 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wpZ, wpX, wpY;
+    int wx, wz, wy;
     if (waypoint != nullptr) {
-        wpX = waypoint->x;
-        wpY = waypoint->y;
-        wpZ = waypoint->z;
+        wz = waypoint->x;
+        wy = waypoint->y;
+        wx = waypoint->z;
     } else {
-        wpX = 0;
-        wpY = 0;
-        wpZ = 0;
+        wz = 0;
+        wy = 0;
+        wx = 0;
     }
     int jitterY = Globals::rnd->nextInt(40000);
     int jitterZ = Globals::rnd->nextInt(40000);
     int jitterX = Globals::rnd->nextInt(40000);
     int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
-    if (type == 0x2c) {
-        hitpoints = (int) ((float) hitpoints * 2.25f);
-    } else if (type == 0x31) {
-        hitpoints = (int) ((float) hitpoints * 17.0f);
-    } else if (type == 0x33) {
-        hitpoints = (int) ((float) hitpoints * 1.7f);
+    switch (type) {
+        case 0x2c:
+            hitpoints = (int) ((float) hitpoints * 2.25f);
+            break;
+        case 0x33:
+            hitpoints = (int) ((float) hitpoints * 1.7f);
+            break;
+        case 0x31:
+            hitpoints = (int) ((float) hitpoints * 17.0f);
+            break;
     }
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
@@ -5208,32 +5212,29 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = wpX + jitterX - 20000;
-    float z = (float) (wpZ + jitterZ - 20000);
-    float y = (float) (wpY + jitterY - 20000);
+    int x = jitterZ + jitterX - 20000;
+    float y = (float) (wy + jitterY - 20000);
+    float z = (float) (wz + wx - 20000);
     try {
         player->setEmpData(empPoints, empTime);
     } catch (...) {
-        __builtin_trap(); // lint: arm_builtin
+        __builtin_trap(); // lint: arm_builtin anchor: Level::createShip; removal grows body 2764 -> 2772
     }
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
         PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
         new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, group);
         if (missionPtr != 1 && missionPtr != 23) {
-            lodManager->addObject(fighter->parentGeometry != nullptr ? fighter->parentGeometry : fighter->geometry);
+            KIPlayer *kiFighter = fighter;
+            lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
-        switch (type) {
-        case 0x2c:
-        case 0x31:
+        if (type == 0x2c || type == 0x31) {
             delete fighter->cargo;
             fighter->cargo = nullptr;
-            break;
-        case 0x33:
+        } else if (type == 0x33) {
             fighter->field_0x25 = 0;
-            break;
         }
         ship = fighter;
     } else if (shipClass == 1) {
