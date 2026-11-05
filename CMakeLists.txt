@@ -68,19 +68,30 @@ target_compile_options(gof2 PRIVATE -ffunction-sections -funwind-tables)
 include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 
 
-# The only remaining per-file branch-weight override.  StarMap::drawOnScreenInfo's campaign-target
-# arm (getStationEnumIndex(93) >= 0) is reached from both the station and system paths.  The branch
-# is `icmp sgt i32 %x, -1`; the natural zero-compare heuristic is 20:12, and the default
-# __builtin_expect weight is 2000:1 -- both lay the block out differently (0xd98 / 0xdac instead
-# of the original 0xda0).  Only the 7:1 ratio reproduces the original's block frequencies and the
-# campaign-in-r6 allocation.  Clang 7.0.2 has no __builtin_expect_with_probability, and no
-# source-level comparison form yields 7:1 (see _work/reconstructions/branch-weight-overrides_w4218.md).
+# Per-file branch-weight overrides.  Both are matching knobs, not original build flags.
+#
+# StarMap::drawOnScreenInfo's campaign-target arm (getStationEnumIndex(93) >= 0) is reached from
+# both the station and system paths.  The branch is `icmp sgt i32 %x, -1`; the natural
+# zero-compare heuristic is 20:12, and the default __builtin_expect weight is 2000:1 -- both lay
+# the block out differently (0xd98 / 0xdac instead of the original 0xda0).  Only the 7:1 ratio
+# reproduces the original's block frequencies and the campaign-in-r6 allocation.  Clang 7.0.2 has
+# no __builtin_expect_with_probability, and no source-level comparison form yields 7:1 (see
+# _work/reconstructions/branch-weight-overrides_w4218.md).
+#
+# SpaceLounge::drawLounge's single __builtin_expect (the `agent->isKnown()` width-add guard) feeds
+# the EH landing-pad block frequencies.  At the default 2000:1 the landing pads are laid out in a
+# different order and the two tail `b.n` selectors disagree with the original by 4 text bytes; a
+# 7:1 weight restores the original ordering (raw fuzzy 95.538778 -> 95.676047, official 95.5 ->
+# 95.7).  A plain (no-expect) guard is 1:1 and scores 95.061728, so the expect must stay.  See
+# _work/reconstructions/spacelounge-drawlounge-wave112-w6015.md.
 # The flag A/B harness (tools/flag_fingerprint.py) can suppress these per-file overrides so a
 # global -mllvm branch-weight default can be tested: clang 7 rejects a repeated
 # -likely-branch-weight on one command line, and the per-file property would duplicate it.
 option(GOF2_NO_PER_FILE_WEIGHTS "Omit per-file branch-weight overrides (flag A/B harness)" OFF)
 if(NOT GOF2_NO_PER_FILE_WEIGHTS)
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/world/StarMap.cpp"
+        PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/game/menu/SpaceLounge.cpp"
         PROPERTIES COMPILE_OPTIONS "-mllvm;-likely-branch-weight=7;-mllvm;-unlikely-branch-weight=1")
 endif()
 
@@ -92,10 +103,12 @@ endif()
 # the remaining 0.057 raw points are the otherLock cold-block address (0x261e vs 0x2480).  See
 # _work/reconstructions/radar-draw-pass15-w5004.md.
 
-# SpaceLounge.cpp (20:12) and MenuTouchWindow.cpp (5:1) used to carry per-file overrides too.
-# They were matching knobs, not original build flags: with the default 2000:1 __builtin_expect
-# weight the linked .so is byte-identical (byte_exact/linked_exact unchanged and the official
-# per-function percentages unchanged), so those overrides were removed.
+# MenuTouchWindow.cpp (5:1) used to carry a per-file override too.  It was a matching knob, not an
+# original build flag: with the default 2000:1 __builtin_expect weight the linked .so is
+# byte-identical (byte_exact/linked_exact unchanged and the official per-function percentage
+# unchanged), so that override was removed.  SpaceLounge.cpp's old 20:12 override was likewise
+# gate-neutral and was removed in wave 92; wave 112 re-added it as 7:1 because it is *not*
+# score-neutral (95.5 -> 95.7 official) even though the gate counts are unchanged.
 
 # Link the gof2 objects + the vendored archives into libgof2hdaa.so with the NDK gold linker,
 # exactly as the original was linked: crtbegin/crtend_so.o, the same NEEDED libs, the static C++ ABI

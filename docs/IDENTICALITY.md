@@ -43,7 +43,7 @@ The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C
 `Status::missionCompleted` 87.0, `PlayerEgo::calcCollision` 87.6,
 `Level::createScene` 88.3, `HangarWindow::render` 88.5, `Gun::calcCharacterCollision` 90.0,
 `Level::createMission` 92.1, `RocketGun::update` 92.4, `Hud::draw` 94.6,
-`SpaceLounge::drawLounge` 95.5, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.7,
+`SpaceLounge::drawLounge` 95.7, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.7,
 `MenuTouchWindow::OnTouchBegin` 98.1, `ModStation::ModStation` C1/C2 98.6,
 `MGame::OnUpdate` 99.9. See `_work/reconstructions/build_flag_research_wave104.md` and the
 wave-106..109 notes.
