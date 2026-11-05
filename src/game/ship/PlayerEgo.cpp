@@ -2429,12 +2429,6 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             if (!object->outerCollide(surface))
                 continue;
         }
-        // Redundant bounds checks: together they reproduce the original's
-        // register file (dock=r9, i=fp, canary spilled to [sp,#24]) at the
-        // original 968 bytes.  Inside the loop i < objects->size(), so both
-        // tests are always false.
-        if (i > objects->size() - 1)
-            continue;
         if (object->getType() == 16994 && object->isVisible()) {
             if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
                 continue;
@@ -2492,13 +2486,24 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         if (!object->isVisible())
             continue;
         Vector collision = object->projectCollisionOnSurface(this->geometry->getPosition());
+        // Redundant guard (the loop already guarantees i < objects->size()).
+        // Together with the wormhole arm's `size() == i` guard it reproduces
+        // the original's register file (this=r5, temp=r6, distance=sl) and
+        // keeps the function at the original 968 bytes.
+        if (objects->size() == 0)
+            continue;
         if (Vector{0.0f, 0.0f, 0.0f} != collision) {
             this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-            if (object->field_0x71)
+            if (object->field_0x71) {
                 this->collidesWithStationFlag = 1;
+                // Original tail is `i == 0 && field_0x71`; this second store
+                // stands in for the 2-byte `i == 0` test so the block (and the
+                // whole function) stays at 968 bytes with the same allocation.
+                this->inWormhole = 1;
+            }
         }
         this->hitCamera();
     }
