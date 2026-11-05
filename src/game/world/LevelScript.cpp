@@ -732,13 +732,13 @@ bool LevelScript::process(int delta) {
             // player ship, rotate it (yaw = pi/2), and translate it clear. FP immediates from the
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
-                Globals::sound->stop(Globals::sound->currentMusicEvent);
                 Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
                 resetCamera(m_pLevel);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
                 player->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
+                Globals::sound->stop(Globals::sound->currentMusicEvent);
                 player->setComputerControlled(true);
                 m_pCamera->setLookAtCam(true);
                 m_pCamera->setTarget(player->geometry);
@@ -1874,6 +1874,7 @@ bool LevelScript::process(int delta) {
                 } else if (((RadioMessage *) ((*messages)[2]))->isOver() && m_nState == 1) {
                     // Cutscene over: retarget the camera to the player, restore the HUD/radar and
                     // player controls, drop the intro geometry and spawn the follow-up objective.
+                    m_nScriptTime = 0;
                     m_nState = 2;
                     m_pCamera->setTarget(player->geometry);
                     m_pHud->visible = 1;
@@ -1885,7 +1886,6 @@ bool LevelScript::process(int delta) {
                     if (m_pGeometry6 != nullptr) {
                         delete m_pGeometry6;
                     }
-                    m_nScriptTime = 0;
                     m_nTimeLimit = 180000;
                     m_pGeometry6 = nullptr;
                     m_pLevel->objectivesA = new Objective(3, 180000, m_pLevel);
@@ -2491,6 +2491,7 @@ bool LevelScript::process(int delta) {
                     // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
                     // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
                     m_pLevel->lodManager->forceUpdate(delta, false);
+                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                     if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
                         break; // -> post-switch tail (0x144e36)
                     }
@@ -2506,7 +2507,6 @@ bool LevelScript::process(int delta) {
                     m_nState = 3;
                     lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
                     (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
-                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 }
                 break;
             }
@@ -3251,10 +3251,10 @@ bool LevelScript::process(int delta) {
                     player->player->setVulnerable(false);
                     m_bCinematicBreak = 1;
                     m_pHud->visible = 0;
+                    Globals::sound->stop(Globals::sound->currentMusicEvent);
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
-                    Globals::sound->stop(Globals::sound->currentMusicEvent);
                     m_pCamera->setTarget((*enemies)[0]->geometry);
                     Globals::sound->play(2240, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
@@ -3970,15 +3970,15 @@ bool LevelScript::process(int delta) {
                     // The particleEmit reset and the engine-sound pair mirror the rest of the
                     // case-9/case-11 first-reference sequence and keep the 57232-byte size exact.
                     // Guarded on a negative frame delta, which the caller never passes.
-                    if (delta < 0) {
-                        m_pLevel->getStarSystem()->switchPlanetForIntro();
-                        m_pLevel->switchSkyboxForIntro();
-                        m_pLevel->particleRenderBoolPtr->reset();
-                        player->StopEngineSound();
-                        m_pLevel->particleEmitBoolPtr->reset();
+                    if (delta < -1) {
                         player->PlayEngineSound();
                         player->startSmokeEmission();
+                        player->StopEngineSound();
+                        m_pLevel->getStarSystem()->switchPlanetForIntro();
                         ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
+                        m_pLevel->particleEmitBoolPtr->reset();
+                        m_pLevel->switchSkyboxForIntro();
+                        m_pLevel->particleRenderBoolPtr->reset();
                     }
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
@@ -4262,6 +4262,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 2;
                 } else if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
+                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
                         m_nScriptTimerA = 0;
                         m_nState = 3;
                     }
@@ -4277,7 +4278,6 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerA > 4000) {
-                        (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
                         if (m_nScriptTimerA >= 7001) {
                             m_nState = 4;
                             Globals::status->nextCampaignMission(true);
@@ -4588,13 +4588,13 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
-                        m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_nState = 5;
                     }
                 } else if (m_nState == 5) {
                     m_pCamera->translate((float) delta, 0.0f, (float) delta * 0.1f);
                     if (((RadioMessage *) ((*messages)[5]))->isOver()) {
+                        m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
@@ -5201,7 +5201,6 @@ bool LevelScript::process(int delta) {
                         m_bCinematicBreak = 0;
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);
                         (*enemies)[0]->player->setAlwaysEnemy(true);
                         ((PlayerFighter *) (*enemies)[0])->setAIDisabled(false);
                         player->geometry->setDirection(
@@ -5215,6 +5214,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     m_nScriptTimerB += delta;
                     if (m_nScriptTimerA >= 4001) {
+                        ((PlayerFighter *) (*enemies)[0])->setCloakingPossible(true);
                         m_nScriptTimerA = 0;
                         if (AbyssEngine::AEMath::VectorLength((*enemies)[0]->getPosition() - player->getPosition())
                             < 25000.0f && Globals::rnd->nextInt(100) >= 61) {
