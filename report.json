@@ -33,11 +33,19 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 56.1,
+   "pct": 57.6,
    "byte": false,
    "linked": false,
    "osize": 57232,
    "usize": 57232
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 66.4,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -46,14 +54,6 @@
    "linked": false,
    "osize": 9908,
    "usize": 9908
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 74.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
@@ -113,7 +113,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 88.7,
+   "pct": 89.1,
    "byte": false,
    "linked": false,
    "osize": 9700,
