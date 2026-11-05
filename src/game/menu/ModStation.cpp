@@ -322,19 +322,19 @@ ModStation::ModStation() : idleBox(nullptr), field_0x108(0), field_0x10c(0) {
     // address materialisations ahead of the iPad load, matching the original.
     const float *pitchTable = gHangarCamPitch;
     const float *yawTable = Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw;
-    // Compiler barrier only (no instruction emitted).  Placed after the table-pointer
-    // setup so the two yaw-table address materialisations keep the original's order
-    // (YawIPad before Yaw) and are scheduled ahead of the volatile pitch load.
     __atomic_signal_fence(__ATOMIC_SEQ_CST);
     int pitchBits = *(const volatile int *) &pitchTable[race];
     int yawBits = *(const volatile int *) &yawTable[race];
-    MatrixSetRotation(nearKey, *(const float *) &pitchBits, *(const float *) &yawBits, 0.0f,
+    float yaw = *(const float *) &yawBits;
+    float pitch = *(const float *) &pitchBits;
+    MatrixSetRotation(nearKey, pitch, yaw, 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
+
     Matrix farKey;
     MatrixSetTranslation(farKey, (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 1],
                          (float) (Globals::iPad ? gHangarCamPosIPad : gHangarCamPos)[race * 3 + 2]);
-    MatrixSetRotation(farKey, *(const float *) &pitchBits, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
+    MatrixSetRotation(farKey, yaw, (Globals::iPad ? gHangarCamYawIPad : gHangarCamYaw)[race], 0.0f,
                       (AbyssEngine::AEMath::RotationOrder) 2);
     this->cameraTween = new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
     Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), nearKey);
