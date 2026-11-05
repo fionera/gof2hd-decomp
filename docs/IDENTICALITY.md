@@ -595,3 +595,31 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   Gun::calcCharacterCollision 93.4, SpaceLounge::drawLounge 95.7, Hud::draw 95.9,
   MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2, MenuTouchWindow C1/C2 99.7,
   MGame::OnUpdate 99.9.
+
+## Session 2026-11-05 (wave 118 — Globals exact, Generator LSDA exact)
+
+- Gate: `byte_exact 4503/4524`, `linked_exact 4503/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.93**. RATCHET PASS.
+- **`Globals::Globals` C1/C2 are now byte-exact (100.0%)** — restoring the original late-block
+  source order. `byte_exact` moved 4501 -> **4503**.
+- **`Generator::createMission` now has the original's exact 172 B LSDA record** (volatile
+  `type` + base split + tail hint). This costs fuzzy (83.3 -> 50.1) but removes the last
+  non-createShip `.ARM.extab` delta; `.ARM.extab` is now 8 B short solely because of
+  `Level::createShip` (328 vs 336).
+- Other landed gains:
+  - `MGame::OnTouchEnd` 79.05 -> **80.14** (merge 96/127, refetch campaign mission, `== true`
+    select).
+  - `Hud::draw` 95.89 -> **95.99** (mission-panel `ldrd` operand order).
+  - `Layout::Layout` 48.555 -> **48.595** (`rewardBoxHeight` ternary + 0x138 double round
+    trip).
+- `Level::createShip` stays 73.5 (placement-new + `try`, LSDA 328 B).
+- `.text` differing bytes 89,185 -> **89,836** (the Generator LSDA fix reshapes the body).
+  `.ARM.exidx` 1,327; `.ARM.extab` 108,063 (8 B short); `.rodata` 192; build-id 20. 27
+  sections, exact file size.
+- Remaining 21 non-exact functions (all size-exact): Layout C1/C2 48.6,
+  Generator::createMission 50.1, LevelScript::process 58.2, Level::createShip 73.5,
+  Radar::draw 74.0, MGame::OnTouchEnd 80.1, PlayerEgo::calcCollision 87.6,
+  Level::createScene 90.7, HangarWindow::render 91.2, Level::createMission 92.3,
+  Status::missionCompleted 92.5, Gun::calcCharacterCollision 93.4, SpaceLounge::drawLounge
+  95.7, Hud::draw 96.0, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2,
+  MenuTouchWindow C1/C2 99.7, MGame::OnUpdate 99.9.

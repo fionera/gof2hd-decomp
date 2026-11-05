@@ -3,10 +3,10 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.92,
-  "byte_exact": 4501,
-  "linked_exact": 4501,
-  "fuzzy_perfect": 4501,
+  "avg_match": 99.93,
+  "byte_exact": 4503,
+  "linked_exact": 4503,
+  "fuzzy_perfect": 4503,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -30,6 +30,14 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
+  },
+  {
+   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
+   "pct": 50.1,
+   "byte": false,
+   "linked": false,
+   "osize": 1996,
+   "usize": 1996
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -56,36 +64,12 @@
    "usize": 9908
   },
   {
-   "name": "_ZN7GlobalsC1Ev",
-   "pct": 78.8,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
-   "name": "_ZN7GlobalsC2Ev",
-   "pct": 78.8,
-   "byte": false,
-   "linked": false,
-   "osize": 612,
-   "usize": 612
-  },
-  {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 79.0,
+   "pct": 80.1,
    "byte": false,
    "linked": false,
    "osize": 8080,
    "usize": 8080
-  },
-  {
-   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 83.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1996,
-   "usize": 1996
   },
   {
    "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
@@ -145,7 +129,7 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 95.9,
+   "pct": 96.0,
    "byte": false,
    "linked": false,
    "osize": 9332,
@@ -28350,6 +28334,22 @@
    "linked": true,
    "osize": 128,
    "usize": 128
+  },
+  {
+   "name": "_ZN7GlobalsC1Ev",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 612,
+   "usize": 612
+  },
+  {
+   "name": "_ZN7GlobalsC2Ev",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 612,
+   "usize": 612
   },
   {
    "name": "_ZN7GlobalsD1Ev",

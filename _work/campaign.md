@@ -5540,3 +5540,16 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `LevelScript::process` 58.19 -> **58.20**.
 - `Globals` 80.5 -> 78.8 with stores 96-103 byte-exact (volatile settings tail).
 - `.text` 89,185; `.ARM.extab` 12 B short (createShip -8, Generator -4); 27 sections, exact file.
+
+## Session 2026-11-05 (wave 118 — Globals exact, Generator LSDA exact)
+
+- 20 `codex exec -p dsv41` workers from `3d4a98a3e`. Landed:
+  - **`Globals::Globals` C1/C2 78.8 -> 100.0 (byte-exact)** — original late-block order.
+    `byte_exact` 4501 -> **4503**.
+  - **`Generator::createMission` LSDA record is now the original's 172 B** (volatile type +
+    base split + tail hint); fuzzy 83.3 -> 50.1, but `.ARM.extab` is now 8 B short solely
+    from createShip (328 vs 336).
+  - `MGame::OnTouchEnd` 79.05 -> **80.14**.
+  - `Hud::draw` 95.89 -> **95.99**.
+  - `Layout::Layout` 48.555 -> **48.595**.
+- `.text` 89,836; `.ARM.exidx` 1,327; `.ARM.extab` 8 B short; 27 sections, exact file size.
