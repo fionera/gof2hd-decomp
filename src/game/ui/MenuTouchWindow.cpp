@@ -368,7 +368,8 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         this->addButton(19, *Globals::gameText->getText(59), row + 1, this->buttons, 0);
         int mission = Globals::status->getCurrentCampaignMission();
         if (mission == 154 || mission == 157 || mission == 158) {
-            this->addButton(18, *Globals::gameText->getText(395), row + 2, this->buttons, 0);
+            char row2 = row + 2;
+            this->addButton(18, *Globals::gameText->getText(395), row2, this->buttons, 0);
         }
         TouchButton *quit = new TouchButton(*Globals::gameText->getText(61), 0,
                                             Globals::w - Globals::layout->field_0x2c_rowHeight,
@@ -435,7 +436,7 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
                                              : (float) Globals::layout->field_0x34 * 0.9f) + 2;
         // Emission-order reference: the original TU emits languageIds before languageTextIds.
         (void) MenuTouchWindow_languageIds;
-        for (unsigned int i = 0; (i & 0xf) != 10; i++) {
+        for (unsigned int i = 0; i != 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int yBase = Globals::h / 2 - this->buttonYBias;
             int rowPitch = rowHeight + Globals::layout->field_0x30_rowHeight;
