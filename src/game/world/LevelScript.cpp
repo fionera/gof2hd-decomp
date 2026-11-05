@@ -1359,12 +1359,12 @@ bool LevelScript::process(int delta) {
             m_pLevel->lodManager->forceUpdate(0, false);
             if (m_nScriptTimerA >= 3001) {
                 AEGeometry *ship = (*enemies)[0]->geometry;
-                m_pCamera->setTarget(ship);
+                m_pCamera->setPosition(m_tempVec);
                 m_tempVec = ship->getPosition();
                 m_tempVec += ship->getDirection() * 8000.0f;
                 m_tempVec += ship->getUpVector() * 500.0f;
                 m_tempVec += ship->getRightVector() * 1000.0f;
-                m_pCamera->setPosition(m_tempVec);
+                m_pCamera->setTarget(ship);
                 m_nState = 3;
                 m_nScriptTimerA = 0;
             } else {
@@ -2576,7 +2576,7 @@ bool LevelScript::process(int delta) {
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     m_bCinematicBreak = 1;
-                    m_pHud->visible = 0;
+                    m_pCamera->setTarget(m_pGeometry6);
                     m_pRadar->enabled = 0;
                     player->setComputerControlled(true);
                     player->freeze = 1;
@@ -2608,7 +2608,7 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 6) {
                     m_pGeometry6->setPosition(Vector{12487.0f, -11451.0f, 5958.0f});
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget(m_pGeometry6);
+                    m_pHud->visible = 0;
                     m_tempVec = Vector{-28855.0f, -30075.0f, 63820.0f} / 1.7f;
                     m_pCamera->setPosition(m_tempVec);
                     Vector facing = m_pGeometry6->getPosition() - m_tempVec;
@@ -2777,12 +2777,11 @@ bool LevelScript::process(int delta) {
                 // Escorting the defector freighter to the station, then flying away with it.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
                     m_nScriptTimerB = 0;
-                    m_nState = 1;
-                    (*enemies)[0]->setActive(true);
+                    m_nState = 2;
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
                             ->setName(String(*Globals::gameText->getText(3211), false));
                 } else if (m_nState == 1 && player->isDockedToDockingPoint()) {
-                    m_nState = 2;
+                    (*enemies)[0]->setActive(true);
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
                     if (player->isDockedToDockingPoint()) {
@@ -2898,7 +2897,7 @@ bool LevelScript::process(int delta) {
                         field_0xab = player->isInTurretMode();
                         player->setTurretMode(false);
                         resetCamera(m_pLevel);
-                        if (m_pLevel->getPlayer()->isInRocketControl()) {
+                        if (player->isInRocketControl()) {
                             player->setRocketControl(nullptr, nullptr);
                             player->killLiberator();
                             m_pCamera->setRumblePercentage(0.0f, 0);
@@ -2909,7 +2908,7 @@ bool LevelScript::process(int delta) {
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
                         m_bCinematicBreak = 1;
-                        m_pHud->visible = 0;
+                        m_nScriptTimerA = 0;
                         m_pRadar->enabled = 0;
                         AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
@@ -2923,7 +2922,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setName(String("", false));
-                        m_nScriptTimerA = 0;
+                        m_pHud->visible = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 2) {
@@ -4070,9 +4069,9 @@ bool LevelScript::process(int delta) {
                     Vector *tempVec = &m_tempVec;
                     Vector *scratch = &m_dirVec;
                     *tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    *scratch = player->GetDirVector();
-                    *tempVec += *scratch * ((float) delta * 2.01f);
                     *scratch = player->geometry->getRightVector();
+                    *tempVec += *scratch * ((float) delta * 2.01f);
+                    *scratch = player->GetDirVector();
                     *tempVec += *scratch * ((float) delta * 0.03f);
                     *scratch = player->GetUpVector();
                     *tempVec += *scratch * ((float) delta * 0.01f);
