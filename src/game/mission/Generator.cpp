@@ -832,7 +832,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         targetStation = agent->getStation();
         type = 8;
     } else {
-        if ((uint32_t) type < 15 && ((1U << type) & 0x4801U) != 0) {
+        if ((uint32_t) type < 15 && __builtin_expect(((1U << type) & 0x4801U) != 0, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint
             while (targetStation == Globals::status->getStation()->getIndex()) {
                 targetStation = generateStationIndex(systems, agent->getStation());
             }
