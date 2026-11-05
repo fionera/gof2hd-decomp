@@ -5445,3 +5445,33 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.rodata` 192; build-id 20. File size exact.
 - Open follow-ups: close the last 4 B of `.ARM.extab` (a 332-byte createShip LSDA would do it);
   Layout/LevelScript/Radar remain the worst; 24 functions non-exact.
+
+## Session 2026-11-05 (waves 111-112 — worst-first fleet + build archaeology)
+
+- Wave 111: 20 `codex exec -p dsv41` workers from `8eea060cc` (18 function, 4 research).
+  Wave 112: 20 workers from `5d98bd391`/current master (19 function, 1 shared-cause research).
+- Landed fuzzy improvements (gate stayed byte 4500 / linked 4500 / size 4524 / data 843 /
+  imports 207 / lint CLEAN / drift 0):
+  - `Level::createScene` 88.3 -> **90.5** (loop-variant Vector address + rnd mask 47).
+  - `Hud::draw` 94.6 -> **94.9** (second-bar fadeColor if/else).
+  - `ModStation` ctor 98.6 -> **99.2** (yaw-first bitcasts, yaw live into far rotation).
+  - `MenuTouchWindow` ctor 95.69 -> **96.16** (loop-scoped `i`, id-first tail).
+  - `SpaceLounge::drawLounge` 95.5 -> **95.7** (per-file 7:1 branch weight).
+  - `Layout::Layout` 48.269 -> **48.426** (0x130/0x134/0x138 branch-local fusion).
+  - `HangarWindow::render` 88.52 -> **89.06** (textX+3 operand order, pV placement).
+  - `LevelScript::process` 56.09 -> **57.6** (de-nest case-125 state chain + ascending case
+    order; supersedes the 57.19 statement-order variant).
+  - `Level::createShip` 74.4 -> 61.9 -> **66.6** (faithful real `new`).
+  - `Globals` 80.5 -> **78.8** (faithful GOT-pool order: `status` slot 6 -> 26; fuzzy loss
+    accepted because it is the pool-faithful shape).
+- **Structural: `.ARM.extab` exact (`0x26298`).** The faithful real-`new` createShip LSDA
+  (336 B / 57 rows) cancels the remaining `Hud` +4 / `Generator` -4 record deltas.
+  `.ARM.exidx` differing bytes 1,683 -> 1,063. 27 sections, exact file size.
+- Build archaeology (wave 111): the recipe is positively re-derived (NDK r18b / clang 7.0.2 /
+  gold 1.12 / API 16 / thumb / NEON / softfp / static libc++ / `-Oz -g -std=c++11 -fPIC
+  -frtti -fexceptions -fstack-protector-strong -funwind-tables -ffunction-sections`, no
+  `-fdata-sections`, default visibility; one plain gold link). 1,136 per-TU flag cells + 128
+  `-mllvm` + 160 combinations + 384 branch-weight cells: no strict gate improvement. The
+  second official 2.0.16 build is NDK r14 (clang 3.8, gold 1.11, gnustl).
+- Section deltas now: `.text` 97,001; `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact);
+  `.rodata` 192; build-id 20. File size exact.

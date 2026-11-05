@@ -424,3 +424,40 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   MGame::OnUpdate 99.9.
 - Section deltas: `.text` 95,999; `.ARM.exidx` 1,683; `.ARM.extab` 128,950 (size -4);
   `.rodata` 192 (appended table); build-id 20. Everything else exact, file size exact.
+
+## Session 2026-11-05 (waves 111-112 — worst-first fleet + build archaeology)
+
+- Gate: `byte_exact 4500/4524`, `linked_exact 4500/4524`, size 4524/4524, data 843/843,
+  imports 207, lint CLEAN, drift 0, avg **99.92**. RATCHET PASS.
+- **`.ARM.extab` is now size-exact (`0x26298`).** `Level::createShip` was restored to the
+  faithful real-`new` shape (336 B / 57-row LSDA, 66.6%), which cancels `Hud::draw` +4 and
+  `Generator::createMission` -4. `.ARM.exidx` differing bytes fell 1,683 -> 1,063.
+- Landed fuzzy improvements:
+  - `Level::createScene` 88.3 -> **90.5** (loop-variant Vector address + rnd mask 47).
+  - `Level::createShip` 74.4 -> 61.9 (332 B device) -> **66.6** (faithful real `new`).
+  - `Hud::draw` 94.6 -> **94.9** (second-bar fadeColor if/else).
+  - `ModStation` ctor 98.6 -> **99.2** (yaw-first bitcasts, yaw live into far rotation).
+  - `MenuTouchWindow` ctor 95.69 -> **96.16** (loop-scoped `i`, id-first tail).
+  - `SpaceLounge::drawLounge` 95.5 -> **95.7** (per-file 7:1 branch weight).
+  - `Layout::Layout` 48.269 -> **48.426** (0x130/0x134/0x138 branch-local fusion).
+  - `HangarWindow::render` 88.52 -> **89.06** (textX+3 operand order, pV placement).
+  - `LevelScript::process` 56.09 -> **57.6** (de-nest case-125 state chain, ascending case
+    order; supersedes the 57.19 statement-order variant).
+- **Build flags are no longer a guess.** Wave-111 research (w5917/w5918/w5919) re-derived the
+  recipe from primary evidence: NDK r18b, clang 7.0.2, gold 1.12, API 16, armeabi-v7a,
+  Thumb-2/NEONv1/softfp, static libc++, `-Oz -g -std=c++11 -fPIC -frtti -fexceptions
+  -fstack-protector-strong -funwind-tables -ffunction-sections`, no `-fdata-sections`, default
+  visibility; one plain gold link (`-shared -soname libgof2hdaa.so --build-id -z now
+  --exclude-libs=libgcc.a`), then `strip --strip-all` + `.shstrtab` normalization. 1,136
+  per-TU flag cells, 128 `-mllvm` cells, 160 combinations and 384 branch-weight cells found
+  **no** strict gate improvement. A second official 2.0.16 build is NDK r14 (clang 3.8, gold
+  1.11, gnustl), not r18b.
+- Remaining 24 non-exact functions (all size-exact): Layout C1/C2 48.4, LevelScript::process
+  57.6, Level::createShip 66.6, Radar::draw 74.0, Globals C1/C2 78.8, MGame::OnTouchEnd 78.9,
+  Generator::createMission 82.6, Status::missionCompleted 87.0, PlayerEgo::calcCollision 87.6,
+  HangarWindow::render 89.1, Gun::calcCharacterCollision 90.0, Level::createScene 90.5,
+  Level::createMission 92.1, RocketGun::update 93.8, Hud::draw 94.9, SpaceLounge::drawLounge
+  95.7, MenuTouchWindow C1/C2 96.2, MenuTouchWindow::OnTouchBegin 98.1, ModStation C1/C2 99.2,
+  MGame::OnUpdate 99.9.
+- Section deltas: `.text` 97,001; `.ARM.exidx` 1,063; `.ARM.extab` 118,463 (size exact);
+  `.rodata` 192 (appended table); build-id 20. Everything else exact, file size exact.
