@@ -5501,3 +5501,17 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `LevelScript::process` 58.00 -> **58.02** (case-157 decl order, cached player).
   - `MenuTouchWindow` ctor 97.214 -> **97.244** (signed loop bound restores `bcc`).
 - `.text` differing bytes 94,443 -> **92,493**; `.ARM.extab` size-exact; 27 sections, exact file.
+
+## Session 2026-11-05 (wave 115 — first new byte-exact function)
+
+- 20 `codex exec -p dsv41` workers from `b847d5d46`. Landed:
+  - **`RocketGun::update` 93.8 -> 100.0 (byte-exact)** — `trailMatrices` `operator[]` +
+    faithful shape. `byte_exact` 4500 -> **4501**.
+  - `Status::missionCompleted` 88.3 -> **91.5** (rank table re-based to 0..39).
+  - `Hud::draw` 94.86 -> **95.46** (docking-bar/second-bar decl order; Hud LSDA now exact).
+  - `Globals` 78.76 -> **80.5** (`status` early pointer block + 80.5 late order).
+  - `Level::createScene` 90.53 -> **90.72** (address-expression scheduling).
+  - `LevelScript::process` 58.02 -> **58.10** (case-92 decl/statement order).
+  - `Gun::calcCharacterCollision` 92.8 -> **93.4**.
+- `.text` differing bytes 92,493 -> **91,907**. `.ARM.extab` 4 B short again, now solely
+  `Generator::createMission` (168 vs 172); `.ARM.exidx` 1,663; 27 sections, exact file size.

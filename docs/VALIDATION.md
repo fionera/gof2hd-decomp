@@ -92,21 +92,21 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-05, waves 111-112)
+### Current state — ELF sections (2026-11-05, wave 115)
 All **27 original section headers are present and exact**, with no extra section and an
-**exact file size** (2,187,328 B). `.ARM.extab` is now **size-exact** (`0x26298`) as well:
-`Level::createShip` was restored to the faithful real-`new` shape (336 B / 57-row LSDA), which
-cancels the remaining per-record deltas (`Hud::draw` +4, `Generator::createMission` -4).
-`.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`, `.ARM.exidx`, `.rel.plt`, `.dynstr`,
-`.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab` and `.note.gnu.build-id` are size- and
-base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`,
-`.note.android.ident`, `.note.gnu.gold-version` and `.ARM.attributes` content is byte-identical.
-The `Status::missionCompleted` rank table remains the last `.rodata` input
+**exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
+`.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
+and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
+`.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
+`.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact but **4 B short**
+(`0x26294` vs `0x26298`): `Hud::draw`'s record is now exact (476 B) and
+`Generator::createMission` is the sole remaining delta (168 B vs 172 B). The
+`Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`), so the original `.rodata` image is
 untouched (the table is the only 192 B of extra `.rodata`). The differing section bytes are
-`.text` (92,493), `.ARM.exidx` (1,063), `.ARM.extab` (118,463), `.rodata` (192, the appended
-codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker
-padding).
+`.text` (91,907), `.ARM.exidx` (1,663), `.ARM.extab` (135,424; size 4 B short), `.rodata`
+(192, the appended codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file
+bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

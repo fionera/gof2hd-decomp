@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.92,
-  "byte_exact": 4500,
-  "linked_exact": 4500,
-  "fuzzy_perfect": 4500,
+  "byte_exact": 4501,
+  "linked_exact": 4501,
+  "fuzzy_perfect": 4501,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 58.0,
+   "pct": 58.1,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -56,8 +56,16 @@
    "usize": 9908
   },
   {
+   "name": "_ZN5MGame10OnTouchEndEiiPv",
+   "pct": 78.9,
+   "byte": false,
+   "linked": false,
+   "osize": 8080,
+   "usize": 8080
+  },
+  {
    "name": "_ZN7GlobalsC1Ev",
-   "pct": 78.8,
+   "pct": 80.5,
    "byte": false,
    "linked": false,
    "osize": 612,
@@ -65,19 +73,11 @@
   },
   {
    "name": "_ZN7GlobalsC2Ev",
-   "pct": 78.8,
+   "pct": 80.5,
    "byte": false,
    "linked": false,
    "osize": 612,
    "usize": 612
-  },
-  {
-   "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 78.9,
-   "byte": false,
-   "linked": false,
-   "osize": 8080,
-   "usize": 8080
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
@@ -96,16 +96,8 @@
    "usize": 968
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 88.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
-  },
-  {
    "name": "_ZN5Level11createSceneEv",
-   "pct": 90.5,
+   "pct": 90.7,
    "byte": false,
    "linked": false,
    "osize": 2252,
@@ -120,6 +112,14 @@
    "usize": 9700
   },
   {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 91.5,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
+  },
+  {
    "name": "_ZN5Level13createMissionEv",
    "pct": 92.1,
    "byte": false,
@@ -129,23 +129,15 @@
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
-   "pct": 92.8,
+   "pct": 93.4,
    "byte": false,
    "linked": false,
    "osize": 1984,
    "usize": 1984
   },
   {
-   "name": "_ZN9RocketGun6updateEi",
-   "pct": 93.8,
-   "byte": false,
-   "linked": false,
-   "osize": 1908,
-   "usize": 1908
-  },
-  {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 94.9,
+   "pct": 95.5,
    "byte": false,
    "linked": false,
    "osize": 9332,
@@ -33590,6 +33582,14 @@
    "linked": true,
    "osize": 4,
    "usize": 4
+  },
+  {
+   "name": "_ZN9RocketGun6updateEi",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 1908,
+   "usize": 1908
   },
   {
    "name": "_ZN9RocketGun8setRadarEP5Radar",
