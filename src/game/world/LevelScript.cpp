@@ -3253,9 +3253,9 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
                     Globals::sound->stop(Globals::sound->currentMusicEvent);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     Globals::sound->play(2240, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     m_nState++;
