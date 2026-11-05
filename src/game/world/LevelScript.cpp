@@ -3499,8 +3499,8 @@ bool LevelScript::process(int delta) {
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
-                        m_nScriptTimerA = 0;
                         m_nState++;
+                        m_nScriptTimerA = 0;
                     }
                 }
                 break;
