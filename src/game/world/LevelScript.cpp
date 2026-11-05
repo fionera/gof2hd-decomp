@@ -2833,8 +2833,8 @@ bool LevelScript::process(int delta) {
                         m_tempVec += m_dirVec * 10000.0f;
                         m_tempVec += m_dirVec * 700.0f;
                         m_pCamera->setPosition(m_tempVec);
-                        (*enemies)[0]->player->setHitpoints(0);
                         m_nState = 6;
+                        (*enemies)[0]->player->setHitpoints(0);
                     }
                 } else if (m_nState == 6) {
                     m_nScriptTimerA += delta;
@@ -2862,8 +2862,8 @@ bool LevelScript::process(int delta) {
                 Globals::sound->updateEvent3DAttributes(2281, &pos, &zero, false);
                 if (Globals::status->field_178 > 7 && m_nScriptTime <= 179999) {
                     if (m_nScriptTimerB == 0) {
-                        m_nScriptTimerB = 1;
                         Globals::sound->play(2282, nullptr, nullptr, 0.0f);
+                        m_nScriptTimerB = 1;
                     }
                     ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform((*enemies)[0]->geometry->transform))
                             ->Update((long long) delta, true);
@@ -3016,8 +3016,8 @@ bool LevelScript::process(int delta) {
                         bool docked = player->isDockedToDockingPoint();
                         m_pCamera->setLookAtCam(false);
                         if (docked) {
-                            lookBehind();
                             m_pCamera->setRotationAroundTarget(true);
+                            lookBehind();
                             player->setFreeLookMode(true);
                             if (field_0xab) {
                                 player->setTurretMode(true);
