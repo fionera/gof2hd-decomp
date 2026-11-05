@@ -30,7 +30,7 @@ original section headers are present and exact, with no extra section and an exa
 336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because the 8-byte
 shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **88,625**; `.ARM.exidx` **1,663** raw bytes;
+The only differing section bytes are `.text` **88,638**; `.ARM.exidx` **1,663** raw bytes;
 `.ARM.extab` **135,431** (size 4 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
@@ -38,7 +38,7 @@ The only differing section bytes are `.text` **88,625**; `.ARM.exidx` **1,663** 
 `.shstrtab`, `.ARM.attributes`) is byte-identical.
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.8,
-`Generator::createMission` 83.5, `LevelScript::process` 59.4, `Level::createShip` 67.4,
+`Generator::createMission` 83.5, `LevelScript::process` 59.5, `Level::createShip` 67.4,
 `Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`
@@ -248,7 +248,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,625 content bytes differ across the 19 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,638 content bytes differ across the 19 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,351 | **+192** | base-exact at 0x1c9e10 and every original byte is identical; the 192 B `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address 0x20b977) is appended as the last `.rodata` input. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short**: `Generator::createMission` -4 (168 vs 172); `Level::createShip` is exact at 336 B (real-`new` shape, wave 119). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (135,430 bytes differ). |
@@ -636,7 +636,7 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
   `fromSystemPtr`); its LSDA is 168 B, so `.ARM.extab` is **12 B short** again.
 - `LevelScript::process` 58.2 -> **58.5** — merged w6603/w6604/w6704 reorders, body exactly
   57232 B (a 57240 B merge collapses byte_exact to 2740).
-- `.text` differing bytes 89,836 -> **88,625**. `.ARM.exidx` 1,663; `.ARM.extab` 156,308
+- `.text` differing bytes 89,836 -> **88,638**. `.ARM.exidx` 1,663; `.ARM.extab` 156,308
   (4 B short, Generator only); `.rodata` 192; build-id 20. 27 sections, exact file size.
 - Remaining 19 non-exact functions (all size-exact): Layout C1/C2 48.6,
   Generator::createMission 83.5, LevelScript::process 58.5, Level::createShip 73.5,
