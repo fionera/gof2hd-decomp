@@ -5553,3 +5553,16 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `Hud::draw` 95.89 -> **95.99**.
   - `Layout::Layout` 48.555 -> **48.595**.
 - `.text` 89,836; `.ARM.exidx` 1,327; `.ARM.extab` 8 B short; 27 sections, exact file size.
+
+## Session 2026-11-05 (wave 119 — MenuTouchWindow ctor exact)
+
+- 20 `codex exec -p dsv41` workers from `47a1396bd`/`432167221`. Landed:
+  - **`MenuTouchWindow::MenuTouchWindow` C1/C2 99.82 -> 100.0 (byte-exact)** — row2
+    hoisted before `addButton(19)`. `byte_exact` 4503 -> **4505**.
+  - `Level::createScene` 90.724 -> **92.757**.
+  - `Radar::draw` 74.030 -> **74.427**.
+  - `LevelScript::process` 58.2 -> **58.5** (merged w6603/w6604/w6704; 57232 B exact).
+- Build provenance re-audited: 72 global + 378 per-TU flag cells, no flag beats 4505;
+  `-Oz`/`-g2` uniquely correct.
+- `.text` 89,528; `.ARM.exidx` 1,327; `.ARM.extab` 108,059 (8 B short); 27 sections,
+  exact file size.

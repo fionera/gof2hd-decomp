@@ -4,9 +4,9 @@
   "ours_functions": 4524,
   "compared": 4524,
   "avg_match": 99.93,
-  "byte_exact": 4503,
-  "linked_exact": 4503,
-  "fuzzy_perfect": 4503,
+  "byte_exact": 4505,
+  "linked_exact": 4505,
+  "fuzzy_perfect": 4505,
   "stub_zero_size": 0,
   "orig_zero_size": 0,
   "missing": 0,
@@ -57,7 +57,7 @@
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
-   "pct": 74.0,
+   "pct": 74.4,
    "byte": false,
    "linked": false,
    "osize": 9908,
@@ -78,14 +78,6 @@
    "linked": false,
    "osize": 968,
    "usize": 968
-  },
-  {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 90.7,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2252
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
@@ -110,6 +102,14 @@
    "linked": false,
    "osize": 1432,
    "usize": 1432
+  },
+  {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2252
   },
   {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
@@ -158,22 +158,6 @@
    "linked": false,
    "osize": 1008,
    "usize": 1008
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC1Ei",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
-  },
-  {
-   "name": "_ZN15MenuTouchWindowC2Ei",
-   "pct": 99.8,
-   "byte": false,
-   "linked": false,
-   "osize": 9600,
-   "usize": 9600
   },
   {
    "name": "_ZN5MGame8OnUpdateEv",
@@ -17774,6 +17758,22 @@
    "linked": true,
    "osize": 96,
    "usize": 96
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC1Ei",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 9600,
+   "usize": 9600
+  },
+  {
+   "name": "_ZN15MenuTouchWindowC2Ei",
+   "pct": 100.0,
+   "byte": true,
+   "linked": true,
+   "osize": 9600,
+   "usize": 9600
   },
   {
    "name": "_ZN15MenuTouchWindowD1Ev",
