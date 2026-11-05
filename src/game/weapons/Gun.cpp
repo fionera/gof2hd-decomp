@@ -679,18 +679,18 @@ void Gun::calcCharacterCollision() {
             if (this->empDamage != kNoAttribute) {
                 enemy->damageEmp(this->empDamage, this->friendGun);
             }
-            int dmg = this->damage;
             if (this->owner == nullptr || this->owner->enemyFlagsLo) {
                 if (enemy->egoFlag && ((Level *) this->level)->getPlayer() != nullptr &&
                     ((Level *) this->level)->getPlayer()->isDockedToDockingPoint()) {
                     enemy->damage((int) ((float) this->damage * 3.0f * 0.25f), this->friendGun, this->itemIndex);
                 } else {
-                    enemy->damage(dmg, this->friendGun, this->itemIndex);
+                    enemy->damage(this->damage, this->friendGun, this->itemIndex);
                 }
             } else if (enemy->egoFlag) {
-                enemy->damage((int) ((float) this->damage * 0.2f), this->friendGun, this->itemIndex);
+                const volatile int &dv = this->damage;
+                enemy->damage((int) ((float) dv * 0.2f), this->friendGun, this->itemIndex);
             } else {
-                enemy->damage(dmg, this->friendGun, this->itemIndex);
+                enemy->damage(this->damage, this->friendGun, this->itemIndex);
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
             if (this->playerGun) {
@@ -720,6 +720,7 @@ void Gun::calcCharacterCollision() {
                 }
             }
             if (scatter) {
+                this->hitFlags[i] = 1;
                 this->hitPositions.data()[i] = position;
                 for (unsigned k = 0; k < this->enemies->size(); ++k) {
                     enemy = (*this->enemies)[k];
@@ -737,7 +738,6 @@ void Gun::calcCharacterCollision() {
                         if (this->empDamage > 0) {
                             enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
-                    this->hitFlags[i] = 1;
                     }
                 }
             }
