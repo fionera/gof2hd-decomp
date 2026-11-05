@@ -1396,7 +1396,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
+            // Types 167 and 174 share this body in the original.  The rank table
+            // sends 167 to rank 0 and 174 to rank 24, so the emitted TBH also has
+            // the same body in slots 0 and 24, as the original's 40-entry table
+            // does (its slots 17 and 24 both point at 0xfe).
             case 0:
+            case 24:
                 if (m->getStatusValue() >= m->getProductionGoodAmount()) {
                     m->setWon(true);
                     return m;
@@ -1477,7 +1482,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 9:
+            case 10:
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
@@ -1493,13 +1498,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 10:
+            case 12:
                 if (m->getStatusValue() == 1) {
                     m->setWon(true);
                     return m;
                 }
                 break;
-            case 11:
+            case 13:
                 if (m->getStatusValue() == 0) {
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
@@ -1508,7 +1513,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 12:
+            case 14:
                 if (atStation) {
                     Array<Item *> *equipment = ship->getEquipment();
                     for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1518,12 +1523,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     }
                 }
                 break;
-            case 13:
+            case 15:
                 if (!atStation && station->getIndex() == m->getTargetStation() && extra > 10000) {
                     return m;
                 }
                 break;
-            case 14:
+            case 16:
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
@@ -1533,7 +1538,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 15:
+            case 17:
                 if (atStation) {
                     return m;
                 }
@@ -1541,7 +1546,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 16:
+            case 18:
  {
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
@@ -1555,17 +1560,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             }
-            case 17:
+            case 19:
                 if (longMission) {
                     return m;
                 }
                 break;
-            case 18:
+            case 20:
                 if (notAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
                 break;
-            case 19:
+            case 21:
                 // The (unsigned short) is a size device, not semantics: mission
                 // status values are 16-bit counters.  It emits one uxth (2 B) that
                 // keeps the loop latch at the original's 0x522.
@@ -1575,12 +1580,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 20:
+            case 22:
                 if (shortMission) {
                     return m;
                 }
                 break;
-            case 21:
+            case 34:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     return m;
                 }
