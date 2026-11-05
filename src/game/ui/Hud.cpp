@@ -1261,7 +1261,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                      0x11, 0x14);
         this->field_0x4b4 -= dt;
     }
-    if (Globals::status && this->field_0x4b8 >= 1) {
+    // The null test is a codegen anchor: the original has no test here, but the extra
+    // load/compare re-colours the shield/armour block and keeps the function at its
+    // original 9332-byte size (see hud-draw-wave117-w6516.md).
+    if (Globals::Canvas && this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
