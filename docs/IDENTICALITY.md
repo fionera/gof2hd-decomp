@@ -4,49 +4,46 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-04 (wave 109)
+## Update 2026-11-05 (wave 118)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
-byte_exact **4500/4524**, linked_exact **4500/4524**, size-exact **4524/4524**, data_exact
+byte_exact **4503/4524**, linked_exact **4503/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
-parity **5370/5370** (0 extra / 0 missing), avg **99.92%**. 24 functions remain
-non-byte-exact.
+parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 21 functions remain
+non-byte-exact, all size-exact.
 
-Wave 109 (20 parallel `codex exec -p dsv41` workers) continued worst-first:
-`Layout::Layout` 48.0 -> **48.3**, `Level::createShip` 73.8 -> **74.4**,
-`HangarWindow::render` 88.3 -> **88.5**, `RocketGun::update` 88.3 -> **92.4**,
-`MenuTouchWindow` ctor 95.6 -> **95.7**; `LevelScript::process` stayed at **56.1**.
-`.text` content delta dropped 96,488 -> **95,946**.
+Wave 118 (20 parallel `codex exec -p dsv41` workers) made `Globals::Globals` C1/C2
+byte-exact (80.5 -> **100.0**) and gave `Generator::createMission` the original's exact
+172 B LSDA record (fuzzy 83.3 -> 50.1). Other gains: `MGame::OnTouchEnd` 79.05 -> **80.14**,
+`Hud::draw` 95.89 -> **95.99**, `Layout::Layout` 48.555 -> **48.595**. `.text` content delta
+89,185 -> **89,836**.
 
-The `Status::missionCompleted` rank table stays in the `.jcr` section (192 B) placed in the
-zero-filled `.rodata`..`.fini_array` gap: `.fini_array`/`.dynamic`/`.rel.dyn` are exact and
-there is no exit-destructor hazard. A wave-109 attempt to move the table into a last-linked
-`.rodata` TU restored 27 sections and the exact file size but perturbed
-`.dynsym`/`.dynstr`/`.hash`/`.gnu.version`/`.rel.plt` ordering (4,417 `.dynstr` bytes), so it
-was reverted; the note is `status-missioncompleted-wave109-w5710.md`.
+The `Status::missionCompleted` rank table is the last `.rodata` input
+(`tools/mission_case_table.cpp`, fixed address `0x20b977`); every original `.rodata` byte
+before it is exact, and the table accounts for the only 192 B of extra `.rodata`. All 27
+original section headers are present and exact, with no extra section and an exact file size
+(2,187,328 B).
 
 **One structural delta remains open:** `.ARM.extab` is 8 bytes short (`0x26290` vs `0x26298`;
-`Level::createShip` -8, 328 vs 336).  `Generator::createMission`'s record is now exact at
+`Level::createShip` -8, 328 vs 336). `Generator::createMission`'s record is now exact at
 172 B (wave 118). `.rodata` still starts at the original `0x1c9e10` because the 8-byte
 shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **90,022**; `.ARM.exidx` **1,327** raw bytes;
-`.ARM.extab` **108,055** (size 8 B short); `.jcr` **192** (the rank table); `.dynsym`
-**661**; `.shstrtab` **5**; and `.note.gnu.build-id` **20**. Everything else (`.rodata`,
-`.data`, `.data.rel.ro`, `.plt`, `.got`, `.init_array`, `.fini_array`, `.dynamic`,
-`.dynstr`, `.hash`, `.gnu.version*`, `.rel.dyn`, `.rel.plt`, `.comment`,
-`.note.android.ident`, `.note.gnu.gold-version`, `.ARM.attributes`) is byte-identical.
+The only differing section bytes are `.text` **89,836**; `.ARM.exidx` **1,327** raw bytes;
+`.ARM.extab` **108,063** (size 8 B short); `.rodata` **192** (the appended rank table); and
+`.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
+`.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
+`.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
+`.shstrtab`, `.ARM.attributes`) is byte-identical.
 
-The 24 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.3,
-`LevelScript::process` 56.1, `Radar::draw` 74.0, `Level::createShip` 74.4,
-`MGame::OnTouchEnd` 78.9, `Globals::Globals` C1/C2 80.5, `Generator::createMission` 50.1,
-`Status::missionCompleted` 87.0, `PlayerEgo::calcCollision` 87.6,
-`Level::createScene` 88.3, `HangarWindow::render` 88.5, `Gun::calcCharacterCollision` 90.0,
-`Level::createMission` 92.1, `RocketGun::update` 92.4, `Hud::draw` 94.6,
-`SpaceLounge::drawLounge` 95.7, `MenuTouchWindow::MenuTouchWindow` C1/C2 95.7,
-`MenuTouchWindow::OnTouchBegin` 98.1, `ModStation::ModStation` C1/C2 98.6,
-`MGame::OnUpdate` 99.9. See `_work/reconstructions/build_flag_research_wave104.md` and the
-wave-106..109 notes.
+The 21 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.6,
+`Generator::createMission` 50.1, `LevelScript::process` 58.2, `Level::createShip` 73.5,
+`Radar::draw` 74.0, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 87.6,
+`Level::createScene` 90.7, `HangarWindow::render` 91.2, `Level::createMission` 92.3,
+`Status::missionCompleted` 92.5, `Gun::calcCharacterCollision` 93.4,
+`SpaceLounge::drawLounge` 95.7, `Hud::draw` 96.0, `MenuTouchWindow::OnTouchBegin` 98.1,
+`ModStation` C1/C2 99.2, `MenuTouchWindow` C1/C2 99.7, `MGame::OnUpdate` 99.9. See
+`_work/reconstructions/build_flag_research_wave104.md` and the wave-106..118 notes.
 
 ## Update 2026-10-26 — historical (superseded by the update above)
 
@@ -250,19 +247,17 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). The stale `marqueeImageByteSum`/`levelTextAnchor` padding anchors are gone; 90,022 content bytes differ across the 24 non-byte-exact bodies. |
-| **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (size, base 0x1c9e10, and all 269,159 content bytes). |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 89,836 content bytes differ across the 21 non-byte-exact bodies. |
+| **.rodata** | 269,159 | 269,351 | **+192** | base-exact at 0x1c9e10 and every original byte is identical; the 192 B `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address 0x20b977) is appended as the last `.rodata` input. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
-| .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is now exact at 172 B (wave 118). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 108,055 content bytes differ. |
-| .dynsym | 89,248 | 89,248 | 0 | size-exact; **661 bytes differ** because the extra `.jcr` section shifts `st_shndx` after it (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. The former `sha256_block_data_order_neon` order gap is closed. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is now exact at 172 B (wave 118). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; 108,063 content bytes differ. |
+| .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
 | .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
 | .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
-| .missioncase | absent | absent | **0** | wave 108 moved the rank table into `.jcr`; see the `.jcr` row. |
-| .shstrtab | 279 | 284 | **+5** | grows by the `.jcr` name; the 27 original names remain byte-identical. |
-| .jcr | absent | 192 B | **+192** | holds the `Status::missionCompleted` rank table (192 B) in the zero-filled `.rodata`..`.fini_array` gap. Gold places `.jcr` there, so `.fini_array` (8 B), `.dynamic`, `.rel.dyn` and `.data.rel.ro` are exact; cost is a 28th section header and `.shstrtab` +5 B. `.jcr` is not called as a destructor. |
+| .shstrtab | 279 | 279 | **0** | **byte-identical**; 27 original names, no extra section. |
 | .data | 10,604 | 10,604 | **0** | exact (0x214000/0x296c; original TU order/sizes). |
 | .bss | 27,052 | 27,052 | **0** | exact (0x216970/0x69ac; `sh_offset` 0x21596c, the unaligned end of `.data` as bfd writes it). The invented `.aezdata` section is gone, so the RW LOAD and `.bss` VMA now match. |
 | .got | 17,164 | 17,164 | 0 | exact (address 0x20fcf4, same slot order). |
@@ -270,16 +265,15 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **24 non-linked functions.** 4500 of 4524 compared functions are linked-exact. The worst are
-   `Layout::Layout` (48.0%), `LevelScript::process` (55.4%), `Level::createShip` (73.8%),
-   `Radar::draw` (74.0%), `MGame::OnTouchEnd` (78.9%), `Globals::Globals` (80.5%),
-   `Generator::createMission` (82.1%), `Status::missionCompleted` (87.0%),
-   `PlayerEgo::calcCollision` (87.6%) and `HangarWindow::render` (88.3%).
-   The `.text` total is exact (0x1337c8); these are per-function body/register-allocation
-   deltas, not missing code.
-2. **`.rodata` content — resolved.** Size and base are exact and the content is now
-   byte-identical (0 differing bytes, w3477). The baseline 8,826-byte gap was pure table
-   emission order (word multiset 6,586/6,586 common, 0 unique). See
+1. **21 non-byte-exact functions.** 4503 of 4524 compared functions are linked-exact. The worst
+   are `Layout::Layout` (48.6%), `Generator::createMission` (50.1%), `LevelScript::process`
+   (58.2%), `Level::createShip` (73.5%), `Radar::draw` (74.0%), `MGame::OnTouchEnd` (80.1%),
+   `PlayerEgo::calcCollision` (87.6%), `Level::createScene` (90.7%) and
+   `HangarWindow::render` (91.2%). The `.text` total is exact (0x1337c8); these are
+   per-function body/register-allocation deltas, not missing code.
+2. **`.rodata` content — one codegen table left.** Every original byte is identical; only the
+   192 B `Status::missionCompleted` rank table is appended at 0x20b977. Removing it requires
+   the plain switch shape that makes clang 7 emit the original body order. See
    `_work/reconstructions/rodata_content_round5_w3477.md`.
 3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272, inline
    856, extab 2438); `.ARM.extab` is base-exact but **8 B short** (156,304 vs 156,312 @
