@@ -3919,8 +3919,8 @@ bool LevelScript::process(int delta) {
                             KIPlayer *pirate = (*enemies)[i];
                             Vector playerPos = player->getPosition();
                             int sideX = Globals::rnd->nextInt(100);
-                            int offsetY = Globals::rnd->nextInt(1000);
                             int sideZ = Globals::rnd->nextInt(100);
+                            int offsetY = Globals::rnd->nextInt(1000);
                             int offsetZ = Globals::rnd->nextInt(2000);
                             Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
                                           (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
