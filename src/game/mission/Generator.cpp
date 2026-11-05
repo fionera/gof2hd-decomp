@@ -790,6 +790,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             }
             used->data()[pick] = true;
         }
+    padA = 0; (void) padA;
         if (__builtin_expect(pick == 12, 0)) {  // lint: arm_builtin anchor: Generator::createMission; cold mission type 12
             selected = true;
             if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
@@ -919,23 +920,26 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     Galaxy *galaxy = Globals::galaxy;
     int fromSystem = Globals::status->getStation()->getSystem();
     SolarSystem *fromSystemPtr = systems->data()[fromSystem];
-    padA = 0; (void) padA;
-    int base = (int) ((float) difficulty / 10.0f * 5500.0f) + 1500;
     float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
-                   (float) base;
-    if (type == 7) {
-        reward *= 0.7f;
-    } else if (type == 9) {
-        reward *= 1.2f;
-    } else if (type == 8) {
-        reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
-    } else if (type == 11) {
+                   (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
+    if (type == 11) {
         reward *= 0.6f;
         reward += reward / 5.0f * (float) amount;
-    } else if (type == 3) {
+    }
+    else if (type == 5) {
         reward *= 2.0f;
-    } else if (type == 5) {
+    }
+    else if (type == 3) {
         reward *= 2.0f;
+    }
+    else if (type == 8) {
+        reward = (float) ((*Globals::items)[itemId]->getMaxPrice() * amount) * 1.7f;
+    }
+    else if (type == 7) {
+        reward *= 0.7f;
+    }
+    else if (type == 9) {
+        reward *= 1.2f;
     }
 
     level = Globals::status->getLevel();
