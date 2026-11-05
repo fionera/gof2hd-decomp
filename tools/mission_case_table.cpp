@@ -3,9 +3,11 @@
 // The original lays the switch bodies out in source order, but clang 7's
 // MachineBlockPlacement follows the jump table's value-sorted successor list, so a
 // direct switch emits ascending order.  This permutation keeps the ascending table
-// order aligned with the original body layout.  The first group's ranks are 0..21
+// order aligned with the original body layout.  The first group's ranks are 0..23
 // plus 39: 40 TBH entries, the same size and base as the original's, and a range
-// starting at 0 so the dispatch needs no `sub`.  The second group (types 0, 8, 11,
+// starting at 0 so the dispatch needs no `sub`.  Within that range the ranks are a
+// permutation of the body order; the gaps (7, 8, 24, 26..38) stay default so the
+// emitted TBH keeps the original's default slots.  The second group (types 0, 8, 11,
 // 13, 14) uses ranks 200..214 so clang keeps it in a separate 8..14 TBH.
 //
 // The table lives in its own translation unit that is linked *after* every archive,
@@ -16,7 +18,8 @@
 // dynamic symbol table).  Status.cpp reads it through that fixed address rather
 // than through this symbol: a cross-TU reference would add an undefined symbol to
 // gold's table mid-link and reorder .dynsym.
-// See _work/reconstructions/status-missioncompleted-wave110-w5810.md and
+// See _work/reconstructions/status-missioncompleted-wave117-w6513.md,
+// status-missioncompleted-wave110-w5810.md and
 // status-missioncompleted-wave115-w6311.md.
 #pragma GCC visibility push(hidden)
 extern const unsigned char kMissionCase[192] = {
@@ -29,8 +32,8 @@ extern const unsigned char kMissionCase[192] = {
     250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
     250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
     250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250, 250,
-    250, 250, 250, 250, 250, 250,   1,   2,   3,   4,   5,   6,  15,  16,   7, 250,
-     17, 250,   8,  18,  19,  20,  10,   0,  21,  22,  12,  34,  39, 250,  24, 250,
-    250, 250, 250, 250, 250, 250, 250, 250,  13, 250, 250, 250, 250,  14, 250, 250,
+    250, 250, 250, 250, 250, 250,   0,   1,   2,   3,   4,   5,  14,  15,   6, 250,
+     16, 250,   9,  17,  18,  19,  10,  21,  20,  22,  11,  23,  39, 250,  25, 250,
+    250, 250, 250, 250, 250, 250, 250, 250,  12, 250, 250, 250, 250,  13, 250, 250,
 };
 #pragma GCC visibility pop
