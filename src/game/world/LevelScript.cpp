@@ -1926,13 +1926,13 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 1) {
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
-                        m_pCamera->setTarget(player->geometry);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
+                        m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
-                        player->player->setVulnerable(true);
                         m_pCamera->setLookAtCam(false);
+                        player->player->setVulnerable(true);
                         m_nState = 2;
                     }
                 } else if (m_nState == 2 && (*enemies)[0]->getPosition().z >= 90000.0f) {
@@ -2165,9 +2165,9 @@ bool LevelScript::process(int delta) {
                             Globals::status->setStation(
                                     (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
                             Globals::status->departStation(Globals::status->getStation());
-                            Level::comingFromAlienWorld = 1;
-                            Level::initStreamOutPosition = 1;
                             Level::programmedStation = nullptr;
+                            Level::initStreamOutPosition = 1;
+                            Level::comingFromAlienWorld = 1;
                             Globals::switch_to_target_setting = 1;
                             Globals::appManager->SetCurrentApplicationModule(2);
                             field_0x12 = 0x101;
@@ -2344,10 +2344,10 @@ bool LevelScript::process(int delta) {
                     player->setFreeLookMode(false);
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
-                    m_bCinematicBreak = 1;
                     player->stopShooting(0);
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
+                    m_bCinematicBreak = 1;
                     player->setComputerControlled(true);
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
@@ -3342,8 +3342,8 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         AEGeometry *leaderShip = (*enemies)[leader]->geometry;
-                        m_bCinematicBreak = 1;
                         m_pCamera->setTarget(leaderShip);
+                        m_bCinematicBreak = 1;
                         m_tempVec = leaderShip->getPosition();
                         m_dirVec = leaderShip->getDirection();
                         m_tempVec += m_dirVec * 4500.0f;
@@ -4832,9 +4832,9 @@ bool LevelScript::process(int delta) {
                                 if ((*enemies)[i]->shipGroupFlag == 44) {
                                     ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                     Vector offset;
-                                    offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     offset.z = (float) (Globals::rnd->nextInt(30000) - 87000);
                                     offset.x = 120000.0f;
+                                    offset.y = (float) (Globals::rnd->nextInt(12000) - 6000);
                                     (*enemies)[i]->translate(offset);
                                 } else {
                                     Vector offset(20000.0f,
@@ -5138,9 +5138,9 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
-                        Level::initStreamOutPosition = 1;
-                        Globals::appManager->SetCurrentApplicationModule(2);
                         Globals::switch_to_target_setting = 1;
+                        Globals::appManager->SetCurrentApplicationModule(2);
+                        Level::initStreamOutPosition = 1;
                     }
                 }
                 break;
