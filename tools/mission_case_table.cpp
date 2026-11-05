@@ -3,7 +3,9 @@
 // The original lays the switch bodies out in source order, but clang 7's
 // MachineBlockPlacement follows the jump table's value-sorted successor list, so a
 // direct switch emits ascending order.  This permutation keeps the ascending table
-// order aligned with the original body layout.
+// order aligned with the original body layout.  The ranks are 150..186 with a hole
+// after the 22nd body: 37 TBH entries is the size that lands the first case body at
+// the original's 0xfe.
 //
 // The table lives in its own translation unit that is linked *after* every archive,
 // so it is the last .rodata input: appending it does not shift any existing .rodata
@@ -26,7 +28,7 @@ extern const unsigned char kMissionCase[192] = {
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190,
     190, 190, 190, 190, 190, 190, 151, 152, 153, 154, 155, 156, 163, 164, 157, 190,
-    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 181, 190, 150, 190,
+    165, 190, 158, 166, 167, 168, 159, 150, 169, 170, 160, 171, 186, 190, 150, 190,
     190, 190, 190, 190, 190, 190, 190, 190, 161, 190, 190, 190, 190, 162, 190, 190,
 };
 #pragma GCC visibility pop

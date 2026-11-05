@@ -1322,7 +1322,16 @@ static int g_levelXPTable[0x15] = {0, 7, 0x15, 0x2a, 0x46, 0x69, 0x93, 0xc4, 0xf
 // reference makes gold insert an undefined symbol mid-table, which reorders
 // .dynsym.  The (unsigned char) index cast bounds the load to 0..255, which is
 // what keeps the function at the original's 1432 bytes.
-// See status-missioncompleted-wave110-w5810.md.
+//
+// The ranks are 150..171 plus 186: a 37-entry TBH with a fourteen-value hole
+// after the 22nd body.  37 is the one table size that places the first case body
+// at the original's 0xfe: the dispatch prefix is 18 B here vs the original's
+// 12 B, so the table must be 74 B (37 entries) rather than the original's 80 B.
+// That size also moves the loop latch off the original's 0x522 unless the body
+// sizes are corrected; see the (unsigned short) cast in the type-169 case and
+// the hasEquipment call in type 159.
+// See status-missioncompleted-wave110-w5810.md and
+// status-missioncompleted-wave114-w6210.md.
 #define MISSION_CASE ((const unsigned char *) 0x20b977)
 
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
@@ -1472,18 +1481,13 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 if (atStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
-                    // Size anchor: this splits the body into two MBBs, which
-                    // forces the original's (index r9, amount r5, ship r0)
-                    // allocation and restores the 4 bytes the 32-entry TBH
-                    // gives up. The original has no null check here.
-                    Ship *s = ship;
-                    if (s == 0) {
-                        continue;
-                    }
-                    if (Item::isInList(index, amount, s->getCargo())) {
+                    if (Item::isInList(index, amount, ship->getCargo())) {
                         return m;
                     }
-                    if (Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) {
+                    // The original re-queries getProductionGoodIndex() here; reusing
+                    // the local is the same value and keeps this body 4 B shorter,
+                    // which is what the 37-entry table needs (see MISSION_CASE).
+                    if (Globals::status->ship->hasEquipment(index, 1)) {
                         return m;
                     }
                 }
@@ -1561,7 +1565,11 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 169:
-                if (Globals::status->field_178 >= m->getStatusValue()) {
+                // The (unsigned short) is a size device, not semantics: mission
+                // status values are 16-bit counters.  It emits one uxth (2 B) that
+                // puts the loop latch back at the original's 0x522 once the
+                // 37-entry table has moved everything +6.
+                if (Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;
@@ -1577,7 +1585,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     return m;
                 }
                 break;
-            case 181:
+            case 186:
                 if (dockedAtStation && station->getIndex() == m->getTargetStation()) {
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
