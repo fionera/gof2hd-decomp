@@ -25,13 +25,16 @@ before it is exact, and the table accounts for the only 192 B of extra `.rodata`
 original section headers are present and exact, with no extra section and an exact file size
 (2,187,328 B).
 
-**One structural delta remains open:** `.ARM.extab` is 4 bytes short (`0x26294` vs `0x26298`;
-`Generator::createMission` -4, 168 vs 172). `Level::createShip` now has the exact
-336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because the 8-byte
-shortfall fits the 16-byte alignment gap, so no function address moves.
+**One structural delta remains open:** `.ARM.extab` is 8 bytes short (`0x26290` vs `0x26298`;
+`Generator::createMission` -4, 168 vs 172, plus 4 bytes of tail alignment). `Level::createShip`
+has the exact 336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because
+the 8-byte shortfall fits the 16-byte alignment gap, so no function address moves. This is a
+hard wall: `156,304 B` is the minimum that keeps `.rodata` at `0x1c9e10`; losing one more
+`.ARM.extab` byte moves `.rodata` to `0x1c9e00` and collapses `byte_exact` (4505 -> 4043,
+measured by the w6829 placement-new shape).
 
 The only differing section bytes are `.text` **87,909**; `.ARM.exidx` **1,674** raw bytes;
-`.ARM.extab` **135,831** (size 4 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
+`.ARM.extab` **135,831** (size 8 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
