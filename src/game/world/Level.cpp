@@ -2121,7 +2121,7 @@ case4Tail:
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    unsigned n = this->enemies->size();
+    volatile unsigned n = this->enemies->size();
     for (unsigned i = 0; i < n; i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
