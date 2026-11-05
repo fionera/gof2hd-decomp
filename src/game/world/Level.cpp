@@ -5231,17 +5231,19 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
         }
         if (type == 0x2c || type == 0x31) {
-            delete fighter->cargo;
-            fighter->cargo = nullptr;
+            if (fighter->cargo != nullptr) {
+                delete fighter->cargo;
+                fighter->cargo = nullptr;
+            }
         } else if (type == 0x33) {
             fighter->field_0x25 = 0;
         }
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
+        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject)); // lint: operator_call
         new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
-        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
                 if (type == 14) {
