@@ -818,7 +818,7 @@ void HangarWindow::render() {
                             // 156-row / 948-byte .ARM.extab record is preserved.
                             volatile int *padX = 0;
                             if (tab != 0) {
-                                if (!(tab == 3 && item->ship == Globals::status->getShip())) {
+                                if (!(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
@@ -850,7 +850,7 @@ void HangarWindow::render() {
                                         ((Globals::status->getShip()->getFreeSlots(item->item->getType()) != 0 ||
                                           replaceable) &&
                                          (!sameWeapon || item->item->canBeInstalledMultipleTimes()))) {
-                                        int b = item->inTabIndex == -1 ? 4 : 3;
+                                        int b = 3 + (item->inTabIndex < 0);
                                         (*this->buttons)[b]->setPosition(
                                             Globals::layout->buttonInsetX + this->hintOffsetX + listWidth -
                                             2 * Globals::layout->field_0x2c_rowHeight,
@@ -1041,7 +1041,7 @@ void HangarWindow::render() {
         int row = 0;
         for (int i = 0; i < 5; i++) {
             TouchButton *button = (*this->buttons)[18 + i];
-            int visible;
+            bool visible;
             if (i == 0 || (Globals::options[73] && i == 1) || (Globals::options[74] && i == 2) ||
                 (Globals::options[75] && i == 3)) {
                 visible = false;
