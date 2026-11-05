@@ -953,20 +953,15 @@ void HangarWindow::render() {
                 int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
-                // Codegen anchor: taking x's address pins the buy-credits
-                // register allocation, and the dead pointer keeps the original's
-                // separate cleanup region (156-row .ARM.extab) at 9700 bytes.
-                volatile int *pad0 = &x;
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
                 Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
-                    Globals::Canvas->DrawImage2D(
-                        this->scrollHintImageA,
-                        (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth),
-                        (int) ((float) y - (float) this->gridButtonHeight * 0.1f), 17, 17);
+                    int iconX = (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth);
+                    int iconY = (int) ((float) y - (float) this->gridButtonHeight * 0.1f);
+                    Globals::Canvas->DrawImage2D(this->scrollHintImageA, iconX, iconY, 17, 17);
                 }
             }
         } else {
