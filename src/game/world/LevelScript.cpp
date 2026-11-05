@@ -2976,10 +2976,10 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 4) {
                     m_nScriptTimerA += delta;
-                    m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     AEGeometry *leader = (*enemies)[0]->geometry;
-                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
+                    m_nScriptTimerB = (long long) ((float) delta * 0.05f + (float) m_nScriptTimerB);
                     m_pCamera->setTarget(leader);
+                    AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_dirVec = leader->getDirection();
