@@ -2141,9 +2141,9 @@ bool LevelScript::process(int delta) {
                         AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                         Vector dir = AbyssEngine::AEMath::MatrixGetDir(
                                 *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent())));
-                        m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
-                        m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         m_pParticleGeom1->setPosition(dir * 10000.0f);
+                        m_pParticleGeom2->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
+                        m_pParticleGeom1->setDirection(dir, Vector{0.0f, 1.0f, 0.0f});
                         if (((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                     ->currentTime >= 4001) {
                             ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
@@ -3917,10 +3917,10 @@ bool LevelScript::process(int delta) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
                             (*enemies)[i]->awake();
-                            KIPlayer *pirate = (*enemies)[i];
+                            int sideZ = Globals::rnd->nextInt(100);
                             Vector playerPos = player->getPosition();
                             int sideX = Globals::rnd->nextInt(100);
-                            int sideZ = Globals::rnd->nextInt(100);
+                            KIPlayer *pirate = (*enemies)[i];
                             int offsetY = Globals::rnd->nextInt(1000);
                             int offsetZ = Globals::rnd->nextInt(2000);
                             Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
@@ -3954,10 +3954,10 @@ bool LevelScript::process(int delta) {
                         m_tempVec = leader->getPosition();
                         m_pCamera->setTarget(leader);
                         m_tempVec += leader->getDirection() * 4000.0f;
-                        m_tempVec += leader->getUpVector() * -500.0f;
+                        m_nScriptTimerA = 0;
                         m_tempVec += leader->getRightVector() * -500.0f;
                         m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
-                        m_nScriptTimerA = 0;
+                        m_tempVec += leader->getUpVector() * -500.0f;
                         m_nState = 4;
                     }
                 } else if (m_nState == 3) {
