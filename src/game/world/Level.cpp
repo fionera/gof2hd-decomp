@@ -6618,7 +6618,7 @@ void Level::createScene() {
                     continue;
                 AEGeometry *g = new AEGeometry(mesh, Globals::Canvas, false);
                 Vector rot(0.0f, 3.1415927f, 0.0f);
-                Vector *rp = (Vector *) ((char *) &rot + ((size_t) g << 31));
+                Vector *rp = (Vector *) ((char *) &rot - ((size_t) g + 1));
                 g->setRotation(*rp);
                 PlayerStatic *hangarPart = new PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 if (!plainHangar) {
