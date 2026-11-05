@@ -5570,5 +5570,7 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.ARM.extab` is only **4 B short**.
 - `Generator::createMission` 53.3 -> **83.5** (faithful shape + pad before
   `fromSystemPtr`); LSDA 168 B, so `.ARM.extab` is 12 B short again.
-- `.text` 88,516; `.ARM.exidx` 1,704; `.ARM.extab` 156,300 (12 B short); 27 sections,
+- `Level::createShip` real-`new` shape landed: LSDA 336 B exact (74.4 -> 67.1);
+  `.ARM.extab` is now only 4 B short (Generator 168 vs 172).
+- `.text` 89,327; `.ARM.exidx` 1,663; `.ARM.extab` 156,308 (4 B short); 27 sections,
   exact file size.

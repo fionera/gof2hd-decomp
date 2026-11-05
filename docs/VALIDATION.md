@@ -98,13 +98,13 @@ All **27 original section headers are present and exact**, with no extra section
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
 and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
 `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
-`.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact but **12 B short**
-(`0x2628c` vs `0x26298`): `Level::createShip`'s record is 332 B vs 336 B (-4) and
-`Generator::createMission`'s is 168 B vs 172 B (-4). The
+`.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact but **4 B short**
+(`0x26294` vs `0x26298`): `Generator::createMission`'s record is 168 B vs 172 B (-4);
+`Level::createShip` is exact at 336 B (real-`new` shape). The
 `Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`), so the original `.rodata` image is
 untouched (the table is the only 192 B of extra `.rodata`). The differing section bytes are
-`.text` (88,516), `.ARM.exidx` (1,704), `.ARM.extab` (120,113; size 12 B short), `.rodata`
+`.text` (89,327), `.ARM.exidx` (1,663), `.ARM.extab` (135,430; size 4 B short), `.rodata`
 (192, the appended codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file
 bytes are linker padding).
 

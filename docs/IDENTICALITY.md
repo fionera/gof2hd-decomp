@@ -25,19 +25,20 @@ before it is exact, and the table accounts for the only 192 B of extra `.rodata`
 original section headers are present and exact, with no extra section and an exact file size
 (2,187,328 B).
 
-**One structural delta remains open:** `.ARM.extab` is 12 bytes short (`0x2628c` vs `0x26298`;
-`Level::createShip` -4, 332 vs 336; `Generator::createMission` -4, 168 vs 172). `.rodata` still starts at the original `0x1c9e10` because the 8-byte
+**One structural delta remains open:** `.ARM.extab` is 4 bytes short (`0x26294` vs `0x26298`;
+`Generator::createMission` -4, 168 vs 172). `Level::createShip` now has the exact
+336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because the 8-byte
 shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **88,516**; `.ARM.exidx` **1,704** raw bytes;
-`.ARM.extab` **120,113** (size 12 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
+The only differing section bytes are `.text` **89,327**; `.ARM.exidx` **1,663** raw bytes;
+`.ARM.extab` **135,430** (size 4 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
 `.shstrtab`, `.ARM.attributes`) is byte-identical.
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.6,
-`Generator::createMission` 83.5, `LevelScript::process` 58.5, `Level::createShip` 74.4,
+`Generator::createMission` 83.5, `LevelScript::process` 58.5, `Level::createShip` 67.1,
 `Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`
@@ -247,10 +248,10 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,516 content bytes differ across the 19 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 89,327 content bytes differ across the 19 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,351 | **+192** | base-exact at 0x1c9e10 and every original byte is identical; the 192 B `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address 0x20b977) is appended as the last `.rodata` input. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
-| .ARM.extab | 156,312 | 156,300 | **-12** | base-exact (0x1a3b78) but **12 B short**: `Level::createShip` -4 (332 vs 336) and `Generator::createMission` -4 (168 vs 172). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (120,113 bytes differ). |
+| .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short**: `Generator::createMission` -4 (168 vs 172); `Level::createShip` is exact at 336 B (real-`new` shape, wave 119). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (135,430 bytes differ). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
@@ -628,13 +629,15 @@ gameOrientation/engine back by 0xc. Verify-gate each step.
 - `Radar::draw` 74.030 -> **74.427** (local `String` label in the landmark `i == 0` arm).
 - `PlayerEgo::calcCollision` 87.644 -> **95.2** (A2+visible size guards, swapped compare,
   tail pad; 968 B).
-- `Level::createShip` 73.5 -> **74.4** (tuned spawn slot-map); its LSDA is now 332 B.
+- `Level::createShip` 73.5 -> **74.4** (tuned spawn slot-map), then the faithful
+  real-`new` shape landed at **67.1** with the exact 336 B LSDA (the original really uses
+  real `new`; `.ARM.extab` is now only 4 B short, from Generator).
 - `Generator::createMission` 53.3 -> **83.5** (faithful shape + pad store before
   `fromSystemPtr`); its LSDA is 168 B, so `.ARM.extab` is **12 B short** again.
 - `LevelScript::process` 58.2 -> **58.5** — merged w6603/w6604/w6704 reorders, body exactly
   57232 B (a 57240 B merge collapses byte_exact to 2740).
-- `.text` differing bytes 89,836 -> **88,516**. `.ARM.exidx` 1,704; `.ARM.extab` 156,300
-  (12 B short); `.rodata` 192; build-id 20. 27 sections, exact file size.
+- `.text` differing bytes 89,836 -> **89,327**. `.ARM.exidx` 1,663; `.ARM.extab` 156,308
+  (4 B short, Generator only); `.rodata` 192; build-id 20. 27 sections, exact file size.
 - Remaining 19 non-exact functions (all size-exact): Layout C1/C2 48.6,
   Generator::createMission 83.5, LevelScript::process 58.5, Level::createShip 73.5,
   Radar::draw 74.4, MGame::OnTouchEnd 80.1, HangarWindow::render 91.2,
