@@ -1320,8 +1320,8 @@ bool LevelScript::process(int delta) {
                 m_pLevel->getStarSystem()->scaleSunDuringSupernovaIntro(delta);
                 m_pLevel->getStarSystem()->updateSupernova(delta);
                 if (m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000) {
-                    m_nState = 5;
                     Globals::layout->startFade(true, 255, delta + 1000);
+                    m_nState = 5;
                 }
                 m_nScriptTimerA += delta;
                 break;
@@ -2360,8 +2360,8 @@ bool LevelScript::process(int delta) {
                 } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 3) {
                     Vector origin = (*enemies)[0]->getPosition();
                     for (int i = 5; i != 9; i++) {
-                        KIPlayer *pirate = (*enemies)[i];
                         int dx = Globals::rnd->nextInt(10000) + 15000;
+                        KIPlayer *pirate = (*enemies)[i];
                         int x = (Globals::rnd->nextInt(2) == 0 ? 1 : -1) * dx;
                         int dy = Globals::rnd->nextInt(10000);
                         int dz = Globals::rnd->nextInt(10000) + 15000;
