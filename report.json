@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 50.1,
+   "pct": 53.3,
    "byte": false,
    "linked": false,
    "osize": 1996,
@@ -49,7 +49,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.5,
+   "pct": 74.4,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -70,14 +70,6 @@
    "linked": false,
    "osize": 8080,
    "usize": 8080
-  },
-  {
-   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
-   "pct": 87.6,
-   "byte": false,
-   "linked": false,
-   "osize": 968,
-   "usize": 968
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
@@ -118,6 +110,14 @@
    "linked": false,
    "osize": 1984,
    "usize": 1984
+  },
+  {
+   "name": "_ZN9PlayerEgo13calcCollisionEP5ArrayIP8KIPlayerE",
+   "pct": 95.2,
+   "byte": false,
+   "linked": false,
+   "osize": 968,
+   "usize": 968
   },
   {
    "name": "_ZN11SpaceLounge10drawLoungeEv",

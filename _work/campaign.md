@@ -5564,5 +5564,9 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   - `LevelScript::process` 58.2 -> **58.5** (merged w6603/w6604/w6704; 57232 B exact).
 - Build provenance re-audited: 72 global + 378 per-TU flag cells, no flag beats 4505;
   `-Oz`/`-g2` uniquely correct.
-- `.text` 89,528; `.ARM.exidx` 1,327; `.ARM.extab` 108,059 (8 B short); 27 sections,
+- `PlayerEgo::calcCollision` 87.644 -> **95.2** (A2+visible size guards, swapped
+  compare, tail pad; 968 B).
+- `Level::createShip` 73.5 -> **74.4** (tuned spawn slot-map); LSDA 332 B, so
+  `.ARM.extab` is only **4 B short**.
+- `.text` 89,234; `.ARM.exidx` 1,660; `.ARM.extab` 156,308 (4 B short); 27 sections,
   exact file size.
