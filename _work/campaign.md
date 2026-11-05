@@ -5574,3 +5574,17 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
   `.ARM.extab` is now only 4 B short (Generator 168 vs 172).
 - `.text` 89,327; `.ARM.exidx` 1,663; `.ARM.extab` 156,308 (4 B short); 27 sections,
   exact file size.
+
+## Session 2026-11-05 (wave 119 continuation — worst-first, 20 workers)
+
+- `Layout::Layout` 48.834 -> **48.963** (three independent field-store reorders:
+  0x94/0x1f4, 0xb4 SLP order, 0x19c/0x18c/0x1a0/0x198; body stays 7072 B).
+- `LevelScript::process` 59.475 -> **59.490** (chaser-wakeup block reorder; 57232 B).
+- `Radar::draw` literal-pool water placement disproved (w6910); branch-target offsets
+  are half the residual (w6837).
+- `Status::missionCompleted` rank-table TBH assignment confirmed optimal (w6807/w6836).
+- `HangarWindow::render` dead-decl sweep: no gain (w6839).
+- `Level::createMission` convoy k-chain/store-order sweep: no gain (w6830/w6834).
+- Gate: byte 4505 / linked 4505, avg 99.94, data 843/843, imports 207, lint CLEAN,
+  drift 0. `.text` 87,909; `.ARM.exidx` 1,674; `.ARM.extab` 156,304 (4 B short,
+  Generator only); `.rodata` +192; build-id 20; 27 sections, exact file size.

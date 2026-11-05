@@ -17,7 +17,7 @@ Wave 119 (20 parallel `codex exec -p dsv41` workers, worst-first) made
 before `addButton(19)`), moving `byte_exact` 4503 -> **4505**. Other gains:
 `Level::createScene` 90.7 -> **92.8**, `Radar::draw` 74.0 -> **74.4**,
 `LevelScript::process` 58.2 -> **59.5** (merged wave-119 statement reorders at exactly
-57232 B). `.text` content delta 89,836 -> **87,954**.
+57232 B). `.text` content delta 89,836 -> **87,909**.
 
 The `Status::missionCompleted` rank table is the last `.rodata` input
 (`tools/mission_case_table.cpp`, fixed address `0x20b977`); every original `.rodata` byte
@@ -30,14 +30,14 @@ original section headers are present and exact, with no extra section and an exa
 336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because the 8-byte
 shortfall fits the 16-byte alignment gap, so no function address moves.
 
-The only differing section bytes are `.text` **87,954**; `.ARM.exidx` **1,674** raw bytes;
+The only differing section bytes are `.text` **87,909**; `.ARM.exidx` **1,674** raw bytes;
 `.ARM.extab` **135,831** (size 4 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
 `.shstrtab`, `.ARM.attributes`) is byte-identical.
 
-The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.8,
+The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.9,
 `Generator::createMission` 83.6, `LevelScript::process` 59.5, `Level::createShip` 70.2,
 `Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
