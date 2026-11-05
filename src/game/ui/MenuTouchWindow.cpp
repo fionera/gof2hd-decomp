@@ -439,8 +439,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         for (unsigned int i = 0; (int) i < 10; i++) {
             // Phone: two columns; iPad: one centred column.
             int yBase = Globals::h / 2 - this->buttonYBias;
+            int y = yBase - 12 - Globals::layout->field_0x29c_buttonRowGap;
             int rowPitch = rowHeight + Globals::layout->field_0x30_rowHeight;
-            int y = (yBase - 12 - Globals::layout->field_0x29c_buttonRowGap) + rowPitch * (i >> 1);
+            y += rowPitch * (i >> 1);
             int x = (int) ((float) ((i & 1) ? Globals::w - Globals::w / 4 : Globals::w / 4) +
                            (float) this->buttonWidth * -0.5f);
             if (Globals::iPad) {
@@ -616,9 +617,9 @@ MenuTouchWindow::MenuTouchWindow(int menuType) {
         (Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + Globals::layout->field_0x1c * 3 +
          this->listEntryWidth) +
             Globals::layout->field_0x2c_rowHeight * 5 +
-            this->sliderRowHeight + this->sliderRowHeight / 2 +
             (Globals::layout->field_0x2fc + ((this->field_0x15c + Globals::layout->field_0x2c_rowHeight) & 0x7fffffff) +
-             (this->sliderRowHeight & 0x7fffffff)) * 2,
+             (this->sliderRowHeight & 0x7fffffff)) * 2 +
+            this->sliderRowHeight + this->sliderRowHeight / 2,
         66);
     this->optBtnD0->setHalfTransparent(Globals::options[17]);
     this->optBtnCC->setAlwaysPressed(Globals::options[16]);
