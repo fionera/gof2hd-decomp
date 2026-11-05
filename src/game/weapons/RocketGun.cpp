@@ -166,7 +166,7 @@ void RocketGun::update(int elapsed) {
     Gun &g = *this->gun;
     g.update(elapsed);
 
-    if (__builtin_expect(this->hasGeometry != 0 && this->gun->delayActive != 0, 1)) { // lint: arm_builtin anchor: RocketGun::update; plain form lowers raw match 86.9 -> 84.6
+    if (this->hasGeometry != 0 && this->gun->delayActive != 0) {
         // Muzzle flash grows on the launcher while the launch delay runs down.
         PlayerEgo *player = this->level->getPlayer();
         Vector muzzle = player->getPosition();
@@ -177,15 +177,15 @@ void RocketGun::update(int elapsed) {
         this->geometry->setPosition(muzzle);
         const float scale = (float) (int) (((float) this->gun->delayTimer / -200.0f + 1.0f) * 255.0f) / 255.0f;
         this->geometry->setScaling(scale, scale, scale);
+        AEGeometry *geom = this->geometry;
         const Vector forward = MatrixGetDir(reinterpret_cast<const Matrix &>(player->player->transform[0]));
         Vector up = {0.0f, 1.0f, 0.0f};
-        this->geometry->setDirection(forward, up);
+        geom->setDirection(forward, up);
     }
 
     gun = this->gun;
     this->wasFiring = gun->delayActive;
 
-    const float dt = (float) elapsed;
     if (gun->hitSmall != 0) {
         // A rocket was just launched: orient the rocket mesh along its velocity.
         this->fadeTimer = 0;
@@ -225,8 +225,8 @@ void RocketGun::update(int elapsed) {
             goto itemEmit;
         } else if (this->gun->positions.data()[this->gun->currentProjectile].z == 50000.0f) {
             this->particleManager->enableSystemEmit((*this->trailSystems)[this->gun->currentProjectile], false);
-            (*this->trailTimers)[this->gun->currentProjectile] = 0;
             this->particleManager->resetSystem((*this->trailSystems)[this->gun->currentProjectile]);
+            (*this->trailTimers)[this->gun->currentProjectile] = 0;
             goto launchDone;
         } else {
             (*this->trailMatrices)[this->gun->currentProjectile] = frame;
@@ -280,6 +280,7 @@ void RocketGun::update(int elapsed) {
         }
     }
 
+    const float dt = (float) elapsed;
     for (uint32_t i = 0; i < this->gun->positions.count; ++i) {
         gun = this->gun;
         ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
@@ -306,14 +307,9 @@ void RocketGun::update(int elapsed) {
                     const int life = gun->lifetimes[i];
                     const float s = Sinf((phase + (float) (total - life)) * 0.003f);
                     const float c = Cosf((phase + (float) (this->gun->initialLifetime - this->gun->lifetimes[i])) * 0.003f);
-                    // The cross product is materialised in its own temporary and then copied
-                    // into the named local, matching the original's two-step construction.
-                    struct V3 { float x, y, z; };
-                    V3 crossBuf;
-                    Vector &cross = *(Vector *) &crossBuf;
-                    cross = VectorCross(this->gun->velocities.data()[i],
-                                        this->gun->upVectors.data()[i]);
-                    this->gun->positions.data()[i] += VectorNormalize(cross) * (s + s) * dt;
+                    Vector cross = VectorNormalize(VectorCross(this->gun->velocities.data()[i],
+                                                               this->gun->upVectors.data()[i]));
+                    this->gun->positions.data()[i] += cross * (s + s) * dt;
                     this->gun->positions.data()[i] += this->gun->upVectors.data()[i] * (c + c) * dt;
                 }
             }
@@ -323,7 +319,7 @@ void RocketGun::update(int elapsed) {
                 ahead = gun->positions.data()[i] + gun->velocities.data()[i] * dt * 0.5f;
                 MatrixSetTranslation((*this->trailMatrices)[i], ahead.x, ahead.y, ahead.z);
                 const Vector heading = VectorNormalize(this->gun->velocities.data()[i]);
-                Matrix &trail = this->trailMatrices->data()[i];
+                Matrix &trail = (*this->trailMatrices)[i];
                 trail.m.e2 = heading.x;
                 trail.m.e6 = heading.y;
                 trail.m.e10 = heading.z;
