@@ -2490,20 +2490,18 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         // Together with the wormhole arm's `size() == i` guard it reproduces
         // the original's register file (this=r5, temp=r6, distance=sl) and
         // keeps the function at the original 968 bytes.
-        if (objects->size() == 0)
+        if (objects->empty())
             continue;
         if (Vector{0.0f, 0.0f, 0.0f} != collision) {
             this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-            if (object->field_0x71) {
-                this->collidesWithStationFlag = 1;
-                // Original tail is `i == 0 && field_0x71`; this second store
-                // stands in for the 2-byte `i == 0` test so the block (and the
-                // whole function) stays at 968 bytes with the same allocation.
-                this->inWormhole = 1;
-            }
+            // The original stores the flag value straight through: that drops
+            // the `movs r0, #1` the constant store would need, which is what
+            // keeps the real `i == 0` test inside the 968-byte budget.
+            if (i == 0 && object->field_0x71)
+                this->collidesWithStationFlag = object->field_0x71;
         }
         this->hitCamera();
     }
