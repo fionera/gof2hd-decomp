@@ -757,7 +757,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     uint32_t race = agent->getRace();
     int level;
     volatile double padA;
-    volatile int amount;
+    int amount;
 
     bool selected = false;
     int32_t type = 0;
@@ -881,7 +881,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
-        amount = 0;
+        *(volatile int *) &amount = 0;
         ++difficulty;
         switch (type) {
             case 0:

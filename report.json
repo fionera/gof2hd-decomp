@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.93,
+  "avg_match": 99.94,
   "byte_exact": 4505,
   "linked_exact": 4505,
   "fuzzy_perfect": 4505,
@@ -30,14 +30,6 @@
    "linked": false,
    "osize": 7072,
    "usize": 7072
-  },
-  {
-   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 53.3,
-   "byte": false,
-   "linked": false,
-   "osize": 1996,
-   "usize": 1996
   },
   {
    "name": "_ZN11LevelScript7processEi",
@@ -70,6 +62,14 @@
    "linked": false,
    "osize": 8080,
    "usize": 8080
+  },
+  {
+   "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
+   "pct": 80.7,
+   "byte": false,
+   "linked": false,
+   "osize": 1996,
+   "usize": 1996
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
