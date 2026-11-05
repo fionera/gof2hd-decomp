@@ -756,8 +756,8 @@ bool LevelScript::process(int delta) {
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Vector pos = player->getPosition();
                     Globals::sound->updateEvent3DAttributes(161, &pos, &zero, false);
-                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     m_nScriptTimerA += delta;
+                    m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
                     float rumble = (float) m_nScriptTimerA / 4000.0f;
                     if (!(rumble < 1.0f)) {
                         rumble = 1.0f;
@@ -1320,12 +1320,10 @@ bool LevelScript::process(int delta) {
                 m_pLevel->getStarSystem()->scaleSunDuringSupernovaIntro(delta);
                 m_pLevel->getStarSystem()->updateSupernova(delta);
                 if (m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000) {
+                    m_nState = 5;
                     Globals::layout->startFade(true, 255, delta + 1000);
                 }
                 m_nScriptTimerA += delta;
-                if (m_nScriptTimerA >= 8000) {
-                    m_nState = 5;
-                }
                 break;
             case 5:
                 if (!Globals::layout->isFading()) {
@@ -3222,11 +3220,11 @@ bool LevelScript::process(int delta) {
                             m_nScriptTimerA = 0;
                             int x = -40000;
                             for (int i = 4; i != 6; i++) {
+                                x -= 3000;
                                 KIPlayer *ship = (*enemies)[i];
                                 ship->setPosition(player->getPosition() + Vector{(float) x, 3000.0f, 20000.0f});
                                 (*enemies)[i]->awake();
                                 (*enemies)[i]->setVisible(true);
-                                x -= 3000;
                             }
                             m_nState++;
                         }
@@ -3341,10 +3339,10 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
-                        m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         AEGeometry *leaderShip = (*enemies)[leader]->geometry;
+                        m_bCinematicBreak = 1;
                         m_pCamera->setTarget(leaderShip);
                         m_tempVec = leaderShip->getPosition();
                         m_dirVec = leaderShip->getDirection();
@@ -4427,6 +4425,7 @@ bool LevelScript::process(int delta) {
                         }
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
+                        m_nState++;
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
@@ -4439,7 +4438,6 @@ bool LevelScript::process(int delta) {
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
                         m_bCinematicBreak = 0;
-                        m_nState++;
                     }
                     break;
                 }
@@ -4574,9 +4572,9 @@ bool LevelScript::process(int delta) {
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
                     m_tempVec += m_dirVec * (step * 0.008f);
                     m_tempVec += m_dirVec * (step * -0.05f);
-                    m_dirVec = player->GetDirVector();
                     m_dirVec = player->geometry->getRightVector();
                     m_dirVec = player->GetUpVector();
+                    m_dirVec = player->GetDirVector();
                     m_tempVec += m_dirVec * (step * 0.005f);
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
@@ -5129,6 +5127,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerA >= 6500) {
+                        m_bCinematicBreak = 1;
                         m_nState++;
                         Globals::status->nextCampaignMission(true);
                         Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
@@ -5138,7 +5137,6 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_60 = player->player->getArmorHP();
                         Globals::status->field_68 = player->player->getGammaHP();
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
-                        m_bCinematicBreak = 1;
                         player->player->setGammaHP(100);
                         Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
