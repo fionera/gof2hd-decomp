@@ -603,8 +603,8 @@ void Gun::calcCharacterCollision() {
             if (mine) {
                 radius *= 5;
             } else if (scatter) {
-                int distance = (int) AbyssEngine::AEMath::VectorLength(
-                        enemyPosition - ((Level *) this->level)->getPlayer()->getPosition());
+                Vector playerPosition = ((Level *) this->level)->getPlayer()->getPosition();
+                int distance = (int) AbyssEngine::AEMath::VectorLength(enemyPosition - playerPosition);
                 if (enemy->getKIPlayer() != nullptr && enemy->getKIPlayer()->field_0x71) {
                     radius = (int) ((float) radius * 0.5f);
                 } else if (distance > 20000) {
@@ -693,12 +693,12 @@ void Gun::calcCharacterCollision() {
                 enemy->damage(dmg, this->friendGun, this->itemIndex);
             }
             reinterpret_cast<uint8_t *>(&enemy->field_54)[0] = 1;
-            enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
-            this->lastHitKIPlayer = (int) (intptr_t) enemy->getKIPlayer();
-            this->lifetimes[i] = -1000000;
             if (this->playerGun) {
                 ((Level *) this->level)->field_30 = 1;
             }
+            enemy->setHitVector(-velocity.x, -velocity.y, -velocity.z);
+            this->lifetimes[i] = -1000000;
+            this->lastHitKIPlayer = (int) (intptr_t) enemy->getKIPlayer();
             if (explosive) {
                 ((Level *) this->level)->field_74->emitManual(((Level *) this->level)->field_3c, position, 0, velocity,
                                                               -1.0f);
@@ -720,14 +720,13 @@ void Gun::calcCharacterCollision() {
                 }
             }
             if (scatter) {
-                this->hitFlags[i] = 1;
                 this->hitPositions.data()[i] = position;
                 for (unsigned k = 0; k < this->enemies->size(); ++k) {
                     enemy = (*this->enemies)[k];
                     *td = enemy->getPosition();
                     *td -= position;
                     int distance = (int) AbyssEngine::AEMath::VectorLength(*td);
-                    if (distance < this->magnitude) {
+                    if (__builtin_expect(distance < this->magnitude, 0)) {  // lint: arm_builtin
                         float falloff = (float) (this->magnitude - distance) / (float) this->magnitude;
                         if (falloff > 1.0f) {
                             falloff = 1.0f;
@@ -738,6 +737,7 @@ void Gun::calcCharacterCollision() {
                         if (this->empDamage > 0) {
                             enemy->damageEmp((int) (falloff * (float) this->empDamage), this->friendGun);
                         }
+                    this->hitFlags[i] = 1;
                     }
                 }
             }
