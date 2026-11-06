@@ -1264,7 +1264,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     // The null test is a codegen anchor: the original has no test here, but the extra
     // load/compare re-colours the shield/armour block and keeps the function at its
     // original 9332-byte size (see hud-draw-wave117-w6516.md).
-    if (Globals::Canvas && this->field_0x4b8 >= 1) {
+    if (Globals::status && this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
@@ -1587,8 +1587,13 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                                                            ? (int) (ego->getBoostRate() * 75.0f)
                                                                            : 200)) +
                                                    55));
-        if (Globals::mouseCursorActivated || mining || this->hackingGameActive || ego->isDockedToDockingPoint())
-            Globals::Canvas->SetColor(ego->getBoostRate() < 1.0f ? 0xffffff2f : 0xffffff00);
+        if (Globals::mouseCursorActivated || mining || this->hackingGameActive || ego->isDockedToDockingPoint()) {
+            float rate = ego->getBoostRate();
+            if (rate < 1.0f)
+                Globals::Canvas->SetColor(0xffffff2f);
+            else
+                Globals::Canvas->SetColor(0xffffff00);
+        }
         if ((this->touchFlags & 2) || (this->field_0x484 >= 1 && this->field_0x488 < 1)) {
             if (this->field_0x484 >= 1) {
                 this->field_0x488 = 80;
@@ -1648,7 +1653,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
-            unsigned short barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            short barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
             int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
