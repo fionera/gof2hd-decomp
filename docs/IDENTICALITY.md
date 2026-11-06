@@ -1,18 +1,43 @@
+## Update 2026-11-06 (wave 125)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.93%**. 18 functions remain non-byte-exact, all size-exact.
+
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
+`LevelScript::process` **60.3**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.0**,
+`Radar::draw` **75.3**, `MGame::OnTouchEnd` **78.8**, `Generator::createMission` **90.0**,
+`Level::createMission` **92.3**, `Gun::calcCharacterCollision` **93.4**, `Level::createScene`
+**93.6**, `HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw`
+**96.6**, `MenuTouchWindow::OnTouchBegin` **98.1**, `ModStation` C1/C2 **99.2**,
+`MGame::OnUpdate` **99.9**.
+
+Wave-125 gains: `Hud::draw` **96.4 -> 96.6** (raw 96.445573 -> 96.587843; dock1 `total`
+`short`, `barW` `unsigned short`, first-bar `top` `short`, `barYOffset` `unsigned int`; 85
+diff hunks, normalised instruction streams 3149/3152). The four type tweaks are allocator
+tie-breaks that keep the body at 9332 B; the faithful all-`int` dock form remains 9328 B.
+
+Section deltas: `.text` **85,912** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,474** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+**0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+(2,187,328 B).
+
 # Binary identicality: gap analysis & roadmap
 
 Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16_libgof2hdaa.so`
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-06 (wave 125)
+## Update 2026-11-06 (wave 124)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
-avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+avg **99.93%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
-`LevelScript::process` **60.3**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.0**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **79.2**,
+`LevelScript::process` **60.3**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.0**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **78.8**,
 `Generator::createMission` **90.0**, `Level::createMission` **92.3**,
 `Gun::calcCharacterCollision` **93.4**, `Level::createScene` **93.6**,
 `HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
@@ -29,13 +54,10 @@ before the landmark loop, reduced recompute); `Generator::createMission` **89.9 
 hoist); `LevelScript::process` stays **60.3** but two case-157 fidelity fixes reduce its
 `.text` delta. `MGame::OnTouchEnd` **82.4 -> 78.8** is a structural win: the failed-first
 `won` local and `hasFailed() == true` hint make **`.rel.plt` byte-identical**; the fuzzy drop
-is block-address placement, not missing code. Wave 125 then recovered **78.8 -> 79.2** by
-typing the mining `refinedAny` accumulator as `bool` (the original tests bit 0, `lsls #31`,
-not the `char` bit 7), which also moves the cold `resetStartSequenceOver` block directly after
-the failed `type == 12` block; `.text` delta 85,975 -> 85,973, `.rel.plt` stays byte-identical.
+is block-address placement, not missing code.
 
-Section deltas: `.text` **85,973** differing bytes (size exact); `.ARM.exidx` **0**;
-`.ARM.extab` **1,475** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+Section deltas: `.text` **85,975** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,474** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
 
@@ -446,10 +468,10 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,973 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,912 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
-| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,475 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
+| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,474 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). Wave 124 made the `MGame::OnTouchEnd` cold-block PLT order match. |
