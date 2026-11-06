@@ -917,13 +917,15 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = 10;
     }
 
-    Galaxy *galaxy = Globals::galaxy;
+    Galaxy *&galaxy = Globals::galaxy;
     int fromSystem;
+    int toSystem;
     SolarSystem *fromSystemPtr;
     float reward = (fromSystem = Globals::status->getStation()->getSystem(),
                     padA = 0, (void) padA,
                     fromSystemPtr = systems->data()[fromSystem],
-                    (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
+                    toSystem = galaxy->getStation(targetStation)->getSystem(),
+                    (galaxy->distance(fromSystemPtr, systems->data()[toSystem]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500));
     if (type == 7) {
         reward *= 0.7f;
