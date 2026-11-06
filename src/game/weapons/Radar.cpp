@@ -407,7 +407,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
-    Status *status = Globals::status;
     int otherLock;
     if (__builtin_expect(this->lockedAsteroid == nullptr && // lint: arm_builtin anchor: Radar::draw
                                  __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
@@ -421,10 +420,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     int notOtherLock = !otherLock;
     int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
-        !(status->getStation()->getIndex() == 109 ||
-          status->getStation()->getIndex() == 110 ||
-          (status->getStation()->getIndex() == 111 &&
-           status->getCurrentCampaignMission() > 93))) {
+        !(Globals::status->getStation()->getIndex() == 109 ||
+          Globals::status->getStation()->getIndex() == 110 ||
+          (Globals::status->getStation()->getIndex() == 111 &&
+           Globals::status->getCurrentCampaignMission() > 93))) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
@@ -478,9 +477,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + Globals::layout->field_0x4, false);
                     }
                 }
-            } else if (__builtin_expect((i & 0x7fffffff) == 1 || (i & 0x7fffffff) == 3, 0)) { // lint: arm_builtin anchor: Radar::draw; plain form grows body 9908 -> 9912
-                Globals::Canvas->DrawImage2D(i == 1 ? this->image_0xbc : this->image_0xb8,
-                                             this->screenX, this->screenY, 17, 68);
+            } else if ((i & 0x7fffffff) == 1) {
+                Globals::Canvas->DrawImage2D(this->image_0xbc, this->screenX, this->screenY, 17, 68);
+            } else if ((i & 0x7fffffff) == 3) {
+                Globals::Canvas->DrawImage2D(this->image_0xb8, this->screenX, this->screenY, 17, 68);
             }
         }
         if (!turretMode) {
@@ -618,9 +618,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
-            onPlanetCourse = this->level->getPlayer()->goingToPlanet() &&
-                             !this->level->getPlayer()->isDockingToPlanet() &&
-                             autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
+            onPlanetCourse = autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
             this->field_0x1a8 = onPlanetCourse;
         }
 
@@ -664,8 +662,8 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     this->blipSprite->draw(1.0f, 1.0f);
                 }
             } else if (this->field_0x14 == 0) {
-                this->planetLockTimer = 0;
                 this->field_0x18 = 0;
+                this->planetLockTimer = 0;
             } else {
                 this->planetLockTimer = 0;
             }
@@ -693,6 +691,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
+            bool dead = enemy->isDead() || enemy->isDying();
             bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
