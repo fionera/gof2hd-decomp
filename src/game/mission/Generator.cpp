@@ -747,6 +747,7 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
+    struct NoopGuard { ~NoopGuard() {} };
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -877,7 +878,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         } while ((*items)[itemId]->getOccurence() == 0 || (*items)[itemId]->getSinglePrice() == 0 ||
                  (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
-        int count = Globals::rnd->nextInt(15);
+        int count; { NoopGuard g; count = Globals::rnd->nextInt(15); }
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
@@ -917,11 +918,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     Galaxy *galaxy = Globals::galaxy;
-    int fromSystem = Globals::status->getStation()->getSystem();
-    padA = 0; (void) padA;
-    SolarSystem *fromSystemPtr = systems->data()[fromSystem];
-    float reward = (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
-                   (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500);
+    int fromSystem;
+    SolarSystem *fromSystemPtr;
+    float reward = (fromSystem = Globals::status->getStation()->getSystem(),
+                    padA = 0, (void) padA,
+                    fromSystemPtr = systems->data()[fromSystem],
+                    (galaxy->distance(fromSystemPtr, systems->data()[galaxy->getStation(targetStation)->getSystem()]) / 1200.0f + 1.0f) *
+                   (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500));
     if (type == 7) {
         reward *= 0.7f;
     } else if (type == 9) {
