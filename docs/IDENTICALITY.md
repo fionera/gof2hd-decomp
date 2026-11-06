@@ -12,6 +12,14 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 18 functions remain
 non-byte-exact, all size-exact.
 
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **49.0**,
+`Status::missionCompleted` **59.4**, `LevelScript::process` **60.2**, `Level::createShip`
+**74.4**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **81.7**, `Generator::createMission`
+**88.0**, `HangarWindow::render` **91.7**, `Level::createMission` **92.3**,
+`Level::createScene` **92.8**, `Gun::calcCharacterCollision` **93.4**,
+`SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.0**, `MenuTouchWindow::OnTouchBegin`
+**98.1**, `ModStation` C1/C2 **99.2**, `MGame::OnUpdate` **99.9**.
+
 Wave 121 made three structural gains. `PlayerEgo::calcCollision` is now **byte-exact**
 (95.5 -> **100.0**, 968 B): the original's un-rotated loop and visible-arm register shuffle
 are reproduced by two branch-weight hints (`__builtin_expect(isShrinking() || miningGame != 0, 1)`
