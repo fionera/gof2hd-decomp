@@ -1513,12 +1513,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->pauseOpen = 0;
                 resumeSounds();
                 this->cutsceneActive = 0;
-                bool failed = Globals::status->getMission()->hasFailed();
-                bool won = Globals::status->getMission()->hasWon() == true ||
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon();
-                if (!failed && !won) {
-                    this->levelScript->resetStartSequenceOver();
-                } else if (failed) {
+                bool failed = Globals::status->getMission()->hasFailed() == true;
+                if (failed) {
                     if (Globals::status->getMission()->isCampaignMission() ||
                         Globals::status->getCurrentCampaignMission() == 42) {
                         Globals::globals->playMusicAndFadeOutCurrent(2);
@@ -1549,230 +1545,236 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->levelScript->m_nTimeLimit = 0;
                     Globals::status->setMission(Mission::empty);
                     this->player->setRoute(nullptr);
-                    if (this->player->goingToWaypoint() == true) {
+                    if (this->player->goingToWaypoint()) {
                         this->player->setAutoPilot(nullptr);
                     }
                     this->player->removeRoute();
                     this->level->setPlayerRoute(nullptr);
                 } else {
-                    bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
-                    Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    if (mission->isCampaignMission()) {
-                        Globals::status->nextCampaignMission(true);
-                    } else if (mission->isInstantActionMission()) {
-                        Globals::switch_to_target_setting = 2;
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(1);
-                        return;
-                    } else {
-                        Globals::status->setFreelanceMission(Mission::empty);
-                        Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
-                    }
-                    Globals::status->changeCredits(mission->getReward() + mission->getBonus());
-                    this->levelScript->m_nTimeLimit = 0;
-
-                    if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
-                        FileRead *reader = new FileRead();
-                        Globals::status->setStation(reader->loadStation(98));
-                        delete reader;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
-                        FileRead *reader = new FileRead();
-                        Globals::status->setStation(reader->loadStation(10));
-                        delete reader;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 42) {
-                        delete this->level->objectivesB;
-                        this->level->objectivesB = nullptr;
-                        delete this->level->objectivesA;
-                        this->level->objectivesA = nullptr;
-                        goto finishMission;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 65) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 1;
-                        FileRead *reader = new FileRead();
-                        Globals::status->departStation(reader->loadStation(100));
-                        delete reader;
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 1;
-                        Globals::status->setStation(Globals::status->playerStation);
-                        Globals::status->departStation(Globals::status->playerStation);
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 74) {
-                        FileRead *reader = new FileRead();
-                        Globals::status->setStation(reader->loadStation(100));
-                        delete reader;
-                        Globals::sound->stopAll();
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 95) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 1;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() &&
-                               (Globals::status->getCurrentCampaignMission() == 96 ||
-                                Globals::status->getCurrentCampaignMission() == 127)) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 1;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::switch_to_target_setting = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
-                        Globals::appManager->SetCurrentApplicationModule(5);
-                        this->active = 0;
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 110) {
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::switch_to_target_setting = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
-                        Globals::appManager->SetCurrentApplicationModule(5);
-                        Globals::enterSpaceLounge = 1;
-                        this->active = 0;
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 120) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(126));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(5);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 134) {
-                        Globals::switch_to_target_setting = 0;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(5);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 144) {
-                        Globals::switch_to_target_setting = 1;
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 155) {
-                        Globals::switch_to_target_setting = 1;
-                        Level::initStreamOutPosition = 1;
-                        Globals::status->departStation(
-                            (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 161) {
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::switch_to_target_setting = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(2);
-                        return;
-                    } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 162) {
-                        Globals::status->field_64 = this->player->player->getHitpoints();
-                        Globals::status->field_5c = this->player->player->getShieldHP();
-                        Globals::status->field_60 = this->player->player->getArmorHP();
-                        Globals::status->field_68 = this->player->player->getGammaHP();
-                        Level::initStreamOutPosition = 0;
-                        Globals::switch_to_target_setting = 0;
-                        Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
-                        this->active = 0;
-                        this->applicationManager->SetCurrentApplicationModule(5);
-                        return;
-                    } else {
-                        goto finishMission;
-                    }
-                    // Back to the station.
-                    Globals::switch_to_target_setting = 0;
-                    Globals::status->field_64 = this->player->player->getHitpoints();
-                    Globals::status->field_5c = this->player->player->getShieldHP();
-                    Globals::status->field_60 = this->player->player->getArmorHP();
-                    Globals::status->field_68 = this->player->player->getGammaHP();
-                    this->active = 0;
-                    this->applicationManager->SetCurrentApplicationModule(5);
-                    return;
-
-                finishMission:
-                    if (!keepObjectives) {
-                        this->level->removeObjectives();
-                        Globals::status->setMission(Mission::empty);
-                        this->player->setRoute(nullptr);
-                        if (this->player->goingToWaypoint()) {
-                            this->player->setAutoPilot(nullptr);
+                    bool won = Globals::status->getMission()->hasWon() ||
+                               ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() == true;
+                    if (won) {
+                        bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
+                        Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
+                        if (mission->isInstantActionMission()) {
+                            Globals::switch_to_target_setting = 2;
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(1);
+                            return;
+                        } else if (mission->isCampaignMission()) {
+                            Globals::status->nextCampaignMission(true);
+                        } else {
+                            Globals::status->setFreelanceMission(Mission::empty);
+                            Globals::layout->showMissionRewardMessage(mission->getReward() + mission->getBonus(), false);
                         }
-                        this->player->removeRoute();
-                        this->level->setPlayerRoute(nullptr);
-                    }
-                    if (!mission->isCampaignMission() && mission->getType() == 183) {
-                        // Escort job handed out right after the previous one.
-                        this->field_0x1e0 = this->level->killCountB;
-                        Item *escortItem = (*Globals::items)[216]->makeItem(10);
-                        Globals::status->getShip()->setEquipment(escortItem, 0);
-                        Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
-                                                      0, Globals::status->getStation()->getIndex(), 1);
-                        Globals::status->setMission(escort);
-                        Globals::status->setFreelanceMission(escort);
+                        Globals::status->changeCredits(mission->getReward() + mission->getBonus());
+                        this->levelScript->m_nTimeLimit = 0;
+
+                        if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 15) {
+                            FileRead *reader = new FileRead();
+                            Globals::status->setStation(reader->loadStation(98));
+                            delete reader;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 22) {
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 43) {
+                            FileRead *reader = new FileRead();
+                            Globals::status->setStation(reader->loadStation(10));
+                            delete reader;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 42) {
+                            delete this->level->objectivesB;
+                            this->level->objectivesB = nullptr;
+                            delete this->level->objectivesA;
+                            this->level->objectivesA = nullptr;
+                            goto finishMission;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 65) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 1;
+                            FileRead *reader = new FileRead();
+                            Globals::status->departStation(reader->loadStation(100));
+                            delete reader;
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 81) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->setStation(Globals::status->playerStation);
+                            Globals::status->departStation(Globals::status->playerStation);
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 74) {
+                            FileRead *reader = new FileRead();
+                            Globals::status->setStation(reader->loadStation(100));
+                            delete reader;
+                            Globals::sound->stopAll();
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 95) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() &&
+                                   (Globals::status->getCurrentCampaignMission() == 96 ||
+                                    Globals::status->getCurrentCampaignMission() == 127)) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 100) {
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                            Globals::appManager->SetCurrentApplicationModule(5);
+                            this->active = 0;
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 110) {
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(10));
+                            Globals::appManager->SetCurrentApplicationModule(5);
+                            Globals::enterSpaceLounge = 1;
+                            this->active = 0;
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 120) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(126));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(5);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 126) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 134) {
+                            Globals::switch_to_target_setting = 0;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(5);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 144) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(112));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 155) {
+                            Globals::switch_to_target_setting = 1;
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->departStation(
+                                (Station *) (intptr_t) Globals::galaxy->getStation(Globals::status->field_84));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 161) {
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 162) {
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 0;
+                            Globals::switch_to_target_setting = 0;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(93));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(5);
+                            return;
+                        } else {
+                            goto finishMission;
+                        }
+                        // Back to the station.
+                        Globals::switch_to_target_setting = 0;
+                        Globals::status->field_64 = this->player->player->getHitpoints();
+                        Globals::status->field_5c = this->player->player->getShieldHP();
+                        Globals::status->field_60 = this->player->player->getArmorHP();
+                        Globals::status->field_68 = this->player->player->getGammaHP();
                         this->active = 0;
-                        Globals::appManager->SetCurrentApplicationModule(2);
+                        this->applicationManager->SetCurrentApplicationModule(5);
                         return;
+
+                    finishMission:
+                        if (!keepObjectives) {
+                            this->level->removeObjectives();
+                            Globals::status->setMission(Mission::empty);
+                            this->player->setRoute(nullptr);
+                            if (this->player->goingToWaypoint()) {
+                                this->player->setAutoPilot(nullptr);
+                            }
+                            this->player->removeRoute();
+                            this->level->setPlayerRoute(nullptr);
+                        }
+                        if (!mission->isCampaignMission() && mission->getType() == 183) {
+                            // Escort job handed out right after the previous one.
+                            this->field_0x1e0 = this->level->killCountB;
+                            Item *escortItem = (*Globals::items)[216]->makeItem(10);
+                            Globals::status->getShip()->setEquipment(escortItem, 0);
+                            Mission *escort = new Mission(183, String("Client"), Globals::imageFactory->createChar(true, 0), 0,
+                                                          0, Globals::status->getStation()->getIndex(), 1);
+                            Globals::status->setMission(escort);
+                            Globals::status->setFreelanceMission(escort);
+                            this->active = 0;
+                            Globals::appManager->SetCurrentApplicationModule(2);
+                            return;
+                        }
+                    } else {
+                        this->levelScript->resetStartSequenceOver();
                     }
                 }
                 this->frameTime = 0;

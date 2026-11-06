@@ -9,17 +9,27 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
-avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+avg **99.93%**. 18 functions remain non-byte-exact, all size-exact.
 
-Wave-124 gains: `Level::createScene` **92.8 -> 93.6** (natural `Vector rot` parts-loop
-construction, `AERandom *&rnd` reference, `unsigned short cap` split for the spot/retry
-`nextInt`, `geo` hoist before `setAlwaysFriend`). Size stays 2252 B; the remaining residual is
-Greedy-RA stack-slot/register ordering (first diff at normalized instruction 9, one extra
-`uxth`). See `_work/reconstructions/level-createscene-wave124-w7418.md`.
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
+`LevelScript::process` **60.3**, `Level::createShip` **70.3**, `Status::missionCompleted`
+**71.0**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **78.8**,
+`Generator::createMission` **89.9**, `Level::createMission` **92.3**,
+`Level::createScene` **92.8**, `Gun::calcCharacterCollision` **93.4**,
+`HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
+`MenuTouchWindow::OnTouchBegin` **98.1**, `ModStation` C1/C2 **99.2**,
+`MGame::OnUpdate` **99.9**.
 
-Section deltas: `.text` **87,210** differing bytes (size exact); `.ARM.exidx` **0**;
-`.ARM.extab` **1,446** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
-**4** (2 swapped PLT entries); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+Wave-124 gains: `MGame::OnTouchEnd` **82.4 -> 78.8**. The fuzzy score drops, but the raw
+`.text` delta improves **87,014 -> 86,164** and `.rel.plt` becomes **byte-identical**: the
+`hasFailed() == true` branch-probability hint, the failed-first/`won`-local structure and the
+`goingToWaypoint()` bare test place the cold `resetStartSequenceOver` block after
+`isInstantActionMission` and the tail after the `menuTouchWindow` block. See
+`_work/reconstructions/MGame-OnTouchEnd-wave124-w7415.md`.
+
+Section deltas: `.text` **86,164** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,480** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+**0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
 
 ## Update 2026-11-06 (wave 123)
@@ -429,13 +439,13 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,210 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 86,164 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
-| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,446 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
+| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,480 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
-| .rel.plt | 29,392 | 29,392 | 0 | size- and base-exact (0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). 2 relocations have permuted symbol indices (4 differing bytes; the `MGame::OnTouchEnd` cold-block PLT order). |
+| .rel.plt | 29,392 | 29,392 | 0 | size- and base-exact (0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). **byte-identical** (0 differing bytes; wave 124 fixed the `MGame::OnTouchEnd` cold-block PLT order). |
 | .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
 | .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
@@ -449,7 +459,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 1. **18 non-byte-exact functions.** 4506 of 4524 compared functions are linked-exact. The worst
    are `Layout::Layout` (49.0%), `Generator::createMission` (84.3%), `LevelScript::process`
-   (60.0%), `Level::createShip` (70.3%), `Radar::draw` (74.4%), `MGame::OnTouchEnd` (81.3%),
+   (60.0%), `Level::createShip` (70.3%), `Radar::draw` (74.4%), `MGame::OnTouchEnd` (78.8%),
    `HangarWindow::render` (91.3%), `Level::createMission` (92.3%) and
    `Level::createScene` (92.8%). The `.text` total is exact (0x1337c8); these are
    per-function body/register-allocation deltas, not missing code.
@@ -462,7 +472,7 @@ The original build is now pinned by evidence, not by A/B alone:
    272, inline 856, extab 2438); `.ARM.extab` is **size- and base-exact** (156,312 B @
    0x1a3b78, 0x26298). `Level::createShip` now has the faithful 336 B cleanup-only record
    (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B and
-   `HangarWindow::render` is exact at 948 B. 1,446 raw `.ARM.extab` content bytes still differ
+   `HangarWindow::render` is exact at 948 B. 1,480 raw `.ARM.extab` content bytes still differ
    (the createShip landing-pad offsets inside the exact-length records). The
    `Layout::Layout` body is size-exact 7072 B without a pad. See
    `_work/reconstructions/exidx-records_w4237.md` and

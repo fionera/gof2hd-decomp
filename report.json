@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.94,
+  "avg_match": 99.93,
   "byte_exact": 4506,
   "linked_exact": 4506,
   "fuzzy_perfect": 4506,
@@ -40,20 +40,20 @@
    "usize": 57232
   },
   {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 70.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
+  },
+  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 71.0,
    "byte": false,
    "linked": false,
    "osize": 1432,
    "usize": 1432
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 71.2,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 82.8,
+   "pct": 78.8,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -88,20 +88,20 @@
    "usize": 17172
   },
   {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 92.8,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2252
+  },
+  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 93.4,
    "byte": false,
    "linked": false,
    "osize": 1984,
    "usize": 1984
-  },
-  {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 93.6,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2252
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
