@@ -4,6 +4,40 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-06 (wave 120)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4505/4524**, linked_exact **4505/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
+parity **5370/5370** (0 extra / 0 missing), avg **99.94%**. 19 functions remain
+non-byte-exact, all size-exact.
+
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **49.0**,
+`LevelScript::process` **60.0**, `Level::createShip` **74.4**, `Radar::draw` **74.5**,
+`MGame::OnTouchEnd` **81.6**, `Generator::createMission` **84.7**, `HangarWindow::render`
+**91.7**, `Level::createMission` **92.3**, `Status::missionCompleted` **92.5**,
+`Level::createScene` **92.8**, `Gun::calcCharacterCollision` **93.4**,
+`PlayerEgo::calcCollision` **95.5**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw`
+**96.0**, `MenuTouchWindow::OnTouchBegin` **98.1**, `ModStation` C1/C2 **99.2**,
+`MGame::OnUpdate` **99.9**.
+
+Wave-120 build-provenance research (10 parallel agents) established that the current
+compile recipe is byte-equivalent to **stock NDK r18b CMake Release defaults**: 192/192
+app TUs compile to identical objects, the full CMake/ndk-build default link flag set
+produces the same `.so` hash, and a stock toolchain plus a minimal single-target
+`CMakeLists.txt` reproduces the original's dynamic tables and `.rodata` exactly (the
+canonical +192 B `.rodata` is the checked-in `tools/mission_case_table.cpp` matching
+device). No tested global or per-TU compile flag improves any residual function; the
+remaining gaps are source-shape. See
+`_work/reconstructions/build-flags-cmake-equivalence-wave120-main.md`,
+`_work/reconstructions/stock-cmake-reproduction-wave120-w7010.md`, and
+`_work/reconstructions/per-tu-flag-sensitivity-wave120-w7005.md`.
+
+Section deltas: `.text` **88,116** differing bytes (size exact); `.ARM.exidx` **1,660**;
+`.ARM.extab` **156,308 B** (4 B short; only `Generator::createMission` -4, 135,593 differing
+bytes); `.rodata` **+192** (mission rank table); `.rel.plt` **6**; `.note.gnu.build-id`
+**20**; `.bss` **3** (the known pointer-order residual). File size is exact (2,187,328 B).
+
 ## Update 2026-11-05 (wave 119)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
