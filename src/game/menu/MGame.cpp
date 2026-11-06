@@ -1514,7 +1514,11 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 resumeSounds();
                 this->cutsceneActive = 0;
                 bool failed = Globals::status->getMission()->hasFailed();
-                if (failed) {
+                bool won = Globals::status->getMission()->hasWon() == true ||
+                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon();
+                if (!failed && !won) {
+                    this->levelScript->resetStartSequenceOver();
+                } else if (failed) {
                     if (Globals::status->getMission()->isCampaignMission() ||
                         Globals::status->getCurrentCampaignMission() == 42) {
                         Globals::globals->playMusicAndFadeOutCurrent(2);
@@ -1550,8 +1554,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                     this->player->removeRoute();
                     this->level->setPlayerRoute(nullptr);
-                } else if (Globals::status->getMission()->hasWon() == true ||
-                           ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon()) {
+                } else {
                     Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
                     bool keepObjectives = campaign->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
@@ -1772,8 +1775,6 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         Globals::appManager->SetCurrentApplicationModule(2);
                         return;
                     }
-                } else {
-                    this->levelScript->resetStartSequenceOver();
                 }
                 this->frameTime = 0;
                 this->hud->resetAnalogStick();

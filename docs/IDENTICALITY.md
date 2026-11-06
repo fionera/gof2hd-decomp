@@ -30,7 +30,7 @@ avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.7**,
 `Status::missionCompleted` **71.0**, `LevelScript::process` **60.3**, `Level::createShip`
-**73.9**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **81.7**, `Generator::createMission`
+**73.9**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **82.4**, `Generator::createMission`
 **89.9**, `Level::createMission` **92.3**, `Level::createScene` **92.8**,
 `Gun::calcCharacterCollision` **93.4**, `HangarWindow::render` **94.0**, `Hud::draw`
 **95.3**, `SpaceLounge::drawLounge` **95.7**, `MenuTouchWindow::OnTouchBegin` **98.1**,
@@ -49,7 +49,7 @@ vector). See the `*-wave122-w72*.md` notes.
 
 Section deltas: `.text` **86,947** differing bytes (size exact); `.ARM.exidx` **1,327**;
 `.ARM.extab` **156,304 B** (8 B short; only `Level::createShip` -8, 108,010 differing bytes);
-`.rodata` **0** (byte-identical); `.rel.plt` **6**; `.bss` **1**; `.note.gnu.build-id` **20**.
+`.rodata` **0** (byte-identical); `.rel.plt` **4**; `.bss` **1**; `.note.gnu.build-id` **20**.
 File size is exact (2,187,328 B).
 
 ## Update 2026-11-06 (wave 121)
