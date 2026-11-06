@@ -5171,19 +5171,18 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     int mission = Globals::status->getCurrentCampaignMission();
     int wx, wz, wy;
     if (waypoint != nullptr) {
-        wx = waypoint->x;
+        wz = waypoint->x;
         wy = waypoint->y;
-        wz = waypoint->z;
+        wx = waypoint->z;
     } else {
-        wx = 0;
-        wy = 0;
         wz = 0;
+        wy = 0;
+        wx = 0;
     }
-    int jitterX = Globals::rnd->nextInt(40000);
-    int jitterZ = Globals::rnd->nextInt(40000);
     int jitterY = Globals::rnd->nextInt(40000);
-    int level = Globals::status->getLevel();
-    if (level > 20) level = 20;
+    int jitterZ = Globals::rnd->nextInt(40000);
+    int jitterX = Globals::rnd->nextInt(40000);
+    int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
     switch (type) {
         case 0x2c:
@@ -5199,9 +5198,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = Globals::status->getLevel();
-    if (empPoints > 20) empPoints = 20;
-    empPoints = empPoints * 5 + 40;
+    int empPoints = (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 5 + 40;
     int empTime;
     if (shipClass == 1) {
         hitpoints *= type == 14 ? 25 : 5;
@@ -5216,16 +5213,20 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = wx + jitterX - 20000;
+    int x = jitterZ + jitterX - 20000;
     float y = (float) (wy + jitterY - 20000);
-    float z = (float) (wz + jitterZ - 20000);
-    player->setEmpData(empPoints, empTime);
+    float z = (float) (wz + wx - 20000);
+    try {
+        player->setEmpData(empPoints, empTime);
+    } catch (...) {
+        __builtin_trap(); // lint: arm_builtin anchor: Level::createShip; removal grows body 2764 -> 2772
+    }
 
-    if (Globals::status == nullptr) return nullptr;
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+        PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
+        new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, group);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
@@ -5239,7 +5240,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, x, y, z);
+        PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject)); // lint: operator_call
+        new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:

@@ -569,7 +569,9 @@ void HangarWindow::render() {
                                     (this->hangarList->getCurrentTab() == 4 && item->isItem())) {
                                     int right, left;
                                     if (tab == 1) {
+                                        struct NoopGuard { ~NoopGuard() {} };
                                         right = item->item->getStationAmount();
+                                        NoopGuard guard;
                                         left = item->item->getAmount();
                                     } else {
                                         right = item->item->getAmount();
