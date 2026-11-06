@@ -1753,7 +1753,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->level->removeObjectives();
                         Globals::status->setMission(Mission::empty);
                         this->player->setRoute(nullptr);
-                        if (this->player->goingToWaypoint() == true) {
+                        if (this->player->goingToWaypoint()) {
                             this->player->setAutoPilot(nullptr);
                         }
                         this->player->removeRoute();
