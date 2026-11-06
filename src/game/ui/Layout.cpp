@@ -141,7 +141,7 @@ Layout::Layout() {
     this->field_0x150 = (int)(float)(Globals::iPadHD ? 5 : (Globals::n9 ? 6 : (Globals::retinaDisplay ? 8 : 4)));
     this->field_0x154 = Globals::iPadHD ? 50 * 1.40625f : (Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 14 : (Globals::retinaDisplay ? 30 : 15))));
     this->field_0x148 = Globals::iPadHD ? 2 * 1.40625f : (Globals::n9 ? 19 : (Globals::retinaDisplay ? 4 : 2));
-    this->field_0x158 = Globals::iPadHD ? 70 : (Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 28 : 14))));
+    this->field_0x158 = Globals::iPadHD ? 70 : (Globals::iPadLarge ? 100 : (Globals::iPad ? 50 : (Globals::n9 ? 13 : (Globals::retinaDisplay ? 28 : this->field_0x154 - 1))));
     this->field_0x15c = Globals::iPadHD ? 147 * 1.40625f : (Globals::iPadLarge ? 294 : (Globals::iPad ? 147 : (Globals::n9 ? 136 : (Globals::retinaDisplay ? 158 : 79))));
     this->field_0x204 = Globals::iPadHD ? 9 * 1.40625f : (Globals::n9 ? 16 : (Globals::retinaDisplay ? 18 : 9));
     this->field_0x2bc = Globals::iPadHD ? 2 : (Globals::n9 ? 3 : 2);
