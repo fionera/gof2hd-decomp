@@ -93,11 +93,11 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-06, wave 123)
+### Current state — ELF sections (2026-11-06, wave 124)
 All **27 original section headers are present and exact**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
-`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
+`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.rel.plt`, `.dynamic`,
 `.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
 and `.ARM.attributes` content is byte-identical. `.ARM.extab` is now **size- and base-exact**
 (`0x26298` @ `0x1a3b78`): all 3566 records have the original length, and `Level::createShip` is
@@ -106,8 +106,8 @@ the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`) landed
 exact at 948 B. `.rodata` is **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (86,993), `.ARM.extab` (1,446), `.rel.plt` (4) and
-`.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker padding).
+section bytes are `.text` (85,975), `.ARM.extab` (1,474) and
+`.note.gnu.build-id` (20); `.rel.plt` is now byte-identical. `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:
@@ -244,7 +244,7 @@ A separate axis from symbol parity. The verify metric was rebuilt for structural
   `return`, or a call through a never-assigned static function pointer, is deleted to zero bytes
   by `-Oz` and would silently alias its neighbour; the ratchet keeps the count frozen at 0.
 
-Current numbers (of **4524** compared): **byte_exact 4506, linked_exact 4506, avg 99.94%**
+Current numbers (of **4524** compared): **byte_exact 4506, linked_exact 4506, avg 99.93%**
 (the matching build compiles with `-g` since 2026-10-21, as ndk-build does — see `cmake/toolchain.cmake`).
 `verify` lists the worst matches; many low scorers are genuine decompile gaps. This long-tail
 correctness work is gated by `tools/ratchet.py` against `tools/verify_baseline.json`: byte_exact
