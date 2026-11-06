@@ -25,12 +25,11 @@ before it is exact, and the table accounts for the only 192 B of extra `.rodata`
 original section headers are present and exact, with no extra section and an exact file size
 (2,187,328 B).
 
-**`.ARM.extab` is now size-exact** (`156,312` B, `0x26298`) but two records still differ:
-`HangarWindow::render` -4 (944 vs 948) and `Generator::createMission` +4 (176 vs 172), a
-cancelling pair (w6924). `Level::createShip` has the exact 336 B real-`new` LSDA. `.rodata`
-starts at the original `0x1c9e10`. Because the size is exact only by cancellation, fixing
-`HangarWindow` alone would grow the section to `0x2629c` and move `.rodata` to `0x1c9e20`;
-both records must be fixed together.
+**`.ARM.extab` is now size-exact** (`156,312` B, `0x26298`) but three records differ:
+`Level::createShip` -8 (328 vs 336), `HangarWindow::render` +4 (952 vs 948) and
+`Generator::createMission` +4 (176 vs 172), a cancelling triple (w6960). `.rodata` starts at
+the original `0x1c9e10`. The size is exact only by cancellation; fixing one record alone
+moves `.rodata` and collapses `byte_exact`.
 
 The only differing section bytes are `.text` **88,386**; `.ARM.exidx` **861** raw bytes;
 `.ARM.extab` **109,453** (size exact; records differ -4/+4); `.rodata` **192** (the appended rank table); and
@@ -42,9 +41,9 @@ The only differing section bytes are `.text` **88,386**; `.ARM.exidx` **861** ra
 (`MenuTouchWindow` / `MGame::setCinematicMode`); it returns to exact when that function matches.
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.9,
-`Generator::createMission` 84.7, `LevelScript::process` 60.0, `Level::createShip` 70.2,
+`Generator::createMission` 84.7, `LevelScript::process` 60.0, `Level::createShip` 74.4,
 `Radar::draw` 74.5, `MGame::OnTouchEnd` 81.6, `PlayerEgo::calcCollision` 95.2,
-`HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
+`HangarWindow::render` 89.7, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`
 95.7, `Hud::draw` 96.0, `MenuTouchWindow::OnTouchBegin` 98.1, `ModStation` C1/C2 99.2,
 `MGame::OnUpdate` 99.9. See `_work/reconstructions/build-provenance-flags-wave119-w6719.md`
