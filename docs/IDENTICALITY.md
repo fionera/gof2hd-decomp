@@ -32,7 +32,7 @@ starts at the original `0x1c9e10`. Because the size is exact only by cancellatio
 `HangarWindow` alone would grow the section to `0x2629c` and move `.rodata` to `0x1c9e20`;
 both records must be fixed together.
 
-The only differing section bytes are `.text` **88,119**; `.ARM.exidx` **861** raw bytes;
+The only differing section bytes are `.text` **88,105**; `.ARM.exidx` **861** raw bytes;
 `.ARM.extab` **109,453** (size exact; records differ -4/+4); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
@@ -43,7 +43,7 @@ The only differing section bytes are `.text` **88,119**; `.ARM.exidx` **861** ra
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.9,
 `Generator::createMission` 84.3, `LevelScript::process` 60.0, `Level::createShip` 70.2,
-`Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
+`Radar::draw` 74.4, `MGame::OnTouchEnd` 81.6, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`
 95.7, `Hud::draw` 96.0, `MenuTouchWindow::OnTouchBegin` 98.1, `ModStation` C1/C2 99.2,
