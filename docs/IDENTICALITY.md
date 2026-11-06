@@ -98,7 +98,7 @@ address moves.
 
 The only differing section bytes are `.text` **88,116**; `.ARM.exidx` **1,660** raw bytes;
 `.ARM.extab` **135,593** (4 B short; `Generator::createMission` -4); `.rodata` **192** (the appended rank table); and
-`.note.gnu.build-id` **19**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
+`.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
 `.shstrtab`, `.ARM.attributes`) is byte-identical. `.rel.plt` now differs by **6 bytes**: the
