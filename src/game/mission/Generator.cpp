@@ -755,17 +755,17 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
     }
 
     uint32_t race = agent->getRace();
-    int level;
+    int itemId;
     volatile double padA;
     int amount;
 
     bool selected = false;
-    int32_t type = 0;
+    uint32_t type = 0;
     int guard = 999;
     Array<bool> *used = Globals::status->field_50;
     while (!selected) {
         selected = guard < 1;
-        int pick = Globals::rnd->nextInt(15);
+        uint32_t pick = Globals::rnd->nextInt(15);
         --guard;
         if (pick == 8) goto assignType;
         if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint, plain form drops the match 74.3% -> 54.1%
@@ -869,7 +869,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = Globals::rnd->nextInt(9);
     }
 
-    int itemId = 0;
+    itemId = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
         do {
@@ -937,7 +937,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         reward *= 2.0f;
     }
 
-    level = Globals::status->getLevel();
+    int level = Globals::status->getLevel();
     reward += (float) (level * level * level * 10);
 
     int bonus;
