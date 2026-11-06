@@ -4269,7 +4269,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (Globals::rnd->nextInt(100) <= 9 && !((PlayerFighter *) (*enemies)[i])->field_0x13c) {
+                            if (!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9) {
                                 ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                 ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
                             }
