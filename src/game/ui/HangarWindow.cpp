@@ -892,7 +892,6 @@ void HangarWindow::render() {
     }
     if (this->viewMode == 1) {
         this->viewMode = 0;
-        volatile int pV = 0;
         this->render();
         this->viewMode = 1;
         this->listItemWindow->draw();
@@ -1042,23 +1041,22 @@ void HangarWindow::render() {
             button->setPosition(baseX, y);
             button->draw();
             if (visible) {
-                Layout *lay = Globals::layout;
+                int width = button->getWidth();
+                int textX = width + baseX + Globals::layout->field_0x2c_rowHeight;
                 int height = button->getHeight();
-                int textX = button->getWidth() + baseX + lay->field_0x2c_rowHeight;
-                Globals::Canvas->SetColor(0xffffffffu);
-                volatile float textYf = (float) y + (float) height * 0.2f;
-                int textY = (int) textYf;
-                Globals::Canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
+                PaintCanvas *canvas = Globals::Canvas;
+                canvas->SetColor(0xffffffffu);
+                volatile int textY = (int) ((float) y + (float) height * 0.2f);
+                canvas->DrawString(hangarFont(), *Globals::gameText->getText(i != 0 ? i + 112 : 3400), textX,
                                             textY, false);
-                Globals::Canvas->SetColor(0x777777ffu);
-                if (i != 0) {
-                    Globals::Canvas->DrawString(
+                canvas->SetColor(0x777777ffu);
+                if (i == 0) {
+                    canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4, false);
+                } else {
+                    canvas->DrawString(
                         hangarFont(),
                         String("(+") + Globals::layout->formatCredits(FREE_CREDIT_AMOUNTS[i]) + String(")"), textX,
                         textY + Globals::layout->field_0x4, false);
-                } else {
-                    Globals::Canvas->DrawString(hangarFont(), String(""), textX, textY + Globals::layout->field_0x4,
-                                                false);
                 }
                 row++;
             }
