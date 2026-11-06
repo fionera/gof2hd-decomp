@@ -1391,7 +1391,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             refinedAny = true;
                         }
                         int count = -amount;
-                        if (count > 0) {
+                        if (__builtin_expect(count > 0, 0)) {  // lint: arm_builtin anchor: MGame::OnTouchEnd; cold ore-report branch
                             report += String("\n") + String(count) + String("t ") +
                                       *Globals::gameText->getText(1274 + refined);
                         }
