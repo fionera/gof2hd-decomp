@@ -13,8 +13,8 @@ parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 18 functions remain
 non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **49.0**,
-`Status::missionCompleted` **59.4**, `LevelScript::process` **60.2**, `Level::createShip`
-**73.8**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **81.7**, `Generator::createMission`
+`Status::missionCompleted` **59.4**, `LevelScript::process` **60.3**, `Level::createShip`
+**73.9**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **81.7**, `Generator::createMission`
 **88.0**, `HangarWindow::render` **91.7**, `Level::createMission` **92.3**,
 `Level::createScene` **92.8**, `Gun::calcCharacterCollision` **93.4**,
 `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.0**, `MenuTouchWindow::OnTouchBegin`
@@ -34,7 +34,7 @@ See `_work/reconstructions/generator-createmission-wave121-w7110.md`.
 
 `Level::createShip` now uses the **faithful spawn coordinates** (`x = waypoint->x + jx`,
 `y = waypoint->y + jy`, `z = waypoint->z + jz`, all `int`) instead of the wave-119 tuned
-slot-map; the score dips 74.4 -> **73.8** but the source now matches the original's
+slot-map; the score dips 74.4 -> **73.9** but the source now matches the original's
 disassembly semantics. See `_work/reconstructions/level-createship-wave121-w7107.md`.
 
 The last manually linked data input was also removed: the 192-byte
@@ -43,9 +43,9 @@ fixed address `0x20b977`). The function now uses a plain `switch (m->getType())`
 real mission-type labels in the original body order. **`.rodata` is byte-identical**:
 269,159 B at `0x1c9e10`/`0x41b67`, 0 differing bytes. The function score drops
 **92.454632% -> 59.372027%** (1432 B -> 1432 B, byte/linked still false), and the `.text`
-content delta is **87,895** bytes; the `.text` size/base (0x69440/0x1337c8),
+content delta is **87,892** bytes; the `.text` size/base (0x69440/0x1337c8),
 `.ARM.exidx` size/base, `.ARM.extab` size (0x26290, 8 B short) and the exact file size
-(2,187,328 B) are unchanged. The remaining section deltas are `.text` 87,895,
+(2,187,328 B) are unchanged. The remaining section deltas are `.text` 87,892,
 `.ARM.exidx` 1,327, `.ARM.extab` 107,976 (8 B short), `.rel.plt` 6, `.bss` 1 and
 `.note.gnu.build-id` 20.
 
@@ -121,7 +121,7 @@ original section headers are present and exact, with no extra section and an exa
 starts at the original `0x1c9e10`; the 8 B shortfall fits the 16-byte `.rodata` alignment
 gap, so no function address moves.
 
-The only differing section bytes are `.text` **87,895**; `.ARM.exidx` **1,327** raw bytes;
+The only differing section bytes are `.text` **87,892**; `.ARM.exidx` **1,327** raw bytes;
 `.ARM.extab` **107,976** (8 B short; `Level::createShip` -8); `.rodata` **0** (byte-identical); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
@@ -341,7 +341,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,895 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,892 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (107,976 bytes differ). |
