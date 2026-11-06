@@ -93,7 +93,7 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-06, wave 124)
+### Current state — ELF sections (2026-11-06, wave 125)
 All **27 original section headers are present and exact**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
@@ -106,7 +106,7 @@ the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`) landed
 exact at 948 B. `.rodata` is **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (85,965), `.ARM.extab` (1,474) and
+section bytes are `.text` (85,953; wave 125 corrected the `Layout::Layout` `field_0x184` chain), `.ARM.extab` (1,474) and
 `.note.gnu.build-id` (20); `.rel.plt` is now byte-identical. `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
