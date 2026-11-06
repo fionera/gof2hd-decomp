@@ -1486,7 +1486,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->starMapOpen = 0;
                 this->pauseOpen = 0;
                 resumeSounds();
-                if (this->starMap->exitRequested == true) {
+                if (this->starMap->exitRequested) {
                     if (this->touchesStream) {
                         this->usingJumpDrive = 0;
                         startJumpScene();
@@ -1780,7 +1780,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->hud->releaseAllKeys();
                 return;
             }
-            if (this->menuTouchOpen == true) {
+            if (this->menuTouchOpen) {
                 if (this->freeCamMode) {
                     MGameAppData *appData = (MGameAppData *) Globals::appManager->GetApplicationData();
                     if (appData->modalActive || appData->transitionActive) {
@@ -1791,7 +1791,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                 }
                 uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
-                if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
+                if (this->menuWindow->OnTouchEnd(x, y, touchId) == true) {
                     // Pause menu closed.
                     this->pauseOpen = 0;
                     this->pauseSnapshot = 0;
