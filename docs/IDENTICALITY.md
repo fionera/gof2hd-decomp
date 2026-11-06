@@ -11,7 +11,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
-Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **49.0**,
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.7**,
 `Status::missionCompleted` **71.0**, `LevelScript::process` **60.3**, `Level::createShip`
 **73.9**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **81.7**, `Generator::createMission`
 **89.9**, `Level::createMission` **92.3**, `Level::createScene` **92.8**,
@@ -19,7 +19,8 @@ Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **49.0**,
 **95.3**, `SpaceLounge::drawLounge` **95.7**, `MenuTouchWindow::OnTouchBegin` **98.1**,
 `ModStation` C1/C2 **99.2**, `MGame::OnUpdate` **99.9**.
 
-Wave-122 gains: `Status::missionCompleted` **59.4 -> 71.0** (four branch-probability hints on the
+Wave-122 gains: `Layout::Layout` now uses the original's `field_0x184` iPad/n9 arm order
+(48.96 -> **48.70**, a fidelity fix); `Status::missionCompleted` **59.4 -> 71.0** (four branch-probability hints on the
 plain switch recover most of the rank-table removal cost while keeping `.rodata` exact);
 `Generator::createMission` **88.0 -> 89.9** (volatile `short padA` + volatile
 `amount` store); `HangarWindow::render` **91.7 -> 94.0** (free-credits canvas local + faithful
@@ -29,7 +30,7 @@ Canvas hoist plus dock-block allocator perturbation); `LevelScript::process` **6
 (case-154 state-7 timer/state fix); `Level::createShip` **73.8 -> 73.9** (capital-ship position
 vector). See the `*-wave122-w72*.md` notes.
 
-Section deltas: `.text` **86,927** differing bytes (size exact); `.ARM.exidx` **1,327**;
+Section deltas: `.text` **86,947** differing bytes (size exact); `.ARM.exidx` **1,327**;
 `.ARM.extab` **156,304 B** (8 B short; only `Level::createShip` -8, 108,010 differing bytes);
 `.rodata` **0** (byte-identical); `.rel.plt` **6**; `.bss` **1**; `.note.gnu.build-id` **20**.
 File size is exact (2,187,328 B).
@@ -371,7 +372,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 86,927 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 86,947 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (108,010 bytes differ). |
