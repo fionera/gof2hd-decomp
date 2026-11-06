@@ -4648,8 +4648,8 @@ bool LevelScript::process(int delta) {
                     }
                 } else if (m_nState == 7) {
                     if ((*enemies)[0]->isDocked()) {
-                        m_pLevel->objectivesB = nullptr;
-                        m_nState = 8;
+                        m_nScriptTimerA = 0;
+                        m_nState++;
                     }
                 } else if (m_nState == 8) {
                     m_nScriptTimerA += delta;
@@ -4706,7 +4706,6 @@ bool LevelScript::process(int delta) {
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;
-                        m_nState++;
                         m_nScriptTimerA = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 9) {
