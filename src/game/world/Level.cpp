@@ -5169,12 +5169,12 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wx = waypoint != nullptr ? waypoint->x : 0;
-    int wy = waypoint != nullptr ? waypoint->y : 0;
     int wz = waypoint != nullptr ? waypoint->z : 0;
+    int wy = waypoint != nullptr ? waypoint->y : 0;
+    int wx = waypoint != nullptr ? waypoint->x : 0;
     int jitterX = Globals::rnd->nextInt(40000);
-    int jitterZ = Globals::rnd->nextInt(40000);
     int jitterY = Globals::rnd->nextInt(40000);
+    int jitterZ = Globals::rnd->nextInt(40000);
     int level = Globals::status->getLevel();
     if (level > 20) level = 20;
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
@@ -5209,9 +5209,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    int x = wx + jitterX - 20000;
-    float y = (float) (wy + jitterY - 20000);
     float z = (float) (wz + jitterZ - 20000);
+    float y = (float) (wy + jitterY - 20000);
+    int x = wx + jitterX - 20000;
     player->setEmpData(empPoints, empTime);
 
     if (Globals::status == nullptr) return nullptr;
