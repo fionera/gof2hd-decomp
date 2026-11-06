@@ -12,7 +12,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 18 functions remain
 non-byte-exact, all size-exact.
 
-Wave 121 made two structural gains. `PlayerEgo::calcCollision` is now **byte-exact**
+Wave 121 made three structural gains. `PlayerEgo::calcCollision` is now **byte-exact**
 (95.5 -> **100.0**, 968 B): the original's un-rotated loop and visible-arm register shuffle
 are reproduced by two branch-weight hints (`__builtin_expect(isShrinking() || miningGame != 0, 1)`
 on the wormhole `continue` and `__builtin_expect(isDying() || isDead(), 0)` on the steal-arm
@@ -20,16 +20,20 @@ on the wormhole `continue` and `__builtin_expect(isDying() || isDead(), 0)` on t
 (`= 1`). The previous body's two redundant size guards and the `field_0x71` tail store are gone.
 See `_work/reconstructions/playerego-calccollision-wave121-w7116.md`.
 
+`Generator::createMission` improved **84.7 -> 88.0** and its `.ARM.extab` record is now exact
+at 172 B (the `race < 4 && type == 13` branch hint plus the `volatile long long padA` width).
+See `_work/reconstructions/generator-createmission-wave121-w7110.md`.
+
 The last manually linked data input was also removed: the 192-byte
 `Status::missionCompleted` mission-type -> case-rank table (`tools/mission_case_table.cpp`,
 fixed address `0x20b977`). The function now uses a plain `switch (m->getType())` with the
 real mission-type labels in the original body order. **`.rodata` is byte-identical**:
 269,159 B at `0x1c9e10`/`0x41b67`, 0 differing bytes. The function score drops
 **92.454632% -> 59.372027%** (1432 B -> 1432 B, byte/linked still false), and the `.text`
-content delta is **88,196** bytes; the `.text` size/base (0x69440/0x1337c8),
-`.ARM.exidx` size/base, `.ARM.extab` size (0x26294, still 4 B short) and the exact file size
-(2,187,328 B) are unchanged. The remaining section deltas are `.text` 88,196,
-`.ARM.exidx` 1,660, `.ARM.extab` 135,593 (4 B short), `.rel.plt` 6, `.bss` 1 and
+content delta is **87,887** bytes; the `.text` size/base (0x69440/0x1337c8),
+`.ARM.exidx` size/base, `.ARM.extab` size (0x26290, 8 B short) and the exact file size
+(2,187,328 B) are unchanged. The remaining section deltas are `.text` 87,887,
+`.ARM.exidx` 1,327, `.ARM.extab` 107,976 (8 B short), `.rel.plt` 6, `.bss` 1 and
 `.note.gnu.build-id` 20.
 
 Why the Status score drops: clang 7's `MachineBlockPlacement` lays a plain switch's case bodies
@@ -72,8 +76,8 @@ remaining gaps are source-shape. See
 `_work/reconstructions/stock-cmake-reproduction-wave120-w7010.md`, and
 `_work/reconstructions/per-tu-flag-sensitivity-wave120-w7005.md`.
 
-Section deltas: `.text` **88,116** differing bytes (size exact); `.ARM.exidx` **1,660**;
-`.ARM.extab` **156,308 B** (4 B short; only `Generator::createMission` -4, 135,593 differing
+Section deltas: `.text` **87,809** differing bytes (size exact); `.ARM.exidx` **1,327**;
+`.ARM.extab` **156,304 B** (8 B short; only `Level::createShip` -8, 107,985 differing
 bytes); `.rodata` **+192** (mission rank table); `.rel.plt` **6**; `.note.gnu.build-id`
 **20**; `.bss` **3** (the known pointer-order residual). File size is exact (2,187,328 B).
 
@@ -98,14 +102,14 @@ before it is exact, and the table accounts for the only 192 B of extra `.rodata`
 original section headers are present and exact, with no extra section and an exact file size
 (2,187,328 B).
 
-**`.ARM.extab` is 4 B short** (`156,308` B, `0x26294`); the only record delta is
-`Generator::createMission` -4 (168 vs 172). `Level::createShip` is exact at 336 B and
-`HangarWindow::render` is exact at 948 B (wave-119 w6978). `.rodata` starts at the original
-`0x1c9e10`; the 4 B shortfall fits the 16-byte `.rodata` alignment gap, so no function
-address moves.
+**`.ARM.extab` is 8 B short** (`156,304` B, `0x26290`); the only record delta is
+`Level::createShip` -8 (328 vs 336). `Generator::createMission` is now exact at 172 B
+(wave-121 w7110) and `HangarWindow::render` is exact at 948 B (wave-119 w6978). `.rodata`
+starts at the original `0x1c9e10`; the 8 B shortfall fits the 16-byte `.rodata` alignment
+gap, so no function address moves.
 
-The only differing section bytes are `.text` **88,116**; `.ARM.exidx` **1,660** raw bytes;
-`.ARM.extab` **135,593** (4 B short; `Generator::createMission` -4); `.rodata` **192** (the appended rank table); and
+The only differing section bytes are `.text` **87,887**; `.ARM.exidx` **1,327** raw bytes;
+`.ARM.extab` **107,976** (8 B short; `Level::createShip` -8); `.rodata` **0** (byte-identical); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
@@ -324,10 +328,10 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,549 content bytes differ across the 19 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,887 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
-| .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,660 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
-| .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short**: `Generator::createMission` -4 (168 vs 172); `Level::createShip` is exact at 336 B (real-`new` shape, wave 119) and `HangarWindow::render` is exact at 948 B (w6978). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (135,593 bytes differ). |
+| .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,327 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip` LSDA-length changes shift the records between them). |
+| .ARM.extab | 156,312 | 156,304 | **-8** | base-exact (0x1a3b78) but **8 B short**: `Level::createShip` -8 (328 vs 336); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (107,976 bytes differ). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). |
@@ -354,10 +358,10 @@ The original build is now pinned by evidence, not by A/B alone:
    order, not the original's A-then-B order. See
    `_work/reconstructions/status-missioncompleted-wave121-w7113.md`.
 3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272, inline
-   856, extab 2438); `.ARM.extab` is base-exact but **4 B short** (156,308 vs 156,312 @
-   0x1a3b78). The only record delta is `Generator::createMission` -4 (168 vs 172);
-   `Level::createShip` is exact at 336 B and `HangarWindow::render` is exact at 948 B. The shortfall fits the
-   `.rodata` alignment gap, so no address moves. 1,660 raw `.ARM.exidx` bytes differ. The
+   856, extab 2438); `.ARM.extab` is base-exact but **8 B short** (156,304 vs 156,312 @
+   0x1a3b78). The only record delta is `Level::createShip` -8 (328 vs 336);
+   `Generator::createMission` is exact at 172 B and `HangarWindow::render` is exact at 948 B. The shortfall fits the
+   `.rodata` alignment gap, so no address moves. 1,327 raw `.ARM.exidx` bytes differ. The
    `Layout::Layout` body is size-exact 7072 B without a pad. See
    `_work/reconstructions/exidx-records_w4237.md` and
    `_work/reconstructions/extab_lsda_scopes_w102_wm103.md`. The w3840 `extern template` for
@@ -395,8 +399,8 @@ section-size deltas above.
 - Byte-exactness campaign: verify.py worst-first, fix near-miss (80-99%) high-value functions first.
 - Remove the `.jcr` rank table without losing `Status::missionCompleted`'s 87.0% body order,
   restoring the 27-section table and the byte-identical `.dynsym`/`.shstrtab`.
-- Close the last 4 B of `.ARM.extab`: `Generator::createMission` -4 (168 vs 172). The
-  `Level::createShip` and `HangarWindow::render` records are already exact.
+- Close the last 8 B of `.ARM.extab`: `Level::createShip` -8 (328 vs 336). The
+  `Generator::createMission` and `HangarWindow::render` records are already exact.
 - Implement missing engine functions in batches (math/Vector/Matrix shims are the densest cluster).
 
 ## Concrete leads found (for the byte-exactness campaign)

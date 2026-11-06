@@ -747,7 +747,6 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
-    struct NoopGuard { ~NoopGuard() {} };
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -757,7 +756,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int itemId;
-    volatile double padA;
+    volatile long long padA;
     int amount;
 
     bool selected = false;
@@ -769,7 +768,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         uint32_t pick = Globals::rnd->nextInt(15);
         --guard;
         if (pick == 8) goto assignType;
-        if (__builtin_expect(pick == 10, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint, plain form drops the match 74.3% -> 54.1%
+        if (pick == 10) {
             type = 10;
             if (race > 3) continue;
         }
@@ -791,7 +790,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
             }
             used->data()[pick] = true;
         }
-        if (__builtin_expect(pick == 12, 0)) {  // lint: arm_builtin anchor: Generator::createMission; cold mission type 12
+        if (pick == 12) {
             selected = true;
             if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 25) {
                 type = 12;
@@ -833,12 +832,12 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         targetStation = agent->getStation();
         type = 8;
     } else {
-        if ((uint32_t) type < 15 && __builtin_expect(((1U << type) & 0x4801U) != 0, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint
+        if ((uint32_t) type < 15 && ((1U << type) & 0x4801U) != 0) {
             while (targetStation == Globals::status->getStation()->getIndex()) {
                 targetStation = generateStationIndex(systems, agent->getStation());
             }
         }
-        if (race < 4 && type == 13) {
+        if (__builtin_expect(race < 4 && type == 13, 1)) {  // lint: arm_builtin anchor: Generator::createMission; branch-weight hint
             int agentSystem = agent->getSystem();
             if (systems->data()[agentSystem]->getRoutes() == nullptr) {
                 type = 4;
@@ -878,7 +877,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         } while ((*items)[itemId]->getOccurence() == 0 || (*items)[itemId]->getSinglePrice() == 0 ||
                  (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
-        int count; { NoopGuard g; count = Globals::rnd->nextInt(15); }
+        int count = Globals::rnd->nextInt(15);
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
