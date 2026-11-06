@@ -686,13 +686,13 @@ bool LevelScript::process(int delta) {
                 m_nState = 4;
                 player->setComputerControlled(false);
                 player->player->field_5e = 0;
-                m_pLevel->getPlayer()->setCollide(true);
                 m_pRadar->enabled = 1; // disasm stores m_pRadar+0x48 (same field the siblings exit)
+                m_pLevel->getPlayer()->setCollide(true);
                 m_bCinematicBreak = 0; // clear cinematicBreak_ (m_nFlags high byte @0x11)
                 m_pCamera->setLookAtCam(false);
                 m_pCamera->setTarget(player->geometry);
-                m_bStartSequence = 0;               // strb 0 -> this+0x20
                 reinterpret_cast<uint8_t &>(field_0x12) = 1; // strb 1 -> this+0x12 (low byte)
+                m_bStartSequence = 0;               // strb 0 -> this+0x20
             }
             // falls through to the shared active tail (0x137f7c)
         } else if (m_nState == 5 && ((RadioMessage *) ((*messages)[12]))->isOver()) {
@@ -712,7 +712,7 @@ bool LevelScript::process(int delta) {
                 Vector zero158{0.0f, 0.0f, 0.0f};
                 Globals::sound->updateEvent3DAttributes(158, &pos, &zero158, false);
                 Globals::sound->stop(Globals::sound->currentMusicEvent);
-                Globals::sound->play(143, nullptr, nullptr, 0.0f);
+                Globals::sound->play(161, nullptr, nullptr, 0.0f);
             }
             Vector zero161{0.0f, 0.0f, 0.0f};
             Globals::sound->updateEvent3DAttributes(161, &pos, &zero161, false);
@@ -733,7 +733,7 @@ bool LevelScript::process(int delta) {
             // .rodata pool @0x138e30..0x138e3c: yaw = 1.5707964f, translate = {25000, -200, -1000}.
             if (((RadioMessage *) ((*messages)[10]))->isOver()) {
                 Globals::sound->stop(player->field_0x1c);
-                Globals::sound->play(161, nullptr, nullptr, 0.0f);
+                Globals::sound->play(143, nullptr, nullptr, 0.0f);
                 player->setTurretMode(false);
                 resetCamera(m_pLevel);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
