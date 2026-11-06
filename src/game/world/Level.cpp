@@ -5217,8 +5217,8 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (Globals::status == nullptr) return nullptr;
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
-        fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
+        PlayerFighter *fighter = new PlayerFighter(race, hostile, player, nullptr, x, y, z, false);
+        fighter->setShipGroup(Globals::globals->getShipGroup(race, race, group), race, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
             lodManager->addObject(kiFighter->parentGeometry != nullptr ? kiFighter->parentGeometry : kiFighter->geometry);
@@ -5233,7 +5233,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
         Vector pos = {(float) x, (float) y, (float) z};
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, pos.x, pos.y, pos.z);
+        PlayerFixedObject *fixed = new PlayerFixedObject(hostile, race, player, nullptr, pos.x, pos.y, pos.z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
@@ -5285,7 +5285,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
                 break;
         }
         fixed->setBV(volumes);
-        fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), type, false);
+        fixed->setShipGroup(Globals::globals->getShipGroup(type, race, false), race, false);
         lodManager->addObject(fixed->geometry);
         fixed->field_0x40 = 1;
         ship = fixed;
