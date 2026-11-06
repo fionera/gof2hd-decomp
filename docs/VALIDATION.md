@@ -93,19 +93,20 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-05, wave 118)
+### Current state — ELF sections (2026-11-06, wave 123)
 All **27 original section headers are present and exact**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
-`.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
-and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
-`.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
-`.ARM.attributes` content is byte-identical. `.ARM.extab` is **8 B short** (`0x26290`); the
-only remaining record delta is `Level::createShip` 328 B vs 336 B (-8). `Generator::createMission`
-is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B. `.rodata` is
-**byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B `Status::missionCompleted`
-rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`) was removed in wave 121
-and the switch is now a plain `switch (m->getType())`. The differing section bytes are
-`.text` (87,887), `.ARM.exidx` (1,327), `.ARM.extab` (107,976; 8 B short) and
+`.ARM.exidx`, `.ARM.extab`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
+`.shstrtab` and `.note.gnu.build-id` are size- and base-exact; `.ARM.exidx`, `.dynamic`,
+`.rel.dyn`, `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`
+and `.ARM.attributes` content is byte-identical. `.ARM.extab` is now **size- and base-exact**
+(`0x26298` @ `0x1a3b78`): all 3566 records have the original length, and `Level::createShip` is
+the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`) landed in wave 123.
+`Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is
+exact at 948 B. `.rodata` is **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
+`Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
+was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
+section bytes are `.text` (87,197), `.ARM.extab` (1,446), `.rel.plt` (6) and
 `.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
