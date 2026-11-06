@@ -5258,7 +5258,6 @@ bool LevelScript::process(int delta) {
                         break;
                     }
                 }
-                m_pLevel->createRadioMessage(14, ((SolarSystem *) Globals::status->getSystem())->getRace());
                 m_nState = 1;
             }
         }
@@ -5282,6 +5281,7 @@ bool LevelScript::process(int delta) {
                 player->setAutoPilot(nullptr);
                 player->setRoute(nullptr);
                 m_pLevel->setPlayerRoute(nullptr);
+                m_pLevel->createRadioMessage(14, ((SolarSystem *) Globals::status->getSystem())->getRace());
                 m_nState = 2;
             }
         }
