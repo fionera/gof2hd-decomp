@@ -1538,11 +1538,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 168:
-                // The (unsigned short) is a size device, not semantics: mission
-                // status values are 16-bit counters.  It emits one uxth (2 B) that
-                // keeps this function at the original's 1432 B so the rest of
-                // .text stays at its original addresses.
-                if (Globals::status->field_178 >= (unsigned short) m->getStatusValue()) {
+                if (Globals::status->field_178 >= m->getStatusValue()) {
                     m->setWon(true);
                     Globals::status->field_178 = 0;
                     return m;
