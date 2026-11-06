@@ -5595,3 +5595,9 @@ prefix 3856 -> 3885). Gate 4498/4498. Note: `_work/reconstructions/meshmerger_or
 - `PlayerEgo::calcCollision` real `i == 0 && field_0x71` tail landed (968 B).
 - `.ARM.extab` is **8 B short** (156,304 vs 156,312); 156,304 is the hard minimum that
   keeps `.rodata` at 0x1c9e10 (one more byte lost -> `.rodata` 0x1c9e00, byte 4043).
+
+- `Generator::createMission` 83.61 -> **84.30** (itemId hoist + uint32 pick/type): LSDA is now
+  176 B (+4 vs original) while `HangarWindow::render` is 944 (-4), so `.ARM.extab` is
+  **size-exact 156,312 B**. `.ARM.exidx` differing bytes fell 1,674 -> **861**.
+- `Level::createMission` 92.294 -> **92.327** (negated bigShips/localRace condition).
+- `MGame::OnUpdate`, `Level::createShip`, `LevelScript::process` prologue: dead-end sweeps.

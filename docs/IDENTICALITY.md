@@ -25,16 +25,15 @@ before it is exact, and the table accounts for the only 192 B of extra `.rodata`
 original section headers are present and exact, with no extra section and an exact file size
 (2,187,328 B).
 
-**One structural delta remains open:** `.ARM.extab` is 8 bytes short (`0x26290` vs `0x26298`;
-`Generator::createMission` -4, 168 vs 172, plus 4 bytes of tail alignment). `Level::createShip`
-has the exact 336 B real-`new` LSDA. `.rodata` still starts at the original `0x1c9e10` because
-the 8-byte shortfall fits the 16-byte alignment gap, so no function address moves. This is a
-hard wall: `156,304 B` is the minimum that keeps `.rodata` at `0x1c9e10`; losing one more
-`.ARM.extab` byte moves `.rodata` to `0x1c9e00` and collapses `byte_exact` (4505 -> 4043,
-measured by the w6829 placement-new shape).
+**`.ARM.extab` is now size-exact** (`156,312` B, `0x26298`) but two records still differ:
+`HangarWindow::render` -4 (944 vs 948) and `Generator::createMission` +4 (176 vs 172), a
+cancelling pair (w6924). `Level::createShip` has the exact 336 B real-`new` LSDA. `.rodata`
+starts at the original `0x1c9e10`. Because the size is exact only by cancellation, fixing
+`HangarWindow` alone would grow the section to `0x2629c` and move `.rodata` to `0x1c9e20`;
+both records must be fixed together.
 
-The only differing section bytes are `.text` **88,125**; `.ARM.exidx` **1,674** raw bytes;
-`.ARM.extab` **135,831** (size 8 B short; the shift makes the tail comparison non-local); `.rodata` **192** (the appended rank table); and
+The only differing section bytes are `.text` **88,119**; `.ARM.exidx` **861** raw bytes;
+`.ARM.extab` **109,453** (size exact; records differ -4/+4); `.rodata` **192** (the appended rank table); and
 `.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
@@ -43,7 +42,7 @@ The only differing section bytes are `.text` **88,125**; `.ARM.exidx` **1,674** 
 (`MenuTouchWindow` / `MGame::setCinematicMode`); it returns to exact when that function matches.
 
 The 19 non-byte-exact functions (fuzzy %, current report): `Layout::Layout` C1/C2 48.9,
-`Generator::createMission` 83.6, `LevelScript::process` 60.0, `Level::createShip` 70.2,
+`Generator::createMission` 84.3, `LevelScript::process` 60.0, `Level::createShip` 70.2,
 `Radar::draw` 74.4, `MGame::OnTouchEnd` 80.1, `PlayerEgo::calcCollision` 95.2,
 `HangarWindow::render` 91.2, `Level::createMission` 92.3, `Status::missionCompleted` 92.5,
 `Level::createScene` 92.8, `Gun::calcCharacterCollision` 93.4, `SpaceLounge::drawLounge`
