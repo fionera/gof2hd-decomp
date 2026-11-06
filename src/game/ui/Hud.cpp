@@ -1606,12 +1606,20 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
 
     // Primary fire button and lock marker.
     {
-        unsigned int fireImage =
-            (this->touchFlags & 0x10) || this->fireForTutorial ? this->orbitMarkerIdleImage : this->autoTurretOnImage;
-        if (Globals::iPad)
-            Globals::Canvas->DrawImage2D(fireImage, this->field_0x3e4, this->field_0x3e6, 0x11, 0x44);
-        else
-            Globals::Canvas->DrawImage2D(fireImage, this->field_0x3e4, this->field_0x3e6);
+        // The original duplicates the whole iPad/non-iPad draw in each arm of the
+        // touchFlags/fireForTutorial test; the compiler tail-merges the iPad check but
+        // keeps the two value loads (ldr.w r1,[sl,#0x2e0] / [sl,#0x2e4]) in the arms.
+        if ((this->touchFlags & 0x10) || this->fireForTutorial) {
+            if (Globals::iPad)
+                Globals::Canvas->DrawImage2D(this->orbitMarkerIdleImage, this->field_0x3e4, this->field_0x3e6, 0x11, 0x44);
+            else
+                Globals::Canvas->DrawImage2D(this->orbitMarkerIdleImage, this->field_0x3e4, this->field_0x3e6);
+        } else {
+            if (Globals::iPad)
+                Globals::Canvas->DrawImage2D(this->autoTurretOnImage, this->field_0x3e4, this->field_0x3e6, 0x11, 0x44);
+            else
+                Globals::Canvas->DrawImage2D(this->autoTurretOnImage, this->field_0x3e4, this->field_0x3e6);
+        }
     }
     if (!ego->isDockingToAsteroid() && !ego->isMining() && !ego->isDockingToStream() && !ego->isInDockingProcedure() &&
         !ego->isDockingToDockingPoint() && !ego->isInTurretMode()) {
@@ -1634,7 +1642,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
-            short total = ego->getDockTotalAmount();
+            int total = ego->getDockTotalAmount();
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
