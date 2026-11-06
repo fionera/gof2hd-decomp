@@ -40,20 +40,20 @@
    "usize": 57232
   },
   {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 70.3,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
+  },
+  {
    "name": "_ZN6Status16missionCompletedEbbx",
    "pct": 71.0,
    "byte": false,
    "linked": false,
    "osize": 1432,
    "usize": 1432
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.9,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -112,20 +112,20 @@
    "usize": 9700
   },
   {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 95.3,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
-  },
-  {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
    "pct": 95.7,
    "byte": false,
    "linked": false,
    "osize": 1948,
    "usize": 1948
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 96.4,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
   },
   {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",

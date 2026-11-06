@@ -9,17 +9,39 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
-avg **99.93%**. 18 functions remain non-byte-exact, all size-exact.
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
-`Level::createShip` **73.9 -> 70.3** (real `new` for both ship allocations, no `try/catch`
-anchor): the function now carries the original's 336 B cleanup-only LSDA (`ttype 0xff`, 57
-rows), so **`.ARM.extab` is size- and base-exact (`0x26298`)** and **`.ARM.exidx` is
-byte-identical**. The score drop is the Greedy-RA cascade caused by the four live cleanup
-pointers (see `_work/reconstructions/level-createship-wave123-w7306.md`).
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
+`LevelScript::process` **60.3**, `Level::createShip` **70.3**, `Status::missionCompleted`
+**71.0**, `Radar::draw` **74.5**, `MGame::OnTouchEnd` **82.4**,
+`Generator::createMission` **89.9**, `Level::createMission` **92.3**,
+`Level::createScene` **92.8**, `Gun::calcCharacterCollision` **93.4**,
+`HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
+`MenuTouchWindow::OnTouchBegin` **98.1**, `ModStation` C1/C2 **99.2**,
+`MGame::OnUpdate` **99.9**.
 
-Section deltas: `.text` **87,197** differing bytes (size exact); `.ARM.exidx` **0**;
+Wave-123 gains: `Layout::Layout` **48.7 -> 48.9** (n9-first `field_0x184` arm, int
+`field_0x124` arm, `field_0x2b8`/`field_0x110` order); `HangarWindow::render` **94.0 -> 94.1**
+(free-credits `visible` as one expression); `Hud::draw` **95.3 -> 96.4** (boost if/else,
+`Globals::status` anchor, `short barW`); `MGame::OnTouchEnd` **81.7 -> 82.4** (named `won`
+local + inverted guard). `LevelScript::process` stays **60.3** but now reuses the saved
+`player` local in mission-0 case 8 (raw 60.2547 -> 60.2567). `Level::createShip` **73.9 ->
+70.3** is a structural win: the real-`new` body carries the original's 336 B cleanup-only
+LSDA (`ttype 0xff`, 57 rows), so **`.ARM.extab` is size- and base-exact (`0x26298`)** and
+**`.ARM.exidx` is byte-identical**; the score drop is the Greedy-RA cascade caused by the four
+live cleanup pointers (see `_work/reconstructions/level-createship-wave123-w7306.md`).
+
+Build-flag research (wave 123, two independent workers) re-confirmed the stock NDK r18b CMake
+Release recipe: 192/192 app TUs object-identical, full default link flag set byte-identical,
+and 259 + 258 global plus 140 per-TU flag screens found **zero** target improvements.
+The remaining gaps are source shape, not build flags. See
+`_work/reconstructions/build-flags-wave123-w7319.md` and
+`_work/reconstructions/build-flags-wave123-w7320.md`.
+
+Section deltas: `.text` **87,014** differing bytes (size exact); `.ARM.exidx` **0**;
 `.ARM.extab` **1,446** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
-**6**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+**4** (2 swapped PLT entries); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+(2,187,328 B).
 
 ## Update 2026-11-06 (wave 122)
 
@@ -389,13 +411,13 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,197 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 87,014 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,446 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
-| .rel.plt | 29,392 | 29,392 | 0 | size- and base-exact (0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). 3 relocations have permuted symbol indices (6 differing bytes, pre-existing). |
+| .rel.plt | 29,392 | 29,392 | 0 | size- and base-exact (0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). 2 relocations have permuted symbol indices (4 differing bytes; the `MGame::OnTouchEnd` cold-block PLT order). |
 | .rel.dyn | 28,744 | 28,744 | 0 | **byte-identical** (0 differing bytes; 0x7048 @ 0x504d4). |
 | .hash | 38,716 | 38,716 | 0 | **byte-identical** (0 differing bytes; 0x973c @ 0x441a8). |
 | .data.rel.ro | 12,264 | 12,264 | **0** | **byte-identical** (0 differing bytes). |
