@@ -3956,9 +3956,9 @@ bool LevelScript::process(int delta) {
                         m_tempVec += leader->getDirection() * 4000.0f;
                         m_nScriptTimerA = 0;
                         m_tempVec += leader->getRightVector() * -500.0f;
-                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
+                        m_pCamera->setPosition(m_tempVec);
                         m_tempVec += leader->getUpVector() * -500.0f;
-                        m_nState = 4;
+                        m_nState++;
                     }
                 } else if (m_nState == 3) {
                     // First-reference anchor for the mission-0 intro calls. The original
