@@ -50,8 +50,9 @@ source tree reproduces the original TU membership and within-TU function order, 
 object input order (`tools/source_order.txt`) places every one of the 4,524 exported functions at
 its original address; `.text`, `.rodata`, `.data`, `.bss`, `.got`, `.ARM.exidx`, `.ARM.extab`,
 `.rel.plt`, `.dynsym`, `.dynstr`, `.hash` and `.rel.dyn` are size- and base-exact, `.rel.plt`
-content is byte-identical, and all 27 original section headers are exact; wave 108 adds one
-`.jcr` section for the `Status::missionCompleted` rank table (see below).
+content is byte-identical, and all 27 original section headers are exact. `.rodata` is now
+byte-identical too: the former `Status::missionCompleted` rank table was removed in wave 121
+and the switch is a plain `switch (m->getType())` (see below).
 The link order is a static source
 input: the build reads the checked-in source list, not the original `.so`, so no manually linked
 data is generated at build time. `tools/gen_link_order.py` remains as an analysis tool (it
@@ -100,13 +101,12 @@ and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel
 `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
 `.ARM.attributes` content is byte-identical. `.ARM.extab` is **size-exact** (`0x26298`) but two records differ:
 `HangarWindow::render` is 944 B vs 948 B (-4) and `Generator::createMission` is 176 B vs 172 B (+4), a cancelling pair;
-`Level::createShip` is exact at 336 B (real-`new` shape). The
-`Status::missionCompleted` rank table is the last `.rodata` input
-(`tools/mission_case_table.cpp`, fixed address `0x20b977`), so the original `.rodata` image is
-untouched (the table is the only 192 B of extra `.rodata`). The differing section bytes are
-`.text` (88,216), `.ARM.exidx` (863), `.ARM.extab` (109,364; size exact, records -8/+4/+4), `.rodata`
-(192, the appended codegen table) and `.note.gnu.build-id` (20). `.bss` is NOBITS (its file
-bytes are linker padding).
+`Level::createShip` is exact at 336 B (real-`new` shape). `.rodata` is **byte-identical**
+(269,159 B, base `0x1c9e10`): the former 192 B `Status::missionCompleted` rank table
+(`tools/mission_case_table.cpp`, fixed address `0x20b977`) was removed in wave 121 and the
+switch is now a plain `switch (m->getType())`. The differing section bytes are
+`.text` (88,549), `.ARM.exidx` (863), `.ARM.extab` (109,364; size exact, records -8/+4/+4) and
+`.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
 How the former 50 allowlisted extras were removed — the template for any new one:

@@ -4,7 +4,38 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
-## Update 2026-11-06 (wave 120)
+## Update 2026-11-06 (wave 121)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4505/4524**, linked_exact **4505/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
+parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 19 functions remain
+non-byte-exact, all size-exact.
+
+Wave 121 removed the last manually linked data input: the 192-byte
+`Status::missionCompleted` mission-type -> case-rank table (`tools/mission_case_table.cpp`,
+fixed address `0x20b977`). The function now uses a plain `switch (m->getType())` with the
+real mission-type labels in the original body order. **`.rodata` is byte-identical**:
+269,159 B at `0x1c9e10`/`0x41b67`, 0 differing bytes. The function score drops
+**92.454632% -> 59.372027%** (1432 B -> 1432 B, byte/linked still false), and the `.text`
+content delta grows 88,116 -> **88,549** bytes; the `.text` size/base (0x69440/0x1337c8),
+`.ARM.exidx` size/base, `.ARM.extab` size (0x26294, still 4 B short) and the exact file size
+(2,187,328 B) are unchanged. The remaining section deltas are `.text` 88,549,
+`.ARM.exidx` 1,660, `.ARM.extab` 135,593 (4 B short), `.rel.plt` 6, `.bss` 1 and
+`.note.gnu.build-id` 20.
+
+Why the score drops: clang 7's `MachineBlockPlacement` lays a plain switch's case bodies
+out in the jump table's value-sorted successor order, while the original's body layout is
+two ascending runs (A = 150,151,152,153,154,155,158,162,166,170,184,189 then
+B = 156,157,160,163,164,165,168,169,171,172). The rank table made the sorted case values
+A-then-B, which is why it reproduced the original layout. A plain switch matches the
+dispatch (`sub #150; cmp #39; tbh`), the TBH size/base, the low group and the shared tails,
+but the A/B body order is value-interleaved, so the verifier's LCS drops. The table is the
+only plain-C++ mechanism found that reproduces the original body order; removing it is a
+structural win (`.rodata` exact, no manually linked data) at the cost of the function's
+fuzzy score. See `_work/reconstructions/status-missioncompleted-wave121-w7113.md`.
+
+## Update 2026-11-06 (wave 120, superseded by wave 121)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
 byte_exact **4505/4524**, linked_exact **4505/4524**, size-exact **4524/4524**, data_exact
@@ -285,8 +316,8 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,116 content bytes differ across the 19 non-byte-exact bodies. |
-| **.rodata** | 269,159 | 269,351 | **+192** | base-exact at 0x1c9e10 and every original byte is identical; the 192 B `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address 0x20b977) is appended as the last `.rodata` input. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 88,549 content bytes differ across the 19 non-byte-exact bodies. |
+| **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | size- and base-exact (0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. 1,660 raw bytes still differ (the wave-108 `LevelScript::process`/`Hud::draw`/`Level::createShip`/`Generator::createMission` LSDA-length changes shift the records between them). |
 | .ARM.extab | 156,312 | 156,308 | **-4** | base-exact (0x1a3b78) but **4 B short**: `Generator::createMission` -4 (168 vs 172); `Level::createShip` is exact at 336 B (real-`new` shape, wave 119) and `HangarWindow::render` is exact at 948 B (w6978). The shortfall fits the 16-byte `.rodata` alignment gap, so `.rodata` stays at 0x1c9e10 and no function address moves; the shift makes the raw content comparison non-local (135,593 bytes differ). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
@@ -309,10 +340,11 @@ The original build is now pinned by evidence, not by A/B alone:
    `HangarWindow::render` (91.3%), `Level::createMission` (92.3%) and
    `Level::createScene` (92.8%). The `.text` total is exact (0x1337c8); these are
    per-function body/register-allocation deltas, not missing code.
-2. **`.rodata` content — one codegen table left.** Every original byte is identical; only the
-   192 B `Status::missionCompleted` rank table is appended at 0x20b977. Removing it requires
-   the plain switch shape that makes clang 7 emit the original body order. See
-   `_work/reconstructions/rodata_content_round5_w3477.md`.
+2. **`.rodata` content — exact.** The former 192 B `Status::missionCompleted` rank table was
+   removed in wave 121; `.rodata` is byte-identical (269,159 B). The plain switch shape costs
+   the function's fuzzy score (92.5 -> 59.4) because clang 7 emits the case bodies in value
+   order, not the original's A-then-B order. See
+   `_work/reconstructions/status-missioncompleted-wave121-w7113.md`.
 3. **EH tables.** `.ARM.exidx` is size- and base-exact (3566 entries, CANTUNWIND 272, inline
    856, extab 2438); `.ARM.extab` is base-exact but **4 B short** (156,308 vs 156,312 @
    0x1a3b78). The only record delta is `Generator::createMission` -4 (168 vs 172);
