@@ -407,6 +407,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         }
     }
 
+    Status *status = Globals::status;
     int otherLock;
     if (__builtin_expect(this->lockedAsteroid == nullptr && // lint: arm_builtin anchor: Radar::draw
                                  __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
@@ -417,13 +418,13 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
         otherLock = 1;
     }
     bool landmarkHit = false;
+    int notOtherLock = !otherLock;
+    int notTurretMode = !turretMode;
     if (this->landmarks != nullptr &&
-        !(Globals::status->getStation()->getIndex() == 109 ||
-          Globals::status->getStation()->getIndex() == 110 ||
-          (Globals::status->getStation()->getIndex() == 111 &&
-           Globals::status->getCurrentCampaignMission() > 93))) {
-        int notOtherLock = !otherLock;
-        int notTurretMode = !turretMode;
+        !(status->getStation()->getIndex() == 109 ||
+          status->getStation()->getIndex() == 110 ||
+          (status->getStation()->getIndex() == 111 &&
+           status->getCurrentCampaignMission() > 93))) {
         for (int i = 0; i < this->landmarks->size(); ++i) {
             if (i == 2 || this->landmarks->data()[i] == nullptr || !this->landmarks->data()[i]->isVisible()) {
                 continue;
