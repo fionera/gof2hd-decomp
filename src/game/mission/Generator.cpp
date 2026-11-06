@@ -747,7 +747,6 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
-    struct NoopGuard { ~NoopGuard() {} };
     int targetStation = generateStationIndex(systems, agent->getStation());
     if (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getIndex() == 15) {
         targetStation = ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
@@ -878,7 +877,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         } while ((*items)[itemId]->getOccurence() == 0 || (*items)[itemId]->getSinglePrice() == 0 ||
                  (*items)[itemId]->getIngredients() != nullptr || itemId == 175 || itemId == 164 || itemId == 131 ||
                  itemId == 116 || itemId == 115 || itemId == 117 || itemId == 218 || itemId == 217);
-        int count; { NoopGuard g; count = Globals::rnd->nextInt(15); }
+        int count = Globals::rnd->nextInt(15);
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
