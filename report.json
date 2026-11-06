@@ -48,6 +48,14 @@
    "usize": 57232
   },
   {
+   "name": "_ZN6Status16missionCompletedEbbx",
+   "pct": 71.0,
+   "byte": false,
+   "linked": false,
+   "osize": 1432,
+   "usize": 1432
+  },
+  {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
    "pct": 73.8,
    "byte": false,

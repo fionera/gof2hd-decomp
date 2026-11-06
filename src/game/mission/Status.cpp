@@ -1453,7 +1453,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 166:
-                if (atStation && station->getIndex() == m->getTargetStation()) {
+                if (__builtin_expect(atStation && station->getIndex() == m->getTargetStation(), 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint, plain form 59.4 -> 71.0
                     int index = m->getProductionGoodIndex();
                     int amount = m->getProductionGoodAmount();
                     if (Item::isInList(index, amount, ship->getCargo())) {
@@ -1472,7 +1472,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             case 184:
-                if (m->getStatusValue() == 0) {
+                if (__builtin_expect(m->getStatusValue() == 0, 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint, plain form 59.4 -> 71.0
                     if (Globals::status->currentCampaignMission != 0x5c || Globals::status->inAlienOrbit() ||
                         Globals::status->station->getIndex() != 0x71) {
                         m->setWon(true);
@@ -1499,7 +1499,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
  {
                 Array<Item *> *equipment = ship->getEquipment();
                 for (unsigned j = 0; j < equipment->size(); j++) {
-                    if ((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue()) {
+                    if (__builtin_expect((*equipment)[j] != 0 && (*equipment)[j]->getType() == m->getStatusValue(), 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint, plain form 59.4 -> 71.0
                         return m;
                     }
                 }
@@ -1517,7 +1517,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
  {
                 bool none = true;
                 for (unsigned j = 0; j < field_90->size(); j++) {
-                    if ((*field_90)[j] >= 0) {
+                    if (__builtin_expect((*field_90)[j] >= 0, 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint, plain form 59.4 -> 71.0
                         none = false;
                         break;
                     }
