@@ -5110,7 +5110,7 @@ bool LevelScript::process(int delta) {
                     }
                     if (m_nScriptTimerA >= 5700 && m_nScriptTimerA - delta < 5700) {
                         m_pGeometry1->setVisible(false);
-                        m_pGeometry2->setVisible(false);
+                        (*enemies)[stationIndex]->setVisible(false);
                         Globals::layout->startFade(true, -1, 6600 - (int) m_nScriptTimerA);
                         Globals::sound->play(2248, nullptr, nullptr, 0.0f);
                     }
@@ -5126,7 +5126,6 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (m_nScriptTimerA >= 6500) {
-                        m_bCinematicBreak = 1;
                         m_nState++;
                         Globals::status->nextCampaignMission(true);
                         Globals::status->setStation((Station *) (intptr_t) Globals::galaxy->getStation(111));
