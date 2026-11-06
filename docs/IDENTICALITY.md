@@ -31,9 +31,9 @@ original section headers are present and exact, with no extra section and an exa
 the original `0x1c9e10`. The size is exact only by cancellation; fixing one record alone
 moves `.rodata` and collapses `byte_exact`.
 
-The only differing section bytes are `.text` **88,386**; `.ARM.exidx` **861** raw bytes;
-`.ARM.extab` **109,453** (size exact; records differ -4/+4); `.rodata` **192** (the appended rank table); and
-`.note.gnu.build-id` **20**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
+The only differing section bytes are `.text` **88,216**; `.ARM.exidx` **863** raw bytes;
+`.ARM.extab` **109,364** (size exact; records differ -8/+4/+4); `.rodata` **192** (the appended rank table); and
+`.note.gnu.build-id` **19**. Everything else (`.data`, `.data.rel.ro`, `.plt`, `.got`,
 `.init_array`, `.fini_array`, `.dynamic`, `.dynsym`, `.dynstr`, `.hash`, `.gnu.version*`,
 `.rel.dyn`, `.rel.plt`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version`,
 `.shstrtab`, `.ARM.attributes`) is byte-identical. `.rel.plt` now differs by **6 bytes**: the
