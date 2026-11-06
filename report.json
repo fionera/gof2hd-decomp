@@ -3,7 +3,7 @@
   "original_functions": 4524,
   "ours_functions": 4524,
   "compared": 4524,
-  "avg_match": 99.93,
+  "avg_match": 99.94,
   "byte_exact": 4506,
   "linked_exact": 4506,
   "fuzzy_perfect": 4506,
@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 49.0,
+   "pct": 48.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,23 +25,15 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 49.0,
+   "pct": 48.7,
    "byte": false,
    "linked": false,
    "osize": 7072,
    "usize": 7072
   },
   {
-   "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 59.4,
-   "byte": false,
-   "linked": false,
-   "osize": 1432,
-   "usize": 1432
-  },
-  {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 60.2,
+   "pct": 60.3,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -57,7 +49,7 @@
   },
   {
    "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.8,
+   "pct": 73.9,
    "byte": false,
    "linked": false,
    "osize": 2764,
@@ -81,19 +73,11 @@
   },
   {
    "name": "_ZN9Generator13createMissionEP5AgentP5ArrayIP11SolarSystemE",
-   "pct": 88.0,
+   "pct": 89.9,
    "byte": false,
    "linked": false,
    "osize": 1996,
    "usize": 1996
-  },
-  {
-   "name": "_ZN12HangarWindow6renderEv",
-   "pct": 91.7,
-   "byte": false,
-   "linked": false,
-   "osize": 9700,
-   "usize": 9700
   },
   {
    "name": "_ZN5Level13createMissionEv",
@@ -120,20 +104,28 @@
    "usize": 1984
   },
   {
+   "name": "_ZN12HangarWindow6renderEv",
+   "pct": 94.0,
+   "byte": false,
+   "linked": false,
+   "osize": 9700,
+   "usize": 9700
+  },
+  {
+   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
+   "pct": 95.3,
+   "byte": false,
+   "linked": false,
+   "osize": 9332,
+   "usize": 9332
+  },
+  {
    "name": "_ZN11SpaceLounge10drawLoungeEv",
    "pct": 95.7,
    "byte": false,
    "linked": false,
    "osize": 1948,
    "usize": 1948
-  },
-  {
-   "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 96.0,
-   "byte": false,
-   "linked": false,
-   "osize": 9332,
-   "usize": 9332
   },
   {
    "name": "_ZN15MenuTouchWindow12OnTouchBeginEiiPv",
