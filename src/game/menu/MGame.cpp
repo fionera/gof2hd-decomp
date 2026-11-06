@@ -1555,9 +1555,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     this->player->removeRoute();
                     this->level->setPlayerRoute(nullptr);
                 } else {
+                    bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() ? !Globals::status->getMission()->isCampaignMission() : false;
                     Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                    bool keepObjectives = campaign->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
                     if (mission->isCampaignMission()) {
                         Globals::status->nextCampaignMission(true);
                     } else if (mission->isInstantActionMission()) {
