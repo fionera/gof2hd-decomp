@@ -99,13 +99,13 @@ All **27 original section headers are present and exact**, with no extra section
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`, `.shstrtab`
 and `.note.gnu.build-id` are size- and base-exact; `.rel.plt`, `.dynamic`, `.rel.dyn`,
 `.dynsym`, `.shstrtab`, `.comment`, `.note.android.ident`, `.note.gnu.gold-version` and
-`.ARM.attributes` content is byte-identical. `.ARM.extab` is **size-exact** (`0x26298`) but two records differ:
-`HangarWindow::render` is 944 B vs 948 B (-4) and `Generator::createMission` is 176 B vs 172 B (+4), a cancelling pair;
-`Level::createShip` is exact at 336 B (real-`new` shape). `.rodata` is **byte-identical**
-(269,159 B, base `0x1c9e10`): the former 192 B `Status::missionCompleted` rank table
-(`tools/mission_case_table.cpp`, fixed address `0x20b977`) was removed in wave 121 and the
-switch is now a plain `switch (m->getType())`. The differing section bytes are
-`.text` (88,549), `.ARM.exidx` (863), `.ARM.extab` (109,364; size exact, records -8/+4/+4) and
+`.ARM.attributes` content is byte-identical. `.ARM.extab` is **4 B short** (`0x26294`); the
+only remaining record delta is `Generator::createMission` -4 (168 vs 172). `HangarWindow::render`
+(948 B) and `Level::createShip` (336 B, real-`new` shape) are exact. `.rodata` is
+**byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B `Status::missionCompleted`
+rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`) was removed in wave 121
+and the switch is now a plain `switch (m->getType())`. The differing section bytes are
+`.text` (88,549), `.ARM.exidx` (1,660), `.ARM.extab` (135,593; 4 B short) and
 `.note.gnu.build-id` (20). `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
