@@ -787,7 +787,7 @@ bool LevelScript::process(int delta) {
                             ->Update((long long) delta, false);
                     if (m_nScriptTimerA >= 2001) {
                         Globals::sound->stop(158);
-                        m_pLevel->getPlayer()->setVisible(false);
+                        player->setVisible(false);
                         m_pCamera->setRumblePercentage(0.0f, 0);
                     }
                     if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
