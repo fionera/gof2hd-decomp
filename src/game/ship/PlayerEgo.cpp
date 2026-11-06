@@ -2430,9 +2430,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
                 continue;
         }
         if (object->getType() == 16994 && object->isVisible()) {
-            if (((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0)
-                continue;
-            if (objects->size() == i)
+            if (__builtin_expect(((PlayerWormHole *) object)->isShrinking() || this->miningGame != 0, 1)) // lint: arm_builtin anchor: PlayerEgo::calcCollision; wormhole continue is the hot path, hint keeps the loop un-rotated (byte-exact)
                 continue;
             Vector &pull = this->moveTarget;
             pull = object->getPosition();
@@ -2466,7 +2464,7 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
             continue;
         }
         if (object->stealFlagByte) {
-            if (object->isDying() || object->isDead())
+            if (__builtin_expect(object->isDying() || object->isDead(), 0)) // lint: arm_builtin anchor: PlayerEgo::calcCollision; dying/dead is the cold path, hint keeps the latch chain un-rotated (byte-exact)
                 continue;
             if ((this->dockingState || this->dockedFlag) && object == (KIPlayer *) (intptr_t) this->asteroidTarget)
                 continue;
@@ -2486,22 +2484,13 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *objects) {
         if (!object->isVisible())
             continue;
         Vector collision = object->projectCollisionOnSurface(this->geometry->getPosition());
-        // Redundant guard (the loop already guarantees i < objects->size()).
-        // Together with the wormhole arm's `size() == i` guard it reproduces
-        // the original's register file (this=r5, temp=r6, distance=sl) and
-        // keeps the function at the original 968 bytes.
-        if (objects->empty())
-            continue;
-        if (Vector{0.0f, 0.0f, 0.0f} != collision) {
+        if (collision != Vector{0.0f, 0.0f, 0.0f}) {
             this->geometry->setPosition(collision);
             reinterpret_cast<Matrix &>(this->player->transform[0]) =
                 *(Matrix *) Globals::Canvas->TransformGetLocal(this->geometry->transform)
                 * *(Matrix *) Globals::Canvas->TransformGetLocal(this->field_0x4->transform);
-            // The original stores the flag value straight through: that drops
-            // the `movs r0, #1` the constant store would need, which is what
-            // keeps the real `i == 0` test inside the 968-byte budget.
             if (i == 0 && object->field_0x71)
-                this->collidesWithStationFlag = object->field_0x71;
+                this->collidesWithStationFlag = 1;
         }
         this->hitCamera();
     }

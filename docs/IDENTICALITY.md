@@ -7,24 +7,32 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 ## Update 2026-11-06 (wave 121)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
-byte_exact **4505/4524**, linked_exact **4505/4524**, size-exact **4524/4524**, data_exact
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
 **843/843**, imports **207** (identical to the original), lint **CLEAN**, drift **0**, symbol
-parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 19 functions remain
+parity **5370/5370** (0 extra / 0 missing), avg **99.93%**. 18 functions remain
 non-byte-exact, all size-exact.
 
-Wave 121 removed the last manually linked data input: the 192-byte
+Wave 121 made two structural gains. `PlayerEgo::calcCollision` is now **byte-exact**
+(95.5 -> **100.0**, 968 B): the original's un-rotated loop and visible-arm register shuffle
+are reproduced by two branch-weight hints (`__builtin_expect(isShrinking() || miningGame != 0, 1)`
+on the wormhole `continue` and `__builtin_expect(isDying() || isDead(), 0)` on the steal-arm
+`continue`), the real compare order (`collision != Vector{0,0,0}`) and the constant tail store
+(`= 1`). The previous body's two redundant size guards and the `field_0x71` tail store are gone.
+See `_work/reconstructions/playerego-calccollision-wave121-w7116.md`.
+
+The last manually linked data input was also removed: the 192-byte
 `Status::missionCompleted` mission-type -> case-rank table (`tools/mission_case_table.cpp`,
 fixed address `0x20b977`). The function now uses a plain `switch (m->getType())` with the
 real mission-type labels in the original body order. **`.rodata` is byte-identical**:
 269,159 B at `0x1c9e10`/`0x41b67`, 0 differing bytes. The function score drops
 **92.454632% -> 59.372027%** (1432 B -> 1432 B, byte/linked still false), and the `.text`
-content delta grows 88,116 -> **88,549** bytes; the `.text` size/base (0x69440/0x1337c8),
+content delta is **88,196** bytes; the `.text` size/base (0x69440/0x1337c8),
 `.ARM.exidx` size/base, `.ARM.extab` size (0x26294, still 4 B short) and the exact file size
-(2,187,328 B) are unchanged. The remaining section deltas are `.text` 88,549,
+(2,187,328 B) are unchanged. The remaining section deltas are `.text` 88,196,
 `.ARM.exidx` 1,660, `.ARM.extab` 135,593 (4 B short), `.rel.plt` 6, `.bss` 1 and
 `.note.gnu.build-id` 20.
 
-Why the score drops: clang 7's `MachineBlockPlacement` lays a plain switch's case bodies
+Why the Status score drops: clang 7's `MachineBlockPlacement` lays a plain switch's case bodies
 out in the jump table's value-sorted successor order, while the original's body layout is
 two ascending runs (A = 150,151,152,153,154,155,158,162,166,170,184,189 then
 B = 156,157,160,163,164,165,168,169,171,172). The rank table made the sorted case values
@@ -334,7 +342,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 ## The remaining gaps (in priority order)
 
-1. **19 non-byte-exact functions.** 4505 of 4524 compared functions are linked-exact. The worst
+1. **18 non-byte-exact functions.** 4506 of 4524 compared functions are linked-exact. The worst
    are `Layout::Layout` (49.0%), `Generator::createMission` (84.3%), `LevelScript::process`
    (60.0%), `Level::createShip` (70.3%), `Radar::draw` (74.4%), `MGame::OnTouchEnd` (81.3%),
    `HangarWindow::render` (91.3%), `Level::createMission` (92.3%) and
