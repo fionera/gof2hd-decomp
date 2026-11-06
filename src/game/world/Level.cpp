@@ -1834,14 +1834,15 @@ void Level::createMission() {
     int bigAlienWave = 0;
     int alienWave = 0;
     int pirateFortress = 0;
-    if (*bigShipsCount > 0 && localRace == 0) {
+    if (*bigShipsCount <= 0 || localRace != 0) {
+        if (localRace == 1 && *bigShipsCount >= 1 && Globals::rnd->nextInt(100) <= 29)
+            pirateFortress = Globals::status->getCurrentCampaignMission() > 140;
+    } else {
         if (Globals::rnd->nextInt(100) <= 29) {
             if (Globals::rnd->nextInt(100) <= 29)
                 bigAlienWave = Globals::status->getCurrentCampaignMission() > 103;
             alienWave = 1;
         }
-    } else if (localRace == 1 && *bigShipsCount >= 1 && Globals::rnd->nextInt(100) <= 29) {
-        pirateFortress = Globals::status->getCurrentCampaignMission() > 140;
     }
     if (Globals::status->inSupernovaSystem()) {
         this->friendCount = 0;
