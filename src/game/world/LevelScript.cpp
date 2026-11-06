@@ -764,7 +764,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (((RadioMessage *) ((*messages)[15]))->isOver()) {
-                        Globals::sound->stop(161);
+                        Globals::sound->play(159, nullptr, nullptr, 0.0f);
                         m_nScriptTimerA = 0;
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
@@ -840,7 +840,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 2001) {
-                        Globals::sound->play(159, nullptr, nullptr, 0.0f);
+                        Globals::sound->stop(161);
                         m_nState = 11;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -850,7 +850,7 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 11: {
-                    m_nScriptTimerA += delta;
+                    Globals::layout->enableFillScreen(true);
                     float rumble = (float) m_nScriptTimerA / -2500.0f + 1.0f;
                     if (rumble < 0.0f) {
                         rumble = 0.0f;
@@ -929,7 +929,7 @@ bool LevelScript::process(int delta) {
             if (m_nState == 16) {
                 if (!Globals::layout->isFading()) {
                     Globals::appManager->SetCurrentApplicationModule(2);
-                    Globals::layout->enableFillScreen(true);
+                    m_nScriptTimerA += delta;
                     Globals::status->nextCampaignMission(true);
                     Globals::switch_to_target_setting = 1;
                     Level::initStreamOutPosition = 0;
@@ -1307,12 +1307,12 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setRumblePercentage(1.0f, 100);
                 } else {
                     Globals::layout->startFade(false, -1, 10000);
-                    (*enemies)[2]->setVisible(true);
+                    m_nState = 5;
                     for (unsigned int i = 3; i < enemies->count; i++) {
                         (*enemies)[i]->player->setHitpoints(0);
                     }
                     m_nScriptTimerA = 0;
-                    m_nState = 5;
+                    (*enemies)[2]->setVisible(true);
                 }
                 break;
             }
@@ -1959,7 +1959,7 @@ bool LevelScript::process(int delta) {
                     if ((*enemies)[0]->getPosition().z > 500000.0f) {
                         (*enemies)[0]->setPosition(0.0f, 0.0f, -200000.0f);
                         (*enemies)[0]->setActive(false);
-                        m_nState = 5;
+                        (*enemies)[0]->speed = 0.0f;
                     }
                 }
                 break;
@@ -1970,7 +1970,7 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
-                    m_pCamera->enableFirstPersonCam(false);
+                    m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     player->freeze = 1;
@@ -2054,14 +2054,14 @@ bool LevelScript::process(int delta) {
                     m_nScriptTime = 0;
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 15001) {
-                        m_nState = 5;
-                        Globals::sound->stop(156);
+                        m_pCamera->setTarget(player->geometry);
+                        m_bCinematicBreak = 0;
                         (*enemies)[0]->player->setHitpoints(100);
-                        (*enemies)[0]->speed = 0.0f;
+                        m_nState = 5;
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
-                        m_pCamera->setTarget(player->geometry);
+                        m_nState = 5;
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->useTargetsUpVector(true);
                         player->setComputerControlled(false);
@@ -2108,7 +2108,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setLookAtCam(true);
                         ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->freeMissionLock();
                         player->setComputerControlled(true);
-                        m_nState = 7;
+                        player->freeze = 0;
                         player->player->setVulnerable(false);
                         m_pCamera->setPosition(player->getPosition());
                         m_pCamera->setTarget(((PlayerStation *) (*m_pLevel->getLandmarks())[0])->rootGeometry);
@@ -2129,7 +2129,7 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                     }
                 } else if (m_nState == 7) {
-                    m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
+                    m_pCamera->enableFirstPersonCam(false);
                     m_pCamera->translate(0.0f, (float) ((double) delta * 0.2), 0.0f);
                     if (m_bRenderParticles) {
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
@@ -2240,7 +2240,7 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0;
+                        Globals::sound->stop(156);
                         player->freeze = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             (*enemies)[i]->setRoute(nullptr);
@@ -2299,7 +2299,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         player->player->setVulnerable(true);
-                        player->freeze = 0;
+                        m_nState = 7;
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
@@ -2480,7 +2480,7 @@ bool LevelScript::process(int delta) {
                         camPos.z += -1000.0f;
                         m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState = 2;
+                        m_pHud->visible = 1;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
                 }
@@ -2669,7 +2669,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->freeze = 0;
-                        m_pHud->visible = 1;
+                        m_nState = 2;
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
@@ -2972,7 +2972,7 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                             ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                         }
-                        m_nScriptTimerA = 0;
+                        m_pRadar->dockNavPtr = nullptr;
                         m_nState++;
                     }
                 } else if (m_nState == 4) {
@@ -3043,7 +3043,7 @@ bool LevelScript::process(int delta) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
                         m_pLevel->getPlayer()->resetGunDelay();
-                        m_pRadar->dockNavPtr = nullptr;
+                        m_nScriptTimerA = 0;
                         m_pLevel->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
@@ -3080,7 +3080,7 @@ bool LevelScript::process(int delta) {
                     (*enemies)[3]->geometry->moveForward((float) (2 * delta));
                     if (m_nScriptTimerA >= 8001) {
                         m_pCamera->setTarget((*enemies)[3]->geometry);
-                        m_tempVec = (*enemies)[3]->geometry->getPosition();
+                        resetCamera(m_pLevel);
                         m_dirVec = (*enemies)[3]->geometry->getDirection();
                         m_tempVec += m_dirVec * 10000.0f;
                         m_dirVec = (*enemies)[3]->geometry->getRightVector();
@@ -3274,7 +3274,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(player->getPosition() - player->GetDirVector() * 2400.0f);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
-                        resetCamera(m_pLevel);
+                        m_tempVec = (*enemies)[3]->geometry->getPosition();
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                         m_nScriptTimerA = 0;
@@ -4280,7 +4280,7 @@ bool LevelScript::process(int delta) {
                         (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
                         if (m_nScriptTimerA >= 7001) {
                             Globals::appManager->SetCurrentApplicationModule(2);
-                            Globals::status->nextCampaignMission(true);
+                            m_nState++;
                             Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
@@ -4310,9 +4310,9 @@ bool LevelScript::process(int delta) {
                         (*enemies)[i]->setEnemies(nullptr);
                         (*enemies)[i]->player->setEnemy((*enemies)[14]->player);
                     }
+                    m_pExplosion = new Explosion(0);
                     m_pExplosion->addFireStreaks();
                     m_pExplosion->setScaling(12.0f);
-                    m_pExplosion = new Explosion(0);
                     m_nState = 1;
                     // fallthrough
                 }
@@ -4344,7 +4344,7 @@ bool LevelScript::process(int delta) {
                     m_tempVec += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
                     m_pCamera->setPosition(m_tempVec);
                     (*enemies)[0]->setVisible(true);
-                    (*enemies)[0]->setActive(true);
+                    m_pCamera->setTarget(player->geometry);
                     m_nScriptTimerA = 0;
                     m_nState++;
                     break;
@@ -4425,7 +4425,7 @@ bool LevelScript::process(int delta) {
                         }
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
-                        m_nState++;
+                        Globals::status->nextCampaignMission(true);
                         m_pCamera->setTarget(player->geometry);
                         player->setComputerControlled(false);
                         player->player->setVulnerable(true);
@@ -4499,7 +4499,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
-                        m_nScriptTimerA += delta;
+                        m_pCamera->setFixed(false);
                     }
                     if (m_nScriptTimerA >= 1501) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
@@ -4509,13 +4509,13 @@ bool LevelScript::process(int delta) {
                             }
                         }
                         m_tempVec = player->getPosition();
-                        m_pCamera->setFixed(false);
+                        m_nScriptTimerA += delta;
                         m_nState = 2;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                         m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
-                        m_pCamera->setTarget(player->geometry);
+                        (*enemies)[0]->setActive(true);
                     }
                 } else if (m_nState == 2) {
                     player->setSpeed(0.0f);
@@ -4538,13 +4538,13 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
-                        player->setSpeed(0.0f);
+                        m_bCinematicBreak = 0;
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 26000.0f};
                         m_pCamera->setPosition(m_tempVec);
-                        m_nScriptTimerA = 0;
+                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nState = 3;
                     }
@@ -4585,7 +4585,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
+                        m_nScriptTimerA = 0;
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec);
@@ -4691,7 +4691,7 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_bCinematicBreak = 0;
+                        player->setSpeed(0.0f);
                         if (field_0xaa) {
                             player->setAutoTurret(true);
                         }
