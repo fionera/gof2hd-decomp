@@ -88,20 +88,20 @@
    "usize": 17172
   },
   {
-   "name": "_ZN5Level11createSceneEv",
-   "pct": 92.8,
-   "byte": false,
-   "linked": false,
-   "osize": 2252,
-   "usize": 2252
-  },
-  {
    "name": "_ZN3Gun22calcCharacterCollisionEv",
    "pct": 93.4,
    "byte": false,
    "linked": false,
    "osize": 1984,
    "usize": 1984
+  },
+  {
+   "name": "_ZN5Level11createSceneEv",
+   "pct": 93.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2252,
+   "usize": 2252
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
