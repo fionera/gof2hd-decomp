@@ -567,22 +567,14 @@ void HangarWindow::render() {
                             if (item == this->selectedItem) {
                                 if (this->hangarList->getCurrentTab() == 1 ||
                                     (this->hangarList->getCurrentTab() == 4 && item->isItem())) {
-                                    int right, left;
-                                    if (tab == 1) {
-                                        struct NoopGuard { ~NoopGuard() {} };
-                                        right = item->item->getStationAmount();
-                                        NoopGuard guard;
-                                        left = item->item->getAmount();
-                                    } else {
-                                        right = item->item->getAmount();
-                                        left = this->bluePrint->getCurrentAmount(item->item->getIndex());
-                                    }
+                                    // Ternaries (rather than an if/else) keep the
+                                    // original's per-arm landing pads: clang emits a
+                                    // distinct cleanup row for each ?: arm even when
+                                    // the arm code is identical, which is what the
+                                    // 948-byte .ARM.extab record encodes.
+                                    int right = tab == 1 ? item->item->getStationAmount() : item->item->getAmount();
+                                    int left = tab == 1 ? item->item->getAmount() : this->bluePrint->getCurrentAmount(item->item->getIndex());
                                     if (left > 0) {
-                                        // Codegen anchor: the dead store keeps the
-                                        // list-body register roles (this -> r6) and
-                                        // the 9700-byte body of the original. Storing
-                                        // `left` (already in r0) avoids a reload of y.
-                                        volatile int pad3 = left;
                                         (*this->buttons)[8]->setPosition(
                                             Globals::layout->buttonInsetX + this->hintOffsetX,
                                             this->field_0x114 + y, 17);
