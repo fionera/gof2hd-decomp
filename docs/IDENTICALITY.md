@@ -17,7 +17,8 @@ Wave-133 landed three source-level improvements (all keep exact sizes and `.rel.
   case-144 `setActive(true)`, `getStation(100)` un-merge and anchor trim (w7724):
   function diff bytes **54,507 -> 54,465**, exact 57,232 B.
 * `Layout::Layout` `0xc0` SLP store-group reorder (w7730): function diff bytes
-  **5,848 -> 5,789**, exact 7,072 B.
+  **5,848 -> 5,789**, exact 7,072 B; then the full SLP store-group census +
+  five group-contiguity reorders (w7752): **5,789 -> 5,784**, exact 7,072 B.
 * The rest of the wave was analysis: w7725-w7728 LevelScript prologue/block-order/
   literal-pool/anchor maps, w7731-w7732 `Radar::draw`, w7733 `Level::createMission`,
   w7734 `MGame::OnTouchEnd`, w7735 `HangarWindow::render`, w7736 `Hud::draw`,
@@ -25,7 +26,7 @@ Wave-133 landed three source-level improvements (all keep exact sizes and `.rel.
   `Gun::calcCharacterCollision`, w7740 `SpaceLounge`/`Generator`, w7741 the
   near-miss trio, w7742 `.ARM.extab`.
 
-Section deltas: `.text` **85,143** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **85,138** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,416** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
@@ -643,7 +644,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,143 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,138 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,416 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
