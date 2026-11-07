@@ -4,6 +4,26 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 135)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Wave-135 landed one source-level improvement:
+
+* `LevelScript::process` case 70: the original else path tests state 2 before state 1
+  (`0x13c04e`), so the state-2 block now precedes the state-1 block. Function diff
+  bytes **54,359 -> 54,262** (-97), exact 57,232 B, `.rel.plt` byte-identical. The
+  state-1 body is a no-op immediately after state 0 (the freshly built route's first
+  waypoint state is 0), so the fall-through does not change behaviour.
+
+Section deltas: `.text` **84,925** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,416** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 134)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
