@@ -1647,7 +1647,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
         int barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
-            short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            unsigned short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
             short total = ego->getDockTotalAmount();
