@@ -1237,7 +1237,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             if (m_nState >= 5 && m_nState <= 8) {
-                m_pCamera->translate((float) -delta * 0.3f, 0.0f, 0.0f);
+                m_pCamera->translate((float) -delta * 0.8f, 0.0f, 0.0f);
             }
         }
     } else if (Globals::status->getCurrentCampaignMission() == 89) {
