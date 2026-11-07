@@ -14,15 +14,18 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
     this->setVisible(visible);
 
     if (visible) {
-        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
-        this->boundingVolumes = volumes;
-        ArraySetLength(1, *volumes);
+        this->boundingVolumes = new Array<BoundingVolume *>();
+        ArraySetLength(1, *this->boundingVolumes);
 
         int radius;
-        if (Globals::status->inAlienOrbit()) {
-            radius = 7500;
-        } else {
-            radius = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1 ? 11250 : 7500;
+        {
+            int r;
+            if (Globals::status->inAlienOrbit()) {
+                r = 7500;
+            } else {
+                r = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getRace() == 1 ? 11250 : 7500;
+            }
+            radius = r;
         }
 
         this->player->setRadius(radius);
