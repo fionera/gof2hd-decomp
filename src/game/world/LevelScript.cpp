@@ -4693,11 +4693,11 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         if (field_0xaa) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nScriptTimerB = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 10) {
