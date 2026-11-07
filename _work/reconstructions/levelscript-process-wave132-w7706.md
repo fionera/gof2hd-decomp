@@ -118,3 +118,13 @@ python3 /dev/shm/w7706/bytediff.py                      # process 54591
 
 Scratch helpers (`common.py`, `score.py`, `bytediff.py`, `fixes.py`, `orig.dis`,
 `ours_final.dis`) live in `/dev/shm/w7706/` and are not part of the tree.
+
+## Post-merge note (wave 132 coordinator)
+
+This branch's `LevelScript.cpp` edits were **reverted** in favour of the parallel
+w7705 semantic set (case 131 `dir * 2.01`, case 157 `m_pGeometry2`, the missing
+8th `setPosition(f,f,f)`, mission-0 state-6/10 sound fixes, case-40 state 4).
+The two branches overlap in case 131/154; applying both grew `process` to
+57,264 B (+32 section bytes).  w7705 alone keeps the exact 57,232 B and lowers
+the function's diff bytes to 54,507.  The per-case measurements above remain
+valid as a map of the residual.
