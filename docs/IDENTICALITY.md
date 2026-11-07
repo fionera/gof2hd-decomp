@@ -23,6 +23,39 @@ Section deltas: `.text` **84,504** differing bytes (size exact); `.ARM.exidx` **
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+## Update 2026-11-07 (wave 140)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.93%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-140 landed seven source-level improvements:
+
+* `LevelScript::process` (w8501): full case-94 receiver block (fresh `getPlayer` for
+  `resetGunDelay`/`dockToDockingPoint`, `dockNavPtr = nullptr`), the missing case-154
+  state-9 `m_bCinematicBreak = 0` store, the spurious `m_nScriptTimerB = 0` removed, and
+  the duplicate case-154 state-7 `resetCamera` removed. Raw **54,262 -> 54,140**.
+* `LevelScript::process` (w8505): mission-0 state-0 data-pointer placement; raw 54,140 -> 54,138.
+* `Layout::Layout` (w8507): raw **5,765 -> 5,759** at 7,072 B.
+* `Radar::draw` (w8509): `int alwaysEnemy` + `int asteroid wreck`; raw **8,346 -> 8,279**.
+* `MGame::OnTouchEnd` (w8513/w8514): the campaign-mission `96||127` clause is split into the
+  original's two separate else-if clauses (shared body tail-merged), `hasFailed()` and
+  `menuWindow->OnTouchEnd(...)` are implicit, and the mission selection re-calls
+  `getCampaignMission()`. Instruction multiset now matches the original
+  (`isCampaignMission` 23=23, `getCampaignMission` 3=3); raw rises 4,363 -> 5,816 because
+  the content fixes shift the campaign chain.
+* `HangarWindow::render` (w8516): credit-block `String` declaration swap; raw 2,062 -> 2,059.
+* `Hud::draw` (w8517): dock1 locals `frameH`/`total`/`barW` are `int`; raw **1,416 -> 1,362**.
+
+Reverted with notes (size-exact but worse raw diff on the merged base): w8502 (57,240 B),
+w8503 (57,220 B), w8510 (Radar raw +443).
+
+Section deltas: `.text` **86,472** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,411** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 139)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
