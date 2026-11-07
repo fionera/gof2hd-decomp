@@ -944,7 +944,7 @@ bool LevelScript::process(int delta) {
 
         // player->rotate(0, angle, angle) with angle = ((delta<<1)&~15) * 2^-16 * 2*pi (0x137d90).
         float angle = (float) ((delta << 1) & -16) * 1.52587890625e-05f * 6.2831855f;
-        player->rotate(0.0f, angle, angle);
+        m_pLevel->getPlayer()->rotate(0.0f, angle, angle);
 
         // enemies[0]: sample z, put to sleep, then creep forward proportional to depth (0x137dbe).
         Vector enemyPos = (*enemies)[0]->getPosition();
@@ -1319,17 +1319,15 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
-            case 4: {
-                StarSystem *stars4 = m_pLevel->getStarSystem();
-                stars4->scaleSunDuringSupernovaIntro(delta);
-                stars4->updateSupernova(delta);
+            case 4:
+                m_pLevel->getStarSystem()->scaleSunDuringSupernovaIntro(delta);
+                m_pLevel->getStarSystem()->updateSupernova(delta);
                 if (m_nScriptTimerA <= 7000 && m_nScriptTimerA + delta > 7000) {
                     Globals::layout->startFade(true, 255, delta + 1000);
                     m_nState = 4;
                 }
                 m_nScriptTimerA += delta;
                 break;
-            }
             case 5:
                 if (!Globals::layout->isFading()) {
                     Globals::layout->enableFillScreen(true);
@@ -1684,9 +1682,8 @@ bool LevelScript::process(int delta) {
                     ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
                 } else if (((RadioMessage *) ((*messages)[2]))->isTriggered() && m_nState == 3) {
                     m_nState = 4;
-                    Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-                    ((PlayerWormHole *) (*landmarks)[3])->open();
-                    (*landmarks)[3]->setVisible(true);
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
+                    (*m_pLevel->getLandmarks())[3]->setVisible(true);
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
@@ -1700,11 +1697,11 @@ bool LevelScript::process(int delta) {
                     player->freeze = 1;
                     m_pCamera->setLookAtCam(true);
                     m_pCamera->setActive(true);
-                    m_pCamera->setTarget((*landmarks)[3]->geometry);
-                    Vector camPos = (*landmarks)[3]->getPosition();
+                    m_pCamera->setTarget((*m_pLevel->getLandmarks())[3]->geometry);
+                    Vector camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
                     camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
                     m_pCamera->setPosition(camPos);
-                    camPos = (*landmarks)[3]->getPosition();
+                    camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
                     int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
                     Route *route = new Route(routePoints, 3);
                     camPos.z += -15000.0f;
@@ -1714,7 +1711,7 @@ bool LevelScript::process(int delta) {
                             ship->setPosition(camPos.x, camPos.y - 2000.0f + (float) Globals::rnd->nextInt(4000),
                                               camPos.z - 2000.0f + (float) Globals::rnd->nextInt(4000));
                             ship->geometry->setDirection(
-                                    AbyssEngine::AEMath::VectorNormalize((*landmarks)[3]->getPosition()
+                                    AbyssEngine::AEMath::VectorNormalize((*m_pLevel->getLandmarks())[3]->getPosition()
                                                                          - ship->getPosition()),
                                     Vector{0.0f, 1.0f, 0.0f});
                             ship->setRoute(route->clone());
@@ -1786,7 +1783,7 @@ bool LevelScript::process(int delta) {
                     player->setComputerControlled(true);
                     player->player->removeAllGuns();
                     m_pCamera->setTarget(player->geometry);
-                    Vector camPos = player->geometry->getPosition();
+                    Vector camPos = m_pLevel->getPlayer()->geometry->getPosition();
                     m_pCamera->setPosition(camPos);
                     m_pCamera->translate(10500.0f, 700.0f, 1000.0f); // pool @0x13ed90/94/98
                     Vector *ahead = &m_tempVec;
@@ -3249,7 +3246,7 @@ bool LevelScript::process(int delta) {
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[0]))->isTriggered()) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
-                    if (player->isInRocketControl()) {
+                    if (m_pLevel->getPlayer()->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
@@ -3985,7 +3982,9 @@ bool LevelScript::process(int delta) {
                     // mission-0 case-9/11 blocks. Guarded on a negative frame delta, which the
                     // caller never passes.
                     if (delta < 0) {
-                        ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
+                        m_pLevel->getStarSystem()->switchPlanetForIntro();
+                        player->PlayEngineSound();
+                        player->StopEngineSound();
                     }
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
@@ -4334,7 +4333,7 @@ bool LevelScript::process(int delta) {
                         break;
                     }
                     player->setTurretMode(false);
-                    if (player->isInRocketControl()) {
+                    if (m_pLevel->getPlayer()->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
