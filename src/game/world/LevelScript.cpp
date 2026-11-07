@@ -737,7 +737,7 @@ bool LevelScript::process(int delta) {
                 player->setTurretMode(false);
                 resetCamera(m_pLevel);
                 m_bCinematicBreak = 1; // cinematicBreak_ (m_nFlags high byte @0x11) = 1
-                player->setCollide(false);
+                m_pLevel->getPlayer()->setCollide(false);
                 m_pRadar->enabled = 0; // disasm stores m_pRadar+0x48 (same field the siblings enter)
                 player->setComputerControlled(true);
                 m_pCamera->setLookAtCam(true);
@@ -1703,7 +1703,7 @@ bool LevelScript::process(int delta) {
                     camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
                     m_pCamera->setPosition(camPos);
                     camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
-                    int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) camPos.z + 30000};
+                    int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
                     Route *route = new Route(routePoints, 3);
                     camPos.z += -15000.0f;
                     for (unsigned int i = 0; i < enemies->count; i++) {
@@ -1901,7 +1901,8 @@ bool LevelScript::process(int delta) {
             }
             case 40: {
                 // Escort the transport to the wormhole; the pirates jump in behind it.
-                if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                if (m_nState == 0) {
+                    if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
                     ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
                     KIPlayer *transport = (*enemies)[0];
                     transport->setPosition((float) m_pLevel->getFriendRoute()->getWaypoint(0)->x,
@@ -1926,6 +1927,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
+                    }
                 } else if (m_nState == 1) {
                     // 0x13e6da: keep the camera drifting backwards while the escort message plays.
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
