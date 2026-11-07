@@ -473,8 +473,9 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     if (AEFile::FileExist(tmp) != 0) {
         unsigned int fd;
         AEFile::OpenRead(tmp, &fd);
+        signed char *buf;
         sz = AEFile::GetFileSize(fd);
-        signed char *buf = new signed char[sz];
+        buf = new signed char[sz];
         *out = buf;
         AEFile::Read(sz, buf, fd);
         AEFile::Close(fd);
