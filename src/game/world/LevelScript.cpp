@@ -3964,12 +3964,12 @@ bool LevelScript::process(int delta) {
                         m_pCamera->enableFirstPersonCam(false);
                         player->hideShipForFirstPersonCameraView(false);
                         player->stopShooting(0);
-                        player->setFreeze(true);
                         m_bCinematicBreak = 1;
                         m_pHud->visible = 0;
                         m_pRadar->enabled = 0;
                         m_pCamera->setLookAtCam(true);
                         player->setVisible(false);
+                        player->setFreeze(true);
                         AEGeometry *leader = (*enemies)[4]->geometry;
                         m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
@@ -4044,6 +4044,69 @@ bool LevelScript::process(int delta) {
                 }
                 break;
             }
+            case 135: { // 0x1391c0
+                if (m_nState == 0) {
+                    // state 0 (0x13c50e): once the player has docked (or the 64-bit script counter
+                    // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
+                    // group-8 escort into a widening formation ahead of the player, re-aim it at the
+                    // player and wipe its cargo list.
+                    if (player->isDockedToDockingPoint() ||
+                        m_nScriptTime >= 60001) {
+                        m_nState = 1;
+                        int xOff = 25000;
+                        for (unsigned int i = 0; i < enemies->count; ++i) {
+                            if ((*enemies)[i]->shipGroup == 8) {
+                                Vector playerPos = player->getPosition();
+                                (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                                (*enemies)[i]->awake();       // vtable+0xc
+                                (*enemies)[i]->setVisible(true);
+                                (*enemies)[i]->player->setEnemy(player->player);
+                                delete (*enemies)[i]->cargo;
+                                (*enemies)[i]->cargo = nullptr;
+                            }
+                            xOff += 1000;
+                        }
+                        m_nScriptTimerA = 0; // 64-bit script counter @0x90
+                    }
+                    break; // -> post-switch tail (0x144e36)
+                }
+                if (m_nState < 1) {
+                    break; // negative state -> post-switch tail (0x144e36)
+                }
+                // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
+                m_nScriptTimerA += delta;
+                if (m_nState == 1) {
+                    // Advance once the mission's production quota is at least half filled.
+                    int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
+                    int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
+                    if (statusValue >= amount / 2) {
+                        m_nState++;
+                    }
+                }
+                if (m_nScriptTimerA < 75001) {
+                    break; // -> post-switch tail (0x144e36)
+                }
+                if (m_nState == 2) {
+                    m_nState = 3;
+                }
+                // Once the timer elapses, revive every dead group-8 escort into the same widening
+                // formation and re-aim it at the player.
+                int xOff = 25000;
+                for (unsigned int i = 0; i < enemies->count; ++i) {
+                    KIPlayer *enemy = (*enemies)[i];
+                    if (enemy->shipGroup == 8 && enemy->isDead()) {
+                        (*enemies)[i]->revive();          // vtable+0x18
+                        Vector playerPos = player->getPosition();
+                        (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
+                        (*enemies)[i]->player->setEnemy(player->player);
+                        delete (*enemies)[i]->cargo;
+                        (*enemies)[i]->cargo = nullptr;
+                    }
+                    xOff += 1000;
+                }
+                m_nScriptTimerA = 0;
+                break; // -> post-switch tail (0x144e36)
+            }
             case 131: {
                 // Opening fly-by: the camera rides along in front of the player's ship.
                 if (m_nState == 1) {
@@ -4108,69 +4171,6 @@ bool LevelScript::process(int delta) {
                     }
                 }
                 break;
-            }
-            case 135: { // 0x1391c0
-                if (m_nState == 0) {
-                    // state 0 (0x13c50e): once the player has docked (or the 64-bit script counter
-                    // {field_0x8:field_0xc} has reached 60001), advance to state 1 and (re)home every
-                    // group-8 escort into a widening formation ahead of the player, re-aim it at the
-                    // player and wipe its cargo list.
-                    if (player->isDockedToDockingPoint() ||
-                        m_nScriptTime >= 60001) {
-                        m_nState = 1;
-                        int xOff = 25000;
-                        for (unsigned int i = 0; i < enemies->count; ++i) {
-                            if ((*enemies)[i]->shipGroup == 8) {
-                                Vector playerPos = player->getPosition();
-                                (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
-                                (*enemies)[i]->awake();       // vtable+0xc
-                                (*enemies)[i]->setVisible(true);
-                                (*enemies)[i]->player->setEnemy(player->player);
-                                delete (*enemies)[i]->cargo;
-                                (*enemies)[i]->cargo = nullptr;
-                            }
-                            xOff += 1000;
-                        }
-                        m_nScriptTimerA = 0; // 64-bit script counter @0x90
-                    }
-                    break; // -> post-switch tail (0x144e36)
-                }
-                if (m_nState < 1) {
-                    break; // negative state -> post-switch tail (0x144e36)
-                }
-                // states >= 1: accumulate the 64-bit script counter {m_nScriptTimerA:m_nScriptCounterA}.
-                m_nScriptTimerA += delta;
-                if (m_nState == 1) {
-                    // Advance once the mission's production quota is at least half filled.
-                    int statusValue = ((Mission *) Globals::status->getCampaignMission())->getStatusValue();
-                    int amount = ((Mission *) Globals::status->getCampaignMission())->getProductionGoodAmount();
-                    if (statusValue >= amount / 2) {
-                        m_nState++;
-                    }
-                }
-                if (m_nScriptTimerA < 75001) {
-                    break; // -> post-switch tail (0x144e36)
-                }
-                if (m_nState == 2) {
-                    m_nState = 3;
-                }
-                // Once the timer elapses, revive every dead group-8 escort into the same widening
-                // formation and re-aim it at the player.
-                int xOff = 25000;
-                for (unsigned int i = 0; i < enemies->count; ++i) {
-                    KIPlayer *enemy = (*enemies)[i];
-                    if (enemy->shipGroup == 8 && enemy->isDead()) {
-                        (*enemies)[i]->revive();          // vtable+0x18
-                        Vector playerPos = player->getPosition();
-                        (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
-                        (*enemies)[i]->player->setEnemy(player->player);
-                        delete (*enemies)[i]->cargo;
-                        (*enemies)[i]->cargo = nullptr;
-                    }
-                    xOff += 1000;
-                }
-                m_nScriptTimerA = 0;
-                break; // -> post-switch tail (0x144e36)
             }
             case 139: { // 0x13965c
                 // Count how many of the leading docking-object pair are NOT at docking type 3. This
@@ -4288,15 +4288,15 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA > 4000) {
                         (*enemies)[0]->geometry->moveForward((float) (m_nScriptTimerA - 4000) * 0.05f);
                         if (m_nScriptTimerA >= 7001) {
-                            Globals::appManager->SetCurrentApplicationModule(2);
-                            m_nState++;
+                            m_nState = 4;
+                            Globals::status->nextCampaignMission(true);
                             Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
                                 Level::initStreamOutPosition = 1;
                             }
-                            m_nState = 4;
+                            Globals::appManager->SetCurrentApplicationModule(2);
                         }
                     }
                 }
