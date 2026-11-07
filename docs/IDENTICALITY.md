@@ -26,6 +26,36 @@ Section deltas: `.text` **85,538** differing bytes (size exact); `.ARM.exidx` **
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+## Update 2026-11-07 (wave 138)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-138 landed three source-level improvements:
+
+* `LevelScript::process` (w8303): the wave-137 w8202 companion set re-based on the current
+  master. Raw same-address diff bytes **55,151 -> 55,072** at exactly 57,232 B. The set moves
+  `nextCampaignMission(true)` from case-145 state 5 to the state-6 block, orders the case-125
+  state-2 tail as `setLookAtCam(true); setVisible(false); setFreeze(true)`, and swaps the
+  case-131/135 blocks.
+* `Layout::Layout` (w8301): re-lands the fuzzy-first reorder (ascending `0xb8..0x118` region
+  plus the `0x11c`/`0x12c` swap) at **45.9 %**, exact 7,072 B; raw diff 5,775 B.
+* `Level::createMission` (w8312): case-183 offset-chain branch order (0, 1, 2), fuzzy
+  **92.34 -> 92.49 %**, size 17,172 B; raw diff 5,766 B.
+* `Hud::draw` (w8317): dock1 `top` is an `int` (zero-extended), not a float; 9,332 B.
+
+Two further analyses landed as notes with the source reverted: w8305 (`m_nState++` is +8 B
+and unfaithful — the original stores the immediate 4) and w8308 (case-40 cold-chain order
+lands at 57,240 B). Radar w8309 found the nested `inSight` shape at 9,908 B but it moves
+`.rel.plt` entries 2736-2739, so it is pinned for a later pass.
+
+Section deltas: `.text` **85,476** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,396** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 137)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
