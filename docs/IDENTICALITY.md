@@ -47,11 +47,14 @@ Wave-140 landed seven source-level improvements:
   the content fixes shift the campaign chain.
 * `HangarWindow::render` (w8516): credit-block `String` declaration swap; raw 2,062 -> 2,059.
 * `Hud::draw` (w8517): dock1 locals `frameH`/`total`/`barW` are `int`; raw **1,416 -> 1,362**.
+* `Radar::draw` (w8609): extend the int-local hypothesis to `bossSeen`, the enemy-loop
+  `inSight`, and the asteroid-loop `asteroidHit`; raw **8,279 -> 8,244** at 9,908 B,
+  `.rel.plt` byte-identical, `.ARM.extab` unchanged.
 
 Reverted with notes (size-exact but worse raw diff on the merged base): w8502 (57,240 B),
 w8503 (57,220 B), w8510 (Radar raw +443).
 
-Section deltas: `.text` **86,472** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **86,437** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,411** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
