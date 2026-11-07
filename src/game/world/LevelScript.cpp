@@ -4527,8 +4527,8 @@ bool LevelScript::process(int delta) {
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    m_dirVec = player->GetDirVector();
                     m_tempVec += m_dirVec * (step * 0.008f);
+                    m_dirVec = player->GetDirVector();
                     m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
                     m_dirVec = player->GetUpVector();
@@ -4681,7 +4681,7 @@ bool LevelScript::process(int delta) {
                         (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);
                         (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
                         m_pCamera->setFixed(false);
-                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setFreeze(false);

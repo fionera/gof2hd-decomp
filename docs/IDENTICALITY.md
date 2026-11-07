@@ -36,7 +36,7 @@ Wave-133 landed three source-level improvements (all keep exact sizes and `.rel.
 
 * `LevelScript::process` case-154 state-4/6 and partial case-64 bodies (w7723) plus
   case-144 `setActive(true)`, `getStation(100)` un-merge and anchor trim (w7724):
-  function diff bytes **54,507 -> 54,465**, exact 57,232 B.
+  function diff bytes **54,507 -> 54,359**, exact 57,232 B.
 * `Layout::Layout` `0xc0` SLP store-group reorder (w7730): function diff bytes
   **5,848 -> 5,789**, exact 7,072 B; then the full SLP store-group census +
   five group-contiguity reorders (w7752): **5,789 -> 5,784**, exact 7,072 B.
