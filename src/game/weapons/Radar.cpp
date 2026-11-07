@@ -408,10 +408,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (__builtin_expect(this->lockedAsteroid == nullptr && // lint: arm_builtin anchor: Radar::draw
-                                 __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
-                                 this->field_0x1c == nullptr,
-                         0)) {
+    if (__builtin_expect(this->lockedAsteroid == nullptr, 0) && // lint: arm_builtin anchor: Radar::draw
+        __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
+        __builtin_expect(this->field_0x1c == nullptr, 1)) { // lint: arm_builtin anchor: Radar::draw
         otherLock = this->field_0x14 != 0;
     } else {
         otherLock = 1;
@@ -553,7 +552,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
-                bool isTarget = stationId == campaignMission->getTargetStation();
+                bool isTarget = campaignMission->getTargetStation() == stations->data()[i];
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
@@ -1099,7 +1098,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
