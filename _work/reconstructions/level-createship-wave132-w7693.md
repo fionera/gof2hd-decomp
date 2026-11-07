@@ -139,3 +139,12 @@ python3 tools/verify/verify.py \
 Scratch helpers (not committed): `/dev/shm/w7693/{score.py,apply.py,
 build_score.sh,try.sh,insdiff.py,lsda.py,lsdacount.py,mir.sh,ir.sh,gen_*.cpp,
 g2_*.cpp,g3_*.cpp}`.
+
+## Post-merge note (wave 132 coordinator)
+
+The `z,y,x` declaration-order change was reverted together with its parent
+`try`/`catch` body: the combined shape is 73.4% but its 328 B LSDA record makes
+`.ARM.extab` 8 B short and shifts `.ARM.exidx` (0 -> 1,327 differing bytes).
+Master keeps the exact 336 B record at 70.6%.  The register-allocation insight
+(`wpx=[sp,#44]`, `jitter1=[sp,#36]`, `wpy=[sp,#48]`) is preserved here as the
+target for a future non-EH shape.

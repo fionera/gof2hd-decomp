@@ -151,3 +151,14 @@ python3 tools/verify/verify.py \
 
 Scratch helpers (not committed): `/dev/shm/w7693/{score.py,apply.py,
 build_score.sh,pro.sh,insdiff.py,lsda.py,lsdacount.py,mir.sh,ir.sh}`.
+
+## Post-merge note (wave 132 coordinator)
+
+This `try`/`catch` body was **reverted from master in wave 132**.  The 328 B /
+54-row / `ttype 0x00` record leaves `.ARM.extab` 8 B short, and because every
+later `.ARM.extab` record then shifts, `.ARM.exidx` goes from 0 to **1,327**
+differing bytes.  Master keeps the 336 B / 57-row / `ttype 0xff` exact record
+and the 70.6% body.  The 73.2-73.4% allocation is still the best-known register
+map; w7709 showed that every EH scope that reproduces it also changes the LSDA,
+so the open lever is a **non-EH** source shape that changes Greedy RA's
+live-interval order.  See `level-createship-wave131-w7709.md`.
