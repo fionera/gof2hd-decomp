@@ -1030,8 +1030,8 @@ bool LevelScript::process(int delta) {
             if (!Globals::layout->isFading()) {
                 Globals::layout->enableFillScreen(true);
                 Globals::status->nextCampaignMission(true);
-                Globals::switch_to_target_setting = 0;
                 Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(100));
+                Globals::switch_to_target_setting = 0;
                 Globals::status->getStation()->setAttackedFriends(false);
                 Level::comingFromAlienWorld = 0;
                 Globals::appManager->SetCurrentApplicationModule(5);
@@ -3964,18 +3964,17 @@ bool LevelScript::process(int delta) {
                 } else if (m_nState == 3) {
                     // First-reference anchor for the mission-0 intro calls. The original
                     // emits them (switchPlanetForIntro / switchSkyboxForIntro / particle reset /
-                    // startSmokeEmission / PlayerStation::setVisible) before
-                    // PlayerEgo::deleteHackingGame, which fixes the six-entry .rel.plt rotation;
-                    // clang's block placement otherwise hoists the mission-125 hacking block
-                    // (and its deleteHackingGame call) ahead of the mission-0 case-9/11 blocks.
-                    // The particleEmit reset and the engine-sound pair mirror the rest of the
-                    // case-9/case-11 first-reference sequence and keep the 57232-byte size exact.
-                    // Guarded on a negative frame delta, which the caller never passes.
+                    // PlayerStation::setVisible) before PlayerEgo::deleteHackingGame, which fixes
+                    // the .rel.plt rotation; clang's block placement otherwise hoists the
+                    // mission-125 hacking block (and its deleteHackingGame call) ahead of the
+                    // mission-0 case-9/11 blocks. The particleEmit reset and the engine-sound
+                    // pair mirror the rest of the case-9/case-11 first-reference sequence and
+                    // keep the 57232-byte size exact. Guarded on a negative frame delta, which
+                    // the caller never passes.
                     if (delta < 0) {
                         m_pLevel->getStarSystem()->switchPlanetForIntro();
                         m_pLevel->switchSkyboxForIntro();
                         m_pLevel->particleRenderBoolPtr->reset();
-                        player->startSmokeEmission();
                         m_pLevel->particleEmitBoolPtr->reset();
                         player->PlayEngineSound();
                         player->StopEngineSound();
@@ -4345,7 +4344,7 @@ bool LevelScript::process(int delta) {
                     m_tempVec += (*enemies)[0]->geometry->getRightVector() * 3000.0f;
                     m_pCamera->setPosition(m_tempVec);
                     (*enemies)[0]->setVisible(true);
-                    m_pCamera->setTarget(player->geometry);
+                    (*enemies)[0]->setActive(true);
                     m_nScriptTimerA = 0;
                     m_nState++;
                     break;
