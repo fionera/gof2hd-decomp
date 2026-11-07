@@ -972,8 +972,9 @@ GameRecord *RecordHandler::recordStoreRead(int slot) {
         }
         int shipCount = 0;
         AEFile::Read(shipCount, fd);
+        Array<Ship *> *shipList = 0;
         if (shipCount >= 1) {
-            Array<Ship *> *shipList = new Array<Ship *>();
+            shipList = new Array<Ship *>();
             ArraySetLength(shipCount, *shipList);
             for (int i = 0; i < shipCount; i++) {
                 int index = 0;

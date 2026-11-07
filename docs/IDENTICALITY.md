@@ -74,7 +74,7 @@ post-loop recompute) still re-rolls the planet-loop register split (`fp`/`sl`) a
 72.93 %.  See `_work/reconstructions/radar-draw-wave129-w7674.md`.
 
 Section deltas: `.text` **85,379** differing bytes (size exact); `.ARM.exidx` **0**;
-`.ARM.extab` **1,420** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+`.ARM.extab` **1,417** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
 
