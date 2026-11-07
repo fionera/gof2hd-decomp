@@ -2003,7 +2003,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setPosition((*enemies)[0]->getPosition());
                     m_pCamera->translate(-38000.0f, 0.0f, -30200.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    m_pCamera->translate(3000.0f, 1000.0f, 2000.0f);
                 } else if (((RadioMessage *) ((*messages)[5]))->isTriggered() && m_nState == 1) {
                     // PLT-order anchor: first reference to Standing::setStanding must precede
                     // TargetFollowCamera::setRotationAroundTarget (never taken).  Verified by
@@ -2020,8 +2019,8 @@ bool LevelScript::process(int delta) {
                     ((PlayerFixedObject *) freighter)->setMoving(false);
                     m_pCamera->setTarget(freighter->geometry);
                     m_pCamera->setPosition(freighter->getPosition());
-                    Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     m_pCamera->translate(-3000.0f, -2000.0f, 12000.0f);
+                    Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     (*enemies)[0]->player->StopEngineSound();
                 } else if (m_nState == 2) {
                     (*enemies)[0]->geometry->updateReferenceMatrix();
@@ -2039,6 +2038,7 @@ bool LevelScript::process(int delta) {
                     freighter->geometry->setRotation(-0.4f, 0.0f, 1.8f);
                     ((PlayerFixedObject *) freighter)->setExhaustVisible(false);
                     m_pCamera->setPosition(freighter->getPosition());
+                    m_pCamera->translate(3000.0f, 1000.0f, 2000.0f);
                     m_nState = 1;
                     m_pCamera->useTargetsUpVector(false);
                     for (unsigned int i = 1; i < enemies->count; i++) {
@@ -2061,7 +2061,6 @@ bool LevelScript::process(int delta) {
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
-                        m_nState = 5;
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->useTargetsUpVector(true);
                         player->setComputerControlled(false);
