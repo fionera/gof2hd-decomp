@@ -188,3 +188,82 @@ Section deltas vs the original: `.text` **85,440** differing bytes (size/base ex
 `.ARM.extab` 1,427, `.note.gnu.build-id` 20. `.rodata`, `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.rel.dyn`, `.dynsym`, `.dynstr`, `.hash` are byte-identical.
 `docs/IDENTICALITY.md` and `docs/VALIDATION.md` are updated to the new `.text` count.
+
+## 7. Additional sweep after the landed change (wave-129b, same session)
+
+The scratch tree (`/dev/shm/w7674`) was recreated after the worktree was pruned and
+re-checked out from branch `wave130-w7674` (`ed8dc3591`); the raw score reproduced at
+**75.297491** before these runs. All variants below start from the committed source
+(swap already applied) and keep the 9908 B size unless noted.
+
+### 7.1 Landmark-loop shape
+
+| variant | usize | raw % |
+|---|---:|---:|
+| **committed** | 9908 | **75.297491** |
+| `if (i != 2 && data != null && visible) { body }` (remove `continue`, if-wrapper) | 9908 | 75.297491 (tie) |
+| `int i = 0; while (i < size) { ... ++i; }` + `++i` in the continue arm | 9852 | 64.867968 |
+
+The if-wrapper is canonicalised by clang to the same rotated loop, so it does not
+un-rotate the top-tested original. The `while` form re-rolls the whole loop.
+
+### 7.2 Top-of-function `onPlanetCourse` recompute order
+
+| variant | usize | raw % |
+|---|---:|---:|
+| **committed** | 9908 | **75.297491** |
+| `targets` first (before `autoPilotTarget`) | 9908 | 75.068100 |
+| `system` first, then `autoPilotTarget`, `targets` | 9852 | 71.535365 |
+| `system`/`stationIndex` first, then `autoPilotTarget`/`targets` | 9860 | 71.217129 |
+
+The original cold block at `12e6ee` keeps `getAutoPilotTarget` first; the committed
+order is already the best.
+
+### 7.3 First `otherLock` guard, more shapes
+
+| variant | usize | raw % |
+|---|---:|---:|
+| **committed** (negated `&&`, expect 0) | 9908 | **75.297491** |
+| positive `||` + `__builtin_expect(...,1)` | 9908 | 75.268817 |
+| positive `||` plain | 9908 | 74.121864 |
+| single-expression `A || B || C || field_0x14 != 0` | 9852 | 72.962484 |
+| `otherLock = field_0x14 != 0; if (A||B||C) otherLock = 1;` | 9856 | 73.281565 |
+| positive `||` + expect(0) | 9872 | 73.383156 |
+
+None beats the committed negated form; the positive-OR `cbnz` chain still displaces the
+first literal pool.
+
+### 7.4 Ship `inSight` block
+
+| variant | usize | raw % |
+|---|---:|---:|
+| **committed** | 9908 | **75.297491** |
+| float `cx`/`cy` crosshair | 9920 | 68.196815 |
+| distance-first (`VectorLength` before bounds) | 9904 | 65.421635 |
+| drop the redundant `enemy->field_0x73 = 0` | 9864 | 64.421416 |
+
+The committed integer-crosshair/bounds-first shape is the local optimum; the extra
+`d12`/`d13` (s24-s27) live range is still not reproduced.
+
+### 7.5 Removing existing `__builtin_expect` hints
+
+| variant | usize | raw % |
+|---|---:|---:|
+| **committed** | 9908 | **75.297491** |
+| drop landmark `onScreen` expect | 9856 | 70.557792 |
+| drop landmark `screenX` expect | 9912 | 71.492045 |
+| drop both landmark expects | 9864 | 71.825111 |
+| drop first `otherLock` expects | 9908 | 74.121864 |
+| drop only the inner `lockedGasCloud` expect | 9908 | 75.268817 |
+
+The existing hints are load-bearing; the committed set is best.
+
+### 7.6 `notOtherLock` / `notTurretMode` locals
+
+Inlining `!otherLock`/`!turretMode` at the landmark use site (removing the two locals)
+is 9844 B / 73.320869 %. The locals are required for the original's `eor`-computed
+`[sp,#108]`/`[sp,#116]` booleans.
+
+Conclusion unchanged: the committed swap is the only source win found; the residual is
+the coupled planet-loop register split (`fp`/`sl`+spill) plus the `vpush {d8-d13}`
+live-range difference.
