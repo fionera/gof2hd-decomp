@@ -30,9 +30,18 @@ Wave-137 landed four `LevelScript::process` source fixes (all keep exactly 57,23
   faithful un-cache of the three `Level::getLandmarks()` calls in mission-24 state 1.
   **`.rel.plt` is now byte-identical** (3,674 entries).
 
-`Layout::Layout` fuzzy is **45.0 %** (the wave-136 w8107 reorder).
+* the four semantically-required `getPlayer` receiver fixes are landed (the original reuses
+  the cached `player` local at `0x137da6`, `0x13e97e`, `0x13f3c2` and the case-145 state-1
+  site); `Level::getPlayer` is now **23/23**.  The fixes re-roll the 57 KB block layout
+  (raw `.text` diff rises), but the instruction-level fuzzy stays **58.9 %** and the size is
+  exactly 57,232 B.  Companions: the case-102 state-1 tail is the faithful
+  `resetCamera(m_pLevel)` (not the spurious `m_tempVec` read), the spurious case-145 state-5
+  `nextCampaignMission(true)` and the unreachable `case 6` are removed, and the first
+  `resetGunDelay` site uses the cached `player`.
 
-Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **0**
+`Layout::Layout` keeps the wave-136 w8107 reorder (raw diff 5,757 B; the fuzzy ratio is verifier-tie-break-sensitive and reads 43.6-45.0 %).
+
+Section deltas: `.text` **85,535** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
@@ -51,10 +60,30 @@ Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **
 w8209 fuzzy-first reorder measured 45.9 % in its own worktree but lands at 43.6 % on the
 merged base, so its source was reverted and only the analysis note is kept.
 
-Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **85,535** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**, linked_exact
+**4507/4524**, size-exact **4524/4524**, data_exact **843/843**, imports **207**, lint
+**CLEAN**, drift **0**, avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+`LevelScript::process` (w8201) now carries the four semantically-required `getPlayer`
+receiver fixes (the original reuses the cached `player` local at `0x137da6`, `0x13e97e`,
+`0x13f3c2` and the case-145 state-1 site).  `Level::getPlayer` is **23/23**.  The fixes
+re-roll the 57 KB block layout, so the function fuzzy drops **58.9 -> 58.2 %** and its raw
+diff rises 54,327 -> 55,085, but the size stays exactly 57,232 B and the gate is unchanged.
+The size companion is the w8105 combination (`anchor_trim2 + case4_hoist + case24_loop2 +
+case135 + enemies1718`) plus two -8 B levers that absorb the +20 B base shift introduced by
+the wave-136 case-40 translate and anchor trim.  The single-`setVisible` anchor also
+restores `.rel.plt` to **byte-identical** (was 4 bytes off).  See
+`_work/reconstructions/levelscript-process-wave137-w8201.md`.
+
+Section deltas: `.text` **85,467** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
 
 ## Update 2026-11-07 (wave 136)
@@ -86,7 +115,7 @@ Two further LevelScript analyses landed as notes with the source reverted: w8106
 semantically faithful but needs a +8 B companion on top of the case-40 change;
 w8105 (the four `getPlayer` receiver fixes) is also faithful but re-rolls the
 57 KB block layout (58.9 -> 45.6 % at 57,236 B) and needs a different size
-companion. Both are ready to re-land once the companion is found.
+companion. w8105 was re-landed in wave 137 (see above); w8106 is still pending.
 
 * `Layout::Layout` C1/C2 (w8107): six adjacent statement swaps found by
   hill-climbing the raw byte diff (`0x1c` after `0x10`, `buttonInsetX` after
