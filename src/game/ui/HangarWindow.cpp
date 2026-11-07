@@ -911,9 +911,10 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; count <= 4; count++) {
-                String price("");
                 String description("");
+                String price("");
                 (*this->buttons)[12 + count]->setVisible(true);
+                Layout *lay = Globals::layout;
                 switch (count) {
                     case 0:
                         description = String(Globals::cItemListDescription_00);
@@ -943,13 +944,13 @@ void HangarWindow::render() {
                 int row = (unsigned char) count / 3;
                 int col = (unsigned char) count % 3;
                 int x = Globals::w / 2 - this->buttonWidth - this->gridSpacingX + (this->gridSpacingX + this->buttonWidth) * col;
-                int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * Globals::layout->field_0x20_top) -
+                int y = (int) ((float) (Globals::h / 2 - this->gridButtonHeight / 2 - 3 * lay->field_0x20_top) -
                           (float) this->gridSpacingY * 0.5f + (float) ((this->gridSpacingY + this->gridButtonHeight) * row));
                 (*this->buttons)[12 + count]->setPosition(x, y, 68);
                 (*this->buttons)[12 + count]->replaceTextKeepSize(description);
                 (*this->buttons)[12 + count]->setSplitText(price);
                 (*this->buttons)[12 + count]->draw();
-                Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - Globals::layout->field_0x2c_rowHeight, 17,
+                Globals::Canvas->DrawImage2D(this->tabIcons[count], x, y - lay->field_0x2c_rowHeight, 17,
                                              68);
                 if (count == 4 && Globals::showBestDeal) {
                     int iconX = (int) ((float) x + (Globals::iPad ? 0.05f : 0.13f) * (float) this->buttonWidth);
