@@ -632,10 +632,10 @@ bool LevelScript::process(int delta) {
             (*enemies)[1]->setPosition(-10000.0f, -300.0f, -1700.0f);     // 0x1380e8/f0/f4
             (*enemies)[2]->setPosition(-10000.0f, -200.0f, 2000.0f);      // 0x1380e8/f8/e0
             // Face them +X with +Y up, and make them visible (0x137f34).
+            KIPlayer **enemyData = enemies->data_;
             for (int i = 0; i < 3; ++i) {
-                KIPlayer *enemy = (*enemies)[i];
-                enemy->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
-                enemy->geometry->setVisible(true);
+                enemyData[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
+                enemyData[i]->geometry->setVisible(true);
             }
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
@@ -792,7 +792,6 @@ bool LevelScript::process(int delta) {
                     }
                     if (!((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                  ->animating) {
-                        m_nState = 9;
                         Globals::sound->play(141, nullptr, nullptr, 0.0f);
                         m_nState = 8;
                         m_nScriptTimerA = 0;
