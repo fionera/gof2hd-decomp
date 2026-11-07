@@ -675,7 +675,7 @@ enemies:
         otherLock = false;
         this->dockNavPtr = nullptr;
     }
-    int bossSeen = false;
+    bool bossSeen = false;
     bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         int alwaysEnemy = false;
@@ -791,7 +791,7 @@ enemies:
                     enemy->field_0x73 = 0;
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
-                    int inSight = false;
+                    bool inSight = false;
                     AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
                     if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
                         inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
@@ -1090,7 +1090,7 @@ asteroids:
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
             }
             int slotCount = 0;
-            int asteroidHit = false;
+            bool asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
                 bool dead = asteroid->isDead() || asteroid->isDying();
