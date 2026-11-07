@@ -3262,14 +3262,14 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
+                    m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_pCamera->setPosition((*enemies)[0]->getPosition() + Vector{9000.0f, -7000.0f, 40000.0f});
                     Globals::sound->stop(Globals::sound->currentMusicEvent);
                     Globals::sound->play(2240, nullptr, nullptr, 0.0f);
-                    m_pCamera->translate((float) delta * 0.6f, (float) delta * 0.8f, (float) -delta * 2.5f);
                     m_nScriptTimerA = 0;
                     m_nState++;
                 } else if (m_nState == 1) {
-                    m_pCamera->setTarget((*enemies)[0]->geometry);
+                    m_pCamera->translate((float) delta * 0.6f, (float) delta * 0.8f, (float) -delta * 2.5f);
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
@@ -4333,7 +4333,7 @@ bool LevelScript::process(int delta) {
                         break;
                     }
                     player->setTurretMode(false);
-                    if (m_pLevel->getPlayer()->isInRocketControl()) {
+                    if (player->isInRocketControl()) {
                         player->setRocketControl(nullptr, nullptr);
                         player->killLiberator();
                         m_pCamera->setRumblePercentage(0.0f, 0);
@@ -4450,6 +4450,7 @@ bool LevelScript::process(int delta) {
                         m_pRadar->lockedEnemy = nullptr;
                         m_pRadar->dockNavPtr = nullptr;
                         m_bCinematicBreak = 0;
+                        m_nState++;
                     }
                     break;
                 }
