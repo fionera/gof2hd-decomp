@@ -5169,14 +5169,20 @@ KIPlayer *Level::createStaticObject(Waypoint *waypoint, int type, bool scatter) 
 
 PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint *waypoint, bool hostile, bool group) {
     int mission = Globals::status->getCurrentCampaignMission();
-    int wz = waypoint != nullptr ? waypoint->z : 0;
-    int wy = waypoint != nullptr ? waypoint->y : 0;
-    int wx = waypoint != nullptr ? waypoint->x : 0;
-    int jitterX = Globals::rnd->nextInt(40000);
-    int jitterZ = Globals::rnd->nextInt(40000);
-    int jitterY = Globals::rnd->nextInt(40000);
-    int level = Globals::status->getLevel();
-    if (level > 20) level = 20;
+    int wpz, wpx, wpy;
+    if (waypoint != nullptr) {
+        wpx = waypoint->x;
+        wpy = waypoint->y;
+        wpz = waypoint->z;
+    } else {
+        wpx = 0;
+        wpy = 0;
+        wpz = 0;
+    }
+    int jitter1 = Globals::rnd->nextInt(40000);
+    int jitter2 = Globals::rnd->nextInt(40000);
+    int jitter3 = Globals::rnd->nextInt(40000);
+    int level = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
     int hitpoints = (Globals::status->gameWon() ? 180 : mission * 4) + level * 14 + 20;
     switch (type) {
         case 0x2c:
@@ -5192,9 +5198,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
         hitpoints = 270;
     }
-    int empPoints = Globals::status->getLevel();
-    if (empPoints > 20) empPoints = 20;
-    empPoints = empPoints * 5 + 40;
+    int empPoints = (Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel()) * 5 + 40;
     int empTime;
     if (shipClass == 1) {
         hitpoints *= type == 14 ? 25 : 5;
@@ -5209,15 +5213,19 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     }
     int armor = Globals::status->hardCoreMode() ? 650 : 1000;
     Player *player = new Player(armor, hitpoints, 1, 1, 0);
-    float z = (float) (wz + jitterZ - 20000);
-    float y = (float) (wy + jitterY - 20000);
-    int x = wx + jitterX - 20000;
-    player->setEmpData(empPoints, empTime);
+    int x = wpx + jitter1 - 20000;
+    float y = (float) (wpy + jitter2 - 20000);
+    float z = (float) (wpz + jitter3 - 20000);
+    try {
+        player->setEmpData(empPoints, empTime);
+    } catch (...) {
+        __builtin_trap(); // lint: arm_builtin anchor: Level::createShip; removal grows body 2764 -> 2772
+    }
 
-    if (Globals::status == nullptr) return nullptr;
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
-        PlayerFighter *fighter = new PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
+        PlayerFighter *fighter = (PlayerFighter *) ::operator new(sizeof(PlayerFighter)); // lint: operator_call
+        new (fighter) PlayerFighter(type, race, player, nullptr, x, y, z, hostile);
         fighter->setShipGroup(Globals::globals->getShipGroup(type, race, group), type, hostile);
         if (missionPtr != 1 && missionPtr != 23) {
             KIPlayer *kiFighter = fighter;
@@ -5232,55 +5240,55 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         ship = fighter;
     } else if (shipClass == 1) {
         // capital ships: hull collision boxes per race
-        Vector pos = {(float) x, (float) y, (float) z};
-        PlayerFixedObject *fixed = new PlayerFixedObject(type, race, player, nullptr, pos.x, pos.y, pos.z);
+        PlayerFixedObject *fixed = (PlayerFixedObject *) ::operator new(sizeof(PlayerFixedObject)); // lint: operator_call
+        new (fixed) PlayerFixedObject(type, race, player, nullptr, x, y, z);
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         switch (race) {
             case 0:
                 if (type == 14) {
                     ArraySetLength(11, *volumes);
-                    (*volumes)[0] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -2240.0f, 21608.0f, 760.0f, 640.0f, 2890.0f);
-                    (*volumes)[1] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 18392.0f, -2342.0f, 1260.0f, 3560.0f, 3670.0f);
-                    (*volumes)[2] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -786.0f, 8926.0f, 7410.0f, 7740.0f, 15540.0f);
-                    (*volumes)[3] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 9656.0f, -4950.0f, 820.0f, 1040.0f, 7150.0f);
-                    (*volumes)[4] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 3420.0f, -452.0f, 1310.0f, 940.0f, 4880.0f);
-                    (*volumes)[5] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -9018.0f, -270.0f, 7520.0f, 6870.0f, 20470.0f);
-                    (*volumes)[6] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -5088.0f, -7962.0f, 1300.0f, 2900.0f, 13210.0f);
-                    (*volumes)[7] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -11604.0f, 3526.0f, 3260.0f, 880.0f, 10640.0f);
-                    (*volumes)[8] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 5212.0f, -12332.0f, 3260.0f, 2640.0f, 8410.0f);
-                    (*volumes)[9] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -15852.0f, 2004.0f, 15860.0f, 2510.0f, 10910.0f);
-                    (*volumes)[10] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
+                    (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -2240.0f, 21608.0f, 760.0f, 640.0f, 2890.0f);
+                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 18392.0f, -2342.0f, 1260.0f, 3560.0f, 3670.0f);
+                    (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, -786.0f, 8926.0f, 7410.0f, 7740.0f, 15540.0f);
+                    (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 9656.0f, -4950.0f, 820.0f, 1040.0f, 7150.0f);
+                    (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 3420.0f, -452.0f, 1310.0f, 940.0f, 4880.0f);
+                    (*volumes)[5] = new BoundingAAB(x, y, z, 0.0f, -9018.0f, -270.0f, 7520.0f, 6870.0f, 20470.0f);
+                    (*volumes)[6] = new BoundingAAB(x, y, z, 0.0f, -5088.0f, -7962.0f, 1300.0f, 2900.0f, 13210.0f);
+                    (*volumes)[7] = new BoundingAAB(x, y, z, 0.0f, -11604.0f, 3526.0f, 3260.0f, 880.0f, 10640.0f);
+                    (*volumes)[8] = new BoundingAAB(x, y, z, 0.0f, 5212.0f, -12332.0f, 3260.0f, 2640.0f, 8410.0f);
+                    (*volumes)[9] = new BoundingAAB(x, y, z, 0.0f, -15852.0f, 2004.0f, 15860.0f, 2510.0f, 10910.0f);
+                    (*volumes)[10] = new BoundingAAB(x, y, z, 0.0f, -2610.0f, -15852.0f, 15860.0f, 2510.0f, 10910.0f);
                     fixed->setWreckedMeshId(0x4780);
                 } else {
                     ArraySetLength(3, *volumes);
-                    (*volumes)[0] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
-                    (*volumes)[1] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
-                    (*volumes)[2] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
+                    (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -73.0f, 123.0f, 3000.0f, 2860.0f, 10430.0f);
+                    (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -280.0f, -4257.0f, 3470.0f, 1815.0f, 2200.0f);
+                    (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, -770.0f, -4279.0f, 5220.0f, 680.0f, 2270.0f);
                     fixed->setWreckedMeshId(0x477e);
                 }
                 break;
             case 3:
                 ArraySetLength(2, *volumes);
-                (*volumes)[0] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
-                (*volumes)[1] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -199.0f, 4708.0f, 980.0f, 1530.0f, 1240.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, -14.0f, -98.0f, 4500.0f, 1405.0f, 8860.0f);
                 fixed->setWreckedMeshId(0x477c);
                 break;
             case 2:
                 ArraySetLength(3, *volumes);
-                (*volumes)[0] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, -85.0f, 24.0f, 4335.0f, 1245.0f, 10880.0f);
-                (*volumes)[1] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 710.0f, 292.0f, 2990.0f, 935.0f, 11450.0f);
-                (*volumes)[2] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 1510.0f, -2886.0f, 2750.0f, 1010.0f, 2750.0f);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, -85.0f, 24.0f, 4335.0f, 1245.0f, 10880.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 710.0f, 292.0f, 2990.0f, 935.0f, 11450.0f);
+                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 1510.0f, -2886.0f, 2750.0f, 1010.0f, 2750.0f);
                 fixed->setWreckedMeshId(0x477d);
                 break;
             default:
                 break;
             case 1:
                 ArraySetLength(5, *volumes);
-                (*volumes)[0] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 351.0f, 5827.0f, 3930.0f, 1590.0f, 2070.0f);
-                (*volumes)[1] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 616.0f, 4573.0f, 4440.0f, 2120.0f, 1035.0f);
-                (*volumes)[2] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 780.0f, 3303.0f, 4970.0f, 2620.0f, 1895.0f);
-                (*volumes)[3] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 456.0f, -309.0f, 2695.0f, 3530.0f, 6600.0f);
-                (*volumes)[4] = new BoundingAAB(pos.x, pos.y, pos.z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
+                (*volumes)[0] = new BoundingAAB(x, y, z, 0.0f, 351.0f, 5827.0f, 3930.0f, 1590.0f, 2070.0f);
+                (*volumes)[1] = new BoundingAAB(x, y, z, 0.0f, 616.0f, 4573.0f, 4440.0f, 2120.0f, 1035.0f);
+                (*volumes)[2] = new BoundingAAB(x, y, z, 0.0f, 780.0f, 3303.0f, 4970.0f, 2620.0f, 1895.0f);
+                (*volumes)[3] = new BoundingAAB(x, y, z, 0.0f, 456.0f, -309.0f, 2695.0f, 3530.0f, 6600.0f);
+                (*volumes)[4] = new BoundingAAB(x, y, z, 0.0f, 248.0f, -5587.0f, 3325.0f, 3020.0f, 4205.0f);
                 fixed->setWreckedMeshId(0x477f);
                 break;
         }
