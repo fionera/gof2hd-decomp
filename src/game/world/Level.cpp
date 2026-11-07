@@ -2044,11 +2044,10 @@ void Level::createMission() {
         for (int i = first + pirates + this->friendCount + this->field_164 + this->field_168 + this->hostileCount;
              i < escortsEnd + this->friendCount + this->field_164 + this->field_168 + this->hostileCount; i++) {
             (*this->enemies)[i] = this->createShip(8, 0, Globals::globals->getRandomEnemyFighter(8), nullptr, true, false);
-            int x = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
-            int y = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
-            int z = Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000;
-            (*this->enemies)[i]->setPosition((int) (pirateBase.x + (float) x), (int) (pirateBase.y + (float) y),
-                                             (int) (pirateBase.z + (float) z));
+            Vector pos = {pirateBase.x + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
+                          pirateBase.y + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000),
+                          pirateBase.z + (float) (Globals::rnd->nextInt(20000) * (Globals::rnd->nextInt(2) == 0 ? 1 : -1) + 10000)};
+            (*this->enemies)[i]->setPosition((int) pos.x, (int) pos.y, (int) pos.z);
             (*this->enemies)[i]->setToSleep();
             ((PlayerFighter *) (*this->enemies)[i])->field_0x12f = 1;
         }

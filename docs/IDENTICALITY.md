@@ -4,6 +4,27 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 134)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Wave-134 landed one source-level improvement:
+
+* `Level::createMission` station-pirate escort `setPosition`: the three RNG
+  offsets are now built as a single `Vector pos = {pirateBase.x + ..., ...}`
+  aggregate instead of three `int x/y/z` locals. This reproduces the original's
+  interleaved `vldr pirateBase.{x,y,z}` / `nextInt` / `vadd` schedule (the
+  original loads each `pirateBase` component immediately before its RNG pair).
+  Function diff bytes **5,771 -> 5,763**, exact 17,172 B.
+
+Section deltas: `.text` **85,135** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,416** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 133)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
