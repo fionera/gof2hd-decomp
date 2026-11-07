@@ -1930,12 +1930,12 @@ bool LevelScript::process(int delta) {
                     // 0x13e6da: keep the camera drifting backwards while the escort message plays.
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
+                        m_pCamera->setTarget(player->geometry);
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
-                        m_pCamera->setTarget(player->geometry);
-                        player->setComputerControlled(false);
                         m_pCamera->setLookAtCam(false);
+                        player->setComputerControlled(false);
                         player->player->setVulnerable(true);
                         m_nState = 2;
                     }
