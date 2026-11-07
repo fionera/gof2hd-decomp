@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 81.3,
+   "pct": 81.9,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -105,7 +105,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 94.1,
+   "pct": 94.4,
    "byte": false,
    "linked": false,
    "osize": 9700,
@@ -121,7 +121,7 @@
   },
   {
    "name": "_ZN3Hud4drawExxP9PlayerEgobjj",
-   "pct": 96.4,
+   "pct": 96.6,
    "byte": false,
    "linked": false,
    "osize": 9332,
