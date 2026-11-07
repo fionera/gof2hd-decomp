@@ -3059,9 +3059,10 @@ bool LevelScript::process(int delta) {
                     if (player->isDockedToDockingPoint()) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
+                        m_pRadar->dockNavPtr = nullptr;
                         m_pLevel->getPlayer()->resetGunDelay();
                         m_nScriptTimerA = 0;
-                        player->dockToDockingPoint(nullptr, m_pRadar);
+                        m_pLevel->getPlayer()->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
                         m_pCamera->setRotationAroundTarget(false);
                     }
@@ -3723,7 +3724,6 @@ bool LevelScript::process(int delta) {
                         Vector playerPos = player->getPosition();
                         m_pCamera->setPosition(playerPos - playerDir * 2400.0f);
                         m_pHud->visible = 1;
-                        resetCamera(m_pLevel);
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0; // clear cinematicBreak_ (byte @0x11 = 0)
@@ -4698,11 +4698,11 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_bCinematicBreak = 0;
                         if (field_0xaa) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nScriptTimerB = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 10) {
