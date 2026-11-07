@@ -32,10 +32,21 @@ Wave-137 landed four `LevelScript::process` source fixes (all keep exactly 57,23
 
 `Layout::Layout` fuzzy is **45.0 %** (the wave-136 w8107 reorder).
 
-Section deltas: `.text` **84,662** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
+* `Level::createMission` tail loop (case 4): the `int idx` temp evaluated the waypoint
+  index before `getRandomEnemyFighter`, which also swapped the tail register map
+  (`this` r9 / `i` r8 vs the original r8 / r9) and reloaded `playerRoute`.  The faithful
+  one-liner restores the original left-to-right argument order and register map.
+  Official fuzzy **92.1033 -> 92.3432 %** (+0.24 pp), size unchanged at 17,172 B.  The
+  positional `.text` diff rises 84,709 -> 84,711 because the `strd r0,fp,[sp]` becomes
+  `movs r0,#1; str r0,[sp,#4]` (`&Globals::rnd` in `fp` instead of `[sp,#120]`); the
+  instruction-level match is better despite that.  See
+  `_work/reconstructions/level-createmission-wave137-w8214.md`.
+
 
 ## Update 2026-11-07 (wave 136)
 
@@ -86,7 +97,7 @@ Build provenance was re-audited (w8119): the original is **not PGO-built**
 Status switch does), and a 60-flag matrix plus APK/NDK re-mine found no flag
 that beats the current recipe.
 
-Section deltas: `.text` **84,709** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,711** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **4** (size exact, 29,392 B); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).

@@ -2123,13 +2123,12 @@ case4Tail:
     ArraySetLength(hunterCount, *this->enemies);
     volatile unsigned n = this->enemies->size();
     for (unsigned i = 0; i < n; i++) {
-        // Evaluate the waypoint index before the createShip call: this keeps
-        // `Globals::rnd` loaded ahead of `this->playerRoute` (the original's
-        // argument order) and lets clang hoist the `true` argument into fp.
-        int idx = Globals::rnd->nextInt(this->playerRoute->length());
+        // The original evaluates `getRandomEnemyFighter` before the waypoint
+        // index (left-to-right argument order); this also reproduces the
+        // original tail register map (`this` in r8, `i` in r9).
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
-                this->playerRoute->getWaypoint(idx), true, false);
+                this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
         (*this->enemies)[i]->setToSleep();
     }
     this->objectivesA = new Objective(18, 0, hunterCount, this);
