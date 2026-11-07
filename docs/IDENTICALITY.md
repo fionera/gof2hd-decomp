@@ -4,6 +4,23 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 132)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Wave-132 `Level::createShip` **73.2 -> 73.4** raw at the original 2764 B,
+1007/1007 insns.  The only source change is the declaration order of the three
+spawn-coordinate locals (`z`, `y`, `x` instead of `x`, `y`, `z`); the
+expressions and types are unchanged.  The reordering changes the register
+allocator's stack-slot colouring so the coordinate block's frame slots line up
+with the original (`wpx=[sp,#44]`, `jitter1=[sp,#36]`, `wpy=[sp,#48]`).
+Section deltas are unchanged from wave 131 (`.text` **85,167**, `.ARM.extab`
+**156,304 B / 108,023 differing bytes**, 8 B short).  See
+`_work/reconstructions/level-createship-wave132-w7693.md`.
+
 ## Update 2026-11-07 (wave 131)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:

@@ -93,7 +93,7 @@ the correct signature, and we export nothing it does not. `tools/sodiff_allow.tx
 extra export is a hard failure. The 12 formerly broken zero-size UB stubs have all been
 reconstructed (see the fidelity section).
 
-### Current state — ELF sections (2026-11-07, wave 131)
+### Current state — ELF sections (2026-11-07, wave 132)
 All **27 original section headers are present**, with no extra section and an
 **exact file size** (2,187,328 B). `.text`, `.rodata` (prefix), `.data`, `.bss`, `.got`,
 `.ARM.exidx`, `.rel.plt`, `.dynstr`, `.hash`, `.rel.dyn`, `.dynamic`, `.dynsym`,
@@ -102,7 +102,9 @@ All **27 original section headers are present**, with no extra section and an
 and `.ARM.attributes` content is byte-identical. `.ARM.extab` is base-exact (`0x1a3b78`) but
 **8 B short** (`0x26290`): wave-131 `Level::createShip` is a 328 B record (54 rows,
 `ttype 0x00`) because of the `try`/`catch` RA barrier (see
-`_work/reconstructions/level-createship-wave131-w7693.md`); `Generator::createMission` is
+`_work/reconstructions/level-createship-wave131-w7693.md`); wave 132 only reorders the
+spawn-coordinate locals (`z,y,x`) to improve the function to 73.4 raw, leaving the section
+sizes unchanged. `Generator::createMission` is
 exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B. `.rodata` is
 **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
