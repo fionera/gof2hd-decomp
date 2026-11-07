@@ -1905,7 +1905,6 @@ bool LevelScript::process(int delta) {
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z);
                     (*enemies)[0]->awake();
-                    m_nScriptTime = 0;
                     (*enemies)[0]->shipGroup = 1;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -2777,11 +2776,12 @@ bool LevelScript::process(int delta) {
                 // Escorting the defector freighter to the station, then flying away with it.
                 if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
                     m_nScriptTimerB = 0;
-                    m_nState = 2;
+                    m_nState = 1;
+                    (*enemies)[0]->setActive(true);
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
                             ->setName(String(*Globals::gameText->getText(3211), false));
                 } else if (m_nState == 1 && player->isDockedToDockingPoint()) {
-                    (*enemies)[0]->setActive(true);
+                    m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
                     ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))->setDockingType(2);
                     if (player->isDockedToDockingPoint()) {
