@@ -4,6 +4,26 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 126)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Wave-126 gain: `LevelScript::process` case-154 state 0/1 is now instruction-faithful
+(`setComputerControlled` before `setVulnerable`, one `setSpeed(0.0f)`, `setTarget` moved from
+state 1 to state 0, `m_nState++` at the block tail instead of `m_nState = 1` at the head, and the
+state-1 `setSpeed(0.0f)` prologue restored). Size stays exactly 57232 B; `.rel.plt` and
+`.ARM.exidx` remain byte-identical and `.rodata` exact. The function's fuzzy score is 60.2
+(60.235 raw) but the whole-`.text` differing-byte count falls **85,552 -> 85,496**. See
+`_work/reconstructions/levelscript-process-wave126-w7603.md`.
+
+Section deltas: `.text` **85,496** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,438** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+**0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+(2,187,328 B).
+
 ## Update 2026-11-06 (wave 125)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
@@ -469,7 +489,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,636 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,496 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,436 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |

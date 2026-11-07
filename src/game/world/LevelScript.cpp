@@ -4459,10 +4459,10 @@ bool LevelScript::process(int delta) {
                     m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
-                    m_nState = 1;
+                    player->setComputerControlled(true);
                     player->player->setVulnerable(false);
-                    field_0xaa = player->autoTurretIsEnabled();
                     player->setSpeed(0.0f);
+                    field_0xaa = player->autoTurretIsEnabled();
                     if (field_0xaa) {
                         player->setAutoTurret(false);
                     }
@@ -4470,7 +4470,7 @@ bool LevelScript::process(int delta) {
                     m_pHud->visible = 0;
                     m_pRadar->enabled = 0;
                     m_pCamera->setLookAtCam(true);
-                    player->setSpeed(0.0f);
+                    m_pCamera->setTarget((*m_pLevel->getEnemies())[2]->geometry);
                     m_tempVec = (*m_pLevel->getEnemies())[2]->geometry->getPosition();
                     m_tempVec += Vector{300.0f, 300.0f, 5800.0f};
                     m_pCamera->setPosition(m_tempVec);
@@ -4487,10 +4487,10 @@ bool LevelScript::process(int delta) {
                     }
                     (*enemies)[1]->field_0x70 = 1;
                     m_nScriptTimerA = 0;
-                    player->setComputerControlled(true);
+                    m_nState++;
                     m_pLevel->lodManager->forceUpdate(delta, false);
                 } else if (m_nState == 1) {
-                    m_pCamera->setTarget((*m_pLevel->getEnemies())[2]->geometry);
+                    player->setSpeed(0.0f);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     float step = (float) delta * 0.5f;
                     for (unsigned int i = 0; i < enemies->count; i++) {
