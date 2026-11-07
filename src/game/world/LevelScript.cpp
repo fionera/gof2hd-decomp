@@ -1724,7 +1724,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                         m_nState = 5;
-                        for (unsigned int i = 0; i < enemies->count; i++) {
+                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
                             KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                             if (ship != nullptr && ship->shipGroup == 9) {
                                 ship->setVisible(false);
