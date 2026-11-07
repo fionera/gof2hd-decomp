@@ -1442,7 +1442,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     Array<int> *quantities = bluePrint->getQuantityList();
                     bool complete = true;
                     for (unsigned j = 0; j < ingredients->size(); j++) {
-                        if (!ship->hasCargo((*ingredients)[j], (*quantities)[j])) {
+                        if (__builtin_expect(!ship->hasCargo((*ingredients)[j], (*quantities)[j]), 1)) { // lint: arm_builtin anchor: Status::missionCompleted; branch-weight hint
                             complete = false;
                             break;
                         }

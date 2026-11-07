@@ -11,13 +11,28 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
-Wave-126 gain: `LevelScript::process` case-154 state 0/1 is now instruction-faithful
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
+`LevelScript::process` **60.3**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **81.3**,
+`Generator::createMission` **90.0**, `Level::createMission` **92.3**,
+`Gun::calcCharacterCollision` **93.4**, `Level::createScene` **93.6**,
+`HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
+`MenuTouchWindow::OnTouchBegin` **98.1**, `ModStation` C1/C2 **99.2**,
+`MGame::OnUpdate` **99.9**.
+
+Wave-126 gains: `LevelScript::process` case-154 state 0/1 is now instruction-faithful
 (`setComputerControlled` before `setVulnerable`, one `setSpeed(0.0f)`, `setTarget` moved from
 state 1 to state 0, `m_nState++` at the block tail instead of `m_nState = 1` at the head, and the
 state-1 `setSpeed(0.0f)` prologue restored). Size stays exactly 57232 B; `.rel.plt` and
 `.ARM.exidx` remain byte-identical and `.rodata` exact. The function's fuzzy score is 60.2
 (60.235 raw) but the whole-`.text` differing-byte count falls **85,552 -> 85,496**. See
 `_work/reconstructions/levelscript-process-wave126-w7603.md`.
+
+`Status::missionCompleted` **71.0 -> 71.1** — one `__builtin_expect(...,1)` on the case-162
+`hasCargo` loop condition keeps the function at 1432 B and matches the original's loop branch
+layout more closely. The remaining residual is the high-TBH body order: the original lays the
+22 high case bodies out in source order, our identical clang in ascending case-value order,
+which is a switch-edge-frequency (`!prof`/PGO) effect not expressible from C++11. See
+`_work/reconstructions/status-missioncompleted-wave126-w7605.md`.
 
 Section deltas: `.text` **85,496** differing bytes (size exact); `.ARM.exidx` **0**;
 `.ARM.extab` **1,438** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
