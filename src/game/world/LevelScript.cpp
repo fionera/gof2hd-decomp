@@ -3722,8 +3722,8 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setFixed(false);
                         m_pRadar->enabled = 1;
                         m_pCamera->setLookAtCam(false);
-                        Vector playerDir = player->GetDirVector();
                         Vector playerPos = player->getPosition();
+                        Vector playerDir = player->GetDirVector();
                         m_pCamera->setPosition(playerPos - playerDir * 2400.0f);
                         m_pHud->visible = 1;
                         resetCamera(m_pLevel);
@@ -3852,9 +3852,10 @@ bool LevelScript::process(int delta) {
                     }
                     if (!Globals::layout->isFading()) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
+                        AEGeometry *geo = player->geometry;
                         m_pCamera->setTarget(player->geometry);
-                        Vector dir = player->geometry->getDirection();
-                        player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
+                        Vector dir = geo->getDirection();
+                        geo->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
                         if (m_pGeometry6 != nullptr) {
                             delete m_pGeometry6; // 0x144df6
                         }
