@@ -634,8 +634,8 @@ bool LevelScript::process(int delta) {
             // Face them +X with +Y up, and make them visible (0x137f34).
             for (int i = 0; i < 3; ++i) {
                 KIPlayer **enemyData = enemies->data_;
-                enemyData[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
                 enemyData[i]->geometry->setVisible(true);
+                enemyData[i]->geometry->setDirection(Vector{1.0f, 0.0f, 0.0f}, Vector{0.0f, 1.0f, 0.0f});
             }
             m_pLevel->lodManager->forceUpdate(30, false);
             // falls through to the shared active tail (0x137f76 -> 0x137f7c)
