@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 60.3,
+   "pct": 60.2,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -49,7 +49,7 @@
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
-   "pct": 71.0,
+   "pct": 71.1,
    "byte": false,
    "linked": false,
    "osize": 1432,
