@@ -1187,7 +1187,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
         int regenW = (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446);
         // `dividerOffset` as the (unused, angle is 0) pivotY is a codegen anchor: it keeps
         // `dividerOffset` live in `sl` across the gamma block and spills `this`, matching the
-        // original's register allocation and 224-byte frame (see hud-draw-wave134-w7760.md).
+        // original's allocation and 224-byte frame (hud-draw-wave135-w7780.md, wave137-w8218).
         Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, dividerOffset,
                                       this->field_0x440, armorBarY);
     }
