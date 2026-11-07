@@ -4,6 +4,25 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 140)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-140 lands the two remaining w8403 receiver fixes in `LevelScript::process`:
+`m_pLevel->getPlayer()->resetGunDelay()` at `0x140288` (+8) and
+`player->geometry->setDirection(...)` at `0x144dc2` (-8), netting exactly 57,232 B.
+`LevelScript::process` raw same-address diff **54,262 -> 54,115** (-147); whole `.text`
+differing bytes **84,651 -> 84,504**; `.rel.plt` stays byte-identical.  See
+`_work/reconstructions/levelscript-process-wave140-w8504.md`.
+
+Section deltas: `.text` **84,504** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 139)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
