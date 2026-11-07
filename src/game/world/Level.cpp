@@ -2118,12 +2118,15 @@ case4Else:
     }
 case4Tail:
     {
+    // Codegen anchor: the original keeps an otherwise-dead 8-byte stack slot
+    // live across this block (frame 400 B).  Without it clang shrinks the
+    // frame to 392 B and the function comes out 8 B short.
+    volatile double tailFrameSlot = 0.0;
     float hunters = (float) ((int) ((float) Globals::status->getMission()->getDifficulty() / 10.0f * 5.0f) + 2);
     int hunterCount = (int) (hunters + (*(float *) &Globals::options[44] - 0.5f) * hunters);
     this->enemies = new Array<KIPlayer *>();
     ArraySetLength(hunterCount, *this->enemies);
-    volatile unsigned n = this->enemies->size();
-    for (unsigned i = 0; i < n; i++) {
+    for (unsigned i = 0; i < this->enemies->size(); i++) {
         (*this->enemies)[i] = this->createShip(
                 8, 0, Globals::globals->getRandomEnemyFighter(8),
                 this->playerRoute->getWaypoint(Globals::rnd->nextInt(this->playerRoute->length())), true, false);
