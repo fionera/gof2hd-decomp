@@ -679,7 +679,7 @@ enemies:
     bool bossSeen = false;
     bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
-        bool alwaysEnemy = false;
+        int alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
             KIPlayer *enemy = this->enemies->data()[i];
             if (!enemy->player->isActive() ||
@@ -793,10 +793,10 @@ enemies:
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
                     bool inSight = false;
-                    if (this->screenX > cx - this->field_0x124 && this->screenY > cy - this->field_0x124 &&
-                        this->screenX < cx + this->field_0x124 && this->screenY < cy + this->field_0x124 &&
-                        AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f) {
-                        inSight = true;
+                    AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
+                    if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
+                        inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
+                                  this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124;
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
@@ -1099,7 +1099,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
