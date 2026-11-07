@@ -9,6 +9,7 @@
 #include "engine/render/ImagePart.h"
 #include "game/ui/Layout.h"
 #include "game/core/Globals.h"
+#include "engine/core/ArrayReleaseClasses.h"
 #include "game/world/Standing.h"
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
