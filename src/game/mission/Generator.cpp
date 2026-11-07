@@ -756,7 +756,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
 
     uint32_t race = agent->getRace();
     int itemId;
-    volatile short padA;
     int amount;
 
     bool selected = false;
@@ -869,7 +868,6 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = Globals::rnd->nextInt(9);
     }
 
-    itemId = 0;
     if (type == 8) {
         Array<Item *> *items = Globals::items;
         do {
@@ -881,9 +879,9 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = (*items)[itemId]->getTecLevel();
         amount = count + 5;
     } else {
-        volatile int *ap = &amount;
-        *ap = 0;
         ++difficulty;
+        amount = 0;
+        itemId = 0;
         switch (type) {
             case 0:
                 itemId = Globals::rnd->nextInt(7);
@@ -917,14 +915,13 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         difficulty = 10;
     }
 
-    Galaxy *&galaxy = Globals::galaxy;
+    Galaxy *galaxy = Globals::galaxy;
     int fromSystem;
     int toSystem;
     SolarSystem *fromSystemPtr;
     float reward = (fromSystem = Globals::status->getStation()->getSystem(),
-                    padA = 0, (void) padA,
                     fromSystemPtr = systems->data()[fromSystem],
-                    toSystem = galaxy->getStation(targetStation)->getSystem(),
+                    toSystem = Globals::galaxy->getStation(targetStation)->getSystem(),
                     (galaxy->distance(fromSystemPtr, systems->data()[toSystem]) / 1200.0f + 1.0f) *
                    (float) ((int) ((float) difficulty / 10.0f * 5500.0f) + 1500));
     if (type == 7) {
@@ -954,7 +951,7 @@ Mission *Generator::createMission(Agent *agent, Array<SolarSystem *> *systems) {
         int rem = rawBonus % 50;
         bonus = rawBonus + rem;
         if (bonus % 50 != 0) {
-            bonus = rawBonus - rem;
+            bonus -= rem * 2;
         }
     }
 

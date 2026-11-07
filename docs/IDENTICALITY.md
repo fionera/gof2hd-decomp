@@ -4,6 +4,35 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 127)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
+`LevelScript::process` **60.1**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **81.9**,
+`Level::createMission` **92.3**, `Gun::calcCharacterCollision` **93.4**,
+`Level::createScene` **93.6**, `HangarWindow::render` **94.7**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.6**,
+`Generator::createMission` **97.2**, `MenuTouchWindow::OnTouchBegin` **98.1**,
+`ModStation` C1/C2 **99.2**, `MGame::OnUpdate` **99.9**.
+
+Wave-127 gain: `Generator::createMission` **90.0 -> 97.2** at the original size (1996 B) and
+the original frame (96 B).  The clean shape (plain `int amount`, `Galaxy *galaxy` value,
+`amount = 0; itemId = 0;` in the else arm) reproduces the original's exact seven-slot map;
+the bonus `rem`/`agent` register-allocation fixed point is broken by writing the round-down
+as the equivalent `bonus -= rem * 2` instead of `bonus = rawBonus - rem`, which lets
+`rawBonus` die at the add so `rem` no longer needs `r9` and `agent` stays in `r9`.  The
+`volatile short padA`, `volatile int *ap = &amount` and `Galaxy *&galaxy` hacks are removed.
+The remaining 2.8 % is the bonus block's `r5`/`r6`/spill choice plus the `bhi` value-range
+fold.  See `_work/reconstructions/generator-createmission-wave127-w7652.md`.
+
+Section deltas: `.text` **85,475** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,433** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+**0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+(2,187,328 B).
+
 ## Update 2026-11-07 (wave 126)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
