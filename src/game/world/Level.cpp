@@ -6637,7 +6637,6 @@ void Level::createScene() {
                 ownHangar = Globals::status->field_114 == 3;
             AbyssEngine::AERandom *&rnd = Globals::rnd;
             int capacity = kHangarCapacity[sceneRace];
-            unsigned short cap = (unsigned short) capacity;
             int shipCount = rnd->nextInt(capacity + 1);
             if (ownHangar) {
                 Array<Ship *> *ships = Globals::status->voidStation->getShips();
@@ -6662,9 +6661,9 @@ void Level::createScene() {
                 if (ownHangar)
                     type = (*Globals::status->voidStation->getShips())[i]->getIndex();
                 KIPlayer *ship = this->createShip(0, 0, type, nullptr, false, false);
-                int spot = rnd->nextInt(cap);
-                for (int tries = 100; tries != 0 && spotUsed[spot] != 0; tries--)
-                    spot = rnd->nextInt(cap);
+                int spot = rnd->nextInt(capacity);
+                for (int tries = 100; spotUsed[spot] != 0 && tries != 0; tries--)
+                    spot = rnd->nextInt(capacity);
                 spotUsed[spot] = 1;
                 const int *table;
                 switch (sceneRace) {
