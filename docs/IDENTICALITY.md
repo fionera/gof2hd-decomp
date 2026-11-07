@@ -43,6 +43,11 @@ companion. Both are ready to re-land once the companion is found.
   rebuild was tested and is 184 B short (6,888 B) and worse on raw bytes; see
   `_work/reconstructions/Layout-LayoutC1-wave135-w8107.md`.
 
+A second Layout reorder (w8108) sorts the whole `0xb8..0x118` store region
+ascending and reaches **5,754** raw diff bytes at the same 7,072 B, but it
+lowers the fuzzy ratio to 41.7 % versus w8107's 44.8 %, so w8107's smaller
+reorder is the one kept; w8108 is recorded as a note.
+
 Build provenance was re-audited (w8119): the original is **not PGO-built**
 (1957/1973 branch-containing functions carry no `!prof` metadata; only the
 Status switch does), and a 60-flag matrix plus APK/NDK re-mine found no flag
