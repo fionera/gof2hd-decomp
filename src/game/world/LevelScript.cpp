@@ -1803,14 +1803,13 @@ bool LevelScript::process(int delta) {
                 }
                 if (((RadioMessage *) ((*messages)[4]))->isTriggered() && m_nState == 1) {
                     // Radio message #4: spin up the exit wormhole (landmarks[3]).
-                    Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-                    (*landmarks)[3]->setVisible(true);
-                    ((PlayerWormHole *) (*landmarks)[3])->reset(false);
+                    (*m_pLevel->getLandmarks())[3]->setVisible(true);
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(false);
                     // PLT-order anchor: first reference to the auto-turret pair must follow
                     // AEGeometry::isVisible and precede PlayerWormHole::open.  Verified by
                     // removal: .rel.plt then differs from the original by 18 bytes.
                     player->setAutoTurret(player->autoTurretIsEnabled());
-                    ((PlayerWormHole *) (*landmarks)[3])->open();
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->open();
                     Globals::sound->play(34, nullptr, nullptr, 0.0f);
                     m_nScriptTimerA = 0;
                     m_nState = 2;
@@ -2090,10 +2089,14 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA = 0;
                     m_nState = 6;
                 }
-                if (m_nState == 0 && !Globals::status->inAlienOrbit()) {
-                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
-                    m_nState = 1;
-                } else if (m_nState == 6) {
+                // The state tests are ordered 6, 0, 7 (not the numeric order) because that is the
+                // order in which the original's MachineBlockPlacement lays out the three cold
+                // blocks: state 6 (0x13c312), state 7 (0x13d8fc) and finally the mission-125
+                // hacking block (0x13de44).  This is what puts the first PlayerStation::setVisible
+                // reference (state 7, 0x13da1e) before PlayerEgo::deleteHackingGame (0x13ded4) in
+                // .rel.plt without a duplicate anchor call.  The branches are mutually exclusive,
+                // so the reordering is semantics-preserving.
+                if (m_nState == 6) {
                     Vector pos = player->getPosition();
                     Vector zero{0.0f, 0.0f, 0.0f};
                     Globals::sound->updateEvent3DAttributes(153, &pos, &zero, false);
@@ -2132,6 +2135,9 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState = 7;
                     }
+                } else if (m_nState == 0 && !Globals::status->inAlienOrbit()) {
+                    ((PlayerWormHole *) (*m_pLevel->getLandmarks())[3])->reset(true);
+                    m_nState = 1;
                 } else if (m_nState == 7) {
                     m_pCamera->setRumblePercentage(100.0f, 30);
                     m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
@@ -2179,6 +2185,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
+
                 break;
             }
             case 56: {
@@ -3974,18 +3981,6 @@ bool LevelScript::process(int delta) {
                     break;
                 }
                 case 3: {
-                    // First-reference anchor for the mission-0 intro calls. The original
-                    // emits them (switchPlanetForIntro / switchSkyboxForIntro / the engine-sound
-                    // pair / PlayerStation::setVisible) before PlayerEgo::deleteHackingGame, which
-                    // fixes the .rel.plt rotation; clang's block placement otherwise hoists the
-                    // mission-125 hacking block (and its deleteHackingGame call) ahead of the
-                    // mission-0 case-9/11 blocks. Guarded on a negative frame delta, which the
-                    // caller never passes.
-                    if (delta < 0) {
-                        m_pLevel->getStarSystem()->switchPlanetForIntro();
-                        player->PlayEngineSound();
-                        player->StopEngineSound();
-                    }
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
