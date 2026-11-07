@@ -180,8 +180,15 @@ void ArrayRelease(Array<T> &a) {
 // Declaration only: the definition lives in engine/core/ArrayReleaseClasses.h and is visible only in the
 // TUs that include it. In the original, callers that cannot see the body keep the call as potentially
 // throwing (noexcept destructors then carry a __clang_call_terminate landing pad).
+// The defining TU may opt into the noexcept spec so that its own call sites are
+// inferred nounwind (PaintCanvas.cpp does, for ArrayReleaseClasses<String*>).
+#ifdef GOF2_ARC_NOEXCEPT
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) noexcept;
+#else
 template<class T>
 void ArrayReleaseClasses(Array<T> &a);
+#endif
 
 
 template<class T>

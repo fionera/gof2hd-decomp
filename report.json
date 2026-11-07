@@ -33,7 +33,7 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 60.2,
+   "pct": 60.1,
    "byte": false,
    "linked": false,
    "osize": 57232,
@@ -105,7 +105,7 @@
   },
   {
    "name": "_ZN12HangarWindow6renderEv",
-   "pct": 94.4,
+   "pct": 94.7,
    "byte": false,
    "linked": false,
    "osize": 9700,

@@ -1,3 +1,8 @@
+// This TU is the one that emits ArrayReleaseClasses<String*>; the original
+// sees the definition here, so clang infers it nounwind and the call is a
+// plain call (LSDA row 264,88,0). Other TUs only see the non-noexcept
+// declaration and keep the invoke. See _work/reconstructions/extab_lsda_scope_w7662.md.
+#define GOF2_ARC_NOEXCEPT
 #include "engine/render/PaintCanvas.h"
 #include <string.h>
 #include <stdio.h>

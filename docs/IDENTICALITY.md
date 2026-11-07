@@ -29,7 +29,7 @@ The remaining 2.8 % is the bonus block's `r5`/`r6`/spill choice plus the `bhi` v
 fold.  See `_work/reconstructions/generator-createmission-wave127-w7652.md`.
 
 Section deltas: `.text` **85,475** differing bytes (size exact); `.ARM.exidx` **0**;
-`.ARM.extab` **1,433** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+`.ARM.extab` **1,430** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
 
@@ -64,7 +64,7 @@ which is a switch-edge-frequency (`!prof`/PGO) effect not expressible from C++11
 `_work/reconstructions/status-missioncompleted-wave126-w7605.md`.
 
 Section deltas: `.text` **85,510** differing bytes (size exact); `.ARM.exidx` **0**;
-`.ARM.extab` **1,433** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+`.ARM.extab` **1,430** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
 
