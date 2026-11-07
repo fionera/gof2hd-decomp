@@ -1185,14 +1185,17 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                   this->field_0x440, armorBarY);
     if (this->hasArmorRegen) {
         int regenW = (int) ((float) ego->player->getArmorDamageRate() * 0.01f * (float) this->field_0x446);
-        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, 0,
+        // `dividerOffset` as the (unused, angle is 0) pivotY is a codegen anchor: it keeps
+        // `dividerOffset` live in `sl` across the gamma block and spills `this`, matching the
+        // original's register allocation and 224-byte frame (see hud-draw-wave134-w7760.md).
+        Globals::Canvas->DrawRegion2D(this->armorRegenFillImage, 0, 0, regenW, this->field_0x44c, 0.0f, 0, dividerOffset,
                                       this->field_0x440, armorBarY);
     }
-    // Local `Status *` is load-bearing for codegen: it forces the branch-local spill of
-    // `this` in the shield block, matching the original (see hud-draw-status-slot-w4253.md).
-    Status *st = Globals::status;
-    if (st->getGammaRayDamagePerSecond(st->getStation()->getIndex(),
-                                       st->getCurrentCampaignMission()) > 0.0f) {
+    // Plain three-use form: the compiler CSEs the receiver/station loads into one and
+    // reloads `Globals::status` for the mission argument, exactly like the original's
+    // 19-instruction gamma condition block (see hud-draw-wave128-w7658.md).
+    if (Globals::status->getGammaRayDamagePerSecond(Globals::status->getStation()->getIndex(),
+                                                    Globals::status->getCurrentCampaignMission()) > 0.0f) {
         int gammaY = this->field_0x444 - this->field_0x442 + this->field_0x444;
         int gammaBarY = this->field_0x448 - this->field_0x44a + this->field_0x448;
         Globals::Canvas->DrawImage2D(this->image_0x2d0, this->field_0x43c, gammaY);
