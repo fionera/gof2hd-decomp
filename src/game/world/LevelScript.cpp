@@ -1703,10 +1703,10 @@ bool LevelScript::process(int delta) {
                     camPos += Vector{-9000.0f, -4000.0f, -30000.0f};
                     m_pCamera->setPosition(camPos);
                     camPos = (*m_pLevel->getLandmarks())[3]->getPosition();
-                    int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) (camPos.z + 30000.0f)};
+                    int routePoints[3] = {(int) camPos.x, (int) camPos.y, (int) camPos.z + 30000};
                     Route *route = new Route(routePoints, 3);
                     camPos.z += -15000.0f;
-                    for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
+                    for (unsigned int i = 0; i < enemies->count; i++) {
                         KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                         if (ship != nullptr && ship->shipGroup == 9) {
                             ship->setPosition(camPos.x, camPos.y - 2000.0f + (float) Globals::rnd->nextInt(4000),
@@ -1724,7 +1724,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate((float) ((double) delta * 0.5), 0.0f, (float) ((double) delta * 0.2));
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
                         m_nState = 5;
-                        for (unsigned int i = 0; i < m_pLevel->getEnemies()->count; i++) {
+                        for (unsigned int i = 0; i < enemies->count; i++) {
                             KIPlayer *ship = (*m_pLevel->getEnemies())[i];
                             if (ship != nullptr && ship->shipGroup == 9) {
                                 ship->setVisible(false);
@@ -1794,7 +1794,7 @@ bool LevelScript::process(int delta) {
                     *dir *= 45000.0f; // @0x13ed9c
                     *ahead += *dir;
                     (*m_pLevel->getLandmarks())[3]->setPosition(ahead->x, ahead->y, ahead->z);
-                    for (unsigned int j = 0; j < m_pLevel->getEnemies()->count; ++j) {
+                    for (unsigned int j = 0; j < enemies->count; ++j) {
                         (*m_pLevel->getEnemies())[j]->player->setEnemies(nullptr);
                     }
                     m_pLevel->lodManager->forceUpdate(delta, false);
@@ -1901,8 +1901,7 @@ bool LevelScript::process(int delta) {
             }
             case 40: {
                 // Escort the transport to the wormhole; the pirates jump in behind it.
-                if (m_nState == 0) {
-                    if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
                     ((PlayerFixedObject *) (*enemies)[0])->setMoving(true);
                     KIPlayer *transport = (*enemies)[0];
                     transport->setPosition((float) m_pLevel->getFriendRoute()->getWaypoint(0)->x,
@@ -1927,7 +1926,6 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setTarget((*enemies)[0]->geometry);
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
-                    }
                 } else if (m_nState == 1) {
                     // 0x13e6da: keep the camera drifting backwards while the escort message plays.
                     m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
@@ -5146,8 +5144,8 @@ bool LevelScript::process(int delta) {
                         Globals::status->field_f4 = player->getCurrentSecondaryWeaponIndex();
                         player->player->setGammaHP(100);
                         Globals::switch_to_target_setting = 1;
-                        Level::initStreamOutPosition = 1;
                         Globals::appManager->SetCurrentApplicationModule(2);
+                        Level::initStreamOutPosition = 1;
                     }
                 }
                 break;
