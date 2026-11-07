@@ -73,7 +73,7 @@ its original slot after `setComputerControlled`, `freeMissionLock()` moves after
 `timerA += delta` now precedes the camera translate as in the original.  `LevelScript::process`
 raw fuzzy is 59.89 (was 60.10) because the corrected statements move blocks within the global
 `MachineBlockPlacement` permutation; the function's own differing-byte count falls 54577 ->
-54623 and the whole-`.text` count is 85,379 after the combined w7668 case-91 fix (85,487 on the w7666 base).  See
+54623 and the whole-`.text` count is 85,379 after the combined w7668 case-91 fix (85,487 on the w7666 base); wave 132 (w7705) lands the state-6/state-10 sound swap and the case-40 `m_nState = 5` fix, taking the function to 54,507 and the whole `.text` to 85,235.  See
 `_work/reconstructions/levelscript-process-wave129-w7666.md`.
 
 Wave-129 gain: `Radar::draw` **75.268817 -> 75.297491** raw (display 75.4) at the original

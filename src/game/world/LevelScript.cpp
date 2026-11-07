@@ -764,14 +764,14 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (((RadioMessage *) ((*messages)[15]))->isOver()) {
-                        Globals::sound->play(159, nullptr, nullptr, 0.0f);
-                        m_nScriptTimerA = 0;
+                        m_nState = 7;
+                        m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         Globals::sound->play(160, nullptr, nullptr, 0.0f);
-                        m_nState = 7;
+                        Globals::sound->stop(161);
                         m_nScriptTimerA = 0;
                     }
                     break;
@@ -840,7 +840,7 @@ bool LevelScript::process(int delta) {
                     }
                     m_pCamera->setRumblePercentage(rumble, 20);
                     if (m_nScriptTimerA >= 2001) {
-                        Globals::sound->stop(161);
+                        Globals::sound->play(159, nullptr, nullptr, 0.0f);
                         m_nState = 11;
                         m_pGeometry5->setPosition(player->getPosition());
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry5->transform))
@@ -882,7 +882,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[17]))->isOver()) {
                         m_tempVec = player->getPosition();
                         m_tempVec += Vector{-2000.0f, -2000.0f, -5000.0f};
-                        m_pCamera->setPosition(m_tempVec);
+                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
                         m_nState = 13;
                     }
@@ -1235,6 +1235,9 @@ bool LevelScript::process(int delta) {
                 m_nState = 12;
                 m_nScriptTimerA = 0;
                 break;
+            }
+            if (m_nState >= 5 && m_nState <= 8) {
+                m_pCamera->translate((float) -delta * 0.3f, 0.0f, 0.0f);
             }
         }
     } else if (Globals::status->getCurrentCampaignMission() == 89) {
@@ -1958,7 +1961,7 @@ bool LevelScript::process(int delta) {
                     if ((*enemies)[0]->getPosition().z > 500000.0f) {
                         (*enemies)[0]->setPosition(0.0f, 0.0f, -200000.0f);
                         (*enemies)[0]->setActive(false);
-                        (*enemies)[0]->speed = 0.0f;
+                        m_nState = 5;
                     }
                 }
                 break;
@@ -4679,7 +4682,7 @@ bool LevelScript::process(int delta) {
                         (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);
                         (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
                         m_pCamera->setFixed(false);
-                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setFreeze(false);
@@ -5026,7 +5029,7 @@ bool LevelScript::process(int delta) {
                         m_pGeometry3->setPosition(((PlayerStation *) (*enemies)[stationIndex])->rootGeometry->getPosition());
                         m_pGeometry3->setDirection(Vector{0.0f, 0.0f, -1.0f}, Vector{0.0f, 1.0f, 0.0f});
                         m_pGeometry3->setVisible(true);
-                        (*enemies)[stationIndex]->setVisible(false);
+                        m_pGeometry2->setVisible(false);
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pGeometry3->transform))
                                 ->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
                         m_nState = 10;
