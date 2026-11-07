@@ -793,10 +793,10 @@ enemies:
                     int cx = (int) PlayerEgo::crosshairPos.x;
                     int cy = (int) PlayerEgo::crosshairPos.y;
                     bool inSight = false;
-                    if (this->screenX > cx - this->field_0x124 && this->screenY > cy - this->field_0x124 &&
-                        this->screenX < cx + this->field_0x124 && this->screenY < cy + this->field_0x124 &&
-                        AbyssEngine::AEMath::VectorLength(this->egoPos - this->targetPos) < 60000.0f) {
-                        inSight = true;
+                    AbyssEngine::AEMath::Vector delta = this->egoPos - this->targetPos;
+                    if (AbyssEngine::AEMath::VectorLength(delta) < 60000.0f) {
+                        inSight = this->screenX > cx - this->field_0x124 && this->screenX < cx + this->field_0x124 &&
+                                  this->screenY > cy - this->field_0x124 && this->screenY < cy + this->field_0x124;
                     }
                     enemy->field_0x73 = inSight;
                     if (enemy == locked) {
