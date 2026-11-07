@@ -911,8 +911,8 @@ void HangarWindow::render() {
         int count;
         if (this->listModeFlag) {
             for (count = 0; count <= 4; count++) {
-                String description("");
                 String price("");
+                String description("");
                 (*this->buttons)[12 + count]->setVisible(true);
                 switch (count) {
                     case 0:
