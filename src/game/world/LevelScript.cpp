@@ -1905,7 +1905,7 @@ bool LevelScript::process(int delta) {
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->y,
                                            (float) m_pLevel->getFriendRoute()->getWaypoint(0)->z);
                     (*enemies)[0]->awake();
-                    m_nScriptTime = 0;
+                    (*enemies)[0]->setVisible(true);
                     (*enemies)[0]->shipGroup = 1;
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
@@ -1970,7 +1970,7 @@ bool LevelScript::process(int delta) {
                     player->setTurretMode(false);
                     resetCamera(m_pLevel);
                     player->setFreeLookMode(false);
-                    m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
+                    m_pCamera->enableFirstPersonCam(false);
                     player->hideShipForFirstPersonCameraView(false);
                     player->stopShooting(0);
                     player->freeze = 1;
@@ -2022,6 +2022,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->translate(-3000.0f, -2000.0f, 12000.0f);
                     Globals::sound->play(155, nullptr, nullptr, 0.0f);
                     (*enemies)[0]->player->StopEngineSound();
+                    m_nScriptTimerA = 0;
                 } else if (m_nState == 2) {
                     (*enemies)[0]->geometry->updateReferenceMatrix();
                     KIPlayer *freighter = (*m_pLevel->getEnemies())[0];
@@ -2039,7 +2040,6 @@ bool LevelScript::process(int delta) {
                     ((PlayerFixedObject *) freighter)->setExhaustVisible(false);
                     m_pCamera->setPosition(freighter->getPosition());
                     m_pCamera->translate(3000.0f, 1000.0f, 2000.0f);
-                    m_nState = 1;
                     m_pCamera->useTargetsUpVector(false);
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         KIPlayer *ship = (*enemies)[i];
@@ -2051,16 +2051,17 @@ bool LevelScript::process(int delta) {
                     m_nState = 4;
                 } else if (m_nState == 4) {
                     (*enemies)[0]->geometry->updateReferenceMatrix();
-                    m_nScriptTime = 0;
+                    m_pCamera->translate((float) delta, (float) delta, (float) (-2 * delta));
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 15001) {
-                        m_pCamera->setTarget(player->geometry);
-                        m_bCinematicBreak = 0;
-                        (*enemies)[0]->player->setHitpoints(100);
+                        Globals::sound->stop(156);
                         m_nState = 5;
+                        (*enemies)[0]->player->setHitpoints(100);
+                        (*enemies)[0]->speed = 0.0f;
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
                         m_bCinematicBreak = 0;
+                        m_pCamera->setTarget(player->geometry);
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->useTargetsUpVector(true);
                         player->setComputerControlled(false);
@@ -2075,7 +2076,7 @@ bool LevelScript::process(int delta) {
                 // Leaving the alien system through the wormhole.
                 if (messages != nullptr && m_nState == 5 && ((RadioMessage *) ((*messages)[7]))->isOver()) {
                     Globals::sound->play(153, nullptr, nullptr, 0.0f);
-                    m_pCamera->translate((float) delta, (float) delta, (float) (-2 * delta));
+                    m_nScriptTime = 0;
                     delete m_pLevel->objectivesB;
                     delete m_pLevel->objectivesA;
                     m_pLevel->objectivesB = nullptr;
@@ -2128,8 +2129,8 @@ bool LevelScript::process(int delta) {
                         player->setVisible(false);
                     }
                 } else if (m_nState == 7) {
-                    m_pCamera->enableFirstPersonCam(false);
-                    m_pCamera->translate(0.0f, (float) ((double) delta * 0.2), 0.0f);
+                    m_pCamera->setRumblePercentage(100.0f, 30);
+                    m_pCamera->translate(0.0f, 0.0f, (float) (-18 * delta));
                     if (m_bRenderParticles) {
                         ((AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(m_pParticleGeom0->transform))
                                 ->Update((long long) delta, false);
