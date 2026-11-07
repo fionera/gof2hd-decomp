@@ -106,7 +106,7 @@ the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`) landed
 exact at 948 B. `.rodata` is **byte-identical** (269,159 B, base `0x1c9e10`): the former 192 B
 `Status::missionCompleted` rank table (`tools/mission_case_table.cpp`, fixed address `0x20b977`)
 was removed in wave 121 and the switch is now a plain `switch (m->getType())`. The differing
-section bytes are `.text` (85,507), `.ARM.extab` (1,426) and
+section bytes are `.text` (85,379), `.ARM.extab` (1,435) and
 `.note.gnu.build-id` (20); `.rel.plt` is now byte-identical. `.bss` is NOBITS (its file bytes are linker padding).
 
 ### Reducible (all fixed)
