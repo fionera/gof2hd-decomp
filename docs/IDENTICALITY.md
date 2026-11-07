@@ -48,6 +48,8 @@ Wave-139 landed six source-level improvements:
 * `Hud::draw` (w8417): `frameH` is an unsigned short tie-break; raw diff 1,416 B.
 * `MenuTouchWindow::OnTouchBegin` (w8418): fresh `top` load from `Globals::layout`; raw diff
   **29 -> 28**.
+* `Layout::Layout` (w8401): fuzzy-first reorder keeps the ascending `0xb8..0x118` region and
+  adds five adjacent-statement moves; raw diff **5,775 -> 5,765** at exact 7,072 B.
 
 Four further analyses landed as notes with the source reverted (all size-exact but worse raw
 diff or wrong size on the merged base): w8403 (57,228 B), w8404 (57,208 B), w8405 (57,228 B),
