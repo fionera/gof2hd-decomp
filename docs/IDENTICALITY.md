@@ -25,6 +25,39 @@ Section deltas: `.text` **85,575** differing bytes (size exact); `.ARM.exidx` **
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+## Update 2026-11-07 (wave 139)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.93%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-139 landed six source-level improvements:
+
+* `LevelScript::process` (w8407): the enemy loops re-fetch `m_pLevel->getEnemies()` per
+  iteration instead of using the cached local, and the missing
+  `m_pLevel->getPlayer()->resetGunDelay()` at `0x144982` is restored. Raw same-address diff
+  **55,072 -> 54,404** at exactly 57,232 B.
+* `LevelScript::process` (w8406): mission-0 state-0 visibility loop hoists `enemies->data_`
+  into a local (the original's r4/r9 map) and the dead `m_nState = 9` store in state 7 is
+  removed. Raw diff **54,404 -> 54,262**.
+* `Radar::draw` (w8409): a `Vector delta` local gives the original's nested `inSight`
+  shape at exactly 9,908 B with `.rel.plt` exact.
+* `Level::createMission` (w8411): case-183 switch source order 0,1,2 then default; raw diff
+  5,763 B at 17,172 B.
+* `Hud::draw` (w8417): `frameH` is an unsigned short tie-break; raw diff 1,416 B.
+* `MenuTouchWindow::OnTouchBegin` (w8418): fresh `top` load from `Globals::layout`; raw diff
+  **29 -> 28**.
+
+Four further analyses landed as notes with the source reverted (all size-exact but worse raw
+diff or wrong size on the merged base): w8403 (57,228 B), w8404 (57,208 B), w8405 (57,228 B),
+w8408 (case-125 two-chain; raw +333 and it rotates the `deleteHackingGame` `.rel.plt` entry).
+
+Section deltas: `.text` **85,283** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,404** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 138)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
