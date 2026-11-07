@@ -712,9 +712,9 @@ enemies:
                 enemy->field_0x76 = 1;
                 this->egoPos = player->getPosition();
                 this->targetPos = enemy->player->getPosition();
-                if (this->egoPos.x - this->targetPos.x <= 24000.0f && this->egoPos.x - this->targetPos.x >= -24000.0f &&
-                    this->egoPos.y - this->targetPos.y <= 24000.0f && this->egoPos.y - this->targetPos.y >= -24000.0f &&
-                    this->egoPos.z - this->targetPos.z <= 24000.0f && this->egoPos.z - this->targetPos.z >= -24000.0f &&
+                if (!(this->egoPos.x - this->targetPos.x > 24000.0f) && !(this->egoPos.x - this->targetPos.x < -24000.0f) &&
+                    !(this->egoPos.y - this->targetPos.y > 24000.0f) && !(this->egoPos.y - this->targetPos.y < -24000.0f) &&
+                    !(this->egoPos.z - this->targetPos.z > 24000.0f) && !(this->egoPos.z - this->targetPos.z < -24000.0f) &&
                     enemy->getType() != 16917) {
                     if (wreck) {
                         Globals::Canvas->DrawImage2D(this->image_0x9c, this->screenX, this->screenY, 17, 68);
