@@ -57,6 +57,12 @@ Section deltas: `.text` **85,473** differing bytes (size exact); `.ARM.exidx` **
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
+**Wave 139.** `LevelScript::process` (w8408) lands the faithful case-125 two-chain
+dispatch (ascending `if`/`else if` state chain) plus the case-91 nested state-0 test,
+at exactly 57,232 B with `.ARM.extab` unchanged (call-site table `0x148 -> 0x146`, entry
+still `0x15c`). Raw same-address diff bytes **55,072 -> 55,256**; fuzzy pct unchanged at
+57.4; byte_exact/linked_exact stay **4507**.
+
 ## Update 2026-11-07 (wave 137)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:

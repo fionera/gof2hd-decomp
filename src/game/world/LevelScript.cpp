@@ -2793,12 +2793,14 @@ bool LevelScript::process(int delta) {
             }
             case 91: {
                 // Escorting the defector freighter to the station, then flying away with it.
-                if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
-                    m_nScriptTimerB = 0;
-                    m_nState = 1;
-                    (*enemies)[0]->setActive(true);
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
-                            ->setName(String(*Globals::gameText->getText(3211), false));
+                if (m_nState == 0) {
+                    if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                        m_nScriptTimerB = 0;
+                        m_nState = 1;
+                        (*enemies)[0]->setActive(true);
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
+                                ->setName(String(*Globals::gameText->getText(3211), false));
+                    }
                 } else if (m_nState == 1 && player->isDockedToDockingPoint()) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
@@ -3917,8 +3919,7 @@ bool LevelScript::process(int delta) {
                     player->setRoute(route);
                     m_nScriptTimerA = 0;
                 }
-                switch (m_nState) {
-                case 1: {
+                else if (m_nState == 1) {
                     if (player->getRoute() != 0) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
@@ -3930,19 +3931,18 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                    break;
                 }
-                case 2: {
+                if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
                             (*enemies)[i]->awake();
-                            int sideZ = Globals::rnd->nextInt(100);
-                            Vector playerPos = player->getPosition();
-                            int sideX = Globals::rnd->nextInt(100);
                             KIPlayer *pirate = (*enemies)[i];
+                            Vector playerPos = player->getPosition();
+                            int sideZ = Globals::rnd->nextInt(100);
                             int offsetY = Globals::rnd->nextInt(1000);
                             int offsetZ = Globals::rnd->nextInt(2000);
+                            int sideX = Globals::rnd->nextInt(100);
                             Vector offset{(float) ((sideX < 50 ? 1 : -1) * spread + 2000), (float) (offsetY + 2000),
                                           (float) (-57000 - (sideZ < 50 ? 1 : -1) * offsetZ)};
                             pirate->setPosition(playerPos + offset);
@@ -3980,9 +3980,8 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                    break;
                 }
-                case 3: {
+                else if (m_nState == 3) {
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -4015,10 +4014,8 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
-                    break;
                 }
-                default: {
-                    if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
                            && player->getHackingGameDockIndex() >= 0) {
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
@@ -4039,9 +4036,6 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                    break;
-                }
-                }
                 break;
             }
             case 135: { // 0x1391c0
