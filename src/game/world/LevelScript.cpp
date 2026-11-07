@@ -1927,6 +1927,8 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
+                    // 0x13e6da: keep the camera drifting backwards while the escort message plays.
+                    m_pCamera->translate(0.0f, 0.0f, (float) (-2 * delta));
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
                         m_pHud->visible = 1;
                         m_pRadar->enabled = 1;
@@ -3981,10 +3983,8 @@ bool LevelScript::process(int delta) {
                     // caller never passes.
                     if (delta < 0) {
                         m_pLevel->getStarSystem()->switchPlanetForIntro();
-                        m_pLevel->switchSkyboxForIntro();
                         player->PlayEngineSound();
                         player->StopEngineSound();
-                        ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
                     }
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
@@ -4691,7 +4691,6 @@ bool LevelScript::process(int delta) {
                         (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);
                         (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
                         m_pCamera->setFixed(false);
-                        player->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setFreeze(false);

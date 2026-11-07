@@ -11,7 +11,7 @@ byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, 
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
 avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
 
-Wave-136 landed one source-level improvement:
+Wave-136 landed two source-level improvements:
 
 * `Level::createScene` is now **byte-identical** (2252 B at `0xb42ec`). The `spots`
   hangar-table selector was a ternary whose single SSA value fed both phi operands of the
@@ -19,12 +19,18 @@ Wave-136 landed one source-level improvement:
   block (one extra `b.n` + duplicated `spots` reload). Rewriting it as an if/else gives the
   two arms distinct SSA values and keeps both phi copies inline, matching the original. The
   `geo = ship->geometry` load was moved after `setToSleep()` to un-fuse the `ldrd` (restores
-  the 2252 B size). Function diff bytes **236 -> 0**; `.text` differing bytes
-  **84,960 -> 84,724**; `.ARM.extab` **1,404 -> 1,395**.
+  the 2252 B size). Function diff bytes **236 -> 0**.
+* `LevelScript::process` case 40: the genuinely missing state-1
+  `m_pCamera->translate(0.0f, 0.0f, (float)(-2 * delta))` at `0x13e6da` is now present
+  (the handoff's `0x13a4b8` address was a misread; both `-10000,5000,25000` and
+  `-7000,500,17000` were already there). The statement costs +36 B and is balanced by
+  removing two duplicated case-125 first-reference-anchor calls
+  (`switchSkyboxForIntro`, `PlayerStation::setVisible`) and the `resetGunDelay` size pad,
+  keeping the function at exactly 57,232 B. Function fuzzy **58.8 -> 58.9 %**.
 
-Section deltas: `.text` **84,724** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,735** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
-`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
+`.rodata` **0** (byte-identical); `.rel.plt` **4** (size exact, 29,392 B); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
 ## Update 2026-11-07 (wave 135)
