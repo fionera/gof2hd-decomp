@@ -2273,11 +2273,12 @@ void MenuTouchWindow::update(int dt) {
 }
 
 bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_ptr (exported method signature; void* is mangling-load-bearing)
+    Layout *layout = Globals::layout;
     if (this->messageShowing) {
         this->choiceWindow->OnTouchBegin(x, y);
         return false;
     }
-    if (Globals::layout->choiceWindowOpen) {
+    if (layout->choiceWindowOpen) {
         Globals::layout->OnTouchBegin(x, y);
         return false;
     }
@@ -2290,16 +2291,16 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         this->dragVelocity = 0;
         this->dragging = 1;
         int previous = this->selectedRow;
-        if (y > Globals::layout->field_0xc_leftMargin && y < Globals::h - Globals::layout->field_0x10_rightMargin) {
-            int row = (y - Globals::layout->field_0xc_leftMargin - Globals::layout->field_0x20_top - this->scrollOffset) /
-                      (Globals::layout->field_0x70_rowHeight + this->listRowGap);
+        if (y > layout->field_0xc_leftMargin && y < Globals::h - layout->field_0x10_rightMargin) {
+            int row = (y - layout->field_0xc_leftMargin - layout->field_0x20_top - this->scrollOffset) /
+                      (layout->field_0x70_rowHeight + this->listRowGap);
             if (row < Globals::recordSlots) {
                 this->selectedRow = row;
                 this->okButton->setPosition(
-                    Globals::w - this->listX - Globals::layout->buttonInsetX,
-                    row * (Globals::layout->field_0x70_rowHeight + this->listRowGap) +
-                        (Globals::layout->field_0x20_top + Globals::layout->field_0xc_leftMargin + this->scrollOffset) +
-                        Globals::layout->field_0x108);
+                    Globals::w - this->listX - layout->buttonInsetX,
+                    row * (layout->field_0x70_rowHeight + this->listRowGap) +
+                        (layout->field_0x20_top + layout->field_0xc_leftMargin + this->scrollOffset) +
+                        layout->field_0x108);
                 Globals::sound->play(124, 0, 0, 0.0f);
             }
         }
@@ -2388,17 +2389,18 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
     case 8:
             this->upButtonPressed = 0;
             this->downButtonPressed = 0;
-            if (x > this->listTopY + Globals::layout->buttonInsetX &&
-                x < Globals::layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
-                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+            if (x > this->listTopY + layout->buttonInsetX &&
+                x < layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
+                y > layout->field_0xc_leftMargin + layout->buttonInsetX &&
+                y < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
                 Globals::sound->play(124, 0, 0, 0.0f);
+                layout = Globals::layout;
             }
-            if (x > this->listTopY + Globals::layout->buttonInsetX + this->listEntryHeight &&
-                x < this->listTopY - Globals::layout->buttonInsetX + this->listBottomY &&
-                y > Globals::layout->field_0xc_leftMargin + Globals::layout->buttonInsetX &&
-                y < Globals::layout->field_0xc_leftMargin + Globals::layout->field_0x20_top + this->listEntryWidth) {
+            if (x > this->listTopY + layout->buttonInsetX + this->listEntryHeight &&
+                x < this->listTopY - layout->buttonInsetX + this->listBottomY &&
+                y > layout->field_0xc_leftMargin + layout->buttonInsetX &&
+                y < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->downButtonPressed = 1;
                 Globals::sound->play(124, 0, 0, 0.0f);
             }
