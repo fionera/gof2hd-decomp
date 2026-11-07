@@ -2232,8 +2232,6 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
-                    player->freeze = 0;
-                    m_pCamera->setRumblePercentage(100.0f, 30);
                     if (((RadioMessage *) ((*messages)[2]))->isTriggered()) {
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
@@ -2242,7 +2240,7 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        Globals::sound->stop(156);
+                        m_bCinematicBreak = 0;
                         player->freeze = 0;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             (*enemies)[i]->setRoute(nullptr);
@@ -4573,11 +4571,11 @@ bool LevelScript::process(int delta) {
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    m_tempVec += m_dirVec * (step * 0.008f);
-                    m_tempVec += m_dirVec * (step * -0.05f);
-                    m_dirVec = player->geometry->getRightVector();
-                    m_dirVec = player->GetUpVector();
                     m_dirVec = player->GetDirVector();
+                    m_tempVec += m_dirVec * (step * 0.008f);
+                    m_dirVec = player->geometry->getRightVector();
+                    m_tempVec += m_dirVec * (step * -0.05f);
+                    m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.005f);
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
@@ -4588,11 +4586,12 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
-                        m_nScriptTimerA = 0;
+                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
+                        m_nState = 5;
                     }
                 } else if (m_nState == 5) {
                     m_pCamera->translate((float) delta, 0.0f, (float) delta * 0.1f);
@@ -4626,11 +4625,11 @@ bool LevelScript::process(int delta) {
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->GetDirVector();
+                    m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
-                    m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.05f);
+                    m_dirVec = player->GetUpVector();
                     m_tempVec += m_dirVec * (step * 0.005f);
                     m_pCamera->setFixed(true);
                     AbyssEngine::AEMath::MatrixSetTranslation(local, m_tempVec);
