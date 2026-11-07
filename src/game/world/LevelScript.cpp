@@ -3906,7 +3906,8 @@ bool LevelScript::process(int delta) {
                     player->setRoute(route);
                     m_nScriptTimerA = 0;
                 }
-                if (m_nState == 1) {
+                switch (m_nState) {
+                case 1: {
                     if (player->getRoute() != 0) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
@@ -3918,8 +3919,9 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
+                    break;
                 }
-                if (m_nState == 2) {
+                case 2: {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
@@ -3967,21 +3969,19 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                } else if (m_nState == 3) {
+                    break;
+                }
+                case 3: {
                     // First-reference anchor for the mission-0 intro calls. The original
-                    // emits them (switchPlanetForIntro / switchSkyboxForIntro / particle reset /
-                    // PlayerStation::setVisible) before PlayerEgo::deleteHackingGame, which fixes
-                    // the .rel.plt rotation; clang's block placement otherwise hoists the
+                    // emits them (switchPlanetForIntro / switchSkyboxForIntro / the engine-sound
+                    // pair / PlayerStation::setVisible) before PlayerEgo::deleteHackingGame, which
+                    // fixes the .rel.plt rotation; clang's block placement otherwise hoists the
                     // mission-125 hacking block (and its deleteHackingGame call) ahead of the
-                    // mission-0 case-9/11 blocks. The particleEmit reset and the engine-sound
-                    // pair mirror the rest of the case-9/case-11 first-reference sequence and
-                    // keep the 57232-byte size exact. Guarded on a negative frame delta, which
-                    // the caller never passes.
+                    // mission-0 case-9/11 blocks. Guarded on a negative frame delta, which the
+                    // caller never passes.
                     if (delta < 0) {
                         m_pLevel->getStarSystem()->switchPlanetForIntro();
                         m_pLevel->switchSkyboxForIntro();
-                        m_pLevel->particleRenderBoolPtr->reset();
-                        m_pLevel->particleEmitBoolPtr->reset();
                         player->PlayEngineSound();
                         player->StopEngineSound();
                         ((PlayerStation *) (*m_pLevel->getLandmarks())[0])->setVisible(false);
@@ -4018,26 +4018,32 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
-                } else if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
+                    break;
+                }
+                default: {
+                    if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
                            && player->getHackingGameDockIndex() >= 0) {
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
-                            ->setName(String("", false));
-                    ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
-                    player->deleteHackingGame();
-                    m_nState++;
-                    if (m_nState == 6) {
-                        int xOff = 25000;
-                        int yOff = 2300;
-                        for (int i = 6; i < 8; i++) {
-                            (*enemies)[i]->awake();
-                            KIPlayer *guard = (*enemies)[i];
-                            guard->setPosition(player->getPosition()
-                                               + Vector{(float) xOff, (float) yOff, 25000.0f});
-                            xOff += 1000;
-                            yOff += 50;
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
+                                ->setName(String("", false));
+                        ((KIPlayer *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->field_0x74 = 1;
+                        player->deleteHackingGame();
+                        m_nState++;
+                        if (m_nState == 6) {
+                            int xOff = 25000;
+                            int yOff = 2300;
+                            for (int i = 6; i < 8; i++) {
+                                (*enemies)[i]->awake();
+                                KIPlayer *guard = (*enemies)[i];
+                                guard->setPosition(player->getPosition()
+                                                   + Vector{(float) xOff, (float) yOff, 25000.0f});
+                                xOff += 1000;
+                                yOff += 50;
+                            }
                         }
                     }
+                    break;
+                }
                 }
                 break;
             }
