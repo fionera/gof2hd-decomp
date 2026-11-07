@@ -3951,13 +3951,13 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setLookAtCam(true);
                         player->setVisible(false);
                         AEGeometry *leader = (*enemies)[4]->geometry;
-                        m_tempVec = leader->getPosition();
                         m_pCamera->setTarget(leader);
+                        m_tempVec = leader->getPosition();
                         m_tempVec += leader->getDirection() * 4000.0f;
-                        m_nScriptTimerA = 0;
+                        m_tempVec += leader->getUpVector() * -500.0f;
                         m_tempVec += leader->getRightVector() * -500.0f;
                         m_pCamera->setPosition(m_tempVec);
-                        m_tempVec += leader->getUpVector() * -500.0f;
+                        m_nScriptTimerA = 0;
                         m_nState++;
                     }
                 } else if (m_nState == 3) {
@@ -4508,8 +4508,8 @@ bool LevelScript::process(int delta) {
                                 (*enemies)[i]->setVisible(false);
                             }
                         }
+                        m_pCamera->setTarget(player->geometry);
                         m_tempVec = player->getPosition();
-                        m_nScriptTimerA += delta;
                         m_nState = 2;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
