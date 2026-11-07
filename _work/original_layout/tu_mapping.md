@@ -8,7 +8,7 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/audio/AESoundRessource.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/AESoundRessource.cpp |  |
 | engine/audio/FModSound.cpp | rename(.mm) | Classes/Game/FModSound.mm | game-side TU originally |
 | engine/core/AERandom.cpp | rename | Svn_iPhone_AE2/Classes/Random.cpp | AERandom class == engine Random.cpp |
-| engine/core/AbyssEngine.cpp | removed(empty) | Image.cpp+Image2D.cpp+ImageFont.cpp+SpriteSystem.cpp+Mesh.cpp+Camera.cpp+Material.cpp+... (engine free-function TUs) | w3613: the former 2958-line kitchen sink was dismantled; the file was empty and is removed |
+| engine/core/AbyssEngine.cpp | removed(empty) | Image.cpp+Image2D.cpp+ImageFont.cpp+SpriteSystem.cpp+Mesh.cpp+Camera.cpp+Material.cpp+... (engine free-function TUs) | w3613: the former 2958-line kitchen sink was dismantled; the file was empty and is removed. The separate TUs now have their own rows below. |
 | engine/core/ApplicationManager.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/ApplicationManager.cpp |  |
 | engine/core/Array.cpp | invented | (Array.h header-only in all dumps) | template impl+instantiations |
 | engine/core/ArrayInstantiations.cpp | invented | (none) | explicit template instantiations; orig emitted per-TU weak copies |
@@ -48,6 +48,9 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/render/FBOContainer.cpp | witnessed(windows) | Classes\FBOContainer.cpp |  |
 | engine/render/GLES1Compat.cpp | invented | (none) | GLES1 stub shims |
 | engine/render/IParticleSystem.cpp | exact(HD) | Classes/Game/ParticleSystems/IParticleSystem.cpp | folder drift: orig game-side, ours engine/ |
+| engine/render/Image.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/Image.cpp | AELoadedTexture ctor, ImageCreate*/TextureCreateFromFile, Image/ImageFont ctors |
+| engine/render/Image2D.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/Image2D.cpp | Image2DRelease only |
+| engine/render/ImageFont.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/ImageFont.cpp | ImageFontGetWidth/Height/Spacing, DrawString, Release |
 | engine/render/ImageFactory.cpp | exact(HD) | Classes/Game/ImageFactory.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/ImagePart.cpp | exact(HD) | Classes/Game/ImagePart.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/LODManager.cpp | exact(HD) | Classes/Game/LODManager.cpp | folder drift: orig game-side, ours engine/ |
@@ -67,10 +70,11 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 | engine/render/ResourceMesh.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: Resource* classes are emitted by PaintCanvas.cpp; empty split TU removed |
 | engine/render/ResourceTexture.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed (ResourceTexture ctor is emitted by GameResource TU) |
 | engine/render/ResourceTransform.cpp | removed(empty) | Svn_iPhone_AE2/Classes/PaintCanvas.cpp | w3613: empty split TU removed |
-| engine/render/ShaderBaseStruct.cpp | split | Svn_iPhone_AE2/Classes/Engine.cpp | ShaderBaseStruct defined in Engine.cpp |
+| engine/render/shaders/BaseShader.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/Shader/BaseShader.cpp | w7618: renamed from the invented `ShaderBaseStruct.cpp`; SD dump attributes the ShaderBaseStruct ctor/Update/UseShader/vtable/typeinfo here, and the original .text places them between GenericShader2 and GenericShader (0x8e0d0..0x8e750), not next to Engine.cpp |
 | engine/render/SimpleMeshMerger.cpp | witnessed(MeeGo) | src/Classes/Game/MeshMerger/SimpleMeshMerger.cpp |  |
 | engine/render/Sparks.cpp | exact(HD) | Classes/Game/Sparks.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/Sprite.cpp | exact(HD) | Classes/Game/Sprite.cpp | folder drift: orig game-side, ours engine/ |
+| engine/render/SpriteSystem.cpp | exact(SD engine) | Svn_iPhone_AE2/Classes/SpriteSystem.cpp | SpriteSystemCreate/Draw/SetUv/SetRGBA/SetAllSize/Release |
 | engine/render/Trail.cpp | exact(HD) | Classes/Game/Trail.cpp | folder drift: orig game-side, ours engine/ |
 | engine/render/shaders/BloomShader.cpp | no-witness(2.0.x shader) | (none) | GLES2 shader zoo, absent from all dumps |
 | engine/render/shaders/BlurShader.cpp | no-witness(2.0.x shader) | (none) | GLES2 shader zoo, absent from all dumps |
@@ -208,14 +212,13 @@ Stats: {'exact_hd': 102, 'exact_sd_engine': 20, 'rename': 7, 'split': 13, 'merge
 
 ## Original TUs with NO our-side file (Android-relevant only)
 
-- Engine (SD .a witnesses; code exists in Android binary — exported Image2DRelease/ImageFontDrawString/SpriteSystemDraw confirm — but our tree formerly folded it into engine/core/AbyssEngine.cpp or leaves it unimplemented):
-  - Svn_iPhone_AE2/Classes/Image.cpp (ImageCreate*/TextureCreateFromFile + Image/ImageFont/AELoadedTexture ctors)
-  - Svn_iPhone_AE2/Classes/Image2D.cpp (Image2DRelease)
-  - Svn_iPhone_AE2/Classes/ImageFont.cpp (ImageFontGetWidth/DrawString/...)
-  - Svn_iPhone_AE2/Classes/SpriteSystem.cpp (SpriteSystemCreate/Draw/SetUv/...)
-  - Svn_iPhone_AE2/Classes/Shader/BaseShader.cpp (no BaseShader anywhere in our src; possibly refactored away by 2.0.x)
+- Engine: every SD engine TU now has an our-side file. The former `engine/core/AbyssEngine.cpp`
+  kitchen sink was dismantled into `Image.cpp` / `Image2D.cpp` / `ImageFont.cpp` /
+  `SpriteSystem.cpp` / `Mesh.cpp` / `Camera.cpp` / `Material.cpp`, and
+  `Svn_iPhone_AE2/Classes/Shader/BaseShader.cpp` is `engine/render/shaders/BaseShader.cpp`
+  (w7618 rename; it was the invented `ShaderBaseStruct.cpp`).
 - Game:
-  - Classes/Game/GameInit.cpp (OnCreateApplication/OnDestroyApplication/loadingScreen/cheatFunction + GameData ctors; ours scatters these into JniBridge.cpp/GameData.cpp; cheatFunction has no definition in our tree)
-  - Classes/Game/GameResource.cpp (renamed/split into BuildResourceList.cpp + LowResourceTable.cpp + ResourceMaterial.cpp:loadPortraits)
+  - Classes/Game/GameInit.cpp → `src/game/core/GameInit.cpp` (GameData ctors emitted there).
+  - Classes/Game/GameResource.cpp → `src/engine/render/GameResource.cpp` (w3624 merge).
 - Engine iOS-only, replaced on Android: AEString.mm(.mm form), Engine_iPhone.mm, FileInterfaceIPhone.mm, GameText_iPhone.mm, AlertView.mm, AccelerometerFilter.mm, FLStat.m/FLStat_cpp.mm (FLStat absent from Android dynsym), Math16_iPhone.cpp (ours AEMath.cpp)
 - iOS app glue, N/A on Android: AppController.mm, AppView.mm, CloudHandler.mm, GamePadHandler.mm, Gof2SaveDocument.m, AECommunityTools*, Facebook/*, SBJson*, main.m, arclite

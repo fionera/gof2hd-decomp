@@ -68,7 +68,7 @@ src/game/core/BumpShaderV2.cpp
 src/engine/render/shaders/TextureLightShader.cpp
 src/engine/render/shaders/NoTexVtxColorShader.cpp
 src/engine/render/shaders/GenericShader2.cpp
-src/engine/render/ShaderBaseStruct.cpp
+src/engine/render/shaders/BaseShader.cpp
 src/engine/render/shaders/GenericShader.cpp
 src/engine/render/shaders/GenericShader1.cpp
 src/engine/render/shaders/PostBWShader.cpp
