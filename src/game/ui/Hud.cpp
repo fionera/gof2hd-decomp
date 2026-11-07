@@ -1657,7 +1657,7 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
             int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
-            unsigned short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
