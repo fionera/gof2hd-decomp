@@ -2091,8 +2091,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->level->getPlayer()->setCurrentSecondaryWeaponIndex((*secondaries)[weaponSlot]->getIndex());
                 this->hud->setCurrentSecondaryWeapon((*secondaries)[weaponSlot]);
             }
-            this->pauseOpen = 0;
             this->hudMenuOpen = 0;
+            this->pauseOpen = 0;
             resumeSounds();
             this->hud->closeHudMenu();
         } else if (wingmanCommand >= 0) {
