@@ -3903,9 +3903,9 @@ bool LevelScript::process(int delta) {
                         if ((uint8_t) ((Route *) (intptr_t) player->getRoute())->getWaypoint(0)->state) {
                             m_nState = 2;
                             for (int i = 8; i <= 10; i++) {
-                                (*enemies)[i]->setActive(true);
                                 PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
                                 port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
+                                (*enemies)[i]->setActive(true);
                                 (*enemies)[i]->field_0x74 = 0;
                             }
                         }
@@ -4154,8 +4154,8 @@ bool LevelScript::process(int delta) {
                         Vector playerPos = player->getPosition();
                         (*enemies)[i]->setPosition(playerPos + Vector{(float) xOff, 5000.0f, 25000.0f}); // vtable+0x44
                         (*enemies)[i]->player->setEnemy(player->player);
-                        (*enemies)[i]->cargo = nullptr;
                         delete (*enemies)[i]->cargo;
+                        (*enemies)[i]->cargo = nullptr;
                     }
                     xOff += 1000;
                 }
