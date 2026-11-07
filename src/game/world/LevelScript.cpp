@@ -2480,7 +2480,7 @@ bool LevelScript::process(int delta) {
                         camPos.z += -1000.0f;
                         m_pCamera->setPosition(camPos);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_pHud->visible = 1;
+                        m_nState = 2;
                         player->freeze = 0; // PlayerEgo+0x24
                     }
                 }
@@ -2490,7 +2490,7 @@ bool LevelScript::process(int delta) {
                     // player and clear the cinematic-break flag. Then buff the lead enemy (enemies[0]):
                     // triple its max hitpoints, set a cruise speed and a fixed rotate mode.
                     // FP immediate from the .rodata pool: @0x13edbc = 10.0f (cruise speed).
-                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
+                    m_pLevel->lodManager->forceUpdate(delta, false);
                     if (!((RadioMessage *) ((*messages)[2]))->isOver()) {
                         break; // -> post-switch tail (0x144e36)
                     }
@@ -2506,7 +2506,7 @@ bool LevelScript::process(int delta) {
                     m_nState = 3;
                     lead->setMaxHitpoints((*m_pLevel->getEnemies())[0]->player->getMaxHitpoints() * 3);
                     (*m_pLevel->getEnemies())[0]->setSpeed(10.0f); // vtable+0x1c [slot 7]
-                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->setRotate(5);
                 }
                 break;
             }
