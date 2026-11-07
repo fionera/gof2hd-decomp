@@ -3061,8 +3061,7 @@ bool LevelScript::process(int delta) {
                     if (player->isDockedToDockingPoint()) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
-                        m_pRadar->dockNavPtr = nullptr;
-                        m_pLevel->getPlayer()->resetGunDelay();
+                        player->resetGunDelay();
                         m_nScriptTimerA = 0;
                         player->dockToDockingPoint(nullptr, m_pRadar);
                         player->setDockingState(3);
@@ -3855,7 +3854,7 @@ bool LevelScript::process(int delta) {
                         Globals::layout->startFade(false, -1, 2000); // 0x144da2
                         m_pCamera->setTarget(player->geometry);
                         Vector dir = player->geometry->getDirection();
-                        player->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
+                        m_pLevel->getPlayer()->geometry->setDirection(-dir, Vector{0.0f, 1.0f, 0.0f});
                         if (m_pGeometry6 != nullptr) {
                             delete m_pGeometry6; // 0x144df6
                         }
