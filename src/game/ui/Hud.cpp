@@ -1647,17 +1647,17 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
     if (this->field_0x277 || this->field_0x276 || this->weaponSelectState) {
         int barOffset = 0;
         if (this->weaponSelectState && ego->isDockedToDockingPoint() && ego->getHitpoints() >= 1) {
-            unsigned short frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int frameH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             int textH = Globals::Canvas->GetTextHeight((unsigned int) (uintptr_t) Globals::font);
             int transferred = ego->getDockTransferedAmount();
-            short total = ego->getDockTotalAmount();
+            int total = ego->getDockTotalAmount();
             float progress = (float) transferred / (float) total;
             if (this->field_0x279)
                 progress = 1.0f - progress;
             barOffset = (int) ((float) textH + (float) frameH * 2.5f);
             String text = *Globals::gameText->getText(this->field_0x279 ? 3205 : 3204) + String(" ");
-            unsigned short barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barW = Globals::Canvas->GetImage2DWidth(this->image_0x37c);
+            unsigned short barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             this->field_0x468 += dt;
             float fadeIn = (float) this->field_0x468 / 1000.0f;
             float fade = 1.0f;
