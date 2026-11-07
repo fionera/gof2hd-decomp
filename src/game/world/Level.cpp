@@ -2190,18 +2190,18 @@ case4Tail:
                         (*this->enemies)[i]->player->setAlwaysFriend(true);
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13d = 0;
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
-                        if (k == 2) {
-                            offset[0] = 25000.0f;
-                            offset[1] = 0.0f;
-                            offset[2] = -36000.0f;
+                        if (k == 0) {
+                            offset[0] = 20000.0f;
+                            offset[1] = -3000.0f;
+                            offset[2] = -50000.0f;
                         } else if (k == 1) {
                             offset[0] = 10000.0f;
                             offset[1] = -7000.0f;
                             offset[2] = -30000.0f;
-                        } else if (k == 0) {
-                            offset[0] = 20000.0f;
-                            offset[1] = -3000.0f;
-                            offset[2] = -50000.0f;
+                        } else if (k == 2) {
+                            offset[0] = 25000.0f;
+                            offset[1] = 0.0f;
+                            offset[2] = -36000.0f;
                         } else {
                             offset[1] = 6000.0f;
                             offset[2] = -45000.0f;
