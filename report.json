@@ -17,7 +17,7 @@
  "rows": [
   {
    "name": "_ZN6LayoutC1Ev",
-   "pct": 48.9,
+   "pct": 45.0,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -25,7 +25,7 @@
   },
   {
    "name": "_ZN6LayoutC2Ev",
-   "pct": 48.9,
+   "pct": 45.0,
    "byte": false,
    "linked": false,
    "osize": 7072,
@@ -33,11 +33,19 @@
   },
   {
    "name": "_ZN11LevelScript7processEi",
-   "pct": 59.9,
+   "pct": 58.9,
    "byte": false,
    "linked": false,
    "osize": 57232,
    "usize": 57232
+  },
+  {
+   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
+   "pct": 70.6,
+   "byte": false,
+   "linked": false,
+   "osize": 2764,
+   "usize": 2764
   },
   {
    "name": "_ZN6Status16missionCompletedEbbx",
@@ -46,14 +54,6 @@
    "linked": false,
    "osize": 1432,
    "usize": 1432
-  },
-  {
-   "name": "_ZN5Level10createShipEiiiP8Waypointbb",
-   "pct": 73.4,
-   "byte": false,
-   "linked": false,
-   "osize": 2764,
-   "usize": 2764
   },
   {
    "name": "_ZN5Radar4drawEP6PlayerP3Hudi",
@@ -65,7 +65,7 @@
   },
   {
    "name": "_ZN5MGame10OnTouchEndEiiPv",
-   "pct": 81.9,
+   "pct": 82.0,
    "byte": false,
    "linked": false,
    "osize": 8080,
@@ -73,7 +73,7 @@
   },
   {
    "name": "_ZN5Level13createMissionEv",
-   "pct": 92.3,
+   "pct": 92.2,
    "byte": false,
    "linked": false,
    "osize": 17172,
