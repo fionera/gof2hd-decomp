@@ -4,6 +4,27 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 139)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-139 lands the wave-137 w8308 case-40 cold-chain placement at exactly 57,232 B.  The
+`-8 B` companion is the case-157 tail store order (both `Globals::switch_to_target_setting`
+and `Level::initStreamOutPosition` are stored before the shared `SetCurrentApplicationModule`
+tail at `0x145bd0..0x145bec`).  Two further faithful fixes cancel in size: the missing
+`resetGunDelay` at `0x144982` (+12) and the duplicate `resetCamera` at `0x1408c6` (-12).
+`LevelScript::process` raw same-address diff **55,072 -> 55,171** (103 B lower than the
+w8308 landing's 55,274); official fuzzy pct unchanged at **57.4 %**.  See
+`_work/reconstructions/levelscript-process-wave139-w8404.md`.
+
+Section deltas: `.text` **85,575** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,396** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 138)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
