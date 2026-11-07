@@ -3992,7 +3992,7 @@ bool LevelScript::process(int delta) {
                         for (int i = 2; i < 6; i++) {
                             ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                         }
-                        m_nState++;
+                        m_nState = 4;
                         player->setVisible(true);
                         player->setFreeze(false);
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
