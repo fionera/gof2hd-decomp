@@ -2193,12 +2193,6 @@ case4Tail:
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13d = 0;
                         ((PlayerFighter *) (*this->enemies)[i])->field_0x13e = 0;
                         switch (k) {
-                        default:
-
-                            offset[1] = 6000.0f;
-                            offset[2] = -45000.0f;
-                            offset[0] = 12000.0f;
-                            break;
                         case 0:
                             offset[0] = 20000.0f;
                             offset[1] = -3000.0f;
@@ -2213,6 +2207,11 @@ case4Tail:
                             offset[0] = 25000.0f;
                             offset[1] = 0.0f;
                             offset[2] = -36000.0f;
+                            break;
+                        default:
+                            offset[1] = 6000.0f;
+                            offset[2] = -45000.0f;
+                            offset[0] = 12000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));

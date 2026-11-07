@@ -42,8 +42,9 @@ Wave-138 landed three source-level improvements:
   case-131/135 blocks.
 * `Layout::Layout` (w8301): re-lands the fuzzy-first reorder (ascending `0xb8..0x118` region
   plus the `0x11c`/`0x12c` swap) at **45.9 %**, exact 7,072 B; raw diff 5,775 B.
-* `Level::createMission` (w8312): case-183 offset-chain branch order (0, 1, 2), fuzzy
-  **92.34 -> 92.49 %**, size 17,172 B; raw diff 5,766 B.
+* `Level::createMission` (w8312/w8411): case-183 offset-chain source order 0,1,2 then
+  default (ascending compare chain `cmp #2,/cmp #1,/cbnz`), size 17,172 B; raw diff
+  5,766 -> 5,763 B.
 * `Hud::draw` (w8317): dock1 `top` is an `int` (zero-extended), not a float; 9,332 B.
 
 Two further analyses landed as notes with the source reverted: w8305 (`m_nState++` is +8 B
@@ -51,8 +52,8 @@ and unfaithful — the original stores the immediate 4) and w8308 (case-40 cold-
 lands at 57,240 B). Radar w8309 found the nested `inSight` shape at 9,908 B but it moves
 `.rel.plt` entries 2736-2739, so it is pinned for a later pass.
 
-Section deltas: `.text` **85,476** differing bytes (size exact); `.ARM.exidx` **0**
-(byte-identical); `.ARM.extab` **1,396** (size- and base-exact **156,312 B**);
+Section deltas: `.text` **85,473** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
 **0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
