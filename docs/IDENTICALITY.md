@@ -35,12 +35,20 @@ w8105 (the four `getPlayer` receiver fixes) is also faithful but re-rolls the
 57 KB block layout (58.9 -> 45.6 % at 57,236 B) and needs a different size
 companion. Both are ready to re-land once the companion is found.
 
+* `Layout::Layout` C1/C2 (w8107): six adjacent statement swaps found by
+  hill-climbing the raw byte diff (`0x1c` after `0x10`, `buttonInsetX` after
+  `0x2c`, `0x114` after `0x108`, `0x1dc` after the `0x1cc` chain, `rewardBoxX`
+  after `rewardBoxHeight`, `0x2f4` after `0x2f8`). Function diff bytes
+  **5,783 -> 5,757** (-26), exact 7,072 B. The full ascending device-tree
+  rebuild was tested and is 184 B short (6,888 B) and worse on raw bytes; see
+  `_work/reconstructions/Layout-LayoutC1-wave135-w8107.md`.
+
 Build provenance was re-audited (w8119): the original is **not PGO-built**
 (1957/1973 branch-containing functions carry no `!prof` metadata; only the
 Status switch does), and a 60-flag matrix plus APK/NDK re-mine found no flag
 that beats the current recipe.
 
-Section deltas: `.text` **84,735** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,709** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **4** (size exact, 29,392 B); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
@@ -63,15 +71,7 @@ Wave-135 landed two source-level improvements:
   not an `if` ladder; the state switch shape now matches (function 58.2 -> 58.8%,
   diff bytes 54,262 -> 54,316). The `.ARM.extab` LSDA shrank from 1,416 to **1,404**
   differing bytes.
-* `Layout::Layout` C1/C2 (w8107): six adjacent statement swaps found by
-  hill-climbing the raw byte diff (`0x1c` after `0x10`, `buttonInsetX` after
-  `0x2c`, `0x114` after `0x108`, `0x1dc` after the `0x1cc` chain, `rewardBoxX`
-  after `rewardBoxHeight`, `0x2f4` after `0x2f8`). Function diff bytes
-  **5,783 -> 5,757** (-26), exact 7,072 B. The full ascending device-tree
-  rebuild was tested and is 184 B short (6,888 B) and worse on raw bytes; see
-  `_work/reconstructions/Layout-LayoutC1-wave135-w8107.md`.
-
-Section deltas: `.text` **84,934** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,960** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,404** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
