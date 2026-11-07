@@ -134,3 +134,11 @@ cmake --preset default \
   -DGOF2_FMOD_LIBDIR=/home/debian/GalaxyOnFire2/_work/bins/apk_libs
 cmake --build cmake-build-match --target check -j6      # RATCHET PASS, byte 4506
 ```
+
+## Post-merge note (wave 134 coordinator)
+
+The mission 5/26 reorder and the case-154 dir fix landed.  Only **one** of the
+two `resetGunDelay` receiver changes could be kept: both together add +16 B on
+the combined wave-134 base, so the second site stays `player->resetGunDelay()`
+and `process` is exactly 57,232 B.  The remaining site is a +8 B lead for a
+future size-neutral pass.

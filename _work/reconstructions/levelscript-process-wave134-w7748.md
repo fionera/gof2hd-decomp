@@ -130,3 +130,8 @@ Tracked helpers live in `_work/reconstructions/w7748/`: `score.py`, `bytediff.py
 `secdiff.py`, `analyze.py` (pool + `tbh` dump), `reorder_cases.py` (case-body permutation),
 `reorder_branches.py` (mission-0 if/else permutation), `swap_26_5.py` (the landed change).
 `analyze.py` and the reorder scripts assume the repo root as cwd.
+
+## Post-merge note (wave 134 coordinator)
+
+This is the same mission 5/26 reorder as w7745 (w7748 was the isolated probe).
+It is already in master via w7745; no separate source change remains.
