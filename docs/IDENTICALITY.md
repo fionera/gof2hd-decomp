@@ -28,6 +28,18 @@ Wave-136 landed two source-level improvements:
   (`switchSkyboxForIntro`, `PlayerStation::setVisible`) and the `resetGunDelay` size pad,
   keeping the function at exactly 57,232 B. Function fuzzy **58.8 -> 58.9 %**.
 
+Two further LevelScript analyses landed as notes with the source reverted: w8106
+(case-102/145/154 placement + the missing case-145 state-5 `m_nState++`) is
+semantically faithful but needs a +8 B companion on top of the case-40 change;
+w8105 (the four `getPlayer` receiver fixes) is also faithful but re-rolls the
+57 KB block layout (58.9 -> 45.6 % at 57,236 B) and needs a different size
+companion. Both are ready to re-land once the companion is found.
+
+Build provenance was re-audited (w8119): the original is **not PGO-built**
+(1957/1973 branch-containing functions carry no `!prof` metadata; only the
+Status switch does), and a 60-flag matrix plus APK/NDK re-mine found no flag
+that beats the current recipe.
+
 Section deltas: `.text` **84,735** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **4** (size exact, 29,392 B); `.bss` **0**;
