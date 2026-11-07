@@ -408,9 +408,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
     }
 
     int otherLock;
-    if (__builtin_expect(this->lockedAsteroid == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
-        this->lockedGasCloud == nullptr &&
-        __builtin_expect(this->field_0x1c == nullptr, 0)) { // lint: arm_builtin anchor: Radar::draw
+    if (__builtin_expect(this->lockedAsteroid == nullptr && // lint: arm_builtin anchor: Radar::draw
+                                 __builtin_expect(this->lockedGasCloud == nullptr, 1) && // lint: arm_builtin anchor: Radar::draw
+                                 this->field_0x1c == nullptr,
+                         0)) {
         otherLock = this->field_0x14 != 0;
     } else {
         otherLock = 1;
@@ -552,7 +553,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
                 (Globals::status->getCurrentCampaignMission() < 148 ||
                  Globals::status->getCurrentCampaignMission() >= 152)) {
-                bool isTarget = stations->data()[i] == campaignMission->getTargetStation();
+                bool isTarget = stationId == campaignMission->getTargetStation();
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
                         Globals::Canvas->DrawImage2D(this->image_0xc8, this->screenX + textOffset, this->screenY - 10);
