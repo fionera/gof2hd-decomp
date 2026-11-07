@@ -1496,14 +1496,7 @@ bool LevelScript::process(int delta) {
 
     // --- pre-switch mission specials (disasm 0x13812a); run for all missions ---
     // Re-read the campaign mission (fresh call at 0x13812e; -Oz has no CSE).
-    else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
-        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
-        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
-            m_nState = 1;
-            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
-            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
-        }
-    } else if (Globals::status->getCurrentCampaignMission() == 5) {
+    else if (Globals::status->getCurrentCampaignMission() == 5) {
         // disasm 0x13813c: on the first frame, park enemies[0] ahead of the player and wake it.
         if (m_nState == 0) {
             Vector *scratch = &m_tempVec; // LevelScript tempVec @0x28
@@ -1512,6 +1505,13 @@ bool LevelScript::process(int delta) {
             (*enemies)[0]->geometry->rotate(0.0f, 3.1415927f, 0.0f); // const @0x13853c = pi
             (*enemies)[0]->awake();
             m_nState = 1;
+        }
+    } else if (Globals::status->getCurrentCampaignMission() == 26 && Globals::status->inAlienOrbit()) {
+        // disasm 0x1382dc: in alien orbit, once radio message #1 fires, spin up the exit wormhole.
+        if (((RadioMessage *) ((*messages)[1]))->isTriggered() && m_nState == 0) {
+            m_nState = 1;
+            Array<KIPlayer *> *landmarks = m_pLevel->getLandmarks();
+            ((PlayerWormHole *) (*landmarks)[3])->reset(true);
         }
     } else if (Globals::status->getCurrentCampaignMission() == 50 && messages != nullptr) {
         // disasm 0x1383e4: mission 50 only tests the message array for null here, then joins the
@@ -3176,7 +3176,7 @@ bool LevelScript::process(int delta) {
                             for (int i = 0; i != 2; i++) {
                                 ((PlayerFighter *) (*enemies)[i])->setAIDisabled(false);
                             }
-                            player->resetGunDelay();
+                            m_pLevel->getPlayer()->resetGunDelay();
                             m_pCamera->setLookAtCam(false);
                             m_pCamera->setTarget(player->geometry);
                             bool docked = player->isDockedToDockingPoint();
@@ -4525,8 +4525,8 @@ bool LevelScript::process(int delta) {
                     AbyssEngine::PaintCanvas *canvas = Globals::Canvas;
                     Matrix local = *reinterpret_cast<Matrix *>(canvas->CameraGetLocal(canvas->CameraGetCurrent()));
                     m_tempVec = AbyssEngine::AEMath::MatrixGetPosition(local);
-                    m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->GetDirVector();
+                    m_tempVec += m_dirVec * (step * 0.008f);
                     m_dirVec = player->geometry->getRightVector();
                     m_tempVec += m_dirVec * (step * -0.05f);
                     m_dirVec = player->GetUpVector();
@@ -4680,7 +4680,7 @@ bool LevelScript::process(int delta) {
                         (*m_pLevel->getEnemies())[0]->player->setEnemies(nullptr);
                         (*m_pLevel->getEnemies())[0]->player->setVulnerable(true);
                         m_pCamera->setFixed(false);
-                        player->resetGunDelay();
+                        m_pLevel->getPlayer()->resetGunDelay();
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
                         player->setFreeze(false);
