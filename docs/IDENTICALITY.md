@@ -47,18 +47,14 @@ Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **
   instruction-level match is better despite that.  See
   `_work/reconstructions/level-createmission-wave137-w8214.md`.
 
-Wave-137 re-scores `Layout::Layout` C1/C2 by fuzzy instruction match instead of raw
-same-address bytes. The six wave-135 swaps are reverted (they lower fuzzy to 43.6 %) and
-replaced by an adjacent-statement hill climb on the fuzzy ratio: `field_0x214` before
-`field_0x1ec` and `field_0x27c` before `field_0x274`. Function fuzzy **44.8 -> 45.9 %**
-(C1/C2), exact 7,072 B. Raw same-address diff bytes go 5,783 -> 5,812; the fuzzy metric is
-the one this pass optimizes. See
-`_work/reconstructions/Layout-LayoutC1-wave137-w8209.md`.
+`Layout::Layout` C1/C2 stays at the wave-136 w8107 reorder (**45.0 %**). The wave-137
+w8209 fuzzy-first reorder measured 45.9 % in its own worktree but lands at 43.6 % on the
+merged base, so its source was reverted and only the analysis note is kept.
 
-Section deltas: `.text` **84,764** differing bytes (size exact); `.ARM.exidx` **0**
+Section deltas: `.text` **84,664** differing bytes (size exact); `.ARM.exidx` **0**
 (byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
-`.rodata` **0** (byte-identical); `.rel.plt` **4** (size exact, 29,392 B); `.bss` **0**;
-`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
 
 ## Update 2026-11-07 (wave 136)
