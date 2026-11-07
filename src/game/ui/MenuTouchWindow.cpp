@@ -2386,21 +2386,25 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
             }
         }
         break;
-    case 8:
+    case 8: {
             this->upButtonPressed = 0;
             this->downButtonPressed = 0;
-            if (x > this->listTopY + layout->buttonInsetX &&
-                x < layout->buttonInsetX + this->listTopY + this->listEntryHeight &&
-                y > layout->field_0xc_leftMargin + layout->buttonInsetX &&
+            int listTopY = this->listTopY;
+            int buttonInsetX = layout->buttonInsetX;
+            if (buttonInsetX + listTopY < x &&
+                x < buttonInsetX + listTopY + this->listEntryHeight &&
+                layout->field_0xc_leftMargin + buttonInsetX < y &&
                 y < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
                 Globals::sound->play(124, 0, 0, 0.0f);
+                listTopY = this->listTopY;
+                buttonInsetX = Globals::layout->buttonInsetX;
                 layout = Globals::layout;
             }
-            if (x > this->listTopY + layout->buttonInsetX + this->listEntryHeight &&
-                x < this->listTopY - layout->buttonInsetX + this->listBottomY &&
-                y > layout->field_0xc_leftMargin + layout->buttonInsetX &&
-                y < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
+            if (this->listEntryHeight + buttonInsetX + listTopY < x &&
+                x < (listTopY - buttonInsetX) + this->listBottomY &&
+                buttonInsetX + layout->field_0xc_leftMargin < y &&
+                y < layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth) {
                 this->downButtonPressed = 1;
                 Globals::sound->play(124, 0, 0, 0.0f);
             }
@@ -2408,6 +2412,7 @@ bool MenuTouchWindow::OnTouchBegin(int x, int y, void *touchId) { // lint: void_
         this->optBtnD0->OnTouchBegin(x, y);
         (*this->sliders)[0]->OnTouchBegin(x, y);
         break;
+    }
     case 12:
         for (unsigned int i = 0; i < this->buttonsB4->size(); i++)
             (*this->buttonsB4)[i]->OnTouchBegin(x, y);
