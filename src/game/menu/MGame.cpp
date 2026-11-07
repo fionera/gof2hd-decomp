@@ -1513,7 +1513,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                 this->pauseOpen = 0;
                 resumeSounds();
                 this->cutsceneActive = 0;
-                bool failed = Globals::status->getMission()->hasFailed() == true;
+                bool failed = Globals::status->getMission()->hasFailed();
                 if (failed) {
                     if (Globals::status->getMission()->isCampaignMission() ||
                         Globals::status->getCurrentCampaignMission() == 42) {
@@ -1554,9 +1554,8 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     bool won = Globals::status->getMission()->hasWon() ||
                                ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() == true;
                     if (won) {
-                        Mission *campaign = (Mission *) (intptr_t) Globals::status->getCampaignMission();
-                        bool keepObjectives = campaign->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
-                        Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : campaign;
+                        bool keepObjectives = ((Mission *) (intptr_t) Globals::status->getCampaignMission())->hasWon() != false ? !Globals::status->getMission()->isCampaignMission() : false;
+                        Mission *mission = Globals::status->getMission()->hasWon() ? Globals::status->getMission() : (Mission *) (intptr_t) Globals::status->getCampaignMission();
                         if (mission->isInstantActionMission()) {
                             Globals::switch_to_target_setting = 2;
                             this->active = 0;
@@ -1627,9 +1626,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
-                        } else if (mission->isCampaignMission() &&
-                                   (Globals::status->getCurrentCampaignMission() == 96 ||
-                                    Globals::status->getCurrentCampaignMission() == 127)) {
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 96) {
                             Globals::switch_to_target_setting = 1;
                             Globals::status->field_64 = this->player->player->getHitpoints();
                             Globals::status->field_5c = this->player->player->getShieldHP();
@@ -1682,6 +1679,17 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                             Globals::status->field_68 = this->player->player->getGammaHP();
                             Level::initStreamOutPosition = 0;
                             Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(120));
+                            this->active = 0;
+                            this->applicationManager->SetCurrentApplicationModule(2);
+                            return;
+                        } else if (mission->isCampaignMission() && Globals::status->getCurrentCampaignMission() == 127) {
+                            Globals::switch_to_target_setting = 1;
+                            Globals::status->field_64 = this->player->player->getHitpoints();
+                            Globals::status->field_5c = this->player->player->getShieldHP();
+                            Globals::status->field_60 = this->player->player->getArmorHP();
+                            Globals::status->field_68 = this->player->player->getGammaHP();
+                            Level::initStreamOutPosition = 1;
+                            Globals::status->departStation((Station *) (intptr_t) Globals::galaxy->getStation(98));
                             this->active = 0;
                             this->applicationManager->SetCurrentApplicationModule(2);
                             return;
@@ -1794,7 +1802,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                     }
                 }
                 uint8_t &soundsMuted = reinterpret_cast<uint8_t *>(&this->field_0x1a4)[0];
-                if (this->menuWindow->OnTouchEnd(x, y, touchId) == true) {
+                if (this->menuWindow->OnTouchEnd(x, y, touchId)) {
                     // Pause menu closed.
                     this->pauseOpen = 0;
                     this->pauseSnapshot = 0;
