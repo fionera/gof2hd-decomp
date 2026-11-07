@@ -613,11 +613,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
         }
         if (!alienOrbit) {
-            int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
             SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
             int stationIndex = system->getStationEnumIndex(
                     ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
                             ->data()[this->planetDockIndex]);
+            int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
             onPlanetCourse = autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
             this->field_0x1a8 = onPlanetCourse;
         }

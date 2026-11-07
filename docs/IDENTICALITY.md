@@ -22,6 +22,13 @@ raw fuzzy is 59.89 (was 60.10) because the corrected statements move blocks with
 54623 and the whole-`.text` count is 85,515 after the combined w7668 case-91 fix (85,487 on the w7666 base).  See
 `_work/reconstructions/levelscript-process-wave129-w7666.md`.
 
+Wave-129 gain: `Radar::draw` **75.268817 -> 75.297491** raw (display 75.3) at the original
+9908 B, by computing the post-loop `getStationEnumIndex` before `getAutoPilotTarget` in the
+reduced recompute.  The whole-`.text` differing-byte count fell **85,441 -> 85,440**.  The
+block layout is otherwise unchanged; the faithful single-recompute shape (removing the
+post-loop recompute) still re-rolls the planet-loop register split (`fp`/`sl`) and scores
+72.93 %.  See `_work/reconstructions/radar-draw-wave129-w7674.md`.
+
 Section deltas: `.text` **85,515** differing bytes (size exact); `.ARM.exidx` **0**;
 `.ARM.extab` **1,426** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
