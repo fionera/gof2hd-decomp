@@ -4,6 +4,39 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 137)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-137 landed four `LevelScript::process` source fixes (all keep exactly 57,232 B):
+
+* case 40 state-1 teardown reordered to the exact Thumb order at `0x13e6ee..0x13e726`
+  (`setTarget` first, then hud/radar/cinematicBreak, `setLookAtCam` before
+  `setComputerControlled`, `setVulnerable`, `m_nState = 2`); that 16-instruction cold
+  block is now byte-identical. Diff bytes **54,327 -> 54,323**.
+* the shared tail at `0x13c88c` uses `translate((float)-delta * 0.8f, 0, 0)`, not the
+  `0.3f` the source had. Instruction stream unchanged.
+* case 145 state 1 now uses the cached `player` receiver, and state 5 gained the missing
+  `m_nState++` (`0x13f8f6..0x13f8fe` branches to the shared add-1/store tail at
+  `0x14500e`); the state machine previously stalled at state 5. Case-102 state 0/1
+  `setTarget`/`translate` placement corrected per the wave-136 audit.
+* the `if (delta < 0)` `.rel.plt` first-reference anchor is gone. Reordering the
+  mutually-exclusive mission-42 state tests from 0/6/7 to 6/0/7 makes clang place the
+  real state-7 `PlayerStation::setVisible` block before the mission-125 hacking default
+  block, so the real calls alone give the original order; the freed bytes are spent on a
+  faithful un-cache of the three `Level::getLandmarks()` calls in mission-24 state 1.
+  **`.rel.plt` is now byte-identical** (3,674 entries).
+
+`Layout::Layout` fuzzy is **45.0 %** (the wave-136 w8107 reorder).
+
+Section deltas: `.text` **84,662** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 136)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
