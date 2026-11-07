@@ -4,6 +4,29 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 136)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-136 landed one source-level improvement:
+
+* `Level::createScene` is now **byte-identical** (2252 B at `0xb42ec`). The `spots`
+  hangar-table selector was a ternary whose single SSA value fed both phi operands of the
+  switch hole-check, so `PHIElimination` split the range-check critical edge into an extra
+  block (one extra `b.n` + duplicated `spots` reload). Rewriting it as an if/else gives the
+  two arms distinct SSA values and keeps both phi copies inline, matching the original. The
+  `geo = ship->geometry` load was moved after `setToSleep()` to un-fuse the `ldrd` (restores
+  the 2252 B size). Function diff bytes **236 -> 0**; `.text` differing bytes
+  **84,960 -> 84,724**; `.ARM.extab` **1,404 -> 1,395**.
+
+Section deltas: `.text` **84,724** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,395** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-07 (wave 135)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:

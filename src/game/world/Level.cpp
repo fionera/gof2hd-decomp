@@ -6648,7 +6648,11 @@ void Level::createScene() {
             unsigned char *spotUsed = new unsigned char[capacity];
             for (int i = 0; i < capacity; i++)
                 spotUsed[i] = 0;
-            const int *spots = sceneRace == 7 ? kHangarSpotsKhador[0] : kHangarSpotsDefault[0];
+            const int *spots;
+            if (sceneRace == 7)
+                spots = kHangarSpotsKhador[0];
+            else
+                spots = kHangarSpotsDefault[0];
             for (int i = 0; i < shipCount; i++) {
                 int race = sceneRace;
                 if (rnd->nextInt(100) <= 29) {
@@ -6688,9 +6692,9 @@ void Level::createScene() {
                 }
                 ship->setPosition((float) table[spot * 3], (float) (table[spot * 3 + 1] + kShipHangarHeights[type]),
                                   (float) table[spot * 3 + 2]);
-                AEGeometry *geo = ship->geometry;
                 ship->player->setAlwaysFriend(true);
                 ship->setToSleep();
+                AEGeometry *geo = ship->geometry;
                 geo->setRotation(0.0f, (float) rnd->nextInt(300) / 100.0f, 0.0f);
                 ((PlayerFighter *) ship)->setExhaustVisible(false);
                 ArrayAdd(ship, *this->enemies);
