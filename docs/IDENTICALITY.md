@@ -4,6 +4,29 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-07 (wave 129)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
+
+Wave-129 re-lands the deferred w7645 `LevelScript::process` case-40/41/42 corrections at the
+original 57232 B, plus the genuine case-42 state-6 fixes that pay for them: the bogus
+`player->freeze = 0` (absent from the original) is removed, `player->setVisible(false)` moves to
+its original slot after `setComputerControlled`, `freeMissionLock()` moves after the camera
+`translate`, and the missing `m_nState = 7` state transition is restored.  The case-41 state-4
+`timerA += delta` now precedes the camera translate as in the original.  `LevelScript::process`
+raw fuzzy is 59.89 (was 60.10) because the corrected statements move blocks within the global
+`MachineBlockPlacement` permutation; the function's own differing-byte count falls 54577 ->
+54623 and the whole-`.text` count is 85,487.  See
+`_work/reconstructions/levelscript-process-wave129-w7666.md`.
+
+Section deltas: `.text` **85,487** differing bytes (size exact); `.ARM.exidx` **0**;
+`.ARM.extab` **1,426** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
+**0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
+(2,187,328 B).
+
 ## Update 2026-11-07 (wave 127)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
@@ -533,10 +556,10 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,438 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,487 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
-| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,433 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
+| .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,426 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
 | .dynsym | 89,248 | 89,248 | 0 | **byte-identical** (5,578 entries, 5,370 defined symbols). Gold emits dynsym in SGI `__gnu_cxx::hash_map` ascending-bucket order (keyed by 1-based Stringpool insertion indices), i.e. first-mention order over the link inputs; the model reproduces our table 5,577/5,577. All 79 versioned imports match. See `_work/reconstructions/dynsym_dynstr_hash_order_w3567.md`, `_work/reconstructions/rel_plt_rel_dyn_ordering_w3616.md` and `_work/reconstructions/gameresource_tu_convergence_w3624.md`. |
 | .dynstr | 189,208 | 189,208 | 0 | **byte-identical** (0 differing bytes; 189,208 B). |
 | .rel.plt | 29,392 | 29,392 | 0 | **byte-identical** (0 differing bytes; 0x72d0 @ 0x5751c; `SHF_INFO_LINK`/`sh_info=20`). Wave 124 made the `MGame::OnTouchEnd` cold-block PLT order match. |
