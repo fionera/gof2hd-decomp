@@ -812,7 +812,7 @@ void HangarWindow::render() {
                             // 156-row / 948-byte .ARM.extab record is preserved.
                             volatile int *padX = 0;
                             if (tab != 0) {
-                                if (!(tab == 3 && this->selectedItem->ship == Globals::status->getShip())) {
+                                if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
