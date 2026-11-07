@@ -21,49 +21,42 @@
 // Camera::Camera is inline in Camera.h (the original emits it weak in PaintCanvas.cpp).
 
 namespace AbyssEngine {
-    namespace AEMath {
-    }
-
     void CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen, float near,
                               Camera *cam) {
         if (cam != 0) {
-            float *f = (float *) cam;
-            f[0] = p1;
-            f[1] = aspectNum;
-            f[2] = fov;
+            cam->position[0] = p1;
+            cam->position[1] = aspectNum;
+            cam->position[2] = fov;
 
             float half = p1 * 0.5f;
             float s = AbyssEngine::AEMath::Sinf(half);
             float c = AbyssEngine::AEMath::Cosf(half);
-            f[0x12] = s / c;
-            f[0x13] = (aspectDen / near) * (s / c);
-            f[0x14] = aspectDen / near;
+            cam->frustumTanHalfFov = s / c;
+            cam->field_0x4c = (aspectDen / near) * (s / c);
+            cam->frustumAspect = aspectDen / near;
 
-            f[0x16] = 1.0f / AbyssEngine::AEMath::Cosf(half);
-            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]));
+            cam->frustumInvCosY = 1.0f / AbyssEngine::AEMath::Cosf(half);
+            cam->frustumInvCosX = 1.0f / AbyssEngine::AEMath::Cosf(
+                AbyssEngine::AEMath::ATanf(cam->frustumTanHalfFov * cam->frustumAspect));
         }
     }
 }
 
 namespace AbyssEngine {
-    namespace AEMath {
-    }
-
     void CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam) {
         if (cam != 0) {
-            float *f = (float *) cam;
-            f[1] = fov;
-            f[2] = aspectNum;
+            cam->position[1] = fov;
+            cam->position[2] = aspectNum;
 
-            float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
-            float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
+            float s = AbyssEngine::AEMath::Sinf(cam->position[0] * 0.5f);
+            float c = AbyssEngine::AEMath::Cosf(cam->position[0] * 0.5f);
             float scale = s / c;
-            f[0x12] = scale;
-            f[0x13] = (aspectDen / near) * scale;
-            f[0x14] = aspectDen / near;
+            cam->frustumTanHalfFov = scale;
+            cam->field_0x4c = (aspectDen / near) * scale;
+            cam->frustumAspect = aspectDen / near;
 
             float at = AbyssEngine::AEMath::ATanf((aspectDen / near) * scale);
-            f[0x15] = 1.0f / AbyssEngine::AEMath::Cosf(at);
+            cam->frustumInvCosX = 1.0f / AbyssEngine::AEMath::Cosf(at);
         }
     }
 }

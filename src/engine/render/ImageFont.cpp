@@ -46,7 +46,7 @@ namespace AbyssEngine {
         for (unsigned short i = 0; i < count; ++i) {
             for (unsigned short g = 0; g < font->glyphCount; ++g) {
                 if (font->codes[g] == str[i]) {
-                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int w = (int) font->glyphMeshes[g]->positions[3];
                     int adv = font->spacing + w;
                     // A narrow (11 px) space glyph is drawn two pixels tighter.
                     if (w == 11 && font->codes[g] == ' ')
@@ -62,13 +62,12 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     int ImageFontGetHeight(ImageFont *font) {
         if (font != 0) {
-            Mesh **p = font->glyphMeshes;
-            Mesh *q = p[0];
-            float *r = (float *) q->positions;
-            int v = (int) r[7];
-            if (v == 0x18)
-                v -= 5; // ASM: original subtracts 5 (subeq) rather than moving 19 (moveq); v==0x18 here
-            return v;
+            // The first glyph's quad height is the font's line height.  A 24 px glyph is
+            // reported as 19 px, matching the original's `subeq #5` on the 24 px case.
+            int height = (int) font->glyphMeshes[0]->positions[7];
+            if (height == 24)
+                height -= 5;
+            return height;
         }
         return 0;
     }
@@ -90,7 +89,7 @@ namespace AbyssEngine {
         for (unsigned short i = start; i < start + len; ++i) {
             for (unsigned short g = 0; g < font->glyphCount; ++g) {
                 if (font->codes[g] == str[i]) {
-                    int w = (int) ((float *) font->glyphMeshes[g]->positions)[3];
+                    int w = (int) font->glyphMeshes[g]->positions[3];
                     int adv = font->spacing + w;
                     if (w == 11 && font->codes[g] == ' ')
                         adv -= 2;
