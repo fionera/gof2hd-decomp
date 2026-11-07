@@ -2232,6 +2232,8 @@ bool LevelScript::process(int delta) {
                     m_pLevel->lodManager->forceUpdate(delta, false);
                     m_nState = 1;
                 } else if (m_nState == 1) {
+                    m_pLevel->lodManager->forceUpdate(delta, false);
+                    m_pCamera->translate(0.0f, delta * 0.2, 0.0f);
                     if (((RadioMessage *) ((*messages)[2]))->isTriggered()) {
                         m_pCamera->setLookAtCam(false);
                         m_pCamera->setTarget(player->geometry);
@@ -2935,7 +2937,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[5]))->isTriggered()) {
                         m_nScriptTimerA = 0;
                         m_nScriptTimerB = 0;
-                        m_nState++;
+                        m_nState = 10;
                         AEGeometry *leader = (*enemies)[0]->geometry;
                         m_pCamera->setTarget(leader);
                         m_tempVec = leader->getPosition();
@@ -4499,7 +4501,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                     if (((RadioMessage *) ((*messages)[1]))->isOver()) {
-                        m_pCamera->setFixed(false);
+                        m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1501) {
                         for (unsigned int i = 0; i < enemies->count; i++) {
@@ -4510,12 +4512,12 @@ bool LevelScript::process(int delta) {
                         }
                         m_pCamera->setTarget(player->geometry);
                         m_tempVec = player->getPosition();
-                        m_nState = 2;
-                        m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nScriptTimerA = 0;
                         m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
-                        (*enemies)[0]->setActive(true);
+                        m_pCamera->setFixed(false);
+                        m_nState++;
+                        m_pLevel->lodManager->forceUpdate(delta, false);
+                        m_nScriptTimerA = 0;
                     }
                 } else if (m_nState == 2) {
                     player->setSpeed(0.0f);
@@ -4538,15 +4540,15 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA += delta;
                     }
                     if (m_nScriptTimerA >= 1001) {
-                        m_bCinematicBreak = 0;
+                        player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 26000.0f};
                         m_pCamera->setPosition(m_tempVec);
-                        m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
+                        m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState = 3;
+                        m_nState++;
                     }
                 } else if (m_nState == 3) {
                     if (((RadioMessage *) ((*messages)[3]))->isOver()) {
@@ -4560,7 +4562,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{-350.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
-                        m_nState = 4;
+                        m_nState++;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_nScriptTimerA = 0;
                     }
@@ -4590,13 +4592,12 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
-                        m_nState = 5;
+                        m_nState++;
                     }
                 } else if (m_nState == 5) {
                     m_pCamera->translate((float) delta, 0.0f, (float) delta * 0.1f);
                     if (((RadioMessage *) ((*messages)[5]))->isOver()) {
                         m_nScriptTimerA += delta;
-                        m_nState = 5;
                     }
                     if (m_nScriptTimerA >= 1001) {
                         player->setSpeed(0.02f);
@@ -4605,7 +4606,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += Vector{150.0f, 400.0f, -1500.0f};
                         m_pCamera->setPosition(m_tempVec);
                         m_pCamera->setFixed(false);
-                        m_nState = 6;
+                        m_nState++;
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         (*enemies)[0]->setPosition(Vector{-10000.0f, 0.0f, 22000.0f});
                         ((PlayerFighter *) (*enemies)[0])->field_0x13e = 0;
@@ -4645,7 +4646,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setPosition(m_tempVec);
                         m_nScriptTimerA = 0;
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        m_nState = 7;
+                        m_nState++;
                     }
                 } else if (m_nState == 7) {
                     if ((*enemies)[0]->isDocked()) {
@@ -4692,22 +4693,22 @@ bool LevelScript::process(int delta) {
                         m_pRadar->enabled = 1;
                         resetCamera(m_pLevel);
                         m_pLevel->lodManager->forceUpdate(delta, false);
-                        player->setSpeed(0.0f);
                         if (field_0xaa) {
                             player->setAutoTurret(true);
                         }
                         m_nScriptTimerA = 0;
-                        m_nScriptTime = 0;
+                        m_nScriptTimerB = 0;
+                        m_nState++;
                     }
                 } else if (m_nState == 10) {
                     if (((RadioMessage *) ((*messages)[8]))->isOver() && m_nTimeLimit <= 0) {
-                        delete m_pLevel->objectivesB;
+                        m_nScriptTime = 0;
                         m_nTimeLimit = 91000;
                         m_pLevel->objectivesB = new Objective(3, 91000, m_pLevel);
                     }
                     if (player->isDockedToDockingPoint() && player->hackingWon()) {
                         m_nState = 11;
-                        m_nScriptTimerA = 0;
+                        delete m_pLevel->objectivesB;
                         for (unsigned int i = 0; i < enemies->count; i++) {
                             if ((*enemies)[i]->shipGroup == 9) {
                                 (*enemies)[i]->player->setEnemies(nullptr);
