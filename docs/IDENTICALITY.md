@@ -11,16 +11,20 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 **843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
-Wave-135 landed one source-level improvement:
+Wave-135 landed two source-level improvements:
 
 * `LevelScript::process` case 70: the original else path tests state 2 before state 1
   (`0x13c04e`), so the state-2 block now precedes the state-1 block. Function diff
   bytes **54,359 -> 54,262** (-97), exact 57,232 B, `.rel.plt` byte-identical. The
   state-1 body is a no-op immediately after state 0 (the freshly built route's first
   waypoint state is 0), so the fall-through does not change behaviour.
+* `LevelScript::process` case 125: the state dispatch is a `switch` in the original,
+  not an `if` ladder; the state switch shape now matches (function 58.2 -> 58.8%,
+  diff bytes 54,262 -> 54,316). The `.ARM.extab` LSDA shrank from 1,416 to **1,404**
+  differing bytes.
 
-Section deltas: `.text` **84,925** differing bytes (size exact); `.ARM.exidx` **0**
-(byte-identical); `.ARM.extab` **1,416** (size- and base-exact **156,312 B**);
+Section deltas: `.text` **84,960** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,404** (size- and base-exact **156,312 B**);
 `.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical); `.bss` **0**;
 `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
 
