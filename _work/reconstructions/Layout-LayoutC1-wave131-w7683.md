@@ -119,3 +119,13 @@ Scratch harnesses (not committed, `/dev/shm/w7683/`): `score.py`,
 `gen_reward2.py` (T0..T8 reward-tree variants + statement order),
 `diffaddr.py`, `stores2.py`, `sweep.py` / `custom.py` / `micro.py` /
 `micro2.py` / `ballast.py` / `hit7072.py` (size/ratio sweeps).
+
+## Post-merge note (wave 132 coordinator)
+
+This branch's `Layout.cpp` body was **reverted** when merging with the parallel
+w7684 branch: the two source shapes are not composable.  w7683's body alone is
+7072 B but scores **20.94%** (the outer iPadHD/non-HD split is still unmodelled);
+w7684's body alone is 7072 B and scores **49.00%**.  Combining them shrank the
+function to 7064 B and shifted every later `.text` symbol by 8 B (byte_exact
+4506 -> 3222), so master keeps the w7684 body and this note's reward-box tree
+analysis as the next reconstruction lead.  The analysis above is unchanged.
