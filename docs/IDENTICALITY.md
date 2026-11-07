@@ -19,17 +19,17 @@ its original slot after `setComputerControlled`, `freeMissionLock()` moves after
 `timerA += delta` now precedes the camera translate as in the original.  `LevelScript::process`
 raw fuzzy is 59.89 (was 60.10) because the corrected statements move blocks within the global
 `MachineBlockPlacement` permutation; the function's own differing-byte count falls 54577 ->
-54623 and the whole-`.text` count is 85,515 after the combined w7668 case-91 fix (85,487 on the w7666 base).  See
+54623 and the whole-`.text` count is 85,514 after the combined w7668 case-91 fix (85,487 on the w7666 base).  See
 `_work/reconstructions/levelscript-process-wave129-w7666.md`.
 
-Wave-129 gain: `Radar::draw` **75.268817 -> 75.297491** raw (display 75.3) at the original
+Wave-129 gain: `Radar::draw` **75.268817 -> 75.297491** raw (display 75.4) at the original
 9908 B, by computing the post-loop `getStationEnumIndex` before `getAutoPilotTarget` in the
 reduced recompute.  The whole-`.text` differing-byte count fell **85,441 -> 85,440**.  The
 block layout is otherwise unchanged; the faithful single-recompute shape (removing the
 post-loop recompute) still re-rolls the planet-loop register split (`fp`/`sl`) and scores
 72.93 %.  See `_work/reconstructions/radar-draw-wave129-w7674.md`.
 
-Section deltas: `.text` **85,515** differing bytes (size exact); `.ARM.exidx` **0**;
+Section deltas: `.text` **85,514** differing bytes (size exact); `.ARM.exidx` **0**;
 `.ARM.extab` **1,426** (size exact, 156,312 B); `.rodata` **0** (byte-identical); `.rel.plt`
 **0** (byte-identical); `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact
 (2,187,328 B).
@@ -42,7 +42,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
-`LevelScript::process` **60.1**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **81.9**,
+`LevelScript::process` **60.1**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.4**, `MGame::OnTouchEnd` **81.9**,
 `Level::createMission` **92.3**, `Gun::calcCharacterCollision` **93.4**,
 `Level::createScene` **93.6**, `HangarWindow::render` **94.7**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.6**,
 `Generator::createMission` **97.2**, `MenuTouchWindow::OnTouchBegin` **98.1**,
@@ -71,7 +71,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
-`LevelScript::process` **60.1**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **81.9**,
+`LevelScript::process` **60.1**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.4**, `MGame::OnTouchEnd` **81.9**,
 `Generator::createMission` **97.2**, `Level::createMission` **92.3**,
 `Gun::calcCharacterCollision` **93.4**, `Level::createScene` **93.6**,
 `HangarWindow::render` **94.7**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.6**,
@@ -106,7 +106,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 avg **99.94%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
-`LevelScript::process` **60.2**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **81.3**,
+`LevelScript::process` **60.2**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.4**, `MGame::OnTouchEnd` **81.3**,
 `Generator::createMission` **97.2**, `Level::createMission` **92.3**,
 `Gun::calcCharacterCollision` **93.4**, `Level::createScene` **93.6**,
 `HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
@@ -132,7 +132,7 @@ byte_exact **4506/4524**, linked_exact **4506/4524**, size-exact **4524/4524**, 
 avg **99.93%**. 18 functions remain non-byte-exact, all size-exact.
 
 Worst-first list from a fresh `report.json`: `Layout::Layout` C1/C2 **48.9**,
-`LevelScript::process` **60.2**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.3**, `MGame::OnTouchEnd` **78.8**,
+`LevelScript::process` **60.2**, `Level::createShip` **70.5**, `Status::missionCompleted` **71.1**, `Radar::draw` **75.4**, `MGame::OnTouchEnd` **78.8**,
 `Generator::createMission` **97.2**, `Level::createMission` **92.3**,
 `Gun::calcCharacterCollision` **93.4**, `Level::createScene` **93.6**,
 `HangarWindow::render` **94.1**, `SpaceLounge::drawLounge` **95.7**, `Hud::draw` **96.4**,
@@ -563,7 +563,7 @@ The original build is now pinned by evidence, not by A/B alone:
 
 | section | orig | ours | delta | meaning |
 |---|---|---|---|---|
-| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,515 content bytes differ across the 18 non-byte-exact bodies. |
+| **.text** | 1,259,464 | 1,259,464 | **0** | exact size and address (0x69440). 85,514 content bytes differ across the 18 non-byte-exact bodies. |
 | **.rodata** | 269,159 | 269,159 | **0** | **byte-identical** (0 differing bytes; base 0x1c9e10, size 0x41b67). The former 192 B `Status::missionCompleted` rank table was removed in wave 121; the switch is a plain `switch (m->getType())`. |
 | .ARM.exidx | 28,528 | 28,528 | **0** | **byte-identical** (0 differing bytes; size- and base-exact 0x19cc08); 3566 entries, CANTUNWIND 272, inline 856, extab 2438. The `Layout::Layout` body is size-exact 7072 B without a pad. Wave 123 gave `Level::createShip` its faithful 336 B LSDA record, removing the last record-length delta. |
 | .ARM.extab | 156,312 | 156,312 | **0** | **size- and base-exact** (0x26298 @ 0x1a3b78). `Level::createShip` is the faithful 336 B real-`new` cleanup-only record (57 rows, `ttype 0xff`, wave 123); `Generator::createMission` is exact at 172 B (wave-121 w7110) and `HangarWindow::render` is exact at 948 B (w6978). 1,426 raw content bytes differ (the createShip landing-pad offsets inside the otherwise-exact records). |
