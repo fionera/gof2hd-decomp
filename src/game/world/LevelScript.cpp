@@ -609,9 +609,9 @@ bool LevelScript::process(int delta) {
     // (0x137f7c-0x13812a). The mission==0 intro choreography and the giant mission>=2 general
     // state machine / per-mission switch are DEFERRED (see markers below) for a later pass.
     Array<RadioMessage *> *messages = m_pLevel->getMessages();
-    Status *&status = Globals::status;
-    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
     PlayerEgo *player = m_pLevel->getPlayer();
+    Array<KIPlayer *> *enemies = m_pLevel->getEnemies();
+    Status *status = Globals::status;
     if (status->getCurrentCampaignMission() == 0) {
         // mission==0 intro cutscene (disasm 0x137e84). A short state machine (m_nState) that
         // stages three "enemy" ships in front of a repositioned player/camera while radio
