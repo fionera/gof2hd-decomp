@@ -1967,7 +1967,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->radar->lockedEnemy = nullptr;
                         this->player->dockToDockingPoint(nullptr, this->radar);
                         this->hud->hudEvent(6, this->player, 0);
-                    } else if (__builtin_expect(this->player->isDockingToStream(), 1)) { // lint: arm_builtin anchor: MGame::OnTouchEnd; branch-weight hint, plain form 8084
+                    } else if (this->player->isDockingToStream()) {
                         this->player->dockToAsteroid(this->radar->lockedStation, this->radar);
                         this->hud->hudEvent(6, this->player, 0);
                     } else if ((!Globals::status->inAlienOrbit() ||
