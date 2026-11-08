@@ -1967,7 +1967,7 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
                         this->radar->lockedEnemy = nullptr;
                         this->player->dockToDockingPoint(nullptr, this->radar);
                         this->hud->hudEvent(6, this->player, 0);
-                    } else if (this->player->isDockingToStream()) {
+                    } else if (__builtin_expect(this->player->isDockingToStream(), 1)) { // lint: arm_builtin anchor: MGame::OnTouchEnd; branch-weight hint, plain form 8084
                         this->player->dockToAsteroid(this->radar->lockedStation, this->radar);
                         this->hud->hudEvent(6, this->player, 0);
                     } else if ((!Globals::status->inAlienOrbit() ||
@@ -2094,33 +2094,36 @@ void MGame::OnTouchEnd(int x, int y, void *touchId) { // lint: void_ptr -- expor
             this->pauseOpen = 0;
             resumeSounds();
             this->hud->closeHudMenu();
-        } else if (wingmanCommand >= 0) {
-            // Order the wingmen.
-            Array<KIPlayer *> *enemies = this->level->getEnemies();
-            if (enemies != nullptr) {
-                for (unsigned i = 0; i < enemies->size(); i++) {
-                    KIPlayer *wingman = (*enemies)[i];
-                    if (wingman->isWingMan() && !wingman->isDead()) {
-                        wingman->setWingmanCommand(wingmanCommand,
-                                                   wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
+        } else {
+            if (wingmanCommand >= 0) {
+                // Order the wingmen.
+                Array<KIPlayer *> *enemies = this->level->getEnemies();
+                if (enemies != nullptr) {
+                    for (unsigned i = 0; i < enemies->size(); i++) {
+                        KIPlayer *wingman = (*enemies)[i];
+                        if (wingman->isWingMan() && !wingman->isDead()) {
+                            wingman->setWingmanCommand(wingmanCommand,
+                                                       wingmanCommand == 3 ? this->radar->getLockedEnemy() : nullptr);
+                        }
                     }
                 }
+                this->hudMenuOpen = 0;
+                this->hud->closeHudMenu();
+                this->pauseOpen = 0;
+                resumeSounds();
             }
-            this->hudMenuOpen = 0;
-            this->hud->closeHudMenu();
-            this->pauseOpen = 0;
-            resumeSounds();
-        } else if (this->hudTouchFlags == 0) {
-            this->hud->closeHudMenu();
-            this->hudMenuOpen = 0;
-            this->touch0Id = nullptr;
-            this->touch1Id = nullptr;
-            this->pauseOpen = 0;
-            resumeSounds();
-            if (this->_bc8) {
-                this->_bc8 = 0;
-                if (this->player != nullptr) {
-                    this->player->resetGunDelay();
+            if (this->hudTouchFlags == 0) {
+                this->hud->closeHudMenu();
+                this->hudMenuOpen = 0;
+                this->touch0Id = nullptr;
+                this->touch1Id = nullptr;
+                this->pauseOpen = 0;
+                resumeSounds();
+                if (this->_bc8) {
+                    this->_bc8 = 0;
+                    if (this->player != nullptr) {
+                        this->player->resetGunDelay();
+                    }
                 }
             }
         }
