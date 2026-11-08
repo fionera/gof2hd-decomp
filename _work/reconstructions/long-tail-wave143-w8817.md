@@ -127,3 +127,47 @@ Scratch (not committed), `/dev/shm/w8817/`: `fdiff.py`, `sbs.py`
 `_work/reconstructions/long-tail-wave143-w8817.md` only.
 Gate: byte 4507 / linked 4507, size 4524/4524, data 843/843, imports 207,
 lint CLEAN, drift 0.
+
+## 6. Addendum — stack-slot pairing is the real Gun lever (further probes)
+
+The `r4 <-> r5` swap is **not** a pure register swap: the two stack slots
+themselves are exchanged.  In the shipped function the 12-byte slot at
+`sp+44` holds `{playerPosition (scatter), MST result (geometries)}` and the
+60-byte slot at `sp+104` holds `{operator- temp (scatter), view (geometries)}`.
+In ours it is `{playerPosition, view}` at `sp+104` and
+`{operator- temp, MST}` at `sp+44`.  So StackColoring pairs the first
+scatter temp with the first geometries temp in ours, but first-with-second /
+second-with-first in the original.  This is why every source spelling that
+only touches the register choice fails: the merge partner has to flip.
+
+Evidence (shipped): `0x1530d2 add r4,sp,#44` feeds `PlayerEgo::getPosition`
+(playerPosition), `0x1533c8 add r5,sp,#104` feeds the 60-byte
+`__aeabi_memcpy` of `view`, `0x1533d8 add r0,sp,#44` is the
+`MatrixSetTranslation` sret, and `0x1530dc add r5,sp,#104` is the
+`operator-` sret.  Ours swaps the `sp+44`/`sp+104` roles of the two 12-byte
+temps.
+
+New negatives measured (all 1984 B unless noted):
+
+| variant | raw | size |
+|---|---:|---:|
+| HEAD | **463** | 1984 |
+| `k_ep` (`Vector ep = enemy->getPosition()` in k-loop) | 463 | 1984 |
+| `k_td2` (`this->targetDir` instead of `*td`) | 463 | 1984 |
+| `diffvar2` (named `Vector diff; diff = ...`) | 1623 | **1964** |
+| `diffvar3` (`Vector diff` outer scope) | 1624 | **1964** |
+| `viewtop` (`Matrix view` at function scope) | 1858 | **2016** |
+| `viewloop` (`Matrix view` at i-loop top) | 1836 | **2024** |
+| `viewfirst` (`Matrix view` before SetAnimationState) | 1158 | **1988** |
+| `pploop` (`Vector playerPosition` at i-loop top) | 1593 | **1964** |
+| `pploop2` (`playerPosition` after `position`) | 1578 | **1964** |
+| `k_sub` (`*td = enemy->getPosition() - position`) | 1760 | **1956** |
+| `k_sub2` (`*td = *td - position`) | 1743 | **1936** |
+
+Generator addendum: `faithful + cached race` (`getMissionBonus(race)`) is
+**612 / 1996 B** (right size, wrong raw); `imageParts` hoist + faithful =
+677 / 2000; imageParts after bonus + faithful = 514 / 2004; moving
+`agentName` after the bonus block = 1791 / **1960**.  HEAD (445 / 1996)
+still wins on raw.
+
+SpaceLounge: unchanged, 175 / 1948.
