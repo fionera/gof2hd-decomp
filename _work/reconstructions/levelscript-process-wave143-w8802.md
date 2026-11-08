@@ -165,3 +165,71 @@ python3 /dev/shm/w8802/fdiff.py _ZN11LevelScript7processEi   # 54,671
   `setStanding` call is the first `.rel.plt` reference; then drop the anchor
   (-16 B) and recover 16 B elsewhere.
 * Force the two `TransformGetTransform` calls in the `case 157` branches.
+
+---
+
+## Follow-up sweep (same wave): `setStanding` anchor and case-70 `break`
+
+After landing the case-80 fix, this wave tried to resolve the `setStanding` PLT
+anchor.  **Result: the anchor stays; every anchor-free variant is worse on the
+raw metric on this base.**  The experiments are recorded here so the next wave
+does not re-run them.
+
+### The anchor is worth -504 raw on the wave-143 base
+
+The wave-141 note measured anchor removal as `54,138 -> 53,958` (-180).  That
+no longer holds after the case-80 `setTarget` fix: on the landed wave-143 base
+the anchor is worth **-504** raw bytes.
+
+| variant | size | raw | body `setStanding` |
+|---|---:|---:|---:|
+| landed (anchor present) | 57232 | **54,671** | 0x13be28 (real) |
+| drop anchor only | 57216 | 55,175 | 0x13be14 |
+| drop anchor + case-70 `break` | 57224 | 55,246 | 0x13bcf0 |
+| drop anchor + `case 50/51` in switch | 57208 | 55,447 | 0x138c6e |
+| drop anchor + body standalone in switch | 57196-57456 | 55,116-55,464 | 0x138a1a-0x138a30 |
+
+The anchor also shifts the block layout favourably, so the raw metric is not a
+reliable guide to whether the *source* is faithful here.
+
+### Why the body cannot be block-placed into the PLT window (yet)
+
+The PLT slot is correct iff the real `getStanding`/`setStanding` pair is the
+first reference to `Standing::setStanding` **after** `PlayerEgo::getHackingGameDockIndex`
+and **before** `TargetFollowCamera::setRotationAroundTarget`.  On ours those
+first references are at `0x13960c` and `0x139b90`; the window is ~0x584 bytes.
+
+The mission-50/51 body is placed in exactly two regimes:
+
+* **inside the mission-51 `else if`** (the current source shape): the body is
+  treated as a hot block and outlined **after case 80** at `0x13bdda`
+  (`setStanding` at `0x13be28`), ~0x2200 bytes too late;
+* **standalone** (a labelled block placed between any two switch cases, or in
+  the switch as `case 50/51`): the body becomes a cold block and is outlined
+  **at the start of the cold section** (`0x138a20`-`0x138c6e`), i.e. before
+  `setFreeLookMode`/`removeAllGuns`/`getSpeed`, so `.rel.plt` then differs by
+  16 bytes in the other direction.
+
+No source position tried lands the body in the `0x13960c..0x139b90` window.
+The original's `0x139ac2` placement is after **case 70's** state-0 body
+(`0x1399a2..0x139abe`); ours places case 70 at `0x13991c` but the body after
+case 80.  Changing the body's *source* position moves it between the two
+regimes above, not within the hot region.
+
+### Case-70 `break` is a real source fix but a raw regression
+
+The original's case-70 state-0 body ends `0x139abe b.w 0x144e36` (the
+post-switch tail), i.e. the source has a `break;` after `m_nState = 1;`.  Our
+source lets it fall through to the state-1 `else if` (the comment claims that
+is a no-op).  Adding the `break;` is faithful and keeps the size exact
+(57232 B) but raises raw `54,671 -> 54,870` (+199) because it re-colours the
+state-1 body's block placement.  **Not landed** -- it is a faithful source
+change that contradicts the raw metric, so the coordinator can decide.
+
+### `.rel.plt` check for the anchor-free variants
+
+`reldiff.py` (in `/dev/shm/w8802/`) decodes the `.rel.plt` symbol order.  For
+the standalone-body variant the first mismatch is index 2807: original has
+`PlayerEgo::setFreeLookMode`, ours has `Standing::setStanding` (too early).
+For the current shape the anchor keeps the order byte-identical (0 diff,
+29,392 B).
