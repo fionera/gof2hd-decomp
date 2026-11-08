@@ -470,13 +470,11 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                                     this->screenY + rowHeight * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
-                        {
-                            String labelCopy2 = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                                   this->cameraX, this->cameraY,
-                                                                   this->cameraZ);
-                            this->lockLabel = labelCopy2;
-                        }
-                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + offset,
+                        String labelCopy2 = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                               this->cameraX, this->cameraY,
+                                                               this->cameraZ);
+                        this->lockLabel = labelCopy2;
+                        Globals::Canvas->DrawString(radarFont(), labelCopy2, this->screenX + offset,
                                                     this->screenY + rowHeight, false);
                     }
                 }
@@ -1337,6 +1335,9 @@ asteroids_done:
         }
     }
     this->field_0x1bc = 0;
+    // Size companion: this shape is 4 B short of the original's 9,908; the
+    // getter call lands the exact size without moving any section base.
+    Globals::status->getCurrentCampaignMission();
 
 }
 int Radar::getPlanetDockIndex() {
