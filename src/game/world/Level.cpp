@@ -1959,12 +1959,11 @@ void Level::createMission() {
             KIPlayer *gun = (*this->enemies)[i];
             gun->player->setMaxHitpoints(1000);
             const float (*t)[6] = (bigAlienWave + (i < 0)) ? kAlienStationTurrets : kAlienOutpostTurrets;
-            Vector p = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
-            v = p;
+            v = MatrixRotateVector(rotation, Vector{t[k][3], t[k][4], t[k][5]});
             gun->geometry->setRotation(v);
-            ((PlayerTurret *) gun)->setScaling(6.0f);
             v = MatrixRotateVector(rotation, Vector{t[k][0], t[k][1], t[k][2]});
             gun->setPosition(Vector{base.x + v.x, base.y + v.y, base.z + v.z});
+            ((PlayerTurret *) gun)->setScaling(6.0f);
             gun->cargo = nullptr;
             gun->shipGroup = localRace;
         }
