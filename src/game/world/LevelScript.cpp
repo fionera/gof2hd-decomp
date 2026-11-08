@@ -2795,12 +2795,14 @@ bool LevelScript::process(int delta) {
             }
             case 91: {
                 // Escorting the defector freighter to the station, then flying away with it.
-                if (m_nState == 0 && ((RadioMessage *) ((*messages)[3]))->isTriggered()) {
-                    m_nScriptTimerB = 0;
-                    m_nState = 1;
-                    ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
-                            ->setName(String(*Globals::gameText->getText(3211), false));
-                    (*enemies)[0]->setActive(true);
+                if (m_nState == 0) {
+                    if (((RadioMessage *) ((*messages)[3]))->isTriggered()) {
+                        m_nScriptTimerB = 0;
+                        m_nState = 1;
+                        (*enemies)[0]->setActive(true);
+                        ((PlayerFixedObject *) m_pLevel->getDockingTarget(0))
+                                ->setName(String(*Globals::gameText->getText(3211), false));
+                    }
                 } else if (m_nState == 1 && player->isDockedToDockingPoint()) {
                     m_nState = 2;
                 } else if (m_nState == 2 && ((RadioMessage *) ((*messages)[5]))->isOver()) {
@@ -3927,8 +3929,8 @@ bool LevelScript::process(int delta) {
                             m_nState = 2;
                             for (int i = 8; i <= 10; i++) {
                                 PlayerFixedObject *port = (PlayerFixedObject *) (*enemies)[i];
-                                (*enemies)[i]->setActive(true);
                                 port->setName(*Globals::gameText->getText(3212) + String(" ", false) + String(i - 7));
+                                (*enemies)[i]->setActive(true);
                                 (*enemies)[i]->field_0x74 = 0;
                             }
                         }
@@ -3979,7 +3981,7 @@ bool LevelScript::process(int delta) {
                         m_tempVec += leader->getDirection() * 4000.0f;
                         m_tempVec += leader->getUpVector() * -500.0f;
                         m_tempVec += leader->getRightVector() * -500.0f;
-                        m_pCamera->setPosition(m_tempVec);
+                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
@@ -4599,7 +4601,7 @@ bool LevelScript::process(int delta) {
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
                         m_tempVec = (*m_pLevel->getEnemies())[1]->geometry->getPosition();
                         m_tempVec += Vector{0.0f, 4000.0f, 42000.0f};
-                        m_pCamera->setPosition(m_tempVec);
+                        m_pCamera->setPosition(m_tempVec.x, m_tempVec.y, m_tempVec.z);
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
