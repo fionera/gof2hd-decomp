@@ -1264,10 +1264,11 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
                                      0x11, 0x14);
         this->field_0x4b4 -= dt;
     }
-    // The null test is a codegen anchor: the original has no test here, but the extra
-    // load/compare re-colours the shield/armour block and keeps the function at its
-    // original 9332-byte size (see hud-draw-wave117-w6516.md).
-    if (Globals::status && this->field_0x4b8 >= 1) {
+    // No `Globals::status` null test here: the original has none.  The old anchor
+    // (`Globals::status && ...`) forced the dock2 RA to put `Canvas` in fp and `ego`
+    // in r9 (the original is r9=Canvas, fp=ego) and inserted an extra spill slot.
+    // Removing it lands the merged dock2 LSDA at 9332 B (wave 148, w9413).
+    if (this->field_0x4b8 >= 1) {
         Globals::Canvas->SetColor(255, 255, 255, (unsigned char) (this->field_0x4b8 * 255 / 300));
         Globals::Canvas->DrawImage2D(frontImage, Globals::w >> 1, (Globals::h >> 1) - ego->field_0x14->imageHeight,
                                      Globals::Canvas->GetImage2DWidth(frontImage),
@@ -1698,10 +1699,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             float progress = 1.0f;
             if (rate * 1.05f < 1.0f)
                 progress = (this->field_0x277 ? ego->getDriveChargeRate() : ego->getCloakRate()) * 1.05f;
-            int barYOffset = Globals::layout->field_0x218;
-            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
             String text(*Globals::gameText->getText(this->field_0x277 ? 318 : 317), false);
             int halfW = (int) ((float) Globals::Canvas->GetImage2DWidth(this->image_0x37c) * 0.5f);
+            int barH = Globals::Canvas->GetImage2DHeight(this->image_0x37c);
+            int barYOffset = Globals::layout->field_0x218;
             this->field_0x464 += dt;
             float fade = (float) this->field_0x464 / 1000.0f;
             int fadeColor = 0xffffffff;
@@ -1711,9 +1712,10 @@ void Hud::draw(long long frameTime, long long timeLeft, PlayerEgo *ego, bool let
             int y = barOffset + top * 2;
             Globals::Canvas->SetColor(fadeColor);
             Globals::Canvas->DrawImage2D(this->image_0x378, Globals::w >> 1, y, 0x11, 0x14);
-            float filled = progress * (float) halfW;
-            Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - filled), 0, (int) (filled + filled),
-                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - filled), y + barYOffset);
+            Globals::Canvas->DrawRegion2D(this->image_0x37c, (int) ((float) halfW - (progress * (float) halfW)), 0,
+                                          (int) ((progress * (float) halfW) + (progress * (float) halfW)),
+                                          barH, 0.0f, 0, 0, (int) ((float) (Globals::w >> 1) - (progress * (float) halfW)),
+                                          y + barYOffset);
             Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) Globals::font, text,
                 (Globals::w >> 1) -
