@@ -809,10 +809,11 @@ void HangarWindow::render() {
                                                 false);
                     if (item == this->selectedItem) {
                         if (item->isShip()) {
-                            // LSDA sink: splits the ship-branch cleanup region so the
-                            // 156-row / 948-byte .ARM.extab record is preserved.
-                            volatile int *dummy;
-                            (void) dummy;
+                            // Volatile read of scrollOffset: the original's ship
+                            // branch reloads this field before the tab dispatch, and
+                            // the read keeps the 156-row / 948-byte .ARM.extab record
+                            // while aligning the cleanup landing pads with it.
+                            (void) *(volatile int*)&this->scrollOffset;
                             if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
                                 if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
                                     volatile int padX[1];
