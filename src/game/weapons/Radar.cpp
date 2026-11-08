@@ -683,7 +683,7 @@ enemies:
                 continue;
             }
             this->update(enemy);
-            bool wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
+            int wreck = enemy->hasCargo && (enemy->isDead() || enemy->isDying());
             enemy->field_0x75 = 0;
             if ((enemy->isDead() || enemy->isDying()) && !enemy->hasCargo) {
                 continue;
@@ -1080,7 +1080,7 @@ asteroids:
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
             }
             int slotCount = 0;
-            int asteroidHit = false;
+            bool asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
                 if (!(asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying())) &&
