@@ -122,6 +122,51 @@ RATCHET         PASS    -> PASS
 3. The default triple's literal-pool order (`-45000,12000,6000` vs original
    `6000,12000,-45000`) still differs; the store order is pinned by codegen.
 
+
+## 7. Additional wave-161 experiments (all measured, none landed)
+
+Raw 5,454 / aligned 786 / 17,172 B unless noted.
+
+| candidate | raw | size | why not |
+|---|---:|---:|---|
+| `blueprint` computed before `stationPirates` | 16,620 | 17,380 | size fatal |
+| `int extraAliens` declared before `stationPirates` | 5,454 | 17,172 | identical codegen |
+| `bool raid;` moved before `int security` | 5,454 | 17,172 | identical |
+| `unsigned extraAliens` | 5,457 | 17,172 | +3 raw |
+| `stationPirates`/`pirateEscorts` after `blueprint` | 16,618 | 17,348 | size fatal |
+| `int raiders` (from `float`) | 15,539 | 17,204 | size fatal |
+| drop `float raiders` intermediate | 15,539 | 17,204 | size fatal |
+| `bool raid = false;` | 5,454 | 17,172 | identical |
+| `int raid;` | 5,681 | 17,172 | +227 raw |
+| `float raiders;` declared early | 5,454 | 17,172 | identical |
+| `!((i != x) \|\| !alienWave)` (0xb2e04) | 5,454 | 17,172 | identical to `&&` |
+| `(i == x) & alienWave` | 12,415 | 17,184 | size fatal |
+| nested `if (i==x) { if (alienWave) ... }` | 15,116 | 17,152 | size fatal |
+| `bool atFirst = (i==x)` then `&&` | 5,454 | 17,172 | identical |
+| `alienWave && i==x` (operand swap) | 5,454 | 17,172 | identical |
+| `__builtin_expect(alienWave,1)` | 11,829 | 17,180 | size fatal |
+| `__builtin_expect(i==x,1) && alienWave` | 5,454 | 17,172 | identical |
+| `__builtin_expect` both operands | 14,454 | 17,148 | size fatal |
+| `__builtin_expect(alienWave,0)` | 15,935 | 17,136 | size fatal |
+| case-2 convoy: swap `cargo`/`crateCaptured` stores | 5,455 | 17,172 | +1 raw |
+| case-2 convoy: drop `enemies` local | 10,677 | 17,180 | size fatal |
+| case-2 convoy: drop local + crate-first | 10,678 | 17,180 | size fatal |
+
+The `0xb2e04` if-conversion is a branch-weight artefact: our MBP weights are
+`alienWave` 75/25 and `i==x` 66.67/33.33 (pmi.txt bb.465/bb.466), so clang
+emits two branches; the original's profile made it if-convert to
+`subs/it ne/movne/eor/orrs`.  No size-exact source form reproduces it.
+
+## 8. Stack-slot frame-object order (root cause detail)
+
+The two swapped slots are `%stack.82` (raid, sp+88) and `%stack.83`
+(`&__stack_chk_guard`, sp+84) in ours.  The frame objects fi#73..fi#100 are
+laid out at sp+124 down to sp+16 (higher fi# = lower sp), so the original
+must have the guard-addr slot at a *lower* fi# than raid.  The guard-addr
+spill is emitted at b0024 (before the raid store at b04c0) yet gets the
+higher fi#, i.e. the frame-object order is not code order.  No local
+declaration/type reorder tested changes this ordering.
+
 ## Commands / scratch
 
 ```text

@@ -2206,9 +2206,9 @@ case4Tail:
                         default:
                             // Store order chosen to reproduce the original's literal-pool
                             // ordering and store scheduling for this block.
-                            offset[1] = 6000.0f;
                             offset[2] = -45000.0f;
                             offset[0] = 12000.0f;
+                            offset[1] = 6000.0f;
                             break;
                         }
                         (*this->enemies)[i]->setPosition(*reinterpret_cast<Vector *>(offset));
