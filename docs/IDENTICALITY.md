@@ -4,6 +4,28 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 143)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**,
+avg **99.94%**. 17 functions remain non-byte-exact, all size-exact.
+
+Wave-143 lands one source-level improvement:
+
+* `Level::createMission` (w8812): the raid `guns = alienGuns + fortressGuns` sum is
+  rematerialised *after* the `if (raid)` guard (the original computes `add r5,sl,fp` at
+  `b37e6`, not before it), and the tail hunter loop is restored to the faithful
+  `i < this->enemies->size()` bound with a `KIPlayer *ship` store local and a cached
+  `AERandom *rnd = Globals::rnd` (the original's `fp`). Raw **5,756 -> 5,597** at
+  **17,172 B** (size unchanged).
+
+Section deltas: `.text` **84,960** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,415** (size- and base-exact **156,312 B**; +20 from the
+extra tail scope, not gated); `.rodata` **0** (byte-identical); `.rel.plt` **0**
+(byte-identical, 29,392 B); `.data` **0**; `.bss` **0**; `.note.gnu.build-id` **20**.
+File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 142)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
