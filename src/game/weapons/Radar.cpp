@@ -463,9 +463,9 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                                         String(String(Globals::status->getStation()->getTecLevel()), false),
                                 this->screenX + this->originX, this->screenY + Globals::layout->field_0x4, false);
                         KIPlayer *landmark = this->landmarks->data()[i];
-                        String label = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
-                                                          this->cameraX, this->cameraY, this->cameraZ);
-                        Globals::Canvas->DrawString(radarFont(), label, this->screenX + this->originX,
+                        this->lockLabel = this->calcDistance(landmark->posX, landmark->posY, landmark->posZ,
+                                                             this->cameraX, this->cameraY, this->cameraZ);
+                        Globals::Canvas->DrawString(radarFont(), this->lockLabel, this->screenX + this->originX,
                                                     this->screenY + Globals::layout->field_0x4 * 2, false);
                     } else {
                         KIPlayer *landmark = this->landmarks->data()[i];
@@ -549,9 +549,10 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
             int marked = false;
-            if (campaignMission != nullptr && !campaignMission->isEmpty() && campaignMission->isVisible() &&
-                (Globals::status->getCurrentCampaignMission() < 148 ||
-                 Globals::status->getCurrentCampaignMission() >= 152)) {
+            if (__builtin_expect(campaignMission != nullptr && !campaignMission->isEmpty() && // lint: arm_builtin anchor: Radar::draw
+                                 campaignMission->isVisible() &&
+                                 (Globals::status->getCurrentCampaignMission() < 148 ||
+                                  Globals::status->getCurrentCampaignMission() >= 152), 0)) {
                 bool isTarget = campaignMission->getTargetStation() == stations->data()[i];
                 if (stationId != currentStation && isTarget) {
                     if (Globals::status->getCurrentCampaignMission() != 120) {
@@ -610,15 +611,6 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
                     }
                 }
             }
-        }
-        if (!alienOrbit) {
-            SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
-            int stationIndex = system->getStationEnumIndex(
-                    ((Array<int> *) ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getStations())
-                            ->data()[this->planetDockIndex]);
-            int autoPilotTarget = this->level->getPlayer()->getAutoPilotTarget();
-            onPlanetCourse = autoPilotTarget == ((Array<int> *) this->planetTargets)->data()[stationIndex];
-            this->field_0x1a8 = onPlanetCourse;
         }
 
         if (!turretMode && !landmarkHit) {
@@ -1090,7 +1082,7 @@ asteroids:
                 inCenter = level->isInAsteroidCenterRange(level->getPlayer()->getPosition());
             }
             int slotCount = 0;
-            bool asteroidHit = false;
+            int asteroidHit = false;
             for (uint32_t i = 0; i < this->asteroids->size(); ++i) {
                 PlayerAsteroid *asteroid = (PlayerAsteroid *) this->asteroids->data()[i];
                 bool dead = asteroid->isDead() || asteroid->isDying();
