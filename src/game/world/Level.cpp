@@ -5194,7 +5194,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
             hitpoints = (int) ((float) hitpoints * 17.0f);
             break;
     }
-    if (mission == 49 || mission == 50 || mission == 51 || mission == 52 || mission == 56) {
+    if (mission == 56 || (mission >= 49 && mission <= 52)) {
         hitpoints = 270;
     }
     int empPoints = Globals::status->getLevel() > 20 ? 20 : Globals::status->getLevel();
@@ -5217,6 +5217,9 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     float y = (float) (wy + jitterY - 20000);
     int x = wx + jitterX - 20000;
     player->setEmpData(empPoints, empTime);
+    if (Globals::status == nullptr) {
+        x = 0;
+    }
 
     KIPlayer *ship = nullptr;
     if (shipClass == 0) {
