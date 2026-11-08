@@ -3935,8 +3935,7 @@ bool LevelScript::process(int delta) {
                         }
                     }
                 }
-                switch (m_nState) {
-                case 2: {
+                if (m_nState == 2) {
                     if (((RadioMessage *) ((*messages)[2]))->isOver()) {
                         int spread = 0;
                         for (int i = 2; i < 6; i++) {
@@ -3984,9 +3983,8 @@ bool LevelScript::process(int delta) {
                         m_nScriptTimerA = 0;
                         m_nState++;
                     }
-                    break;
                 }
-                case 3: {
+                if (__builtin_expect(m_nState == 3, 1)) { // lint: arm_builtin anchor: LevelScript::process state-3 hot path
                     float step = (float) (2 * delta);
                     for (int i = 2; i < 6; i++) {
                         (*enemies)[i]->geometry->moveForward(step);
@@ -4019,11 +4017,10 @@ bool LevelScript::process(int delta) {
                         m_pLevel->lodManager->forceUpdate(delta, false);
                         m_bCinematicBreak = 0;
                     }
-                    break;
                 }
-                default: {
-                    if (m_nState >= 4 && m_nState <= 6 && player->isDockedToDockingPoint() && player->hackingWon()
-                           && player->getHackingGameDockIndex() >= 0) {
+                if (m_nState >= 4 && m_nState <= 6) {
+                    if (__builtin_expect(player->isDockedToDockingPoint() && player->hackingWon() // lint: arm_builtin anchor: LevelScript::process hacking hot path
+                           && player->getHackingGameDockIndex() >= 0, 1)) {
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))->setDockingType(0);
                         ((PlayerFixedObject *) m_pLevel->getDockingTarget(player->getHackingGameDockIndex()))
                                 ->setName(String("", false));
@@ -4043,8 +4040,6 @@ bool LevelScript::process(int delta) {
                             }
                         }
                     }
-                    break;
-                }
                 }
                 break;
             }
