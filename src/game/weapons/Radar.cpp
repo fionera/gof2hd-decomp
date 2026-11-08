@@ -549,7 +549,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
             }
             Mission *campaignMission = (Mission *) (intptr_t) Globals::status->getCampaignMission();
             Mission *freelance = Globals::status->getFreelanceMission();
-            bool marked = false;
+            int marked = false;
             if (__builtin_expect(campaignMission != nullptr && !campaignMission->isEmpty() && // lint: arm_builtin anchor: Radar::draw
                                  campaignMission->isVisible() &&
                                  (Globals::status->getCurrentCampaignMission() < 148 ||
@@ -1088,7 +1088,7 @@ asteroids:
                     continue;
                 }
                 this->update(asteroid);
-                int wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
+                bool wreck = asteroid->hasCargo && (asteroid->isDead() || asteroid->isDying());
                 if (this->onScreen) {
                     if (!(this->level->getPlayer()->isAutoPilot() || otherLock || enemyHit || asteroidHit ||
                           turretMode)) {
