@@ -721,7 +721,8 @@ bool LevelScript::process(int delta) {
             }
             Vector zero161{0.0f, 0.0f, 0.0f};
             Globals::sound->updateEvent3DAttributes(161, &pos, &zero161, false);
-            player->setSpeed(reinterpret_cast<float &>(speedBits) * 0.98f);
+            int speedBits2 = player->getSpeed();
+            player->setSpeed(reinterpret_cast<float &>(speedBits2) * 0.98f);
             if (((RadioMessage *) ((*messages)[13]))->isOver()) {
                 m_pCamera->translate((float) ((double) delta * 0.3), 0.0f, (float) -delta * 0.2f);
             }
@@ -2994,7 +2995,6 @@ bool LevelScript::process(int delta) {
                             ((PlayerFighter *) (*enemies)[i])->cloak(18000, false);
                         }
                         m_nScriptTimerA = 0;
-                        m_pRadar->dockNavPtr = nullptr;
                         m_nState++;
                     }
                 } else if (m_nState == 4) {
