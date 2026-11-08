@@ -811,23 +811,25 @@ void HangarWindow::render() {
                         if (item->isShip()) {
                             // LSDA sink: splits the ship-branch cleanup region so the
                             // 156-row / 948-byte .ARM.extab record is preserved.
-                            volatile int *padX = 0;
-                            if (tab != 0) {
+                            volatile int *dummy;
+                            (void) dummy;
+                            if (__builtin_expect(tab != 0, 1)) { // lint: arm_builtin anchor: HangarWindow::render; branch-weight hint
                                 if (!(tab == 3 && Globals::status->getShip() == this->selectedItem->ship)) {
+                                    volatile int padX[1];
                                     (*this->buttons)[1]->setPosition(
                                         Globals::layout->buttonInsetX + this->hintOffsetX + listWidth,
                                         this->field_0x114 + y, 18);
                                     (*this->buttons)[1]->setVisible(true);
                                     (*this->buttons)[1]->draw();
                                     buttonOffset = (*this->buttons)[1]->getWidth() + Globals::layout->field_0x2c_rowHeight;
+                                    if (this->upgradeMode && tab == 1) {
+                                        (*this->buttons)[2]->setVisible(true);
+                                        (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
+                                                                          this->field_0x114 + y, 17);
+                                        (*this->buttons)[10]->setVisible(true);
+                                        (*this->buttons)[10]->draw();
+                                    }
                                 }
-                            }
-                            if (this->upgradeMode && tab == 1) {
-                                (*this->buttons)[2]->setVisible(true);
-                                (*this->buttons)[10]->setPosition(Globals::layout->buttonInsetX + this->hintOffsetX,
-                                                                  this->field_0x114 + y, 17);
-                                (*this->buttons)[10]->setVisible(true);
-                                (*this->buttons)[10]->draw();
                             }
                         } else {
                             // The original dispatches the two selected-item button
