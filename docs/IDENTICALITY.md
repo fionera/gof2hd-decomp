@@ -4,6 +4,39 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 146)
+
+**Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
+byte_exact **4507/4524**, linked_exact **4507/4524**, size-exact **4524/4524**, data_exact
+**843/843**, imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-146 lands one source change:
+
+* `MGame::OnTouchEnd` (w9210): the `hudTouchFlags == 0` join test is written as the
+  `else if` of the `weaponSlot`/`wingmanCommand` chain. The original's weaponSlot body
+  (`0x17b9cc..0x17ba24`) ends with `b.w 17afe8`, bypassing the join test, while the
+  wingman body (`0x17bee2..0x17bf4a`) goes through it — the `else if` CFG. Raw
+  **4,180 -> 4,127**; `.text` **85,651 -> 85,598**. The join block is now the right
+  shape but still block-placed at `0x17aeb2` instead of the original's `0x17afe2`, so
+  the 0x5c campaign-region gap is not yet closed (see
+  `_work/reconstructions/mgame-ontouchend-wave146-w9210.md`).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**54,895** (57,232 B), `Radar::draw` **8,373** (9,908 B), `Layout` C1/C2
+**5,704** (7,072 B), `Level::createMission` **5,592** (17,172 B), `MGame::OnTouchEnd`
+**4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B), `HangarWindow::render`
+**1,719** (9,700 B), `Hud::draw` **1,325** (9,332 B), `Status::missionCompleted`
+**722** (1,432 B), `Gun::calcCharacterCollision` **463** (1,984 B),
+`Generator::createMission` **445** (1,996 B), `SpaceLounge::drawLounge` **175**
+(1,948 B), `MGame::OnUpdate` **41** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**28** (1,896 B), `ModStation` C1/C2 **11** (1,008 B).
+
+Section deltas: `.text` **85,598** differing bytes (size exact); `.ARM.exidx` **0**
+(byte-identical); `.ARM.extab` **1,370** (size- and base-exact **156,312 B**);
+`.rodata` **0** (byte-identical); `.rel.plt` **0** (byte-identical, 29,392 B); `.data`
+**0**; `.bss` **0**; `.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 145, final)
 
 **Current authoritative state.** `cmake --build cmake-build-match --target check` is green:
