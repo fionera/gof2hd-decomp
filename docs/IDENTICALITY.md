@@ -4,6 +4,71 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 160)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-160 ran 20 agents, all on the worst residual functions plus a build
+provenance replay.  Six source changes landed:
+
+* `Layout::Layout` (w10507): three size-exact adjacent field swaps. Raw
+  **5,739 -> 5,733** (-6), aligned 1,978 (0); 7,072 B exact.
+* `LevelScript::process` (w10605): reload `Globals::status->field_90` in the
+  mission-fail loop bound. Raw **55,055 -> 55,047** (-8), aligned
+  **17,059 -> 17,050** (-9).
+* `LevelScript::process` (w10604): drop the hacking-guard
+  `__builtin_expect`. Raw **55,047 -> 55,056** (+9), aligned
+  **17,050 -> 17,031** (-19).
+* `LevelScript::process` (w10602): case-16 state-0 `m_nState++` instead of
+  `= 1`. Raw **55,056 -> 55,048** (-8), aligned **17,031 -> 17,049** (+18).
+  Net LevelScript: **55,048 / 17,049**.
+* `Level::createMission` (w10612): hoist the alien-loop `end` bound and
+  recompute the tail. Raw **5,652 -> 5,454** (-198), aligned **709 -> 786**
+  (+77); 17,172 B exact.
+* `Level::createMission` (w10613): case-183 freighter default store order.
+  Raw **5,454 -> 5,461** (+7), aligned **786 -> 781** (-5).
+  Net createMission: **5,461 / 781**.
+
+Measured and **not landed** (notes kept): w10611 and w10610 (MGame::OnTouchEnd
+join/arm shapes: raw 4,375 / aligned 956 but they swap a `.rel.plt` slot;
+w10610 drops byte_exact to 4505), w10608 (Radar duplicate store: 8,536/1,314),
+w10616 (HangarWindow row-39 ULEB: text +549 for extab 1,256 -> 731, net +24
+bytes), w10603 (LevelScript literal-pool audit: an unreachable
+`translate(-delta*0.8f)` block and a missing mission-89 `>= 8000` guard),
+w10607 (Layout float audit: four real fixes sum to -64 B, no size-exact
+combination), w10617 (Hud: `int barH` is the original type but gives 9,324 B),
+w10619 (small-tail full-stream diff), w10620 (build provenance: every
+non-code ELF byte is already identical; `.ARM.extab` 1,256 decomposes into 12
+functions' LSBAs; 40+ per-TU flag cells tested, none wins).
+
+**Aligned total (15 functions): 23,546** (wave-159 base 23,484). Per function:
+Layout 1,978, LevelScript 17,049 (indicative), createShip 449, Status 320,
+Radar 1,320, MGame::OnTouchEnd 901, createMission 781, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 64, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 19.  The aligned total rises by 62 because createMission's
+recomputed tail re-orders blocks that the greedy instruction alignment
+penalises; the raw `.text` diff falls by **204 bytes** (85,722 -> 85,518).
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,048** (57,232 B), `Radar::draw` **8,124** (9,908 B), `Layout` C1/C2
+**5,733** (7,072 B), `Level::createMission` **5,461** (17,172 B),
+`MGame::OnTouchEnd` **4,387** (8,080 B), `Level::createShip` **1,563** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **162** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **85,518** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,258** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 159)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
