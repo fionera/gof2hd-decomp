@@ -4,6 +4,87 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 153)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-153 ran 20 agents (4 on `LevelScript`, 3 on `Radar`, 3 on `Layout`,
+2 on `createMission`, 2 on `MGame`, the rest on the small tail/extab/PGO).
+Five source changes landed:
+
+* `Radar::draw` (w9902): put the `String` copy in its own scope so clang
+  destroys the `calcDistance` temporary before `DrawString` (the original's
+  else-arm structure). The LSDA record is now 132 B / 19 rows / cst_len 112,
+  matching the original exactly, with no gold-pad hack. Raw **8,620 ->
+  8,577**; **aligned 1,530 -> 1,484**; `.text` **-43**, `.ARM.extab` **-38**.
+* `LevelScript::process` (w9904): compose w9804's `expect(weak,1)` +
+  case-144 `setStation` restore + case-92 3-call revert onto the w9805 base
+  (dropping w9805's c154/s5 timer weights). Raw **55,347 -> 55,328**;
+  **aligned 17,223 -> 17,185**; 57,232 B exact.
+* `Layout::Layout` (w9909): move the `ringNearMidThreshold` (`0xec`)
+  assignment before `0xf0`/`ringMidFarThreshold`/`0xf8`. The GOT-reload
+  premise is falsified: both builds issue exactly 8 device-global GOT loads
+  with the same multiset; the 124 B gap is SLP group-base placement. Raw
+  **5,800 -> 5,830**; **aligned 2,148 -> 2,119**; 7,072 B exact.
+* `Level::createMission` (w9912): swap the final cargo/shipGroup stores in
+  the alien-gun loop to the original's binary order (`cargo str #0x50`
+  before `shipGroup str #0x28`). Raw **5,484 -> 5,487**; **aligned 776 ->
+  774**; 17,172 B exact.
+* `Level::createShip` (w9916): replace the +4 B guard with a register-local
+  null guard and reorder the mission-range test to `mission == 56 || (>=
+  49 && <= 52)`. Entry map is now **status r4 / rnd r5 / nextInt r6** (the
+  original's rotation). Raw **2,056 -> 1,577**; **aligned 480 -> 457**;
+  2,764 B exact.
+
+Measured and **not landed** (notes kept): w9901 (0x30 gold pad + else-arm
+String copy: raw 8,570 / aligned 1,345 but needs the gold binary patch and
+conflicts with w9902), w9903 (`wreck`-before-`update` + `int gasHit`: raw
+8,579 / aligned 1,583), w9906 (case-125 composition: aligned 17,365), w9907
+(c154->strong adjacency: aligned 17,401), w9911 (`v`-before-`rotation`: raw
+5,482 / aligned 794), w9914 (faithful tail-merge owners: raw 4,424 / aligned
+923), w9918 (MenuTouchWindow reload-after-call: raw 28 / aligned 16).
+
+Analysis-only passes: w9905 (the mission-0 `(*enemies)[i]` status-r4 prologue
+is +112 B on the wave-152 base; no single -112 companion), w9908 (the 9
+"missing" `vld1.64` are SLP run-alignment reloads, not extra constants; the
+original groups four int stores at `0xb0/0xc0` and `0x140/0x150/0x160/0x170`),
+w9910 (53,130 single-move variants: 624 land at 7,072 B, best aligned 2,148),
+w9913 (27 more mining-guard spellings falsified; `won == true` is
+load-bearing), w9915 (the Hud `pivotY = dividerOffset` anchor is the unique
+source lever for the 224-byte frame), w9917 (Gun's inline-`getPosition` stack
+layout is the original's; the residual is a pure r4<->r5 swap), w9919 (the
+Radar extab tie sweeps are exhausted; HangarWindow row 39/40 needs padX
+inside the inner `if`, which shrinks to 9,676 B), w9920 (the original's
+source-order jump table is reproduced by a flat `!prof` vector
+`default 1, {167,174,8,0,11,13,14}=4, group2=3, group3=2`: raw 558 / aligned
+47 / 1,432 B — a sample-profile signature, not `handleSwitchExpect`).
+
+**Aligned total (15 functions): 23,978** (wave-152 base 24,116). Per function:
+Layout 2,119, LevelScript 17,185 (indicative), createShip 457, Status 320,
+Radar 1,484, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 19.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,328** (57,232 B), `Radar::draw` **8,577** (9,908 B), `Layout` C1/C2
+**5,830** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,577** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **393** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **318** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **86,623** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,265** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 152)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
