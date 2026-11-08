@@ -4,6 +4,72 @@ Goal: produce a `libgof2hdaa.so` byte-identical to `../_work/bins/android_2.0.16
 (same sha256). This document measures the gap and tracks progress. Measured against the original
 (2,187,328 bytes) with our stripped link output.
 
+## Update 2026-11-08 (wave 156)
+
+**Current authoritative state.** `check` is green: byte_exact **4507/4524**,
+linked_exact **4507/4524**, size-exact **4524/4524**, data_exact **843/843**,
+imports **207**, lint **CLEAN**, drift **0**, symbol parity **5370/5370**.
+17 functions remain non-byte-exact, all size-exact.
+
+Wave-156 ran 20 agents (all on the residual functions plus a build replay).
+Four source changes landed:
+
+* `LevelScript::process` (w10202): five case-157 edits (s5 timer expect,
+  s5/s6/s8 `m_nState++` on known states, s7 timer expect), semantics
+  identical and `.ARM.extab` byte-neutral. Raw **55,123 -> 55,096** (-27),
+  aligned **17,180 -> 17,131** (-49); 57,232 B exact.
+* `LevelScript::process` (w10203): cache the `Player*` in mission-106
+  state-6. Raw **55,096 -> 55,095** (-1), aligned 17,131 (0).
+* `Radar::draw` (w10204): `bool enemyHit` (the alignment lever), the
+  tractorAuto branch store swap (`field_0x1c` before `dockNavPtr`), the
+  w10114 asteroid-lock store order, and a tail `String` companion. Raw
+  **8,490 -> 8,320** (-170), aligned **1,456 -> 1,296** (-160); 9,908 B
+  exact; `.ARM.extab` 1,292 (neutral).
+* `Layout::Layout` (w10207): swap `field_0xc8` and `oreLabelYOffset`
+  (found by a fresh exhaustive adjacent-statement sweep on the w10106
+  base). Raw **5,837 -> 5,822** (-15), aligned **1,986 -> 1,984** (-2);
+  7,072 B exact.
+
+Measured and **not landed** (notes kept): w10201 (faithful two-load
+dispatch: 55,096/17,139, +1 raw), w10205 (`bool enemyHit` + `int
+asteroidHit`: 8,293/1,552), w10206 (scoped copy + store reorder + bool
+enemyHit: 8,449/1,392, extab 1,254; combining with w10204 is 4 B long),
+w10208 (SLP chunk-boundary fix: 5,792/2,010), w10209 (temp=r5 alien loop:
+6,449/1,196 with `GOF2_GOLD_PAD_CAP` wired), w10210 (alien-gun branch
+weight: 5,662/748), w10211 (analysis: both `cmp #1` guards are 50:50
+layout crutches; the `(B & 1) != 0` AND exception shifts gold's `.plt`),
+w10212 (faithful dock owners + else-if fold: 4,415/926), w10213 (no
+source-level 4>3>2 plateau), w10214 (instrumented PGO: 1,432 B reachable
+but `.rel.plt` 7), w10215 (Hud anchor still unique), w10216 (createShip
+mission test is one bitmask switch; raw unchanged), w10217
+(MenuTouchWindow 29 -> 28 / 15 -> 16), w10218 (SpaceLounge/Generator no
+size-exact both-metric win), w10219 (HangarWindow extab 1,292 -> 912 but
+`.text` 86,044 -> 91,890), w10220 (per-TU `-Oz` and `-mllvm` replay:
+still no flag win).
+
+**Aligned total (15 functions): 23,686** (wave-155 base 23,897). Per function:
+Layout 1,984, LevelScript 17,131 (indicative), createShip 452, Status 320,
+Radar 1,296, MGame::OnTouchEnd 903, createMission 774, Gun 57, HangarWindow
+291, SpaceLounge 41, Hud 249, Generator 52, MenuTouchWindow 15, ModStation 12,
+MGame::OnUpdate 109.
+
+Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
+**55,095** (57,232 B), `Radar::draw` **8,320** (9,908 B), `Layout` C1/C2
+**5,822** (7,072 B), `Level::createMission` **5,487** (17,172 B),
+`MGame::OnTouchEnd` **4,391** (8,080 B), `Level::createShip` **1,564** (2,764 B),
+`HangarWindow::render` **1,965** (9,700 B), `Hud::draw` **1,325** (9,332 B),
+`Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
+**463** (1,984 B), `Generator::createMission` **393** (1,996 B),
+`SpaceLounge::drawLounge` **175** (1,948 B), `ModStation` C1/C2 **43**
+(1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
+**29** (1,896 B).
+
+Section deltas: `.text` **85,831** differing bytes (size exact); `.ARM.exidx`
+**0** (byte-identical); `.ARM.extab` **1,292** (size- and base-exact
+**156,312 B**); `.rodata` **0** (byte-identical); **`.rel.plt` 0
+(byte-identical, 29,392 B)**; `.data` **0**; `.bss` **0**;
+`.note.gnu.build-id` **20**. File size is exact (2,187,328 B).
+
 ## Update 2026-11-08 (wave 155)
 
 **Current authoritative state.** `check` is green: byte_exact **4507/4524**,
