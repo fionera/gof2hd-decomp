@@ -4292,6 +4292,7 @@ bool LevelScript::process(int delta) {
                         if (m_nScriptTimerA >= 7001) {
                             m_nState = 4;
                             Globals::status->nextCampaignMission(true);
+                            Globals::status->setStation(Globals::status->getStation());
                             Globals::status->departStation(Globals::status->getStation());
                             if (Level::initStreamOutPositionAfterCutscene) {
                                 Level::initStreamOutPositionAfterCutscene = 0;
