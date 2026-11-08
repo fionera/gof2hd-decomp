@@ -344,7 +344,7 @@ void Radar::draw(Player *player, Hud *hud, int mode) {
 
     Mission *mission = Globals::status->getMission();
     bool missionBlocksPlanets = false;
-    int alwaysEnemySeen = false;
+    bool alwaysEnemySeen = false;
     if (!mission->isEmpty() && mission->getType() != 11 && mission->getType() != 0 && mission->getType() != 13 &&
         mission->getType() != 171) {
         missionBlocksPlanets = mission->getType() != 172;
@@ -670,7 +670,7 @@ enemies:
         this->dockNavPtr = nullptr;
     }
     bool bossSeen = false;
-    int enemyHit = false;
+    bool enemyHit = false;
     if (this->scannerAvailable && this->enemies != nullptr) {
         bool alwaysEnemy = false;
         for (uint32_t i = 0; i < this->enemies->size(); ++i) {
@@ -827,8 +827,8 @@ enemies:
                 !(enemy->countsAsEnemyExcludeFlag != 0 && !wreck) && (!enemyHit || enemy->field_0x24) &&
                 (!wreck || enemy->isDead())) {
                 if (this->field_0x1c == nullptr && this->tractorAuto) {
-                    this->dockNavPtr = enemy;
                     this->field_0x1c = enemy;
+                    this->dockNavPtr = enemy;
                     enemyHit = true;
                 } else {
                     int size = this->field_0x124;
@@ -1194,8 +1194,8 @@ asteroids:
                                       (this->field_0x10->isDead() || this->field_0x10->isDying());
                 if (!asteroidHit || this->level->getPlayer()->isDockingToAsteroid()) {
                     if ((candidateWreck ? this->field_0x1c : this->lockedAsteroid) == nullptr) {
-                        this->asteroidLockTimer = 0;
                         this->field_0x10 = 0;
+                        this->asteroidLockTimer = 0;
                     } else {
                         this->asteroidLockTimer = 0;
                     }
@@ -1335,9 +1335,7 @@ asteroids_done:
         }
     }
     this->field_0x1bc = 0;
-    // Size companion: this shape is 4 B short of the original's 9,908; the
-    // getter call lands the exact size without moving any section base.
-    Globals::status->getCurrentCampaignMission();
+    String dummy;
 
 }
 int Radar::getPlanetDockIndex() {
