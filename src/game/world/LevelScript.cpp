@@ -1080,7 +1080,7 @@ bool LevelScript::process(int delta) {
                     if (!Globals::sound->isPlaying(1122)) {
                         Globals::sound->play(1122, nullptr, nullptr, 0.0f);
                     }
-                    if (m_nScriptTime >= 9001) {
+                    if (__builtin_expect(m_nScriptTime >= 9001, 0)) { // lint: arm_builtin
                         m_nState = 4;
                     }
                 }
@@ -1332,7 +1332,7 @@ bool LevelScript::process(int delta) {
                 break;
             }
             case 5:
-                if (!Globals::layout->isFading()) {
+                if (__builtin_expect(!Globals::layout->isFading(), 1)) { // lint: arm_builtin
                     Globals::layout->enableFillScreen(true);
                     Globals::status->nextCampaignMission(true);
                     Globals::switch_to_target_setting = 0;
@@ -2055,7 +2055,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->useTargetsUpVector(false);
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         KIPlayer *ship = (*enemies)[i];
-                        if (ship != nullptr && ship->shipGroup == 9) {
+                        if (__builtin_expect(ship != nullptr && ship->shipGroup == 9, 0)) { // lint: arm_builtin
                             ship->player->setEnemy(player->player);
                         }
                     }
@@ -2389,7 +2389,7 @@ bool LevelScript::process(int delta) {
                         pirate->setPosition(origin + Vector{(float) x, (float) (dy - 5000), (float) z});
                     }
                     m_nState = 4;
-                } else if (((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6) {
+                } else if (__builtin_expect(((RadioMessage *) ((*messages)[11]))->isOver() && m_nState == 6, 1)) { // lint: arm_builtin
                     (*enemies)[10]->setActive(false);
                     (*enemies)[10]->setVisible(false);
                     m_nState = 7;
@@ -2490,7 +2490,7 @@ bool LevelScript::process(int delta) {
                     // the player. FP immediates from the .rodata pool: @0x13c194 = 2000.0f (dir scale),
                     // @0x13c198/9c/a0 = {-600, 800, -1000} (camera offset); field seed @0x13c190 = 100000.
                     m_pLevel->lodManager->forceUpdate(delta, false);
-                    if (((RadioMessage *) ((*messages)[1]))->isOver()) {
+                    if (__builtin_expect(((RadioMessage *) ((*messages)[1]))->isOver(), 0)) { // lint: arm_builtin
                         (*m_pLevel->getEnemies())[0]->player->setAlwaysFriend(false);
                         (*m_pLevel->getEnemies())[0]->player->setAlwaysEnemy(true);
                         ((PlayerFighter *) (*m_pLevel->getEnemies())[0])->field_0x128 = 100000;
@@ -2845,7 +2845,7 @@ bool LevelScript::process(int delta) {
                             Globals::appManager->SetCurrentApplicationModule(2);
                         }
                     }
-                } else if (m_nState == 5) {
+                } else if (__builtin_expect(m_nState == 5, 1)) { // lint: arm_builtin
                     m_nScriptTimerA += delta;
                     if (m_nScriptTimerA >= 3001) {
                         m_nScriptTimerA = 0;
@@ -3066,7 +3066,7 @@ bool LevelScript::process(int delta) {
                     if (m_nScriptTimerA >= 3001) {
                         m_nState = 7;
                     }
-                } else if (m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered()) {
+                } else if (__builtin_expect(m_nState == 7 && ((RadioMessage *) ((*messages)[8]))->isTriggered(), 1)) { // lint: arm_builtin
                     if (player->isDockedToDockingPoint()) {
                         m_pLevel->getPlayer()->setAutoPilot(nullptr);
                         m_pRadar->lockedEnemy = nullptr;
@@ -3772,9 +3772,9 @@ bool LevelScript::process(int delta) {
                             off += 5000;
                         }
                     }
-                    if (player->getHitpoints() >= 1 &&
+                    if (__builtin_expect(player->getHitpoints() >= 1 && // lint: arm_builtin
                         reinterpret_cast<Route *>(player->getRoute()) != nullptr &&
-                        reinterpret_cast<Route *>(player->getRoute())->getWaypoint(0)->state != 0) {
+                        reinterpret_cast<Route *>(player->getRoute())->getWaypoint(0)->state != 0, 0)) {
                         player->player->setVulnerable(false);
                         player->stopBoost();
                         m_nState = m_nState + 1; // 9 -> 10
@@ -4132,7 +4132,7 @@ bool LevelScript::process(int delta) {
                     m_pCamera->setLocal(local);
                     long long *counter = reinterpret_cast<long long *>(&m_nScriptTimerA);
                     *counter += delta;
-                    if (*counter >= 3001) {
+                    if (__builtin_expect(*counter >= 3001, 1)) { // lint: arm_builtin
                         m_nState = 2;
                         *counter = 0;
                     }
@@ -4283,7 +4283,7 @@ bool LevelScript::process(int delta) {
                     m_nScriptTimerA += delta;
                     for (unsigned int i = 1; i < enemies->count; i++) {
                         if ((*enemies)[i]->shipGroupFlag == 44) {
-                            if (!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9) {
+                            if (__builtin_expect(!((PlayerFighter *) (*enemies)[i])->field_0x13c && Globals::rnd->nextInt(100) <= 9, 1)) { // lint: arm_builtin
                                 ((PlayerFighter *) (*enemies)[i])->setCloakingPossible(true);
                                 ((PlayerFighter *) (*enemies)[i])->cloak(20000, true);
                             }
@@ -4365,7 +4365,7 @@ bool LevelScript::process(int delta) {
                 }
                 case 2: {
                     m_nScriptTimerA += delta;
-                    if (m_nScriptTimerA >= 1001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 1001, 1)) { // lint: arm_builtin
                         (*enemies)[0]->player->shoot(0, delta, false);
                         m_pGeometry4 = new AEGeometry(Globals::Canvas);
                         Gun *leadGun = (*(*(*enemies)[0]->player->guns)[0])[0];
@@ -4396,7 +4396,7 @@ bool LevelScript::process(int delta) {
                 case 4: {
                     m_nScriptTimerA += delta;
                     m_pExplosion->update((int) ((float) delta * 0.5f), nullptr);
-                    if (m_nScriptTimerA >= 324) {
+                    if (__builtin_expect(m_nScriptTimerA >= 324, 0)) { // lint: arm_builtin
                         KIPlayer *wreck = (*enemies)[13];
                         KIPlayer *boss = (*enemies)[14];
                         wreck->geometry->setMatrix(boss->geometry->getMatrix());
@@ -4595,7 +4595,7 @@ bool LevelScript::process(int delta) {
                     if (((RadioMessage *) ((*messages)[4]))->isOver()) {
                         m_nScriptTimerA += delta;
                     }
-                    if (m_nScriptTimerA >= 1001) {
+                    if (__builtin_expect(m_nScriptTimerA >= 1001, 0)) { // lint: arm_builtin
                         player->setSpeed(0.0f);
                         m_pCamera->setFixed(false);
                         m_pCamera->setTarget((*m_pLevel->getEnemies())[1]->geometry);
