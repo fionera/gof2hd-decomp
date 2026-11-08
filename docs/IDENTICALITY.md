@@ -52,15 +52,15 @@ outside the winning family. A separate strong lead: on `Radar::draw`,
 `__builtin_expect(enemies != nullptr, 1)` drops the alignment **2,712 -> 1,963**
 but shrinks the function to 9,800 B — the missing ~108 B is the next step.
 
-**Aligned total (15 functions): 24,055** (wave-146 base 24,232). Per function:
+**Aligned total (15 functions): 24,061** (wave-146 base 24,232). Per function:
 Layout 2,304, LevelScript 15,740 (indicative), createShip 486, Status 320,
-Radar 2,726, MGame::OnTouchEnd 906, createMission 728, Gun 57, HangarWindow 301,
+Radar 2,726, MGame::OnTouchEnd 906, createMission 734, Gun 57, HangarWindow 301,
 SpaceLounge 42, Hud 249, Generator 59, MenuTouchWindow 16, ModStation 12,
 MGame::OnUpdate 109.
 
 Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 **54,913** (57,232 B), `Radar::draw` **8,672** (9,908 B), `Layout` C1/C2
-**5,704** (7,072 B), `Level::createMission` **5,560** (17,172 B),
+**5,704** (7,072 B), `Level::createMission` **5,559** (17,172 B),
 `MGame::OnTouchEnd` **4,127** (8,080 B), `Level::createShip` **1,978** (2,764 B),
 `HangarWindow::render` **1,967** (9,700 B), `Hud::draw` **1,325** (9,332 B),
 `Status::missionCompleted` **722** (1,432 B), `Gun::calcCharacterCollision`
@@ -69,7 +69,7 @@ Residual raw same-address diff bytes (all size-exact): `LevelScript::process`
 (1,008 B), `MGame::OnUpdate` **37** (11,440 B), `MenuTouchWindow::OnTouchBegin`
 **28** (1,896 B).
 
-Section deltas: `.text` **86,160** differing bytes (size exact); `.ARM.exidx`
+Section deltas: `.text` **86,159** differing bytes (size exact); `.ARM.exidx`
 **0** (byte-identical); `.ARM.extab` **1,309** (size- and base-exact
 **156,312 B**); `.rodata` **0** (byte-identical); `.rel.plt` **4** (29,392 B;
 the `setVisible`/`deleteHackingGame` swap); `.data` **0**; `.bss` **0**;
